@@ -1,1006 +1,1006 @@
 class_name GameModes
 
 class GameMode:
-    var name: String = "Unknown"
-    var description: String = "Base game mode"
+	var name: String = "Unknown"
+	var description: String = "Base game mode"
 
-    func _init() -> void:
-        pass
+	func _init() -> void:
+		pass
 
-    func setup(world, balls: Array) -> void:
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            var sponsor = ""
-            if "sponsor" in b:
-                sponsor = b.sponsor
-            elif b.has_method("get_meta") and b.has_meta("sponsor"):
-                sponsor = b.get_meta("sponsor")
+	func setup(world, balls: Array) -> void:
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			var sponsor = ""
+			if "sponsor" in b:
+				sponsor = b.sponsor
+			elif b.has_method("get_meta") and b.has_meta("sponsor"):
+				sponsor = b.get_meta("sponsor")
 
-            if sponsor == "aggressor":
-                if "max_hp" in b:
-                    b.max_hp *= 0.8
-                    if "hp" in b: b.hp = min(b.hp, b.max_hp)
-            elif sponsor == "juggernaut":
-                if "speed" in b: b.speed *= 0.8
-                if "base_speed" in b: b.base_speed *= 0.8
-                elif b.has_method("set_meta") and b.has_meta("base_speed"):
-                    b.set_meta("base_speed", float(b.get_meta("base_speed")) * 0.8)
-            elif sponsor == "vampiric":
-                if "max_hp" in b:
-                    b.max_hp *= 0.9
-                    if "hp" in b: b.hp = min(b.hp, b.max_hp)
+			if sponsor == "aggressor":
+				if "max_hp" in b:
+					b.max_hp *= 0.8
+					if "hp" in b: b.hp = min(b.hp, b.max_hp)
+			elif sponsor == "juggernaut":
+				if "speed" in b: b.speed *= 0.8
+				if "base_speed" in b: b.base_speed *= 0.8
+				elif b.has_method("set_meta") and b.has_meta("base_speed"):
+					b.set_meta("base_speed", float(b.get_meta("base_speed")) * 0.8)
+			elif sponsor == "vampiric":
+				if "max_hp" in b:
+					b.max_hp *= 0.9
+					if "hp" in b: b.hp = min(b.hp, b.max_hp)
 
-        var season_num = 1
-        if "leaderboard_manager" in world and world.leaderboard_manager != null:
-            season_num = world.leaderboard_manager.data.get("current_season", 1)
-        elif "profile_manager" in world and world.profile_manager != null:
-            if "leaderboard_manager" in world.profile_manager and world.profile_manager.leaderboard_manager != null:
-                season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+		var season_num = 1
+		if "leaderboard_manager" in world and world.leaderboard_manager != null:
+			season_num = world.leaderboard_manager.data.get("current_season", 1)
+		elif "profile_manager" in world and world.profile_manager != null:
+			if "leaderboard_manager" in world.profile_manager and world.profile_manager.leaderboard_manager != null:
+				season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
 
-        var modifiers = {
-            1: {"type": "global_speed", "value": 1.2},
-            2: {"type": "global_damage", "value": 0.9},
-            3: {"type": "global_hp", "value": 1.15},
-            4: {"type": "global_cooldown", "value": 0.8}
-        }
+		var modifiers = {
+			1: {"type": "global_speed", "value": 1.2},
+			2: {"type": "global_damage", "value": 0.9},
+			3: {"type": "global_hp", "value": 1.15},
+			4: {"type": "global_cooldown", "value": 0.8}
+		}
 
-        var mod_index = ((season_num - 1) % 4) + 1
-        var mod = modifiers[mod_index]
+		var mod_index = ((season_num - 1) % 4) + 1
+		var mod = modifiers[mod_index]
 
-        var current_week = int(Time.get_unix_time_from_system() / (7.0 * 24.0 * 3600.0))
-        var weekly_mutators = {
-            0: {"type": "low_gravity"},
-            1: {"type": "double_damage"},
-            2: {"type": "high_speed"},
-            3: {"type": "vampirism"}
-        }
-        var week_index = current_week % weekly_mutators.size()
-        var week_mod = weekly_mutators[week_index]
-        if typeof(world) == TYPE_OBJECT or typeof(world) == TYPE_DICTIONARY:
-            if world is Object and world.has_method("set"):
-                world.set("weekly_mutator", week_mod["type"])
-            elif typeof(world) == TYPE_DICTIONARY:
-                world["weekly_mutator"] = week_mod["type"]
-
-
-        for b in balls:
-            if b.ball_type != "spectator":
-                if not ("experience" in b): b.experience = 0.0
-                if not ("level" in b): b.level = 1
-                if mod["type"] == "global_speed":
-                    if "base_speed" in b:
-                        b.base_speed = b.base_speed * mod["value"]
-                    elif b.has_method("get_meta") and b.has_meta("base_speed"):
-                        b.set_meta("base_speed", b.get_meta("base_speed") * mod["value"])
-                    if "speed" in b:
-                        b.speed = b.speed * mod["value"]
-                elif mod["type"] == "global_damage":
-                    if "base_damage" in b:
-                        b.base_damage = b.base_damage * mod["value"]
-                    elif b.has_method("get_meta") and b.has_meta("base_damage"):
-                        b.set_meta("base_damage", b.get_meta("base_damage") * mod["value"])
-                    if "damage" in b:
-                        b.damage = b.damage * mod["value"]
-                elif mod["type"] == "global_hp":
-                    if "max_hp" in b:
-                        b.max_hp = b.max_hp * mod["value"]
-                    elif b.has_method("get_meta") and b.has_meta("max_hp"):
-                        b.set_meta("max_hp", b.get_meta("max_hp") * mod["value"])
-                    if "hp" in b:
-                        if "max_hp" in b:
-                            b.hp = b.max_hp
-                        elif b.has_method("get_meta") and b.has_meta("max_hp"):
-                            b.hp = b.get_meta("max_hp")
-                elif mod["type"] == "global_cooldown":
-                    if "cooldown_multiplier" in b:
-                        b.cooldown_multiplier = b.cooldown_multiplier * mod["value"]
-
-                    elif b.has_method("get_meta") and b.has_meta("cooldown_multiplier"):
-                        b.set_meta("cooldown_multiplier", b.get_meta("cooldown_multiplier") * mod["value"])
-                    elif b.has_method("set_meta"):
-                        b.set_meta("cooldown_multiplier", mod["value"])
-
-                if week_mod["type"] == "double_damage":
-                    if "base_damage" in b:
-                        b.base_damage = b.base_damage * 2.0
-                    elif b.has_method("get_meta") and b.has_meta("base_damage"):
-                        b.set_meta("base_damage", b.get_meta("base_damage") * 2.0)
-                    if "damage" in b:
-                        b.damage = b.damage * 2.0
-                elif week_mod["type"] == "high_speed":
-                    if "base_speed" in b:
-                        b.base_speed = b.base_speed * 1.5
-                    elif b.has_method("get_meta") and b.has_meta("base_speed"):
-                        b.set_meta("base_speed", b.get_meta("base_speed") * 1.5)
-                    if "speed" in b:
-                        b.speed = b.speed * 1.5
-                elif week_mod["type"] == "vampirism":
-                    if "lifesteal" in b:
-                        b.lifesteal = b.lifesteal + 0.5
-                    elif b.has_method("get_meta"):
-                        b.set_meta("lifesteal", b.get_meta("lifesteal", 0.0) + 0.5)
-                elif week_mod["type"] == "low_gravity":
-                    if "mass" in b:
-                        b.mass = b.mass * 0.5
-                    elif b.has_method("get_meta"):
-                        b.set_meta("mass", b.get_meta("mass", 1.0) * 0.5)
+		var current_week = int(Time.get_unix_time_from_system() / (7.0 * 24.0 * 3600.0))
+		var weekly_mutators = {
+			0: {"type": "low_gravity"},
+			1: {"type": "double_damage"},
+			2: {"type": "high_speed"},
+			3: {"type": "vampirism"}
+		}
+		var week_index = current_week % weekly_mutators.size()
+		var week_mod = weekly_mutators[week_index]
+		if typeof(world) == TYPE_OBJECT or typeof(world) == TYPE_DICTIONARY:
+			if world is Object and world.has_method("set"):
+				world.set("weekly_mutator", week_mod["type"])
+			elif typeof(world) == TYPE_DICTIONARY:
+				world["weekly_mutator"] = week_mod["type"]
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+		for b in balls:
+			if b.ball_type != "spectator":
+				if not ("experience" in b): b.experience = 0.0
+				if not ("level" in b): b.level = 1
+				if mod["type"] == "global_speed":
+					if "base_speed" in b:
+						b.base_speed = b.base_speed * mod["value"]
+					elif b.has_method("get_meta") and b.has_meta("base_speed"):
+						b.set_meta("base_speed", b.get_meta("base_speed") * mod["value"])
+					if "speed" in b:
+						b.speed = b.speed * mod["value"]
+				elif mod["type"] == "global_damage":
+					if "base_damage" in b:
+						b.base_damage = b.base_damage * mod["value"]
+					elif b.has_method("get_meta") and b.has_meta("base_damage"):
+						b.set_meta("base_damage", b.get_meta("base_damage") * mod["value"])
+					if "damage" in b:
+						b.damage = b.damage * mod["value"]
+				elif mod["type"] == "global_hp":
+					if "max_hp" in b:
+						b.max_hp = b.max_hp * mod["value"]
+					elif b.has_method("get_meta") and b.has_meta("max_hp"):
+						b.set_meta("max_hp", b.get_meta("max_hp") * mod["value"])
+					if "hp" in b:
+						if "max_hp" in b:
+							b.hp = b.max_hp
+						elif b.has_method("get_meta") and b.has_meta("max_hp"):
+							b.hp = b.get_meta("max_hp")
+				elif mod["type"] == "global_cooldown":
+					if "cooldown_multiplier" in b:
+						b.cooldown_multiplier = b.cooldown_multiplier * mod["value"]
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-        pass
+					elif b.has_method("get_meta") and b.has_meta("cooldown_multiplier"):
+						b.set_meta("cooldown_multiplier", b.get_meta("cooldown_multiplier") * mod["value"])
+					elif b.has_method("set_meta"):
+						b.set_meta("cooldown_multiplier", mod["value"])
+
+				if week_mod["type"] == "double_damage":
+					if "base_damage" in b:
+						b.base_damage = b.base_damage * 2.0
+					elif b.has_method("get_meta") and b.has_meta("base_damage"):
+						b.set_meta("base_damage", b.get_meta("base_damage") * 2.0)
+					if "damage" in b:
+						b.damage = b.damage * 2.0
+				elif week_mod["type"] == "high_speed":
+					if "base_speed" in b:
+						b.base_speed = b.base_speed * 1.5
+					elif b.has_method("get_meta") and b.has_meta("base_speed"):
+						b.set_meta("base_speed", b.get_meta("base_speed") * 1.5)
+					if "speed" in b:
+						b.speed = b.speed * 1.5
+				elif week_mod["type"] == "vampirism":
+					if "lifesteal" in b:
+						b.lifesteal = b.lifesteal + 0.5
+					elif b.has_method("get_meta"):
+						b.set_meta("lifesteal", b.get_meta("lifesteal", 0.0) + 0.5)
+				elif week_mod["type"] == "low_gravity":
+					if "mass" in b:
+						b.mass = b.mass * 0.5
+					elif b.has_method("get_meta"):
+						b.set_meta("mass", b.get_meta("mass", 1.0) * 0.5)
 
 
-    func check_winner(world, balls: Array):
-        return null
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
+
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		pass
+
+
+	func check_winner(world, balls: Array):
+		return null
 
 
 class DraftRoyaleMode extends GameMode:
-    var phase: String = "drafting"
-    var draft_state: String = "ban"
-    var turn_index: int = 0
-    var banned_types: Array = []
-    var available_types: Array = [
-        "time_mage", "assassin", "berserker", "bomber", "brawler", "chaos", "conjurer", "druid",
-        "elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
-        "monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue", "drone", "shield_drone",
-        "scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
-        "warlock", "warrior"
-    ]
-    var team_rosters: Dictionary = {"Team A": [], "Team B": []}
-    var teams: Array = ["Team A", "Team B"]
-    var max_bans: int = 2
-    var picks_per_team: int = 5
-    var timer: float = 0.0
+	var phase: String = "drafting"
+	var draft_state: String = "ban"
+	var turn_index: int = 0
+	var banned_types: Array = []
+	var available_types: Array = [
+		"time_mage", "assassin", "berserker", "bomber", "brawler", "chaos", "conjurer", "druid",
+		"elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
+		"monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue", "drone", "shield_drone",
+		"scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
+		"warlock", "warrior"
+	]
+	var team_rosters: Dictionary = {"Team A": [], "Team B": []}
+	var teams: Array = ["Team A", "Team B"]
+	var max_bans: int = 2
+	var picks_per_team: int = 5
+	var timer: float = 0.0
 
-    func _init() -> void:
-        name = "Draft Royale"
-        description = "Before the match, teams take turns picking and banning ball types to create synergies and counter opponents."
+	func _init() -> void:
+		name = "Draft Royale"
+		description = "Before the match, teams take turns picking and banning ball types to create synergies and counter opponents."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        phase = "drafting"
-        draft_state = "ban"
-        turn_index = 0
-        banned_types = []
-        team_rosters = {"Team A": [], "Team B": []}
-        timer = 0.0
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		phase = "drafting"
+		draft_state = "ban"
+		turn_index = 0
+		banned_types = []
+		team_rosters = {"Team A": [], "Team B": []}
+		timer = 0.0
 
-        for b in balls:
-            if b.has_method("set_meta"):
-                var orig_type = "tank"
-                if "ball_type" in b:
-                    orig_type = b.ball_type
-                b.set_meta("original_type", orig_type)
+		for b in balls:
+			if b.has_method("set_meta"):
+				var orig_type = "tank"
+				if "ball_type" in b:
+					orig_type = b.ball_type
+				b.set_meta("original_type", orig_type)
 
-                var base_spd = 100.0
-                if "speed" in b:
-                    base_spd = float(b.speed)
-                b.set_meta("base_speed", base_spd)
+				var base_spd = 100.0
+				if "speed" in b:
+					base_spd = float(b.speed)
+				b.set_meta("base_speed", base_spd)
 
-                var base_dmg = 10.0
-                if "damage" in b:
-                    base_dmg = float(b.damage)
-                b.set_meta("base_damage", base_dmg)
+				var base_dmg = 10.0
+				if "damage" in b:
+					base_dmg = float(b.damage)
+				b.set_meta("base_damage", base_dmg)
 
-            b.ball_type = "spectator"
-            b.team = "spectator"
-            if "speed" in b:
-                b.speed = 0.0
+			b.ball_type = "spectator"
+			b.team = "spectator"
+			if "speed" in b:
+				b.speed = 0.0
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        if phase == "drafting":
-            timer += delta
-            if timer > 0.5:
-                timer = 0.0
-                var current_team = teams[turn_index % teams.size()]
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if phase == "drafting":
+			timer += delta
+			if timer > 0.5:
+				timer = 0.0
+				var current_team = teams[turn_index % teams.size()]
 
-                if draft_state == "ban":
-                    if banned_types.size() < max_bans * teams.size():
-                        var choices = []
-                        for t in available_types:
-                            if not banned_types.has(t):
-                                choices.append(t)
-                        if choices.size() > 0:
-                            var ban = choices[randi() % choices.size()]
-                            banned_types.append(ban)
-                        turn_index += 1
+				if draft_state == "ban":
+					if banned_types.size() < max_bans * teams.size():
+						var choices = []
+						for t in available_types:
+							if not banned_types.has(t):
+								choices.append(t)
+						if choices.size() > 0:
+							var ban = choices[randi() % choices.size()]
+							banned_types.append(ban)
+						turn_index += 1
 
-                        if banned_types.size() >= max_bans * teams.size():
-                            draft_state = "pick"
-                            turn_index = 0
+						if banned_types.size() >= max_bans * teams.size():
+							draft_state = "pick"
+							turn_index = 0
 
-                elif draft_state == "pick":
-                    var team_a_picks = team_rosters["Team A"].size()
-                    var team_b_picks = team_rosters["Team B"].size()
+				elif draft_state == "pick":
+					var team_a_picks = team_rosters["Team A"].size()
+					var team_b_picks = team_rosters["Team B"].size()
 
-                    if team_a_picks < picks_per_team or team_b_picks < picks_per_team:
-                        if team_rosters[current_team].size() < picks_per_team:
-                            var picked_by_a = team_rosters["Team A"]
-                            var picked_by_b = team_rosters["Team B"]
-                            var choices = []
-                            for t in available_types:
-                                if not banned_types.has(t) and not picked_by_a.has(t) and not picked_by_b.has(t):
-                                    choices.append(t)
-                            if choices.size() == 0:
-                                for t in available_types:
-                                    if not banned_types.has(t):
-                                        choices.append(t)
-                            if choices.size() > 0:
-                                var pick = choices[randi() % choices.size()]
-                                team_rosters[current_team].append(pick)
-                        turn_index += 1
-                    else:
-                        phase = "combat"
-                        start_combat(world, balls)
+					if team_a_picks < picks_per_team or team_b_picks < picks_per_team:
+						if team_rosters[current_team].size() < picks_per_team:
+							var picked_by_a = team_rosters["Team A"]
+							var picked_by_b = team_rosters["Team B"]
+							var choices = []
+							for t in available_types:
+								if not banned_types.has(t) and not picked_by_a.has(t) and not picked_by_b.has(t):
+									choices.append(t)
+							if choices.size() == 0:
+								for t in available_types:
+									if not banned_types.has(t):
+										choices.append(t)
+							if choices.size() > 0:
+								var pick = choices[randi() % choices.size()]
+								team_rosters[current_team].append(pick)
+						turn_index += 1
+					else:
+						phase = "combat"
+						start_combat(world, balls)
 
-    func start_combat(world, balls: Array) -> void:
-        var team_a_balls = []
-        var team_b_balls = []
+	func start_combat(world, balls: Array) -> void:
+		var team_a_balls = []
+		var team_b_balls = []
 
-        for b in balls:
-            var is_orig_spec = false
-            if b.has_method("get_meta") and b.has_meta("original_type"):
-                if b.get_meta("original_type") == "spectator":
-                    is_orig_spec = true
-            elif b.ball_type == "spectator":
-                pass # can't check original type easily without meta
+		for b in balls:
+			var is_orig_spec = false
+			if b.has_method("get_meta") and b.has_meta("original_type"):
+				if b.get_meta("original_type") == "spectator":
+					is_orig_spec = true
+			elif b.ball_type == "spectator":
+				pass # can't check original type easily without meta
 
-            if not is_orig_spec:
-                if team_a_balls.size() < picks_per_team:
-                    team_a_balls.append(b)
-                elif team_b_balls.size() < picks_per_team:
-                    team_b_balls.append(b)
+			if not is_orig_spec:
+				if team_a_balls.size() < picks_per_team:
+					team_a_balls.append(b)
+				elif team_b_balls.size() < picks_per_team:
+					team_b_balls.append(b)
 
-        for i in range(team_a_balls.size()):
-            var b = team_a_balls[i]
-            if i < team_rosters["Team A"].size():
-                b.ball_type = team_rosters["Team A"][i]
-                b.team = "Team A"
-                b.alive = true
-                if b.has_method("get_meta"):
-                    if b.has_meta("base_speed") and "speed" in b:
-                        b.speed = b.get_meta("base_speed")
-                    if b.has_meta("base_damage") and "damage" in b:
-                        b.damage = b.get_meta("base_damage")
+		for i in range(team_a_balls.size()):
+			var b = team_a_balls[i]
+			if i < team_rosters["Team A"].size():
+				b.ball_type = team_rosters["Team A"][i]
+				b.team = "Team A"
+				b.alive = true
+				if b.has_method("get_meta"):
+					if b.has_meta("base_speed") and "speed" in b:
+						b.speed = b.get_meta("base_speed")
+					if b.has_meta("base_damage") and "damage" in b:
+						b.damage = b.get_meta("base_damage")
 
-        for i in range(team_b_balls.size()):
-            var b = team_b_balls[i]
-            if i < team_rosters["Team B"].size():
-                b.ball_type = team_rosters["Team B"][i]
-                b.team = "Team B"
-                b.alive = true
-                if b.has_method("get_meta"):
-                    if b.has_meta("base_speed") and "speed" in b:
-                        b.speed = b.get_meta("base_speed")
-                    if b.has_meta("base_damage") and "damage" in b:
-                        b.damage = b.get_meta("base_damage")
+		for i in range(team_b_balls.size()):
+			var b = team_b_balls[i]
+			if i < team_rosters["Team B"].size():
+				b.ball_type = team_rosters["Team B"][i]
+				b.team = "Team B"
+				b.alive = true
+				if b.has_method("get_meta"):
+					if b.has_meta("base_speed") and "speed" in b:
+						b.speed = b.get_meta("base_speed")
+					if b.has_meta("base_damage") and "damage" in b:
+						b.damage = b.get_meta("base_damage")
 
-        for b in balls:
-            if b.team == "spectator" or b.ball_type == "spectator":
-                b.ball_type = "spectator"
-                b.alive = false
+		for b in balls:
+			if b.team == "spectator" or b.ball_type == "spectator":
+				b.ball_type = "spectator"
+				b.alive = false
 
-    func check_winner(world, balls: Array):
-        if phase == "drafting":
-            return null
+	func check_winner(world, balls: Array):
+		if phase == "drafting":
+			return null
 
-        var alive_a = 0
-        var alive_b = 0
+		var alive_a = 0
+		var alive_b = 0
 
-        for b in balls:
-            if b.alive:
-                if b.team == "Team A":
-                    alive_a += 1
-                elif b.team == "Team B":
-                    alive_b += 1
+		for b in balls:
+			if b.alive:
+				if b.team == "Team A":
+					alive_a += 1
+				elif b.team == "Team B":
+					alive_b += 1
 
-        if alive_a > 0 and alive_b == 0:
-            return "Team A"
-        elif alive_b > 0 and alive_a == 0:
-            return "Team B"
-        elif alive_a == 0 and alive_b == 0:
-            return "Draw"
+		if alive_a > 0 and alive_b == 0:
+			return "Team A"
+		elif alive_b > 0 and alive_a == 0:
+			return "Team B"
+		elif alive_a == 0 and alive_b == 0:
+			return "Draw"
 
-        return null
+		return null
 
 class ShadowMonster:
-    var x = 0.0
-    var y = 0.0
-    var vx = 0.0
-    var vy = 0.0
-    var radius = 15.0
-    var speed = 180.0
-    var damage = 30.0
-    var hp = 100.0
-    var max_hp = 100.0
-    var alive = true
-    var ball_type = "shadow_monster"
-    var team = "ShadowMonsters"
+	var x = 0.0
+	var y = 0.0
+	var vx = 0.0
+	var vy = 0.0
+	var radius = 15.0
+	var speed = 180.0
+	var damage = 30.0
+	var hp = 100.0
+	var max_hp = 100.0
+	var alive = true
+	var ball_type = "shadow_monster"
+	var team = "ShadowMonsters"
 
 class BattleRoyaleMode extends GameMode:
-    var dark_phase_timer: float = 0.0
-    var is_dark_phase: bool = false
-    var weather_timer: float = 0.0
-    var weather: String = "clear"
-    var supply_drop_timer: float = 0.0
-    var zone_initialized: bool = false
-    var zone_x: float = 500.0
-    var zone_y: float = 500.0
-    var zone_radius: float = 1000.0
-    var shrink_rate: float = 10.0
-    var rng = RandomNumberGenerator.new()
-    var match_time: float = 0.0
-    var sudden_death_black_hole_spawned: bool = false
-    var tornado_spawn_timer: float = 0.0
-    var final_boss_spawned: bool = false
+	var dark_phase_timer: float = 0.0
+	var is_dark_phase: bool = false
+	var weather_timer: float = 0.0
+	var weather: String = "clear"
+	var supply_drop_timer: float = 0.0
+	var zone_initialized: bool = false
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 1000.0
+	var shrink_rate: float = 10.0
+	var rng = RandomNumberGenerator.new()
+	var match_time: float = 0.0
+	var sudden_death_black_hole_spawned: bool = false
+	var tornado_spawn_timer: float = 0.0
+	var final_boss_spawned: bool = false
 
-    func _init() -> void:
-        name = "Battle Royale"
-        description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
-        if not has_meta("shadow_monsters"):
-            set_meta("shadow_monsters", [])
+	func _init() -> void:
+		name = "Battle Royale"
+		description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
+		if not has_meta("shadow_monsters"):
+			set_meta("shadow_monsters", [])
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if i >= 20:
-                b.ball_type = "spectator"
-                b.alive = false
-            else:
-                b.team = b.ball_type
-                var base_perc = 250.0
-                if "perception_radius" in b:
-                    base_perc = float(b.perception_radius)
-                if b.has_method("set_meta"):
-                    b.set_meta("base_perception_radius", base_perc)
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i >= 20:
+				b.ball_type = "spectator"
+				b.alive = false
+			else:
+				b.team = b.ball_type
+				var base_perc = 250.0
+				if "perception_radius" in b:
+					base_perc = float(b.perception_radius)
+				if b.has_method("set_meta"):
+					b.set_meta("base_perception_radius", base_perc)
 
-                var PreGameLobbyClass = load("res://src/system/lobby.gd")
-                if PreGameLobbyClass and PreGameLobbyClass.has_method("get_instance"):
-                    var lobby = PreGameLobbyClass.get_instance()
-                    var bid = b.get("id") if b.get("id") != null else i
-                    var perks = lobby.get_perks(bid)
-                    for perk in perks:
-                        if perk == "Thick Skinned":
-                            var b_max_hp = float(b.get("max_hp")) if b.get("max_hp") != null else 100.0
-                            if not b.has_meta("base_max_hp"):
-                                b.set_meta("base_max_hp", b_max_hp)
-                            b.set_meta("base_max_hp", float(b.get_meta("base_max_hp")) * 1.1)
-                            b.set("max_hp", b.get_meta("base_max_hp"))
-                            b.set("hp", b.get("max_hp"))
-                        elif perk == "Nimble":
-                            var b_speed = float(b.get("speed")) if b.get("speed") != null else 100.0
-                            if not b.has_meta("base_speed"):
-                                b.set_meta("base_speed", b_speed)
-                            b.set_meta("base_speed", float(b.get_meta("base_speed")) * 1.1)
-                            b.set("speed", b.get_meta("base_speed"))
-                        elif perk == "Heavy Hitter":
-                            var b_damage = float(b.get("damage")) if b.get("damage") != null else 10.0
-                            if not b.has_meta("base_damage"):
-                                b.set_meta("base_damage", b_damage)
-                            b.set_meta("base_damage", float(b.get_meta("base_damage")) * 1.1)
-                            b.set("damage", b.get_meta("base_damage"))
-                        elif perk == "Eagle Eye":
-                            b.set_meta("base_perception_radius", float(b.get_meta("base_perception_radius")) * 1.1)
-                            b.set("perception_radius", b.get_meta("base_perception_radius"))
-
-
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
-
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-
-        # Safe Zone logic
-        if not self.get("zone_initialized"):
-            self.set("zone_initialized", true)
-            var arena_width = 1000
-            var arena_height = 1000
-            if "arena" in world and world.arena:
-                if "width" in world.arena: arena_width = world.arena.width
-                if "height" in world.arena: arena_height = world.arena.height
-            self.set("zone_x", arena_width / 2.0)
-            self.set("zone_y", arena_height / 2.0)
-            self.set("zone_radius", max(arena_width, arena_height))
-            self.set("shrink_rate", 10.0)
-
-        var current_radius = self.get("zone_radius")
-        if current_radius > 50.0:
-            current_radius -= self.get("shrink_rate") * delta
-            if current_radius < 50.0:
-                current_radius = 50.0
-            self.set("zone_radius", current_radius)
-
-        var arena_width_for_dmg = 1000.0
-        var arena_height_for_dmg = 1000.0
-        if "arena" in world and world.arena:
-            if "width" in world.arena: arena_width_for_dmg = float(world.arena.width)
-            if "height" in world.arena: arena_height_for_dmg = float(world.arena.height)
-
-        var max_arena_dim = max(arena_width_for_dmg, arena_height_for_dmg)
-        var shrink_ratio = max(0.0, min(1.0, 1.0 - (current_radius / max_arena_dim)))
-        var zone_damage_per_second = 20.0 + (shrink_ratio * 80.0)
-
-        for b in balls:
-            if b.alive and b.ball_type != "spectator":
-                var b_x = 0.0
-                var b_y = 0.0
-                if "x" in b: b_x = b.x
-                elif b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
-                if "y" in b: b_y = b.y
-                elif b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
-
-                var dist = sqrt(pow(b_x - self.get("zone_x"), 2) + pow(b_y - self.get("zone_y"), 2))
-                if dist > self.get("zone_radius"):
-                    if b.has_method("take_damage"):
-                        b.take_damage(zone_damage_per_second * delta)
-                    elif "hp" in b:
-                        b.hp -= zone_damage_per_second * delta
+				var PreGameLobbyClass = load("res://src/system/lobby.gd")
+				if PreGameLobbyClass and PreGameLobbyClass.has_method("get_instance"):
+					var lobby = PreGameLobbyClass.get_instance()
+					var bid = b.get("id") if b.get("id") != null else i
+					var perks = lobby.get_perks(bid)
+					for perk in perks:
+						if perk == "Thick Skinned":
+							var b_max_hp = float(b.get("max_hp")) if b.get("max_hp") != null else 100.0
+							if not b.has_meta("base_max_hp"):
+								b.set_meta("base_max_hp", b_max_hp)
+							b.set_meta("base_max_hp", float(b.get_meta("base_max_hp")) * 1.1)
+							b.set("max_hp", b.get_meta("base_max_hp"))
+							b.set("hp", b.get("max_hp"))
+						elif perk == "Nimble":
+							var b_speed = float(b.get("speed")) if b.get("speed") != null else 100.0
+							if not b.has_meta("base_speed"):
+								b.set_meta("base_speed", b_speed)
+							b.set_meta("base_speed", float(b.get_meta("base_speed")) * 1.1)
+							b.set("speed", b.get_meta("base_speed"))
+						elif perk == "Heavy Hitter":
+							var b_damage = float(b.get("damage")) if b.get("damage") != null else 10.0
+							if not b.has_meta("base_damage"):
+								b.set_meta("base_damage", b_damage)
+							b.set_meta("base_damage", float(b.get_meta("base_damage")) * 1.1)
+							b.set("damage", b.get_meta("base_damage"))
+						elif perk == "Eagle Eye":
+							b.set_meta("base_perception_radius", float(b.get_meta("base_perception_radius")) * 1.1)
+							b.set("perception_radius", b.get_meta("base_perception_radius"))
 
 
-        # Handle decoy_spawners
-        if "arena" in world and world.arena != null and "hazards" in world.arena:
-            for h in world.arena.hazards:
-                if "kind" in h and h.kind == "decoy_spawner":
-                    if not h.has_method("has_meta") or not h.has_meta("spawn_timer"):
-                        h.set_meta("spawn_timer", 0.0)
-                    var st = h.get_meta("spawn_timer") + delta
-                    if st >= 3.0:
-                        st = 0.0
-                        var new_decoy = {}
-                        var id_val = 80000 + (randi() % 9999)
-                        new_decoy["id"] = id_val
-                        new_decoy["x"] = h.x
-                        new_decoy["y"] = h.y
-                        new_decoy["vx"] = 0.0
-                        new_decoy["vy"] = 0.0
-                        new_decoy["radius"] = 15.0
-                        new_decoy["hp"] = 1.0
-                        new_decoy["max_hp"] = 1.0
-                        new_decoy["alive"] = true
-                        new_decoy["ball_type"] = "mimic_decoy"
-                        new_decoy["is_decoy"] = true
-                        new_decoy["spawned_by_decoy_spawner"] = true
-                        new_decoy["lifespan"] = 8.0
-                        new_decoy["has_method"] = Callable(func(method_name): return false)
-                        world.balls.append(new_decoy)
-                    h.set_meta("spawn_timer", st)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
+
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+		# Safe Zone logic
+		if not self.get("zone_initialized"):
+			self.set("zone_initialized", true)
+			var arena_width = 1000
+			var arena_height = 1000
+			if "arena" in world and world.arena:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+			self.set("zone_x", arena_width / 2.0)
+			self.set("zone_y", arena_height / 2.0)
+			self.set("zone_radius", max(arena_width, arena_height))
+			self.set("shrink_rate", 10.0)
+
+		var current_radius = self.get("zone_radius")
+		if current_radius > 50.0:
+			current_radius -= self.get("shrink_rate") * delta
+			if current_radius < 50.0:
+				current_radius = 50.0
+			self.set("zone_radius", current_radius)
+
+		var arena_width_for_dmg = 1000.0
+		var arena_height_for_dmg = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena: arena_width_for_dmg = float(world.arena.width)
+			if "height" in world.arena: arena_height_for_dmg = float(world.arena.height)
+
+		var max_arena_dim = max(arena_width_for_dmg, arena_height_for_dmg)
+		var shrink_ratio = max(0.0, min(1.0, 1.0 - (current_radius / max_arena_dim)))
+		var zone_damage_per_second = 20.0 + (shrink_ratio * 80.0)
+
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var b_x = 0.0
+				var b_y = 0.0
+				if "x" in b: b_x = b.x
+				elif b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+				if "y" in b: b_y = b.y
+				elif b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+
+				var dist = sqrt(pow(b_x - self.get("zone_x"), 2) + pow(b_y - self.get("zone_y"), 2))
+				if dist > self.get("zone_radius"):
+					if b.has_method("take_damage"):
+						b.take_damage(zone_damage_per_second * delta)
+					elif "hp" in b:
+						b.hp -= zone_damage_per_second * delta
 
 
-        # Final Zone Boss logic
-        if self.get("zone_radius") <= 250.0 and not self.get("final_boss_spawned"):
-            self.set("final_boss_spawned", true)
+		# Handle decoy_spawners
+		if "arena" in world and world.arena != null and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				if "kind" in h and h.kind == "decoy_spawner":
+					if not h.has_method("has_meta") or not h.has_meta("spawn_timer"):
+						h.set_meta("spawn_timer", 0.0)
+					var st = h.get_meta("spawn_timer") + delta
+					if st >= 3.0:
+						st = 0.0
+						var new_decoy = {}
+						var id_val = 80000 + (randi() % 9999)
+						new_decoy["id"] = id_val
+						new_decoy["x"] = h.x
+						new_decoy["y"] = h.y
+						new_decoy["vx"] = 0.0
+						new_decoy["vy"] = 0.0
+						new_decoy["radius"] = 15.0
+						new_decoy["hp"] = 1.0
+						new_decoy["max_hp"] = 1.0
+						new_decoy["alive"] = true
+						new_decoy["ball_type"] = "mimic_decoy"
+						new_decoy["is_decoy"] = true
+						new_decoy["spawned_by_decoy_spawner"] = true
+						new_decoy["lifespan"] = 8.0
+						new_decoy["has_method"] = Callable(func(method_name): return false)
+						world.balls.append(new_decoy)
+					h.set_meta("spawn_timer", st)
 
-            var boss_type = "juggernaut"
-            if weather in ["snow", "blizzard"]:
-                boss_type = "yeti"
-            elif weather == "sandstorm" and not is_imm:
-                boss_type = "sandworm"
 
-            var new_boss = {}
-            var boss_id = 90000 + (randi() % 9999)
-            new_boss["id"] = boss_id
-            new_boss["x"] = self.get("zone_x")
-            new_boss["y"] = self.get("zone_y")
-            new_boss["vx"] = 0.0
-            new_boss["vy"] = 0.0
-            new_boss["radius"] = 40.0
-            new_boss["hp"] = 3000.0
-            new_boss["max_hp"] = 3000.0
-            new_boss["alive"] = true
-            new_boss["ball_type"] = boss_type
-            new_boss["team"] = "Boss"
-            new_boss["speed"] = 120.0
-            new_boss["base_speed"] = 120.0
-            new_boss["damage"] = 40.0
-            new_boss["base_damage"] = 40.0
-            new_boss["perception_radius"] = 500.0
-            new_boss["base_perception_radius"] = 500.0
-            new_boss["is_final_boss"] = true
-            new_boss["reward_given"] = false
-            new_boss["has_method"] = Callable(func(method_name): return false)
+		# Final Zone Boss logic
+		if self.get("zone_radius") <= 250.0 and not self.get("final_boss_spawned"):
+			self.set("final_boss_spawned", true)
 
-            if world != null and "balls" in world:
-                world.balls.append(new_boss)
+			var boss_type = "juggernaut"
+			if weather in ["snow", "blizzard"]:
+				boss_type = "yeti"
+			elif weather == "sandstorm" and not is_imm:
+				boss_type = "sandworm"
 
-            if world != null and world.has_method("add_event"):
-                world.add_event("final_boss_spawn", {"message": "A massive " + boss_type.capitalize() + " has emerged in the center of the safe zone!"})
+			var new_boss = {}
+			var boss_id = 90000 + (randi() % 9999)
+			new_boss["id"] = boss_id
+			new_boss["x"] = self.get("zone_x")
+			new_boss["y"] = self.get("zone_y")
+			new_boss["vx"] = 0.0
+			new_boss["vy"] = 0.0
+			new_boss["radius"] = 40.0
+			new_boss["hp"] = 3000.0
+			new_boss["max_hp"] = 3000.0
+			new_boss["alive"] = true
+			new_boss["ball_type"] = boss_type
+			new_boss["team"] = "Boss"
+			new_boss["speed"] = 120.0
+			new_boss["base_speed"] = 120.0
+			new_boss["damage"] = 40.0
+			new_boss["base_damage"] = 40.0
+			new_boss["perception_radius"] = 500.0
+			new_boss["base_perception_radius"] = 500.0
+			new_boss["is_final_boss"] = true
+			new_boss["reward_given"] = false
+			new_boss["has_method"] = Callable(func(method_name): return false)
 
-        # Check boss death
-        for b in balls:
-            var is_final = false
-            if typeof(b) == TYPE_DICTIONARY and b.has("is_final_boss"): is_final = b["is_final_boss"]
-            elif "is_final_boss" in b: is_final = b.is_final_boss
-            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_final_boss"): is_final = b.get_meta("is_final_boss")
+			if world != null and "balls" in world:
+				world.balls.append(new_boss)
 
-            if is_final:
-                var b_alive = true
-                if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
-                elif "alive" in b: b_alive = b.alive
+			if world != null and world.has_method("add_event"):
+				world.add_event("final_boss_spawn", {"message": "A massive " + boss_type.capitalize() + " has emerged in the center of the safe zone!"})
 
-                var r_given = false
-                if typeof(b) == TYPE_DICTIONARY and b.has("reward_given"): r_given = b["reward_given"]
-                elif "reward_given" in b: r_given = b.reward_given
-                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("reward_given"): r_given = b.get_meta("reward_given")
+		# Check boss death
+		for b in balls:
+			var is_final = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("is_final_boss"): is_final = b["is_final_boss"]
+			elif "is_final_boss" in b: is_final = b.is_final_boss
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_final_boss"): is_final = b.get_meta("is_final_boss")
 
-                if not b_alive and not r_given:
-                    if typeof(b) == TYPE_DICTIONARY: b["reward_given"] = true
-                    elif "reward_given" in b: b.reward_given = true
-                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("reward_given", true)
+			if is_final:
+				var b_alive = true
+				if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+				elif "alive" in b: b_alive = b.alive
 
-                    var killer_id = null
-                    if typeof(b) == TYPE_DICTIONARY and b.has("killer_id"): killer_id = b["killer_id"]
-                    elif "killer_id" in b: killer_id = b.killer_id
-                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("killer_id"): killer_id = b.get_meta("killer_id")
+				var r_given = false
+				if typeof(b) == TYPE_DICTIONARY and b.has("reward_given"): r_given = b["reward_given"]
+				elif "reward_given" in b: r_given = b.reward_given
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("reward_given"): r_given = b.get_meta("reward_given")
 
-                    if world != null and world.has_method("add_event"):
-                        world.add_event("boss_defeated", {"killer_id": killer_id, "points": 5000, "message": "The final boss was defeated!"})
+				if not b_alive and not r_given:
+					if typeof(b) == TYPE_DICTIONARY: b["reward_given"] = true
+					elif "reward_given" in b: b.reward_given = true
+					elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("reward_given", true)
 
-        # Handle decoy movement mimicking
-        for b in balls:
-            var spawned_by = false
-            if typeof(b) == TYPE_DICTIONARY and b.has("spawned_by_decoy_spawner"):
-                spawned_by = b["spawned_by_decoy_spawner"]
-            elif "spawned_by_decoy_spawner" in b:
-                spawned_by = b.spawned_by_decoy_spawner
-            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("spawned_by_decoy_spawner"):
-                spawned_by = b.get_meta("spawned_by_decoy_spawner")
+					var killer_id = null
+					if typeof(b) == TYPE_DICTIONARY and b.has("killer_id"): killer_id = b["killer_id"]
+					elif "killer_id" in b: killer_id = b.killer_id
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("killer_id"): killer_id = b.get_meta("killer_id")
 
-            if spawned_by:
-                var alive_val = true
-                if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
-                    alive_val = b["alive"]
-                elif "alive" in b:
-                    alive_val = b.alive
+					if world != null and world.has_method("add_event"):
+						world.add_event("boss_defeated", {"killer_id": killer_id, "points": 5000, "message": "The final boss was defeated!"})
 
-                if alive_val:
-                    var lifespan = 0.0
-                    if typeof(b) == TYPE_DICTIONARY and b.has("lifespan"):
-                        lifespan = b["lifespan"] - delta
-                        b["lifespan"] = lifespan
-                    elif "lifespan" in b:
-                        b.lifespan -= delta
-                        lifespan = b.lifespan
+		# Handle decoy movement mimicking
+		for b in balls:
+			var spawned_by = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("spawned_by_decoy_spawner"):
+				spawned_by = b["spawned_by_decoy_spawner"]
+			elif "spawned_by_decoy_spawner" in b:
+				spawned_by = b.spawned_by_decoy_spawner
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("spawned_by_decoy_spawner"):
+				spawned_by = b.get_meta("spawned_by_decoy_spawner")
 
-                    if lifespan <= 0:
-                        if typeof(b) == TYPE_DICTIONARY:
-                            b["alive"] = false
-                        else:
-                            b.alive = false
-                        continue
+			if spawned_by:
+				var alive_val = true
+				if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					alive_val = b["alive"]
+				elif "alive" in b:
+					alive_val = b.alive
 
-                    var nearest_player = null
-                    var min_dist = 99999999.0
-                    for p in balls:
-                        var p_alive = false
-                        if typeof(p) == TYPE_DICTIONARY and p.has("alive"): p_alive = p["alive"]
-                        elif "alive" in p: p_alive = p.alive
-                        var is_decoy = false
-                        if typeof(p) == TYPE_DICTIONARY and p.has("is_decoy"): is_decoy = p["is_decoy"]
-                        elif "is_decoy" in p: is_decoy = p.is_decoy
-                        var b_type = ""
-                        if typeof(p) == TYPE_DICTIONARY and p.has("ball_type"): b_type = p["ball_type"]
-                        elif "ball_type" in p: b_type = p.ball_type
+				if alive_val:
+					var lifespan = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("lifespan"):
+						lifespan = b["lifespan"] - delta
+						b["lifespan"] = lifespan
+					elif "lifespan" in b:
+						b.lifespan -= delta
+						lifespan = b.lifespan
 
-                        if p_alive and not is_decoy and b_type != "spectator":
-                            var p_x = 0.0
-                            var p_y = 0.0
-                            if typeof(p) == TYPE_DICTIONARY:
-                                if p.has("x"): p_x = p["x"]
-                                if p.has("y"): p_y = p["y"]
-                            else:
-                                if "x" in p: p_x = p.x
-                                if "y" in p: p_y = p.y
-                            var dx = p_x - (b["x"] if typeof(b) == TYPE_DICTIONARY else b.x)
-                            var dy = p_y - (b["y"] if typeof(b) == TYPE_DICTIONARY else b.y)
-                            var dist = dx*dx + dy*dy
-                            if dist < min_dist:
-                                min_dist = dist
-                                nearest_player = p
+					if lifespan <= 0:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["alive"] = false
+						else:
+							b.alive = false
+						continue
 
-                    if nearest_player != null:
-                        var vx = 0.0
-                        var vy = 0.0
-                        if typeof(nearest_player) == TYPE_DICTIONARY:
-                            if nearest_player.has("vx"): vx = nearest_player["vx"]
-                            if nearest_player.has("vy"): vy = nearest_player["vy"]
-                        else:
-                            if "vx" in nearest_player: vx = nearest_player.vx
-                            if "vy" in nearest_player: vy = nearest_player.vy
+					var nearest_player = null
+					var min_dist = 99999999.0
+					for p in balls:
+						var p_alive = false
+						if typeof(p) == TYPE_DICTIONARY and p.has("alive"): p_alive = p["alive"]
+						elif "alive" in p: p_alive = p.alive
+						var is_decoy = false
+						if typeof(p) == TYPE_DICTIONARY and p.has("is_decoy"): is_decoy = p["is_decoy"]
+						elif "is_decoy" in p: is_decoy = p.is_decoy
+						var b_type = ""
+						if typeof(p) == TYPE_DICTIONARY and p.has("ball_type"): b_type = p["ball_type"]
+						elif "ball_type" in p: b_type = p.ball_type
 
-                        if typeof(b) == TYPE_DICTIONARY:
-                            b["vx"] = vx * 1.5
-                            b["vy"] = vy * 1.5
-                            b["x"] += b["vx"] * delta
-                            b["y"] += b["vy"] * delta
-                        else:
-                            b.vx = vx * 1.5
-                            b.vy = vy * 1.5
-                            b.x += b.vx * delta
-                            b.y += b.vy * delta
+						if p_alive and not is_decoy and b_type != "spectator":
+							var p_x = 0.0
+							var p_y = 0.0
+							if typeof(p) == TYPE_DICTIONARY:
+								if p.has("x"): p_x = p["x"]
+								if p.has("y"): p_y = p["y"]
+							else:
+								if "x" in p: p_x = p.x
+								if "y" in p: p_y = p.y
+							var dx = p_x - (b["x"] if typeof(b) == TYPE_DICTIONARY else b.x)
+							var dy = p_y - (b["y"] if typeof(b) == TYPE_DICTIONARY else b.y)
+							var dist = dx*dx + dy*dy
+							if dist < min_dist:
+								min_dist = dist
+								nearest_player = p
 
-        # Tornado roaming and bouncing logic
-        if "arena" in world and world.arena and "hazards" in world.arena:
-            for h in world.arena.hazards:
-                if "kind" in h and h.kind == "tornado":
-                    if h.has_meta("vx") and h.has_meta("vy"):
-                        var vx = h.get_meta("vx")
-                        var vy = h.get_meta("vy")
-                        h.x += vx * delta
-                        h.y += vy * delta
-                        var aw = 1000.0
-                        var ah = 1000.0
-                        if "width" in world.arena: aw = world.arena.width
-                        if "height" in world.arena: ah = world.arena.height
-                        var r = h.radius if "radius" in h else 50.0
-                        if h.x - r < 0:
-                            h.x = r
-                            h.set_meta("vx", -vx)
-                        elif h.x + r > aw:
-                            h.x = aw - r
-                            h.set_meta("vx", -vx)
-                        if h.y - r < 0:
-                            h.y = r
-                            h.set_meta("vy", -vy)
-                        elif h.y + r > ah:
-                            h.y = ah - r
-                            h.set_meta("vy", -vy)
+					if nearest_player != null:
+						var vx = 0.0
+						var vy = 0.0
+						if typeof(nearest_player) == TYPE_DICTIONARY:
+							if nearest_player.has("vx"): vx = nearest_player["vx"]
+							if nearest_player.has("vy"): vy = nearest_player["vy"]
+						else:
+							if "vx" in nearest_player: vx = nearest_player.vx
+							if "vy" in nearest_player: vy = nearest_player.vy
 
-        # Periodic tornado spawn
-        tornado_spawn_timer += delta
-        if tornado_spawn_timer >= 20.0:
-            tornado_spawn_timer = 0.0
-            var aw = 1000.0
-            var ah = 1000.0
-            if "arena" in world and world.arena:
-                if "width" in world.arena: aw = world.arena.width
-                if "height" in world.arena: ah = world.arena.height
-            var tx = rng.randf_range(100.0, aw - 100.0)
-            var ty = rng.randf_range(100.0, ah - 100.0)
-            var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-            var t_id = 10000 + (rng.randi() % 90000)
-            if "arena" in world and "hazards" in world.arena:
-                t_id += world.arena.hazards.size()
-            var tornado = Hazard.new(t_id, tx, ty, 50.0, "tornado", 10.0)
-            tornado.set_meta("vx", rng.randf_range(-100.0, 100.0))
-            tornado.set_meta("vy", rng.randf_range(-100.0, 100.0))
-            tornado.set_meta("duration", 9999.0)
-            if "arena" in world and world.arena and "hazards" in world.arena:
-                world.arena.hazards.append(tornado)
-                if world.has_method("add_event"):
-                    world.add_event("hazard_spawn", {"message": "A roaming Tornado has appeared!"})
+						if typeof(b) == TYPE_DICTIONARY:
+							b["vx"] = vx * 1.5
+							b["vy"] = vy * 1.5
+							b["x"] += b["vx"] * delta
+							b["y"] += b["vy"] * delta
+						else:
+							b.vx = vx * 1.5
+							b.vy = vy * 1.5
+							b.x += b.vx * delta
+							b.y += b.vy * delta
 
-        dark_phase_timer += delta
+		# Tornado roaming and bouncing logic
+		if "arena" in world and world.arena and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				if "kind" in h and h.kind == "tornado":
+					if h.has_meta("vx") and h.has_meta("vy"):
+						var vx = h.get_meta("vx")
+						var vy = h.get_meta("vy")
+						h.x += vx * delta
+						h.y += vy * delta
+						var aw = 1000.0
+						var ah = 1000.0
+						if "width" in world.arena: aw = world.arena.width
+						if "height" in world.arena: ah = world.arena.height
+						var r = h.radius if "radius" in h else 50.0
+						if h.x - r < 0:
+							h.x = r
+							h.set_meta("vx", -vx)
+						elif h.x + r > aw:
+							h.x = aw - r
+							h.set_meta("vx", -vx)
+						if h.y - r < 0:
+							h.y = r
+							h.set_meta("vy", -vy)
+						elif h.y + r > ah:
+							h.y = ah - r
+							h.set_meta("vy", -vy)
 
-        supply_drop_timer += delta
-        if supply_drop_timer >= 15.0:
-            supply_drop_timer = 0.0
-            if "boosters" in world:
-                var arena_width = 1000
-                var arena_height = 1000
-                if "arena" in world and world.arena:
-                    if "width" in world.arena: arena_width = world.arena.width
-                    if "height" in world.arena: arena_height = world.arena.height
+		# Periodic tornado spawn
+		tornado_spawn_timer += delta
+		if tornado_spawn_timer >= 20.0:
+			tornado_spawn_timer = 0.0
+			var aw = 1000.0
+			var ah = 1000.0
+			if "arena" in world and world.arena:
+				if "width" in world.arena: aw = world.arena.width
+				if "height" in world.arena: ah = world.arena.height
+			var tx = rng.randf_range(100.0, aw - 100.0)
+			var ty = rng.randf_range(100.0, ah - 100.0)
+			var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+			var t_id = 10000 + (rng.randi() % 90000)
+			if "arena" in world and "hazards" in world.arena:
+				t_id += world.arena.hazards.size()
+			var tornado = Hazard.new(t_id, tx, ty, 50.0, "tornado", 10.0)
+			tornado.set_meta("vx", rng.randf_range(-100.0, 100.0))
+			tornado.set_meta("vy", rng.randf_range(-100.0, 100.0))
+			tornado.set_meta("duration", 9999.0)
+			if "arena" in world and world.arena and "hazards" in world.arena:
+				world.arena.hazards.append(tornado)
+				if world.has_method("add_event"):
+					world.add_event("hazard_spawn", {"message": "A roaming Tornado has appeared!"})
 
-                rng.randomize()
-                var booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "shield_booster"]
-                var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
-                var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
-                var b_x = rng.randf_range(100, arena_width - 100)
-                var b_y = rng.randf_range(100, arena_height - 100)
+		dark_phase_timer += delta
 
-                var new_booster = {
-                    "id": b_id,
-                    "x": b_x,
-                    "y": b_y,
-                    "kind": chosen_kind,
-                    "radius": 15.0,
-                    "ball_type": "booster",
-                    "active": true
-                }
-                world.boosters.append(new_booster)
+		supply_drop_timer += delta
+		if supply_drop_timer >= 15.0:
+			supply_drop_timer = 0.0
+			if "boosters" in world:
+				var arena_width = 1000
+				var arena_height = 1000
+				if "arena" in world and world.arena:
+					if "width" in world.arena: arena_width = world.arena.width
+					if "height" in world.arena: arena_height = world.arena.height
 
-                if "arena" in world and world.arena and "hazards" in world.arena:
-                    var h = {
-                        "id": b_id,
-                        "x": b_x,
-                        "y": b_y,
-                        "radius": 15.0,
-                        "kind": chosen_kind,
-                        "damage": 0.0,
-                        "active": true
-                    }
-                    world.arena.hazards.append(h)
+				rng.randomize()
+				var booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "shield_booster"]
+				var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
+				var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
+				var b_x = rng.randf_range(100, arena_width - 100)
+				var b_y = rng.randf_range(100, arena_height - 100)
 
-                if "add_event" in world and world.has_method("add_event"):
-                    world.add_event("supply_drop", {"message": "A " + chosen_kind + " supply drop has appeared!"})
+				var new_booster = {
+					"id": b_id,
+					"x": b_x,
+					"y": b_y,
+					"kind": chosen_kind,
+					"radius": 15.0,
+					"ball_type": "booster",
+					"active": true
+				}
+				world.boosters.append(new_booster)
 
-        # Weather logic
-        if not "weather_timer" in self:
-            self.weather_timer = 0.0
-            self.weather = "clear"
+				if "arena" in world and world.arena and "hazards" in world.arena:
+					var h = {
+						"id": b_id,
+						"x": b_x,
+						"y": b_y,
+						"radius": 15.0,
+						"kind": chosen_kind,
+						"damage": 0.0,
+						"active": true
+					}
+					world.arena.hazards.append(h)
 
-        var controller = null
-        for b in balls:
-            var c_timer = 0.0
-            if "weather_control_timer" in b: c_timer = b.weather_control_timer
-            elif b.has_method("get_meta") and b.has_meta("weather_control_timer"): c_timer = b.get_meta("weather_control_timer")
+				if "add_event" in world and world.has_method("add_event"):
+					world.add_event("supply_drop", {"message": "A " + chosen_kind + " supply drop has appeared!"})
 
-            var is_alive = false
-            if "alive" in b: is_alive = b.alive
-            elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+		# Weather logic
+		if not "weather_timer" in self:
+			self.weather_timer = 0.0
+			self.weather = "clear"
 
-            if is_alive and c_timer > 0:
-                controller = b
-                break
+		var controller = null
+		for b in balls:
+			var c_timer = 0.0
+			if "weather_control_timer" in b: c_timer = b.weather_control_timer
+			elif b.has_method("get_meta") and b.has_meta("weather_control_timer"): c_timer = b.get_meta("weather_control_timer")
 
-        if controller != null:
-            self.weather_timer = 0.0
-            var ctype = "default"
-            if "ball_type" in controller: ctype = controller.ball_type
-            elif controller.has_method("get_meta") and controller.has_meta("ball_type"): ctype = controller.get_meta("ball_type")
+			var is_alive = false
+			if "alive" in b: is_alive = b.alive
+			elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
 
-            var pref = "clear"
-            if ctype in ["elementalist"]: pref = "thunderstorm"
-            elif ctype in ["druid", "healer"]: pref = "rain"
-            elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
-            elif ctype in ["mage", "conjurer"]: pref = "snow"
-            elif ctype in ["speed", "scout"]: pref = "wind"
-            elif ctype in ["tank", "brawler"]: pref = "heatwave"
-            elif ctype in ["swarm"]: pref = "sandstorm"
-            else: pref = "thunderstorm"
+			if is_alive and c_timer > 0:
+				controller = b
+				break
 
-            var old_weather = self.weather
-            if old_weather != pref:
-                self.weather = pref
-                if world != null and world.has_method("add_event"):
-                    world.add_event("weather_change", {"weather": self.weather})
-                if self.weather == "wind":
-                    if has_method("set_meta"):
-                        set_meta("wind_dx", (randf() * 100.0) - 50.0)
-                        set_meta("wind_dy", (randf() * 100.0) - 50.0)
-        else:
-            self.weather_timer += delta
-            if self.weather_timer > 15.0:
-                self.weather_timer = 0.0
-                var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse"]
-                var old_weather = self.weather
-                self.weather = weathers[randi() % weathers.size()]
-                if old_weather != self.weather:
-                    for b in balls:
-                        if "forecast_booster_active" in b and b.forecast_booster_active:
-                            if b.has_method("set_meta"):
-                                b.set_meta("forecast_booster_active", false)
-                                b.set_meta("weather_immunity_timer", 15.0)
-                                b.set_meta("forecast_warning_issued", false)
-                            else:
-                                b.forecast_booster_active = false
-                                b.weather_immunity_timer = 15.0
-                                b.forecast_warning_issued = false
-                        elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"):
-                            b.set_meta("forecast_booster_active", false)
-                            b.set_meta("weather_immunity_timer", 15.0)
-                            b.set_meta("forecast_warning_issued", false)
-                    if world != null and world.has_method("add_event"):
-                        world.add_event("weather_change", {"weather": self.weather})
-                if self.weather == "wind":
-                    if has_method("set_meta"):
-                        set_meta("wind_dx", (randf() * 100.0) - 50.0)
-                        set_meta("wind_dy", (randf() * 100.0) - 50.0)
+		if controller != null:
+			self.weather_timer = 0.0
+			var ctype = "default"
+			if "ball_type" in controller: ctype = controller.ball_type
+			elif controller.has_method("get_meta") and controller.has_meta("ball_type"): ctype = controller.get_meta("ball_type")
 
-        if world != null and "arena" in world and world.arena != null:
-            var is_imm = false
-            if "weather_immunity_timer" in b and float(b.weather_immunity_timer) > 0.0: is_imm = true
-            elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("weather_immunity_timer") and float(b.get_meta("weather_immunity_timer")) > 0.0: is_imm = true
-            if (self.weather == "fog" or self.weather in ["snow", "blizzard"]) and not is_imm:
-                world.arena.is_foggy = true
-            else:
-                world.arena.is_foggy = false
-            if self.weather == "rain" or self.weather == "thunderstorm":
-                world.arena.is_raining = true
-            else:
-                world.arena.is_raining = false
-            if self.weather == "sandstorm" and not is_imm:
-                world.arena.is_sandstorming = true
-            else:
-                world.arena.is_sandstorming = false
-            if self.weather == "heatwave" and not is_imm:
-                world.arena.is_heatwave = true
-            else:
-                world.arena.is_heatwave = false
-            if self.weather in ["snow", "blizzard"]:
-                world.arena.is_snowing = true
-            else:
-                world.arena.is_snowing = false
+			var pref = "clear"
+			if ctype in ["elementalist"]: pref = "thunderstorm"
+			elif ctype in ["druid", "healer"]: pref = "rain"
+			elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
+			elif ctype in ["mage", "conjurer"]: pref = "snow"
+			elif ctype in ["speed", "scout"]: pref = "wind"
+			elif ctype in ["tank", "brawler"]: pref = "heatwave"
+			elif ctype in ["swarm"]: pref = "sandstorm"
+			else: pref = "thunderstorm"
 
-            if self.weather == "lunar_eclipse" and not is_imm:
-                world.arena.is_lunar_eclipse = true
-                world.arena.is_eclipse = true
-            else:
-                world.arena.is_lunar_eclipse = false
-                world.arena.is_eclipse = false
+			var old_weather = self.weather
+			if old_weather != pref:
+				self.weather = pref
+				if world != null and world.has_method("add_event"):
+					world.add_event("weather_change", {"weather": self.weather})
+				if self.weather == "wind":
+					if has_method("set_meta"):
+						set_meta("wind_dx", (randf() * 100.0) - 50.0)
+						set_meta("wind_dy", (randf() * 100.0) - 50.0)
+		else:
+			self.weather_timer += delta
+			if self.weather_timer > 15.0:
+				self.weather_timer = 0.0
+				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse"]
+				var old_weather = self.weather
+				self.weather = weathers[randi() % weathers.size()]
+				if old_weather != self.weather:
+					for b in balls:
+						if "forecast_booster_active" in b and b.forecast_booster_active:
+							if b.has_method("set_meta"):
+								b.set_meta("forecast_booster_active", false)
+								b.set_meta("weather_immunity_timer", 15.0)
+								b.set_meta("forecast_warning_issued", false)
+							else:
+								b.forecast_booster_active = false
+								b.weather_immunity_timer = 15.0
+								b.forecast_warning_issued = false
+						elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"):
+							b.set_meta("forecast_booster_active", false)
+							b.set_meta("weather_immunity_timer", 15.0)
+							b.set_meta("forecast_warning_issued", false)
+					if world != null and world.has_method("add_event"):
+						world.add_event("weather_change", {"weather": self.weather})
+				if self.weather == "wind":
+					if has_method("set_meta"):
+						set_meta("wind_dx", (randf() * 100.0) - 50.0)
+						set_meta("wind_dy", (randf() * 100.0) - 50.0)
 
-            if not "hazards" in world.arena:
-                world.arena.hazards = []
+		if world != null and "arena" in world and world.arena != null:
+			var is_imm = false
+			if "weather_immunity_timer" in b and float(b.weather_immunity_timer) > 0.0: is_imm = true
+			elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("weather_immunity_timer") and float(b.get_meta("weather_immunity_timer")) > 0.0: is_imm = true
+			if (self.weather == "fog" or self.weather in ["snow", "blizzard"]) and not is_imm:
+				world.arena.is_foggy = true
+			else:
+				world.arena.is_foggy = false
+			if self.weather == "rain" or self.weather == "thunderstorm":
+				world.arena.is_raining = true
+			else:
+				world.arena.is_raining = false
+			if self.weather == "sandstorm" and not is_imm:
+				world.arena.is_sandstorming = true
+			else:
+				world.arena.is_sandstorming = false
+			if self.weather == "heatwave" and not is_imm:
+				world.arena.is_heatwave = true
+			else:
+				world.arena.is_heatwave = false
+			if self.weather in ["snow", "blizzard"]:
+				world.arena.is_snowing = true
+			else:
+				world.arena.is_snowing = false
 
-            if self.weather == "wind":
-                if randf() < 0.1 * delta:
-                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-                    var x = randf_range(100.0, world.arena.width - 100.0)
-                    var y = randf_range(100.0, world.arena.height - 100.0)
-                    var tornado = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado", 20.0)
-                    tornado.set_meta("duration", 5.0)
-                    tornado.set_meta("vx", randf_range(-100.0, 100.0))
-                    tornado.set_meta("vy", randf_range(-100.0, 100.0))
-                    world.arena.hazards.append(tornado)
-            elif self.weather in ["snow", "blizzard"]:
-                if randf() < 0.05 * delta:
-                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-                    var x = randf_range(100.0, world.arena.width - 100.0)
-                    var y = randf_range(100.0, world.arena.height - 100.0)
-                    var ice = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "ice_patch", 0.0)
-                    ice.set_meta("duration", 10.0)
-                    ice.set_meta("vx", randf_range(-20.0, 20.0))
-                    ice.set_meta("vy", randf_range(-20.0, 20.0))
-                    world.arena.hazards.append(ice)
-            elif self.weather == "rain" or self.weather == "thunderstorm":
-                var arena_name = "unknown"
-                if "arena" in world and world.arena != null:
-                    arena_name = str(world.arena.get_script().resource_path).to_lower()
-                var is_dirt_sand = false
-                if "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name:
-                    is_dirt_sand = true
-                elif "arena" in world and "is_sandstorming" in world.arena and world.arena.is_sandstorming:
-                    is_dirt_sand = true
+			if self.weather == "lunar_eclipse" and not is_imm:
+				world.arena.is_lunar_eclipse = true
+				world.arena.is_eclipse = true
+			else:
+				world.arena.is_lunar_eclipse = false
+				world.arena.is_eclipse = false
 
-                if is_dirt_sand and self.weather == "rain" and randf() < 0.05 * delta:
-                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-                    var x = randf_range(100.0, world.arena.width - 100.0)
-                    var y = randf_range(100.0, world.arena.height - 100.0)
-                    var mud = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
-                    mud.set_meta("duration", 15.0)
-                    world.arena.hazards.append(mud)
-                elif not is_dirt_sand and self.weather == "rain" and randf() < 0.05 * delta:
-                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-                    var x = randf_range(100.0, world.arena.width - 100.0)
-                    var y = randf_range(100.0, world.arena.height - 100.0)
-                    var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "puddle", 0.0)
-                    puddle.set_meta("duration", 20.0)
-                    world.arena.hazards.append(puddle)
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
 
-                var w_timer = 0.0
-                if "weather_timer" in self: w_timer = self.weather_timer
-                if self.weather == "rain" and w_timer > 5.0 and randf() < 0.02 * delta:
-                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-                    var x = randf_range(100.0, world.arena.width - 100.0)
-                    var y = randf_range(100.0, world.arena.height - 100.0)
-                    var flood = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 100.0, "flood_zone", 0.0)
-                    flood.set_meta("duration", 10.0)
-                    world.arena.hazards.append(flood)
-                var chance = 0.05
-                if self.weather == "thunderstorm" and not is_imm:
-                    chance = 0.2
-                if randf() < chance * delta:
-                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-                    var x = randf_range(100.0, world.arena.width - 100.0)
-                    var y = randf_range(100.0, world.arena.height - 100.0)
-                    # Attract lightning to metal/armored balls
-                    var metal_balls = []
-                    for b in balls:
-                        if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
-                            var btype = str(b.get("ball_type")).to_lower() if b.get("ball_type") != null else ""
-                            var traits = b.get("traits") if b.get("traits") != null else []
-                            if "metal" in btype or "armor" in btype or "metal" in traits or "armor" in traits:
-                                metal_balls.append(b)
-                        elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
-                            var btype = str(b.get("ball_type", "")).to_lower()
-                            var traits = b.get("traits", [])
-                            if "metal" in btype or "armor" in btype or "metal" in traits or "armor" in traits:
-                                metal_balls.append(b)
-                    if metal_balls.size() > 0 and randf() < 0.6:
-                        var target_b = metal_balls[randi() % metal_balls.size()]
-                        if typeof(target_b) == TYPE_OBJECT:
-                            x = target_b.x
-                            y = target_b.y
-                        else:
-                            x = target_b["x"]
-                            y = target_b["y"]
+			if self.weather == "wind":
+				if randf() < 0.1 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var tornado = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado", 20.0)
+					tornado.set_meta("duration", 5.0)
+					tornado.set_meta("vx", randf_range(-100.0, 100.0))
+					tornado.set_meta("vy", randf_range(-100.0, 100.0))
+					world.arena.hazards.append(tornado)
+			elif self.weather in ["snow", "blizzard"]:
+				if randf() < 0.05 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var ice = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "ice_patch", 0.0)
+					ice.set_meta("duration", 10.0)
+					ice.set_meta("vx", randf_range(-20.0, 20.0))
+					ice.set_meta("vy", randf_range(-20.0, 20.0))
+					world.arena.hazards.append(ice)
+			elif self.weather == "rain" or self.weather == "thunderstorm":
+				var arena_name = "unknown"
+				if "arena" in world and world.arena != null:
+					arena_name = str(world.arena.get_script().resource_path).to_lower()
+				var is_dirt_sand = false
+				if "sand" in arena_name or "dirt" in arena_name or "summer" in arena_name:
+					is_dirt_sand = true
+				elif "arena" in world and "is_sandstorming" in world.arena and world.arena.is_sandstorming:
+					is_dirt_sand = true
 
-                    var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
-                    lightning.set_meta("duration", 1.0)
-                    world.arena.hazards.append(lightning)
-                if self.weather == "thunderstorm" and randf() < 0.05 * delta:
-                    var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-                    var x = randf_range(100.0, world.arena.width - 100.0)
-                    var y = randf_range(100.0, world.arena.height - 100.0)
-                    var warning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado_warning", 0.0)
-                    warning.set_meta("duration", 3.0)
-                    if world.has_method("add_event"):
-                        world.add_event("audio_event", {"sound": "siren_warning", "volume": 1.0, "x": x, "y": y})
-                    world.arena.hazards.append(warning)
+				if is_dirt_sand and self.weather == "rain" and randf() < 0.05 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var mud = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 60.0, "quicksand", 0.0)
+					mud.set_meta("duration", 15.0)
+					world.arena.hazards.append(mud)
+				elif not is_dirt_sand and self.weather == "rain" and randf() < 0.05 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var puddle = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 50.0, "puddle", 0.0)
+					puddle.set_meta("duration", 20.0)
+					world.arena.hazards.append(puddle)
 
-        for b in balls:
-            if b.alive and b.ball_type != "spectator":
-                var base_spd = 100.0
-                if "base_speed" in b:
-                    base_spd = b.base_speed
-                elif b.has_method("has_meta") and b.has_meta("base_speed"):
-                    base_spd = b.get_meta("base_speed")
-                elif "speed" in b:
-                    base_spd = b.speed
+				var w_timer = 0.0
+				if "weather_timer" in self: w_timer = self.weather_timer
+				if self.weather == "rain" and w_timer > 5.0 and randf() < 0.02 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var flood = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 100.0, "flood_zone", 0.0)
+					flood.set_meta("duration", 10.0)
+					world.arena.hazards.append(flood)
+				var chance = 0.05
+				if self.weather == "thunderstorm" and not is_imm:
+					chance = 0.2
+				if randf() < chance * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					# Attract lightning to metal/armored balls
+					var metal_balls = []
+					for b in balls:
+						if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
+							var btype = str(b.get("ball_type")).to_lower() if b.get("ball_type") != null else ""
+							var traits = b.get("traits") if b.get("traits") != null else []
+							if "metal" in btype or "armor" in btype or "metal" in traits or "armor" in traits:
+								metal_balls.append(b)
+						elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
+							var btype = str(b.get("ball_type", "")).to_lower()
+							var traits = b.get("traits", [])
+							if "metal" in btype or "armor" in btype or "metal" in traits or "armor" in traits:
+								metal_balls.append(b)
+					if metal_balls.size() > 0 and randf() < 0.6:
+						var target_b = metal_balls[randi() % metal_balls.size()]
+						if typeof(target_b) == TYPE_OBJECT:
+							x = target_b.x
+							y = target_b.y
+						else:
+							x = target_b["x"]
+							y = target_b["y"]
 
-                var base_dmg = 10.0
-                if "base_damage" in b:
-                    base_dmg = b.base_damage
-                elif b.has_method("has_meta") and b.has_meta("base_damage"):
-                    base_dmg = b.get_meta("base_damage")
-                elif "damage" in b:
-                    base_dmg = b.damage
-                var t = ""
-                if "ball_type" in b: t = b.ball_type
-                var is_fire = t in ["mage", "bomber", "chaos"]
-                var is_water = t in ["elementalist", "healer", "trickster"]
-                var is_air = t in ["ninja", "scout", "phantom"]
-                var is_earth = t in ["tank", "druid", "juggernaut"]
+					var lightning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 30.0, "lightning_strike", 50.0)
+					lightning.set_meta("duration", 1.0)
+					world.arena.hazards.append(lightning)
+				if self.weather == "thunderstorm" and randf() < 0.05 * delta:
+					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+					var x = randf_range(100.0, world.arena.width - 100.0)
+					var y = randf_range(100.0, world.arena.height - 100.0)
+					var warning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado_warning", 0.0)
+					warning.set_meta("duration", 3.0)
+					if world.has_method("add_event"):
+						world.add_event("audio_event", {"sound": "siren_warning", "volume": 1.0, "x": x, "y": y})
+					world.arena.hazards.append(warning)
 
-                if self.weather == "clear":
-                    if "speed" in b: b.speed = base_spd
-                    if "damage" in b:
-                        if is_fire: b.damage = base_dmg * 1.5
-                        else: b.damage = base_dmg
-                    if b.has_method("set_meta"):
-                        b.set_meta("dash_range_mult", 1.0)
-                        b.set_meta("steering_mult", 1.0)
-                        b.set_meta("attack_accuracy", 1.0)
-                elif self.weather == "rain":
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var base_spd = 100.0
+				if "base_speed" in b:
+					base_spd = b.base_speed
+				elif b.has_method("has_meta") and b.has_meta("base_speed"):
+					base_spd = b.get_meta("base_speed")
+				elif "speed" in b:
+					base_spd = b.speed
+
+				var base_dmg = 10.0
+				if "base_damage" in b:
+					base_dmg = b.base_damage
+				elif b.has_method("has_meta") and b.has_meta("base_damage"):
+					base_dmg = b.get_meta("base_damage")
+				elif "damage" in b:
+					base_dmg = b.damage
+				var t = ""
+				if "ball_type" in b: t = b.ball_type
+				var is_fire = t in ["mage", "bomber", "chaos"]
+				var is_water = t in ["elementalist", "healer", "trickster"]
+				var is_air = t in ["ninja", "scout", "phantom"]
+				var is_earth = t in ["tank", "druid", "juggernaut"]
+
+				if self.weather == "clear":
+					if "speed" in b: b.speed = base_spd
+					if "damage" in b:
+						if is_fire: b.damage = base_dmg * 1.5
+						else: b.damage = base_dmg
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
+						b.set_meta("attack_accuracy", 1.0)
+				elif self.weather == "rain":
 			var has_wt = false
 			var bt = ""
 			if "ball_type" in b: bt = str(b.ball_type).to_lower()
@@ -1032,25 +1032,25 @@ class BattleRoyaleMode extends GameMode:
 			if sk_r == "fireball":
 				if "hp" in b:
 					b.hp -= 2.0 * delta
-                    if b.has_method("set_meta"):
-                        b.set_meta("dash_range_mult", 1.5)
-                        b.set_meta("steering_mult", 0.5)
-                        b.set_meta("attack_accuracy", 0.8)
-                    if "vx" in b and "vy" in b:
-                        b.x += b.vx * delta * 0.5
-                        b.y += b.vy * delta * 0.5
-                    if is_water and "hp" in b:
-                        var m = 100.0
-                        if "max_hp" in b: m = b.max_hp
-                        elif b.has_method("has_meta") and b.has_meta("max_hp"): m = b.get_meta("max_hp")
-                        b.hp = min(m, b.hp + 5.0 * delta)
-                elif self.weather == "fog":
-                    if "speed" in b: b.speed = base_spd * 0.8
-                    if "damage" in b: b.damage = base_dmg * 0.9
-                    if b.has_method("set_meta"):
-                        b.set_meta("dash_range_mult", 1.0)
-                        b.set_meta("steering_mult", 1.0)
-                elif self.weather in ["snow", "blizzard"] and not is_imm:
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.5)
+						b.set_meta("steering_mult", 0.5)
+						b.set_meta("attack_accuracy", 0.8)
+					if "vx" in b and "vy" in b:
+						b.x += b.vx * delta * 0.5
+						b.y += b.vy * delta * 0.5
+					if is_water and "hp" in b:
+						var m = 100.0
+						if "max_hp" in b: m = b.max_hp
+						elif b.has_method("has_meta") and b.has_meta("max_hp"): m = b.get_meta("max_hp")
+						b.hp = min(m, b.hp + 5.0 * delta)
+				elif self.weather == "fog":
+					if "speed" in b: b.speed = base_spd * 0.8
+					if "damage" in b: b.damage = base_dmg * 0.9
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
+				elif self.weather in ["snow", "blizzard"] and not is_imm:
 			if "speed" in b: b.speed = base_spd * 0.5
 			if "damage" in b: b.damage = base_dmg * 1.2
 			var sk_s = ""
@@ -1061,914 +1061,914 @@ class BattleRoyaleMode extends GameMode:
 			if sk_s == "iceball" or sk_s == "elemental_burst":
 				if "speed" in b: b.speed = base_spd * 1.2
 				if "damage" in b: b.damage = base_dmg * 1.5
-                    if b.has_method("set_meta"):
-                        b.set_meta("dash_range_mult", 1.0)
-                        b.set_meta("steering_mult", 1.0)
-                    if b.has_method("set_meta") and b.has_method("get_meta"):
-                        var stacks = 0.0
-                        if b.has_meta("chill_stacks"):
-                            stacks = b.get_meta("chill_stacks")
-                        stacks += delta
-                        if stacks >= 3.0:
-                            stacks = 0.0
-                            b.set_meta("stutter_timer", 1.0)
-                        b.set_meta("chill_stacks", stacks)
-                    if b.has_method("set_meta"):
-                        b.set_meta("attack_accuracy", 0.9)
-                elif self.weather == "wind":
-                    if "speed" in b:
-                        if is_air: b.speed = base_spd * 1.5
-                        else: b.speed = base_spd
-                    if "damage" in b: b.damage = base_dmg
-                    if b.has_method("set_meta"):
-                        b.set_meta("dash_range_mult", 1.0)
-                        b.set_meta("steering_mult", 1.0)
-                    var wind_dx = 0.0
-                    var wind_dy = 0.0
-                    if has_method("has_meta") and has_meta("wind_dx"):
-                        wind_dx = get_meta("wind_dx")
-                    if has_method("has_meta") and has_meta("wind_dy"):
-                        wind_dy = get_meta("wind_dy")
-                    b.x += wind_dx * delta
-                    b.y += wind_dy * delta
-                elif self.weather == "thunderstorm" and not is_imm:
-                    if "speed" in b: b.speed = base_spd * 1.1
-                    if "damage" in b: b.damage = base_dmg * 1.5
-                    if b.has_method("set_meta"):
-                        b.set_meta("dash_range_mult", 1.0)
-                        b.set_meta("steering_mult", 1.0)
-                elif self.weather == "sandstorm" and not is_imm:
-                    if "speed" in b: b.speed = base_spd * 0.7
-                    if "damage" in b: b.damage = base_dmg
-                    if b.has_method("set_meta"):
-                        b.set_meta("dash_range_mult", 0.5)
-                        b.set_meta("steering_mult", 0.5)
-                        b.set_meta("attack_accuracy", 0.5)
-                        var sand_timer = 0.0
-                        if b.has_meta("sandstorm_timer"):
-                            sand_timer = b.get_meta("sandstorm_timer")
-                        sand_timer += delta
-                        if sand_timer >= 1.0:
-                            sand_timer = 0.0
-                            if "hp" in b and not is_earth:
-                                b.hp -= 1.0
-                        b.set_meta("sandstorm_timer", sand_timer)
-                    if randf() < 0.05 * delta and not is_earth:
-                        if "hp" in b:
-                            b.hp -= 20.0
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
+					if b.has_method("set_meta") and b.has_method("get_meta"):
+						var stacks = 0.0
+						if b.has_meta("chill_stacks"):
+							stacks = b.get_meta("chill_stacks")
+						stacks += delta
+						if stacks >= 3.0:
+							stacks = 0.0
+							b.set_meta("stutter_timer", 1.0)
+						b.set_meta("chill_stacks", stacks)
+					if b.has_method("set_meta"):
+						b.set_meta("attack_accuracy", 0.9)
+				elif self.weather == "wind":
+					if "speed" in b:
+						if is_air: b.speed = base_spd * 1.5
+						else: b.speed = base_spd
+					if "damage" in b: b.damage = base_dmg
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
+					var wind_dx = 0.0
+					var wind_dy = 0.0
+					if has_method("has_meta") and has_meta("wind_dx"):
+						wind_dx = get_meta("wind_dx")
+					if has_method("has_meta") and has_meta("wind_dy"):
+						wind_dy = get_meta("wind_dy")
+					b.x += wind_dx * delta
+					b.y += wind_dy * delta
+				elif self.weather == "thunderstorm" and not is_imm:
+					if "speed" in b: b.speed = base_spd * 1.1
+					if "damage" in b: b.damage = base_dmg * 1.5
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 1.0)
+						b.set_meta("steering_mult", 1.0)
+				elif self.weather == "sandstorm" and not is_imm:
+					if "speed" in b: b.speed = base_spd * 0.7
+					if "damage" in b: b.damage = base_dmg
+					if b.has_method("set_meta"):
+						b.set_meta("dash_range_mult", 0.5)
+						b.set_meta("steering_mult", 0.5)
+						b.set_meta("attack_accuracy", 0.5)
+						var sand_timer = 0.0
+						if b.has_meta("sandstorm_timer"):
+							sand_timer = b.get_meta("sandstorm_timer")
+						sand_timer += delta
+						if sand_timer >= 1.0:
+							sand_timer = 0.0
+							if "hp" in b and not is_earth:
+								b.hp -= 1.0
+						b.set_meta("sandstorm_timer", sand_timer)
+					if randf() < 0.05 * delta and not is_earth:
+						if "hp" in b:
+							b.hp -= 20.0
 
-        if randf() < 0.05 * delta:
-            if "arena" in world and "hazards" in world.arena:
-                var hx = 100.0 + randf() * (1000.0 - 200.0)
-                var hy = 100.0 + randf() * (1000.0 - 200.0)
-                if "width" in world.arena: hx = 100.0 + randf() * (world.arena.width - 200.0)
-                if "height" in world.arena: hy = 100.0 + randf() * (world.arena.height - 200.0)
-                var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
-                if HazardType != null:
-                    var vb = HazardType.new()
-                    vb.id = world.arena.hazards.size() + int(randf() * 9000.0) + 1000
-                    vb.x = hx
-                    vb.y = hy
-                    vb.radius = 30.0
-                    vb.kind = "vision_booster"
-                    vb.damage = 0.0
-                    vb.set_meta("duration", 15.0)
-                    world.arena.hazards.append(vb)
+		if randf() < 0.05 * delta:
+			if "arena" in world and "hazards" in world.arena:
+				var hx = 100.0 + randf() * (1000.0 - 200.0)
+				var hy = 100.0 + randf() * (1000.0 - 200.0)
+				if "width" in world.arena: hx = 100.0 + randf() * (world.arena.width - 200.0)
+				if "height" in world.arena: hy = 100.0 + randf() * (world.arena.height - 200.0)
+				var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+				if HazardType != null:
+					var vb = HazardType.new()
+					vb.id = world.arena.hazards.size() + int(randf() * 9000.0) + 1000
+					vb.x = hx
+					vb.y = hy
+					vb.radius = 30.0
+					vb.kind = "vision_booster"
+					vb.damage = 0.0
+					vb.set_meta("duration", 15.0)
+					world.arena.hazards.append(vb)
 
 
-        match_time += delta
+		match_time += delta
 
-        # Meteor Shower final phase logic
-        var teams_alive = []
-        for b in balls:
-            if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
-                var team = b.get("team")
-                if not team in teams_alive:
-                    teams_alive.append(team)
-            elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.has("ball_type") and b["ball_type"] != "spectator":
-                var team = b["team"] if b.has("team") else null
-                if team != null and not team in teams_alive:
-                    teams_alive.append(team)
+		# Meteor Shower final phase logic
+		var teams_alive = []
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
+				var team = b.get("team")
+				if not team in teams_alive:
+					teams_alive.append(team)
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.has("ball_type") and b["ball_type"] != "spectator":
+				var team = b["team"] if b.has("team") else null
+				if team != null and not team in teams_alive:
+					teams_alive.append(team)
 
-        if match_time > 90.0 or teams_alive.size() <= 2:
-            if self.has_method("has_meta") and not self.has_meta("br_meteor_timer"):
-                self.set_meta("br_meteor_timer", 0.0) if self.has_method("set_meta") else null
+		if match_time > 90.0 or teams_alive.size() <= 2:
+			if self.has_method("has_meta") and not self.has_meta("br_meteor_timer"):
+				self.set_meta("br_meteor_timer", 0.0) if self.has_method("set_meta") else null
 
-            var current_timer = self.get_meta("br_meteor_timer") if self.has_method("get_meta") and self.has_meta("br_meteor_timer") else 0.0
-            current_timer += delta
+			var current_timer = self.get_meta("br_meteor_timer") if self.has_method("get_meta") and self.has_meta("br_meteor_timer") else 0.0
+			current_timer += delta
 
-            if current_timer >= 1.5:
-                current_timer = 0.0
-                if world != null and "arena" in world and world.arena != null:
-                    var aw = world.arena.width if "width" in world.arena else 1000.0
-                    var ah = world.arena.height if "height" in world.arena else 1000.0
-                    var mx = rng.randf_range(50.0, aw - 50.0)
-                    var my = rng.randf_range(50.0, ah - 50.0)
+			if current_timer >= 1.5:
+				current_timer = 0.0
+				if world != null and "arena" in world and world.arena != null:
+					var aw = world.arena.width if "width" in world.arena else 1000.0
+					var ah = world.arena.height if "height" in world.arena else 1000.0
+					var mx = rng.randf_range(50.0, aw - 50.0)
+					var my = rng.randf_range(50.0, ah - 50.0)
 
-                    # Deal AoE damage
-                    for b in balls:
-                        var is_alive = b.get("alive") if typeof(b) == TYPE_OBJECT else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else false)
-                        var b_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else (b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else null)
-                        if is_alive and b_type != "spectator":
-                            var bx = b.get("x") if typeof(b) == TYPE_OBJECT else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else 0.0)
-                            var by = b.get("y") if typeof(b) == TYPE_OBJECT else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else 0.0)
-                            var dist = sqrt((bx - mx)*(bx - mx) + (by - my)*(by - my))
-                            if dist <= 80.0:
-                                if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
-                                    b.take_damage(50.0)
-                                else:
-                                    if typeof(b) == TYPE_OBJECT:
-                                        b.hp -= 50.0
-                                        if b.hp <= 0:
-                                            b.alive = false
-                                    elif typeof(b) == TYPE_DICTIONARY:
-                                        b["hp"] -= 50.0
-                                        if b["hp"] <= 0:
-                                            b["alive"] = false
+					# Deal AoE damage
+					for b in balls:
+						var is_alive = b.get("alive") if typeof(b) == TYPE_OBJECT else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else false)
+						var b_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else (b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else null)
+						if is_alive and b_type != "spectator":
+							var bx = b.get("x") if typeof(b) == TYPE_OBJECT else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else 0.0)
+							var by = b.get("y") if typeof(b) == TYPE_OBJECT else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else 0.0)
+							var dist = sqrt((bx - mx)*(bx - mx) + (by - my)*(by - my))
+							if dist <= 80.0:
+								if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+									b.take_damage(50.0)
+								else:
+									if typeof(b) == TYPE_OBJECT:
+										b.hp -= 50.0
+										if b.hp <= 0:
+											b.alive = false
+									elif typeof(b) == TYPE_DICTIONARY:
+										b["hp"] -= 50.0
+										if b["hp"] <= 0:
+											b["alive"] = false
 
-                    # Spawn crater (wall)
-                    if not "hazards" in world.arena:
-                        world.arena.hazards = []
+					# Spawn crater (wall)
+					if not "hazards" in world.arena:
+						world.arena.hazards = []
 
-                    var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
-                    if HazardType != null:
-                        var crater = HazardType.new()
-                        crater.id = world.arena.hazards.size() + 9500
-                        crater.x = mx
-                        crater.y = my
-                        crater.radius = 40.0
-                        crater.kind = "wall"
-                        crater.damage = 0.0
-                        crater.set_meta("duration", 10.0)
-                        world.arena.hazards.append(crater)
+					var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+					if HazardType != null:
+						var crater = HazardType.new()
+						crater.id = world.arena.hazards.size() + 9500
+						crater.x = mx
+						crater.y = my
+						crater.radius = 40.0
+						crater.kind = "wall"
+						crater.damage = 0.0
+						crater.set_meta("duration", 10.0)
+						world.arena.hazards.append(crater)
 
-                    if world.has_method("add_event"):
-                        world.add_event("visual_effect", {"type": "explosion", "x": mx, "y": my, "radius": 80.0})
+					if world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "explosion", "x": mx, "y": my, "radius": 80.0})
 
-            if self.has_method("set_meta"):
-                self.set_meta("br_meteor_timer", current_timer)
+			if self.has_method("set_meta"):
+				self.set_meta("br_meteor_timer", current_timer)
 
-        # Sudden Death Black Hole logic
-        if match_time > 120.0 and world != null and "arena" in world and world.arena != null:
-            if not sudden_death_black_hole_spawned:
-                sudden_death_black_hole_spawned = true
-                if not "hazards" in world.arena:
-                    world.arena.hazards = []
-                var cx = 500.0
-                var cy = 500.0
-                if "width" in world.arena: cx = world.arena.width / 2.0
-                if "height" in world.arena: cy = world.arena.height / 2.0
+		# Sudden Death Black Hole logic
+		if match_time > 120.0 and world != null and "arena" in world and world.arena != null:
+			if not sudden_death_black_hole_spawned:
+				sudden_death_black_hole_spawned = true
+				if not "hazards" in world.arena:
+					world.arena.hazards = []
+				var cx = 500.0
+				var cy = 500.0
+				if "width" in world.arena: cx = world.arena.width / 2.0
+				if "height" in world.arena: cy = world.arena.height / 2.0
 
-                var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
-                if HazardType != null:
-                    var boss = HazardType.new()
-                    boss.id = world.arena.hazards.size() + 9000
-                    boss.x = cx
-                    boss.y = cy
-                    boss.radius = 50.0
-                    boss.kind = "massive_black_hole"
-                    boss.damage = 100.0
-                    boss.set_meta("duration", 9999.0)
-                    boss.set_meta("lifetime", 0.0)
-                    world.arena.hazards.append(boss)
+				var HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+				if HazardType != null:
+					var boss = HazardType.new()
+					boss.id = world.arena.hazards.size() + 9000
+					boss.x = cx
+					boss.y = cy
+					boss.radius = 50.0
+					boss.kind = "massive_black_hole"
+					boss.damage = 100.0
+					boss.set_meta("duration", 9999.0)
+					boss.set_meta("lifetime", 0.0)
+					world.arena.hazards.append(boss)
 
-                if world.has_method("add_event"):
-                    world.add_event("sudden_death_black_hole_spawn", {"message": "SUDDEN DEATH! A massive black hole is consuming the arena!"})
-            else:
-                if "hazards" in world.arena:
-                    for h in world.arena.hazards:
-                        if h.kind == "massive_black_hole":
-                            h.radius += 5.0 * delta
-                            var lifetime = 0.0
-                            if h.has_meta("lifetime"):
-                                lifetime = h.get_meta("lifetime")
-                            h.set_meta("lifetime", lifetime + delta)
+				if world.has_method("add_event"):
+					world.add_event("sudden_death_black_hole_spawn", {"message": "SUDDEN DEATH! A massive black hole is consuming the arena!"})
+			else:
+				if "hazards" in world.arena:
+					for h in world.arena.hazards:
+						if h.kind == "massive_black_hole":
+							h.radius += 5.0 * delta
+							var lifetime = 0.0
+							if h.has_meta("lifetime"):
+								lifetime = h.get_meta("lifetime")
+							h.set_meta("lifetime", lifetime + delta)
 
-                            for b in balls:
-                                if b.alive and b.ball_type != "spectator":
-                                    var dx = h.x - b.x
-                                    var dy = h.y - b.y
-                                    var dist_sq = dx*dx + dy*dy
-                                    if dist_sq > 0.0001:
-                                        var dist = sqrt(dist_sq)
-                                        var nx = dx / dist
-                                        var ny = dy / dist
-                                        var pull = (h.radius * 2.0 / max(10.0, dist)) * 50.0 * delta * (1.0 + lifetime / 10.0)
-                                        b.x += nx * pull
-                                        b.y += ny * pull
+							for b in balls:
+								if b.alive and b.ball_type != "spectator":
+									var dx = h.x - b.x
+									var dy = h.y - b.y
+									var dist_sq = dx*dx + dy*dy
+									if dist_sq > 0.0001:
+										var dist = sqrt(dist_sq)
+										var nx = dx / dist
+										var ny = dy / dist
+										var pull = (h.radius * 2.0 / max(10.0, dist)) * 50.0 * delta * (1.0 + lifetime / 10.0)
+										b.x += nx * pull
+										b.y += ny * pull
 
-        if not self.has_meta("shadow_monsters"):
-            self.set_meta("shadow_monsters", [])
-        var shadow_monsters = self.get_meta("shadow_monsters")
+		if not self.has_meta("shadow_monsters"):
+			self.set_meta("shadow_monsters", [])
+		var shadow_monsters = self.get_meta("shadow_monsters")
 
-        if is_dark_phase:
-            var arena_width = 1000.0
-            var arena_height = 1000.0
-            if world != null and "arena" in world and world.arena != null:
-                if "width" in world.arena: arena_width = world.arena.width
-                if "height" in world.arena: arena_height = world.arena.height
+		if is_dark_phase:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena != null:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
 
-            while shadow_monsters.size() < 3:
-                var spawn_x = randf_range(50, arena_width - 50)
-                var spawn_y = randf_range(50, arena_height - 50)
+			while shadow_monsters.size() < 3:
+				var spawn_x = randf_range(50, arena_width - 50)
+				var spawn_y = randf_range(50, arena_height - 50)
 
-                var valid_spawn = true
-                for b in balls:
-                                        if "alive" in b and b.alive and "ball_type" in b and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                        var perc_rad = 250.0
-                        if "perception_radius" in b: perc_rad = float(b.perception_radius)
-                        var dx = b.x - spawn_x
-                        var dy = b.y - spawn_y
-                        var dist = sqrt(dx*dx + dy*dy)
-                        if dist <= perc_rad + 50.0:
-                            valid_spawn = false
-                            break
+				var valid_spawn = true
+				for b in balls:
+										if "alive" in b and b.alive and "ball_type" in b and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+						var perc_rad = 250.0
+						if "perception_radius" in b: perc_rad = float(b.perception_radius)
+						var dx = b.x - spawn_x
+						var dy = b.y - spawn_y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= perc_rad + 50.0:
+							valid_spawn = false
+							break
 
-                if valid_spawn or randf() < 0.1:
-                    var monster = ShadowMonster.new()
-                    monster.x = spawn_x
-                    monster.y = spawn_y
-                    shadow_monsters.append(monster)
-                    balls.append(monster)
+				if valid_spawn or randf() < 0.1:
+					var monster = ShadowMonster.new()
+					monster.x = spawn_x
+					monster.y = spawn_y
+					shadow_monsters.append(monster)
+					balls.append(monster)
 
-            for monster in shadow_monsters:
-                if not monster.alive:
-                    continue
+			for monster in shadow_monsters:
+				if not monster.alive:
+					continue
 
-                var closest_player = null
-                var closest_dist = 999999.0
+				var closest_player = null
+				var closest_dist = 999999.0
 
-                for b in balls:
-                                        if "alive" in b and b.alive and "ball_type" in b and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                        var dx = b.x - monster.x
-                        var dy = b.y - monster.y
-                        var dist = sqrt(dx*dx + dy*dy)
-                        if dist < closest_dist:
-                            closest_dist = dist
-                            closest_player = b
+				for b in balls:
+										if "alive" in b and b.alive and "ball_type" in b and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+						var dx = b.x - monster.x
+						var dy = b.y - monster.y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist < closest_dist:
+							closest_dist = dist
+							closest_player = b
 
-                if closest_player != null:
-                    var dx = closest_player.x - monster.x
-                    var dy = closest_player.y - monster.y
-                    if closest_dist > 0.0001:
-                        var nx = dx / closest_dist
-                        var ny = dy / closest_dist
-                        monster.vx = nx * monster.speed
-                        monster.vy = ny * monster.speed
-                else:
-                    monster.vx *= 0.95
-                    monster.vy *= 0.95
+				if closest_player != null:
+					var dx = closest_player.x - monster.x
+					var dy = closest_player.y - monster.y
+					if closest_dist > 0.0001:
+						var nx = dx / closest_dist
+						var ny = dy / closest_dist
+						monster.vx = nx * monster.speed
+						monster.vy = ny * monster.speed
+				else:
+					monster.vx *= 0.95
+					monster.vy *= 0.95
 
-                monster.x += monster.vx * delta
-                monster.y += monster.vy * delta
+				monster.x += monster.vx * delta
+				monster.y += monster.vy * delta
 
-                for b in balls:
-                                        if not ("alive" in b and b.alive) or ("ball_type" in b and (b.ball_type == "spectator" or b.ball_type == "shadow_monster")):
-                        continue
+				for b in balls:
+										if not ("alive" in b and b.alive) or ("ball_type" in b and (b.ball_type == "spectator" or b.ball_type == "shadow_monster")):
+						continue
 
-                    var dx = b.x - monster.x
-                    var dy = b.y - monster.y
-                    var dist = sqrt(dx*dx + dy*dy)
-                    var target_radius = 10.0
-                    if "radius" in b: target_radius = float(b.radius)
-                    var min_dist = monster.radius + target_radius
+					var dx = b.x - monster.x
+					var dy = b.y - monster.y
+					var dist = sqrt(dx*dx + dy*dy)
+					var target_radius = 10.0
+					if "radius" in b: target_radius = float(b.radius)
+					var min_dist = monster.radius + target_radius
 
-                    if dist < min_dist:
-                        if "hp" in b:
-                            b.hp -= monster.damage * delta
-                            if b.hp <= 0:
-                                b.alive = false
+					if dist < min_dist:
+						if "hp" in b:
+							b.hp -= monster.damage * delta
+							if b.hp <= 0:
+								b.alive = false
 
-            var new_shadow_monsters = []
-            for m in shadow_monsters:
-                if m.alive:
-                    new_shadow_monsters.append(m)
-            shadow_monsters = new_shadow_monsters
-            self.set_meta("shadow_monsters", shadow_monsters)
+			var new_shadow_monsters = []
+			for m in shadow_monsters:
+				if m.alive:
+					new_shadow_monsters.append(m)
+			shadow_monsters = new_shadow_monsters
+			self.set_meta("shadow_monsters", shadow_monsters)
 
-        # Dark phase cycle: 20s normal, 10s dark
-        if not is_dark_phase and dark_phase_timer >= 20.0:
-            is_dark_phase = true
-            dark_phase_timer = 0.0
+		# Dark phase cycle: 20s normal, 10s dark
+		if not is_dark_phase and dark_phase_timer >= 20.0:
+			is_dark_phase = true
+			dark_phase_timer = 0.0
 
-            # Apply dark phase
-            for b in balls:
-                                if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                    var current_perc = 250.0
-                    if "perception_radius" in b:
-                        current_perc = float(b.perception_radius)
-                    if b.has_method("set_meta"):
-                        b.set_meta("base_perception_radius", current_perc)
+			# Apply dark phase
+			for b in balls:
+								if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+					var current_perc = 250.0
+					if "perception_radius" in b:
+						current_perc = float(b.perception_radius)
+					if b.has_method("set_meta"):
+						b.set_meta("base_perception_radius", current_perc)
 
-                    var vb_timer = 0.0
-                    if "vision_booster_timer" in b: vb_timer = b.vision_booster_timer
-                    elif b.has_method("get_meta") and b.has_meta("vision_booster_timer"): vb_timer = b.get_meta("vision_booster_timer")
+					var vb_timer = 0.0
+					if "vision_booster_timer" in b: vb_timer = b.vision_booster_timer
+					elif b.has_method("get_meta") and b.has_meta("vision_booster_timer"): vb_timer = b.get_meta("vision_booster_timer")
 
-                    if vb_timer > 0.0:
-                        b.perception_radius = current_perc
-                    else:
-                        if b.ball_type == "scout":
-                            b.perception_radius = 120.0
-                        else:
-                            b.perception_radius = 60.0
-        elif is_dark_phase and dark_phase_timer >= 10.0:
-            is_dark_phase = false
-            dark_phase_timer = 0.0
+					if vb_timer > 0.0:
+						b.perception_radius = current_perc
+					else:
+						if b.ball_type == "scout":
+							b.perception_radius = 120.0
+						else:
+							b.perception_radius = 60.0
+		elif is_dark_phase and dark_phase_timer >= 10.0:
+			is_dark_phase = false
+			dark_phase_timer = 0.0
 
-            for m in shadow_monsters:
-                m.alive = false
-                balls.erase(m)
-            shadow_monsters.clear()
-            self.set_meta("shadow_monsters", shadow_monsters)
+			for m in shadow_monsters:
+				m.alive = false
+				balls.erase(m)
+			shadow_monsters.clear()
+			self.set_meta("shadow_monsters", shadow_monsters)
 
-            # Restore normal phase
-            for b in balls:
-                                if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                    var base_perc = 250.0
-                    if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
-                        base_perc = b.get_meta("base_perception_radius")
-                    b.perception_radius = base_perc
-                    if "score" in b:
-                        b.score += 100
+			# Restore normal phase
+			for b in balls:
+								if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+					var base_perc = 250.0
+					if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
+						base_perc = b.get_meta("base_perception_radius")
+					b.perception_radius = base_perc
+					if "score" in b:
+						b.score += 100
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            _award_skill_points()
-            return "Draw"
+		if alive.size() == 0:
+			_award_skill_points()
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            if b.has_method("get") or "team" in b:
-                teams_alive[b.team] = true
-            else:
-                teams_alive[b.ball_type] = true
+		var teams_alive = {}
+		for b in alive:
+			if b.has_method("get") or "team" in b:
+				teams_alive[b.team] = true
+			else:
+				teams_alive[b.ball_type] = true
 
-        if teams_alive.size() == 1:
-            _award_skill_points()
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			_award_skill_points()
+			return teams_alive.keys()[0]
 
-        if alive.size() == 1:
-            _award_skill_points()
-            return alive[0].ball_type
+		if alive.size() == 1:
+			_award_skill_points()
+			return alive[0].ball_type
 
-        return null
+		return null
 
-    func _award_skill_points() -> void:
-        var pm = ProfileManager.new()
-        var current_datetime = Time.get_datetime_dict_from_system()
-        var is_weekend = current_datetime.weekday == Time.WEEKDAY_SATURDAY or current_datetime.weekday == Time.WEEKDAY_SUNDAY
-        var points = 20 if is_weekend else 10
-        pm.add_skill_points(points)
+	func _award_skill_points() -> void:
+		var pm = ProfileManager.new()
+		var current_datetime = Time.get_datetime_dict_from_system()
+		var is_weekend = current_datetime.weekday == Time.WEEKDAY_SATURDAY or current_datetime.weekday == Time.WEEKDAY_SUNDAY
+		var points = 20 if is_weekend else 10
+		pm.add_skill_points(points)
 
 class TeamDeathmatchMode extends GameMode:
-    func _init() -> void:
-        name = "Team Deathmatch"
-        description = "Two teams fight until one is eliminated."
+	func _init() -> void:
+		name = "Team Deathmatch"
+		description = "Two teams fight until one is eliminated."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        var mid = valid_balls.size() / 2
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if i < mid:
-                b.team = "Red"
-            else:
-                b.team = "Blue"
+		var mid = valid_balls.size() / 2
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i < mid:
+				b.team = "Red"
+			else:
+				b.team = "Blue"
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            teams_alive[b.team] = true
+		var teams_alive = {}
+		for b in alive:
+			teams_alive[b.team] = true
 
-        if teams_alive.size() == 1:
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
 
-        return null
+		return null
 
 class ZombieInfectionMode extends GameMode:
-    func _init() -> void:
-        name = "Zombie Infection"
-        description = "One zombie infects others. Survivors win if time runs out."
+	func _init() -> void:
+		name = "Zombie Infection"
+		description = "One zombie infects others. Survivors win if time runs out."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        if valid_balls.size() > 0:
-            var zombie = valid_balls[randi() % valid_balls.size()]
-            for b in valid_balls:
-                if b == zombie:
-                    b.team = "Zombie"
-                    b.ball_type = "berserker"
-                else:
-                    b.team = "Survivor"
+		if valid_balls.size() > 0:
+			var zombie = valid_balls[randi() % valid_balls.size()]
+			for b in valid_balls:
+				if b == zombie:
+					b.team = "Zombie"
+					b.ball_type = "berserker"
+				else:
+					b.team = "Survivor"
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-        var survivors = []
-        for b in balls:
-            if ("team" in b) and b.team == "Survivor":
-                survivors.append(b)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		var survivors = []
+		for b in balls:
+			if ("team" in b) and b.team == "Survivor":
+				survivors.append(b)
 
-        for survivor in survivors:
-            if not survivor.alive:
-                survivor.team = "Zombie"
-                survivor.ball_type = "berserker"
-                if "max_hp" in survivor:
-                    survivor.hp = survivor.max_hp
-                else:
-                    survivor.hp = 100
-                survivor.alive = true
+		for survivor in survivors:
+			if not survivor.alive:
+				survivor.team = "Zombie"
+				survivor.ball_type = "berserker"
+				if "max_hp" in survivor:
+					survivor.hp = survivor.max_hp
+				else:
+					survivor.hp = 100
+				survivor.alive = true
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var zombies = 0
-        var survivors = 0
-        for b in alive:
-            if b.team == "Zombie":
-                zombies += 1
-            elif b.team == "Survivor":
-                survivors += 1
+		var zombies = 0
+		var survivors = 0
+		for b in alive:
+			if b.team == "Zombie":
+				zombies += 1
+			elif b.team == "Survivor":
+				survivors += 1
 
-        if survivors == 0:
-            return "Zombies"
-        elif zombies == 0:
-            return "Survivors"
+		if survivors == 0:
+			return "Zombies"
+		elif zombies == 0:
+			return "Survivors"
 
-        return null
+		return null
 
 
 class GuildBossFightMode extends GameMode:
-    var boss_id = null
-    var pull_radius = 300.0
-    var pull_strength = 50.0
-    var guild_name = null
-    var guild_manager = null
-    var week_id = "week_1"
+	var boss_id = null
+	var pull_radius = 300.0
+	var pull_strength = 50.0
+	var guild_name = null
+	var guild_manager = null
+	var week_id = "week_1"
 
-    func _init(p_guild_name = null, p_guild_manager = null, p_week_id = "week_1") -> void:
-        name = "Guild Boss Fight"
-        description = "Guild members team up to deal as much damage as possible to an immortal boss."
-        guild_name = p_guild_name
-        guild_manager = p_guild_manager
-        week_id = p_week_id
+	func _init(p_guild_name = null, p_guild_manager = null, p_week_id = "week_1") -> void:
+		name = "Guild Boss Fight"
+		description = "Guild members team up to deal as much damage as possible to an immortal boss."
+		guild_name = p_guild_name
+		guild_manager = p_guild_manager
+		week_id = p_week_id
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        if valid_balls.size() > 0:
-            var boss = valid_balls[0]
-            boss.team = "Boss"
-            if "max_hp" in boss:
-                boss.max_hp = 10000000.0
-                boss.hp = boss.max_hp
-            if "damage" in boss:
-                boss.damage *= 3.0
+		if valid_balls.size() > 0:
+			var boss = valid_balls[0]
+			boss.team = "Boss"
+			if "max_hp" in boss:
+				boss.max_hp = 10000000.0
+				boss.hp = boss.max_hp
+			if "damage" in boss:
+				boss.damage *= 3.0
 
-            boss.set_meta("total_damage_taken", 0.0)
-            if "id" in boss:
-                boss_id = boss.id
-            elif boss.has_meta("id"):
-                boss_id = boss.get_meta("id")
+			boss.set_meta("total_damage_taken", 0.0)
+			if "id" in boss:
+				boss_id = boss.id
+			elif boss.has_meta("id"):
+				boss_id = boss.get_meta("id")
 
-            var arena_width = 1000
-            var arena_height = 1000
-            if world != null and "arena" in world and world.arena != null:
-                if "width" in world.arena:
-                    arena_width = world.arena.width
-                if "height" in world.arena:
-                    arena_height = world.arena.height
+			var arena_width = 1000
+			var arena_height = 1000
+			if world != null and "arena" in world and world.arena != null:
+				if "width" in world.arena:
+					arena_width = world.arena.width
+				if "height" in world.arena:
+					arena_height = world.arena.height
 
-            if "x" in boss and "y" in boss:
-                boss.x = arena_width / 2.0
-                boss.y = arena_height / 2.0
+			if "x" in boss and "y" in boss:
+				boss.x = arena_width / 2.0
+				boss.y = arena_height / 2.0
 
-            if "radius" in boss:
-                boss.radius *= 4.0
-            elif boss.has_meta("radius"):
-                boss.set_meta("radius", boss.get_meta("radius") * 4.0)
+			if "radius" in boss:
+				boss.radius *= 4.0
+			elif boss.has_meta("radius"):
+				boss.set_meta("radius", boss.get_meta("radius") * 4.0)
 
-            if "base_speed" in boss:
-                boss.base_speed *= 0.5
-            elif boss.has_meta("base_speed"):
-                boss.set_meta("base_speed", boss.get_meta("base_speed") * 0.5)
+			if "base_speed" in boss:
+				boss.base_speed *= 0.5
+			elif boss.has_meta("base_speed"):
+				boss.set_meta("base_speed", boss.get_meta("base_speed") * 0.5)
 
-            if "mass" in boss:
-                boss.mass *= 10.0
-            elif boss.has_meta("mass"):
-                boss.set_meta("mass", boss.get_meta("mass") * 10.0)
+			if "mass" in boss:
+				boss.mass *= 10.0
+			elif boss.has_meta("mass"):
+				boss.set_meta("mass", boss.get_meta("mass") * 10.0)
 
-            for i in range(1, valid_balls.size()):
-                var b = valid_balls[i]
-                b.team = "Hunters"
-                if "max_hp" in b:
-                    b.max_hp *= 1.5
-                    b.hp = b.max_hp
+			for i in range(1, valid_balls.size()):
+				var b = valid_balls[i]
+				b.team = "Hunters"
+				if "max_hp" in b:
+					b.max_hp *= 1.5
+					b.hp = b.max_hp
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        super.tick(world, balls, delta)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
 
-        var boss = null
-        for b in balls:
-            var current_id = null
-            if "id" in b:
-                current_id = b.id
-            elif b.has_meta("id"):
-                current_id = b.get_meta("id")
+		var boss = null
+		for b in balls:
+			var current_id = null
+			if "id" in b:
+				current_id = b.id
+			elif b.has_meta("id"):
+				current_id = b.get_meta("id")
 
-            if current_id != null and boss_id != null and current_id == boss_id:
-                boss = b
-                break
+			if current_id != null and boss_id != null and current_id == boss_id:
+				boss = b
+				break
 
-        if boss == null:
-            return
+		if boss == null:
+			return
 
-        if "hp" in boss and "max_hp" in boss and boss.hp < boss.max_hp:
-            var damage_taken = boss.max_hp - boss.hp
-            var total_dmg = boss.get_meta("total_damage_taken")
-            boss.set_meta("total_damage_taken", total_dmg + damage_taken)
-            boss.hp = boss.max_hp
+		if "hp" in boss and "max_hp" in boss and boss.hp < boss.max_hp:
+			var damage_taken = boss.max_hp - boss.hp
+			var total_dmg = boss.get_meta("total_damage_taken")
+			boss.set_meta("total_damage_taken", total_dmg + damage_taken)
+			boss.hp = boss.max_hp
 
-        for b in balls:
-            var current_id = null
-            if "id" in b:
-                current_id = b.id
-            elif b.has_meta("id"):
-                current_id = b.get_meta("id")
+		for b in balls:
+			var current_id = null
+			if "id" in b:
+				current_id = b.id
+			elif b.has_meta("id"):
+				current_id = b.get_meta("id")
 
-            if current_id != boss_id and "alive" in b and b.alive:
-                if "x" in b and "y" in b and "x" in boss and "y" in boss:
-                    var dx = boss.x - b.x
-                    var dy = boss.y - b.y
-                    var dist = sqrt(dx*dx + dy*dy)
-                    if dist > 0 and dist < pull_radius:
-                        var pull = pull_strength * delta
-                        if "vx" in b and "vy" in b:
-                            b.vx += (dx / dist) * pull
-                            b.vy += (dy / dist) * pull
+			if current_id != boss_id and "alive" in b and b.alive:
+				if "x" in b and "y" in b and "x" in boss and "y" in boss:
+					var dx = boss.x - b.x
+					var dy = boss.y - b.y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0 and dist < pull_radius:
+						var pull = pull_strength * delta
+						if "vx" in b and "vy" in b:
+							b.vx += (dx / dist) * pull
+							b.vy += (dy / dist) * pull
 
-    func end_match(world, balls: Array) -> void:
-        if guild_manager != null and guild_name != null:
-            var boss = null
-            for b in balls:
-                var current_id = null
-                if "id" in b:
-                    current_id = b.id
-                elif b.has_meta("id"):
-                    current_id = b.get_meta("id")
-                if current_id == boss_id:
-                    boss = b
-                    break
+	func end_match(world, balls: Array) -> void:
+		if guild_manager != null and guild_name != null:
+			var boss = null
+			for b in balls:
+				var current_id = null
+				if "id" in b:
+					current_id = b.id
+				elif b.has_meta("id"):
+					current_id = b.get_meta("id")
+				if current_id == boss_id:
+					boss = b
+					break
 
-            if boss != null and boss.has_meta("total_damage_taken"):
-                var dmg = boss.get_meta("total_damage_taken")
-                if dmg > 0:
-                    guild_manager.record_boss_damage(guild_name, dmg, week_id)
+			if boss != null and boss.has_meta("total_damage_taken"):
+				var dmg = boss.get_meta("total_damage_taken")
+				if dmg > 0:
+					guild_manager.record_boss_damage(guild_name, dmg, week_id)
 
 
 class BossFightMode extends GameMode:
-    func _init() -> void:
-        name = "Boss Fight"
-        description = "One giant boss ball faces off against a team of weaker hunters."
+	func _init() -> void:
+		name = "Boss Fight"
+		description = "One giant boss ball faces off against a team of weaker hunters."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        if valid_balls.size() > 0:
-            var boss = valid_balls[0]
-            boss.team = "Boss"
-            if "max_hp" in boss:
-                boss.max_hp *= 10.0
-                boss.hp = boss.max_hp
-            if "damage" in boss:
-                boss.damage *= 3.0
+		if valid_balls.size() > 0:
+			var boss = valid_balls[0]
+			boss.team = "Boss"
+			if "max_hp" in boss:
+				boss.max_hp *= 10.0
+				boss.hp = boss.max_hp
+			if "damage" in boss:
+				boss.damage *= 3.0
 
-            var arena_width = 1000
-            var arena_height = 1000
-            if world != null and "arena" in world and world.arena != null:
-                if "width" in world.arena:
-                    arena_width = world.arena.width
-                if "height" in world.arena:
-                    arena_height = world.arena.height
+			var arena_width = 1000
+			var arena_height = 1000
+			if world != null and "arena" in world and world.arena != null:
+				if "width" in world.arena:
+					arena_width = world.arena.width
+				if "height" in world.arena:
+					arena_height = world.arena.height
 
-            if "x" in boss and "y" in boss:
-                boss.x = arena_width / 2.0
-                boss.y = arena_height / 2.0
+			if "x" in boss and "y" in boss:
+				boss.x = arena_width / 2.0
+				boss.y = arena_height / 2.0
 
-            if "radius" in boss:
-                boss.radius *= 3.0
-            elif boss.has_meta("radius"):
-                boss.set_meta("radius", boss.get_meta("radius") * 3.0)
-            else:
-                boss.set_meta("radius", 30.0)
+			if "radius" in boss:
+				boss.radius *= 3.0
+			elif boss.has_meta("radius"):
+				boss.set_meta("radius", boss.get_meta("radius") * 3.0)
+			else:
+				boss.set_meta("radius", 30.0)
 
-            if "base_speed" in boss:
-                boss.base_speed *= 0.6
-            elif boss.has_meta("base_speed"):
-                boss.set_meta("base_speed", boss.get_meta("base_speed") * 0.6)
+			if "base_speed" in boss:
+				boss.base_speed *= 0.6
+			elif boss.has_meta("base_speed"):
+				boss.set_meta("base_speed", boss.get_meta("base_speed") * 0.6)
 
-            if "mass" in boss:
-                boss.mass *= 5.0
-            elif boss.has_meta("mass"):
-                boss.set_meta("mass", boss.get_meta("mass") * 5.0)
+			if "mass" in boss:
+				boss.mass *= 5.0
+			elif boss.has_meta("mass"):
+				boss.set_meta("mass", boss.get_meta("mass") * 5.0)
 
-            for i in range(1, valid_balls.size()):
-                valid_balls[i].team = "Hunters"
-                if "max_hp" in valid_balls[i]:
-                    valid_balls[i].max_hp *= 0.8
-                    valid_balls[i].hp = valid_balls[i].max_hp
+			for i in range(1, valid_balls.size()):
+				valid_balls[i].team = "Hunters"
+				if "max_hp" in valid_balls[i]:
+					valid_balls[i].max_hp *= 0.8
+					valid_balls[i].hp = valid_balls[i].max_hp
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        super.tick(world, balls, delta)
-        for b in balls:
-            if "team" in b and b.team == "Boss" and b.alive:
-                if "hp" in b and "max_hp" in b:
-                    b.hp = min(b.hp + 5.0 * delta, b.max_hp)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		for b in balls:
+			if "team" in b and b.team == "Boss" and b.alive:
+				if "hp" in b and "max_hp" in b:
+					b.hp = min(b.hp + 5.0 * delta, b.max_hp)
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var boss_alive = false
-        var hunters_alive = false
+		var boss_alive = false
+		var hunters_alive = false
 
-        for b in alive:
-            if b.team == "Boss":
-                boss_alive = true
-            elif b.team == "Hunters":
-                hunters_alive = true
+		for b in alive:
+			if b.team == "Boss":
+				boss_alive = true
+			elif b.team == "Hunters":
+				hunters_alive = true
 
-        if not boss_alive:
-            return "Hunters"
-        if not hunters_alive:
-            return "Boss"
+		if not boss_alive:
+			return "Hunters"
+		if not hunters_alive:
+			return "Boss"
 
-        return null
+		return null
 
 class VIPDefenseMode extends GameMode:
-    func _init() -> void:
-        name = "VIP Defense"
-        description = "Protect the VIP. If the VIP dies, the attackers win."
+	func _init() -> void:
+		name = "VIP Defense"
+		description = "Protect the VIP. If the VIP dies, the attackers win."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        var mid = valid_balls.size() / 2
-        var defenders = []
+		var mid = valid_balls.size() / 2
+		var defenders = []
 
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if i < mid:
-                b.team = "Defenders"
-                defenders.append(b)
-            else:
-                b.team = "Attackers"
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i < mid:
+				b.team = "Defenders"
+				defenders.append(b)
+			else:
+				b.team = "Attackers"
 
-        if defenders.size() > 0:
-            var vip = defenders[0]
-            vip.team = "VIP"
-            vip.ball_type = "king"
+		if defenders.size() > 0:
+			var vip = defenders[0]
+			vip.team = "VIP"
+			vip.ball_type = "king"
 
-    func check_winner(world, balls: Array):
-        var vip_alive = false
-        for b in balls:
-            if b.alive and ("team" in b) and b.team == "VIP":
-                vip_alive = true
-                break
+	func check_winner(world, balls: Array):
+		var vip_alive = false
+		for b in balls:
+			if b.alive and ("team" in b) and b.team == "VIP":
+				vip_alive = true
+				break
 
-        if not vip_alive:
-            return "Attackers"
+		if not vip_alive:
+			return "Attackers"
 
-        var attackers_alive = false
-        for b in balls:
-            if b.alive and ("team" in b) and b.team == "Attackers" and b.ball_type != "spectator":
-                attackers_alive = true
-                break
+		var attackers_alive = false
+		for b in balls:
+			if b.alive and ("team" in b) and b.team == "Attackers" and b.ball_type != "spectator":
+				attackers_alive = true
+				break
 
-        if not attackers_alive:
-            return "Defenders"
+		if not attackers_alive:
+			return "Defenders"
 
-        return null
+		return null
 
 class SurvivalMode extends GameMode:
-    func _init() -> void:
-        name = "Survival"
-        description = "Players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
+	func _init() -> void:
+		name = "Survival"
+		description = "Players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        var players_count = min(4, valid_balls.size())
+		var players_count = min(4, valid_balls.size())
 
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if i < players_count:
-                b.team = "Players"
-            else:
-                b.team = "Enemies"
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i < players_count:
+				b.team = "Players"
+			else:
+				b.team = "Enemies"
 
-    func tick(world, balls: Array, delta: float) -> void:
-        super.tick(world, balls, delta)
-        var current_tick = 0
-        if "tick" in world:
-            current_tick = world.tick
-        elif world.has_method("get_meta") and world.has_meta("tick"):
-            current_tick = world.get_meta("tick")
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		var current_tick = 0
+		if "tick" in world:
+			current_tick = world.tick
+		elif world.has_method("get_meta") and world.has_meta("tick"):
+			current_tick = world.get_meta("tick")
 
-        if current_tick % 60 == 0 and "arena" in world:
-            var w = 1000.0
-            var h = 1000.0
-            if "width" in world.arena:
-                w = world.arena.width
-            if "height" in world.arena:
-                h = world.arena.height
+		if current_tick % 60 == 0 and "arena" in world:
+			var w = 1000.0
+			var h = 1000.0
+			if "width" in world.arena:
+				w = world.arena.width
+			if "height" in world.arena:
+				h = world.arena.height
 
-            if "hazards" in world.arena:
-                var arena_class = load("res://src/arena/procedural_arena.gd")
-                if arena_class != null:
-                    var Hazard = arena_class.Hazard
-                    var h_id = 10000 + world.arena.hazards.size()
-                    var choice = randi() % 3
-                    var hz = null
-                    if choice == 0:
-                        var y = randf_range(50, h - 50)
-                        hz = Hazard.new(h_id, w/2, y, w, "moving_laser", 20.0)
-                        hz.set_meta("vy", [ -100.0, 100.0 ][randi() % 2])
-                        hz.set_meta("vx", 0.0)
-                        hz.set_meta("duration", 10.0)
-                    elif choice == 1:
-                        var x = randf_range(100, w - 100)
-                        var y = randf_range(100, h - 100)
-                        hz = Hazard.new(h_id, x, y, 60.0, "rotating_bumper", 10.0)
-                        hz.set_meta("vx", 0.0)
-                        hz.set_meta("vy", 0.0)
-                        hz.set_meta("duration", 15.0)
-                    else:
-                        var x = randf_range(200, w - 200)
-                        var y = randf_range(200, h - 200)
-                        hz = Hazard.new(h_id, x, y, 150.0, "collapsing_floor", 50.0)
-                        hz.set_meta("vx", 0.0)
-                        hz.set_meta("vy", 0.0)
-                        hz.set_meta("duration", 5.0)
-                        hz.set_meta("warning_timer", 2.0)
-                    if hz != null:
-                        world.arena.hazards.append(hz)
+			if "hazards" in world.arena:
+				var arena_class = load("res://src/arena/procedural_arena.gd")
+				if arena_class != null:
+					var Hazard = arena_class.Hazard
+					var h_id = 10000 + world.arena.hazards.size()
+					var choice = randi() % 3
+					var hz = null
+					if choice == 0:
+						var y = randf_range(50, h - 50)
+						hz = Hazard.new(h_id, w/2, y, w, "moving_laser", 20.0)
+						hz.set_meta("vy", [ -100.0, 100.0 ][randi() % 2])
+						hz.set_meta("vx", 0.0)
+						hz.set_meta("duration", 10.0)
+					elif choice == 1:
+						var x = randf_range(100, w - 100)
+						var y = randf_range(100, h - 100)
+						hz = Hazard.new(h_id, x, y, 60.0, "rotating_bumper", 10.0)
+						hz.set_meta("vx", 0.0)
+						hz.set_meta("vy", 0.0)
+						hz.set_meta("duration", 15.0)
+					else:
+						var x = randf_range(200, w - 200)
+						var y = randf_range(200, h - 200)
+						hz = Hazard.new(h_id, x, y, 150.0, "collapsing_floor", 50.0)
+						hz.set_meta("vx", 0.0)
+						hz.set_meta("vy", 0.0)
+						hz.set_meta("duration", 5.0)
+						hz.set_meta("warning_timer", 2.0)
+					if hz != null:
+						world.arena.hazards.append(hz)
 
-        if "arena" in world and "hazards" in world.arena:
-            var hazards_to_remove = []
-            for hz in world.arena.hazards:
-                if hz.kind == "moving_laser":
-                    var vy = 0.0
-                    if hz.has_meta("vy"):
-                        vy = hz.get_meta("vy")
-                    hz.y += vy * delta
-                    var h_val = 1000.0
-                    if "height" in world.arena:
-                        h_val = world.arena.height
-                    if hz.y < 0 or hz.y > h_val:
-                        hz.set_meta("vy", vy * -1.0)
-                    if hz.has_meta("duration"):
-                        var d = hz.get_meta("duration") - delta
-                        hz.set_meta("duration", d)
-                        if d <= 0:
-                            hazards_to_remove.append(hz)
-                elif hz.kind == "rotating_bumper":
-                    if hz.has_meta("duration"):
-                        var d = hz.get_meta("duration") - delta
-                        hz.set_meta("duration", d)
-                        if d <= 0:
-                            hazards_to_remove.append(hz)
-                elif hz.kind == "collapsing_floor":
-                    if hz.has_meta("warning_timer"):
-                        var w_t = hz.get_meta("warning_timer") - delta
-                        hz.set_meta("warning_timer", w_t)
-                        if w_t <= 0:
-                            hz.kind = "lava"
-                            hz.remove_meta("warning_timer")
-                    if hz.has_meta("duration"):
-                        var d = hz.get_meta("duration") - delta
-                        hz.set_meta("duration", d)
-                        if d <= 0:
-                            hazards_to_remove.append(hz)
-                elif hz.kind == "lava":
-                    if hz.has_meta("duration"):
-                        var d = hz.get_meta("duration") - delta
-                        hz.set_meta("duration", d)
-                        if d <= 0:
-                            hazards_to_remove.append(hz)
+		if "arena" in world and "hazards" in world.arena:
+			var hazards_to_remove = []
+			for hz in world.arena.hazards:
+				if hz.kind == "moving_laser":
+					var vy = 0.0
+					if hz.has_meta("vy"):
+						vy = hz.get_meta("vy")
+					hz.y += vy * delta
+					var h_val = 1000.0
+					if "height" in world.arena:
+						h_val = world.arena.height
+					if hz.y < 0 or hz.y > h_val:
+						hz.set_meta("vy", vy * -1.0)
+					if hz.has_meta("duration"):
+						var d = hz.get_meta("duration") - delta
+						hz.set_meta("duration", d)
+						if d <= 0:
+							hazards_to_remove.append(hz)
+				elif hz.kind == "rotating_bumper":
+					if hz.has_meta("duration"):
+						var d = hz.get_meta("duration") - delta
+						hz.set_meta("duration", d)
+						if d <= 0:
+							hazards_to_remove.append(hz)
+				elif hz.kind == "collapsing_floor":
+					if hz.has_meta("warning_timer"):
+						var w_t = hz.get_meta("warning_timer") - delta
+						hz.set_meta("warning_timer", w_t)
+						if w_t <= 0:
+							hz.kind = "lava"
+							hz.remove_meta("warning_timer")
+					if hz.has_meta("duration"):
+						var d = hz.get_meta("duration") - delta
+						hz.set_meta("duration", d)
+						if d <= 0:
+							hazards_to_remove.append(hz)
+				elif hz.kind == "lava":
+					if hz.has_meta("duration"):
+						var d = hz.get_meta("duration") - delta
+						hz.set_meta("duration", d)
+						if d <= 0:
+							hazards_to_remove.append(hz)
 
-            for hz in hazards_to_remove:
-                world.arena.hazards.erase(hz)
+			for hz in hazards_to_remove:
+				world.arena.hazards.erase(hz)
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var players_alive = false
-        var enemies_alive = false
+		var players_alive = false
+		var enemies_alive = false
 
-        for b in alive:
-            if b.team == "Players":
-                players_alive = true
-            elif b.team == "Enemies":
-                enemies_alive = true
+		for b in alive:
+			if b.team == "Players":
+				players_alive = true
+			elif b.team == "Enemies":
+				enemies_alive = true
 
-        if not players_alive:
-            return "Enemies"
-        if not enemies_alive:
-            return "Players"
+		if not players_alive:
+			return "Enemies"
+		if not enemies_alive:
+			return "Players"
 
-        return null
+		return null
 
 
 
@@ -2111,11 +2111,41 @@ class DualPayloadMode extends GameMode:
 			if red_alive:
 				var red_x = payload_red.get("x", 0.0) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("x")
 				var red_y = payload_red.get("y", 0.0) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("y")
+				var payload_team = payload_red.get("team", "") if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("team", "")
+
+				var nearby_red = 0
+				for b in balls:
+					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if b_type == "spectator":
+						continue
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if not b_alive:
+						continue
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					var p_id = payload_red.get("id") if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("id")
+					if b_id != null and p_id != null and b_id == p_id:
+						continue
+					if typeof(b) == TYPE_OBJECT and typeof(payload_red) == TYPE_OBJECT and b == payload_red:
+						continue
+					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+					if b_team != payload_team:
+						continue
+
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var bdx = bx - red_x
+					var bdy = by - red_y
+					if sqrt(bdx*bdx + bdy*bdy) <= 150.0:
+						nearby_red += 1
+
+				var speed_mult_red = 1.0 + (nearby_red * 0.5)
+
 				var dx = center_x - red_x
 				var dy = center_y - red_y
 				var dist = sqrt(dx*dx + dy*dy)
 				if dist > 5.0:
-					var speed = payload_red.get("speed", 10.0) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("speed")
+					var base_speed = payload_red.get("speed", 10.0) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("speed")
+					var speed = base_speed * speed_mult_red
 					if typeof(payload_red) == TYPE_DICTIONARY:
 						payload_red["x"] += (dx / dist) * speed * delta
 						payload_red["y"] += (dy / dist) * speed * delta
@@ -2128,11 +2158,41 @@ class DualPayloadMode extends GameMode:
 			if blue_alive:
 				var blue_x = payload_blue.get("x", 0.0) if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("x")
 				var blue_y = payload_blue.get("y", 0.0) if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("y")
+				var payload_team = payload_blue.get("team", "") if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("team", "")
+
+				var nearby_blue = 0
+				for b in balls:
+					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if b_type == "spectator":
+						continue
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if not b_alive:
+						continue
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					var p_id = payload_blue.get("id") if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("id")
+					if b_id != null and p_id != null and b_id == p_id:
+						continue
+					if typeof(b) == TYPE_OBJECT and typeof(payload_blue) == TYPE_OBJECT and b == payload_blue:
+						continue
+					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+					if b_team != payload_team:
+						continue
+
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var bdx = bx - blue_x
+					var bdy = by - blue_y
+					if sqrt(bdx*bdx + bdy*bdy) <= 150.0:
+						nearby_blue += 1
+
+				var speed_mult_blue = 1.0 + (nearby_blue * 0.5)
+
 				var dx = center_x - blue_x
 				var dy = center_y - blue_y
 				var dist = sqrt(dx*dx + dy*dy)
 				if dist > 5.0:
-					var speed = payload_blue.get("speed", 10.0) if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("speed")
+					var base_speed = payload_blue.get("speed", 10.0) if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("speed")
+					var speed = base_speed * speed_mult_blue
 					if typeof(payload_blue) == TYPE_DICTIONARY:
 						payload_blue["x"] += (dx / dist) * speed * delta
 						payload_blue["y"] += (dy / dist) * speed * delta
@@ -2159,628 +2219,660 @@ class DualPayloadMode extends GameMode:
 
 
 class EscortMode extends GameMode:
-    var payload
-    var goal_x: float = 900.0
-    var goal_y: float = 500.0
-    var timer: float = 180.0
+	var payload
+	var goal_x: float = 900.0
+	var goal_y: float = 500.0
+	var timer: float = 180.0
 
-    func _init() -> void:
-        name = "Escort Mode"
-        description = "One team defends an invulnerable payload moving towards a goal. The other tries to delay it until time runs out."
+	func _init() -> void:
+		name = "Escort Mode"
+		description = "One team defends an invulnerable payload moving towards a goal. The other tries to delay it until time runs out."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-        var valid_balls = []
-        for b in balls:
-            if typeof(b) == TYPE_DICTIONARY:
-                if b.get("ball_type", "") != "spectator":
-                    valid_balls.append(b)
-            else:
-                if b.ball_type != "spectator":
-                    valid_balls.append(b)
+		var valid_balls = []
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type", "") != "spectator":
+					valid_balls.append(b)
+			else:
+				if b.ball_type != "spectator":
+					valid_balls.append(b)
 
-        var mid = valid_balls.size() / 2
-        var defenders = []
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if typeof(b) == TYPE_DICTIONARY:
-                b["team"] = "Defenders" if i < mid else "Attackers"
-                if i < mid: defenders.append(b)
-            else:
-                b.team = "Defenders" if i < mid else "Attackers"
-                if i < mid: defenders.append(b)
+		var mid = valid_balls.size() / 2
+		var defenders = []
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if typeof(b) == TYPE_DICTIONARY:
+				b["team"] = "Defenders" if i < mid else "Attackers"
+				if i < mid: defenders.append(b)
+			else:
+				b.team = "Defenders" if i < mid else "Attackers"
+				if i < mid: defenders.append(b)
 
-        if defenders.size() > 0:
-            payload = defenders[0]
-            if typeof(payload) == TYPE_DICTIONARY:
-                payload["ball_type"] = "payload"
-                payload["is_invulnerable"] = true
-                payload["speed"] = 0.5
-                payload["damage"] = 0.0
-                payload["x"] = 100.0
-                payload["y"] = 500.0
-            else:
-                payload.ball_type = "payload"
-                payload.is_invulnerable = true
-                payload.speed = 0.5
-                payload.damage = 0.0
-                payload.x = 100.0
-                payload.y = 500.0
+		if defenders.size() > 0:
+			payload = defenders[0]
+			if typeof(payload) == TYPE_DICTIONARY:
+				payload["ball_type"] = "payload"
+				payload["is_invulnerable"] = true
+				payload["speed"] = 0.5
+				payload["damage"] = 0.0
+				payload["x"] = 100.0
+				payload["y"] = 500.0
+			else:
+				payload.ball_type = "payload"
+				payload.is_invulnerable = true
+				payload.speed = 0.5
+				payload.damage = 0.0
+				payload.x = 100.0
+				payload.y = 500.0
 
-    var pulse_timer: float = 0.0
+	var pulse_timer: float = 0.0
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        if timer > 0.0:
-            timer -= delta
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if timer > 0.0:
+			timer -= delta
 
-        pulse_timer += delta
-        if pulse_timer >= 5.0:
-            pulse_timer = 0.0
-            if payload != null:
-                var px = payload.get("x") if typeof(payload) == TYPE_DICTIONARY else payload.x
-                var py = payload.get("y") if typeof(payload) == TYPE_DICTIONARY else payload.y
+		pulse_timer += delta
+		if pulse_timer >= 5.0:
+			pulse_timer = 0.0
+			if payload != null:
+				var px = payload.get("x") if typeof(payload) == TYPE_DICTIONARY else payload.x
+				var py = payload.get("y") if typeof(payload) == TYPE_DICTIONARY else payload.y
 
-                for b in balls:
-                    if typeof(b) == TYPE_DICTIONARY and b.has("id") and typeof(payload) == TYPE_DICTIONARY and payload.has("id") and b["id"] == payload["id"]:
-                        continue
-                    if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
-                        continue
-                    var balive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
-                    if not balive:
-                        continue
-                    var btype = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
-                    if btype == "spectator":
-                        continue
+				for b in balls:
+					if typeof(b) == TYPE_DICTIONARY and b.has("id") and typeof(payload) == TYPE_DICTIONARY and payload.has("id") and b["id"] == payload["id"]:
+						continue
+					if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
+						continue
+					var balive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if not balive:
+						continue
+					var btype = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if btype == "spectator":
+						continue
 
-                    var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
-                    var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
 
-                    var bdx = bx - px
-                    var bdy = by - py
-                    var bdist = sqrt(bdx*bdx + bdy*bdy)
+					var bdx = bx - px
+					var bdy = by - py
+					var bdist = sqrt(bdx*bdx + bdy*bdy)
 
-                    if bdist <= 300.0:
-                        var bteam = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
-                        if bteam == "Defenders":
-                            var bmax_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0 if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
-                            var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
-                            var new_hp = min(bmax_hp, bhp + 20.0)
-                            if typeof(b) == TYPE_DICTIONARY:
-                                b["hp"] = new_hp
-                            else:
-                                b.set("hp", new_hp)
-                        elif bteam == "Attackers":
-                            var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
-                            var new_hp = max(0.0, bhp - 20.0)
-                            if typeof(b) == TYPE_DICTIONARY:
-                                b["hp"] = new_hp
-                                if new_hp <= 0:
-                                    b["alive"] = false
-                            else:
-                                b.set("hp", new_hp)
-                                if new_hp <= 0:
-                                    b.set("alive", false)
+					if bdist <= 300.0:
+						var bteam = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+						if bteam == "Defenders":
+							var bmax_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0 if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
+							var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+							var new_hp = min(bmax_hp, bhp + 20.0)
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = new_hp
+							else:
+								b.set("hp", new_hp)
+						elif bteam == "Attackers":
+							var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+							var new_hp = max(0.0, bhp - 20.0)
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = new_hp
+								if new_hp <= 0:
+									b["alive"] = false
+							else:
+								b.set("hp", new_hp)
+								if new_hp <= 0:
+									b.set("alive", false)
 
-        if payload != null:
-            var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
-            if is_alive:
-                var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
-                var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
-                var spd = payload.get("speed", 0) if typeof(payload) == TYPE_DICTIONARY else payload.speed
-                var dx = goal_x - px
-                var dy = goal_y - py
-                var dist = sqrt(dx * dx + dy * dy)
-                if dist > 0:
-                    if typeof(payload) == TYPE_DICTIONARY:
-                        payload["x"] += (dx / dist) * spd
-                        payload["y"] += (dy / dist) * spd
-                    else:
-                        payload.x += (dx / dist) * spd
-                        payload.y += (dy / dist) * spd
+		if payload != null:
+			var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
+			if is_alive:
+				var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
+				var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
+				var payload_team = payload.get("team", "") if typeof(payload) == TYPE_DICTIONARY else payload.get("team", "")
 
-    func check_winner(world, balls: Array):
-        if payload == null:
-            return null
+				var nearby_teammates = 0
+				for b in balls:
+					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if b_type == "spectator":
+						continue
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if not b_alive:
+						continue
 
-        var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
-        var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
-        var dx = goal_x - px
-        var dy = goal_y - py
-        var dist = sqrt(dx * dx + dy * dy)
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					var p_id = payload.get("id") if typeof(payload) == TYPE_DICTIONARY else payload.get("id")
+					if b_id != null and p_id != null and b_id == p_id:
+						continue
+					if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
+						continue
 
-        if timer <= 0.0:
-            return "Attackers"
+					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+					if b_team != payload_team:
+						continue
 
-        if dist < 10.0:
-            return "Defenders"
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var bdx = bx - px
+					var bdy = by - py
+					if sqrt(bdx*bdx + bdy*bdy) <= 150.0:
+						nearby_teammates += 1
 
-        return null
+				var speed_mult = 1.0 + (nearby_teammates * 0.5)
+				var base_spd = payload.get("speed", 0) if typeof(payload) == TYPE_DICTIONARY else payload.speed
+				var spd = base_spd * speed_mult
 
-        var dx = goal_x - payload["x"]
-        var dy = goal_y - payload["y"]
-        var dist = sqrt(dx * dx + dy * dy)
+				var dx = goal_x - px
+				var dy = goal_y - py
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist > 0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["x"] += (dx / dist) * spd
+						payload["y"] += (dy / dist) * spd
+					else:
+						payload.x += (dx / dist) * spd
+						payload.y += (dy / dist) * spd
 
-        var is_dead = false
-        if payload.has("hp") and payload["hp"] <= 0:
-            is_dead = true
-        if payload.has("alive") and not payload["alive"]:
-            is_dead = true
+	func check_winner(world, balls: Array):
+		if payload == null:
+			return null
 
-        if is_dead:
-            payload["alive"] = false
-            return "Attackers"
+		var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
+		var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
+		var dx = goal_x - px
+		var dy = goal_y - py
+		var dist = sqrt(dx * dx + dy * dy)
 
-        if dist < 10.0:
-            return "Defenders"
+		if timer <= 0.0:
+			return "Attackers"
 
-        return null
+		if dist < 10.0:
+			return "Defenders"
+
+		return null
+
+		var dx = goal_x - payload["x"]
+		var dy = goal_y - payload["y"]
+		var dist = sqrt(dx * dx + dy * dy)
+
+		var is_dead = false
+		if payload.has("hp") and payload["hp"] <= 0:
+			is_dead = true
+		if payload.has("alive") and not payload["alive"]:
+			is_dead = true
+
+		if is_dead:
+			payload["alive"] = false
+			return "Attackers"
+
+		if dist < 10.0:
+			return "Defenders"
+
+		return null
 
 class CaptureTheFlagMode extends GameMode:
-    func _init() -> void:
-        name = "Capture The Flag"
-        description = "Teams try to steal the enemy's flag and return it to their base."
+	func _init() -> void:
+		name = "Capture The Flag"
+		description = "Teams try to steal the enemy's flag and return it to their base."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        var mid = valid_balls.size() / 2
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if i < mid:
-                b.team = "Red"
-            else:
-                b.team = "Blue"
+		var mid = valid_balls.size() / 2
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i < mid:
+				b.team = "Red"
+			else:
+				b.team = "Blue"
 
-        if "boosters" in world:
-            var red_flag = {"id": "red_flag", "x": 100, "y": 100, "is_flag": true, "team": "Red", "carrier": null, "ball_type": "booster"}
-            var blue_flag = {"id": "blue_flag", "x": 900, "y": 900, "is_flag": true, "team": "Blue", "carrier": null, "ball_type": "booster"}
-            world.boosters.append(red_flag)
-            world.boosters.append(blue_flag)
-            if not "flags" in world:
-                world.flags = {"Red": red_flag, "Blue": blue_flag}
+		if "boosters" in world:
+			var red_flag = {"id": "red_flag", "x": 100, "y": 100, "is_flag": true, "team": "Red", "carrier": null, "ball_type": "booster"}
+			var blue_flag = {"id": "blue_flag", "x": 900, "y": 900, "is_flag": true, "team": "Blue", "carrier": null, "ball_type": "booster"}
+			world.boosters.append(red_flag)
+			world.boosters.append(blue_flag)
+			if not "flags" in world:
+				world.flags = {"Red": red_flag, "Blue": blue_flag}
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            if b.has_method("get") or "team" in b:
-                teams_alive[b.team] = true
+		var teams_alive = {}
+		for b in alive:
+			if b.has_method("get") or "team" in b:
+				teams_alive[b.team] = true
 
-        if teams_alive.size() == 1:
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
 
-        if "scores" in world:
-            if world.scores.has("Red") and world.scores["Red"] >= 3:
-                return "Red"
-            if world.scores.has("Blue") and world.scores["Blue"] >= 3:
-                return "Blue"
+		if "scores" in world:
+			if world.scores.has("Red") and world.scores["Red"] >= 3:
+				return "Red"
+			if world.scores.has("Blue") and world.scores["Blue"] >= 3:
+				return "Blue"
 
-        return null
+		return null
 
 
 class EvolutionarySimulationMode extends GameMode:
-    func _init() -> void:
-        name = "Evolutionary Simulation"
-        description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
+	func _init() -> void:
+		name = "Evolutionary Simulation"
+		description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for i in range(balls.size()):
-            var b = balls[i]
-            if b.ball_type != "spectator":
-                b.ball_type = "neural"
-                b.team = "Neural_" + str(i)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for i in range(balls.size()):
+			var b = balls[i]
+			if b.ball_type != "spectator":
+				b.ball_type = "neural"
+				b.team = "Neural_" + str(i)
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        if alive.size() == 1:
-            if "team" in alive[0]:
-                return alive[0].team
-            return alive[0].ball_type
+		if alive.size() == 1:
+			if "team" in alive[0]:
+				return alive[0].team
+			return alive[0].ball_type
 
-        return null
+		return null
 
 
 class VampireRoyaleMode extends GameMode:
-    var tick_timer = 0.0
+	var tick_timer = 0.0
 
-    func _init() -> void:
-        name = "Vampire Royale"
-        description = "All balls slowly lose HP over time but regain HP when dealing damage. Last one standing wins."
+	func _init() -> void:
+		name = "Vampire Royale"
+		description = "All balls slowly lose HP over time but regain HP when dealing damage. Last one standing wins."
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-        tick_timer += delta
-        if tick_timer >= 1.0:
-            tick_timer = 0.0
-            for b in balls:
-                if b.alive and b.ball_type != "spectator":
-                    if "hp" in b:
-                        b.hp = max(0, b.hp - 5.0)
-                        if b.hp <= 0:
-                            b.alive = false
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		tick_timer += delta
+		if tick_timer >= 1.0:
+			tick_timer = 0.0
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					if "hp" in b:
+						b.hp = max(0, b.hp - 5.0)
+						if b.hp <= 0:
+							b.alive = false
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            if "team" in b:
-                teams_alive[b.team] = true
-            else:
-                teams_alive[b.ball_type] = true
+		var teams_alive = {}
+		for b in alive:
+			if "team" in b:
+				teams_alive[b.team] = true
+			else:
+				teams_alive[b.ball_type] = true
 
-        if teams_alive.size() == 1:
-            if has_method("_award_skill_points"): call("_award_skill_points")
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return teams_alive.keys()[0]
 
-        if alive.size() == 1:
-            if has_method("_award_skill_points"): call("_award_skill_points")
-            return alive[0].ball_type
+		if alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return alive[0].ball_type
 
-        return null
+		return null
 
 
 class KingOfTheHillMode extends GameMode:
-    var tick_timer = 0.0
-    var game_time = 0.0
+	var tick_timer = 0.0
+	var game_time = 0.0
 
-    func _init() -> void:
-        name = "King of the Hill"
-        description = "Control a central shrinking zone. First to 100 points wins."
+	func _init() -> void:
+		name = "King of the Hill"
+		description = "Control a central shrinking zone. First to 100 points wins."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        game_time = 0.0
-        for b in balls:
-            if b.ball_type != "spectator":
-                b.set_meta("score", 0)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		game_time = 0.0
+		for b in balls:
+			if b.ball_type != "spectator":
+				b.set_meta("score", 0)
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-        game_time += delta
-        tick_timer += delta
-        if tick_timer >= 0.5:
-            tick_timer = 0.0
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		game_time += delta
+		tick_timer += delta
+		if tick_timer >= 0.5:
+			tick_timer = 0.0
 
-            var arena_width = 1000.0
-            var arena_height = 1000.0
-            if world != null and "arena" in world and world.arena != null:
-                if "width" in world.arena:
-                    arena_width = float(world.arena.width)
-                if "height" in world.arena:
-                    arena_height = float(world.arena.height)
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena != null:
+				if "width" in world.arena:
+					arena_width = float(world.arena.width)
+				if "height" in world.arena:
+					arena_height = float(world.arena.height)
 
-            var center_x = arena_width / 2.0
-            var center_y = arena_height / 2.0
+			var center_x = arena_width / 2.0
+			var center_y = arena_height / 2.0
 
-            var max_radius = min(arena_width, arena_height) * 0.5
-            var min_radius = min(arena_width, arena_height) * 0.05
-            var zone_radius = max(min_radius, max_radius - game_time * 5.0)
+			var max_radius = min(arena_width, arena_height) * 0.5
+			var min_radius = min(arena_width, arena_height) * 0.05
+			var zone_radius = max(min_radius, max_radius - game_time * 5.0)
 
-            for b in balls:
-                if b.alive and b.ball_type != "spectator":
-                    var dx = b.x - center_x
-                    var dy = b.y - center_y
-                    var dist_sq = dx * dx + dy * dy
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var dx = b.x - center_x
+					var dy = b.y - center_y
+					var dist_sq = dx * dx + dy * dy
 
-                    if dist_sq <= zone_radius * zone_radius:
-                        var s = 0
-                        if b.has_meta("score"):
-                            s = b.get_meta("score")
-                        b.set_meta("score", s + 1)
+					if dist_sq <= zone_radius * zone_radius:
+						var s = 0
+						if b.has_meta("score"):
+							s = b.get_meta("score")
+						b.set_meta("score", s + 1)
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        for b in balls:
-            if b.ball_type != "spectator":
-                var score = 0
-                if b.has_meta("score"):
-                    score = b.get_meta("score")
-                if score >= 100:
-                    if "team" in b:
-                        return b.team
-                    return b.ball_type
+		for b in balls:
+			if b.ball_type != "spectator":
+				var score = 0
+				if b.has_meta("score"):
+					score = b.get_meta("score")
+				if score >= 100:
+					if "team" in b:
+						return b.team
+					return b.ball_type
 
-        return null
+		return null
 
 
 class SweepingBlackHoleMode extends GameMode:
-    var bh_x = -100.0
-    var bh_y = 500.0
-    var bh_vx = 30.0
-    var bh_vy = 0.0
-    var bh_radius = 80.0
-    var is_sweeping = false
+	var bh_x = -100.0
+	var bh_y = 500.0
+	var bh_vx = 30.0
+	var bh_vy = 0.0
+	var bh_radius = 80.0
+	var is_sweeping = false
 
-    func _init() -> void:
-        name = "Sweeping Black Hole"
-        description = "A massive black hole sweeps across the arena, sucking in everything in its path."
+	func _init() -> void:
+		name = "Sweeping Black Hole"
+		description = "A massive black hole sweeps across the arena, sucking in everything in its path."
 
-    func setup(world, balls: Array) -> void:
-        .setup(world, balls)
-        is_sweeping = false
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		is_sweeping = false
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if world != null and "arena" in world and world.arena != null:
-            if "width" in world.arena:
-                arena_width = float(world.arena.width)
-            if "height" in world.arena:
-                arena_height = float(world.arena.height)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
 
-        if not is_sweeping:
-            is_sweeping = true
-            var side = randi() % 4
-            if side == 0: # Top
-                bh_x = randf_range(100.0, arena_width - 100.0)
-                bh_y = -bh_radius
-                bh_vx = 0.0
-                bh_vy = 40.0
-            elif side == 1: # Bottom
-                bh_x = randf_range(100.0, arena_width - 100.0)
-                bh_y = arena_height + bh_radius
-                bh_vx = 0.0
-                bh_vy = -40.0
-            elif side == 2: # Left
-                bh_x = -bh_radius
-                bh_y = randf_range(100.0, arena_height - 100.0)
-                bh_vx = 40.0
-                bh_vy = 0.0
-            else: # Right
-                bh_x = arena_width + bh_radius
-                bh_y = randf_range(100.0, arena_height - 100.0)
-                bh_vx = -40.0
-                bh_vy = 0.0
+		if not is_sweeping:
+			is_sweeping = true
+			var side = randi() % 4
+			if side == 0: # Top
+				bh_x = randf_range(100.0, arena_width - 100.0)
+				bh_y = -bh_radius
+				bh_vx = 0.0
+				bh_vy = 40.0
+			elif side == 1: # Bottom
+				bh_x = randf_range(100.0, arena_width - 100.0)
+				bh_y = arena_height + bh_radius
+				bh_vx = 0.0
+				bh_vy = -40.0
+			elif side == 2: # Left
+				bh_x = -bh_radius
+				bh_y = randf_range(100.0, arena_height - 100.0)
+				bh_vx = 40.0
+				bh_vy = 0.0
+			else: # Right
+				bh_x = arena_width + bh_radius
+				bh_y = randf_range(100.0, arena_height - 100.0)
+				bh_vx = -40.0
+				bh_vy = 0.0
 
-            if world != null and world.has_method("add_event"):
-                world.add_event("sweeping_black_hole_spawn", {"message": "A sweeping black hole appeared!"})
+			if world != null and world.has_method("add_event"):
+				world.add_event("sweeping_black_hole_spawn", {"message": "A sweeping black hole appeared!"})
 
-        bh_x += bh_vx * delta
-        bh_y += bh_vy * delta
+		bh_x += bh_vx * delta
+		bh_y += bh_vy * delta
 
-        if (bh_vx > 0 and bh_x > arena_width + bh_radius) or \
-           (bh_vx < 0 and bh_x < -bh_radius) or \
-           (bh_vy > 0 and bh_y > arena_height + bh_radius) or \
-           (bh_vy < 0 and bh_y < -bh_radius):
-            is_sweeping = false
+		if (bh_vx > 0 and bh_x > arena_width + bh_radius) or \
+		   (bh_vx < 0 and bh_x < -bh_radius) or \
+		   (bh_vy > 0 and bh_y > arena_height + bh_radius) or \
+		   (bh_vy < 0 and bh_y < -bh_radius):
+			is_sweeping = false
 
-        for b in balls:
-            if not b.alive or b.ball_type == "spectator":
-                continue
+		for b in balls:
+			if not b.alive or b.ball_type == "spectator":
+				continue
 
-            var dx = bh_x - b.x
-            var dy = bh_y - b.y
-            var dist = sqrt(dx * dx + dy * dy)
+			var dx = bh_x - b.x
+			var dy = bh_y - b.y
+			var dist = sqrt(dx * dx + dy * dy)
 
-            if dist < bh_radius:
-                if "hp" in b:
-                    b.hp = 0
-                b.alive = false
-            elif dist > 0:
-                var pull_strength = 30000.0 / (dist * dist)
-                pull_strength = min(pull_strength, 200.0)
+			if dist < bh_radius:
+				if "hp" in b:
+					b.hp = 0
+				b.alive = false
+			elif dist > 0:
+				var pull_strength = 30000.0 / (dist * dist)
+				pull_strength = min(pull_strength, 200.0)
 
-                b.x += (dx / dist) * pull_strength * delta
-                b.y += (dy / dist) * pull_strength * delta
+				b.x += (dx / dist) * pull_strength * delta
+				b.y += (dy / dist) * pull_strength * delta
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            if "team" in b:
-                teams_alive[b.team] = true
-            else:
-                teams_alive[b.ball_type] = true
+		var teams_alive = {}
+		for b in alive:
+			if "team" in b:
+				teams_alive[b.team] = true
+			else:
+				teams_alive[b.ball_type] = true
 
-        if teams_alive.size() == 1:
-            if has_method("_award_skill_points"): call("_award_skill_points")
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return teams_alive.keys()[0]
 
-        if alive.size() == 1:
-            if has_method("_award_skill_points"): call("_award_skill_points")
-            return alive[0].ball_type
+		if alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return alive[0].ball_type
 
-        return null
+		return null
 
 
 class BlackHoleMode extends GameMode:
-    var black_hole_radius = 50.0
+	var black_hole_radius = 50.0
 
-    func _init() -> void:
-        name = "Black Hole"
-        description = "The entire arena is slowly sucked into a massive black hole in the center. Avoid the center!"
+	func _init() -> void:
+		name = "Black Hole"
+		description = "The entire arena is slowly sucked into a massive black hole in the center. Avoid the center!"
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if world != null and "arena" in world and world.arena != null:
-            if "width" in world.arena:
-                arena_width = world.arena.width
-            if "height" in world.arena:
-                arena_height = world.arena.height
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
 
-        var center_x = arena_width / 2.0
-        var center_y = arena_height / 2.0
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
 
-        # The black hole slowly grows over time
-        black_hole_radius += 2.0 * delta
+		# The black hole slowly grows over time
+		black_hole_radius += 2.0 * delta
 
-        for b in balls:
-            if b.alive and b.ball_type != "spectator":
-                var dx = center_x - b.x
-                var dy = center_y - b.y
-                var dist = sqrt(dx * dx + dy * dy)
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var dx = center_x - b.x
+				var dy = center_y - b.y
+				var dist = sqrt(dx * dx + dy * dy)
 
-                if dist < black_hole_radius:
-                    # Instantly die if inside the event horizon
-                    if "hp" in b:
-                        b.hp = 0
-                    b.alive = false
-                elif dist > 0:
-                    # Pull towards center
-                    var pull_strength = 20000.0 / (dist * dist)
+				if dist < black_hole_radius:
+					# Instantly die if inside the event horizon
+					if "hp" in b:
+						b.hp = 0
+					b.alive = false
+				elif dist > 0:
+					# Pull towards center
+					var pull_strength = 20000.0 / (dist * dist)
 
-                    var radius_multiplier = black_hole_radius / 50.0
-                    pull_strength *= radius_multiplier
+					var radius_multiplier = black_hole_radius / 50.0
+					pull_strength *= radius_multiplier
 
-                    # Cap max pull to avoid crazy speeds
-                    pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+					# Cap max pull to avoid crazy speeds
+					pull_strength = min(pull_strength, 150.0 * radius_multiplier)
 
-                    b.x += (dx / dist) * pull_strength * delta
-                    b.y += (dy / dist) * pull_strength * delta
+					b.x += (dx / dist) * pull_strength * delta
+					b.y += (dy / dist) * pull_strength * delta
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            if "team" in b:
-                teams_alive[b.team] = true
-            else:
-                teams_alive[b.ball_type] = true
+		var teams_alive = {}
+		for b in alive:
+			if "team" in b:
+				teams_alive[b.team] = true
+			else:
+				teams_alive[b.ball_type] = true
 
-        if teams_alive.size() == 1:
-            if has_method("_award_skill_points"): call("_award_skill_points")
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return teams_alive.keys()[0]
 
-        if alive.size() == 1:
-            if has_method("_award_skill_points"): call("_award_skill_points")
-            return alive[0].ball_type
+		if alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return alive[0].ball_type
 
-        return null
+		return null
 
 
 class WeatherChaosMode extends GameMode:
@@ -3273,309 +3365,309 @@ class WeatherChaosMode extends GameMode:
 		return null
 
 class DominationMode extends GameMode:
-    var points = []
+	var points = []
 
-    func _init() -> void:
-        name = "Domination"
-        description = "Capture points to gain global buffs for your team."
+	func _init() -> void:
+		name = "Domination"
+		description = "Capture points to gain global buffs for your team."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        var mid = balls.size() / 2
-        for i in range(balls.size()):
-            var b = balls[i]
-            if b.ball_type != "spectator":
-                if i < mid:
-                    b.team = "Red"
-                else:
-                    b.team = "Blue"
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		var mid = balls.size() / 2
+		for i in range(balls.size()):
+			var b = balls[i]
+			if b.ball_type != "spectator":
+				if i < mid:
+					b.team = "Red"
+				else:
+					b.team = "Blue"
 
-        points = []
-        points.append({"id": "A", "x": 300, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
-        points.append({"id": "B", "x": 500, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
-        points.append({"id": "C", "x": 700, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
-
-
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
-
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-        for pt in points:
-            var red_count = 0
-            var blue_count = 0
-            for b in balls:
-                if b.alive and b.ball_type != "spectator":
-                    var dist_sq = (b.x - pt.x) * (b.x - pt.x) + (b.y - pt.y) * (b.y - pt.y)
-                    if dist_sq <= pt.radius * pt.radius:
-                        if b.get("team") == "Red":
-                            red_count += 1
-                        elif b.get("team") == "Blue":
-                            blue_count += 1
-
-            if red_count > blue_count:
-                pt.capture_progress += 10.0 * delta
-                for b in balls:
-                    var b_type = null
-                    if "ball_type" in b: b_type = b.ball_type
-                    if ("alive" in b) and b.alive and b_type != "spectator":
-                        var team = ""
-                        if "team" in b: team = b.team
-                        if team == "Red":
-                            var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
-                            if dist_sq <= pt.radius*pt.radius:
-                                if not ("experience" in b): b.experience = 0.0
-                                if not ("level" in b): b.level = 1
-                                b.experience += 5.0 * delta
-                                while b.experience >= 100 * b.level:
-                                    b.experience -= 100 * b.level
-                                    b.level += 1
-                                    var rng = randf()
-                                    var stat = "max_hp"
-                                    if rng > 0.66: stat = "damage"
-                                    elif rng > 0.33: stat = "speed"
-
-                                    if stat == "max_hp":
-                                        if "max_hp" in b: b.max_hp *= 1.1
-                                        else: b.max_hp = 110.0
-                                        if "hp" in b: b.hp += b.max_hp * 0.1
-                                        else: b.hp = b.max_hp
-                                        if b.hp > b.max_hp: b.hp = b.max_hp
-                                    elif stat == "damage":
-                                        if "damage" in b: b.damage *= 1.1
-                                        else: b.damage = 11.0
-                                        if "base_damage" in b: b.base_damage *= 1.1
-                                    elif stat == "speed":
-                                        if "speed" in b: b.speed *= 1.1
-                                        else: b.speed = 110.0
-                                        if "base_speed" in b: b.base_speed *= 1.1
-
-            elif blue_count > red_count:
-                pt.capture_progress -= 10.0 * delta
-                for b in balls:
-                    var b_type = null
-                    if "ball_type" in b: b_type = b.ball_type
-                    if ("alive" in b) and b.alive and b_type != "spectator":
-                        var team = ""
-                        if "team" in b: team = b.team
-                        if team == "Blue":
-                            var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
-                            if dist_sq <= pt.radius*pt.radius:
-                                if not ("experience" in b): b.experience = 0.0
-                                if not ("level" in b): b.level = 1
-                                b.experience += 5.0 * delta
-                                while b.experience >= 100 * b.level:
-                                    b.experience -= 100 * b.level
-                                    b.level += 1
-                                    var rng = randf()
-                                    var stat = "max_hp"
-                                    if rng > 0.66: stat = "damage"
-                                    elif rng > 0.33: stat = "speed"
-
-                                    if stat == "max_hp":
-                                        if "max_hp" in b: b.max_hp *= 1.1
-                                        else: b.max_hp = 110.0
-                                        if "hp" in b: b.hp += b.max_hp * 0.1
-                                        else: b.hp = b.max_hp
-                                        if b.hp > b.max_hp: b.hp = b.max_hp
-                                    elif stat == "damage":
-                                        if "damage" in b: b.damage *= 1.1
-                                        else: b.damage = 11.0
-                                        if "base_damage" in b: b.base_damage *= 1.1
-                                    elif stat == "speed":
-                                        if "speed" in b: b.speed *= 1.1
-                                        else: b.speed = 110.0
-                                        if "base_speed" in b: b.base_speed *= 1.1
-
-            pt.capture_progress = clamp(pt.capture_progress, -100.0, 100.0)
-
-            var new_owner = null
-            if pt.capture_progress >= 100.0:
-                new_owner = "Red"
-            elif pt.capture_progress <= -100.0:
-                new_owner = "Blue"
-
-            if new_owner != null and new_owner != pt.owner:
-                pt.owner = new_owner
-                if pt.has("held_time"):
-                    pt.held_time = 0.0
-                if pt.has("is_danger_zone"):
-                    pt.is_danger_zone = false
-                # Apply global buff
-                for b in balls:
-                    if b.alive and b.get("team") == new_owner:
-                        # Give buff
-                        if b.get("damage") != null:
-                            b.damage += 5.0
-                        if b.get("max_hp") != null:
-                            b.max_hp += 20.0
-                            b.hp += 20.0
-
-            if pt.get("owner") != null:
-                if pt.has("held_time"):
-                    pt.held_time += delta
-                    if pt.held_time >= 15.0:
-                        pt.is_danger_zone = true
-
-                if pt.get("is_danger_zone", false):
-                    for b in balls:
-                        if b.alive and b.ball_type != "spectator":
-                            var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
-                            if dist_sq <= pt.radius * pt.radius:
-                                if b.get("hp") != null:
-                                    b.hp -= 20.0 * delta
-                                    if b.hp <= 0:
-                                        b.alive = false
-                                        if b.has_method("set"):
-                                            b.killer = "Danger Zone"
+		points = []
+		points.append({"id": "A", "x": 300, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
+		points.append({"id": "B", "x": 500, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
+		points.append({"id": "C", "x": 700, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
 
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if alive.size() == 0:
-            if has_method("_award_skill_points"): call("_award_skill_points")
-            return "Draw"
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		for pt in points:
+			var red_count = 0
+			var blue_count = 0
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var dist_sq = (b.x - pt.x) * (b.x - pt.x) + (b.y - pt.y) * (b.y - pt.y)
+					if dist_sq <= pt.radius * pt.radius:
+						if b.get("team") == "Red":
+							red_count += 1
+						elif b.get("team") == "Blue":
+							blue_count += 1
 
-        var teams_alive = {}
-        for b in alive:
-            var t = b.get("team")
-            if t == null: t = b.ball_type
-            teams_alive[t] = true
+			if red_count > blue_count:
+				pt.capture_progress += 10.0 * delta
+				for b in balls:
+					var b_type = null
+					if "ball_type" in b: b_type = b.ball_type
+					if ("alive" in b) and b.alive and b_type != "spectator":
+						var team = ""
+						if "team" in b: team = b.team
+						if team == "Red":
+							var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
+							if dist_sq <= pt.radius*pt.radius:
+								if not ("experience" in b): b.experience = 0.0
+								if not ("level" in b): b.level = 1
+								b.experience += 5.0 * delta
+								while b.experience >= 100 * b.level:
+									b.experience -= 100 * b.level
+									b.level += 1
+									var rng = randf()
+									var stat = "max_hp"
+									if rng > 0.66: stat = "damage"
+									elif rng > 0.33: stat = "speed"
 
-        if teams_alive.size() == 1:
-            if has_method("_award_skill_points"): call("_award_skill_points")
-            return teams_alive.keys()[0]
+									if stat == "max_hp":
+										if "max_hp" in b: b.max_hp *= 1.1
+										else: b.max_hp = 110.0
+										if "hp" in b: b.hp += b.max_hp * 0.1
+										else: b.hp = b.max_hp
+										if b.hp > b.max_hp: b.hp = b.max_hp
+									elif stat == "damage":
+										if "damage" in b: b.damage *= 1.1
+										else: b.damage = 11.0
+										if "base_damage" in b: b.base_damage *= 1.1
+									elif stat == "speed":
+										if "speed" in b: b.speed *= 1.1
+										else: b.speed = 110.0
+										if "base_speed" in b: b.base_speed *= 1.1
 
-        if alive.size() == 1:
-            if has_method("_award_skill_points"): call("_award_skill_points")
-            return alive[0].ball_type
+			elif blue_count > red_count:
+				pt.capture_progress -= 10.0 * delta
+				for b in balls:
+					var b_type = null
+					if "ball_type" in b: b_type = b.ball_type
+					if ("alive" in b) and b.alive and b_type != "spectator":
+						var team = ""
+						if "team" in b: team = b.team
+						if team == "Blue":
+							var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
+							if dist_sq <= pt.radius*pt.radius:
+								if not ("experience" in b): b.experience = 0.0
+								if not ("level" in b): b.level = 1
+								b.experience += 5.0 * delta
+								while b.experience >= 100 * b.level:
+									b.experience -= 100 * b.level
+									b.level += 1
+									var rng = randf()
+									var stat = "max_hp"
+									if rng > 0.66: stat = "damage"
+									elif rng > 0.33: stat = "speed"
 
-        return null
+									if stat == "max_hp":
+										if "max_hp" in b: b.max_hp *= 1.1
+										else: b.max_hp = 110.0
+										if "hp" in b: b.hp += b.max_hp * 0.1
+										else: b.hp = b.max_hp
+										if b.hp > b.max_hp: b.hp = b.max_hp
+									elif stat == "damage":
+										if "damage" in b: b.damage *= 1.1
+										else: b.damage = 11.0
+										if "base_damage" in b: b.base_damage *= 1.1
+									elif stat == "speed":
+										if "speed" in b: b.speed *= 1.1
+										else: b.speed = 110.0
+										if "base_speed" in b: b.base_speed *= 1.1
+
+			pt.capture_progress = clamp(pt.capture_progress, -100.0, 100.0)
+
+			var new_owner = null
+			if pt.capture_progress >= 100.0:
+				new_owner = "Red"
+			elif pt.capture_progress <= -100.0:
+				new_owner = "Blue"
+
+			if new_owner != null and new_owner != pt.owner:
+				pt.owner = new_owner
+				if pt.has("held_time"):
+					pt.held_time = 0.0
+				if pt.has("is_danger_zone"):
+					pt.is_danger_zone = false
+				# Apply global buff
+				for b in balls:
+					if b.alive and b.get("team") == new_owner:
+						# Give buff
+						if b.get("damage") != null:
+							b.damage += 5.0
+						if b.get("max_hp") != null:
+							b.max_hp += 20.0
+							b.hp += 20.0
+
+			if pt.get("owner") != null:
+				if pt.has("held_time"):
+					pt.held_time += delta
+					if pt.held_time >= 15.0:
+						pt.is_danger_zone = true
+
+				if pt.get("is_danger_zone", false):
+					for b in balls:
+						if b.alive and b.ball_type != "spectator":
+							var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
+							if dist_sq <= pt.radius * pt.radius:
+								if b.get("hp") != null:
+									b.hp -= 20.0 * delta
+									if b.hp <= 0:
+										b.alive = false
+										if b.has_method("set"):
+											b.killer = "Danger Zone"
+
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
+
+		if alive.size() == 0:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = b.get("team")
+			if t == null: t = b.ball_type
+			teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return teams_alive.keys()[0]
+
+		if alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return alive[0].ball_type
+
+		return null
 
 
 class MovingZoneMode extends GameMode:
-    var tick_timer = 0.0
-    var zone_x = 500.0
-    var zone_y = 500.0
-    var zone_radius = 150.0
-    var zone_target_x = 500.0
-    var zone_target_y = 500.0
+	var tick_timer = 0.0
+	var zone_x = 500.0
+	var zone_y = 500.0
+	var zone_radius = 150.0
+	var zone_target_x = 500.0
+	var zone_target_y = 500.0
 
-    func _init() -> void:
-        name = "Moving Zone"
-        description = "Maintain position in the moving zone to score points for your team."
+	func _init() -> void:
+		name = "Moving Zone"
+		description = "Maintain position in the moving zone to score points for your team."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if b.ball_type != "spectator":
-                b.set_meta("score", 0)
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if world != null and "arena" in world and world.arena != null:
-            if "width" in world.arena: arena_width = float(world.arena.width)
-            if "height" in world.arena: arena_height = float(world.arena.height)
-        zone_x = arena_width / 2.0
-        zone_y = arena_height / 2.0
-        zone_target_x = zone_x
-        zone_target_y = zone_y
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if b.ball_type != "spectator":
+				b.set_meta("score", 0)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-        tick_timer += delta
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if world != null and "arena" in world and world.arena != null:
-            if "width" in world.arena: arena_width = float(world.arena.width)
-            if "height" in world.arena: arena_height = float(world.arena.height)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		tick_timer += delta
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
 
-        var dx = zone_target_x - zone_x
-        var dy = zone_target_y - zone_y
-        var dist = sqrt(dx*dx + dy*dy)
-        if dist > 5.0:
-            zone_x += (dx / dist) * 20.0 * delta
-            zone_y += (dy / dist) * 20.0 * delta
-        else:
-            zone_target_x = zone_radius + randf() * (arena_width - 2.0 * zone_radius)
-            zone_target_y = zone_radius + randf() * (arena_height - 2.0 * zone_radius)
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 5.0:
+			zone_x += (dx / dist) * 20.0 * delta
+			zone_y += (dy / dist) * 20.0 * delta
+		else:
+			zone_target_x = zone_radius + randf() * (arena_width - 2.0 * zone_radius)
+			zone_target_y = zone_radius + randf() * (arena_height - 2.0 * zone_radius)
 
-        if tick_timer >= 0.5:
-            tick_timer = 0.0
-            for b in balls:
-                if b.alive and b.ball_type != "spectator":
-                    var bdx = b.x - zone_x
-                    var bdy = b.y - zone_y
-                    if bdx*bdx + bdy*bdy <= zone_radius * zone_radius:
-                        var s = 0
-                        if b.has_meta("score"): s = b.get_meta("score")
-                        b.set_meta("score", s + 1)
+		if tick_timer >= 0.5:
+			tick_timer = 0.0
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var bdx = b.x - zone_x
+					var bdy = b.y - zone_y
+					if bdx*bdx + bdy*bdy <= zone_radius * zone_radius:
+						var s = 0
+						if b.has_meta("score"): s = b.get_meta("score")
+						b.set_meta("score", s + 1)
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        for b in balls:
-            if b.ball_type != "spectator":
-                var score = 0
-                if b.has_meta("score"): score = b.get_meta("score")
-                if score >= 100:
-                    if "team" in b: return b.team
-                    return b.ball_type
+		for b in balls:
+			if b.ball_type != "spectator":
+				var score = 0
+				if b.has_meta("score"): score = b.get_meta("score")
+				if score >= 100:
+					if "team" in b: return b.team
+					return b.ball_type
 
-        return null
+		return null
 
 
 
@@ -4261,277 +4353,277 @@ class DynamicHazardsMode extends GameMode:
 
 
 class PortalNodeMode extends GameMode:
-    var portal_timer: float = 0.0
-    var portal_x: float = 500.0
-    var portal_y: float = 500.0
-    var capture_radius: float = 100.0
-    var drain_rate: float = 5.0
-    var team_scores: Dictionary = {}
+	var portal_timer: float = 0.0
+	var portal_x: float = 500.0
+	var portal_y: float = 500.0
+	var capture_radius: float = 100.0
+	var drain_rate: float = 5.0
+	var team_scores: Dictionary = {}
 
-    func _init() -> void:
-        name = "Portal Node"
-        description = "Capture and hold the moving portal node."
+	func _init() -> void:
+		name = "Portal Node"
+		description = "Capture and hold the moving portal node."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        team_scores.clear()
-        for b in balls:
-            var team = "Solo"
-            if "team" in b:
-                team = b.team
-            if not team_scores.has(team):
-                team_scores[team] = 1000.0
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		team_scores.clear()
+		for b in balls:
+			var team = "Solo"
+			if "team" in b:
+				team = b.team
+			if not team_scores.has(team):
+				team_scores[team] = 1000.0
 
-        var arena_w = 1000.0
-        var arena_h = 1000.0
-        if "arena" in world and world.arena != null:
-            if "width" in world.arena:
-                arena_w = float(world.arena.width)
-            if "height" in world.arena:
-                arena_h = float(world.arena.height)
-        portal_x = arena_w / 2.0
-        portal_y = arena_h / 2.0
-        portal_timer = 0.0
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_w = float(world.arena.width)
+			if "height" in world.arena:
+				arena_h = float(world.arena.height)
+		portal_x = arena_w / 2.0
+		portal_y = arena_h / 2.0
+		portal_timer = 0.0
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        super.tick(world, balls, delta)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
 
-        portal_timer += delta
-        if portal_timer >= 10.0:
-            portal_timer = 0.0
-            var arena_w = 1000.0
-            var arena_h = 1000.0
-            if "arena" in world and world.arena != null:
-                if "width" in world.arena:
-                    arena_w = float(world.arena.width)
-                if "height" in world.arena:
-                    arena_h = float(world.arena.height)
-            portal_x = randf_range(100.0, max(100.0, arena_w - 100.0))
-            portal_y = randf_range(100.0, max(100.0, arena_h - 100.0))
-            print("Portal moved to ", portal_x, ", ", portal_y)
+		portal_timer += delta
+		if portal_timer >= 10.0:
+			portal_timer = 0.0
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if "arena" in world and world.arena != null:
+				if "width" in world.arena:
+					arena_w = float(world.arena.width)
+				if "height" in world.arena:
+					arena_h = float(world.arena.height)
+			portal_x = randf_range(100.0, max(100.0, arena_w - 100.0))
+			portal_y = randf_range(100.0, max(100.0, arena_h - 100.0))
+			print("Portal moved to ", portal_x, ", ", portal_y)
 
-        # Count balls in portal radius per team
-        var teams_in_radius: Dictionary = {}
-        for b in balls:
-            if not b.alive:
-                continue
-            var dx = b.position.x - portal_x
-            var dy = b.position.y - portal_y
-            var dist = sqrt(dx*dx + dy*dy)
-            if dist <= capture_radius:
-                var team = "Solo"
-                if "team" in b:
-                    team = b.team
-                if not teams_in_radius.has(team):
-                    teams_in_radius[team] = 0
-                teams_in_radius[team] += 1
+		# Count balls in portal radius per team
+		var teams_in_radius: Dictionary = {}
+		for b in balls:
+			if not b.alive:
+				continue
+			var dx = b.position.x - portal_x
+			var dy = b.position.y - portal_y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist <= capture_radius:
+				var team = "Solo"
+				if "team" in b:
+					team = b.team
+				if not teams_in_radius.has(team):
+					teams_in_radius[team] = 0
+				teams_in_radius[team] += 1
 
-        # If exactly one team is in the radius, they capture it and drain others
-        if teams_in_radius.size() == 1:
-            var controlling_team = teams_in_radius.keys()[0]
-            for t in team_scores.keys():
-                if t != controlling_team:
-                    team_scores[t] -= drain_rate * delta
-                    if team_scores[t] < 0:
-                        team_scores[t] = 0.0
+		# If exactly one team is in the radius, they capture it and drain others
+		if teams_in_radius.size() == 1:
+			var controlling_team = teams_in_radius.keys()[0]
+			for t in team_scores.keys():
+				if t != controlling_team:
+					team_scores[t] -= drain_rate * delta
+					if team_scores[t] < 0:
+						team_scores[t] = 0.0
 
 
 
 
 class MovingSafeZoneMode extends GameMode:
-    var zone_x: float = 500.0
-    var zone_y: float = 500.0
-    var zone_radius: float = 500.0
-    var min_zone_radius: float = 50.0
-    var shrink_rate: float = 10.0
-    var outside_damage_per_second: float = 15.0
-    var zone_target_x: float = 500.0
-    var zone_target_y: float = 500.0
-    var move_speed: float = 30.0
-    var tick_timer: float = 0.0
-    var collapse_triggered: bool = false
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 50.0
+	var shrink_rate: float = 10.0
+	var outside_damage_per_second: float = 15.0
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
+	var move_speed: float = 30.0
+	var tick_timer: float = 0.0
+	var collapse_triggered: bool = false
 
-    func _init() -> void:
-        name = "Moving Safe Zone"
-        description = "A dynamic battle royale where the safe zone not only shrinks but also moves around the map, forcing intense combat."
+	func _init() -> void:
+		name = "Moving Safe Zone"
+		description = "A dynamic battle royale where the safe zone not only shrinks but also moves around the map, forcing intense combat."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        collapse_triggered = false
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if "arena" in world and world.arena:
-            if "width" in world.arena:
-                arena_width = float(world.arena.width)
-            if "height" in world.arena:
-                arena_height = float(world.arena.height)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		collapse_triggered = false
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
 
-        zone_x = arena_width / 2.0
-        zone_y = arena_height / 2.0
-        zone_target_x = zone_x
-        zone_target_y = zone_y
-        zone_radius = min(arena_width, arena_height) / 2.0
-        min_zone_radius = 50.0
-        zone_target_x = zone_x
-        zone_target_y = zone_y
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+		zone_radius = min(arena_width, arena_height) / 2.0
+		min_zone_radius = 50.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
 
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if i >= 20:
-                b.ball_type = "spectator"
-                b.alive = false
-            else:
-                b.team = b.ball_type
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i >= 20:
+				b.ball_type = "spectator"
+				b.alive = false
+			else:
+				b.team = b.ball_type
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if "arena" in world and world.arena:
-            if "width" in world.arena:
-                arena_width = float(world.arena.width)
-            if "height" in world.arena:
-                arena_height = float(world.arena.height)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
 
-        # Move safe zone
-        var dx = zone_target_x - zone_x
-        var dy = zone_target_y - zone_y
-        var dist = sqrt(dx*dx + dy*dy)
-        if dist > 5.0:
-            zone_x += (dx / dist) * move_speed * delta
-            zone_y += (dy / dist) * move_speed * delta
-        else:
-            # Pick a new target
-            # Ensuring it drifts in a random direction and doesn't just converge on a single static point
-            var buffer = max(100.0, zone_radius * 0.5)
-            var rng = RandomNumberGenerator.new()
-            rng.randomize()
-            zone_target_x = rng.randf_range(buffer, arena_width - buffer)
-            zone_target_y = rng.randf_range(buffer, arena_height - buffer)
+		# Move safe zone
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 5.0:
+			zone_x += (dx / dist) * move_speed * delta
+			zone_y += (dy / dist) * move_speed * delta
+		else:
+			# Pick a new target
+			# Ensuring it drifts in a random direction and doesn't just converge on a single static point
+			var buffer = max(100.0, zone_radius * 0.5)
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			zone_target_x = rng.randf_range(buffer, arena_width - buffer)
+			zone_target_y = rng.randf_range(buffer, arena_height - buffer)
 
-        # Shrink safe zone
-        # Count players inside the safe zone to calculate shrink multiplier
-        var players_in_zone = 0
-        for b in balls:
-            if b.alive and b.ball_type != "spectator":
-                var b_x = b.get("position").x if b.get("position") != null else b.get("x")
-                var b_y = b.get("position").y if b.get("position") != null else b.get("y")
-                var dx_b = b_x - zone_x
-                var dy_b = b_y - zone_y
-                var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
-                if dist_b <= zone_radius:
-                    players_in_zone += 1
+		# Shrink safe zone
+		# Count players inside the safe zone to calculate shrink multiplier
+		var players_in_zone = 0
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+				var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+				var dx_b = b_x - zone_x
+				var dy_b = b_y - zone_y
+				var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
+				if dist_b <= zone_radius:
+					players_in_zone += 1
 
-        var shrink_multiplier = max(1.0, float(players_in_zone))
+		var shrink_multiplier = max(1.0, float(players_in_zone))
 
-        if zone_radius > min_zone_radius:
-            zone_radius -= shrink_rate * shrink_multiplier * delta
-            if zone_radius <= min_zone_radius:
-                zone_radius = min_zone_radius
-                if not collapse_triggered:
-                    collapse_triggered = true
-                    if world.has_method("add_event"):
-                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
-        elif collapse_triggered:
-            if zone_radius > 0:
-                zone_radius -= shrink_rate * shrink_multiplier * delta
-                if zone_radius < 0:
-                    zone_radius = 0.0
+		if zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * shrink_multiplier * delta
+			if zone_radius <= min_zone_radius:
+				zone_radius = min_zone_radius
+				if not collapse_triggered:
+					collapse_triggered = true
+					if world.has_method("add_event"):
+						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+		elif collapse_triggered:
+			if zone_radius > 0:
+				zone_radius -= shrink_rate * shrink_multiplier * delta
+				if zone_radius < 0:
+					zone_radius = 0.0
 
-            for b in balls:
-                if b.alive and b.ball_type != "spectator":
-                    var b_x = b.get("position").x if b.get("position") != null else b.get("x")
-                    var b_y = b.get("position").y if b.get("position") != null else b.get("y")
-                    var dx = zone_x - b_x
-                    var dy = zone_y - b_y
-                    var dist = sqrt(dx*dx + dy*dy)
-                    if dist > 0:
-                        var pull_strength = 2000.0
-                        if not "vx" in b: b.vx = 0.0
-                        if not "vy" in b: b.vy = 0.0
-                        b.vx += (dx / dist) * pull_strength * delta
-                        b.vy += (dy / dist) * pull_strength * delta
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+					var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+					var dx = zone_x - b_x
+					var dy = zone_y - b_y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0:
+						var pull_strength = 2000.0
+						if not "vx" in b: b.vx = 0.0
+						if not "vy" in b: b.vy = 0.0
+						b.vx += (dx / dist) * pull_strength * delta
+						b.vy += (dy / dist) * pull_strength * delta
 
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-                continue
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+				continue
 
-            var bx = b.position.x if "position" in b else b.x
-            var by = b.position.y if "position" in b else b.y
-            var bdx = bx - zone_x
-            var bdy = by - zone_y
-            var bdist = sqrt(bdx*bdx + bdy*bdy)
+			var bx = b.position.x if "position" in b else b.x
+			var by = b.position.y if "position" in b else b.y
+			var bdx = bx - zone_x
+			var bdy = by - zone_y
+			var bdist = sqrt(bdx*bdx + bdy*bdy)
 
-            if bdist > zone_radius:
-                if "hp" in b:
-                    var damage = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
-                    b.hp -= damage
+			if bdist > zone_radius:
+				if "hp" in b:
+					var damage = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
+					b.hp -= damage
 
-                    var effect_timer = 0.0
-                    if b.has_method("get_meta") and b.has_meta("danger_effect_timer"):
-                        effect_timer = b.get_meta("danger_effect_timer")
-                    effect_timer += delta
-                    if effect_timer > 0.5:
-                        effect_timer = 0.0
-                        world.add_event("danger_zone_damage", {
-                            "x": bx,
-                            "y": by
-                        })
-                    if b.has_method("set_meta"):
-                        b.set_meta("danger_effect_timer", effect_timer)
+					var effect_timer = 0.0
+					if b.has_method("get_meta") and b.has_meta("danger_effect_timer"):
+						effect_timer = b.get_meta("danger_effect_timer")
+					effect_timer += delta
+					if effect_timer > 0.5:
+						effect_timer = 0.0
+						world.add_event("danger_zone_damage", {
+							"x": bx,
+							"y": by
+						})
+					if b.has_method("set_meta"):
+						b.set_meta("danger_effect_timer", effect_timer)
 
-                    if b.hp <= 0:
-                        b.alive = false
-                        b.killer = "Danger Zone"
-                        world.add_event("danger_zone_death", {"message": b.ball_type.capitalize() + " succumbed to the danger zone!"})
+					if b.hp <= 0:
+						b.alive = false
+						b.killer = "Danger Zone"
+						world.add_event("danger_zone_death", {"message": b.ball_type.capitalize() + " succumbed to the danger zone!"})
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            var t = b.team if "team" in b else b.ball_type
-            teams_alive[t] = true
+		var teams_alive = {}
+		for b in alive:
+			var t = b.team if "team" in b else b.ball_type
+			teams_alive[t] = true
 
-        if teams_alive.size() == 1:
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
 
-        return null
+		return null
 
 
 
@@ -4577,602 +4669,602 @@ class PoisonGasZoneMode extends MovingSafeZoneMode:
 
 
 class ShrinkingDangerZoneMode extends GameMode:
-    var zone_x: float = 500.0
-    var zone_y: float = 500.0
-    var zone_radius: float = 500.0
-    var min_zone_radius: float = 50.0
-    var shrink_rate: float = 15.0
-    var outside_damage_per_second: float = 20.0
-    var collapse_triggered: bool = false
-    var zone_target_x: float = 500.0
-    var zone_target_y: float = 500.0
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 50.0
+	var shrink_rate: float = 15.0
+	var outside_damage_per_second: float = 20.0
+	var collapse_triggered: bool = false
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
 
-    func _init() -> void:
-        name = "Shrinking Danger Zone"
-        description = "A shrinking danger zone mode where the safe area slowly decreases, forcing players into close-quarters combat."
+	func _init() -> void:
+		name = "Shrinking Danger Zone"
+		description = "A shrinking danger zone mode where the safe area slowly decreases, forcing players into close-quarters combat."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        collapse_triggered = false
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if "arena" in world and world.arena:
-            if "width" in world.arena:
-                arena_width = float(world.arena.width)
-            if "height" in world.arena:
-                arena_height = float(world.arena.height)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		collapse_triggered = false
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
 
-        zone_x = arena_width / 2.0
-        zone_y = arena_height / 2.0
-        zone_radius = min(arena_width, arena_height) / 2.0
-        min_zone_radius = 50.0
-        zone_target_x = zone_x
-        zone_target_y = zone_y
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_radius = min(arena_width, arena_height) / 2.0
+		min_zone_radius = 50.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
 
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if i >= 20:
-                b.ball_type = "spectator"
-                b.alive = false
-            else:
-                b.team = b.ball_type
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i >= 20:
+				b.ball_type = "spectator"
+				b.alive = false
+			else:
+				b.team = b.ball_type
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
-        # Drift the safe zone
-        var ddx = zone_target_x - zone_x
-        var ddy = zone_target_y - zone_y
-        var ddist = sqrt(ddx*ddx + ddy*ddy)
-        if ddist > 5.0:
-            var d_move_speed = 10.0
-            zone_x += (ddx / ddist) * d_move_speed * delta
-            zone_y += (ddy / ddist) * d_move_speed * delta
-        else:
-            var arena_width = 1000.0
-            var arena_height = 1000.0
-            if world != null and "arena" in world and world.arena:
-                if "width" in world.arena:
-                    arena_width = float(world.arena.width)
-                if "height" in world.arena:
-                    arena_height = float(world.arena.height)
-            var buffer = max(100.0, zone_radius * 0.5)
-            var rng = RandomNumberGenerator.new()
-            rng.randomize()
-            zone_target_x = rng.randf_range(buffer, arena_width - buffer)
-            zone_target_y = rng.randf_range(buffer, arena_height - buffer)
+		# Drift the safe zone
+		var ddx = zone_target_x - zone_x
+		var ddy = zone_target_y - zone_y
+		var ddist = sqrt(ddx*ddx + ddy*ddy)
+		if ddist > 5.0:
+			var d_move_speed = 10.0
+			zone_x += (ddx / ddist) * d_move_speed * delta
+			zone_y += (ddy / ddist) * d_move_speed * delta
+		else:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena:
+				if "width" in world.arena:
+					arena_width = float(world.arena.width)
+				if "height" in world.arena:
+					arena_height = float(world.arena.height)
+			var buffer = max(100.0, zone_radius * 0.5)
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			zone_target_x = rng.randf_range(buffer, arena_width - buffer)
+			zone_target_y = rng.randf_range(buffer, arena_height - buffer)
 
-        # Count players inside the safe zone to calculate shrink multiplier
-        var players_in_zone = 0
-        for b in balls:
-            if b.alive and b.ball_type != "spectator":
-                var b_x = b.get("position").x if b.get("position") != null else b.get("x")
-                var b_y = b.get("position").y if b.get("position") != null else b.get("y")
-                var dx_b = b_x - zone_x
-                var dy_b = b_y - zone_y
-                var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
-                if dist_b <= zone_radius:
-                    players_in_zone += 1
+		# Count players inside the safe zone to calculate shrink multiplier
+		var players_in_zone = 0
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+				var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+				var dx_b = b_x - zone_x
+				var dy_b = b_y - zone_y
+				var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
+				if dist_b <= zone_radius:
+					players_in_zone += 1
 
-        var shrink_multiplier = max(1.0, float(players_in_zone))
+		var shrink_multiplier = max(1.0, float(players_in_zone))
 
-        # Shrink the safe zone
-        if zone_radius > min_zone_radius:
-            zone_radius -= shrink_rate * shrink_multiplier * delta
-            if zone_radius <= min_zone_radius:
-                zone_radius = min_zone_radius
-                if not collapse_triggered:
-                    collapse_triggered = true
-                    if world.has_method("add_event"):
-                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
-        elif collapse_triggered:
-            if zone_radius > 0:
-                zone_radius -= shrink_rate * shrink_multiplier * delta
-                if zone_radius < 0:
-                    zone_radius = 0.0
+		# Shrink the safe zone
+		if zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * shrink_multiplier * delta
+			if zone_radius <= min_zone_radius:
+				zone_radius = min_zone_radius
+				if not collapse_triggered:
+					collapse_triggered = true
+					if world.has_method("add_event"):
+						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+		elif collapse_triggered:
+			if zone_radius > 0:
+				zone_radius -= shrink_rate * shrink_multiplier * delta
+				if zone_radius < 0:
+					zone_radius = 0.0
 
-            for b in balls:
-                if b.alive and b.ball_type != "spectator":
-                    var b_x = b.get("position").x if b.get("position") != null else b.get("x")
-                    var b_y = b.get("position").y if b.get("position") != null else b.get("y")
-                    var dx = zone_x - b_x
-                    var dy = zone_y - b_y
-                    var dist = sqrt(dx*dx + dy*dy)
-                    if dist > 0:
-                        var pull_strength = 2000.0
-                        if not "vx" in b: b.vx = 0.0
-                        if not "vy" in b: b.vy = 0.0
-                        b.vx += (dx / dist) * pull_strength * delta
-                        b.vy += (dy / dist) * pull_strength * delta
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+					var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+					var dx = zone_x - b_x
+					var dy = zone_y - b_y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0:
+						var pull_strength = 2000.0
+						if not "vx" in b: b.vx = 0.0
+						if not "vy" in b: b.vy = 0.0
+						b.vx += (dx / dist) * pull_strength * delta
+						b.vy += (dy / dist) * pull_strength * delta
 
-        # Apply continuous damage outside the safe zone
-        var arena_width_for_dmg = 1000.0
-        var arena_height_for_dmg = 1000.0
-        if "arena" in world and world.arena:
-            if "width" in world.arena: arena_width_for_dmg = float(world.arena.width)
-            if "height" in world.arena: arena_height_for_dmg = float(world.arena.height)
+		# Apply continuous damage outside the safe zone
+		var arena_width_for_dmg = 1000.0
+		var arena_height_for_dmg = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena: arena_width_for_dmg = float(world.arena.width)
+			if "height" in world.arena: arena_height_for_dmg = float(world.arena.height)
 
-        var max_arena_dim = max(arena_width_for_dmg, arena_height_for_dmg)
-        var shrink_ratio = max(0.0, min(1.0, 1.0 - (zone_radius / max_arena_dim)))
-        var base_dmg = outside_damage_per_second + (shrink_ratio * outside_damage_per_second * 4.0)
-        var damage_this_tick = base_dmg * (10.0 if collapse_triggered else 1.0) * delta
-        for b in balls:
-            if b.alive and b.ball_type != "spectator":
-                var dx = b.x - zone_x
-                var dy = b.y - zone_y
-                var dist = sqrt(dx*dx + dy*dy)
+		var max_arena_dim = max(arena_width_for_dmg, arena_height_for_dmg)
+		var shrink_ratio = max(0.0, min(1.0, 1.0 - (zone_radius / max_arena_dim)))
+		var base_dmg = outside_damage_per_second + (shrink_ratio * outside_damage_per_second * 4.0)
+		var damage_this_tick = base_dmg * (10.0 if collapse_triggered else 1.0) * delta
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var dx = b.x - zone_x
+				var dy = b.y - zone_y
+				var dist = sqrt(dx*dx + dy*dy)
 
-                if dist > zone_radius:
-                    b.hp -= damage_this_tick
-                    if b.hp <= 0:
-                        b.alive = false
-                        b.hp = 0
+				if dist > zone_radius:
+					b.hp -= damage_this_tick
+					if b.hp <= 0:
+						b.alive = false
+						b.hp = 0
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.get("alive", false) and b.get("ball_type", "") != "spectator":
-                alive.append(b)
-        if alive.is_empty():
-            return "Draw"
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+				alive.append(b)
+		if alive.is_empty():
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            var team = b.get("team") if b.get("team") != null else b.get("ball_type")
-            teams_alive[team] = true
+		var teams_alive = {}
+		for b in alive:
+			var team = b.get("team") if b.get("team") != null else b.get("ball_type")
+			teams_alive[team] = true
 
-        if teams_alive.size() == 1:
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
 
-        if alive.size() == 1:
-            return alive[0].get("team", alive[0].get("ball_type"))
+		if alive.size() == 1:
+			return alive[0].get("team", alive[0].get("ball_type"))
 
-        return null
+		return null
 
 class ModifierZonesSafeZoneMode extends GameMode:
-    var zone_x: float = 500.0
-    var zone_y: float = 500.0
-    var zone_radius: float = 500.0
-    var min_zone_radius: float = 50.0
-    var shrink_rate: float = 10.0
-    var outside_damage_per_second: float = 10.0
-    var zone_target_x: float = 500.0
-    var zone_target_y: float = 500.0
-    var collapse_triggered: bool = false
-    var zones: Array = []
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 50.0
+	var shrink_rate: float = 10.0
+	var outside_damage_per_second: float = 10.0
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
+	var collapse_triggered: bool = false
+	var zones: Array = []
 
-    func _init() -> void:
-        name = "Modifier Zones Safe Zone"
-        description = "The safe zone shrinks, and modifier zones spawn near its center, forcing players to fight for buffs."
+	func _init() -> void:
+		name = "Modifier Zones Safe Zone"
+		description = "The safe zone shrinks, and modifier zones spawn near its center, forcing players to fight for buffs."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        collapse_triggered = false
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if "arena" in world and world.arena:
-            if "width" in world.arena:
-                arena_width = float(world.arena.width)
-            if "height" in world.arena:
-                arena_height = float(world.arena.height)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		collapse_triggered = false
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
 
-        zone_x = arena_width / 2.0
-        zone_y = arena_height / 2.0
-        zone_target_x = zone_x
-        zone_target_y = zone_y
-        zone_radius = min(arena_width, arena_height) / 2.0
-        min_zone_radius = 50.0
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+		zone_radius = min(arena_width, arena_height) / 2.0
+		min_zone_radius = 50.0
 
-        zones = [
-            {"id": "zone_speed", "x": zone_x - 100, "y": zone_y - 100, "radius": 75.0, "type": "speed"},
-            {"id": "zone_damage", "x": zone_x + 100, "y": zone_y - 100, "radius": 75.0, "type": "damage"},
-            {"id": "zone_heal", "x": zone_x, "y": zone_y + 100, "radius": 75.0, "type": "heal"},
-            {"id": "zone_debuff", "x": zone_x, "y": zone_y, "radius": 75.0, "type": "debuff"}
-        ]
+		zones = [
+			{"id": "zone_speed", "x": zone_x - 100, "y": zone_y - 100, "radius": 75.0, "type": "speed"},
+			{"id": "zone_damage", "x": zone_x + 100, "y": zone_y - 100, "radius": 75.0, "type": "damage"},
+			{"id": "zone_heal", "x": zone_x, "y": zone_y + 100, "radius": 75.0, "type": "heal"},
+			{"id": "zone_debuff", "x": zone_x, "y": zone_y, "radius": 75.0, "type": "debuff"}
+		]
 
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if i >= 20:
-                b.ball_type = "spectator"
-                b.alive = false
-            else:
-                b.team = b.ball_type
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i >= 20:
+				b.ball_type = "spectator"
+				b.alive = false
+			else:
+				b.team = b.ball_type
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
-        var dx = zone_target_x - zone_x
-        var dy = zone_target_y - zone_y
-        var dist_zone = sqrt(dx*dx + dy*dy)
-        if dist_zone > 5.0:
-            var move_speed = 15.0
-            zone_x += (dx / dist_zone) * move_speed * delta
-            zone_y += (dy / dist_zone) * move_speed * delta
-        else:
-            var arena_width = 1000.0
-            var arena_height = 1000.0
-            if world != null and "arena" in world and world.arena:
-                if "width" in world.arena:
-                    arena_width = float(world.arena.width)
-                if "height" in world.arena:
-                    arena_height = float(world.arena.height)
-            var buffer = max(100.0, zone_radius * 0.5)
-            zone_target_x = randf_range(buffer, arena_width - buffer)
-            zone_target_y = randf_range(buffer, arena_height - buffer)
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist_zone = sqrt(dx*dx + dy*dy)
+		if dist_zone > 5.0:
+			var move_speed = 15.0
+			zone_x += (dx / dist_zone) * move_speed * delta
+			zone_y += (dy / dist_zone) * move_speed * delta
+		else:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena:
+				if "width" in world.arena:
+					arena_width = float(world.arena.width)
+				if "height" in world.arena:
+					arena_height = float(world.arena.height)
+			var buffer = max(100.0, zone_radius * 0.5)
+			zone_target_x = randf_range(buffer, arena_width - buffer)
+			zone_target_y = randf_range(buffer, arena_height - buffer)
 
-        if zone_radius > min_zone_radius:
-            zone_radius -= shrink_rate * delta
-            if zone_radius <= min_zone_radius:
-                zone_radius = min_zone_radius
-                if not collapse_triggered:
-                    collapse_triggered = true
-                    if world.has_method("add_event"):
-                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
-        elif collapse_triggered:
-            if zone_radius > 0:
-                zone_radius -= shrink_rate * delta
-                if zone_radius < 0:
-                    zone_radius = 0.0
+		if zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * delta
+			if zone_radius <= min_zone_radius:
+				zone_radius = min_zone_radius
+				if not collapse_triggered:
+					collapse_triggered = true
+					if world.has_method("add_event"):
+						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+		elif collapse_triggered:
+			if zone_radius > 0:
+				zone_radius -= shrink_rate * delta
+				if zone_radius < 0:
+					zone_radius = 0.0
 
-            for b in balls:
-                if b.alive and b.ball_type != "spectator":
-                    var b_x = b.get("position").x if b.get("position") != null else b.get("x")
-                    var b_y = b.get("position").y if b.get("position") != null else b.get("y")
-                    var dx_pull = zone_x - b_x
-                    var dy_pull = zone_y - b_y
-                    var dist_pull = sqrt(dx_pull*dx_pull + dy_pull*dy_pull)
-                    if dist_pull > 0:
-                        var pull_strength = 2000.0
-                        if not "vx" in b: b.vx = 0.0
-                        if not "vy" in b: b.vy = 0.0
-                        b.vx += (dx_pull / dist_pull) * pull_strength * delta
-                        b.vy += (dy_pull / dist_pull) * pull_strength * delta
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+					var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+					var dx_pull = zone_x - b_x
+					var dy_pull = zone_y - b_y
+					var dist_pull = sqrt(dx_pull*dx_pull + dy_pull*dy_pull)
+					if dist_pull > 0:
+						var pull_strength = 2000.0
+						if not "vx" in b: b.vx = 0.0
+						if not "vy" in b: b.vy = 0.0
+						b.vx += (dx_pull / dist_pull) * pull_strength * delta
+						b.vy += (dy_pull / dist_pull) * pull_strength * delta
 
-        if zones.size() >= 4:
-            zones[0]["x"] = zone_x - 100
-            zones[0]["y"] = zone_y - 100
-            zones[1]["x"] = zone_x + 100
-            zones[1]["y"] = zone_y - 100
-            zones[2]["x"] = zone_x
-            zones[2]["y"] = zone_y + 100
-            zones[3]["x"] = zone_x
-            zones[3]["y"] = zone_y
+		if zones.size() >= 4:
+			zones[0]["x"] = zone_x - 100
+			zones[0]["y"] = zone_y - 100
+			zones[1]["x"] = zone_x + 100
+			zones[1]["y"] = zone_y - 100
+			zones[2]["x"] = zone_x
+			zones[2]["y"] = zone_y + 100
+			zones[3]["x"] = zone_x
+			zones[3]["y"] = zone_y
 
-        var damage_this_tick = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
+		var damage_this_tick = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
 
-        for b in balls:
-            if not b.alive or b.ball_type == "spectator":
-                continue
+		for b in balls:
+			if not b.alive or b.ball_type == "spectator":
+				continue
 
-            if not b.has_meta("base_speed"):
-                b.set_meta("base_speed", b.get("speed") if b.get("speed") != null else 100.0)
-            if not b.has_meta("base_damage"):
-                b.set_meta("base_damage", b.get("damage") if b.get("damage") != null else 10.0)
+			if not b.has_meta("base_speed"):
+				b.set_meta("base_speed", b.get("speed") if b.get("speed") != null else 100.0)
+			if not b.has_meta("base_damage"):
+				b.set_meta("base_damage", b.get("damage") if b.get("damage") != null else 10.0)
 
-            var in_speed_zone = false
-            var in_damage_zone = false
-            var in_heal_zone = false
-            var in_debuff_zone = false
+			var in_speed_zone = false
+			var in_damage_zone = false
+			var in_heal_zone = false
+			var in_debuff_zone = false
 
-            var b_x = b.get("position").x if b.get("position") != null else b.get("x")
-            var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+			var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+			var b_y = b.get("position").y if b.get("position") != null else b.get("y")
 
-            for zone in zones:
-                var dx_z = b_x - zone["x"]
-                var dy_z = b_y - zone["y"]
-                var dist_z = sqrt(dx_z*dx_z + dy_z*dy_z)
+			for zone in zones:
+				var dx_z = b_x - zone["x"]
+				var dy_z = b_y - zone["y"]
+				var dist_z = sqrt(dx_z*dx_z + dy_z*dy_z)
 
-                if dist_z <= zone["radius"]:
-                    if zone["type"] == "speed":
-                        in_speed_zone = true
-                    elif zone["type"] == "damage":
-                        in_damage_zone = true
-                    elif zone["type"] == "heal":
-                        in_heal_zone = true
-                    elif zone["type"] == "debuff":
-                        in_debuff_zone = true
+				if dist_z <= zone["radius"]:
+					if zone["type"] == "speed":
+						in_speed_zone = true
+					elif zone["type"] == "damage":
+						in_damage_zone = true
+					elif zone["type"] == "heal":
+						in_heal_zone = true
+					elif zone["type"] == "debuff":
+						in_debuff_zone = true
 
-            if in_speed_zone:
-                b.speed = b.get_meta("base_speed") * 1.5
-                b.set_meta("zone_modifier_speed", true)
-            else:
-                if b.has_meta("zone_modifier_speed"):
-                    b.speed = b.get_meta("base_speed")
-                    b.remove_meta("zone_modifier_speed")
+			if in_speed_zone:
+				b.speed = b.get_meta("base_speed") * 1.5
+				b.set_meta("zone_modifier_speed", true)
+			else:
+				if b.has_meta("zone_modifier_speed"):
+					b.speed = b.get_meta("base_speed")
+					b.remove_meta("zone_modifier_speed")
 
-            if in_damage_zone:
-                b.damage = b.get_meta("base_damage") * 1.5
-                b.set_meta("zone_modifier_damage", true)
-            else:
-                if b.has_meta("zone_modifier_damage"):
-                    b.damage = b.get_meta("base_damage")
-                    b.remove_meta("zone_modifier_damage")
+			if in_damage_zone:
+				b.damage = b.get_meta("base_damage") * 1.5
+				b.set_meta("zone_modifier_damage", true)
+			else:
+				if b.has_meta("zone_modifier_damage"):
+					b.damage = b.get_meta("base_damage")
+					b.remove_meta("zone_modifier_damage")
 
-            if in_debuff_zone:
-                if not b.has_meta("base_max_hp"):
-                    b.set_meta("base_max_hp", b.get("max_hp") if b.get("max_hp") != null else 100.0)
-                b.max_hp = b.get_meta("base_max_hp") * 0.5
-                if b.get("hp", 0) > b.max_hp:
-                    b.hp = b.max_hp
-                b.set_meta("zone_modifier_debuff", true)
-            else:
-                if b.has_meta("zone_modifier_debuff"):
-                    if b.has_meta("base_max_hp"):
-                        b.max_hp = b.get_meta("base_max_hp")
-                    b.remove_meta("zone_modifier_debuff")
+			if in_debuff_zone:
+				if not b.has_meta("base_max_hp"):
+					b.set_meta("base_max_hp", b.get("max_hp") if b.get("max_hp") != null else 100.0)
+				b.max_hp = b.get_meta("base_max_hp") * 0.5
+				if b.get("hp", 0) > b.max_hp:
+					b.hp = b.max_hp
+				b.set_meta("zone_modifier_debuff", true)
+			else:
+				if b.has_meta("zone_modifier_debuff"):
+					if b.has_meta("base_max_hp"):
+						b.max_hp = b.get_meta("base_max_hp")
+					b.remove_meta("zone_modifier_debuff")
 
-            if in_heal_zone:
-                if "hp" in b and "max_hp" in b:
-                    b.hp = min(b.get("max_hp") if b.get("max_hp") != null else 100.0, b.hp + 20.0 * delta)
+			if in_heal_zone:
+				if "hp" in b and "max_hp" in b:
+					b.hp = min(b.get("max_hp") if b.get("max_hp") != null else 100.0, b.hp + 20.0 * delta)
 
-            var dx_s = b_x - zone_x
-            var dy_s = b_y - zone_y
-            var dist_s = sqrt(dx_s*dx_s + dy_s*dy_s)
-            if dist_s > zone_radius:
-                b.hp -= damage_this_tick
-                if b.hp <= 0:
-                    b.alive = false
-                    b.hp = 0
+			var dx_s = b_x - zone_x
+			var dy_s = b_y - zone_y
+			var dist_s = sqrt(dx_s*dx_s + dy_s*dy_s)
+			if dist_s > zone_radius:
+				b.hp -= damage_this_tick
+				if b.hp <= 0:
+					b.alive = false
+					b.hp = 0
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            if self.has_method("_award_skill_points"):
-                self.call("_award_skill_points")
-            return "Draw"
+		if alive.size() == 0:
+			if self.has_method("_award_skill_points"):
+				self.call("_award_skill_points")
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            var team = b.ball_type
-            if b.has_method("get") or "team" in b:
-                team = b.team
-            teams_alive[team] = true
+		var teams_alive = {}
+		for b in alive:
+			var team = b.ball_type
+			if b.has_method("get") or "team" in b:
+				team = b.team
+			teams_alive[team] = true
 
-        if teams_alive.size() == 1:
-            if self.has_method("_award_skill_points"):
-                self.call("_award_skill_points")
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			if self.has_method("_award_skill_points"):
+				self.call("_award_skill_points")
+			return teams_alive.keys()[0]
 
-        if alive.size() == 1:
-            if self.has_method("_award_skill_points"):
-                self.call("_award_skill_points")
-            var ret = alive[0].ball_type
-            if alive[0].has_method("get") or "team" in alive[0]:
-                ret = alive[0].team
-            return ret
+		if alive.size() == 1:
+			if self.has_method("_award_skill_points"):
+				self.call("_award_skill_points")
+			var ret = alive[0].ball_type
+			if alive[0].has_method("get") or "team" in alive[0]:
+				ret = alive[0].team
+			return ret
 
-        return null
+		return null
 
 
 class SafeZoneMode extends GameMode:
-    var zone_x: float = 500.0
-    var zone_y: float = 500.0
-    var zone_radius: float = 500.0
-    var min_zone_radius: float = 50.0
-    var shrink_rate: float = 10.0
-    var outside_damage_per_second: float = 10.0
-    var zone_target_x: float = 500.0
-    var zone_target_y: float = 500.0
-    var collapse_triggered: bool = false
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 50.0
+	var shrink_rate: float = 10.0
+	var outside_damage_per_second: float = 10.0
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
+	var collapse_triggered: bool = false
 
-    func _init() -> void:
-        name = "Safe Zone"
-        description = "A battle royale mode where the safe zone gradually shrinks, and balls take continuous damage outside of it."
+	func _init() -> void:
+		name = "Safe Zone"
+		description = "A battle royale mode where the safe zone gradually shrinks, and balls take continuous damage outside of it."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        collapse_triggered = false
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if "arena" in world and world.arena:
-            if "width" in world.arena:
-                arena_width = float(world.arena.width)
-            if "height" in world.arena:
-                arena_height = float(world.arena.height)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		collapse_triggered = false
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
 
-        zone_x = arena_width / 2.0
-        zone_y = arena_height / 2.0
-        zone_target_x = zone_x
-        zone_target_y = zone_y
-        zone_radius = min(arena_width, arena_height) / 2.0
-        min_zone_radius = 50.0
-        zone_target_x = zone_x
-        zone_target_y = zone_y
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+		zone_radius = min(arena_width, arena_height) / 2.0
+		min_zone_radius = 50.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
 
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if i >= 20:
-                b.ball_type = "spectator"
-                b.alive = false
-            else:
-                b.team = b.ball_type
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i >= 20:
+				b.ball_type = "spectator"
+				b.alive = false
+			else:
+				b.team = b.ball_type
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
-        # Move the safe zone
-        var dx = zone_target_x - zone_x
-        var dy = zone_target_y - zone_y
-        var dist = sqrt(dx*dx + dy*dy)
-        if dist > 5.0:
-            var move_speed = 15.0 # pixels per second
-            zone_x += (dx / dist) * move_speed * delta
-            zone_y += (dy / dist) * move_speed * delta
-        else:
-            # Pick a new target
-            # Ensuring it drifts in a random direction and doesn't just converge on a single static point
-            var arena_width = 1000.0
-            var arena_height = 1000.0
-            if world != null and "arena" in world and world.arena:
-                if "width" in world.arena:
-                    arena_width = float(world.arena.width)
-                if "height" in world.arena:
-                    arena_height = float(world.arena.height)
-            var buffer = max(100.0, zone_radius * 0.5)
-            zone_target_x = randf_range(buffer, arena_width - buffer)
-            zone_target_y = randf_range(buffer, arena_height - buffer)
+		# Move the safe zone
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 5.0:
+			var move_speed = 15.0 # pixels per second
+			zone_x += (dx / dist) * move_speed * delta
+			zone_y += (dy / dist) * move_speed * delta
+		else:
+			# Pick a new target
+			# Ensuring it drifts in a random direction and doesn't just converge on a single static point
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena:
+				if "width" in world.arena:
+					arena_width = float(world.arena.width)
+				if "height" in world.arena:
+					arena_height = float(world.arena.height)
+			var buffer = max(100.0, zone_radius * 0.5)
+			zone_target_x = randf_range(buffer, arena_width - buffer)
+			zone_target_y = randf_range(buffer, arena_height - buffer)
 
-        # Shrink the safe zone
-        if zone_radius > min_zone_radius:
-            zone_radius -= shrink_rate * delta
-            if zone_radius <= min_zone_radius:
-                zone_radius = min_zone_radius
-                if not collapse_triggered:
-                    collapse_triggered = true
-                    if world.has_method("add_event"):
-                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
-        elif collapse_triggered:
-            if zone_radius > 0:
-                zone_radius -= shrink_rate * delta
-                if zone_radius < 0:
-                    zone_radius = 0.0
+		# Shrink the safe zone
+		if zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * delta
+			if zone_radius <= min_zone_radius:
+				zone_radius = min_zone_radius
+				if not collapse_triggered:
+					collapse_triggered = true
+					if world.has_method("add_event"):
+						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+		elif collapse_triggered:
+			if zone_radius > 0:
+				zone_radius -= shrink_rate * delta
+				if zone_radius < 0:
+					zone_radius = 0.0
 
-            for b in balls:
-                if b.alive and b.ball_type != "spectator":
-                    var b_x = b.get("position").x if b.get("position") != null else b.get("x")
-                    var b_y = b.get("position").y if b.get("position") != null else b.get("y")
-                    var dx = zone_x - b_x
-                    var dy = zone_y - b_y
-                    var dist = sqrt(dx*dx + dy*dy)
-                    if dist > 0:
-                        var pull_strength = 2000.0
-                        if not "vx" in b: b.vx = 0.0
-                        if not "vy" in b: b.vy = 0.0
-                        b.vx += (dx / dist) * pull_strength * delta
-                        b.vy += (dy / dist) * pull_strength * delta
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+					var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+					var dx = zone_x - b_x
+					var dy = zone_y - b_y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0:
+						var pull_strength = 2000.0
+						if not "vx" in b: b.vx = 0.0
+						if not "vy" in b: b.vy = 0.0
+						b.vx += (dx / dist) * pull_strength * delta
+						b.vy += (dy / dist) * pull_strength * delta
 
-        # Apply continuous damage outside the safe zone
-        var arena_width_for_dmg = 1000.0
-        var arena_height_for_dmg = 1000.0
-        if "arena" in world and world.arena:
-            if "width" in world.arena: arena_width_for_dmg = float(world.arena.width)
-            if "height" in world.arena: arena_height_for_dmg = float(world.arena.height)
+		# Apply continuous damage outside the safe zone
+		var arena_width_for_dmg = 1000.0
+		var arena_height_for_dmg = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena: arena_width_for_dmg = float(world.arena.width)
+			if "height" in world.arena: arena_height_for_dmg = float(world.arena.height)
 
-        var max_arena_dim = max(arena_width_for_dmg, arena_height_for_dmg)
-        var shrink_ratio = max(0.0, min(1.0, 1.0 - (zone_radius / max_arena_dim)))
-        var base_dmg = outside_damage_per_second + (shrink_ratio * outside_damage_per_second * 4.0)
-        var damage_this_tick = base_dmg * (10.0 if collapse_triggered else 1.0) * delta
-        for b in balls:
-            if b.alive and b.ball_type != "spectator":
-                var dx = b.x - zone_x
-                var dy = b.y - zone_y
-                var dist = sqrt(dx*dx + dy*dy)
+		var max_arena_dim = max(arena_width_for_dmg, arena_height_for_dmg)
+		var shrink_ratio = max(0.0, min(1.0, 1.0 - (zone_radius / max_arena_dim)))
+		var base_dmg = outside_damage_per_second + (shrink_ratio * outside_damage_per_second * 4.0)
+		var damage_this_tick = base_dmg * (10.0 if collapse_triggered else 1.0) * delta
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var dx = b.x - zone_x
+				var dy = b.y - zone_y
+				var dist = sqrt(dx*dx + dy*dy)
 
-                # If outside safe zone, take damage
-                if dist > zone_radius:
-                    b.hp -= damage_this_tick
-                    if b.hp <= 0:
-                        b.alive = false
-                        b.hp = 0
+				# If outside safe zone, take damage
+				if dist > zone_radius:
+					b.hp -= damage_this_tick
+					if b.hp <= 0:
+						b.alive = false
+						b.hp = 0
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            _award_skill_points()
-            return "Draw"
+		if alive.size() == 0:
+			_award_skill_points()
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            var team = b.ball_type
-            if b.has_method("get") or "team" in b:
-                team = b.team
-            teams_alive[team] = true
+		var teams_alive = {}
+		for b in alive:
+			var team = b.ball_type
+			if b.has_method("get") or "team" in b:
+				team = b.team
+			teams_alive[team] = true
 
-        if teams_alive.size() == 1:
-            _award_skill_points()
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			_award_skill_points()
+			return teams_alive.keys()[0]
 
-        return null
+		return null
 
-    func _award_skill_points():
-        pass
+	func _award_skill_points():
+		pass
 
 
 
@@ -5428,321 +5520,321 @@ class CloneChaosMode extends GameMode:
 								world.balls.append(clone)
 
 class SumoKnockoutMode extends GameMode:
-    var zone_x: float = 500.0
-    var zone_y: float = 500.0
-    var zone_radius: float = 500.0
-    var min_zone_radius: float = 100.0
-    var shrink_rate: float = 15.0
-    var outside_damage_per_second: float = 20.0
-    var tick_timer: float = 0.0
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 100.0
+	var shrink_rate: float = 15.0
+	var outside_damage_per_second: float = 20.0
+	var tick_timer: float = 0.0
 
-    func _init() -> void:
-        name = "Sumo Knockout"
-        description = "A physics-based mutator where collisions between balls deal minimal damage but apply massive knockback. The arena gradually shrinks towards a central spike pit."
+	func _init() -> void:
+		name = "Sumo Knockout"
+		description = "A physics-based mutator where collisions between balls deal minimal damage but apply massive knockback. The arena gradually shrinks towards a central spike pit."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        var arena_width = 1000.0
-        var arena_height = 1000.0
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
 
-        if "arena" in world and world.arena:
-            if "width" in world.arena: arena_width = world.arena.width
-            if "height" in world.arena: arena_height = world.arena.height
-        elif "width" in world:
-            arena_width = world.width
-            arena_height = world.height
+		if "arena" in world and world.arena:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+		elif "width" in world:
+			arena_width = world.width
+			arena_height = world.height
 
-        zone_x = arena_width / 2.0
-        zone_y = arena_height / 2.0
-        zone_radius = min(arena_width, arena_height) / 2.0
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_radius = min(arena_width, arena_height) / 2.0
 
-        if "arena" in world and world.arena and "hazards" in world.arena:
-            var hazard_class = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
-            if not hazard_class:
-                # Mock if load fails
-                var h = {"id": "sumo_spike_pit", "x": zone_x, "y": zone_y, "radius": 80.0, "kind": "spike_pit", "damage": 50.0}
-                world.arena.hazards.append(h)
-            else:
-                var spike_pit = hazard_class.new("sumo_spike_pit", zone_x, zone_y, "spike_pit", 80.0)
-                spike_pit.damage = 50.0
-                world.arena.hazards.append(spike_pit)
+		if "arena" in world and world.arena and "hazards" in world.arena:
+			var hazard_class = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+			if not hazard_class:
+				# Mock if load fails
+				var h = {"id": "sumo_spike_pit", "x": zone_x, "y": zone_y, "radius": 80.0, "kind": "spike_pit", "damage": 50.0}
+				world.arena.hazards.append(h)
+			else:
+				var spike_pit = hazard_class.new("sumo_spike_pit", zone_x, zone_y, "spike_pit", 80.0)
+				spike_pit.damage = 50.0
+				world.arena.hazards.append(spike_pit)
 
-        for b in balls:
-            b.damage = 1.0
+		for b in balls:
+			b.damage = 1.0
 
-            var mutators = []
-            if "mutators" in b:
-                mutators = b.mutators
-            elif b.has_method("get_meta") and b.has_meta("mutators"):
-                mutators = b.get_meta("mutators")
+			var mutators = []
+			if "mutators" in b:
+				mutators = b.mutators
+			elif b.has_method("get_meta") and b.has_meta("mutators"):
+				mutators = b.get_meta("mutators")
 
-            if not mutators.has("bumper_balls"):
-                mutators.append("bumper_balls")
+			if not mutators.has("bumper_balls"):
+				mutators.append("bumper_balls")
 
-            if b.has_method("set_meta"):
-                b.set_meta("mutators", mutators)
-            else:
-                b.mutators = mutators
+			if b.has_method("set_meta"):
+				b.set_meta("mutators", mutators)
+			else:
+				b.mutators = mutators
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        tick_timer += delta
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		tick_timer += delta
 
-        zone_radius -= shrink_rate * delta
-        if zone_radius < min_zone_radius:
-            zone_radius = min_zone_radius
+		zone_radius -= shrink_rate * delta
+		if zone_radius < min_zone_radius:
+			zone_radius = min_zone_radius
 
-        for b in balls:
-            if ("alive" in b and not b.alive) or (b.has_method("get_meta") and b.has_meta("alive") and not b.get_meta("alive")):
-                continue
+		for b in balls:
+			if ("alive" in b and not b.alive) or (b.has_method("get_meta") and b.has_meta("alive") and not b.get_meta("alive")):
+				continue
 
-            var bx = b.x if "x" in b else 0.0
-            var by = b.y if "y" in b else 0.0
+			var bx = b.x if "x" in b else 0.0
+			var by = b.y if "y" in b else 0.0
 
-            var dx = bx - zone_x
-            var dy = by - zone_y
-            var dist = sqrt(dx*dx + dy*dy)
+			var dx = bx - zone_x
+			var dy = by - zone_y
+			var dist = sqrt(dx*dx + dy*dy)
 
-            if dist > zone_radius:
-                if "hp" in b:
-                    b.hp -= outside_damage_per_second * delta
-                    if b.hp <= 0:
-                        b.hp = 0
-                        b.alive = false
-                        if "time_since_death" in b:
-                            b.time_since_death = 0.0
+			if dist > zone_radius:
+				if "hp" in b:
+					b.hp -= outside_damage_per_second * delta
+					if b.hp <= 0:
+						b.hp = 0
+						b.alive = false
+						if "time_since_death" in b:
+							b.time_since_death = 0.0
 
-        if tick_timer > 0.5:
-            tick_timer = 0.0
-            if world.has_method("add_event"):
-                world.add_event("zone_shrink_update", {"zone_x": zone_x, "zone_y": zone_y, "radius": zone_radius})
+		if tick_timer > 0.5:
+			tick_timer = 0.0
+			if world.has_method("add_event"):
+				world.add_event("zone_shrink_update", {"zone_x": zone_x, "zone_y": zone_y, "radius": zone_radius})
 
 class BumperBallsMode extends GameMode:
-    func _init() -> void:
-        name = "Bumper Balls"
-        description = "Balls deal zero damage but bounce each other with much higher knockback. Try to push opponents off the arena!"
+	func _init() -> void:
+		name = "Bumper Balls"
+		description = "Balls deal zero damage but bounce each other with much higher knockback. Try to push opponents off the arena!"
 
-    func setup(world, balls: Array) -> void:
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            var sponsor = ""
-            if "sponsor" in b:
-                sponsor = b.sponsor
-            elif b.has_method("get_meta") and b.has_meta("sponsor"):
-                sponsor = b.get_meta("sponsor")
+	func setup(world, balls: Array) -> void:
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			var sponsor = ""
+			if "sponsor" in b:
+				sponsor = b.sponsor
+			elif b.has_method("get_meta") and b.has_meta("sponsor"):
+				sponsor = b.get_meta("sponsor")
 
-            if sponsor == "aggressor":
-                if "max_hp" in b:
-                    b.max_hp *= 0.8
-                    if "hp" in b: b.hp = min(b.hp, b.max_hp)
-            elif sponsor == "juggernaut":
-                if "speed" in b: b.speed *= 0.8
-                if "base_speed" in b: b.base_speed *= 0.8
-                elif b.has_method("set_meta") and b.has_meta("base_speed"):
-                    b.set_meta("base_speed", float(b.get_meta("base_speed")) * 0.8)
-            elif sponsor == "vampiric":
-                if "max_hp" in b:
-                    b.max_hp *= 0.9
-                    if "hp" in b: b.hp = min(b.hp, b.max_hp)
-        for b in balls:
-            b.damage = 0.0
-            if not b.has_meta("mutators"):
-                b.set_meta("mutators", [])
-            var mutators = b.get_meta("mutators")
-            if not mutators.has("bumper_balls"):
-                mutators.append("bumper_balls")
-                b.set_meta("mutators", mutators)
+			if sponsor == "aggressor":
+				if "max_hp" in b:
+					b.max_hp *= 0.8
+					if "hp" in b: b.hp = min(b.hp, b.max_hp)
+			elif sponsor == "juggernaut":
+				if "speed" in b: b.speed *= 0.8
+				if "base_speed" in b: b.base_speed *= 0.8
+				elif b.has_method("set_meta") and b.has_meta("base_speed"):
+					b.set_meta("base_speed", float(b.get_meta("base_speed")) * 0.8)
+			elif sponsor == "vampiric":
+				if "max_hp" in b:
+					b.max_hp *= 0.9
+					if "hp" in b: b.hp = min(b.hp, b.max_hp)
+		for b in balls:
+			b.damage = 0.0
+			if not b.has_meta("mutators"):
+				b.set_meta("mutators", [])
+			var mutators = b.get_meta("mutators")
+			if not mutators.has("bumper_balls"):
+				mutators.append("bumper_balls")
+				b.set_meta("mutators", mutators)
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if "arena" in world and world.arena != null:
-            if "width" in world.arena:
-                arena_width = world.arena.width
-            if "height" in world.arena:
-                arena_height = world.arena.height
-        elif "width" in world:
-            arena_width = world.width
-            arena_height = world.height
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+		elif "width" in world:
+			arena_width = world.width
+			arena_height = world.height
 
-        for b in balls:
-            if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
-                continue
+		for b in balls:
+			if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
+				continue
 
-            var radius = b.get("radius", 10.0)
-            if b.x < -radius or b.x > arena_width + radius or b.y < -radius or b.y > arena_height + radius:
-                if b.has_method("set"):
-                    b.set("alive", false)
-                else:
-                    b.alive = false
+			var radius = b.get("radius", 10.0)
+			if b.x < -radius or b.x > arena_width + radius or b.y < -radius or b.y > arena_height + radius:
+				if b.has_method("set"):
+					b.set("alive", false)
+				else:
+					b.alive = false
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        if alive.size() == 1:
-            if "team" in alive[0]:
-                return alive[0].team
-            return alive[0].ball_type
+		if alive.size() == 1:
+			if "team" in alive[0]:
+				return alive[0].team
+			return alive[0].ball_type
 
-        return null
+		return null
 
 
 class TournamentMode extends GameMode:
-    var tick_timer: float = 0.0
+	var tick_timer: float = 0.0
 
-    func _init() -> void:
-        name = "Tournament"
-        description = "Monthly or seasonal tournament where players compete for exclusive cosmetic ball skins and unique status effects."
+	func _init() -> void:
+		name = "Tournament"
+		description = "Monthly or seasonal tournament where players compete for exclusive cosmetic ball skins and unique status effects."
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        if alive.size() == 1:
-            if "team" in alive[0]:
-                return alive[0].team
-            return alive[0].ball_type
+		if alive.size() == 1:
+			if "team" in alive[0]:
+				return alive[0].team
+			return alive[0].ball_type
 
-        return null
+		return null
 
 class ToxicEnvironmentMode extends GameMode:
-    var spawn_timer = 0.0
+	var spawn_timer = 0.0
 
-    func _init() -> void:
-        name = "Toxic Environment"
-        description = "Balls take constant damage over time. Collect temporary immune boosters to survive."
+	func _init() -> void:
+		name = "Toxic Environment"
+		description = "Balls take constant damage over time. Collect temporary immune boosters to survive."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "boosters" in world:
-            world.boosters = []
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "boosters" in world:
+			world.boosters = []
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        if not "boosters" in world:
-            world.boosters = []
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		if not "boosters" in world:
+			world.boosters = []
 
-        spawn_timer += delta
-        if spawn_timer >= 1.0:
-            spawn_timer = 0.0
-            var immune_boosters = 0
-            for b in world.boosters:
-                if typeof(b) == TYPE_DICTIONARY and b.has("is_immunity") and b.get("is_immunity") == true and b.has("active") and b.get("active") == true:
-                    immune_boosters += 1
-            if immune_boosters < 5:
-                var x = randf_range(100.0, 900.0)
-                var y = randf_range(100.0, 900.0)
-                var b_id = randi() % 90000 + 10000
-                if "next_id" in world:
-                    b_id = world.next_id
-                    world.next_id += 1
-                world.boosters.append({
-                    "id": b_id,
-                    "x": x,
-                    "y": y,
-                    "ball_type": "booster",
-                    "active": true,
-                    "is_immunity": true,
-                    "radius": 15.0
-                })
+		spawn_timer += delta
+		if spawn_timer >= 1.0:
+			spawn_timer = 0.0
+			var immune_boosters = 0
+			for b in world.boosters:
+				if typeof(b) == TYPE_DICTIONARY and b.has("is_immunity") and b.get("is_immunity") == true and b.has("active") and b.get("active") == true:
+					immune_boosters += 1
+			if immune_boosters < 5:
+				var x = randf_range(100.0, 900.0)
+				var y = randf_range(100.0, 900.0)
+				var b_id = randi() % 90000 + 10000
+				if "next_id" in world:
+					b_id = world.next_id
+					world.next_id += 1
+				world.boosters.append({
+					"id": b_id,
+					"x": x,
+					"y": y,
+					"ball_type": "booster",
+					"active": true,
+					"is_immunity": true,
+					"radius": 15.0
+				})
 
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-                continue
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+				continue
 
-            var imm_timer = 0.0
-            if b.has_method("get_meta") and b.has_meta("immunity_timer"):
-                imm_timer = b.get_meta("immunity_timer")
-            elif "immunity_timer" in b:
-                imm_timer = b.immunity_timer
+			var imm_timer = 0.0
+			if b.has_method("get_meta") and b.has_meta("immunity_timer"):
+				imm_timer = b.get_meta("immunity_timer")
+			elif "immunity_timer" in b:
+				imm_timer = b.immunity_timer
 
-            if imm_timer > 0:
-                if b.has_method("set_meta"):
-                    b.set_meta("immunity_timer", imm_timer - delta)
-                elif "immunity_timer" in b:
-                    b.immunity_timer = imm_timer - delta
-            else:
-                if b.has_method("set_meta"):
-                    b.set_meta("immunity_timer", 0.0)
-                elif "immunity_timer" in b:
-                    b.immunity_timer = 0.0
-                if b.has_method("take_damage"):
-                    b.take_damage(5.0 * delta)
+			if imm_timer > 0:
+				if b.has_method("set_meta"):
+					b.set_meta("immunity_timer", imm_timer - delta)
+				elif "immunity_timer" in b:
+					b.immunity_timer = imm_timer - delta
+			else:
+				if b.has_method("set_meta"):
+					b.set_meta("immunity_timer", 0.0)
+				elif "immunity_timer" in b:
+					b.immunity_timer = 0.0
+				if b.has_method("take_damage"):
+					b.take_damage(5.0 * delta)
 
-            var to_remove = []
-            for booster in world.boosters:
-                if typeof(booster) == TYPE_DICTIONARY and booster.has("is_immunity") and booster.get("is_immunity") == true and booster.has("active") and booster.get("active") == true:
-                    var bx = booster.get("x")
-                    var by = booster.get("y")
-                    var dist = sqrt(pow(b.x - bx, 2) + pow(b.y - by, 2))
-                    var b_rad = 10.0
-                    if "radius" in b:
-                        b_rad = b.radius
-                    elif b.has_method("get_meta") and b.has_meta("radius"):
-                        b_rad = b.get_meta("radius")
-                    var booster_rad = 15.0
-                    if booster.has("radius"):
-                        booster_rad = booster.get("radius")
+			var to_remove = []
+			for booster in world.boosters:
+				if typeof(booster) == TYPE_DICTIONARY and booster.has("is_immunity") and booster.get("is_immunity") == true and booster.has("active") and booster.get("active") == true:
+					var bx = booster.get("x")
+					var by = booster.get("y")
+					var dist = sqrt(pow(b.x - bx, 2) + pow(b.y - by, 2))
+					var b_rad = 10.0
+					if "radius" in b:
+						b_rad = b.radius
+					elif b.has_method("get_meta") and b.has_meta("radius"):
+						b_rad = b.get_meta("radius")
+					var booster_rad = 15.0
+					if booster.has("radius"):
+						booster_rad = booster.get("radius")
 
-                    if dist < b_rad + booster_rad:
-                        if b.has_method("set_meta"):
-                            b.set_meta("immunity_timer", 5.0)
-                        elif "immunity_timer" in b:
-                            b.immunity_timer = 5.0
-                        booster["active"] = false
-                        to_remove.append(booster)
+					if dist < b_rad + booster_rad:
+						if b.has_method("set_meta"):
+							b.set_meta("immunity_timer", 5.0)
+						elif "immunity_timer" in b:
+							b.immunity_timer = 5.0
+						booster["active"] = false
+						to_remove.append(booster)
 
-            for booster in to_remove:
-                world.boosters.erase(booster)
+			for booster in to_remove:
+				world.boosters.erase(booster)
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        if alive.size() == 1:
-            if "team" in alive[0]:
-                return alive[0].team
-            return alive[0].ball_type
+		if alive.size() == 1:
+			if "team" in alive[0]:
+				return alive[0].team
+			return alive[0].ball_type
 
-        return null
+		return null
 
 
 
@@ -5858,111 +5950,111 @@ class ModifierZonesMode extends GameMode:
 
 
 class WindstormMode extends GameMode:
-    var push_timer = 3.0
-    var push_duration = 0.0
-    var push_dir_x = 0.0
-    var push_dir_y = 0.0
-    var push_strength = 600.0
+	var push_timer = 3.0
+	var push_duration = 0.0
+	var push_dir_x = 0.0
+	var push_dir_y = 0.0
+	var push_strength = 600.0
 
-    func _init() -> void:
-        name = "Windstorm"
-        description = "Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target."
+	func _init() -> void:
+		name = "Windstorm"
+		description = "Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if b.ball_type != "spectator":
-                b.team = b.ball_type
-                if not "base_speed" in b:
-                    b.base_speed = b.get("speed") if b.get("speed") != null else 100.0
-                if not "base_damage" in b:
-                    b.base_damage = b.get("damage") if b.get("damage") != null else 10.0
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if b.ball_type != "spectator":
+				b.team = b.ball_type
+				if not "base_speed" in b:
+					b.base_speed = b.get("speed") if b.get("speed") != null else 100.0
+				if not "base_damage" in b:
+					b.base_damage = b.get("damage") if b.get("damage") != null else 10.0
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
-        push_timer -= delta
-        if push_timer <= 0:
-            if push_duration <= 0:
-                var angle = randf_range(0.0, 2.0 * PI)
-                if world != null and world.has_method("add_event"):
-                    world.add_event("weather_warning", {"type": "weather_warning", "message": "Windstorm is pushing!"})
-                push_dir_x = cos(angle)
-                push_dir_y = sin(angle)
-                push_duration = randf_range(1.0, 2.0)
-            else:
-                push_duration -= delta
-                if push_duration <= 0:
-                    push_timer = randf_range(2.0, 4.0)
+		push_timer -= delta
+		if push_timer <= 0:
+			if push_duration <= 0:
+				var angle = randf_range(0.0, 2.0 * PI)
+				if world != null and world.has_method("add_event"):
+					world.add_event("weather_warning", {"type": "weather_warning", "message": "Windstorm is pushing!"})
+				push_dir_x = cos(angle)
+				push_dir_y = sin(angle)
+				push_duration = randf_range(1.0, 2.0)
+			else:
+				push_duration -= delta
+				if push_duration <= 0:
+					push_timer = randf_range(2.0, 4.0)
 
-        if push_duration > 0:
-            for b in balls:
-                if b.alive and b.ball_type != "spectator":
-                    if not "vx" in b:
-                        b.vx = 0.0
-                    if not "vy" in b:
-                        b.vy = 0.0
-                    var is_kite = false
-                    if "cosmetic" in b:
-                        is_kite = str(b.cosmetic).to_lower().replace(" ", "_") == "kite"
-                    elif b.has_method("get_meta") and b.has_meta("cosmetic"):
-                        is_kite = str(b.get_meta("cosmetic")).to_lower().replace(" ", "_") == "kite"
+		if push_duration > 0:
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					if not "vx" in b:
+						b.vx = 0.0
+					if not "vy" in b:
+						b.vy = 0.0
+					var is_kite = false
+					if "cosmetic" in b:
+						is_kite = str(b.cosmetic).to_lower().replace(" ", "_") == "kite"
+					elif b.has_method("get_meta") and b.has_meta("cosmetic"):
+						is_kite = str(b.get_meta("cosmetic")).to_lower().replace(" ", "_") == "kite"
 
-                    var strength = push_strength
-                    if is_kite:
-                        if "base_speed" in b:
-                            b.speed = b.base_speed * 1.5
-                        elif b.has_method("get_meta") and b.has_meta("base_speed"):
-                            if "speed" in b: b.speed = b.get_meta("base_speed") * 1.5
-                        strength = push_strength * 1.5
+					var strength = push_strength
+					if is_kite:
+						if "base_speed" in b:
+							b.speed = b.base_speed * 1.5
+						elif b.has_method("get_meta") and b.has_meta("base_speed"):
+							if "speed" in b: b.speed = b.get_meta("base_speed") * 1.5
+						strength = push_strength * 1.5
 
-                    b.vx += push_dir_x * strength * delta
-                    b.vy += push_dir_y * strength * delta
+					b.vx += push_dir_x * strength * delta
+					b.vy += push_dir_y * strength * delta
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.get("alive", false) and b.get("ball_type", "") != "spectator":
-                alive.append(b)
-        if alive.is_empty():
-            return "Draw"
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+				alive.append(b)
+		if alive.is_empty():
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            var team = b.get("team") if b.get("team") != null else b.get("ball_type")
-            teams_alive[team] = true
+		var teams_alive = {}
+		for b in alive:
+			var team = b.get("team") if b.get("team") != null else b.get("ball_type")
+			teams_alive[team] = true
 
-        if teams_alive.size() == 1:
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
 
-        if alive.size() == 1:
-            return alive[0].get("team", alive[0].get("ball_type"))
+		if alive.size() == 1:
+			return alive[0].get("team", alive[0].get("ball_type"))
 
-        return null
+		return null
 
 
 
@@ -6009,102 +6101,102 @@ class BlackoutMode extends GameMode:
 
 
 class BountyHuntMode extends GameMode:
-    var bounties = {}
-    var buffed_teams = {}
+	var bounties = {}
+	var buffed_teams = {}
 
-    func _init() -> void:
-        name = "Bounty Hunt"
-        description = "One ball on each team is the Bounty. Destroying the enemy Bounty grants a massive buff and extra skill points."
+	func _init() -> void:
+		name = "Bounty Hunt"
+		description = "One ball on each team is the Bounty. Destroying the enemy Bounty grants a massive buff and extra skill points."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-        var red_team = []
-        var blue_team = []
+		var red_team = []
+		var blue_team = []
 
-        var valid_balls = []
-        for b in balls:
-            if b.ball_type != "spectator":
-                valid_balls.append(b)
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
 
-        var mid = valid_balls.size() / 2
-        for i in range(valid_balls.size()):
-            var b = valid_balls[i]
-            if i < mid:
-                b.team = "Red"
-                red_team.append(b)
-            else:
-                b.team = "Blue"
-                blue_team.append(b)
+		var mid = valid_balls.size() / 2
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i < mid:
+				b.team = "Red"
+				red_team.append(b)
+			else:
+				b.team = "Blue"
+				blue_team.append(b)
 
-        bounties.clear()
-        buffed_teams.clear()
+		bounties.clear()
+		buffed_teams.clear()
 
-        if red_team.size() > 0:
-            var red_bounty = red_team[randi() % red_team.size()]
-            red_bounty.set_meta("is_bounty", true)
-            red_bounty.set_meta("bounty_timer", 0)
-            bounties["Red"] = red_bounty
+		if red_team.size() > 0:
+			var red_bounty = red_team[randi() % red_team.size()]
+			red_bounty.set_meta("is_bounty", true)
+			red_bounty.set_meta("bounty_timer", 0)
+			bounties["Red"] = red_bounty
 
-        if blue_team.size() > 0:
-            var blue_bounty = blue_team[randi() % blue_team.size()]
-            blue_bounty.set_meta("is_bounty", true)
-            blue_bounty.set_meta("bounty_timer", 0)
-            bounties["Blue"] = blue_bounty
+		if blue_team.size() > 0:
+			var blue_bounty = blue_team[randi() % blue_team.size()]
+			blue_bounty.set_meta("is_bounty", true)
+			blue_bounty.set_meta("bounty_timer", 0)
+			bounties["Blue"] = blue_bounty
 
-    func tick(world, balls: Array, delta: float) -> void:
-        super.tick(world, balls, delta)
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
 
-        for team in bounties.keys():
-            var bounty = bounties[team]
-            if not bounty.alive and not buffed_teams.has(team):
-                buffed_teams[team] = true
-                var enemy_team = "Blue" if team == "Red" else "Red"
+		for team in bounties.keys():
+			var bounty = bounties[team]
+			if not bounty.alive and not buffed_teams.has(team):
+				buffed_teams[team] = true
+				var enemy_team = "Blue" if team == "Red" else "Red"
 
-                for b in balls:
-                    if b.alive and b.get("team") == enemy_team:
-                        var bd = b.get("base_damage")
-                        if bd != null: b.base_damage = bd * 2.0
-                        var bs = b.get("base_speed")
-                        if bs != null: b.base_speed = bs * 1.5
-                        var mhp = b.get("max_hp")
-                        if mhp != null:
-                            b.max_hp = mhp * 1.5
-                            b.hp = b.max_hp
-                        var su = b.get("skill_uses")
-                        if su != null:
-                            b.skill_uses = su + 3
-                        else:
-                            b.set_meta("skill_uses", 3)
+				for b in balls:
+					if b.alive and b.get("team") == enemy_team:
+						var bd = b.get("base_damage")
+						if bd != null: b.base_damage = bd * 2.0
+						var bs = b.get("base_speed")
+						if bs != null: b.base_speed = bs * 1.5
+						var mhp = b.get("max_hp")
+						if mhp != null:
+							b.max_hp = mhp * 1.5
+							b.hp = b.max_hp
+						var su = b.get("skill_uses")
+						if su != null:
+							b.skill_uses = su + 3
+						else:
+							b.set_meta("skill_uses", 3)
 
-                if has_method("_award_skill_points"):
-                    call("_award_skill_points")
-                    call("_award_skill_points")
-                    call("_award_skill_points")
+				if has_method("_award_skill_points"):
+					call("_award_skill_points")
+					call("_award_skill_points")
+					call("_award_skill_points")
 
-                if world.has_method("add_event"):
-                    world.add_event("bounty_destroyed", {"message": team + " Bounty destroyed! " + enemy_team + " gets massive buff!"})
+				if world.has_method("add_event"):
+					world.add_event("bounty_destroyed", {"message": team + " Bounty destroyed! " + enemy_team + " gets massive buff!"})
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            var t = b.get("team")
-            if t == null: t = b.ball_type
-            teams_alive[t] = true
+		var teams_alive = {}
+		for b in alive:
+			var t = b.get("team")
+			if t == null: t = b.ball_type
+			teams_alive[t] = true
 
-        if teams_alive.size() == 1:
-            return teams_alive.keys()[0]
-        return null
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
+		return null
 
 class EarthquakeMode extends GameMode:
 	var timer: float = 0.0
@@ -6313,418 +6405,418 @@ class ShiftingMazeMode extends GameMode:
 
 
 class GravityWellMode extends GameMode:
-    var spawn_timer = 0.0
+	var spawn_timer = 0.0
 
-    func _init():
-        name = "Gravity Well"
-        description = "Random gravity wells spawn in the arena, pulling nearby balls towards their center and slightly damaging them over time."
+	func _init():
+		name = "Gravity Well"
+		description = "Random gravity wells spawn in the arena, pulling nearby balls towards their center and slightly damaging them over time."
 
-    func setup(world, balls):
-        super.setup(world, balls)
-        if not "hazards" in world.arena:
-            world.arena.hazards = []
-        spawn_timer = 0.0
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		spawn_timer = 0.0
 
-    func tick(world, balls, delta = 0.016):
-        super.tick(world, balls, delta)
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
 
-        # Update gravity well inversions
-        var gw_hazards_all = []
-        if "hazards" in world.arena:
-            for h in world.arena.hazards:
-                if h.kind == "gravity_well":
-                    gw_hazards_all.append(h)
+		# Update gravity well inversions
+		var gw_hazards_all = []
+		if "hazards" in world.arena:
+			for h in world.arena.hazards:
+				if h.kind == "gravity_well":
+					gw_hazards_all.append(h)
 
-        for gw in gw_hazards_all:
-            if not gw.has_meta("invert_timer"):
-                gw.set_meta("invert_timer", randf_range(0.0, 5.0))
-                gw.set_meta("is_inverted", false)
+		for gw in gw_hazards_all:
+			if not gw.has_meta("invert_timer"):
+				gw.set_meta("invert_timer", randf_range(0.0, 5.0))
+				gw.set_meta("is_inverted", false)
 
-            var t = gw.get_meta("invert_timer")
-            t -= delta
-            if t <= 0:
-                gw.set_meta("is_inverted", not gw.get_meta("is_inverted"))
-                t = randf_range(3.0, 5.0)
-            gw.set_meta("invert_timer", t)
+			var t = gw.get_meta("invert_timer")
+			t -= delta
+			if t <= 0:
+				gw.set_meta("is_inverted", not gw.get_meta("is_inverted"))
+				t = randf_range(3.0, 5.0)
+			gw.set_meta("invert_timer", t)
 
-        spawn_timer += delta
-        if spawn_timer >= 5.0:
-            spawn_timer = 0.0
+		spawn_timer += delta
+		if spawn_timer >= 5.0:
+			spawn_timer = 0.0
 
-            var arena_width = 2000.0
-            var arena_height = 2000.0
-            if "width" in world.arena:
-                arena_width = world.arena.width
-            if "height" in world.arena:
-                arena_height = world.arena.height
+			var arena_width = 2000.0
+			var arena_height = 2000.0
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
 
-            var x = randf_range(200.0, arena_width - 200.0)
-            var y = randf_range(200.0, arena_height - 200.0)
+			var x = randf_range(200.0, arena_width - 200.0)
+			var y = randf_range(200.0, arena_height - 200.0)
 
-            var h_id = 9000 + world.arena.hazards.size() + (randi() % 1000)
+			var h_id = 9000 + world.arena.hazards.size() + (randi() % 1000)
 
-            var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
-            var gw = Hazard.new(h_id, x, y, randf_range(150.0, 300.0), "gravity_well", 10.0)
-            world.arena.hazards.append(gw)
+			var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+			var gw = Hazard.new(h_id, x, y, randf_range(150.0, 300.0), "gravity_well", 10.0)
+			world.arena.hazards.append(gw)
 
-            var gw_hazards = []
-            for h in world.arena.hazards:
-                if h.kind == "gravity_well":
-                    gw_hazards.append(h)
+			var gw_hazards = []
+			for h in world.arena.hazards:
+				if h.kind == "gravity_well":
+					gw_hazards.append(h)
 
-            if gw_hazards.size() > 5:
-                var oldest_gw = gw_hazards[0]
-                world.arena.hazards.erase(oldest_gw)
+			if gw_hazards.size() > 5:
+				var oldest_gw = gw_hazards[0]
+				world.arena.hazards.erase(oldest_gw)
 
 
 class SupernovaMode extends GameMode:
-    var supernova_radius = 50.0
-    var supernova_exploded = false
-    var explosion_timer = 0.0
-    var heat_multiplier = 1.0
+	var supernova_radius = 50.0
+	var supernova_exploded = false
+	var explosion_timer = 0.0
+	var heat_multiplier = 1.0
 
-    func _init() -> void:
-        name = "Supernova"
-        description = "Balls take rapidly scaling heat damage as they approach the center. Eventually, the supernova explodes, knocking survivors away."
+	func _init() -> void:
+		name = "Supernova"
+		description = "Balls take rapidly scaling heat damage as they approach the center. Eventually, the supernova explodes, knocking survivors away."
 
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        # Evaluate crowd system
-        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
-            var crowd = world.get_node("CrowdSystem")
-            var kill_log = []
-            if "kill_log" in world:
-                kill_log = world.kill_log
-            var current_tick = 0
-            if "tick" in world:
-                current_tick = world.tick
-            crowd.tick(balls, kill_log, current_tick)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Evaluate crowd system
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
 
-        if not "dead_balls" in world:
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-        for b in balls:
-            if not b.alive:
-                if not world.get_meta("dead_balls").has(b):
-                    if b.has_method("set_meta"):
-                        b.set_meta("time_since_death", 0.0)
-                    world.get_meta("dead_balls").append(b)
-                else:
-                    if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                        b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if world != null and "arena" in world and world.arena != null:
-            if "width" in world.arena:
-                arena_width = world.arena.width
-            if "height" in world.arena:
-                arena_height = world.arena.height
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
 
-        var center_x = arena_width / 2.0
-        var center_y = arena_height / 2.0
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
 
-        if not supernova_exploded:
-            supernova_radius += 2.0 * delta
-            explosion_timer += delta
+		if not supernova_exploded:
+			supernova_radius += 2.0 * delta
+			explosion_timer += delta
 
-            # Explosion triggers at e.g. 20 seconds
-            if explosion_timer >= 20.0:
-                supernova_exploded = true
-                explosion_timer = 0.0
-                # Trigger knockback for all alive balls
-                for b in balls:
-                    if b.alive and b.ball_type != "spectator":
-                        var dx = b.x - center_x
-                        var dy = b.y - center_y
-                        var dist = sqrt(dx * dx + dy * dy)
-                        if dist > 0:
-                            # Massive outward knockback force
-                            var knockback = 50000.0 / max(dist, 10.0)
-                            if "vx" in b:
-                                b.vx += (dx / dist) * knockback
-                            if "vy" in b:
-                                b.vy += (dy / dist) * knockback
+			# Explosion triggers at e.g. 20 seconds
+			if explosion_timer >= 20.0:
+				supernova_exploded = true
+				explosion_timer = 0.0
+				# Trigger knockback for all alive balls
+				for b in balls:
+					if b.alive and b.ball_type != "spectator":
+						var dx = b.x - center_x
+						var dy = b.y - center_y
+						var dist = sqrt(dx * dx + dy * dy)
+						if dist > 0:
+							# Massive outward knockback force
+							var knockback = 50000.0 / max(dist, 10.0)
+							if "vx" in b:
+								b.vx += (dx / dist) * knockback
+							if "vy" in b:
+								b.vy += (dy / dist) * knockback
 
-        for b in balls:
-            if b.alive and b.ball_type != "spectator":
-                var dx = center_x - b.x
-                var dy = center_y - b.y
-                var dist = sqrt(dx * dx + dy * dy)
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var dx = center_x - b.x
+				var dy = center_y - b.y
+				var dist = sqrt(dx * dx + dy * dy)
 
-                if not supernova_exploded:
-                    # Pull towards center
-                    if dist > 0:
-                        var pull_strength = 20000.0 / (dist * dist)
-                        var radius_multiplier = supernova_radius / 50.0
-                        pull_strength *= radius_multiplier
-                        pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+				if not supernova_exploded:
+					# Pull towards center
+					if dist > 0:
+						var pull_strength = 20000.0 / (dist * dist)
+						var radius_multiplier = supernova_radius / 50.0
+						pull_strength *= radius_multiplier
+						pull_strength = min(pull_strength, 150.0 * radius_multiplier)
 
-                        b.x += (dx / dist) * pull_strength * delta
-                        b.y += (dy / dist) * pull_strength * delta
+						b.x += (dx / dist) * pull_strength * delta
+						b.y += (dy / dist) * pull_strength * delta
 
-                    # Heat damage
-                    var max_dist = max(arena_width, arena_height) / 2.0
-                    if dist < max_dist:
-                        var damage_intensity = (max_dist - dist) / max_dist
-                        var heat_damage = 5.0 * pow(damage_intensity, 3) * heat_multiplier * delta
-                        if "hp" in b:
-                            b.hp -= heat_damage
-                            if b.hp <= 0:
-                                b.hp = 0
-                                b.alive = false
+					# Heat damage
+					var max_dist = max(arena_width, arena_height) / 2.0
+					if dist < max_dist:
+						var damage_intensity = (max_dist - dist) / max_dist
+						var heat_damage = 5.0 * pow(damage_intensity, 3) * heat_multiplier * delta
+						if "hp" in b:
+							b.hp -= heat_damage
+							if b.hp <= 0:
+								b.hp = 0
+								b.alive = false
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
 
-        if alive.size() == 0:
-            return "Draw"
+		if alive.size() == 0:
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            if "team" in b:
-                teams_alive[b.team] = true
-            else:
-                teams_alive[b.ball_type] = true
+		var teams_alive = {}
+		for b in alive:
+			if "team" in b:
+				teams_alive[b.team] = true
+			else:
+				teams_alive[b.ball_type] = true
 
-        if teams_alive.size() == 1:
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
 
-        if alive.size() == 1:
-            return alive[0].ball_type
+		if alive.size() == 1:
+			return alive[0].ball_type
 
-        return null
+		return null
 
 
 class DayNightMode extends GameMode:
-    var timer = 0.0
-    var phase_duration = 10.0
-    var sunlight_beam_timer = 0.0
-    var active_sunlight_beams = []
+	var timer = 0.0
+	var phase_duration = 10.0
+	var sunlight_beam_timer = 0.0
+	var active_sunlight_beams = []
 
-    func _init():
-        super._init()
-        name = "Day/Night Cycle"
-        description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear."
+	func _init():
+		super._init()
+		name = "Day/Night Cycle"
+		description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if world != null and "arena" in world:
-            world.arena.is_night = false
-        timer = 0.0
-        sunlight_beam_timer = 0.0
-        active_sunlight_beams = []
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world != null and "arena" in world:
+			world.arena.is_night = false
+		timer = 0.0
+		sunlight_beam_timer = 0.0
+		active_sunlight_beams = []
 
-    func _line_intersects_circle(p1_x, p1_y, p2_x, p2_y, cx, cy, radius):
-        var dx = p2_x - p1_x
-        var dy = p2_y - p1_y
-        var length_sq = dx * dx + dy * dy
+	func _line_intersects_circle(p1_x, p1_y, p2_x, p2_y, cx, cy, radius):
+		var dx = p2_x - p1_x
+		var dy = p2_y - p1_y
+		var length_sq = dx * dx + dy * dy
 
-        if length_sq == 0:
-            return (p1_x - cx) * (p1_x - cx) + (p1_y - cy) * (p1_y - cy) <= radius * radius
+		if length_sq == 0:
+			return (p1_x - cx) * (p1_x - cx) + (p1_y - cy) * (p1_y - cy) <= radius * radius
 
-        var t = ((cx - p1_x) * dx + (cy - p1_y) * dy) / length_sq
-        t = max(0.0, min(1.0, t))
+		var t = ((cx - p1_x) * dx + (cy - p1_y) * dy) / length_sq
+		t = max(0.0, min(1.0, t))
 
-        var px = p1_x + t * dx
-        var py = p1_y + t * dy
+		var px = p1_x + t * dx
+		var py = p1_y + t * dy
 
-        var dist_sq = (px - cx) * (px - cx) + (py - cy) * (py - cy)
-        return dist_sq <= radius * radius
+		var dist_sq = (px - cx) * (px - cx) + (py - cy) * (py - cy)
+		return dist_sq <= radius * radius
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        if world != null and "arena" in world:
-            timer += delta
-            if timer >= phase_duration:
-                timer = 0.0
-                if "is_night" in world.arena:
-                    world.arena.is_night = not world.arena.is_night
-                else:
-                    world.arena.is_night = true
-                sunlight_beam_timer = 0.0
-                active_sunlight_beams.clear()
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null and "arena" in world:
+			timer += delta
+			if timer >= phase_duration:
+				timer = 0.0
+				if "is_night" in world.arena:
+					world.arena.is_night = not world.arena.is_night
+				else:
+					world.arena.is_night = true
+				sunlight_beam_timer = 0.0
+				active_sunlight_beams.clear()
 
-            var is_night = false
-            if "is_night" in world.arena:
-                is_night = world.arena.is_night
+			var is_night = false
+			if "is_night" in world.arena:
+				is_night = world.arena.is_night
 
-            if is_night:
-                world.arena.night_ratio = timer / max(0.1, phase_duration)
-            else:
-                world.arena.night_ratio = 0.0
+			if is_night:
+				world.arena.night_ratio = timer / max(0.1, phase_duration)
+			else:
+				world.arena.night_ratio = 0.0
 
-            var active_beams = []
-            for i in range(active_sunlight_beams.size()):
-                var beam = active_sunlight_beams[i]
-                beam["duration"] -= delta
-                if beam["duration"] > 0:
-                    active_beams.append(beam)
-            active_sunlight_beams = active_beams
+			var active_beams = []
+			for i in range(active_sunlight_beams.size()):
+				var beam = active_sunlight_beams[i]
+				beam["duration"] -= delta
+				if beam["duration"] > 0:
+					active_beams.append(beam)
+			active_sunlight_beams = active_beams
 
-            for beam in active_sunlight_beams:
-                var beam_damage = 50.0 * delta
-                var fx = beam["x"]
-                var fy = beam["y"]
-                var beam_radius = beam["radius"]
+			for beam in active_sunlight_beams:
+				var beam_damage = 50.0 * delta
+				var fx = beam["x"]
+				var fy = beam["y"]
+				var beam_radius = beam["radius"]
 
-                for b in balls:
-                    if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
-                        continue
+				for b in balls:
+					if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
+						continue
 
-                    var dist_sq = (b.x - fx) * (b.x - fx) + (b.y - fy) * (b.y - fy)
-                    if dist_sq < beam_radius * beam_radius:
-                        var b_type = b.get("ball_type", "").to_lower()
-                        var has_daylight_buff = not (b_type in ["vampire", "assassin", "phantom"])
+					var dist_sq = (b.x - fx) * (b.x - fx) + (b.y - fy) * (b.y - fy)
+					if dist_sq < beam_radius * beam_radius:
+						var b_type = b.get("ball_type", "").to_lower()
+						var has_daylight_buff = not (b_type in ["vampire", "assassin", "phantom"])
 
-                        if not has_daylight_buff:
-                            var behind_cover = false
-                            var b_radius = 15.0
-                            if "radius" in b: b_radius = b.radius
+						if not has_daylight_buff:
+							var behind_cover = false
+							var b_radius = 15.0
+							if "radius" in b: b_radius = b.radius
 
-                            var hazards = []
-                            if "hazards" in world.arena: hazards = world.arena.hazards
+							var hazards = []
+							if "hazards" in world.arena: hazards = world.arena.hazards
 
-                            for hazard in hazards:
-                                var hk = ""
-                                var hx = 0.0
-                                var hy = 0.0
-                                var hr = 10.0
-                                if typeof(hazard) == TYPE_DICTIONARY:
-                                    hk = hazard.get("kind", "")
-                                    hx = hazard.get("x", 0.0)
-                                    hy = hazard.get("y", 0.0)
-                                    hr = hazard.get("radius", 10.0)
-                                else:
-                                    hk = hazard.get("kind", "")
-                                    hx = hazard.get("x", 0.0)
-                                    hy = hazard.get("y", 0.0)
-                                    hr = hazard.get("radius", 10.0)
+							for hazard in hazards:
+								var hk = ""
+								var hx = 0.0
+								var hy = 0.0
+								var hr = 10.0
+								if typeof(hazard) == TYPE_DICTIONARY:
+									hk = hazard.get("kind", "")
+									hx = hazard.get("x", 0.0)
+									hy = hazard.get("y", 0.0)
+									hr = hazard.get("radius", 10.0)
+								else:
+									hk = hazard.get("kind", "")
+									hx = hazard.get("x", 0.0)
+									hy = hazard.get("y", 0.0)
+									hr = hazard.get("radius", 10.0)
 
-                                if hk == "laser_wall" or hk == "wall" or hk == "indestructible_wall":
-                                    if _line_intersects_circle(fx, fy, b.x, b.y, hx, hy, hr):
-                                        behind_cover = true
-                                        break
+								if hk == "laser_wall" or hk == "wall" or hk == "indestructible_wall":
+									if _line_intersects_circle(fx, fy, b.x, b.y, hx, hy, hr):
+										behind_cover = true
+										break
 
-                            if not behind_cover:
-                                if b.has_method("take_damage"):
-                                    b.take_damage(beam_damage)
-                                else:
-                                    var hp = b.get("hp", 100.0)
-                                    b.set("hp", hp - beam_damage)
-                                    if b.get("hp", 100.0) <= 0:
-                                        b.set("alive", false)
+							if not behind_cover:
+								if b.has_method("take_damage"):
+									b.take_damage(beam_damage)
+								else:
+									var hp = b.get("hp", 100.0)
+									b.set("hp", hp - beam_damage)
+									if b.get("hp", 100.0) <= 0:
+										b.set("alive", false)
 
-            if not is_night:
-                sunlight_beam_timer += delta
-                if sunlight_beam_timer >= 3.0:
-                    sunlight_beam_timer = 0.0
+			if not is_night:
+				sunlight_beam_timer += delta
+				if sunlight_beam_timer >= 3.0:
+					sunlight_beam_timer = 0.0
 
-                    var arena_w = 1000.0
-                    var arena_h = 1000.0
-                    if "width" in world.arena: arena_w = world.arena.width
-                    if "height" in world.arena: arena_h = world.arena.height
+					var arena_w = 1000.0
+					var arena_h = 1000.0
+					if "width" in world.arena: arena_w = world.arena.width
+					if "height" in world.arena: arena_h = world.arena.height
 
-                    var fx = randf_range(50.0, arena_w - 50.0)
-                    var fy = randf_range(50.0, arena_h - 50.0)
-                    var beam_radius = 150.0
+					var fx = randf_range(50.0, arena_w - 50.0)
+					var fy = randf_range(50.0, arena_h - 50.0)
+					var beam_radius = 150.0
 
-                    active_sunlight_beams.append({"x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
+					active_sunlight_beams.append({"x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
 
-                    if world.has_method("add_event"):
-                        world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
+					if world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
 
 class GuildVsGuildMode extends GameMode:
-    var guilds = {}
-    var control_points = []
-    var territory_captured = false
+	var guilds = {}
+	var control_points = []
+	var territory_captured = false
 
-    func _init():
-        name = "gvg"
-        desc = "Guild vs Guild territory battle"
+	func _init():
+		name = "gvg"
+		desc = "Guild vs Guild territory battle"
 
-    func setup(world_ref, balls_ref: Array):
-        super.setup(world_ref, balls_ref)
-        guilds = {}
-        control_points = [
-            {"x": 200, "y": 200, "radius": 50, "owner": null, "progress": 0},
-            {"x": 800, "y": 800, "radius": 50, "owner": null, "progress": 0},
-            {"x": 500, "y": 500, "radius": 80, "owner": null, "progress": 0}
-        ]
-        territory_captured = false
+	func setup(world_ref, balls_ref: Array):
+		super.setup(world_ref, balls_ref)
+		guilds = {}
+		control_points = [
+			{"x": 200, "y": 200, "radius": 50, "owner": null, "progress": 0},
+			{"x": 800, "y": 800, "radius": 50, "owner": null, "progress": 0},
+			{"x": 500, "y": 500, "radius": 80, "owner": null, "progress": 0}
+		]
+		territory_captured = false
 
-        if balls.size() >= 2:
-            var mid = balls.size() / 2
-            var g1 = []
-            var g2 = []
-            for i in range(mid):
-                g1.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
-            for i in range(mid, balls.size()):
-                g2.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
-            guilds["GuildA"] = g1
-            guilds["GuildB"] = g2
+		if balls.size() >= 2:
+			var mid = balls.size() / 2
+			var g1 = []
+			var g2 = []
+			for i in range(mid):
+				g1.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
+			for i in range(mid, balls.size()):
+				g2.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
+			guilds["GuildA"] = g1
+			guilds["GuildB"] = g2
 
-    func _tick(delta: float):
-        super._tick(delta)
-        if territory_captured:
-            return
+	func _tick(delta: float):
+		super._tick(delta)
+		if territory_captured:
+			return
 
-        for cp in control_points:
-            var guild_counts = {}
-            for guild in guilds.keys():
-                var count = 0
-                for ball in world.balls:
-                    var bid = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
-                    var balive = ball.get_meta("alive") if ball.has_method("get_meta") and ball.has_meta("alive") else ball.alive
-                    if guilds[guild].has(bid) and balive:
-                        var bx = ball.get_meta("x") if ball.has_method("get_meta") and ball.has_meta("x") else ball.x
-                        var by = ball.get_meta("y") if ball.has_method("get_meta") and ball.has_meta("y") else ball.y
-                        var dx = bx - cp["x"]
-                        var dy = by - cp["y"]
-                        if sqrt(dx*dx + dy*dy) <= cp["radius"]:
-                            count += 1
-                guild_counts[guild] = count
+		for cp in control_points:
+			var guild_counts = {}
+			for guild in guilds.keys():
+				var count = 0
+				for ball in world.balls:
+					var bid = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
+					var balive = ball.get_meta("alive") if ball.has_method("get_meta") and ball.has_meta("alive") else ball.alive
+					if guilds[guild].has(bid) and balive:
+						var bx = ball.get_meta("x") if ball.has_method("get_meta") and ball.has_meta("x") else ball.x
+						var by = ball.get_meta("y") if ball.has_method("get_meta") and ball.has_meta("y") else ball.y
+						var dx = bx - cp["x"]
+						var dy = by - cp["y"]
+						if sqrt(dx*dx + dy*dy) <= cp["radius"]:
+							count += 1
+				guild_counts[guild] = count
 
-            var dominating_guild = null
-            var max_count = 0
-            for guild in guild_counts.keys():
-                var count = guild_counts[guild]
-                if count > max_count:
-                    max_count = count
-                    dominating_guild = guild
-                elif count == max_count and count > 0:
-                    dominating_guild = null
+			var dominating_guild = null
+			var max_count = 0
+			for guild in guild_counts.keys():
+				var count = guild_counts[guild]
+				if count > max_count:
+					max_count = count
+					dominating_guild = guild
+				elif count == max_count and count > 0:
+					dominating_guild = null
 
-            if dominating_guild != null:
-                if cp["owner"] != dominating_guild:
-                    cp["progress"] += delta * 10
-                    if cp["progress"] >= 100:
-                        cp["owner"] = dominating_guild
-                        cp["progress"] = 100
-            else:
-                cp["progress"] = max(0, cp["progress"] - delta * 5)
+			if dominating_guild != null:
+				if cp["owner"] != dominating_guild:
+					cp["progress"] += delta * 10
+					if cp["progress"] >= 100:
+						cp["owner"] = dominating_guild
+						cp["progress"] = 100
+			else:
+				cp["progress"] = max(0, cp["progress"] - delta * 5)
 
-        var owners = []
-        for cp in control_points:
-            if cp["owner"] != null:
-                owners.append(cp["owner"])
+		var owners = []
+		for cp in control_points:
+			if cp["owner"] != null:
+				owners.append(cp["owner"])
 
-        var unique_owners = {}
-        for o in owners:
-            unique_owners[o] = true
+		var unique_owners = {}
+		for o in owners:
+			unique_owners[o] = true
 
-        if owners.size() == control_points.size() and unique_owners.size() == 1:
-            var winner = owners[0]
-            _end_match(winner)
+		if owners.size() == control_points.size() and unique_owners.size() == 1:
+			var winner = owners[0]
+			_end_match(winner)
 
-    func _end_match(winner_guild: String):
-        territory_captured = true
-        var GuildManager = load("res://src/system/guild.gd")
-        if GuildManager:
-            var gm = GuildManager.new()
-            gm.capture_territory(winner_guild, "GvG_Arena")
-            var loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
-            gm.record_gvg_match(winner_guild, loser, winner_guild)
+	func _end_match(winner_guild: String):
+		territory_captured = true
+		var GuildManager = load("res://src/system/guild.gd")
+		if GuildManager:
+			var gm = GuildManager.new()
+			gm.capture_territory(winner_guild, "GvG_Arena")
+			var loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
+			gm.record_gvg_match(winner_guild, loser, winner_guild)
 
 
 class MagneticCollisionsMode extends GameMode:
@@ -6965,20 +7057,20 @@ class MagneticCollisionsMode extends GameMode:
 
 
 class StaminaRegenMode extends GameMode:
-    func _init() -> void:
-        name = "Stamina Regen modifier"
-        description = "A game mode modifier where stamina regenerates twice as fast, allowing more frequent use of stamina-based skills."
+	func _init() -> void:
+		name = "Stamina Regen modifier"
+		description = "A game mode modifier where stamina regenerates twice as fast, allowing more frequent use of stamina-based skills."
 
 
 class BouncyTerrainMode extends GameMode:
-    func _init() -> void:
-        name = "Bouncy Terrain"
-        description = "Collision with arena boundaries dramatically reflects velocity without dealing damage."
+	func _init() -> void:
+		name = "Bouncy Terrain"
+		description = "Collision with arena boundaries dramatically reflects velocity without dealing damage."
 
 class ZeroGravityMode extends GameMode:
-    func _init() -> void:
-        name = "Zero Gravity"
-        description = "Friction and gravity are drastically reduced, causing balls to slide around effortlessly and collisions to produce massive knockback."
+	func _init() -> void:
+		name = "Zero Gravity"
+		description = "Friction and gravity are drastically reduced, causing balls to slide around effortlessly and collisions to produce massive knockback."
 
 
 class PinballMode extends GameMode:
@@ -7194,13 +7286,13 @@ class PinballMode extends GameMode:
 							break
 
 class MirrorWallsMode extends GameMode:
-    func _init():
-        super._init()
-        name = "Mirror Walls"
-        description = "An arena event where all projectiles are reflected infinitely across mirror walls."
+	func _init():
+		super._init()
+		name = "Mirror Walls"
+		description = "An arena event where all projectiles are reflected infinitely across mirror walls."
 
-    func tick(world: Variant, balls: Array, delta: float = 0.016) -> void:
-        super.tick(world, balls, delta)
+	func tick(world: Variant, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
 
 
 class GeometricZoneMode extends GameMode:
@@ -8468,332 +8560,332 @@ class MinefieldSafeZoneMode extends SafeZoneMode:
 				mines_spawned += 1
 
 class InverseSafeZoneMode extends GameMode:
-    var zone_x: float = 500.0
-    var zone_y: float = 500.0
-    var danger_radius: float = 50.0
-    var max_danger_radius: float = 500.0
-    var expand_rate: float = 15.0
-    var inside_damage_per_second: float = 20.0
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var danger_radius: float = 50.0
+	var max_danger_radius: float = 500.0
+	var expand_rate: float = 15.0
+	var inside_damage_per_second: float = 20.0
 
-    func _init() -> void:
-        name = "Inverse Safe Zone"
-        description = "A battle royale mode where the center expands and becomes dangerous, forcing players to the edges."
+	func _init() -> void:
+		name = "Inverse Safe Zone"
+		description = "A battle royale mode where the center expands and becomes dangerous, forcing players to the edges."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if "arena" in world and world.arena:
-            if "width" in world.arena:
-                arena_width = float(world.arena.width)
-            if "height" in world.arena:
-                arena_height = float(world.arena.height)
-        zone_x = arena_width / 2.0
-        zone_y = arena_height / 2.0
-        danger_radius = 50.0
-        max_danger_radius = max(arena_width, arena_height) / 2.0
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		danger_radius = 50.0
+		max_danger_radius = max(arena_width, arena_height) / 2.0
 
-        for b in balls:
-            if "ball_type" in b and b.ball_type != "spectator":
-                if typeof(b) == TYPE_DICTIONARY:
-                    b["team"] = b.ball_type
-                else:
-                    b.team = b.ball_type
+		for b in balls:
+			if "ball_type" in b and b.ball_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = b.ball_type
+				else:
+					b.team = b.ball_type
 
-        if not ("dead_balls" in world):
-            world["dead_balls"] = []
+		if not ("dead_balls" in world):
+			world["dead_balls"] = []
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        if not ("dead_balls" in world):
-            world["dead_balls"] = []
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not ("dead_balls" in world):
+			world["dead_balls"] = []
 
-        for b in balls:
-            var is_alive = false
-            if typeof(b) == TYPE_DICTIONARY:
-                is_alive = b.get("alive", false)
-            else:
-                is_alive = b.alive
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive
 
-            if not is_alive:
-                if not (b in world.dead_balls):
-                    if typeof(b) == TYPE_DICTIONARY:
-                        b["time_since_death"] = 0.0
-                    else:
-                        b.time_since_death = 0.0
-                    world.dead_balls.append(b)
-                else:
-                    if typeof(b) == TYPE_DICTIONARY:
-                        b["time_since_death"] += delta
-                    else:
-                        b.time_since_death += delta
+			if not is_alive:
+				if not (b in world.dead_balls):
+					if typeof(b) == TYPE_DICTIONARY:
+						b["time_since_death"] = 0.0
+					else:
+						b.time_since_death = 0.0
+					world.dead_balls.append(b)
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["time_since_death"] += delta
+					else:
+						b.time_since_death += delta
 
-        if danger_radius < max_danger_radius:
-            danger_radius += expand_rate * delta
-            if danger_radius > max_danger_radius:
-                danger_radius = max_danger_radius
+		if danger_radius < max_danger_radius:
+			danger_radius += expand_rate * delta
+			if danger_radius > max_danger_radius:
+				danger_radius = max_danger_radius
 
-        var damage_this_tick = inside_damage_per_second * delta
+		var damage_this_tick = inside_damage_per_second * delta
 
-        for b in balls:
-            var is_alive = false
-            var b_type = null
-            if typeof(b) == TYPE_DICTIONARY:
-                is_alive = b.get("alive", false)
-                b_type = b.get("ball_type", null)
-            else:
-                is_alive = b.alive
-                b_type = b.ball_type
+		for b in balls:
+			var is_alive = false
+			var b_type = null
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", null)
+			else:
+				is_alive = b.alive
+				b_type = b.ball_type
 
-            if is_alive and b_type != "spectator":
-                var bx = 0.0
-                var by = 0.0
-                if typeof(b) == TYPE_DICTIONARY:
-                    bx = b.get("x", 0.0)
-                    by = b.get("y", 0.0)
-                else:
-                    bx = b.x
-                    by = b.y
+			if is_alive and b_type != "spectator":
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				else:
+					bx = b.x
+					by = b.y
 
-                var dx = bx - zone_x
-                var dy = by - zone_y
-                var dist = sqrt(dx*dx + dy*dy)
+				var dx = bx - zone_x
+				var dy = by - zone_y
+				var dist = sqrt(dx*dx + dy*dy)
 
-                if dist > 0.1:
-                    var push_strength = 2000.0 * (1.0 - min(1.0, dist / max_danger_radius))
-                    if typeof(b) == TYPE_DICTIONARY:
-                        if not ("vx" in b): b["vx"] = 0.0
-                        if not ("vy" in b): b["vy"] = 0.0
-                        b["vx"] += (dx / dist) * push_strength * delta
-                        b["vy"] += (dy / dist) * push_strength * delta
-                    else:
-                        if not ("vx" in b): b.vx = 0.0
-                        if not ("vy" in b): b.vy = 0.0
-                        b.vx += (dx / dist) * push_strength * delta
-                        b.vy += (dy / dist) * push_strength * delta
+				if dist > 0.1:
+					var push_strength = 2000.0 * (1.0 - min(1.0, dist / max_danger_radius))
+					if typeof(b) == TYPE_DICTIONARY:
+						if not ("vx" in b): b["vx"] = 0.0
+						if not ("vy" in b): b["vy"] = 0.0
+						b["vx"] += (dx / dist) * push_strength * delta
+						b["vy"] += (dy / dist) * push_strength * delta
+					else:
+						if not ("vx" in b): b.vx = 0.0
+						if not ("vy" in b): b.vy = 0.0
+						b.vx += (dx / dist) * push_strength * delta
+						b.vy += (dy / dist) * push_strength * delta
 
-                if dist <= danger_radius:
-                    if typeof(b) == TYPE_DICTIONARY:
-                        b["hp"] -= damage_this_tick
-                        if b["hp"] <= 0:
-                            b["alive"] = false
-                            b["hp"] = 0
-                    else:
-                        b.hp -= damage_this_tick
-                        if b.hp <= 0:
-                            b.alive = false
-                            b.hp = 0
+				if dist <= danger_radius:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] -= damage_this_tick
+						if b["hp"] <= 0:
+							b["alive"] = false
+							b["hp"] = 0
+					else:
+						b.hp -= damage_this_tick
+						if b.hp <= 0:
+							b.alive = false
+							b.hp = 0
 
-    func check_winner(world, balls: Array):
-        var alive = []
-        for b in balls:
-            var is_alive = false
-            var b_type = null
-            if typeof(b) == TYPE_DICTIONARY:
-                is_alive = b.get("alive", false)
-                b_type = b.get("ball_type", null)
-            else:
-                is_alive = b.alive
-                b_type = b.ball_type
-            if is_alive and b_type != "spectator":
-                alive.append(b)
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			var is_alive = false
+			var b_type = null
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", null)
+			else:
+				is_alive = b.alive
+				b_type = b.ball_type
+			if is_alive and b_type != "spectator":
+				alive.append(b)
 
-        if alive.size() == 0:
-            if has_method("_award_skill_points"):
-                call("_award_skill_points")
-            return "Draw"
+		if alive.size() == 0:
+			if has_method("_award_skill_points"):
+				call("_award_skill_points")
+			return "Draw"
 
-        var teams_alive = {}
-        for b in alive:
-            var t = null
-            if typeof(b) == TYPE_DICTIONARY:
-                t = b.get("team", b.get("ball_type", null))
-            else:
-                t = b.team
-            if t != null:
-                teams_alive[t] = true
+		var teams_alive = {}
+		for b in alive:
+			var t = null
+			if typeof(b) == TYPE_DICTIONARY:
+				t = b.get("team", b.get("ball_type", null))
+			else:
+				t = b.team
+			if t != null:
+				teams_alive[t] = true
 
-        if teams_alive.size() == 1:
-            if has_method("_award_skill_points"):
-                call("_award_skill_points")
-            return teams_alive.keys()[0]
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"):
+				call("_award_skill_points")
+			return teams_alive.keys()[0]
 
-        if alive.size() == 1:
-            if has_method("_award_skill_points"):
-                call("_award_skill_points")
-            if typeof(alive[0]) == TYPE_DICTIONARY:
-                return alive[0].get("team", alive[0].get("ball_type", null))
-            else:
-                return alive[0].team
+		if alive.size() == 1:
+			if has_method("_award_skill_points"):
+				call("_award_skill_points")
+			if typeof(alive[0]) == TYPE_DICTIONARY:
+				return alive[0].get("team", alive[0].get("ball_type", null))
+			else:
+				return alive[0].team
 
-        return null
+		return null
 
 class DynamicSafeZoneMode extends GameMode:
-    var zone_x: float = 500.0
-    var zone_y: float = 500.0
-    var zone_radius: float = 500.0
-    var min_zone_radius: float = 50.0
-    var shrink_rate: float = 10.0
-    var outside_damage_per_second: float = 10.0
-    var zone_target_x: float = 500.0
-    var zone_target_y: float = 500.0
-    var collapse_triggered: bool = false
-    var buff_zone_radius: float = 75.0
-    var buff_type: String = "speed"
-    var buff_timer: float = 0.0
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 50.0
+	var shrink_rate: float = 10.0
+	var outside_damage_per_second: float = 10.0
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
+	var collapse_triggered: bool = false
+	var buff_zone_radius: float = 75.0
+	var buff_type: String = "speed"
+	var buff_timer: float = 0.0
 
-    func _init() -> void:
-        name = "Dynamic Safe Zone"
-        description = "Dynamic safe zones that not only protect from environmental damage but also apply randomized buffs for a short duration, encouraging players to fight for the optimal spot inside the zone."
+	func _init() -> void:
+		name = "Dynamic Safe Zone"
+		description = "Dynamic safe zones that not only protect from environmental damage but also apply randomized buffs for a short duration, encouraging players to fight for the optimal spot inside the zone."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        collapse_triggered = false
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if "arena" in world and world.arena:
-            if "width" in world.arena:
-                arena_width = float(world.arena.width)
-            if "height" in world.arena:
-                arena_height = float(world.arena.height)
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		collapse_triggered = false
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
 
-        zone_x = arena_width / 2.0
-        zone_y = arena_height / 2.0
-        zone_target_x = zone_x
-        zone_target_y = zone_y
-        zone_radius = min(arena_width, arena_height) / 2.0
-        min_zone_radius = 50.0
-        buff_timer = 0.0
-        _pick_new_buff()
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+		zone_radius = min(arena_width, arena_height) / 2.0
+		min_zone_radius = 50.0
+		buff_timer = 0.0
+		_pick_new_buff()
 
-    func _pick_new_buff() -> void:
-        var buffs = ["speed", "damage", "heal", "shield"]
-        buff_type = buffs[randi() % buffs.size()]
-        buff_timer = randf_range(5.0, 10.0)
+	func _pick_new_buff() -> void:
+		var buffs = ["speed", "damage", "heal", "shield"]
+		buff_type = buffs[randi() % buffs.size()]
+		buff_timer = randf_range(5.0, 10.0)
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        super.tick(world, balls, delta)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
 
-        if world != null and world.has_method("has_meta") and not world.has_meta("dead_balls"):
-            world.set_meta("dead_balls", [])
+		if world != null and world.has_method("has_meta") and not world.has_meta("dead_balls"):
+			world.set_meta("dead_balls", [])
 
-        if world != null and world.has_method("has_meta") and world.has_meta("dead_balls"):
-            pass # Keep logic simple
-        elif world != null and world.has_method("has_meta") and not world.has_meta("dead_balls"):
-            world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		if world != null and world.has_method("has_meta") and world.has_meta("dead_balls"):
+			pass # Keep logic simple
+		elif world != null and world.has_method("has_meta") and not world.has_meta("dead_balls"):
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
-        for b in balls:
-            if not b.alive:
-                if world != null and world.has_method("has_meta") and world.has_meta("dead_balls"):
-                    if not world.get_meta("dead_balls").has(b):
-                        if b.has_method("set_meta"):
-                            b.set_meta("time_since_death", 0.0)
-                        world.get_meta("dead_balls").append(b)
-                    else:
-                        if b.has_method("get_meta") and b.has_meta("time_since_death"):
-                            b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+		for b in balls:
+			if not b.alive:
+				if world != null and world.has_method("has_meta") and world.has_meta("dead_balls"):
+					if not world.get_meta("dead_balls").has(b):
+						if b.has_method("set_meta"):
+							b.set_meta("time_since_death", 0.0)
+						world.get_meta("dead_balls").append(b)
+					else:
+						if b.has_method("get_meta") and b.has_meta("time_since_death"):
+							b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
-        buff_timer -= delta
-        if buff_timer <= 0:
-            _pick_new_buff()
+		buff_timer -= delta
+		if buff_timer <= 0:
+			_pick_new_buff()
 
-        var dx = zone_target_x - zone_x
-        var dy = zone_target_y - zone_y
-        var dist_zone = sqrt(dx*dx + dy*dy)
-        if dist_zone > 5.0:
-            var move_speed = 15.0
-            zone_x += (dx / dist_zone) * move_speed * delta
-            zone_y += (dy / dist_zone) * move_speed * delta
-        else:
-            var arena_width = 1000.0
-            var arena_height = 1000.0
-            if world != null and "arena" in world and world.arena:
-                if "width" in world.arena:
-                    arena_width = float(world.arena.width)
-                if "height" in world.arena:
-                    arena_height = float(world.arena.height)
-            var buffer = max(100.0, zone_radius * 0.5)
-            zone_target_x = randf_range(buffer, arena_width - buffer)
-            zone_target_y = randf_range(buffer, arena_height - buffer)
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist_zone = sqrt(dx*dx + dy*dy)
+		if dist_zone > 5.0:
+			var move_speed = 15.0
+			zone_x += (dx / dist_zone) * move_speed * delta
+			zone_y += (dy / dist_zone) * move_speed * delta
+		else:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena:
+				if "width" in world.arena:
+					arena_width = float(world.arena.width)
+				if "height" in world.arena:
+					arena_height = float(world.arena.height)
+			var buffer = max(100.0, zone_radius * 0.5)
+			zone_target_x = randf_range(buffer, arena_width - buffer)
+			zone_target_y = randf_range(buffer, arena_height - buffer)
 
-        if zone_radius > min_zone_radius:
-            zone_radius -= shrink_rate * delta
-            if zone_radius <= min_zone_radius:
-                zone_radius = min_zone_radius
-                if not collapse_triggered:
-                    collapse_triggered = true
-                    if world.has_method("add_event"):
-                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
-        elif collapse_triggered:
-            if zone_radius > 0:
-                zone_radius -= shrink_rate * delta
-                if zone_radius < 0:
-                    zone_radius = 0.0
+		if zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * delta
+			if zone_radius <= min_zone_radius:
+				zone_radius = min_zone_radius
+				if not collapse_triggered:
+					collapse_triggered = true
+					if world.has_method("add_event"):
+						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+		elif collapse_triggered:
+			if zone_radius > 0:
+				zone_radius -= shrink_rate * delta
+				if zone_radius < 0:
+					zone_radius = 0.0
 
-            for b in balls:
-                if b.alive and b.ball_type != "spectator":
-                    var b_x = b.get("position").x if b.get("position") != null else b.get("x")
-                    var b_y = b.get("position").y if b.get("position") != null else b.get("y")
-                    var dx_pull = zone_x - b_x
-                    var dy_pull = zone_y - b_y
-                    var dist_pull = sqrt(dx_pull*dx_pull + dy_pull*dy_pull)
-                    if dist_pull > 0:
-                        var pull_strength = 2000.0
-                        if not "vx" in b: b.vx = 0.0
-                        if not "vy" in b: b.vy = 0.0
-                        b.vx += (dx_pull / dist_pull) * pull_strength * delta
-                        b.vy += (dy_pull / dist_pull) * pull_strength * delta
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+					var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+					var dx_pull = zone_x - b_x
+					var dy_pull = zone_y - b_y
+					var dist_pull = sqrt(dx_pull*dx_pull + dy_pull*dy_pull)
+					if dist_pull > 0:
+						var pull_strength = 2000.0
+						if not "vx" in b: b.vx = 0.0
+						if not "vy" in b: b.vy = 0.0
+						b.vx += (dx_pull / dist_pull) * pull_strength * delta
+						b.vy += (dy_pull / dist_pull) * pull_strength * delta
 
-        var damage_this_tick = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
+		var damage_this_tick = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
 
-        for b in balls:
-            if not b.alive or b.ball_type == "spectator":
-                continue
+		for b in balls:
+			if not b.alive or b.ball_type == "spectator":
+				continue
 
-            if not b.has_meta("base_speed"):
-                b.set_meta("base_speed", b.get("speed") if b.get("speed") != null else 100.0)
-            if not b.has_meta("base_damage"):
-                b.set_meta("base_damage", b.get("damage") if b.get("damage") != null else 10.0)
+			if not b.has_meta("base_speed"):
+				b.set_meta("base_speed", b.get("speed") if b.get("speed") != null else 100.0)
+			if not b.has_meta("base_damage"):
+				b.set_meta("base_damage", b.get("damage") if b.get("damage") != null else 10.0)
 
-            var b_x = b.get("position").x if b.get("position") != null else b.get("x")
-            var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+			var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+			var b_y = b.get("position").y if b.get("position") != null else b.get("y")
 
-            var dx_ball = b_x - zone_x
-            var dy_ball = b_y - zone_y
-            var dist_ball = sqrt(dx_ball*dx_ball + dy_ball*dy_ball)
+			var dx_ball = b_x - zone_x
+			var dy_ball = b_y - zone_y
+			var dist_ball = sqrt(dx_ball*dx_ball + dy_ball*dy_ball)
 
-            var in_buff_zone = dist_ball <= buff_zone_radius
+			var in_buff_zone = dist_ball <= buff_zone_radius
 
-            if in_buff_zone:
-                if buff_type == "speed":
-                    b.set("speed", b.get_meta("base_speed") * 1.5)
-                    b.set_meta("zone_modifier_speed", true)
-                elif buff_type == "damage":
-                    b.set("damage", b.get_meta("base_damage") * 1.5)
-                    b.set_meta("zone_modifier_damage", true)
-                elif buff_type == "heal":
-                    if "hp" in b and "max_hp" in b:
-                        b.hp = min(b.get("max_hp") if b.get("max_hp") != null else 100.0, b.hp + 30.0 * delta)
-                elif buff_type == "shield":
-                    b.set("shield", b.get("shield") if b.get("shield") != null else 0.0 + 10.0 * delta)
-                    if b.get("shield") > 50.0:
-                        b.set("shield", 50.0)
+			if in_buff_zone:
+				if buff_type == "speed":
+					b.set("speed", b.get_meta("base_speed") * 1.5)
+					b.set_meta("zone_modifier_speed", true)
+				elif buff_type == "damage":
+					b.set("damage", b.get_meta("base_damage") * 1.5)
+					b.set_meta("zone_modifier_damage", true)
+				elif buff_type == "heal":
+					if "hp" in b and "max_hp" in b:
+						b.hp = min(b.get("max_hp") if b.get("max_hp") != null else 100.0, b.hp + 30.0 * delta)
+				elif buff_type == "shield":
+					b.set("shield", b.get("shield") if b.get("shield") != null else 0.0 + 10.0 * delta)
+					if b.get("shield") > 50.0:
+						b.set("shield", 50.0)
 
-            if not in_buff_zone or buff_type != "speed":
-                if b.has_meta("zone_modifier_speed") and b.get_meta("zone_modifier_speed"):
-                    b.set("speed", b.get_meta("base_speed"))
-                    b.remove_meta("zone_modifier_speed")
+			if not in_buff_zone or buff_type != "speed":
+				if b.has_meta("zone_modifier_speed") and b.get_meta("zone_modifier_speed"):
+					b.set("speed", b.get_meta("base_speed"))
+					b.remove_meta("zone_modifier_speed")
 
-            if not in_buff_zone or buff_type != "damage":
-                if b.has_meta("zone_modifier_damage") and b.get_meta("zone_modifier_damage"):
-                    b.set("damage", b.get_meta("base_damage"))
-                    b.remove_meta("zone_modifier_damage")
+			if not in_buff_zone or buff_type != "damage":
+				if b.has_meta("zone_modifier_damage") and b.get_meta("zone_modifier_damage"):
+					b.set("damage", b.get_meta("base_damage"))
+					b.remove_meta("zone_modifier_damage")
 
-            if dist_ball > zone_radius:
-                if "hp" in b:
-                    b.hp -= damage_this_tick
-                    if b.hp <= 0:
-                        b.alive = false
-                        b.hp = 0
+			if dist_ball > zone_radius:
+				if "hp" in b:
+					b.hp -= damage_this_tick
+					if b.hp <= 0:
+						b.alive = false
+						b.hp = 0
 
 
 class DailyMutatorMode extends GameMode:
@@ -8899,182 +8991,182 @@ class DailyMutatorMode extends GameMode:
 
 
 class BlackMarketMode extends GameMode:
-    var currency_spawn_timer = 0.0
+	var currency_spawn_timer = 0.0
 
-    func _init():
-        super._init()
-        self.name = "Black Market"
-        self.description = "Collect currency to buy upgrades from wandering Black Markets."
+	func _init():
+		super._init()
+		self.name = "Black Market"
+		self.description = "Collect currency to buy upgrades from wandering Black Markets."
 
-    func setup(world, balls: Array) -> void:
-        super.setup(world, balls)
-        if not "currency_pickups" in world:
-            world.currency_pickups = []
-        if not "black_markets" in world:
-            world.black_markets = []
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "currency_pickups" in world:
+			world.currency_pickups = []
+		if not "black_markets" in world:
+			world.black_markets = []
 
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if world != null and "arena" in world and world.arena != null:
-            if "width" in world.arena: arena_width = float(world.arena.width)
-            if "height" in world.arena: arena_height = float(world.arena.height)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
 
-        for i in range(15):
-            world.currency_pickups.append({
-                "x": randf_range(50.0, arena_width - 50.0),
-                "y": randf_range(50.0, arena_height - 50.0),
-                "type": "currency"
-            })
+		for i in range(15):
+			world.currency_pickups.append({
+				"x": randf_range(50.0, arena_width - 50.0),
+				"y": randf_range(50.0, arena_height - 50.0),
+				"type": "currency"
+			})
 
-        for i in range(2):
-            world.black_markets.append({
-                "x": randf_range(100.0, arena_width - 100.0),
-                "y": randf_range(100.0, arena_height - 100.0),
-                "vx": randf_range(-20.0, 20.0),
-                "vy": randf_range(-20.0, 20.0),
-                "radius": 40.0
-            })
+		for i in range(2):
+			world.black_markets.append({
+				"x": randf_range(100.0, arena_width - 100.0),
+				"y": randf_range(100.0, arena_height - 100.0),
+				"vx": randf_range(-20.0, 20.0),
+				"vy": randf_range(-20.0, 20.0),
+				"radius": 40.0
+			})
 
-        for b in balls:
-            if typeof(b) == TYPE_DICTIONARY:
-                if b.get("ball_type", "") != "spectator":
-                    if not b.has("currency"): b["currency"] = 0
-                    if not b.has("team"): b["team"] = b.get("ball_type", "")
-                    b["purchase_cooldown"] = 0.0
-            else:
-                if b.get("ball_type") != "spectator":
-                    if not b.has_meta("currency"): b.set_meta("currency", 0)
-                    if not b.get("team"): b.set("team", b.get("ball_type"))
-                    if not b.has_meta("purchase_cooldown"): b.set_meta("purchase_cooldown", 0.0)
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type", "") != "spectator":
+					if not b.has("currency"): b["currency"] = 0
+					if not b.has("team"): b["team"] = b.get("ball_type", "")
+					b["purchase_cooldown"] = 0.0
+			else:
+				if b.get("ball_type") != "spectator":
+					if not b.has_meta("currency"): b.set_meta("currency", 0)
+					if not b.get("team"): b.set("team", b.get("ball_type"))
+					if not b.has_meta("purchase_cooldown"): b.set_meta("purchase_cooldown", 0.0)
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        super.tick(world, balls, delta)
-        var arena_width = 1000.0
-        var arena_height = 1000.0
-        if world != null and "arena" in world and world.arena != null:
-            if "width" in world.arena: arena_width = float(world.arena.width)
-            if "height" in world.arena: arena_height = float(world.arena.height)
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
 
-        currency_spawn_timer += delta
-        if currency_spawn_timer >= 2.0:
-            currency_spawn_timer = 0.0
-            if "currency_pickups" in world and world.currency_pickups.size() < 30:
-                world.currency_pickups.append({
-                    "x": randf_range(50.0, arena_width - 50.0),
-                    "y": randf_range(50.0, arena_height - 50.0),
-                    "type": "currency"
-                })
+		currency_spawn_timer += delta
+		if currency_spawn_timer >= 2.0:
+			currency_spawn_timer = 0.0
+			if "currency_pickups" in world and world.currency_pickups.size() < 30:
+				world.currency_pickups.append({
+					"x": randf_range(50.0, arena_width - 50.0),
+					"y": randf_range(50.0, arena_height - 50.0),
+					"type": "currency"
+				})
 
-        if "black_markets" in world:
-            for bm in world.black_markets:
-                bm["x"] += bm["vx"] * delta
-                bm["y"] += bm["vy"] * delta
+		if "black_markets" in world:
+			for bm in world.black_markets:
+				bm["x"] += bm["vx"] * delta
+				bm["y"] += bm["vy"] * delta
 
-                if bm["x"] < bm["radius"] or bm["x"] > arena_width - bm["radius"]:
-                    bm["vx"] *= -1
-                    bm["x"] = clamp(bm["x"], bm["radius"], arena_width - bm["radius"])
-                if bm["y"] < bm["radius"] or bm["y"] > arena_height - bm["radius"]:
-                    bm["vy"] *= -1
-                    bm["y"] = clamp(bm["y"], bm["radius"], arena_height - bm["radius"])
+				if bm["x"] < bm["radius"] or bm["x"] > arena_width - bm["radius"]:
+					bm["vx"] *= -1
+					bm["x"] = clamp(bm["x"], bm["radius"], arena_width - bm["radius"])
+				if bm["y"] < bm["radius"] or bm["y"] > arena_height - bm["radius"]:
+					bm["vy"] *= -1
+					bm["y"] = clamp(bm["y"], bm["radius"], arena_height - bm["radius"])
 
-        for b in balls:
-            var alive = false
-            var is_spec = false
-            var bx = 0.0
-            var by = 0.0
-            var bradius = 10.0
-            var bcurrency = 0
-            var bpcooldown = 0.0
+		for b in balls:
+			var alive = false
+			var is_spec = false
+			var bx = 0.0
+			var by = 0.0
+			var bradius = 10.0
+			var bcurrency = 0
+			var bpcooldown = 0.0
 
-            if typeof(b) == TYPE_DICTIONARY:
-                alive = b.get("alive", false)
-                is_spec = (b.get("ball_type", "") == "spectator")
-                bx = float(b.get("x", 0.0))
-                by = float(b.get("y", 0.0))
-                bradius = float(b.get("radius", 10.0))
-                bcurrency = int(b.get("currency", 0))
-                bpcooldown = float(b.get("purchase_cooldown", 0.0))
-            else:
-                alive = b.get("alive")
-                is_spec = (b.get("ball_type") == "spectator")
-                bx = float(b.get("x"))
-                by = float(b.get("y"))
-                bradius = float(b.get("radius"))
-                bcurrency = int(b.get_meta("currency")) if b.has_meta("currency") else 0
-                bpcooldown = float(b.get_meta("purchase_cooldown")) if b.has_meta("purchase_cooldown") else 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+				is_spec = (b.get("ball_type", "") == "spectator")
+				bx = float(b.get("x", 0.0))
+				by = float(b.get("y", 0.0))
+				bradius = float(b.get("radius", 10.0))
+				bcurrency = int(b.get("currency", 0))
+				bpcooldown = float(b.get("purchase_cooldown", 0.0))
+			else:
+				alive = b.get("alive")
+				is_spec = (b.get("ball_type") == "spectator")
+				bx = float(b.get("x"))
+				by = float(b.get("y"))
+				bradius = float(b.get("radius"))
+				bcurrency = int(b.get_meta("currency")) if b.has_meta("currency") else 0
+				bpcooldown = float(b.get_meta("purchase_cooldown")) if b.has_meta("purchase_cooldown") else 0.0
 
-            if not alive or is_spec:
-                continue
+			if not alive or is_spec:
+				continue
 
-            bpcooldown = max(0.0, bpcooldown - delta)
+			bpcooldown = max(0.0, bpcooldown - delta)
 
-            if "currency_pickups" in world:
-                var pickups_to_remove = []
-                for i in range(world.currency_pickups.size()):
-                    var c = world.currency_pickups[i]
-                    var dx = bx - float(c["x"])
-                    var dy = by - float(c["y"])
-                    var dist = sqrt(dx*dx + dy*dy)
-                    if dist <= bradius + 15.0:
-                        bcurrency += 1
-                        pickups_to_remove.append(i)
+			if "currency_pickups" in world:
+				var pickups_to_remove = []
+				for i in range(world.currency_pickups.size()):
+					var c = world.currency_pickups[i]
+					var dx = bx - float(c["x"])
+					var dy = by - float(c["y"])
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= bradius + 15.0:
+						bcurrency += 1
+						pickups_to_remove.append(i)
 
-                pickups_to_remove.sort_custom(func(a, b): return a > b)
-                for idx in pickups_to_remove:
-                    if idx < world.currency_pickups.size():
-                        world.currency_pickups.remove_at(idx)
+				pickups_to_remove.sort_custom(func(a, b): return a > b)
+				for idx in pickups_to_remove:
+					if idx < world.currency_pickups.size():
+						world.currency_pickups.remove_at(idx)
 
-            if bpcooldown <= 0.0 and bcurrency >= 5 and "black_markets" in world:
-                for bm in world.black_markets:
-                    var dx = bx - float(bm["x"])
-                    var dy = by - float(bm["y"])
-                    var dist = sqrt(dx*dx + dy*dy)
-                    if dist <= bradius + float(bm["radius"]):
-                        bcurrency -= 5
-                        bpcooldown = 5.0
+			if bpcooldown <= 0.0 and bcurrency >= 5 and "black_markets" in world:
+				for bm in world.black_markets:
+					var dx = bx - float(bm["x"])
+					var dy = by - float(bm["y"])
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= bradius + float(bm["radius"]):
+						bcurrency -= 5
+						bpcooldown = 5.0
 
-                        var upgrades = ["max_hp", "speed", "damage"]
-                        var upgrade_type = upgrades[randi() % upgrades.size()]
+						var upgrades = ["max_hp", "speed", "damage"]
+						var upgrade_type = upgrades[randi() % upgrades.size()]
 
-                        if typeof(b) == TYPE_DICTIONARY:
-                            if upgrade_type == "max_hp":
-                                if not b.has("base_max_hp"): b["base_max_hp"] = float(b.get("max_hp", 100.0))
-                                b["base_max_hp"] += 20.0
-                                b["max_hp"] = b["base_max_hp"]
-                                b["hp"] = min(float(b.get("hp", 100.0)) + 20.0, float(b["max_hp"]))
-                            elif upgrade_type == "speed":
-                                if not b.has("base_speed"): b["base_speed"] = float(b.get("speed", 100.0))
-                                b["base_speed"] += 15.0
-                                b["speed"] = b["base_speed"]
-                            elif upgrade_type == "damage":
-                                if not b.has("base_damage"): b["base_damage"] = float(b.get("damage", 10.0))
-                                b["base_damage"] += 5.0
-                                b["damage"] = b["base_damage"]
-                        else:
-                            if upgrade_type == "max_hp":
-                                var cur_base_mhp = b.get_meta("base_max_hp") if b.has_meta("base_max_hp") else float(b.get("max_hp"))
-                                b.set_meta("base_max_hp", cur_base_mhp + 20.0)
-                                b.set("max_hp", cur_base_mhp + 20.0)
-                                b.set("hp", min(float(b.get("hp")) + 20.0, float(b.get("max_hp"))))
-                            elif upgrade_type == "speed":
-                                var cur_base_spd = b.get_meta("base_speed") if b.has_meta("base_speed") else float(b.get("speed"))
-                                b.set_meta("base_speed", cur_base_spd + 15.0)
-                                b.set("speed", cur_base_spd + 15.0)
-                            elif upgrade_type == "damage":
-                                var cur_base_dmg = b.get_meta("base_damage") if b.has_meta("base_damage") else float(b.get("damage"))
-                                b.set_meta("base_damage", cur_base_dmg + 5.0)
-                                b.set("damage", cur_base_dmg + 5.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							if upgrade_type == "max_hp":
+								if not b.has("base_max_hp"): b["base_max_hp"] = float(b.get("max_hp", 100.0))
+								b["base_max_hp"] += 20.0
+								b["max_hp"] = b["base_max_hp"]
+								b["hp"] = min(float(b.get("hp", 100.0)) + 20.0, float(b["max_hp"]))
+							elif upgrade_type == "speed":
+								if not b.has("base_speed"): b["base_speed"] = float(b.get("speed", 100.0))
+								b["base_speed"] += 15.0
+								b["speed"] = b["base_speed"]
+							elif upgrade_type == "damage":
+								if not b.has("base_damage"): b["base_damage"] = float(b.get("damage", 10.0))
+								b["base_damage"] += 5.0
+								b["damage"] = b["base_damage"]
+						else:
+							if upgrade_type == "max_hp":
+								var cur_base_mhp = b.get_meta("base_max_hp") if b.has_meta("base_max_hp") else float(b.get("max_hp"))
+								b.set_meta("base_max_hp", cur_base_mhp + 20.0)
+								b.set("max_hp", cur_base_mhp + 20.0)
+								b.set("hp", min(float(b.get("hp")) + 20.0, float(b.get("max_hp"))))
+							elif upgrade_type == "speed":
+								var cur_base_spd = b.get_meta("base_speed") if b.has_meta("base_speed") else float(b.get("speed"))
+								b.set_meta("base_speed", cur_base_spd + 15.0)
+								b.set("speed", cur_base_spd + 15.0)
+							elif upgrade_type == "damage":
+								var cur_base_dmg = b.get_meta("base_damage") if b.has_meta("base_damage") else float(b.get("damage"))
+								b.set_meta("base_damage", cur_base_dmg + 5.0)
+								b.set("damage", cur_base_dmg + 5.0)
 
-                        if world.has_method("add_event"):
-                            world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
-                        break
+						if world.has_method("add_event"):
+							world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
+						break
 
-            if typeof(b) == TYPE_DICTIONARY:
-                b["currency"] = bcurrency
-                b["purchase_cooldown"] = bpcooldown
-            else:
-                b.set_meta("currency", bcurrency)
-                b.set_meta("purchase_cooldown", bpcooldown)
+			if typeof(b) == TYPE_DICTIONARY:
+				b["currency"] = bcurrency
+				b["purchase_cooldown"] = bpcooldown
+			else:
+				b.set_meta("currency", bcurrency)
+				b.set_meta("purchase_cooldown", bpcooldown)
 
 class FloorIsLavaMode extends GameMode:
 	var lava_radius: float = 2000.0
@@ -9962,42 +10054,42 @@ class PolarityShiftMode extends GameMode:
 
 
 class LunarEclipseEventMode extends GameMode:
-    var event_timer = 0.0
-    var event_active = false
-    var event_duration = 0.0
+	var event_timer = 0.0
+	var event_active = false
+	var event_duration = 0.0
 
-    func _init():
-        name = "Lunar Eclipse Event"
-        description = "A rare Lunar Eclipse triggers briefly, granting all day and night buffs while disabling perception limits."
+	func _init():
+		name = "Lunar Eclipse Event"
+		description = "A rare Lunar Eclipse triggers briefly, granting all day and night buffs while disabling perception limits."
 
-    func tick(world, balls: Array, delta: float = 0.016) -> void:
-        if not event_active:
-            event_timer += delta
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not event_active:
+			event_timer += delta
 
-        if not event_active and event_timer > 30.0:
-            if randf() < 0.2:  # 20% chance every 30 seconds
-                event_active = true
-                event_duration = 10.0
-                event_timer = 0.0
-                if world != null and world.has_method("add_event"):
-                    world.add_event("lunar_eclipse_warning", {"type": "weather_warning", "message": "A LUNAR ECLIPSE HAS BEGUN!"})
-                    world.add_event("visual_effect", {"type": "lunar_eclipse", "duration": 10.0})
-            else:
-                event_timer = 0.0
+		if not event_active and event_timer > 30.0:
+			if randf() < 0.2:  # 20% chance every 30 seconds
+				event_active = true
+				event_duration = 10.0
+				event_timer = 0.0
+				if world != null and world.has_method("add_event"):
+					world.add_event("lunar_eclipse_warning", {"type": "weather_warning", "message": "A LUNAR ECLIPSE HAS BEGUN!"})
+					world.add_event("visual_effect", {"type": "lunar_eclipse", "duration": 10.0})
+			else:
+				event_timer = 0.0
 
-        if event_active:
-            event_duration -= delta
-            if world != null and "arena" in world:
-                world.arena.is_lunar_eclipse = true
-                world.arena.is_eclipse = true
+		if event_active:
+			event_duration -= delta
+			if world != null and "arena" in world:
+				world.arena.is_lunar_eclipse = true
+				world.arena.is_eclipse = true
 
-            if event_duration <= 0:
-                event_active = false
-                if world != null and "arena" in world:
-                    world.arena.is_lunar_eclipse = false
-                    world.arena.is_eclipse = false
-                if world != null and world.has_method("add_event"):
-                    world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
+			if event_duration <= 0:
+				event_active = false
+				if world != null and "arena" in world:
+					world.arena.is_lunar_eclipse = false
+					world.arena.is_eclipse = false
+				if world != null and world.has_method("add_event"):
+					world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
 
 class RollingBouldersMode extends GameMode:
 	var spawn_timer = 0.0
@@ -10632,91 +10724,91 @@ class ArtifactUpgraderMode extends GameMode:
 
 
 class ClanTournamentMode extends GameMode:
-    var clans = {}
-    var scores = {}
-    var current_round = 1
-    var max_wins_needed = 2
-    var tournament_over = false
-    var winner_clan = null
+	var clans = {}
+	var scores = {}
+	var current_round = 1
+	var max_wins_needed = 2
+	var tournament_over = false
+	var winner_clan = null
 
-    func _init():
-        name = "clan_tournament"
-        desc = "Multi-round clan tournament"
+	func _init():
+		name = "clan_tournament"
+		desc = "Multi-round clan tournament"
 
-    func setup(world_ref, balls_ref: Array):
-        super.setup(world_ref, balls_ref)
-        clans = {}
-        scores = {"ClanA": 0, "ClanB": 0}
-        current_round = 1
-        tournament_over = false
-        winner_clan = null
+	func setup(world_ref, balls_ref: Array):
+		super.setup(world_ref, balls_ref)
+		clans = {}
+		scores = {"ClanA": 0, "ClanB": 0}
+		current_round = 1
+		tournament_over = false
+		winner_clan = null
 
-        if balls.size() >= 2:
-            var mid = balls.size() / 2
-            var g1 = []
-            var g2 = []
-            for i in range(mid):
-                g1.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
-            for i in range(mid, balls.size()):
-                g2.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
-            clans["ClanA"] = g1
-            clans["ClanB"] = g2
+		if balls.size() >= 2:
+			var mid = balls.size() / 2
+			var g1 = []
+			var g2 = []
+			for i in range(mid):
+				g1.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
+			for i in range(mid, balls.size()):
+				g2.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
+			clans["ClanA"] = g1
+			clans["ClanB"] = g2
 
-    func _tick(delta: float):
-        super._tick(delta)
-        if tournament_over:
-            return
+	func _tick(delta: float):
+		super._tick(delta)
+		if tournament_over:
+			return
 
-        var alive_counts = {"ClanA": 0, "ClanB": 0}
-        for clan in clans.keys():
-            for ball in world.balls:
-                var bid = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
-                var balive = ball.get_meta("alive") if ball.has_method("get_meta") and ball.has_meta("alive") else ball.alive
-                if clans[clan].has(bid) and balive:
-                    alive_counts[clan] += 1
+		var alive_counts = {"ClanA": 0, "ClanB": 0}
+		for clan in clans.keys():
+			for ball in world.balls:
+				var bid = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
+				var balive = ball.get_meta("alive") if ball.has_method("get_meta") and ball.has_meta("alive") else ball.alive
+				if clans[clan].has(bid) and balive:
+					alive_counts[clan] += 1
 
-        var round_winner = null
-        if alive_counts["ClanA"] > 0 and alive_counts["ClanB"] == 0:
-            round_winner = "ClanA"
-        elif alive_counts["ClanB"] > 0 and alive_counts["ClanA"] == 0:
-            round_winner = "ClanB"
-        elif alive_counts["ClanA"] == 0 and alive_counts["ClanB"] == 0:
-            round_winner = "Draw"
+		var round_winner = null
+		if alive_counts["ClanA"] > 0 and alive_counts["ClanB"] == 0:
+			round_winner = "ClanA"
+		elif alive_counts["ClanB"] > 0 and alive_counts["ClanA"] == 0:
+			round_winner = "ClanB"
+		elif alive_counts["ClanA"] == 0 and alive_counts["ClanB"] == 0:
+			round_winner = "Draw"
 
-        if round_winner != null:
-            if round_winner != "Draw":
-                scores[round_winner] += 1
+		if round_winner != null:
+			if round_winner != "Draw":
+				scores[round_winner] += 1
 
-            if scores["ClanA"] >= max_wins_needed:
-                _end_tournament("ClanA")
-            elif scores["ClanB"] >= max_wins_needed:
-                _end_tournament("ClanB")
-            else:
-                current_round += 1
-                _reset_round()
+			if scores["ClanA"] >= max_wins_needed:
+				_end_tournament("ClanA")
+			elif scores["ClanB"] >= max_wins_needed:
+				_end_tournament("ClanB")
+			else:
+				current_round += 1
+				_reset_round()
 
-    func _reset_round():
-        for ball in world.balls:
-            if ball.has_method("set_meta"):
-                ball.set_meta("alive", true)
-                var max_hp = ball.get_meta("max_hp") if ball.has_meta("max_hp") else 100.0
-                ball.set_meta("hp", max_hp)
-            else:
-                if "alive" in ball:
-                    ball.alive = true
-                if "hp" in ball:
-                    ball.hp = ball.max_hp if "max_hp" in ball else 100.0
+	func _reset_round():
+		for ball in world.balls:
+			if ball.has_method("set_meta"):
+				ball.set_meta("alive", true)
+				var max_hp = ball.get_meta("max_hp") if ball.has_meta("max_hp") else 100.0
+				ball.set_meta("hp", max_hp)
+			else:
+				if "alive" in ball:
+					ball.alive = true
+				if "hp" in ball:
+					ball.hp = ball.max_hp if "max_hp" in ball else 100.0
 
-    func _end_tournament(w_clan: String):
-        tournament_over = true
-        winner_clan = w_clan
-        var ClanManagerClass = load("res://src/system/clan.gd")
-        if ClanManagerClass:
-            var cm = ClanManagerClass.new()
-            if cm.has_method("add_clan_points"):
-                cm.add_clan_points(w_clan, 500)
-            if cm.has_method("unlock_cosmetic"):
-                cm.unlock_cosmetic(w_clan, "Tournament_Champion_Aura")
+	func _end_tournament(w_clan: String):
+		tournament_over = true
+		winner_clan = w_clan
+		var ClanManagerClass = load("res://src/system/clan.gd")
+		if ClanManagerClass:
+			var cm = ClanManagerClass.new()
+			if cm.has_method("add_clan_points"):
+				cm.add_clan_points(w_clan, 500)
+			if cm.has_method("unlock_cosmetic"):
+				cm.unlock_cosmetic(w_clan, "Tournament_Champion_Aura")
 
 class SweepingPaddlesMode extends GameMode:
 	var sweep_timer: float = 0.0
@@ -11435,11 +11527,11 @@ var GAME_MODES = {
 	"geometric_zone": GeometricZoneMode.new(),
 	"daily_mutator": DailyMutatorMode.new(),
 	"factory": FactoryMode.new(),
-    "mirror_walls": MirrorWallsMode.new(),
-    "stamina_regen": StaminaRegenMode.new(),
-    "zero_gravity": ZeroGravityMode.new(),
-    "magnetic_collisions": MagneticCollisionsMode.new(),
-    "polarity_shift": PolarityShiftMode.new(),
+	"mirror_walls": MirrorWallsMode.new(),
+	"stamina_regen": StaminaRegenMode.new(),
+	"zero_gravity": ZeroGravityMode.new(),
+	"magnetic_collisions": MagneticCollisionsMode.new(),
+	"polarity_shift": PolarityShiftMode.new(),
 	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
 	"maze_safe_zone": MazeSafeZoneMode.new(),
@@ -11453,13 +11545,13 @@ var GAME_MODES = {
 	"windstorm": WindstormMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
 	"modifier_zones_safe_zone": ModifierZonesSafeZoneMode.new(),
-    "draft_royale": DraftRoyaleMode.new(),
-    "tournament": TournamentMode.new(),
-    "bumper_balls": BumperBallsMode.new(),
-    "sumo_knockout": SumoKnockoutMode.new(),
+	"draft_royale": DraftRoyaleMode.new(),
+	"tournament": TournamentMode.new(),
+	"bumper_balls": BumperBallsMode.new(),
+	"sumo_knockout": SumoKnockoutMode.new(),
 	"bouncy_terrain": BouncyTerrainMode.new(),
 	"pinball": PinballMode.new(),
-    "portal_node": PortalNodeMode.new(),
+	"portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
 	"pitch_black": PitchBlackMode.new(),
 	"vision_reduced": VisionReducedMode.new(),
@@ -11469,41 +11561,41 @@ var GAME_MODES = {
 	"reverse_event": ReverseEventMode.new(),
 	"unstable_portals_event": UnstablePortalsEventMode.new(),
 	"minefield_event": MinefieldEventMode.new(),
-    "weather_chaos": WeatherChaosMode.new(),
+	"weather_chaos": WeatherChaosMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
-    "domination": DominationMode.new(),
-    "black_hole": BlackHoleMode.new(),
-    "sweeping_black_hole": SweepingBlackHoleMode.new(),
-    "gravity_well": GravityWellMode.new(),
-    "king_of_the_hill": KingOfTheHillMode.new(),
-    "moving_zone": MovingZoneMode.new(),
-    "vampire_royale": VampireRoyaleMode.new(),
-    "battle_royale": BattleRoyaleMode.new(),
-    "team_deathmatch": TeamDeathmatchMode.new(),
-    "zombie_infection": ZombieInfectionMode.new(),
-    "boss_fight": BossFightMode.new(),
-    "juggernaut": JuggernautMode.new(),
-    "guild_boss_fight": GuildBossFightMode.new(),
-    "vip_defense": VIPDefenseMode.new(),
-    "survival": SurvivalMode.new(),
-    "toxic_environment": ToxicEnvironmentMode.new(),
-    "capture_the_flag": CaptureTheFlagMode.new(),
-    "evolutionary_simulation": EvolutionarySimulationMode.new(),
-    "interactive_training": load("res://src/ai/interactive_training.gd").new(),
-    "shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
-    "inverse_safe_zone": InverseSafeZoneMode.new(),
-    "safe_zone": SafeZoneMode.new(),
-    "minefield_safe_zone": MinefieldSafeZoneMode.new(),
-    "dynamic_safe_zone": DynamicSafeZoneMode.new(),
-    "moving_safe_zone": MovingSafeZoneMode.new(),
-    "poison_gas_zone": PoisonGasZoneMode.new(),
-    "bounty_hunt": BountyHuntMode.new(),
-    "earthquake": EarthquakeMode.new(),
-    "inverse_mirror_arena": InverseMirrorArenaMode.new(),
-    "mirror_match": MirrorMatchMode.new(),
+	"domination": DominationMode.new(),
+	"black_hole": BlackHoleMode.new(),
+	"sweeping_black_hole": SweepingBlackHoleMode.new(),
+	"gravity_well": GravityWellMode.new(),
+	"king_of_the_hill": KingOfTheHillMode.new(),
+	"moving_zone": MovingZoneMode.new(),
+	"vampire_royale": VampireRoyaleMode.new(),
+	"battle_royale": BattleRoyaleMode.new(),
+	"team_deathmatch": TeamDeathmatchMode.new(),
+	"zombie_infection": ZombieInfectionMode.new(),
+	"boss_fight": BossFightMode.new(),
+	"juggernaut": JuggernautMode.new(),
+	"guild_boss_fight": GuildBossFightMode.new(),
+	"vip_defense": VIPDefenseMode.new(),
+	"survival": SurvivalMode.new(),
+	"toxic_environment": ToxicEnvironmentMode.new(),
+	"capture_the_flag": CaptureTheFlagMode.new(),
+	"evolutionary_simulation": EvolutionarySimulationMode.new(),
+	"interactive_training": load("res://src/ai/interactive_training.gd").new(),
+	"shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
+	"inverse_safe_zone": InverseSafeZoneMode.new(),
+	"safe_zone": SafeZoneMode.new(),
+	"minefield_safe_zone": MinefieldSafeZoneMode.new(),
+	"dynamic_safe_zone": DynamicSafeZoneMode.new(),
+	"moving_safe_zone": MovingSafeZoneMode.new(),
+	"poison_gas_zone": PoisonGasZoneMode.new(),
+	"bounty_hunt": BountyHuntMode.new(),
+	"earthquake": EarthquakeMode.new(),
+	"inverse_mirror_arena": InverseMirrorArenaMode.new(),
+	"mirror_match": MirrorMatchMode.new(),
 	"clone_chaos": CloneChaosMode.new(),
 	"volatile_clones": VolatileClonesMode.new(),
-    "supernova": SupernovaMode.new(),
+	"supernova": SupernovaMode.new(),
 	"echolocation": EcholocationMode.new(),
 	"body_swap": BodySwapMode.new(),
 	"hazard_billiards": HazardBilliardsMode.new(),

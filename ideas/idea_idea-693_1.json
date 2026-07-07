@@ -1,0 +1,4 @@
+{
+  "title": "Payload Turret Attachment",
+  "description": "Allow specific defensive or supportive entities to be 'attached' to payloads in Escort and Dual Payload modes. When a payload gathers enough players around it to reach a certain speed threshold, it temporarily spawns an automated defensive turret that damages or repels approaching enemies, making coordination even more rewarding."
+}

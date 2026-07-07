@@ -1601,20 +1601,54 @@ class DualPayloadMode(GameMode):
         import math
 
         if self.payload_red and getattr(self.payload_red, "alive", False):
+            nearby_red = 0
+            for b in balls:
+                if getattr(b, "ball_type", None) == "spectator":
+                    continue
+                if not getattr(b, "alive", False) or b == self.payload_red:
+                    continue
+                if getattr(b, "team", "") != "Red":
+                    continue
+
+                bdx = getattr(b, "x", 0) - getattr(self.payload_red, "x", 0)
+                bdy = getattr(b, "y", 0) - getattr(self.payload_red, "y", 0)
+                if math.hypot(bdx, bdy) <= 150.0:
+                    nearby_red += 1
+
+            speed_mult_red = 1.0 + (nearby_red * 0.5)
+
             dx = center_x - getattr(self.payload_red, "x", 0)
             dy = center_y - getattr(self.payload_red, "y", 0)
             dist = math.hypot(dx, dy)
             if dist > 5.0:
-                self.payload_red.x += (dx / dist) * getattr(self.payload_red, "speed", 10.0) * delta
-                self.payload_red.y += (dy / dist) * getattr(self.payload_red, "speed", 10.0) * delta
+                base_speed = getattr(self.payload_red, "speed", 10.0)
+                self.payload_red.x += (dx / dist) * base_speed * speed_mult_red * delta
+                self.payload_red.y += (dy / dist) * base_speed * speed_mult_red * delta
 
         if self.payload_blue and getattr(self.payload_blue, "alive", False):
+            nearby_blue = 0
+            for b in balls:
+                if getattr(b, "ball_type", None) == "spectator":
+                    continue
+                if not getattr(b, "alive", False) or b == self.payload_blue:
+                    continue
+                if getattr(b, "team", "") != "Blue":
+                    continue
+
+                bdx = getattr(b, "x", 0) - getattr(self.payload_blue, "x", 0)
+                bdy = getattr(b, "y", 0) - getattr(self.payload_blue, "y", 0)
+                if math.hypot(bdx, bdy) <= 150.0:
+                    nearby_blue += 1
+
+            speed_mult_blue = 1.0 + (nearby_blue * 0.5)
+
             dx = center_x - getattr(self.payload_blue, "x", 0)
             dy = center_y - getattr(self.payload_blue, "y", 0)
             dist = math.hypot(dx, dy)
             if dist > 5.0:
-                self.payload_blue.x += (dx / dist) * getattr(self.payload_blue, "speed", 10.0) * delta
-                self.payload_blue.y += (dy / dist) * getattr(self.payload_blue, "speed", 10.0) * delta
+                base_speed = getattr(self.payload_blue, "speed", 10.0)
+                self.payload_blue.x += (dx / dist) * base_speed * speed_mult_blue * delta
+                self.payload_blue.y += (dy / dist) * base_speed * speed_mult_blue * delta
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         red_alive = self.payload_red and getattr(self.payload_red, "alive", False)
@@ -1697,12 +1731,32 @@ class EscortMode(GameMode):
 
         if self.payload and getattr(self.payload, "alive", False):
             import math
+
+            nearby_teammates = 0
+            payload_team = getattr(self.payload, "team", "")
+            for b in balls:
+                if getattr(b, "ball_type", None) == "spectator":
+                    continue
+                if not getattr(b, "alive", False) or b == self.payload:
+                    continue
+                if getattr(b, "team", "") != payload_team:
+                    continue
+
+                bdx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
+                bdy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
+                bdist = math.hypot(bdx, bdy)
+                if bdist <= 150.0:
+                    nearby_teammates += 1
+
+            speed_mult = 1.0 + (nearby_teammates * 0.5)
+
             dx = self.goal_x - getattr(self.payload, "x", 0)
             dy = self.goal_y - getattr(self.payload, "y", 0)
             dist = math.hypot(dx, dy)
             if dist > 0:
-                self.payload.x += (dx / dist) * getattr(self.payload, "speed", 0.5)
-                self.payload.y += (dy / dist) * getattr(self.payload, "speed", 0.5)
+                base_speed = getattr(self.payload, "speed", 0.5)
+                self.payload.x += (dx / dist) * base_speed * speed_mult
+                self.payload.y += (dy / dist) * base_speed * speed_mult
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         if not self.payload:
