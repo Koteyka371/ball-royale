@@ -6183,7 +6183,7 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
-                elif hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
+                elif hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
@@ -6212,7 +6212,7 @@ func execute(strategy: String, delta: float):
                         if hazard.has_meta("lifetime"):
                             h_lifetime = hazard.get_meta("lifetime")
 
-                        if hazard.kind in ["black_hole", "massive_black_hole"] and h_lifetime >= 10.0:
+                        if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"] and h_lifetime >= 10.0:
                             hazard.set_meta("duration", 0.0)
 
                             if "events" in self.world:
@@ -6272,7 +6272,7 @@ func execute(strategy: String, delta: float):
                         var h_dur = 1.0
                         if hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
 
-                        if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"] and "boosters" in self.world:
+                        if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"] and "boosters" in self.world:
                             for b in self.world.boosters:
                                 var bdx = hazard.x - b.x
                                 var bdy = hazard.y - b.y
@@ -6285,12 +6285,12 @@ func execute(strategy: String, delta: float):
                                     if bdist > bmin_dist:
                                         bmin_dist = bdist
                                     var lifetime_mult = 1.0
-                                    if hazard.kind in ["black_hole", "massive_black_hole"] and hazard.has_meta("lifetime"):
+                                    if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"] and hazard.has_meta("lifetime"):
                                         lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
                                     var bpull_strength = (hazard.radius * 2.0 / bmin_dist) * 50.0 * delta * lifetime_mult
                                     b.x += bnx * bpull_strength
                                     b.y += bny * bpull_strength
-                                    if hazard.kind in ["black_hole", "massive_black_hole"]:
+                                    if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"]:
                                         var has_vx = false
                                         if "vx" in b: has_vx = true
                                         elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): has_vx = true
@@ -6325,13 +6325,13 @@ func execute(strategy: String, delta: float):
                     var h_dur = 1.0
                     if hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
 
-                    if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
+                    if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
                         var dist_sq = dx * dx + dy * dy
                         if dist_sq > 0.0001:
                             var lifetime_mult = 1.0
-                            if hazard.kind in ["black_hole", "massive_black_hole"] and hazard.has_meta("lifetime"):
+                            if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"] and hazard.has_meta("lifetime"):
                                 lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
                             var dist = sqrt(dist_sq)
                             var nx = dx / dist
@@ -6342,7 +6342,7 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta * lifetime_mult
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
-                            if hazard.kind in ["black_hole", "massive_black_hole"]:
+                            if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"]:
                                 var has_vx = false
                                 if "vx" in self.ball: has_vx = true
                                 elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vx"): has_vx = true
@@ -6872,7 +6872,7 @@ func execute(strategy: String, delta: float):
                                         self.ball.set_meta("stun_timer", 1.0)
                                 self.ball.x = old_x
                                 self.ball.y = old_y
-                            elif trap_variant == "black_hole":
+                            elif trap_variant == "black_hole" or trap_variant == "mini_black_hole":
                                 if world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
                                     var bh = null
                                     if load("res://src/arena/procedural_arena.gd") != null:
@@ -6881,8 +6881,8 @@ func execute(strategy: String, delta: float):
                                         bh.id = world.get_arena().hazards.size() + 8000
                                         bh.x = hazard.x
                                         bh.y = hazard.y
-                                        bh.radius = 100.0
-                                        bh.kind = "black_hole"
+                                        bh.radius = 75.0 if trap_variant == "mini_black_hole" else 100.0
+                                        bh.kind = "mini_black_hole" if trap_variant == "mini_black_hole" else "black_hole"
                                         bh.damage = 0.0
                                         bh.set_meta("duration", 3.0)
                                         world.get_arena().hazards.append(bh)
