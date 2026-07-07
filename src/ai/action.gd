@@ -5998,14 +5998,14 @@ func execute(strategy: String, delta: float):
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
-                elif hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
+                elif hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
                         hazard.set_meta("last_updated_tick", current_tick)
                         if not hazard.has_meta("vx"):
-                            if hazard.kind in ["tornado", "local_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
+                            if hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
                                 hazard.set_meta("vx", randf_range(-100.0, 100.0))
                                 hazard.set_meta("vy", randf_range(-100.0, 100.0))
                             else:
@@ -6087,7 +6087,7 @@ func execute(strategy: String, delta: float):
                         var h_dur = 1.0
                         if hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
 
-                        if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado"] and "boosters" in self.world:
+                        if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"] and "boosters" in self.world:
                             for b in self.world.boosters:
                                 var bdx = hazard.x - b.x
                                 var bdy = hazard.y - b.y
@@ -6130,7 +6130,7 @@ func execute(strategy: String, delta: float):
                                                     elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vx", b_vx + bnx * slingshot_strength * delta)
                                                     if "vy" in b: b.vy += bny * slingshot_strength * delta
                                                     elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vy", b_vy + bny * slingshot_strength * delta)
-                                    if hazard.kind in ["tornado", "local_tornado"]:
+                                    if hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
                                         var tx = -bny
                                         var ty = bnx
                                         var orbital_strength = bpull_strength * 1.5
@@ -6140,7 +6140,7 @@ func execute(strategy: String, delta: float):
                     var h_dur = 1.0
                     if hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
 
-                    if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado"]:
+                    if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
                         var dist_sq = dx * dx + dy * dy
@@ -7162,7 +7162,7 @@ func execute(strategy: String, delta: float):
                             self.ball.attack_timer += delta * (1.0 - speed_mult)
                         if "skill_timer" in self.ball and self.ball.skill_timer > 0:
                             self.ball.skill_timer += delta * (1.0 - speed_mult)
-                    elif hazard.kind in ["tornado", "local_tornado"]:
+                    elif hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
                         var md = max(0.1, dist)
@@ -7210,6 +7210,19 @@ func execute(strategy: String, delta: float):
                                 pass
                             else:
                                 self.ball.confusion_timer = 3.0
+
+                            if hazard.kind in ["firenado", "local_firenado"]:
+                                if "burn_timer" in self.ball:
+                                    self.ball.burn_timer = max(self.ball.burn_timer, 5.0)
+                                elif self.ball.has_method("set_meta"):
+                                    var current = self.ball.get_meta("burn_timer") if self.ball.has_meta("burn_timer") else 0.0
+                                    self.ball.set_meta("burn_timer", max(current, 5.0))
+                            elif hazard.kind in ["poison_tornado", "local_poison_tornado"]:
+                                if "poison_timer" in self.ball:
+                                    self.ball.poison_timer = max(self.ball.poison_timer, 5.0)
+                                elif self.ball.has_method("set_meta"):
+                                    var current = self.ball.get_meta("poison_timer") if self.ball.has_meta("poison_timer") else 0.0
+                                    self.ball.set_meta("poison_timer", max(current, 5.0))
                     elif hazard.kind == "lightning_strike":
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)
