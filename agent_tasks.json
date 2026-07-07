@@ -11258,7 +11258,7 @@
     },
     {
       "id": "idea-653",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shield Generator Booster",
@@ -19235,6 +19235,74 @@
         "src/ai/temperature_mechanics.py",
         "src/ai/temperature_mechanics.gd",
         "tests/test_temperature_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1122",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Teleporter Mode",
+      "description": "Periodically, portals randomly appear on the map and teleport balls to random locations, breaking positioning strategies.",
+      "allowed_paths": [
+        "src/ai/random_teleporter.py",
+        "src/ai/random_teleporter.gd",
+        "tests/test_random_teleporter.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1123",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Expanding Healing Zone",
+      "description": "A battle royale variation where instead of a shrinking danger zone, there's a slow-moving expanding healing zone. Being inside heals players but makes them more visible to enemies.",
+      "allowed_paths": [
+        "src/ai/expanding_healing_zone.py",
+        "src/ai/expanding_healing_zone.gd",
+        "tests/test_expanding_healing_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1124",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Booster Mode",
+      "description": "A game mode where all boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect.",
+      "allowed_paths": [
+        "src/ai/reverse_booster.py",
+        "src/ai/reverse_booster.gd",
+        "tests/test_reverse_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1125",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Phase-Shifting Hazard",
+      "description": "A new hazard type that cycles between solid (blocks movement) and damaging (passes through but deals heavy damage over time).",
+      "allowed_paths": [
+        "src/arena/phase_shifting.py",
+        "src/arena/phase_shifting.gd",
+        "tests/test_phase_shifting.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

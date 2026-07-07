@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-653] Shield Generator Booster — *2026-07-07 20:22:03 UTC*
+
+A booster that gives the collecting ball a temporary shield that absorbs the next incoming instance of damage.
+
+---
+
 ## [idea-691] Random Item Re-roll Mode — *2026-07-07 20:19:33 UTC*
 
 Periodically, all active items and boosters in the arena randomly transform into different item types, keeping players constantly adapting.
