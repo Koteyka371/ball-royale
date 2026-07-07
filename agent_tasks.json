@@ -11156,7 +11156,7 @@
     },
     {
       "id": "idea-647",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Poison Gas Zone",
@@ -18538,6 +18538,40 @@
         "src/ai/bounty_contract.py",
         "src/ai/bounty_contract.gd",
         "tests/test_bounty_contract.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1081",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Bomb Hazard",
+      "description": "Introduce a new 'Sticky Bomb' item or hazard. If a player touches it, it attaches to them. They have 3 seconds to pass it to another player before it explodes, dealing heavy damage.",
+      "allowed_paths": [
+        "src/arena/sticky_bomb.py",
+        "src/arena/sticky_bomb.gd",
+        "tests/test_sticky_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1082",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Ricochet",
+      "description": "Allow lightning strike attacks to bounce from the first target to up to 3 nearby enemies, dealing reduced damage per bounce, making it more effective against grouped enemies.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_ricochet.py",
+        "src/ai/chain_lightning_ricochet.gd",
+        "tests/test_chain_lightning_ricochet.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

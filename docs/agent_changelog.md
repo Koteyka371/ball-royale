@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-647] Shrinking Poison Gas Zone — *2026-07-07 17:07:16 UTC*
+
+Add a dynamic battle royale mechanic where the arena is gradually engulfed by a poison gas zone that moves randomly, forcing players closer together and introducing severe DoT damage outside the safe area.
+
+---
+
 ## [idea-634] Wall Jump Ability — *2026-07-07 16:46:17 UTC*
 
 Introduce a new active skill for certain ball types (e.g., Ninja or Acrobat) that allows them to purposefully dash into an arena boundary to trigger an instant, high-speed 'Wall Jump' ricochet, dealing massive damage to any entity caught in the rebound path while briefly granting immunity.
