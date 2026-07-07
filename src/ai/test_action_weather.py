@@ -164,3 +164,69 @@ def test_lightning_strike_metal_ball():
 
 if __name__ == "__main__":
     test_lightning_strike_metal_ball()
+
+def test_elemental_burst_water_terrain():
+    world = MockWorld(is_raining=False)
+    ball = MockBall(0, 0)
+    ball.active_skill = "elemental_burst"
+    world.balls.append(ball)
+
+    class MockHazard:
+        def __init__(self, kind, x, y, radius):
+            self.kind = kind
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.active = True
+
+    water_puddle = MockHazard("water_puddle", 0, 0, 50)
+    world.arena.hazards.append(water_puddle)
+
+    enemies = [
+        MockEntity(50, 0, hp=100),
+        MockEntity(150, 0, hp=100)
+    ]
+    world.balls.extend(enemies)
+
+    action = Action(ball, world)
+    action.execute("use_skill", 1.0)
+
+    # Base is 20, rain modifier multiplies by 1.5 = 30.
+    assert enemies[0].hp == 100 - 30
+    assert enemies[1].hp == 100 - 15
+    print("Success test_elemental_burst_water_terrain")
+
+def test_elemental_burst_ice_terrain():
+    world = MockWorld(is_raining=False)
+    ball = MockBall(0, 0)
+    ball.active_skill = "elemental_burst"
+    world.balls.append(ball)
+
+    class MockHazard:
+        def __init__(self, kind, x, y, radius):
+            self.kind = kind
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.active = True
+
+    ice_patch = MockHazard("ice_patch", 0, 0, 50)
+    world.arena.hazards.append(ice_patch)
+
+    enemies = [
+        MockEntity(50, 0, hp=100)
+    ]
+    world.balls.extend(enemies)
+
+    action = Action(ball, world)
+    action.execute("use_skill", 1.0)
+
+    # Base damage is 20, no rain chain.
+    assert enemies[0].hp == 100 - 20
+    # Freeze should set stun_timer to 4.0
+    assert getattr(enemies[0], "stun_timer", 0.0) == 4.0
+    print("Success test_elemental_burst_ice_terrain")
+
+if __name__ == '__main__':
+    test_elemental_burst_water_terrain()
+    test_elemental_burst_ice_terrain()

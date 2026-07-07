@@ -14049,6 +14049,49 @@ func _use_skill():
                 if weather in ["fog", "snow", "blizzard"]:
                     is_foggy = true
 
+            var freezes_enemies = false
+            if self.world != null and "arena" in self.world and self.world.arena != null:
+                var hazards = []
+                if "hazards" in self.world.arena:
+                    hazards = self.world.arena.hazards
+                elif self.world.arena.has_method("get_meta") and self.world.arena.has_meta("hazards"):
+                    hazards = self.world.arena.get_meta("hazards")
+                for h in hazards:
+                    var h_active = true
+                    if "active" in h:
+                        h_active = h.active
+                    elif typeof(h) == TYPE_DICTIONARY and h.has("active"):
+                        h_active = h.active
+                    if h_active:
+                        var h_kind = ""
+                        if "kind" in h:
+                            h_kind = h.kind
+                        elif typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+                            h_kind = h.kind
+
+                        var h_x = 0.0
+                        var h_y = 0.0
+                        var h_radius = 0.0
+                        if typeof(h) == TYPE_DICTIONARY:
+                            h_x = h.get("x", 0.0)
+                            h_y = h.get("y", 0.0)
+                            h_radius = h.get("radius", 0.0)
+                        else:
+                            if "x" in h: h_x = h.x
+                            if "y" in h: h_y = h.y
+                            if "radius" in h: h_radius = h.radius
+
+                        if h_kind in ["puddle", "water_puddle", "vampiric_puddle"]:
+                            var dx = h_x - self.ball.x
+                            var dy = h_y - self.ball.y
+                            if sqrt(dx*dx + dy*dy) <= burst_radius + h_radius:
+                                is_raining = true
+                        elif h_kind in ["ice_patch", "ice_patches"]:
+                            var dx = h_x - self.ball.x
+                            var dy = h_y - self.ball.y
+                            if sqrt(dx*dx + dy*dy) <= burst_radius + h_radius:
+                                freezes_enemies = true
+
             if is_raining:
                 burst_radius *= 1.5
                 base_burst_dmg *= 1.5
@@ -14071,7 +14114,7 @@ func _use_skill():
                                 e_stunned = enemy.is_stunned
                             elif enemy.has_method("has_meta") and enemy.has_meta("is_stunned"):
                                 e_stunned = enemy.get_meta("is_stunned")
-                            if not e_stunned:
+                            if not e_stunned or freezes_enemies:
                                 if "is_stunned" in enemy:
                                     enemy.is_stunned = true
                                 else:
@@ -14081,7 +14124,10 @@ func _use_skill():
                                     e_stun_timer = enemy.stun_timer
                                 elif enemy.has_method("has_meta") and enemy.has_meta("stun_timer"):
                                     e_stun_timer = enemy.get_meta("stun_timer")
-                                e_stun_timer = max(e_stun_timer, 2.0)
+                                if freezes_enemies:
+                                    e_stun_timer = max(e_stun_timer, 4.0)
+                                else:
+                                    e_stun_timer = max(e_stun_timer, 2.0)
                                 if "stun_timer" in enemy:
                                     enemy.stun_timer = e_stun_timer
                                 else:
@@ -14107,7 +14153,7 @@ func _use_skill():
                                         e_stunned = enemy.is_stunned
                                     elif enemy.has_method("has_meta") and enemy.has_meta("is_stunned"):
                                         e_stunned = enemy.get_meta("is_stunned")
-                                    if not e_stunned:
+                                    if not e_stunned or freezes_enemies:
                                         if "is_stunned" in enemy:
                                             enemy.is_stunned = true
                                         else:
@@ -14117,7 +14163,10 @@ func _use_skill():
                                             e_stun_timer = enemy.stun_timer
                                         elif enemy.has_method("has_meta") and enemy.has_meta("stun_timer"):
                                             e_stun_timer = enemy.get_meta("stun_timer")
-                                        e_stun_timer = max(e_stun_timer, 1.0)
+                                        if freezes_enemies:
+                                            e_stun_timer = max(e_stun_timer, 4.0)
+                                        else:
+                                            e_stun_timer = max(e_stun_timer, 1.0)
                                         if "stun_timer" in enemy:
                                             enemy.stun_timer = e_stun_timer
                                         else:
@@ -14138,13 +14187,13 @@ func _use_skill():
                                     arena_raining = self.world.arena.is_raining
                                 elif self.world.arena.has_method("has_meta") and self.world.arena.has_meta("is_raining"):
                                     arena_raining = self.world.arena.get_meta("is_raining")
-                            if arena_raining:
+                            if arena_raining or freezes_enemies:
                                 var e_stunned = false
                                 if "is_stunned" in enemy:
                                     e_stunned = enemy.is_stunned
                                 elif enemy.has_method("has_meta") and enemy.has_meta("is_stunned"):
                                     e_stunned = enemy.get_meta("is_stunned")
-                                if not e_stunned:
+                                if not e_stunned or freezes_enemies:
                                     if "is_stunned" in enemy:
                                         enemy.is_stunned = true
                                     else:
@@ -14154,7 +14203,10 @@ func _use_skill():
                                         e_stun_timer = enemy.stun_timer
                                     elif enemy.has_method("has_meta") and enemy.has_meta("stun_timer"):
                                         e_stun_timer = enemy.get_meta("stun_timer")
-                                    e_stun_timer = max(e_stun_timer, 2.0)
+                                    if freezes_enemies:
+                                        e_stun_timer = max(e_stun_timer, 4.0)
+                                    else:
+                                        e_stun_timer = max(e_stun_timer, 2.0)
                                     if "stun_timer" in enemy:
                                         enemy.stun_timer = e_stun_timer
                                     else:
