@@ -10983,6 +10983,108 @@ class ExtremeWeatherMode extends GameMode:
 					b.x += cos(angle) * 100.0 * delta
 					b.y += sin(angle) * 100.0 * delta
 
+
+class JuggernautMode extends GameMode:
+	func _init() -> void:
+		name = "Juggernaut"
+		description = "Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
+
+		if valid_balls.size() > 0:
+			var boss = valid_balls[0]
+			_make_juggernaut(world, boss)
+
+			for i in range(1, valid_balls.size()):
+				valid_balls[i].team = "Hunters"
+				if "max_hp" in valid_balls[i]:
+					valid_balls[i].max_hp *= 0.8
+					valid_balls[i].hp = valid_balls[i].max_hp
+
+	func _make_juggernaut(world, b) -> void:
+		b.team = "Juggernaut"
+		if "max_hp" in b:
+			b.max_hp *= 10.0
+			b.hp = b.max_hp
+		if "damage" in b:
+			b.damage *= 2.0
+		if "radius" in b:
+			b.radius *= 3.0
+		elif b.has_method("has_meta") and b.has_meta("radius"):
+			b.set_meta("radius", b.get_meta("radius") * 3.0)
+		else:
+			b.set_meta("radius", 30.0) if b.has_method("set_meta") else null
+
+		if "base_speed" in b:
+			b.base_speed *= 0.6
+		elif b.has_method("has_meta") and b.has_meta("base_speed"):
+			b.set_meta("base_speed", b.get_meta("base_speed") * 0.6)
+
+		if "mass" in b:
+			b.mass *= 5.0
+		elif b.has_method("has_meta") and b.has_meta("mass"):
+			b.set_meta("mass", b.get_meta("mass") * 5.0)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var dead_juggernauts = []
+		for b in balls:
+			if "team" in b and b.team == "Juggernaut" and not b.alive:
+				dead_juggernauts.append(b)
+
+		for dead_jug in dead_juggernauts:
+			var killer_id = dead_jug.killer if "killer" in dead_jug else null
+			if killer_id != null:
+				var killer = null
+				for b in balls:
+					if "id" in b and b.id == killer_id:
+						killer = b
+						break
+				if killer != null and killer.alive:
+					_make_juggernaut(world, killer)
+					if world != null and world.has_method("add_event"):
+						world.add_event("juggernaut_change", {"message": "A new Juggernaut has emerged!"})
+			dead_jug.team = "Dead"
+
+		for b in balls:
+			if "team" in b and b.team == "Juggernaut" and b.alive:
+				if "hp" in b and "max_hp" in b:
+					b.hp = min(b.hp + 5.0 * delta, b.max_hp)
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
+
+		if alive.size() == 0:
+			return "Draw"
+
+		var juggernaut_alive = false
+		var hunters_alive = false
+
+		for b in alive:
+			if "team" in b and b.team == "Juggernaut":
+				juggernaut_alive = true
+			elif "team" in b and b.team == "Hunters":
+				hunters_alive = true
+
+		if not juggernaut_alive:
+			return "Hunters"
+		if not hunters_alive:
+			return "Juggernaut"
+
+		return null
+
 var GAME_MODES = {
 	"extreme_weather": ExtremeWeatherMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
@@ -11047,6 +11149,7 @@ var GAME_MODES = {
     "team_deathmatch": TeamDeathmatchMode.new(),
     "zombie_infection": ZombieInfectionMode.new(),
     "boss_fight": BossFightMode.new(),
+    "juggernaut": JuggernautMode.new(),
     "guild_boss_fight": GuildBossFightMode.new(),
     "vip_defense": VIPDefenseMode.new(),
     "survival": SurvivalMode.new(),
