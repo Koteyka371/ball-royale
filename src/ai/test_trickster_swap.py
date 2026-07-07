@@ -56,3 +56,37 @@ def test_trickster_swap():
 
     # Check confusion applied
     assert target.confusion_timer >= 3.0
+
+
+def test_trickster_swap_with_decoy():
+    trickster = MockBall(1, 100.0, 100.0, team="A")
+    trickster.burn_timer = 5.0
+
+    # Close enemy
+    target = MockBall(2, 150.0, 150.0, team="B")
+
+    # Far decoy owned by trickster
+    decoy = MockBall(3, 300.0, 300.0, team="A")
+    decoy.is_decoy = True
+    decoy.owner_id = trickster.id
+
+    world = MockWorld([trickster, target, decoy])
+    action = Action(trickster, world)
+
+    # Run skill
+    action._use_skill()
+
+    # Trickster should swap with the decoy, which is furthest, not the closer target
+    assert trickster.x == 300.0
+    assert trickster.y == 300.0
+    assert decoy.x == 100.0
+    assert decoy.y == 100.0
+
+    # Target enemy shouldn't move
+    assert target.x == 150.0
+    assert target.y == 150.0
+
+    # Statuses transferred to decoy
+    assert trickster.burn_timer == 0.0
+    assert decoy.burn_timer == 5.0
+    assert decoy.confusion_timer >= 3.0
