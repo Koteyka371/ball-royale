@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-674] Terrain interactions with elements — *2026-07-07 19:07:06 UTC*
+
+When elemental attacks like elemental burst hit certain terrains (e.g. water puddles or ice), they trigger secondary effects such as extending the radius or freezing enemies.
+
+---
+
 ## [idea-650] Tsunami Event — *2026-07-07 19:07:01 UTC*
 
 A weather event that acts as a hazard where a giant wave sweeps across the screen and moves all players to a certain side, causing damage if they hit walls.
