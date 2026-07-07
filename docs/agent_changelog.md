@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-665] Gravity Well Trap — *2026-07-07 21:55:30 UTC*
+
+A placeable trap that, when triggered, creates a temporary miniature black hole that violently pulls nearby balls and items towards the center, ignoring collision lines. It doesn't deal damage itself but leaves players vulnerable to AoE attacks.
+
+---
+
 ## [idea-693] Payload Speed Boost — *2026-07-07 21:51:10 UTC*
 
 The payload moves faster when more teammates are near it.

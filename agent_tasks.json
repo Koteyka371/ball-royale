@@ -11462,7 +11462,7 @@
     },
     {
       "id": "idea-665",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Well Trap",
@@ -19661,6 +19661,40 @@
         "src/ai/payload_swap.py",
         "src/ai/payload_swap.gd",
         "tests/test_payload_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1147",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Abilities Based on Teammates",
+      "description": "As more teammates stand near a payload in Tug of War or Escort mode, the payload gains temporary abilities (like a small healing aura, a reflecting shield, or damaging pulses to enemies).",
+      "allowed_paths": [
+        "src/ai/payload_abilities_based_on_teammates.py",
+        "src/ai/payload_abilities_based_on_teammates.gd",
+        "tests/test_payload_abilities_based_on_teammates.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1148",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Traps Mode",
+      "description": "In payload modes, when the payload crosses certain points in the arena, it drops temporary static traps or buff zones for its controlling team to use.",
+      "allowed_paths": [
+        "src/arena/payload_traps.py",
+        "src/arena/payload_traps.gd",
+        "tests/test_payload_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
