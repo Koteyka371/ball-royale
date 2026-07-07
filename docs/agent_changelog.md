@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-663] Grappling Hook Booster — *2026-07-07 17:25:10 UTC*
+
+A consumable booster that allows a ball to grapple onto another ball or the wall and pull themselves quickly towards it, giving them bursts of mobility.
+
+---
+
 ## [idea-599] Black Hole Generator Item — *2026-07-07 17:25:05 UTC*
 
 An active item that allows players to deploy a miniature black hole. The black hole slowly pulls nearby enemies towards its center and deals continuous damage while they remain within its event horizon. This adds area-denial capabilities and creates opportunities for combo attacks when enemies are grouped up.
