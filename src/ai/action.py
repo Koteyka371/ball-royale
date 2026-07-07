@@ -694,8 +694,9 @@ class Action:
         # Check for Thermal Goggles loadout item to ignore fog
         cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
         ignores_fog = cosmetic == "thermal_goggles"
+        ignores_rain = cosmetic in ["rain_goggles", "waterproof_goggles"]
 
-        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_raining", False):
+        if hasattr(self.world, "arena") and getattr(self.world.arena, "is_raining", False) and not ignores_rain:
             pr *= 0.6  # Reduced perception in rain
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", False) and not ignores_fog:
             pr *= 0.4  # Further reduced perception in fog
@@ -1692,7 +1693,9 @@ class Action:
         # Weather friction
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-            ignores_mud = cosmetic in ["mud_tires", "spiked_tires"]
+            ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
+            ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires"]
+            ignores_wind = cosmetic in ["heavy_boots", "lead_boots"]
             is_kite = cosmetic == "kite"
 
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
@@ -1707,7 +1710,7 @@ class Action:
             self.ball._is_wind_riding = False
             is_wind_riding = False
 
-            if (wind_dx != 0.0 or wind_dy != 0.0) and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+            if (wind_dx != 0.0 or wind_dy != 0.0) and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0 and not ignores_wind:
                 ball_type = getattr(self.ball, "BALL_TYPE", getattr(self.ball, "ball_type", None))
                 if ball_type in ["scout", "drone", "swarm", "ninja", "assassin", "phantom", "rogue"]:
                     if getattr(self.ball, "stamina", 0.0) >= 10.0:
@@ -1717,7 +1720,7 @@ class Action:
                 # Slippery: apply momentum (friction slide)
                 self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.5
                 self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.5
-            if getattr(self.world.arena, "is_snowing", False) and not is_wind_riding:
+            if getattr(self.world.arena, "is_snowing", False) and not ignores_snow_ice and not is_wind_riding:
                 if getattr(self.ball, "ball_type", "") != "snow_yeti":
                     # Extra slippery: apply even more momentum (reduced friction)
                     self.ball.x += getattr(self.ball, "vx") * delta * 0.4
@@ -1728,14 +1731,14 @@ class Action:
                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                     self.ball.vx *= 0.95
                     self.ball.vy *= 0.95
-            if getattr(self.world.arena, "is_windy", False) and not getattr(self.ball, "_is_wind_riding", False):
+            if getattr(self.world.arena, "is_windy", False) and not ignores_wind and not getattr(self.ball, "_is_wind_riding", False):
                 self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.2
                 self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.2
             if getattr(self.world.arena, "is_foggy", False):
                 pass # Fog has no friction effect, snow has speed change
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
             wind_dy = getattr(self.world.arena, "wind_dy", 0.0)
-            if (wind_dx != 0.0 or wind_dy != 0.0) and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+            if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                 self.ball.x += wind_dx * delta
                 self.ball.y += wind_dy * delta
 
