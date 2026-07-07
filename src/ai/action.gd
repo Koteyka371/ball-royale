@@ -657,6 +657,16 @@ func _attempt_damage(attacker, target) -> void:
 
 				if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
 					for h in self.world.arena.hazards:
+						var is_disabled_sf = false
+						if typeof(h) == TYPE_DICTIONARY:
+							is_disabled_sf = h.get("is_disabled_by_flare", false)
+						elif typeof(h) == TYPE_OBJECT:
+							if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+								is_disabled_sf = h.get_meta("is_disabled_by_flare")
+							elif "is_disabled_by_flare" in h:
+								is_disabled_sf = h.is_disabled_by_flare
+						if is_disabled_sf:
+							continue
 						var h_active = true
 						if "active" in h: h_active = bool(h.active)
 						elif h.has_method("get_meta") and h.has_meta("active"): h_active = bool(h.get_meta("active"))
@@ -4702,6 +4712,16 @@ func execute(strategy: String, delta: float):
 
                             if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                                 for h in self.world.arena.hazards:
+					var is_disabled_sf = false
+					if typeof(h) == TYPE_DICTIONARY:
+						is_disabled_sf = h.get("is_disabled_by_flare", false)
+					elif typeof(h) == TYPE_OBJECT:
+						if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+							is_disabled_sf = h.get_meta("is_disabled_by_flare")
+						elif "is_disabled_by_flare" in h:
+							is_disabled_sf = h.is_disabled_by_flare
+					if is_disabled_sf:
+						continue
                                     var hkind = ""
                                     if "kind" in h: hkind = h.kind
                                     elif typeof(h) != TYPE_DICTIONARY and h.has_method("get_meta") and h.has_meta("kind"): hkind = h.get_meta("kind")
@@ -5202,6 +5222,16 @@ func execute(strategy: String, delta: float):
                                 var pair_id = hazard.get_meta("pair_id")
                                 var paired_hazard = null
                                 for h in self.world.arena.hazards:
+					var is_disabled_sf = false
+					if typeof(h) == TYPE_DICTIONARY:
+						is_disabled_sf = h.get("is_disabled_by_flare", false)
+					elif typeof(h) == TYPE_OBJECT:
+						if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+							is_disabled_sf = h.get_meta("is_disabled_by_flare")
+						elif "is_disabled_by_flare" in h:
+							is_disabled_sf = h.is_disabled_by_flare
+					if is_disabled_sf:
+						continue
                                     if h.id == pair_id:
                                         paired_hazard = h
                                         break
@@ -5352,6 +5382,16 @@ func execute(strategy: String, delta: float):
                                 if hazard.has_meta("target_hazard_id") and self.world != null and self.world.get("arena") != null and "hazards" in self.world.arena:
                                     var target_hazard_id = hazard.get_meta("target_hazard_id")
                                     for h in self.world.arena.hazards:
+					var is_disabled_sf = false
+					if typeof(h) == TYPE_DICTIONARY:
+						is_disabled_sf = h.get("is_disabled_by_flare", false)
+					elif typeof(h) == TYPE_OBJECT:
+						if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+							is_disabled_sf = h.get_meta("is_disabled_by_flare")
+						elif "is_disabled_by_flare" in h:
+							is_disabled_sf = h.is_disabled_by_flare
+					if is_disabled_sf:
+						continue
                                         if h.id == target_hazard_id and h.kind == "black_hole":
                                             var angle = randf_range(0, 2 * PI)
                                             var launch_distance = h.radius + 30.0
@@ -5956,6 +5996,16 @@ func execute(strategy: String, delta: float):
                         if not has_paired_id and randf() < 0.3:
                             var other_gws = []
                             for h in self.world.arena.hazards:
+				var is_disabled_sf = false
+				if typeof(h) == TYPE_DICTIONARY:
+					is_disabled_sf = h.get("is_disabled_by_flare", false)
+				elif typeof(h) == TYPE_OBJECT:
+					if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+						is_disabled_sf = h.get_meta("is_disabled_by_flare")
+					elif "is_disabled_by_flare" in h:
+						is_disabled_sf = h.is_disabled_by_flare
+				if is_disabled_sf:
+					continue
                                 var h_kind = ""
                                 if typeof(h) == TYPE_OBJECT:
                                     h_kind = h.kind if "kind" in h else ""
@@ -6034,6 +6084,16 @@ func execute(strategy: String, delta: float):
                         if h_paired_id != null and (current_tick - last_teleport > 20):
                             var target_pair = null
                             for h in self.world.arena.hazards:
+				var is_disabled_sf = false
+				if typeof(h) == TYPE_DICTIONARY:
+					is_disabled_sf = h.get("is_disabled_by_flare", false)
+				elif typeof(h) == TYPE_OBJECT:
+					if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+						is_disabled_sf = h.get_meta("is_disabled_by_flare")
+					elif "is_disabled_by_flare" in h:
+						is_disabled_sf = h.is_disabled_by_flare
+				if is_disabled_sf:
+					continue
                                 var curr_id = -1
                                 if typeof(h) == TYPE_OBJECT:
                                     curr_id = h.id if "id" in h else -1
@@ -6317,6 +6377,16 @@ func execute(strategy: String, delta: float):
         if "hazards" in self.world.arena:
             var alive_hazards = []
             for h in self.world.arena.hazards:
+		var is_disabled_sf = false
+		if typeof(h) == TYPE_DICTIONARY:
+			is_disabled_sf = h.get("is_disabled_by_flare", false)
+		elif typeof(h) == TYPE_OBJECT:
+			if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+				is_disabled_sf = h.get_meta("is_disabled_by_flare")
+			elif "is_disabled_by_flare" in h:
+				is_disabled_sf = h.is_disabled_by_flare
+		if is_disabled_sf:
+			continue
                 if h.kind != "trap" or (h.has_meta("duration") and h.get_meta("duration") > 0.0):
                     alive_hazards.append(h)
             self.world.arena.hazards = alive_hazards
@@ -6447,6 +6517,16 @@ func execute(strategy: String, delta: float):
                         var chain_rad = 200.0
                         if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
                             for h in self.world.arena.hazards:
+				var is_disabled_sf = false
+				if typeof(h) == TYPE_DICTIONARY:
+					is_disabled_sf = h.get("is_disabled_by_flare", false)
+				elif typeof(h) == TYPE_OBJECT:
+					if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+						is_disabled_sf = h.get_meta("is_disabled_by_flare")
+					elif "is_disabled_by_flare" in h:
+						is_disabled_sf = h.is_disabled_by_flare
+				if is_disabled_sf:
+					continue
                                 var h_kind = ""
                                 if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
                                 elif "kind" in h: h_kind = h.kind
@@ -9122,6 +9202,16 @@ func _get_enemies_internal() -> Array:
     var my_stealth_zones = []
     if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
         for h in self.world.arena.hazards:
+		var is_disabled_sf = false
+		if typeof(h) == TYPE_DICTIONARY:
+			is_disabled_sf = h.get("is_disabled_by_flare", false)
+		elif typeof(h) == TYPE_OBJECT:
+			if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+				is_disabled_sf = h.get_meta("is_disabled_by_flare")
+			elif "is_disabled_by_flare" in h:
+				is_disabled_sf = h.is_disabled_by_flare
+		if is_disabled_sf:
+			continue
             var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
             if h_kind == "stealth_zone" or h_kind == "tall_grass":
                 var hx = h.x if "x" in h else h.get_meta("x")
@@ -9304,6 +9394,16 @@ func _get_enemies_internal() -> Array:
         var ey = e.y if "y" in e else (e.get_meta("y") if e.has_method("has_meta") and e.has_meta("y") else 0)
         if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
             for h in self.world.arena.hazards:
+		var is_disabled_sf = false
+		if typeof(h) == TYPE_DICTIONARY:
+			is_disabled_sf = h.get("is_disabled_by_flare", false)
+		elif typeof(h) == TYPE_OBJECT:
+			if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+				is_disabled_sf = h.get_meta("is_disabled_by_flare")
+			elif "is_disabled_by_flare" in h:
+				is_disabled_sf = h.is_disabled_by_flare
+		if is_disabled_sf:
+			continue
                 var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
                 if h_kind == "stealth_zone" or h_kind == "tall_grass":
                     var hx = h.x if "x" in h else h.get_meta("x")
@@ -9326,6 +9426,16 @@ func _get_enemies_internal() -> Array:
             var by = float(self.ball.y)
 
             for h in self.world.arena.hazards:
+		var is_disabled_sf = false
+		if typeof(h) == TYPE_DICTIONARY:
+			is_disabled_sf = h.get("is_disabled_by_flare", false)
+		elif typeof(h) == TYPE_OBJECT:
+			if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+				is_disabled_sf = h.get_meta("is_disabled_by_flare")
+			elif "is_disabled_by_flare" in h:
+				is_disabled_sf = h.is_disabled_by_flare
+		if is_disabled_sf:
+			continue
                 var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
                 if h_kind == "energy_barrier":
                     var h_team = h.get_meta("team") if h.has_meta("team") else ""
@@ -11510,6 +11620,16 @@ func _collect_booster(delta: float):
                             elif other_ball.has_method("set_meta"): other_ball.set_meta("stun_timer", new_stun)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     for h in self.world.arena.hazards:
+			var is_disabled_sf = false
+			if typeof(h) == TYPE_DICTIONARY:
+				is_disabled_sf = h.get("is_disabled_by_flare", false)
+			elif typeof(h) == TYPE_OBJECT:
+				if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+					is_disabled_sf = h.get_meta("is_disabled_by_flare")
+				elif "is_disabled_by_flare" in h:
+					is_disabled_sf = h.is_disabled_by_flare
+			if is_disabled_sf:
+				continue
                         if h != nearest:
                             var current_frozen = 0.0
                             if "frozen_timer" in h: current_frozen = h.frozen_timer
@@ -14238,6 +14358,16 @@ func _use_skill():
 
             if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
                 for h in self.world.arena.hazards:
+			var is_disabled_sf = false
+			if typeof(h) == TYPE_DICTIONARY:
+				is_disabled_sf = h.get("is_disabled_by_flare", false)
+			elif typeof(h) == TYPE_OBJECT:
+				if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+					is_disabled_sf = h.get_meta("is_disabled_by_flare")
+				elif "is_disabled_by_flare" in h:
+					is_disabled_sf = h.is_disabled_by_flare
+			if is_disabled_sf:
+				continue
                     var dist_sq = (h.x - self.ball.x) * (h.x - self.ball.x) + (h.y - self.ball.y) * (h.y - self.ball.y)
                     if dist_sq < closest_target_dist_sq:
                         closest_target = h
@@ -17225,7 +17355,15 @@ func _update_skill_timer(delta: float):
                     self.ball.modified_scope_applied = false
 
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
-        self.ball.skill_timer -= delta * cooldown_mult
+        var is_sf = false
+        if typeof(self.world) == TYPE_DICTIONARY:
+            is_sf = self.world.get("solar_flare_active", false)
+        elif typeof(self.world) == TYPE_OBJECT and self.world.has_method("get_meta") and self.world.has_meta("solar_flare_active"):
+            is_sf = self.world.get_meta("solar_flare_active")
+        elif self.world != null and "solar_flare_active" in self.world:
+            is_sf = self.world.solar_flare_active
+        if not is_sf:
+            self.ball.skill_timer -= delta * cooldown_mult
 
     var reflect_shield_timer = 0.0
     if "reflect_shield_timer" in self.ball:

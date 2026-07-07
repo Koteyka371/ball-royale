@@ -10205,3 +10205,40 @@ class OverloadShieldMode(GameMode):
 
 
 GAME_MODES["overload_shield"] = OverloadShieldMode()
+
+class SolarFlareMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Solar Flare"
+        self.description = "Periodically, the arena suffers an extreme solar flare that disables all deployed hazards and traps and prevents active skills from regenerating for 5 seconds."
+        self.flare_timer = 0.0
+        self.flare_interval = 20.0
+        self.flare_duration = 5.0
+        self.is_flaring = False
+        self.excluded_hazards = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.flare_timer += delta
+
+        if not self.is_flaring and self.flare_timer >= self.flare_interval:
+            self.is_flaring = True
+            self.flare_timer = 0.0
+            world.solar_flare_active = True
+            if hasattr(world, "add_event"):
+                world.add_event("solar_flare_start", {"message": "Solar Flare Active! Hazards disabled and skills paused!"})
+
+        elif self.is_flaring and self.flare_timer >= self.flare_duration:
+            self.is_flaring = False
+            self.flare_timer = 0.0
+            world.solar_flare_active = False
+            if hasattr(world, "add_event"):
+                world.add_event("solar_flare_end", {"message": "Solar Flare Ended."})
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                hk = getattr(h, "kind", "")
+                if hk not in self.excluded_hazards:
+                    h.is_disabled_by_flare = self.is_flaring
+
+GAME_MODES["solar_flare"] = SolarFlareMode()

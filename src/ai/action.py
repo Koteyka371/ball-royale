@@ -160,6 +160,8 @@ class Action:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
                 for h in self.world.arena.hazards:
+                    if getattr(h, 'is_disabled_by_flare', False):
+                        continue
                     if getattr(h, "kind", "") == "energy_barrier":
                         h_team = getattr(h, "team", "")
                         if h_team != a_team:
@@ -233,6 +235,8 @@ class Action:
         damage_reduction = 1.0
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
+                if getattr(h, 'is_disabled_by_flare', False):
+                    continue
                 if getattr(h, "kind", "") in ("ice_patch", "ice_patches") and getattr(h, "active", True):
                     dx = h.x - getattr(target, "x", 0.0)
                     dy = h.y - getattr(target, "y", 0.0)
@@ -381,6 +385,8 @@ class Action:
                                     nearby_entities.append((d_sq, b))
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         for h in self.world.arena.hazards:
+                            if getattr(h, 'is_disabled_by_flare', False):
+                                continue
                             if getattr(h, "active", True) and getattr(h, "id", None) != getattr(target, "id", None):
                                 d_sq = (getattr(h, "x", 0) - getattr(target, "x", 0))**2 + (getattr(h, "y", 0) - getattr(target, "y", 0))**2
                                 if d_sq <= chain_radius**2:
@@ -969,6 +975,8 @@ class Action:
         self.ball.is_in_quicksand = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
+                if getattr(h, 'is_disabled_by_flare', False):
+                    continue
                 if getattr(h, "kind", "") == "quicksand":
                     dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
                     if dist_sq < h.radius**2:
@@ -2575,6 +2583,8 @@ class Action:
 
                             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                                 for h in self.world.arena.hazards:
+                                    if getattr(h, 'is_disabled_by_flare', False):
+                                        continue
                                     if getattr(h, "kind", "") == "healing_spring":
                                         d_sq = (h.x - hazard.x)**2 + (h.y - hazard.y)**2
                                         if d_sq < nearest_dist:
@@ -2856,6 +2866,8 @@ class Action:
                                 pair_id = getattr(hazard, "pair_id", None)
                                 paired_hazard = None
                                 for h in self.world.arena.hazards:
+                                    if getattr(h, 'is_disabled_by_flare', False):
+                                        continue
                                     if h.id == pair_id:
                                         paired_hazard = h
                                         break
@@ -2978,6 +2990,8 @@ class Action:
                                     launched = False
                                     if hasattr(hazard, "target_hazard_id") and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                                         for h in self.world.arena.hazards:
+                                            if getattr(h, 'is_disabled_by_flare', False):
+                                                continue
                                             if h.id == hazard.target_hazard_id and h.kind == "black_hole":
                                                 import math as _math
                                                 angle = _random.uniform(0, 2 * _math.pi)
@@ -3649,6 +3663,8 @@ class Action:
                                 chain_radius = 200.0
                                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                                     for h in self.world.arena.hazards:
+                                        if getattr(h, 'is_disabled_by_flare', False):
+                                            continue
                                         if h not in exploded_traps and getattr(h, "kind", "") == "chain_reaction_trap" and getattr(h, "duration", 1.0) > 0:
                                             h_dist_sq = (h.x - current_trap.x)**2 + (h.y - current_trap.y)**2
                                             if h_dist_sq <= chain_radius**2:
@@ -5142,6 +5158,8 @@ class Action:
         my_stealth_zones = []
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
+                if getattr(h, 'is_disabled_by_flare', False):
+                    continue
                 if getattr(h, "kind", "") in ["stealth_zone", "tall_grass"]:
                     dx = h.x - self.ball.x
                     dy = h.y - self.ball.y
@@ -5154,6 +5172,8 @@ class Action:
             enemy_stealth_zones = []
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for h in self.world.arena.hazards:
+                    if getattr(h, 'is_disabled_by_flare', False):
+                        continue
                     if getattr(h, "kind", "") in ["stealth_zone", "tall_grass"]:
                         dx = h.x - getattr(enemy, "x", 0)
                         dy = h.y - getattr(enemy, "y", 0)
@@ -5171,6 +5191,8 @@ class Action:
                 my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
 
                 for h in self.world.arena.hazards:
+                    if getattr(h, 'is_disabled_by_flare', False):
+                        continue
                     if getattr(h, "kind", "") == "energy_barrier":
                         h_team = getattr(h, "team", "")
                         if h_team != my_team:
@@ -5292,6 +5314,8 @@ class Action:
         # Include flares as high-priority enemies if they are within perception radius
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
+                if getattr(h, 'is_disabled_by_flare', False):
+                    continue
                 if getattr(h, "kind", "") == "flare" and getattr(h, "active", True):
                     owner_id = getattr(h, "owner_id", None)
                     my_id = getattr(self.ball, "id", None)
@@ -6624,6 +6648,8 @@ class Action:
                                 other_ball.stun_timer = max(getattr(other_ball, "stun_timer", 0.0), duration)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         for h in self.world.arena.hazards:
+                            if getattr(h, 'is_disabled_by_flare', False):
+                                continue
                             if h != nearest:
                                 h.frozen_timer = max(getattr(h, "frozen_timer", 0.0), duration)
                         if nearest in self.world.arena.hazards:
@@ -7247,6 +7273,8 @@ class Action:
 
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     for h in self.world.arena.hazards:
+                        if getattr(h, 'is_disabled_by_flare', False):
+                            continue
                         h.frozen_timer = 2.0
 
             elif skill_name == "time_rewind":
@@ -8120,6 +8148,8 @@ class Action:
                         grapple_targets.append(("item", i, dist_sq))
                 if hasattr(self.world, "arena") and self.world.arena and hasattr(self.world.arena, "hazards"):
                     for h in self.world.arena.hazards:
+                        if getattr(h, 'is_disabled_by_flare', False):
+                            continue
                         dist_sq = (h.x - self.ball.x)**2 + (h.y - self.ball.y)**2
                         grapple_targets.append(("hazard", h, dist_sq))
 
@@ -8436,6 +8466,8 @@ class Action:
                 freezes_enemies = False
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     for h in self.world.arena.hazards:
+                        if getattr(h, 'is_disabled_by_flare', False):
+                            continue
                         if getattr(h, "active", True):
                             h_kind = getattr(h, "kind", "")
                             if h_kind in ["puddle", "water_puddle", "vampiric_puddle"]:
@@ -9375,6 +9407,8 @@ class Action:
 
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         for h in self.world.arena.hazards:
+                            if getattr(h, 'is_disabled_by_flare', False):
+                                continue
                             if getattr(h, "active", True):
                                 if math.hypot(h.x - self.ball.x, h.y - self.ball.y) <= strike_radius:
                                     targets.append(h)
@@ -9651,7 +9685,8 @@ class Action:
             cooldown_mult *= 2.0
 
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
-            self.ball.skill_timer -= delta * cooldown_mult
+            if not getattr(self.world, "solar_flare_active", False):
+                self.ball.skill_timer -= delta * cooldown_mult
         if hasattr(self.ball, "sonar_ping_timer") and self.ball.sonar_ping_timer > 0:
             self.ball.sonar_ping_timer -= delta * cooldown_mult
 
