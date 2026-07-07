@@ -11343,7 +11343,7 @@
     },
     {
       "id": "idea-658",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Revenge Burst",
@@ -18487,6 +18487,40 @@
         "src/ai/reverse_gravity_gun.py",
         "src/ai/reverse_gravity_gun.gd",
         "tests/test_reverse_gravity_gun.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1078",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ghost Mode Environment Event",
+      "description": "A random arena event where the entire map becomes dark and 'haunted'. All players lose the ability to see other players' HP bars and team colors. Footsteps (or ball rolling sounds/trails) become faintly visible to encourage hunting by tracking. Occasionally, spectral hazard clones will appear to disorient players, dealing no damage but behaving like real projectiles.",
+      "allowed_paths": [
+        "src/ai/ghost_environment.py",
+        "src/ai/ghost_environment.gd",
+        "tests/test_ghost_environment.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1079",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Traitor's Tether",
+      "description": "A new booster that, when picked up, forces an enemy ball to become tethered to one of your teammates. The enemy takes continuous tick damage while tethered and can be dragged into hazards against their will.",
+      "allowed_paths": [
+        "src/ai/traitors_tether.py",
+        "src/ai/traitors_tether.gd",
+        "tests/test_traitors_tether.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

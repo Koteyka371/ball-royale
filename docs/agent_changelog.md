@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-658] Revenge Burst — *2026-07-07 16:30:53 UTC*
+
+An explosive ability that deals more damage the more nemeses you have alive on the field, giving a comeback mechanic.
+
+---
+
 ## [idea-614] Decoy Trap Items — *2026-07-07 16:28:08 UTC*
 
 Introduce items that look like boosters on the map but explode or apply debuffs when a player collects them.
