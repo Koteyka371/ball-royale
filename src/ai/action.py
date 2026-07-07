@@ -3056,6 +3056,36 @@ class Action:
                         if dist_sq < hazard.radius * hazard.radius:
                             self.ball.steering_mult = 0.5
                             self.ball.dash_range_mult = 1.5
+
+                            # Dynamic weather reactions for puddle
+                            weather = getattr(self.world, "game_mode", None)
+                            if weather:
+                                weather = getattr(weather, "weather", "")
+                            if not weather and hasattr(self.world, "arena"):
+                                weather = getattr(self.world.arena, "weather", "")
+
+                            if weather == "thunderstorm":
+                                hazard_damage = 20.0 * delta
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard_damage)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+                                if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                                    self.ball.stun_timer = 0.5 # Stunned by electricity
+                            elif weather in ["blizzard", "snow"]:
+                                self.ball.is_frictionless = True
+                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    self.ball.x += getattr(self.ball, "vx") * delta
+                                    self.ball.y += getattr(self.ball, "vy") * delta
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.0
+                                if not hasattr(self.ball, "is_slipping"):
+                                    self.ball.is_slipping = True
+                                if getattr(self, "random", __import__("random")).random() < 0.2 * delta:
+                                    self.ball.stun_timer = 1.0 # Rooted by ice
+
+
                     elif hazard.kind == "ice_patch":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

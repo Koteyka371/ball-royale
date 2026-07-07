@@ -1,0 +1,4 @@
+{
+    "title": "Weather-Adaptive Hazard Types",
+    "description": "Introduce generic trap objects that change their literal 'kind' string and visual appearance (e.g. into 'ice_patch' or 'quicksand') based on weather changes, standardizing trap behaviors across modes."
+}
