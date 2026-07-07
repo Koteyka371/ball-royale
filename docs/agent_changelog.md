@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-664] Weather Anomaly: Solar Eclipse — *2026-07-07 20:51:44 UTC*
+
+A rare weather event that gradually darkens the entire arena, drastically reducing vision radius for all players except those with night vision. Causes some hazards to behave differently (e.g. solar panels stop providing power, shadow boosters spawn more frequently).
+
+---
+
 ## [idea-696] Crowd Betting System — *2026-07-07 20:51:39 UTC*
 
 Allow the crowd to place bets on which team or player will win. If the underdog wins, the crowd's excitement spikes significantly more, and the winning team gets a huge prestige bonus.
