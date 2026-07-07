@@ -203,9 +203,11 @@ func scan() -> Dictionary:
             if "ball_type" in e and e.ball_type == "sand_elemental" and self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena and self.world.arena.is_sandstorming:
                 is_sand_cloaked = true
 
-            if e_has_stealth or e_has_shadow or is_sand_cloaked:
+            if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster:
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
-                if is_sand_cloaked and dist > 40.0:
+                if e_has_stealth_booster and dist > 15.0:
+                    continue
+                elif is_sand_cloaked and dist > 40.0:
                     continue
                 elif e_has_shadow and dist > 30.0:
                     continue
@@ -272,7 +274,7 @@ func scan() -> Dictionary:
                                 break
                         if not found:
                             data["boosters"].append(h)
-                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item" or h.kind == "shadow_booster"):
+                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item" or h.kind == "shadow_booster" or h.kind == "stealth_booster"):
                     var found = false
                     for b in data["boosters"]:
                         if "id" in b and "id" in h and b.id == h.id:
