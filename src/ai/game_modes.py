@@ -108,6 +108,44 @@ class GameMode:
         pass
 
 
+
+        # --- BOUNTY PLACER BUFF TICK ---
+        pm = getattr(world, "profile_manager", None)
+        if pm and hasattr(pm, "data") and "temporary_buffs" in pm.data:
+            buffs = pm.data["temporary_buffs"]
+            if buffs.get("bounty_placer_buff", 0) > 0:
+                buffs["bounty_placer_buff"] -= 1
+                # Ensure the buff is applied
+                for b in balls:
+                    if getattr(b, "id", None) == "local_player":
+                        if not hasattr(b, "_original_base_damage"):
+                            b._original_base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                        b.base_damage = b._original_base_damage * 1.5
+                        b.damage = b.base_damage
+
+                if buffs["bounty_placer_buff"] <= 0:
+                    del buffs["bounty_placer_buff"]
+                    # Revert immediately when expired
+                    for b in balls:
+                        if getattr(b, "id", None) == "local_player":
+                            b.base_damage = getattr(b, "_original_base_damage", getattr(b, "base_damage", 10.0))
+                            b.damage = b.base_damage
+
+    def on_ball_died(self, world, ball, killer=None):
+        if killer and getattr(ball, "id", None) and getattr(killer, "id", None):
+            pm = getattr(world, "profile_manager", None)
+            if pm and hasattr(pm, "get_player_bounties"):
+                target_id = str(ball.id)
+                killer_id = str(killer.id)
+                bounties = pm.get_player_bounties()
+                if target_id in bounties and bounties[target_id].get("reward", 0) > 0:
+                    reward, placer = pm.claim_player_bounty(target_id, killer_id)
+                    if reward > 0:
+                        pm.apply_bounty_placer_buff(placer)
+                        world.add_event("bounty_claimed", {
+                            "message": f"{killer_id} claimed a nemesis bounty on {target_id} for {reward} tokens!"
+                        })
+
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         """Called every tick to check if there is a winner. Returns winner name or None."""
         return None
