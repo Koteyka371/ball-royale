@@ -1,0 +1,4 @@
+{
+    "title": "Ghost Mode Environment Event",
+    "description": "A random arena event where the entire map becomes dark and 'haunted'. All players lose the ability to see other players' HP bars and team colors. Footsteps (or ball rolling sounds/trails) become faintly visible to encourage hunting by tracking. Occasionally, spectral hazard clones will appear to disorient players, dealing no damage but behaving like real projectiles."
+}
