@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-650] Tsunami Event — *2026-07-07 19:07:01 UTC*
+
+A weather event that acts as a hazard where a giant wave sweeps across the screen and moves all players to a certain side, causing damage if they hit walls.
+
+---
+
 ## [idea-667] Nemesis Leaderboard and Rewards — *2026-07-07 18:54:49 UTC*
 
 Expand the nemesis system to include a global leaderboard displaying the most notorious rivalries. Players who defeat their nemeses during special timed events could earn unique cosmetics, titles, and bonus prestige tokens.

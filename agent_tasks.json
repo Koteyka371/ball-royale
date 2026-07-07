@@ -11207,7 +11207,7 @@
     },
     {
       "id": "idea-650",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tsunami Event",
@@ -18759,6 +18759,74 @@
         "src/ai/chain_reaction.py",
         "src/ai/chain_reaction.gd",
         "tests/test_chain_reaction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1094",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Nemesis Chain Reaction",
+      "description": "A new hazard type that only targets players who are currently designated as nemeses to someone else in the match. When a nemesis is destroyed by this hazard, they explode in a 'Chain Reaction' that briefly scrambles the movement controls of all other players in the arena.",
+      "allowed_paths": [
+        "src/ai/nemesis_nemesis_chain_reaction.py",
+        "src/ai/nemesis_nemesis_chain_reaction.gd",
+        "tests/test_nemesis_nemesis_chain_reaction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1095",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Soul Siphon Aura",
+      "description": "Necromancer emits an aura that deals damage to nearby enemies over time and converts a portion of the damage dealt into bone armor stacks or heals the Necromancer.",
+      "allowed_paths": [
+        "src/ai/necromancer_soul_siphon_aura.py",
+        "src/ai/necromancer_soul_siphon_aura.gd",
+        "tests/test_necromancer_soul_siphon_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1096",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bone Wall Hazard",
+      "description": "Necromancer can summon a Bone Wall hazard that blocks enemy movement and projectiles, but can be broken by taking enough damage.",
+      "allowed_paths": [
+        "src/arena/bone_wall.py",
+        "src/arena/bone_wall.gd",
+        "tests/test_bone_wall.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1097",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Faction War",
+      "description": "Introduces a global faction war event where players align with either Light or Dark factions. Completing nemesis revenge kills earns points for the chosen faction. The winning faction at the end of the season unlocks a unique, faction-themed ball type for all its participants.",
+      "allowed_paths": [
+        "src/ai/nemesis_faction_war.py",
+        "src/ai/nemesis_faction_war.gd",
+        "tests/test_nemesis_faction_war.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
