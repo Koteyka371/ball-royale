@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-691] Random Item Re-roll Mode — *2026-07-07 20:19:33 UTC*
+
+Periodically, all active items and boosters in the arena randomly transform into different item types, keeping players constantly adapting.
+
+---
+
 ## [idea-687] Shrinking Safe Zone Hazard — *2026-07-07 20:19:28 UTC*
 
 A hazard that acts like a typical Battle Royale shrinking circle. Balls taking damage outside the shrinking radius.
