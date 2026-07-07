@@ -91,5 +91,53 @@ class TestLeaderboard(unittest.TestCase):
         self.assertEqual(top[1]["code"], "code1") # 10 uses
         self.assertEqual(top[2]["code"], "code2") # 2 uses
 
+    def test_record_nemesis_defeat_active_event(self):
+        self.lm.set_nemesis_event_active(True)
+        self.assertTrue(self.lm.is_nemesis_event_active())
+
+        initial_tokens = self.pm.data.get("prestige_tokens", 0)
+
+        self.lm.record_nemesis_defeat("local_player", "enemy_1")
+
+        # Check rivalry recorded
+        self.assertEqual(self.lm.data["nemesis_rivalries"]["enemy_1_vs_local_player"], 1)
+
+        # Check rewards
+        self.assertIn("Nemesis Slayer", self.pm.data.get("cosmetics", []))
+        self.assertIn("Rivalry Champion", self.pm.data.get("titles", []))
+        self.assertEqual(self.pm.data.get("prestige_tokens", 0), initial_tokens + 10)
+
+    def test_record_nemesis_defeat_inactive_event(self):
+        self.lm.set_nemesis_event_active(False)
+        self.assertFalse(self.lm.is_nemesis_event_active())
+
+        initial_tokens = self.pm.data.get("prestige_tokens", 0)
+
+        self.lm.record_nemesis_defeat("local_player", "enemy_1")
+
+        # Check rivalry recorded
+        self.assertEqual(self.lm.data["nemesis_rivalries"]["enemy_1_vs_local_player"], 1)
+
+        # Check NO rewards
+        self.assertNotIn("Nemesis Slayer", self.pm.data.get("cosmetics", []))
+        self.assertNotIn("Rivalry Champion", self.pm.data.get("titles", []))
+        self.assertEqual(self.pm.data.get("prestige_tokens", 0), initial_tokens)
+
+    def test_get_top_rivalries(self):
+        self.lm.record_nemesis_defeat("player_a", "player_b")
+        self.lm.record_nemesis_defeat("player_b", "player_a") # Same rivalry
+        self.lm.record_nemesis_defeat("player_c", "player_d")
+
+        top = self.lm.get_top_rivalries()
+        self.assertEqual(len(top), 2)
+
+        # "player_a_vs_player_b" has 2 defeats, so it should be first
+        self.assertEqual(top[0]["rivalry"], "player_a_vs_player_b")
+        self.assertEqual(top[0]["defeats"], 2)
+
+        self.assertEqual(top[1]["rivalry"], "player_c_vs_player_d")
+        self.assertEqual(top[1]["defeats"], 1)
+
+
 if __name__ == '__main__':
     unittest.main()
