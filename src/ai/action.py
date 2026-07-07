@@ -8089,6 +8089,41 @@ class Action:
                     setattr(tornado, 'vx', random.uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', random.uniform(-100.0, 100.0))
                     self.world.arena.hazards.append(tornado)
+            elif skill_name == "nemesis_explosion":
+                enemies = self._get_enemies()
+
+                # Count living nemeses
+                living_nemeses = 0
+                pm = getattr(self.world, "profile_manager", None)
+                if pm and hasattr(pm, "is_nemesis") and hasattr(self.world, "balls"):
+                    for other in self.world.balls:
+                        if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "hp", 0) > 0:
+                            if hasattr(self.ball, "ball_type") and hasattr(other, "ball_type"):
+                                if pm.is_nemesis(other.ball_type, self.ball.ball_type):
+                                    living_nemeses += 1
+
+                # Calculate damage and radius
+                explosion_damage = 50.0 + (living_nemeses * 25.0)
+                explosion_radius = 100.0 + (living_nemeses * 20.0)
+
+                # Deal damage
+                if enemies:
+                    import math
+                    for enemy in enemies:
+                        dx = getattr(enemy, "x", 0) - getattr(self.ball, "x", 0)
+                        dy = getattr(enemy, "y", 0) - getattr(self.ball, "y", 0)
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist <= explosion_radius:
+                            if hasattr(enemy, "take_damage"):
+                                enemy.take_damage(explosion_damage)
+                            else:
+                                self._attempt_damage(self.ball, enemy)
+
+                # Cooldown
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 8.0)
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("explosion")
+
             elif skill_name == "explosion":
                 enemies = self._get_enemies()
                 explosion_radius = 100.0
