@@ -8138,6 +8138,24 @@ class Action:
                 if not is_foggy and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") in ["fog", "snow", "blizzard"]:
                     is_foggy = True
 
+                freezes_enemies = False
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for h in self.world.arena.hazards:
+                        if getattr(h, "active", True):
+                            h_kind = getattr(h, "kind", "")
+                            if h_kind in ["puddle", "water_puddle", "vampiric_puddle"]:
+                                dx = h.x - self.ball.x
+                                dy = h.y - self.ball.y
+                                import math
+                                if math.sqrt(dx*dx + dy*dy) <= burst_radius + getattr(h, "radius", 0):
+                                    is_raining = True
+                            elif h_kind in ["ice_patch", "ice_patches"]:
+                                dx = h.x - self.ball.x
+                                dy = h.y - self.ball.y
+                                import math
+                                if math.sqrt(dx*dx + dy*dy) <= burst_radius + getattr(h, "radius", 0):
+                                    freezes_enemies = True
+
                 if is_raining:
                     burst_radius *= 1.5
                     base_burst_dmg *= 1.5
@@ -8157,9 +8175,17 @@ class Action:
                             if dist <= burst_radius:
                                 if hasattr(enemy, "take_damage"):
                                     enemy.take_damage(base_burst_dmg)
+                                if freezes_enemies:
+                                    enemy.is_stunned = True
+                                    enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 4.0)
                                 if not getattr(enemy, "is_stunned", False):
                                     enemy.is_stunned = True
-                                    enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 2.0)
+                                    if freezes_enemies:
+                                        enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 4.0)
+                                    else:
+                                        enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 2.0)
+                                elif freezes_enemies:
+                                    enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 4.0)
                                 primary_hits.append(enemy)
 
                         # Chain from each primary hit
@@ -8175,7 +8201,12 @@ class Action:
                                             enemy.take_damage(base_burst_dmg * 0.5)
                                         if not getattr(enemy, "is_stunned", False):
                                             enemy.is_stunned = True
-                                            enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 1.0)
+                                            if freezes_enemies:
+                                                enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 4.0)
+                                            else:
+                                                enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 1.0)
+                                        elif freezes_enemies:
+                                            enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 4.0)
                                         hit_entities.append(enemy)
                                         break # Chain to one additional target
                     else:
@@ -8186,6 +8217,9 @@ class Action:
                             if dist <= burst_radius:
                                 if hasattr(enemy, "take_damage"):
                                     enemy.take_damage(base_burst_dmg)
+                                if freezes_enemies:
+                                    enemy.is_stunned = True
+                                    enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 4.0)
             elif skill_name == "time_warp":
                 self.ball.time_warp_timer = 5.0
                 self.ball.skill_timer = getattr(self.ball, "base_skill_timer", 10.0)
