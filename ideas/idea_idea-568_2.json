@@ -1,0 +1,4 @@
+{
+  "title": "Echo Mine",
+  "description": "A landmine that, instead of exploding, perfectly records the actions, movements, and skill usages of the player who triggered it for 5 seconds. After a delay, an invulnerable but temporary 'echo' clone of the player spawns and executes the exact recorded sequence, causing confusion and potential friendly-fire interactions."
+}

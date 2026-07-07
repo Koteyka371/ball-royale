@@ -1131,6 +1131,51 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    var has_skill_swap = false
+    var swap_end_time = 0.0
+
+    if "skill_swap_end_time" in self.ball:
+        has_skill_swap = true
+        swap_end_time = self.ball.skill_swap_end_time
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("skill_swap_end_time"):
+        has_skill_swap = true
+        swap_end_time = self.ball.get_meta("skill_swap_end_time")
+
+    if has_skill_swap:
+        var current_time = 0.0
+        if "time" in self.world: current_time = self.world.time
+        elif "tick" in self.world: current_time = self.world.tick * 0.016
+
+        if current_time >= swap_end_time:
+            var orig_skill = null
+            var orig_inv = []
+
+            if "original_skill" in self.ball: orig_skill = self.ball.original_skill
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("original_skill"): orig_skill = self.ball.get_meta("original_skill")
+
+            if "original_inventory" in self.ball: orig_inv = self.ball.original_inventory
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("original_inventory"): orig_inv = self.ball.get_meta("original_inventory")
+
+            if "active_skill" in self.ball: self.ball.active_skill = orig_skill
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("active_skill", orig_skill)
+            else: self.ball.active_skill = orig_skill
+
+            if "inventory" in self.ball: self.ball.inventory = orig_inv
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", orig_inv)
+            else: self.ball.inventory = orig_inv
+
+            if self.ball.has_method("remove_meta"):
+                if self.ball.has_meta("skill_swap_end_time"): self.ball.remove_meta("skill_swap_end_time")
+                if self.ball.has_meta("original_skill"): self.ball.remove_meta("original_skill")
+                if self.ball.has_meta("original_inventory"): self.ball.remove_meta("original_inventory")
+                if self.ball.has_meta("swapped_with_id"): self.ball.remove_meta("swapped_with_id")
+            else:
+                self.ball.erase("skill_swap_end_time")
+                self.ball.erase("original_skill")
+                self.ball.erase("original_inventory")
+                self.ball.erase("swapped_with_id")
+
+
     if self.ball.has_method("get_meta") and self.ball.has_meta("shuffle_booster_timer") and self.ball.get_meta("shuffle_booster_timer") > 0.0:
         var t = self.ball.get_meta("shuffle_booster_timer")
         t -= delta
@@ -4061,6 +4106,127 @@ func execute(strategy: String, delta: float):
                                                 b.hp -= hazard.damage * 2.0
                                                 if b.hp <= 0:
                                                     b.alive = false
+                    elif hazard.kind == "skill_swap_trap":
+                        var valid_targets = []
+                        if "balls" in self.world:
+                            for b in self.world.balls:
+                                if _get_id(b) != _get_id(self.ball):
+                                    var b_alive = true
+                                    var is_decoy = false
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        b_alive = b.get("alive", true)
+                                        is_decoy = b.get("is_decoy", false)
+                                    else:
+                                        b_alive = b.alive if "alive" in b else true
+                                        is_decoy = b.is_decoy if "is_decoy" in b else false
+                                        if not is_decoy and b.has_method("get_meta") and b.has_meta("is_decoy"):
+                                            is_decoy = b.get_meta("is_decoy")
+
+                                    if b_alive and not is_decoy:
+                                        valid_targets.append(b)
+
+                            if valid_targets.size() > 0:
+                                var nearby_targets = []
+                                for b in valid_targets:
+                                    var dist_sq = (b.x - self.ball.x) * (b.x - self.ball.x) + (b.y - self.ball.y) * (b.y - self.ball.y)
+                                    if dist_sq <= 250000.0:
+                                        nearby_targets.append(b)
+
+                                if nearby_targets.size() == 0:
+                                    nearby_targets = valid_targets
+
+                                var target = nearby_targets[randi() % nearby_targets.size()]
+
+                                var ball_has_swap = ("skill_swap_end_time" in self.ball) or (self.ball.has_method("has_meta") and self.ball.has_meta("skill_swap_end_time"))
+                                var target_has_swap = false
+                                if typeof(target) == TYPE_DICTIONARY: target_has_swap = target.has("skill_swap_end_time")
+                                else: target_has_swap = ("skill_swap_end_time" in target) or (target.has_method("has_meta") and target.has_meta("skill_swap_end_time"))
+
+                                if ball_has_swap or target_has_swap:
+                                    hazard.duration = 0.0
+                                    continue
+
+                                # Swap active_skill
+                                var my_skill = null
+                                var target_skill = null
+
+                                if "active_skill" in self.ball: my_skill = self.ball.active_skill
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("active_skill"): my_skill = self.ball.get_meta("active_skill")
+
+                                if typeof(target) == TYPE_DICTIONARY: target_skill = target.get("active_skill", null)
+                                else:
+                                    if "active_skill" in target: target_skill = target.active_skill
+                                    elif target.has_method("get_meta") and target.has_meta("active_skill"): target_skill = target.get_meta("active_skill")
+
+                                if "active_skill" in self.ball: self.ball.active_skill = target_skill
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("active_skill", target_skill)
+                                else: self.ball.active_skill = target_skill
+
+                                if typeof(target) == TYPE_DICTIONARY: target["active_skill"] = my_skill
+                                elif "active_skill" in target: target.active_skill = my_skill
+                                elif target.has_method("set_meta"): target.set_meta("active_skill", my_skill)
+                                else: target.active_skill = my_skill
+
+                                # Swap inventory
+                                var my_inv = []
+                                var target_inv = []
+
+                                if "inventory" in self.ball: my_inv = self.ball.inventory.duplicate()
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): my_inv = self.ball.get_meta("inventory").duplicate()
+
+                                if typeof(target) == TYPE_DICTIONARY: target_inv = target.get("inventory", []).duplicate()
+                                else:
+                                    if "inventory" in target: target_inv = target.inventory.duplicate()
+                                    elif target.has_method("get_meta") and target.has_meta("inventory"): target_inv = target.get_meta("inventory").duplicate()
+
+                                if "inventory" in self.ball: self.ball.inventory = target_inv
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", target_inv)
+                                else: self.ball.inventory = target_inv
+
+                                if typeof(target) == TYPE_DICTIONARY: target["inventory"] = my_inv
+                                elif "inventory" in target: target.inventory = my_inv
+                                elif target.has_method("set_meta"): target.set_meta("inventory", my_inv)
+                                else: target.inventory = my_inv
+
+                                var current_time = 0.0
+                                if "time" in self.world: current_time = self.world.time
+                                elif "tick" in self.world: current_time = self.world.tick * 0.016
+
+                                if self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("skill_swap_end_time", current_time + 10.0)
+                                    self.ball.set_meta("original_skill", my_skill)
+                                    self.ball.set_meta("original_inventory", my_inv)
+                                    self.ball.set_meta("swapped_with_id", _get_id(target))
+                                else:
+                                    self.ball.skill_swap_end_time = current_time + 10.0
+                                    self.ball.original_skill = my_skill
+                                    self.ball.original_inventory = my_inv
+                                    self.ball.swapped_with_id = _get_id(target)
+
+                                if typeof(target) == TYPE_DICTIONARY:
+                                    target["skill_swap_end_time"] = current_time + 10.0
+                                    target["original_skill"] = target_skill
+                                    target["original_inventory"] = target_inv
+                                    target["swapped_with_id"] = _get_id(self.ball)
+                                elif target.has_method("set_meta"):
+                                    target.set_meta("skill_swap_end_time", current_time + 10.0)
+                                    target.set_meta("original_skill", target_skill)
+                                    target.set_meta("original_inventory", target_inv)
+                                    target.set_meta("swapped_with_id", _get_id(self.ball))
+                                else:
+                                    target.skill_swap_end_time = current_time + 10.0
+                                    target.original_skill = target_skill
+                                    target.original_inventory = target_inv
+                                    target.swapped_with_id = _get_id(self.ball)
+
+                                if "events" in self.world:
+                                    self.world.events.append({
+                                        "type": "skill_swap",
+                                        "source": _get_id(self.ball),
+                                        "target": _get_id(target)
+                                    })
+
+                        hazard.duration = 0.0 # Destroy the trap after use
                     elif hazard.kind == "swap_trap":
                         var valid_targets = []
                         if "balls" in self.world:

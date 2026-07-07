@@ -705,6 +705,23 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
         import math
 
+        # Handle skill_swap_trap reversion
+        if hasattr(self.ball, "skill_swap_end_time"):
+            current_time = getattr(self.world, "time", getattr(self.world, "tick", 0) * 0.016)
+            if current_time >= self.ball.skill_swap_end_time:
+                # Revert to original
+                if hasattr(self.ball, "original_skill"):
+                    self.ball.active_skill = self.ball.original_skill
+                if hasattr(self.ball, "original_inventory"):
+                    self.ball.inventory = self.ball.original_inventory
+
+                # Cleanup
+                delattr(self.ball, "skill_swap_end_time")
+                if hasattr(self.ball, "original_skill"): delattr(self.ball, "original_skill")
+                if hasattr(self.ball, "original_inventory"): delattr(self.ball, "original_inventory")
+                if hasattr(self.ball, "swapped_with_id"): delattr(self.ball, "swapped_with_id")
+
+
         if getattr(self.ball, "shuffle_booster_timer", 0.0) > 0:
             self.ball.shuffle_booster_timer -= delta
             if self.ball.shuffle_booster_timer <= 0:
@@ -2256,6 +2273,61 @@ class Action:
                                             b.hp -= hazard.damage * 2.0
                                             if b.hp <= 0:
                                                 b.alive = False
+                    elif hazard.kind == "skill_swap_trap":
+                        import random
+                        valid_targets = []
+                        for b in getattr(self.world, 'balls', []):
+                            if b != self.ball and getattr(b, "alive", True) and not getattr(b, "is_decoy", False):
+                                valid_targets.append(b)
+
+                        if valid_targets:
+                            # Filter nearby targets (e.g. within 500 units)
+                            nearby_targets = [b for b in valid_targets if (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2 <= 250000]
+                            if not nearby_targets:
+                                nearby_targets = valid_targets  # Fallback to any if none nearby
+
+                            target = random.choice(nearby_targets)
+
+                            # Do not swap if already swapped
+                            if hasattr(self.ball, "skill_swap_end_time") or hasattr(target, "skill_swap_end_time"):
+                                hazard.duration = 0.0
+                                continue
+
+                            # Swap active_skill
+                            my_skill = getattr(self.ball, "active_skill", None)
+                            target_skill = getattr(target, "active_skill", None)
+
+                            setattr(self.ball, "active_skill", target_skill)
+                            setattr(target, "active_skill", my_skill)
+
+                            # Swap inventory
+                            my_inv = getattr(self.ball, "inventory", [])
+                            target_inv = getattr(target, "inventory", [])
+
+                            setattr(self.ball, "inventory", target_inv)
+                            setattr(target, "inventory", my_inv)
+
+                            # Apply timer to revert after 10 seconds
+                            # By tracking when to revert, we can manage it in the main action loop
+                            current_time = getattr(self.world, "time", getattr(self.world, "tick", 0) * 0.016)
+                            setattr(self.ball, "skill_swap_end_time", current_time + 10.0)
+                            setattr(self.ball, "original_skill", my_skill)
+                            setattr(self.ball, "original_inventory", my_inv)
+                            setattr(self.ball, "swapped_with_id", getattr(target, "id", None))
+
+                            setattr(target, "skill_swap_end_time", current_time + 10.0)
+                            setattr(target, "original_skill", target_skill)
+                            setattr(target, "original_inventory", target_inv)
+                            setattr(target, "swapped_with_id", getattr(self.ball, "id", None))
+
+                            if hasattr(self.world, 'events'):
+                                self.world.events.append({
+                                    "type": "skill_swap",
+                                    "source": getattr(self.ball, 'id', None),
+                                    "target": getattr(target, 'id', None)
+                                })
+
+                        hazard.duration = 0.0 # Destroy the trap after use
                     elif hazard.kind == "swap_trap":
                         import random
                         my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
