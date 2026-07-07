@@ -1,4 +1,0 @@
-{
-    "title": "Payload Overheal Shield",
-    "description": "When a payload heals a teammate who is already at max HP, it instead generates a temporary shield that absorbs one instance of incoming damage."
-}

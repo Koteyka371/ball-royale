@@ -19717,6 +19717,57 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1150",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Bounce Walls",
+      "description": "Arena walls that absorb impact energy and reflect entities back with a velocity proportional to their incoming momentum, while spawning temporary defensive shields around the impact zone.",
+      "allowed_paths": [
+        "src/ai/kinetic_bounce_walls.py",
+        "src/ai/kinetic_bounce_walls.gd",
+        "tests/test_kinetic_bounce_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1151",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Bounties",
+      "description": "When a player successfully claims a bounty, a smaller bounty is automatically placed on them, encouraging dynamic target shifting and continuous engagements.",
+      "allowed_paths": [
+        "src/ai/chain_bounties.py",
+        "src/ai/chain_bounties.gd",
+        "tests/test_chain_bounties.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1152",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Trap Item",
+      "description": "An item that players can place on the field, which tags the first enemy to touch it with a small bounty that grants the placer a reward when the enemy dies.",
+      "allowed_paths": [
+        "src/arena/bounty_trap_item.py",
+        "src/arena/bounty_trap_item.gd",
+        "tests/test_bounty_trap_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
