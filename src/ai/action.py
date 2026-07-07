@@ -4450,6 +4450,22 @@ class Action:
         silence_taken = current_silence - start_silence
 
         # Chaos Link - Damage & Buff Sharing
+        quantum_target = getattr(self.ball, "quantum_entanglement_target", None)
+        if quantum_target and getattr(quantum_target, "alive", True) and getattr(self.ball, "quantum_entanglement_timer", 0.0) > 0:
+            if damage_taken > 0 and not getattr(self.ball, "quantum_entanglement_is_receiving", False):
+                quantum_target.quantum_entanglement_is_receiving = True
+                half_damage = damage_taken * 0.5
+                if hasattr(quantum_target, "take_damage"):
+                    quantum_target.take_damage(half_damage)
+                elif hasattr(quantum_target, "hp"):
+                    quantum_target.hp -= half_damage
+                    if quantum_target.hp <= 0:
+                        quantum_target.alive = False
+
+                if hasattr(self.ball, "hp"):
+                    self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + half_damage)
+                quantum_target.quantum_entanglement_is_receiving = False
+
         chaos_target = getattr(self.ball, "chaos_link_target", None)
         if chaos_target and getattr(chaos_target, "alive", True):
             if damage_taken > 0 and not getattr(self.ball, "chaos_link_is_receiving", False):
@@ -7675,6 +7691,17 @@ class Action:
                     target.chaos_link_target = self.ball
                     if hasattr(self, "_spawn_directed_particles"):
                         self._spawn_directed_particles(self.ball, target, "chaos_link")
+            elif skill_name == "quantum_entanglement":
+                allies = self._get_allies()
+                if allies:
+                    import math
+                    target = min(allies, key=lambda a: math.hypot(a.x - self.ball.x, a.y - self.ball.y))
+                    self.ball.quantum_entanglement_target = target
+                    self.ball.quantum_entanglement_timer = 10.0
+                    target.quantum_entanglement_target = self.ball
+                    target.quantum_entanglement_timer = 10.0
+                    if hasattr(self, "_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, target, "quantum_entanglement")
             elif skill_name == "health_link":
                 allies = self._get_allies()
                 if allies:
@@ -9395,6 +9422,31 @@ class Action:
 
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta * cooldown_mult
+
+        if hasattr(self.ball, "quantum_entanglement_timer") and self.ball.quantum_entanglement_timer > 0:
+            self.ball.quantum_entanglement_timer -= delta
+            target = getattr(self.ball, "quantum_entanglement_target", None)
+
+            if target and getattr(target, "alive", True):
+                dist_sq = (target.x - self.ball.x)**2 + (target.y - self.ball.y)**2
+                if dist_sq > 90000:  # Distance > 300 breaks the link
+                    self.ball.quantum_entanglement_timer = 0
+                    self.ball.quantum_entanglement_target = None
+                    if getattr(target, "quantum_entanglement_target", None) == self.ball:
+                        target.quantum_entanglement_target = None
+                else:
+                    if self.ball.quantum_entanglement_timer <= 0:
+                        if getattr(target, "quantum_entanglement_target", None) == self.ball:
+                            target.quantum_entanglement_target = None
+                        self.ball.quantum_entanglement_target = None
+                        self.ball.quantum_entanglement_timer = 0
+                    else:
+                        self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 1.5
+                        if hasattr(self.ball, "stamina"):
+                            self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + 20.0 * delta)
+            else:
+                self.ball.quantum_entanglement_timer = 0
+                self.ball.quantum_entanglement_target = None
 
         if hasattr(self.ball, "chaos_link_timer") and self.ball.chaos_link_timer > 0:
             self.ball.chaos_link_timer -= delta

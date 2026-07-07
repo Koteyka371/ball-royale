@@ -1,0 +1,4 @@
+{
+  "title": "Orbital Minefield Utility Skill",
+  "description": "A skill that spawns 3 small mines that orbit the player ball continuously. If an enemy comes within a small radius, the mines detach and seek the enemy before detonating."
+}
