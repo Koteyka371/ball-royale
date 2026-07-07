@@ -12,17 +12,89 @@ var votes = {}
 var vote_cooldown = 0
 var ball_positions = {}
 var camping_time = {}
+var underdog_team = null
+var match_started = false
+var match_ended = false
 
 func _init(p_world):
     world = p_world
 
 func tick(balls: Array, kill_log: Array, current_tick: int):
+    _check_bets_and_winner(balls, current_tick)
     _update_excitement(current_tick)
     _check_events(balls, kill_log, current_tick)
     _check_camping(balls, current_tick)
     _throw_buffs_if_needed(balls, current_tick)
     _throw_hazards_if_bored(balls, current_tick)
     _process_votes(balls, current_tick)
+
+func _check_bets_and_winner(balls: Array, current_tick: int):
+    if not match_started and balls.size() > 1:
+        match_started = true
+        var teams = {}
+        for b in balls:
+            var team = ""
+            if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                team = b.get("team")
+                if team == null or team == "":
+                    team = b.get("ball_type")
+            elif typeof(b) == TYPE_DICTIONARY:
+                team = b.get("team", b.get("ball_type", ""))
+
+            if team != null and team != "" and team != "spectator":
+                if teams.has(team):
+                    teams[team] += 1
+                else:
+                    teams[team] = 1
+
+        if teams.keys().size() > 1:
+            var min_count = 999999
+            for t in teams.keys():
+                if teams[t] < min_count:
+                    min_count = teams[t]
+                    underdog_team = t
+
+            if world != null and world.has_method("add_event") and underdog_team != null:
+                world.add_event("crowd_bet", {"message": "The crowd predicts a tough match for the underdog, " + str(underdog_team) + "!"})
+
+    if match_started and not match_ended:
+        var alive_teams = {}
+        for b in balls:
+            var is_alive = false
+            var team = ""
+            if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                is_alive = b.get("alive") if b.get("alive") != null else false
+                team = b.get("team")
+                if team == null or team == "":
+                    team = b.get("ball_type")
+            elif typeof(b) == TYPE_DICTIONARY:
+                is_alive = b.get("alive", false)
+                team = b.get("team", b.get("ball_type", ""))
+
+            if is_alive and team != null and team != "" and team != "spectator":
+                alive_teams[team] = true
+
+        if alive_teams.keys().size() == 1:
+            match_ended = true
+            var winner = alive_teams.keys()[0]
+            if winner == underdog_team:
+                excitement_level += 50.0
+                if world != null and world.has_method("add_event"):
+                    world.add_event("crowd_cheer", {"message": "The underdog " + str(winner) + " has won! The crowd goes absolutely WILD!", "volume": 1.5})
+                    world.add_event("audio_event", {"sound": "epic_crowd_roar", "volume": 1.0})
+
+                if world != null and world.has_method("get_profile_manager"):
+                    var pm = world.call("get_profile_manager")
+                    if pm != null and typeof(pm) == TYPE_OBJECT and pm.get("data") != null:
+                        var pdata = pm.get("data")
+                        var cur_tokens = 0
+                        if typeof(pdata) == TYPE_DICTIONARY and pdata.has("prestige_tokens"):
+                            cur_tokens = pdata["prestige_tokens"]
+                        if typeof(pdata) == TYPE_DICTIONARY:
+                            pdata["prestige_tokens"] = cur_tokens + 10
+                        if pm.has_method("save"):
+                            pm.call("save")
+
 
 func _check_camping(balls: Array, current_tick: int):
     for b in balls:

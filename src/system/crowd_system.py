@@ -15,8 +15,12 @@ class CrowdSystem:
         self.vote_cooldown = 0
         self.ball_positions = {}
         self.camping_time = {}
+        self.underdog_team = None
+        self.match_started = False
+        self.match_ended = False
 
     def tick(self, balls: List[Any], kill_log: List[Dict[str, Any]], tick: int):
+        self._check_bets_and_winner(balls, tick)
         self._update_excitement(tick)
         self._check_events(balls, kill_log, tick)
         self._check_camping(balls, tick)
@@ -49,6 +53,49 @@ class CrowdSystem:
                 else:
                     self.ball_positions[b_id] = (b_x, b_y)
                     self.camping_time[b_id] = 0
+
+    def _check_bets_and_winner(self, balls: List[Any], tick: int):
+        if not self.match_started and len(balls) > 1:
+            self.match_started = True
+            teams = {}
+            for b in balls:
+                team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                if team != "spectator":
+                    teams[team] = teams.get(team, 0) + 1
+
+            if len(teams) > 1:
+                # Underdog is the team with the minimum count
+                self.underdog_team = min(teams, key=teams.get)
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("crowd_bet", {"message": f"The crowd predicts a tough match for the underdog, {self.underdog_team}!"})
+
+        if self.match_started and not self.match_ended:
+            alive_teams = set()
+            for b in balls:
+                if getattr(b, "alive", False):
+                    team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                    if team != "spectator":
+                        alive_teams.add(team)
+
+            if len(alive_teams) == 1:
+                self.match_ended = True
+                winner = list(alive_teams)[0]
+                if winner == self.underdog_team:
+                    self.excitement_level += 50.0
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("crowd_cheer", {"message": f"The underdog {winner} has won! The crowd goes absolutely WILD!", "volume": 1.5})
+                        self.world.add_event("audio_event", {"sound": "epic_crowd_roar", "volume": 1.0})
+
+                    if hasattr(self.world, "profile_manager"):
+                        try:
+                            pm = self.world.profile_manager
+                            if hasattr(pm, "data"):
+                                pm.data["prestige_tokens"] = pm.data.get("prestige_tokens", 0) + 10
+                                if hasattr(pm, "save"):
+                                    pm.save()
+                        except Exception:
+                            pass
+
 
     def _update_excitement(self, tick: int):
         # Decay excitement slowly

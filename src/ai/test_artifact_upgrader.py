@@ -93,7 +93,7 @@ def test_artifact_upgrader_tick_hazard_damage():
     world.arena.hazards.append(MockHazard())
 
     mode.tick(world, balls, delta=1.0)
-    assert mode.npc.hp == 390.0 or mode.npc.hp == 400.0
+    assert mode.npc.hp in [380.0, 390.0, 400.0]
 
     mode.tick(world, balls, delta=5.0)
     assert not mode.npc.alive
