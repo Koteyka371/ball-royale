@@ -704,6 +704,68 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        import math
+
+        # Process quantum entanglement link
+        qt_timer = getattr(self.ball, "quantum_entangled_timer", 0.0)
+        if qt_timer > 0:
+            self.ball.quantum_entangled_timer -= delta
+            target_id = getattr(self.ball, "quantum_entangled_target", None)
+            if target_id is not None:
+                target_ball = None
+                for b in getattr(self.world, "balls", []):
+                    if b.id == target_id:
+                        target_ball = b
+                        break
+
+                # If target is alive and in radius
+                if target_ball and getattr(target_ball, "alive", True):
+                    dist = math.hypot(target_ball.x - self.ball.x, target_ball.y - self.ball.y)
+                    if dist <= 300.0:
+                        # Apply buffs
+                        if not getattr(self.ball, "quantum_buff_active", False):
+                            self.ball.quantum_buff_active = True
+                            self.ball.speed_multiplier = getattr(self.ball, "speed_multiplier", 1.0) * 1.5
+                            self.ball.stamina_regen_multiplier = getattr(self.ball, "stamina_regen_multiplier", 1.0) * 2.0
+
+                        # Handle damage sharing (only process if NOT currently processing shared damage)
+                        if hasattr(self.ball, "quantum_prev_hp") and not getattr(self.ball, "quantum_damage_processing", False):
+                            damage_taken = self.ball.quantum_prev_hp - getattr(self.ball, "hp", 0.0)
+                            if damage_taken > 0:
+                                # We took fresh damage. Share half to partner.
+                                # Heal back half the damage on self
+                                self.ball.hp += damage_taken / 2.0
+
+                                # Apply half damage to target, temporarily lock it from processing this shared damage
+                                target_ball.quantum_damage_processing = True
+                                target_ball.hp -= damage_taken / 2.0
+                                if target_ball.hp <= 0:
+                                    target_ball.alive = False
+                                    target_ball.killer_id = getattr(self.ball, "last_attacker_id", None)
+
+                                # Update target's prev_hp immediately so next frame it doesn't see this shared damage as fresh damage
+                                target_ball.quantum_prev_hp = target_ball.hp
+                                # Unset processing lock
+                                target_ball.quantum_damage_processing = False
+
+                        self.ball.quantum_prev_hp = getattr(self.ball, "hp", 0.0)
+                    else:
+                        # Out of range
+                        if getattr(self.ball, "quantum_buff_active", False):
+                            self.ball.quantum_buff_active = False
+                            self.ball.speed_multiplier = getattr(self.ball, "speed_multiplier", 1.0) / 1.5
+                            self.ball.stamina_regen_multiplier = getattr(self.ball, "stamina_regen_multiplier", 1.0) / 2.0
+
+                if not target_ball or not getattr(target_ball, "alive", True) or self.ball.quantum_entangled_timer <= 0:
+                    # Remove buffs
+                    if getattr(self.ball, "quantum_buff_active", False):
+                        self.ball.quantum_buff_active = False
+                        self.ball.speed_multiplier = getattr(self.ball, "speed_multiplier", 1.0) / 1.5
+                        self.ball.stamina_regen_multiplier = getattr(self.ball, "stamina_regen_multiplier", 1.0) / 2.0
+                    self.ball.quantum_entangled_timer = 0.0
+                    self.ball.quantum_entangled_target = None
+                    self.ball.quantum_prev_hp = getattr(self.ball, "hp", 0.0)
+
 
         if getattr(self.ball, "siren_feared_timer", 0.0) > 0:
             self.ball.siren_feared_timer -= delta
@@ -6821,6 +6883,32 @@ class Action:
             if skill_name == "energy_shield":
                 self.ball.energy_shield_active = True
                 self.ball.energy_shield_timer = 3.0
+            elif skill_name == "quantum_entanglement":
+                # Find closest ally
+                closest_ally = None
+                min_dist = float('inf')
+                for b in getattr(self.world, "balls", []):
+                    if getattr(b, "id", None) != self.ball.id and getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True):
+                        import math
+                        dist = math.hypot(b.x - self.ball.x, b.y - self.ball.y)
+                        if dist < min_dist:
+                            min_dist = dist
+                            closest_ally = b
+                if closest_ally and min_dist < 400.0:
+                    self.ball.quantum_entangled_target = closest_ally.id
+                    closest_ally.quantum_entangled_target = self.ball.id
+                    self.ball.quantum_entangled_timer = 10.0
+                    closest_ally.quantum_entangled_timer = 10.0
+
+                    # Set up prev hp to prevent recursive damage loops
+                    self.ball.quantum_prev_hp = getattr(self.ball, "hp", 0.0)
+                    closest_ally.quantum_prev_hp = getattr(closest_ally, "hp", 0.0)
+                    self.ball.quantum_damage_processing = False
+                    closest_ally.quantum_damage_processing = False
+
+                    if hasattr(self, "_spawn_skill_particles"):
+                        self._spawn_skill_particles("quantum_entanglement")
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 15.0)
             elif skill_name == "trickster_swap":
                 all_entities = getattr(self.world, "balls", [])
 

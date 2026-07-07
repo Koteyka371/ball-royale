@@ -1131,6 +1131,159 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	# Save current hp
+	var qe_current_hp = 0.0
+	if "hp" in ball: qe_current_hp = ball.hp
+	elif ball.has_method("has_meta") and ball.has_meta("hp"): qe_current_hp = ball.get_meta("hp")
+
+	if "quantum_prev_hp" not in ball and not (ball.has_method("has_meta") and ball.has_meta("quantum_prev_hp")):
+		if "quantum_prev_hp" in ball: ball.quantum_prev_hp = qe_current_hp
+		elif ball.has_method("set_meta"): ball.set_meta("quantum_prev_hp", qe_current_hp)
+
+	var qt_timer = 0.0
+	if "quantum_entangled_timer" in ball: qt_timer = ball.quantum_entangled_timer
+	elif ball.has_method("has_meta") and ball.has_meta("quantum_entangled_timer"): qt_timer = ball.get_meta("quantum_entangled_timer")
+
+	if qt_timer > 0.0:
+		qt_timer -= delta
+		if "quantum_entangled_timer" in ball: ball.quantum_entangled_timer = qt_timer
+		elif ball.has_method("set_meta"): ball.set_meta("quantum_entangled_timer", qt_timer)
+
+		var target_id = null
+		if "quantum_entangled_target" in ball: target_id = ball.quantum_entangled_target
+		elif ball.has_method("has_meta") and ball.has_meta("quantum_entangled_target"): target_id = ball.get_meta("quantum_entangled_target")
+
+		if target_id != null:
+			var target_ball = null
+			for b in world.balls:
+				var bid = null
+				if "id" in b: bid = b.id
+				elif b.has_method("has_meta") and b.has_meta("id"): bid = b.get_meta("id")
+				if bid == target_id:
+					target_ball = b
+					break
+
+			var target_alive = false
+			if target_ball != null:
+				if "alive" in target_ball: target_alive = target_ball.alive
+				elif target_ball.has_method("has_meta") and target_ball.has_meta("alive"): target_alive = target_ball.get_meta("alive")
+
+			if target_ball != null and target_alive:
+				var dist = Vector2(target_ball.x, target_ball.y).distance_to(Vector2(ball.x, ball.y))
+				if dist <= 300.0:
+					var buff_active = false
+					if "quantum_buff_active" in ball: buff_active = ball.quantum_buff_active
+					elif ball.has_method("has_meta") and ball.has_meta("quantum_buff_active"): buff_active = ball.get_meta("quantum_buff_active")
+
+					if not buff_active:
+						if "quantum_buff_active" in ball: ball.quantum_buff_active = true
+						elif ball.has_method("set_meta"): ball.set_meta("quantum_buff_active", true)
+
+						var sp_mult = 1.0
+						if "speed_multiplier" in ball: sp_mult = ball.speed_multiplier
+						elif ball.has_method("has_meta") and ball.has_meta("speed_multiplier"): sp_mult = ball.get_meta("speed_multiplier")
+						if "speed_multiplier" in ball: ball.speed_multiplier = sp_mult * 1.5
+						elif ball.has_method("set_meta"): ball.set_meta("speed_multiplier", sp_mult * 1.5)
+
+						var st_mult = 1.0
+						if "stamina_regen_multiplier" in ball: st_mult = ball.stamina_regen_multiplier
+						elif ball.has_method("has_meta") and ball.has_meta("stamina_regen_multiplier"): st_mult = ball.get_meta("stamina_regen_multiplier")
+						if "stamina_regen_multiplier" in ball: ball.stamina_regen_multiplier = st_mult * 2.0
+						elif ball.has_method("set_meta"): ball.set_meta("stamina_regen_multiplier", st_mult * 2.0)
+
+					# Damage sharing
+					var prev_hp = qe_current_hp
+					if "quantum_prev_hp" in ball: prev_hp = ball.quantum_prev_hp
+					elif ball.has_method("has_meta") and ball.has_meta("quantum_prev_hp"): prev_hp = ball.get_meta("quantum_prev_hp")
+
+					var dmg_taken = prev_hp - qe_current_hp
+					var processing = false
+					if "quantum_damage_processing" in ball: processing = ball.quantum_damage_processing
+					elif ball.has_method("has_meta") and ball.has_meta("quantum_damage_processing"): processing = ball.get_meta("quantum_damage_processing")
+
+					if dmg_taken > 0 and not processing:
+						var new_self_hp = qe_current_hp + (dmg_taken / 2.0)
+						if "hp" in ball: ball.hp = new_self_hp
+						elif ball.has_method("set_meta"): ball.set_meta("hp", new_self_hp)
+
+						if "quantum_damage_processing" in target_ball: target_ball.quantum_damage_processing = true
+						elif target_ball.has_method("set_meta"): target_ball.set_meta("quantum_damage_processing", true)
+
+						var target_hp = 0.0
+						if "hp" in target_ball: target_hp = target_ball.hp
+						elif target_ball.has_method("has_meta") and target_ball.has_meta("hp"): target_hp = target_ball.get_meta("hp")
+
+						var new_target_hp = target_hp - (dmg_taken / 2.0)
+						if "hp" in target_ball: target_ball.hp = new_target_hp
+						elif target_ball.has_method("set_meta"): target_ball.set_meta("hp", new_target_hp)
+
+						if new_target_hp <= 0:
+							if "alive" in target_ball: target_ball.alive = false
+							elif target_ball.has_method("set_meta"): target_ball.set_meta("alive", false)
+
+						if "quantum_prev_hp" in target_ball: target_ball.quantum_prev_hp = new_target_hp
+						elif target_ball.has_method("set_meta"): target_ball.set_meta("quantum_prev_hp", new_target_hp)
+
+						if "quantum_damage_processing" in target_ball: target_ball.quantum_damage_processing = false
+						elif target_ball.has_method("set_meta"): target_ball.set_meta("quantum_damage_processing", false)
+
+					# Re-eval current hp after changes
+					if "hp" in ball: qe_current_hp = ball.hp
+					elif ball.has_method("has_meta") and ball.has_meta("hp"): qe_current_hp = ball.get_meta("hp")
+					if "quantum_prev_hp" in ball: ball.quantum_prev_hp = qe_current_hp
+					elif ball.has_method("set_meta"): ball.set_meta("quantum_prev_hp", qe_current_hp)
+				else:
+					# Out of range, remove buffs
+					var buff_active = false
+					if "quantum_buff_active" in ball: buff_active = ball.quantum_buff_active
+					elif ball.has_method("has_meta") and ball.has_meta("quantum_buff_active"): buff_active = ball.get_meta("quantum_buff_active")
+
+					if buff_active:
+						if "quantum_buff_active" in ball: ball.quantum_buff_active = false
+						elif ball.has_method("set_meta"): ball.set_meta("quantum_buff_active", false)
+
+						var sp_mult = 1.0
+						if "speed_multiplier" in ball: sp_mult = ball.speed_multiplier
+						elif ball.has_method("has_meta") and ball.has_meta("speed_multiplier"): sp_mult = ball.get_meta("speed_multiplier")
+						if "speed_multiplier" in ball: ball.speed_multiplier = sp_mult / 1.5
+						elif ball.has_method("set_meta"): ball.set_meta("speed_multiplier", sp_mult / 1.5)
+
+						var st_mult = 1.0
+						if "stamina_regen_multiplier" in ball: st_mult = ball.stamina_regen_multiplier
+						elif ball.has_method("has_meta") and ball.has_meta("stamina_regen_multiplier"): st_mult = ball.get_meta("stamina_regen_multiplier")
+						if "stamina_regen_multiplier" in ball: ball.stamina_regen_multiplier = st_mult / 2.0
+						elif ball.has_method("set_meta"): ball.set_meta("stamina_regen_multiplier", st_mult / 2.0)
+
+			if target_ball == null or not target_alive or qt_timer <= 0:
+				var buff_active = false
+				if "quantum_buff_active" in ball: buff_active = ball.quantum_buff_active
+				elif ball.has_method("has_meta") and ball.has_meta("quantum_buff_active"): buff_active = ball.get_meta("quantum_buff_active")
+
+				if buff_active:
+					if "quantum_buff_active" in ball: ball.quantum_buff_active = false
+					elif ball.has_method("set_meta"): ball.set_meta("quantum_buff_active", false)
+
+					var sp_mult = 1.0
+					if "speed_multiplier" in ball: sp_mult = ball.speed_multiplier
+					elif ball.has_method("has_meta") and ball.has_meta("speed_multiplier"): sp_mult = ball.get_meta("speed_multiplier")
+					if "speed_multiplier" in ball: ball.speed_multiplier = sp_mult / 1.5
+					elif ball.has_method("set_meta"): ball.set_meta("speed_multiplier", sp_mult / 1.5)
+
+					var st_mult = 1.0
+					if "stamina_regen_multiplier" in ball: st_mult = ball.stamina_regen_multiplier
+					elif ball.has_method("has_meta") and ball.has_meta("stamina_regen_multiplier"): st_mult = ball.get_meta("stamina_regen_multiplier")
+					if "stamina_regen_multiplier" in ball: ball.stamina_regen_multiplier = st_mult / 2.0
+					elif ball.has_method("set_meta"): ball.set_meta("stamina_regen_multiplier", st_mult / 2.0)
+
+				if "quantum_entangled_timer" in ball: ball.quantum_entangled_timer = 0.0
+				elif ball.has_method("set_meta"): ball.set_meta("quantum_entangled_timer", 0.0)
+				if "quantum_entangled_target" in ball: ball.quantum_entangled_target = null
+				elif ball.has_method("set_meta"): ball.set_meta("quantum_entangled_target", null)
+				if "quantum_prev_hp" in ball: ball.quantum_prev_hp = qe_current_hp
+				elif ball.has_method("set_meta"): ball.set_meta("quantum_prev_hp", qe_current_hp)
+
+
+
     # Nemesis Reveal Passive
     var n_reveal = 5.0
     if "nemesis_reveal_timer" in self.ball:
