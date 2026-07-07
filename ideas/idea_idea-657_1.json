@@ -1,0 +1,4 @@
+{
+    "title": "Decoy Distraction Event",
+    "description": "Periodically spawn harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked. This confuses targeting systems and provides cover for sneaky maneuvers."
+}

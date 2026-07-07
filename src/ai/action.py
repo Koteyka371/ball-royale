@@ -705,6 +705,22 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
         import math
 
+        # Nemesis Reveal Passive
+        if not hasattr(self.ball, "nemesis_reveal_timer"):
+            self.ball.nemesis_reveal_timer = 5.0
+        self.ball.nemesis_reveal_timer -= delta
+        if self.ball.nemesis_reveal_timer <= 0.0:
+            self.ball.nemesis_reveal_timer = 5.0
+            pm = getattr(self.world, "profile_manager", None)
+            if pm and hasattr(pm, "is_nemesis") and hasattr(self.world, "balls"):
+                for other in self.world.balls:
+                    if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "alive", True):
+                        if hasattr(self.ball, "ball_type") and hasattr(other, "ball_type"):
+                            if pm.is_nemesis(self.ball.ball_type, other.ball_type):
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({"type": "nemesis_compass", "data": {"target_x": float(other.x), "target_y": float(other.y), "owner_id": getattr(self.ball, "id", None)}})
+                                    self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(self.ball.x), "y": float(self.ball.y), "tx": float(other.x), "ty": float(other.y), "color": "red"}})
+
         if getattr(self.ball, "shuffle_booster_timer", 0.0) > 0:
             self.ball.shuffle_booster_timer -= delta
             if self.ball.shuffle_booster_timer <= 0:
