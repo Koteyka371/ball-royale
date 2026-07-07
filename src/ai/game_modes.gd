@@ -2566,6 +2566,124 @@ class KingOfTheHillMode extends GameMode:
         return null
 
 
+class SweepingBlackHoleMode extends GameMode:
+    var bh_x = -100.0
+    var bh_y = 500.0
+    var bh_vx = 30.0
+    var bh_vy = 0.0
+    var bh_radius = 80.0
+    var is_sweeping = false
+
+    func _init() -> void:
+        name = "Sweeping Black Hole"
+        description = "A massive black hole sweeps across the arena, sucking in everything in its path."
+
+    func setup(world, balls: Array) -> void:
+        .setup(world, balls)
+        is_sweeping = false
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        # Evaluate crowd system
+        if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+            var crowd = world.get_node("CrowdSystem")
+            var kill_log = []
+            if "kill_log" in world:
+                kill_log = world.kill_log
+            var current_tick = 0
+            if "tick" in world:
+                current_tick = world.tick
+            crowd.tick(balls, kill_log, current_tick)
+
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null:
+            if "width" in world.arena:
+                arena_width = float(world.arena.width)
+            if "height" in world.arena:
+                arena_height = float(world.arena.height)
+
+        if not is_sweeping:
+            is_sweeping = true
+            var side = randi() % 4
+            if side == 0: # Top
+                bh_x = randf_range(100.0, arena_width - 100.0)
+                bh_y = -bh_radius
+                bh_vx = 0.0
+                bh_vy = 40.0
+            elif side == 1: # Bottom
+                bh_x = randf_range(100.0, arena_width - 100.0)
+                bh_y = arena_height + bh_radius
+                bh_vx = 0.0
+                bh_vy = -40.0
+            elif side == 2: # Left
+                bh_x = -bh_radius
+                bh_y = randf_range(100.0, arena_height - 100.0)
+                bh_vx = 40.0
+                bh_vy = 0.0
+            else: # Right
+                bh_x = arena_width + bh_radius
+                bh_y = randf_range(100.0, arena_height - 100.0)
+                bh_vx = -40.0
+                bh_vy = 0.0
+
+            if world != null and world.has_method("add_event"):
+                world.add_event("sweeping_black_hole_spawn", {"message": "A sweeping black hole appeared!"})
+
+        bh_x += bh_vx * delta
+        bh_y += bh_vy * delta
+
+        if (bh_vx > 0 and bh_x > arena_width + bh_radius) or \
+           (bh_vx < 0 and bh_x < -bh_radius) or \
+           (bh_vy > 0 and bh_y > arena_height + bh_radius) or \
+           (bh_vy < 0 and bh_y < -bh_radius):
+            is_sweeping = false
+
+        for b in balls:
+            if not b.alive or b.ball_type == "spectator":
+                continue
+
+            var dx = bh_x - b.x
+            var dy = bh_y - b.y
+            var dist = sqrt(dx * dx + dy * dy)
+
+            if dist < bh_radius:
+                if "hp" in b:
+                    b.hp = 0
+                b.alive = false
+            elif dist > 0:
+                var pull_strength = 30000.0 / (dist * dist)
+                pull_strength = min(pull_strength, 200.0)
+
+                b.x += (dx / dist) * pull_strength * delta
+                b.y += (dy / dist) * pull_strength * delta
+
+    func check_winner(world, balls: Array):
+        var alive = []
+        for b in balls:
+            if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+                alive.append(b)
+
+        if alive.size() == 0:
+            return "Draw"
+
+        var teams_alive = {}
+        for b in alive:
+            if "team" in b:
+                teams_alive[b.team] = true
+            else:
+                teams_alive[b.ball_type] = true
+
+        if teams_alive.size() == 1:
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return teams_alive.keys()[0]
+
+        if alive.size() == 1:
+            if has_method("_award_skill_points"): call("_award_skill_points")
+            return alive[0].ball_type
+
+        return null
+
+
 class BlackHoleMode extends GameMode:
     var black_hole_radius = 50.0
 
@@ -11141,6 +11259,7 @@ var GAME_MODES = {
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
     "domination": DominationMode.new(),
     "black_hole": BlackHoleMode.new(),
+    "sweeping_black_hole": SweepingBlackHoleMode.new(),
     "gravity_well": GravityWellMode.new(),
     "king_of_the_hill": KingOfTheHillMode.new(),
     "moving_zone": MovingZoneMode.new(),
