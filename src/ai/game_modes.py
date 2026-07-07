@@ -9973,3 +9973,64 @@ class IllusionWallMode(GameMode):
                     b.interacted_illusion_walls = new_interacted
 
 GAME_MODES["illusion_wall"] = IllusionWallMode()
+
+
+class OverloadShieldMode(GameMode):
+    """
+    A game mode where reflect shields have 300% capacity but passively drain the owner's stamina while active.
+    If the shield breaks, the explosion radius and damage are doubled.
+    """
+    def __init__(self):
+        super().__init__()
+        self.drain_rate = 10.0 # Stamina drained per second
+
+    def start(self, world, balls):
+        """Initialize overload shield mechanics."""
+        for b in balls:
+            b.overload_shield_applied = True
+
+    def tick(self, world, balls, delta=0.016):
+        """Apply the overload rules each tick."""
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            active = getattr(b, "reflect_shield_active", False)
+            boosted = getattr(b, "overload_shield_boosted", False)
+
+            if active and not boosted:
+                base_cap = getattr(b, "reflect_shield_capacity", 50.0)
+                b.reflect_shield_capacity = base_cap * 3.0
+                b.overload_shield_boosted = True
+                b.overload_shield_prev_cap = b.reflect_shield_capacity
+
+                # Double the explosion attributes directly on the ball
+                if hasattr(b, "reflect_explosion_radius"):
+                    b.reflect_explosion_radius *= 2.0
+                else:
+                    b.reflect_explosion_radius = 150.0 * 2.0
+
+                if hasattr(b, "reflect_explosion_damage"):
+                    b.reflect_explosion_damage *= 2.0
+                else:
+                    b.reflect_explosion_damage = 50.0 * 2.0
+
+            if active:
+                if hasattr(b, "stamina"):
+                    b.stamina -= self.drain_rate * delta
+                    if b.stamina < 0:
+                        b.stamina = 0.0
+
+                b.overload_shield_prev_cap = getattr(b, "reflect_shield_capacity", 0.0)
+            else:
+                if boosted:
+                    b.overload_shield_boosted = False
+
+                    # Reset the explosion attributes back to normal
+                    if hasattr(b, "reflect_explosion_radius"):
+                        b.reflect_explosion_radius /= 2.0
+                    if hasattr(b, "reflect_explosion_damage"):
+                        b.reflect_explosion_damage /= 2.0
+
+
+GAME_MODES["overload_shield"] = OverloadShieldMode()

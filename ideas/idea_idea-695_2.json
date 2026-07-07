@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic Minefield Hazard",
+  "description": "New procedural arena hazard that spawns inactive magnetic mines. When a ball comes within a certain proximity, the mine starts slowly dragging the ball towards it before exploding in a massive shockwave."
+}
