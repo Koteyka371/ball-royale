@@ -19768,6 +19768,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1153",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone Game Mode",
+      "description": "A battle royale mode where the boundaries slowly constrict over time. Staying outside the boundary deals continuous damage until elimination.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone_game.py",
+        "src/ai/shrinking_safe_zone_game.gd",
+        "tests/test_shrinking_safe_zone_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
