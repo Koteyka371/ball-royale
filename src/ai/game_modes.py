@@ -6572,10 +6572,12 @@ class TugOfWarMode(GameMode):
 
             if red_count > blue_count:
                 # Red pushes towards Blue goal (right)
-                self.payload.x += move_speed * delta * (red_count - blue_count)
+                speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
+                self.payload.x += move_speed * delta * (red_count - blue_count) * speed_multiplier
             elif blue_count > red_count:
                 # Blue pushes towards Red goal (left)
-                self.payload.x -= move_speed * delta * (blue_count - red_count)
+                speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
+                self.payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
 
             # Keep in bounds
             if self.payload.x < 50.0:
