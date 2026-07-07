@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-599] Black Hole Generator Item — *2026-07-07 17:25:05 UTC*
+
+An active item that allows players to deploy a miniature black hole. The black hole slowly pulls nearby enemies towards its center and deals continuous damage while they remain within its event horizon. This adds area-denial capabilities and creates opportunities for combo attacks when enemies are grouped up.
+
+---
+
 ## [idea-647] Shrinking Poison Gas Zone — *2026-07-07 17:07:16 UTC*
 
 Add a dynamic battle royale mechanic where the arena is gradually engulfed by a poison gas zone that moves randomly, forcing players closer together and introducing severe DoT damage outside the safe area.

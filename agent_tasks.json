@@ -10339,7 +10339,7 @@
     },
     {
       "id": "idea-599",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Generator Item",
@@ -18572,6 +18572,40 @@
         "src/ai/chain_lightning_ricochet.py",
         "src/ai/chain_lightning_ricochet.gd",
         "tests/test_chain_lightning_ricochet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1083",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Storm Eye Safe Zone",
+      "description": "The safe zone has a fast-moving 'eye'. Inside the eye, health regenerates rapidly, but the outer safe zone acts normally. This encourages high-risk fights for the very center.",
+      "allowed_paths": [
+        "src/ai/storm_eye_safe_zone.py",
+        "src/ai/storm_eye_safe_zone.gd",
+        "tests/test_storm_eye_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1084",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Radiation Mutator Zone",
+      "description": "A battle royale zone where being in the danger zone not only deals DoT but also applies random positive and negative mutations to ball stats (speed, damage, perception).",
+      "allowed_paths": [
+        "src/ai/radiation_mutator_zone.py",
+        "src/ai/radiation_mutator_zone.gd",
+        "tests/test_radiation_mutator_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
