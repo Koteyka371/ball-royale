@@ -13118,6 +13118,53 @@ func _use_skill():
                 tornado.set_meta("vx", randf_range(-100.0, 100.0))
                 tornado.set_meta("vy", randf_range(-100.0, 100.0))
                 self.world.arena.hazards.append(tornado)
+        elif skill_name == "nemesis_explosion":
+            var enemies = _get_enemies()
+
+            # Count living nemeses
+            var living_nemeses = 0
+            if world != null and world.has_method("get_profile_manager"):
+                var pm = world.call("get_profile_manager")
+                if pm != null and pm.has_method("is_nemesis") and "balls" in world:
+                    for other in world.balls:
+                        var o_id = -1
+                        var my_id = -1
+                        if "id" in other: o_id = other.id
+                        if "id" in self.ball: my_id = self.ball.id
+
+                        var o_hp = 0
+                        if "hp" in other: o_hp = other.hp
+                        elif other.has_method("has_meta") and other.has_meta("hp"): o_hp = other.get_meta("hp")
+
+                        if o_id != my_id and o_hp > 0:
+                            var my_type = ""
+                            var o_type = ""
+                            if "ball_type" in self.ball: my_type = self.ball.ball_type
+                            if "ball_type" in other: o_type = other.ball_type
+                            if my_type != "" and o_type != "" and pm.is_nemesis(o_type, my_type):
+                                living_nemeses += 1
+
+            # Calculate damage and radius
+            var explosion_damage = 50.0 + (living_nemeses * 25.0)
+            var explosion_radius = 100.0 + (living_nemeses * 20.0)
+
+            # Deal damage
+            for e in enemies:
+                var dx = e.x - self.ball.x
+                var dy = e.y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= explosion_radius:
+                    if e.has_method("take_damage"):
+                        e.take_damage(explosion_damage)
+                    else:
+                        _attempt_damage(self.ball, e)
+
+            # Cooldown and visual effect
+            var cd = 8.0
+            if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+            if self.ball is Dictionary: self.ball["skill_timer"] = cd
+            else: self.ball.set("skill_timer", cd)
+
         elif skill_name == "explosion":
             var enemies = _get_enemies()
             var explosion_radius = 100.0
@@ -14600,6 +14647,14 @@ func _spawn_skill_particles(skill_name: String = ""):
                 particles.color = Color(0.2, 0.5, 1.0, 0.8) # Blue wave
             particles.lifetime = 0.6 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.9
+        elif skill_name == "nemesis_explosion":
+            particles.amount = int(80 * tier_multiplier)
+            particles.spread = 360.0
+            particles.initial_velocity_min = 200.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.initial_velocity_max = 250.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.color = Color(1.0, 0.0, 1.0, 1.0) # Nemesis purple/pink explosion
+            particles.lifetime = 0.5 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.explosiveness = 1.0
         elif skill_name == "explosion":
             particles.amount = int(60 * tier_multiplier)
             particles.spread = 360.0
