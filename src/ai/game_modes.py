@@ -385,7 +385,10 @@ class BattleRoyaleMode(GameMode):
                 b_y = getattr(b, "y", 0.0)
                 dist = math.hypot(b_x - self.zone_x, b_y - self.zone_y)
                 if dist > self.zone_radius:
-                    b.hp -= zone_damage_per_second * delta # damage per second outside safe zone
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(zone_damage_per_second * delta)
+                    else:
+                        b.hp -= zone_damage_per_second * delta # damage per second outside safe zone
 
 
         # Handle decoy_spawners

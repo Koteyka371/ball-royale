@@ -480,7 +480,10 @@ class BattleRoyaleMode extends GameMode:
 
                 var dist = sqrt(pow(b_x - self.get("zone_x"), 2) + pow(b_y - self.get("zone_y"), 2))
                 if dist > self.get("zone_radius"):
-                    if "hp" in b: b.hp -= zone_damage_per_second * delta
+                    if b.has_method("take_damage"):
+                        b.take_damage(zone_damage_per_second * delta)
+                    elif "hp" in b:
+                        b.hp -= zone_damage_per_second * delta
 
 
         # Handle decoy_spawners
