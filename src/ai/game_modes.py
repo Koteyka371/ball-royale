@@ -2087,6 +2087,110 @@ class KingOfTheHillMode(GameMode):
         return None
 
 
+class SweepingBlackHoleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sweeping Black Hole"
+        self.description = "A massive black hole sweeps across the arena, sucking in everything in its path."
+        self.bh_x = -100.0
+        self.bh_y = 500.0
+        self.bh_vx = 30.0
+        self.bh_vy = 0.0
+        self.bh_radius = 80.0
+        self.is_sweeping = False
+        import random
+        self.random = random
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.is_sweeping = False
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        import math
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        if not self.is_sweeping:
+            self.is_sweeping = True
+            side = self.random.randint(0, 3)
+            if side == 0:  # Top
+                self.bh_x = self.random.uniform(100, arena_width - 100)
+                self.bh_y = -self.bh_radius
+                self.bh_vx = 0.0
+                self.bh_vy = 40.0
+            elif side == 1:  # Bottom
+                self.bh_x = self.random.uniform(100, arena_width - 100)
+                self.bh_y = arena_height + self.bh_radius
+                self.bh_vx = 0.0
+                self.bh_vy = -40.0
+            elif side == 2:  # Left
+                self.bh_x = -self.bh_radius
+                self.bh_y = self.random.uniform(100, arena_height - 100)
+                self.bh_vx = 40.0
+                self.bh_vy = 0.0
+            else:  # Right
+                self.bh_x = arena_width + self.bh_radius
+                self.bh_y = self.random.uniform(100, arena_height - 100)
+                self.bh_vx = -40.0
+                self.bh_vy = 0.0
+
+            if hasattr(world, "add_event"):
+                world.add_event("sweeping_black_hole_spawn", {"message": "A sweeping black hole appeared!"})
+
+        self.bh_x += self.bh_vx * delta
+        self.bh_y += self.bh_vy * delta
+
+        # Check if it went fully off-screen on the opposite side
+        if (self.bh_vx > 0 and self.bh_x > arena_width + self.bh_radius) or \
+           (self.bh_vx < 0 and self.bh_x < -self.bh_radius) or \
+           (self.bh_vy > 0 and self.bh_y > arena_height + self.bh_radius) or \
+           (self.bh_vy < 0 and self.bh_y < -self.bh_radius):
+            self.is_sweeping = False
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+                continue
+
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dx = self.bh_x - b.x
+            dy = self.bh_y - b.y
+            dist = math.hypot(dx, dy)
+
+            if dist < self.bh_radius:
+                b.hp = 0
+                b.alive = False
+            elif dist > 0:
+                pull_strength = 30000.0 / (dist * dist)
+                pull_strength = min(pull_strength, 200.0)
+
+                b.x += (dx / dist) * pull_strength * delta
+                b.y += (dy / dist) * pull_strength * delta
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
+
 class BlackHoleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -8624,6 +8728,7 @@ GAME_MODES = {
     "lunar_eclipse_event": LunarEclipseEventMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
+    "sweeping_black_hole": SweepingBlackHoleMode(),
     "gravity_well": GravityWellMode(),
     "king_of_the_hill": KingOfTheHillMode(),
     "moving_zone": MovingZoneMode(),
