@@ -9653,3 +9653,65 @@ class TetheredRoyaleMode(GameMode):
 
 GAME_MODES["tethered_royale"] = TetheredRoyaleMode()
 GAME_MODES["rubber_band"] = RubberBandMode()
+class RiftRouletteMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rift Roulette"
+        self.description = "Two pairs of interconnected portals periodically spawn and swap positions, allowing players to instantly traverse the map but also throwing unexpected hazards through the rifts."
+        self.cycle_timer = 0.0
+        self.cycle_interval = 8.0
+        self.portals = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        from arena.procedural_arena import Hazard
+
+        self.cycle_timer -= delta
+        if self.cycle_timer <= 0:
+            self.cycle_timer = self.cycle_interval
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards = [h for h in world.arena.hazards if not getattr(h, "is_rift_portal", False) and not getattr(h, "is_rift_hazard", False)]
+
+                arena_w = getattr(world.arena, "width", 800)
+                arena_h = getattr(world.arena, "height", 600)
+
+                self.portals = []
+                for i in range(2):
+                    p1_id = f"rift_{i}_a"
+                    p2_id = f"rift_{i}_b"
+
+                    x1 = random.uniform(100, arena_w - 100)
+                    y1 = random.uniform(100, arena_h - 100)
+                    x2 = random.uniform(100, arena_w - 100)
+                    y2 = random.uniform(100, arena_h - 100)
+
+                    p1 = Hazard(id=p1_id, x=x1, y=y1, radius=30.0, kind="teleporter", damage=0.0)
+                    p1.target_x = x2
+                    p1.target_y = y2
+                    p1.is_rift_portal = True
+
+                    p2 = Hazard(id=p2_id, x=x2, y=y2, radius=30.0, kind="teleporter", damage=0.0)
+                    p2.target_x = x1
+                    p2.target_y = y1
+                    p2.is_rift_portal = True
+
+                    world.arena.hazards.extend([p1, p2])
+                    self.portals.extend([p1, p2])
+
+                if hasattr(world, "add_event"):
+                    world.add_event("rifts_shifted", {"message": "Rifts have shifted positions!"})
+
+                for p in self.portals:
+                    if random.random() < 0.5:
+                        h_types = ["meteor", "tornado", "black_hole", "poison_cloud"]
+                        h_type = random.choice(h_types)
+                        h = Hazard(id=f"rift_hazard_{random.randint(1000, 9999)}", x=p.x, y=p.y, radius=20.0, kind=h_type, damage=10.0)
+                        h.is_rift_hazard = True
+                        h.duration = 5.0
+                        world.arena.hazards.append(h)
+
+
+
+GAME_MODES["rift_roulette"] = RiftRouletteMode()

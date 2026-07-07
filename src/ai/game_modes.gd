@@ -11411,6 +11411,7 @@ var GAME_MODES = {
 	"clan_tournament": ClanTournamentMode.new(),
 	"tag_team": TagTeamMode.new(),
 	"rubber_band": RubberBandMode.new(),
+	"rift_roulette": RiftRouletteMode.new(),
 	"crossfire": CrossfireMode.new(),
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new()
 }
@@ -11942,3 +11943,80 @@ class RubberBandMode extends GameMode:
 										else:
 											var hp = other["hp"] if other.has("hp") else 100.0
 											other["hp"] = hp - damage_val
+class RiftRouletteMode extends GameMode:
+	var cycle_timer: float = 0.0
+	var cycle_interval: float = 8.0
+	var portals: Array = []
+
+	func _init().():
+		name = "Rift Roulette"
+		description = "Two pairs of interconnected portals periodically spawn and swap positions, allowing players to instantly traverse the map but also throwing unexpected hazards through the rifts."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		cycle_timer -= delta
+		if cycle_timer <= 0:
+			cycle_timer = cycle_interval
+
+			if world and "arena" in world and "hazards" in world.arena:
+				var new_hazards = []
+				for h in world.arena.hazards:
+					var keep = true
+					if typeof(h) == TYPE_OBJECT:
+						if h.has_method("get_meta") and (h.get_meta("is_rift_portal") or h.get_meta("is_rift_hazard")):
+							keep = false
+						elif "is_rift_portal" in h and h.is_rift_portal:
+							keep = false
+						elif "is_rift_hazard" in h and h.is_rift_hazard:
+							keep = false
+					elif typeof(h) == TYPE_DICTIONARY:
+						if h.has("is_rift_portal") and h["is_rift_portal"]:
+							keep = false
+						if h.has("is_rift_hazard") and h["is_rift_hazard"]:
+							keep = false
+					if keep:
+						new_hazards.append(h)
+				world.arena.hazards = new_hazards
+
+				var arena_w = world.arena.width if "width" in world.arena else 800.0
+				var arena_h = world.arena.height if "height" in world.arena else 600.0
+
+				portals = []
+				var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+
+				for i in range(2):
+					var p1_id = "rift_" + str(i) + "_a"
+					var p2_id = "rift_" + str(i) + "_b"
+
+					var x1 = randf_range(100, arena_w - 100)
+					var y1 = randf_range(100, arena_h - 100)
+					var x2 = randf_range(100, arena_w - 100)
+					var y2 = randf_range(100, arena_h - 100)
+
+					var p1 = HazardObj.new(p1_id, x1, y1, 30.0, "teleporter", 0.0)
+					p1.set_meta("target_x", x2)
+					p1.set_meta("target_y", y2)
+					p1.set_meta("is_rift_portal", true)
+
+					var p2 = HazardObj.new(p2_id, x2, y2, 30.0, "teleporter", 0.0)
+					p2.set_meta("target_x", x1)
+					p2.set_meta("target_y", y1)
+					p2.set_meta("is_rift_portal", true)
+
+					world.arena.hazards.append(p1)
+					world.arena.hazards.append(p2)
+					portals.append(p1)
+					portals.append(p2)
+
+				if world.has_method("add_event"):
+					world.add_event("rifts_shifted", {"message": "Rifts have shifted positions!"})
+
+				for p in portals:
+					if randf() < 0.5:
+						var h_types = ["meteor", "tornado", "black_hole", "poison_cloud"]
+						var h_type = h_types[randi() % h_types.size()]
+						var h = HazardObj.new("rift_hazard_" + str(randi() % 10000), p.x, p.y, 20.0, h_type, 10.0)
+						h.set_meta("is_rift_hazard", true)
+						h.duration = 5.0
+						world.arena.hazards.append(h)
