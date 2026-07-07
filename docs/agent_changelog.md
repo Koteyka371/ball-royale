@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-685] Invisibility Booster — *2026-07-07 22:54:30 UTC*
+
+A booster that renders a ball temporarily invisible to AI tracking and opponent targeting, giving them a stealth advantage for a short duration.
+
+---
+
 ## [idea-668] Nemesis Bounties — *2026-07-07 22:07:30 UTC*
 
 Introduce a bounty system where players can place bounties on their nemeses using prestige tokens. If another player or AI defeats a bounty target, they receive a portion of the tokens, while the player who placed the bounty gets a temporary buff.
