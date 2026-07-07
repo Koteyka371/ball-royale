@@ -7688,6 +7688,103 @@ class Action:
 
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
+
+            elif skill_name == "wall_jump":
+                self._spawn_skill_particles("wall_jump")
+                arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
+                arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
+
+                # Dash into the nearest wall
+                dists = {
+                    "left": self.ball.x,
+                    "right": arena_width - self.ball.x,
+                    "top": self.ball.y,
+                    "bottom": arena_height - self.ball.y
+                }
+                closest_wall = min(dists, key=dists.get)
+
+                # Setup ricochet jump variables
+                jump_speed = 300.0
+                jump_range = 400.0
+
+                # Record starting position
+                start_x, start_y = self.ball.x, self.ball.y
+
+                # Calculate bounce direction based on nearest wall (perpendicular or random outward angle)
+                # We will dash to the wall, then ricochet
+                if closest_wall == "left":
+                    self.ball.x = 0.0
+                    ricochet_dx = jump_range
+                    ricochet_dy = random.uniform(-jump_range, jump_range)
+                elif closest_wall == "right":
+                    self.ball.x = float(arena_width)
+                    ricochet_dx = -jump_range
+                    ricochet_dy = random.uniform(-jump_range, jump_range)
+                elif closest_wall == "top":
+                    self.ball.y = 0.0
+                    ricochet_dy = jump_range
+                    ricochet_dx = random.uniform(-jump_range, jump_range)
+                else: # bottom
+                    self.ball.y = float(arena_height)
+                    ricochet_dy = -jump_range
+                    ricochet_dx = random.uniform(-jump_range, jump_range)
+
+                # Normalize ricochet vector
+                r_dist = math.sqrt(ricochet_dx**2 + ricochet_dy**2)
+                if r_dist > 0.0001:
+                    ricochet_dx = (ricochet_dx / r_dist) * jump_range
+                    ricochet_dy = (ricochet_dy / r_dist) * jump_range
+
+                # Set target position
+                target_x = self.ball.x + ricochet_dx
+                target_y = self.ball.y + ricochet_dy
+
+                # Add brief immunity
+                self.ball.immunity_timer = max(getattr(self.ball, "immunity_timer", 0.0), 1.0)
+
+                # Determine enemies in the rebound path (line segment from wall to target)
+                enemies = self._get_enemies()
+
+                # Helper function for line segment distance
+                def point_line_distance(px, py, x1, y1, x2, y2):
+                    line_mag = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+                    if line_mag < 0.000001:
+                        return math.sqrt((px - x1)**2 + (py - y1)**2)
+
+                    u = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / (line_mag ** 2)
+
+                    if u < 0.00001 or u > 1.0:
+                        ix = x1 if u < 0.00001 else x2
+                        iy = y1 if u < 0.00001 else y2
+                    else:
+                        ix = x1 + u * (x2 - x1)
+                        iy = y1 + u * (y2 - y1)
+
+                    return math.sqrt((px - ix)**2 + (py - iy)**2)
+
+                # Deal massive damage to any entity caught in the rebound path
+                for enemy in enemies:
+                    dist_to_path = point_line_distance(enemy.x, enemy.y, self.ball.x, self.ball.y, target_x, target_y)
+                    # Use a generous width for the "rebound path"
+                    if dist_to_path < getattr(self.ball, "radius", 10.0) + getattr(enemy, "radius", 10.0) + 40.0:
+                        dmg = getattr(self.ball, "damage", 10.0) * 5.0 # massive damage
+                        if hasattr(enemy, "take_damage"):
+                            enemy.take_damage(dmg)
+                        elif hasattr(enemy, "hp"):
+                            enemy.hp -= dmg
+
+                        # Knockback
+                        kb_force = 100.0
+                        if r_dist > 0.0001:
+                            enemy.x += (ricochet_dx / r_dist) * kb_force
+                            enemy.y += (ricochet_dy / r_dist) * kb_force
+
+                # Move ball to final target
+                self.ball.x = max(0.0, min(float(arena_width), target_x))
+                self.ball.y = max(0.0, min(float(arena_height), target_y))
+
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", getattr(self.ball, "skill_cooldown", 5.0))
+
             elif skill_name == "dash":
                 self._spawn_skill_particles("dash")
 

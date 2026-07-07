@@ -13328,6 +13328,123 @@ func _use_skill():
             else:
                 self.ball.skill_timer = 5.0
 
+
+        elif skill_name == "wall_jump":
+            _spawn_skill_particles("wall_jump")
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if world != null and "arena" in world and world.arena != null:
+                arena_width = world.arena.get("width", 1000.0)
+                arena_height = world.arena.get("height", 1000.0)
+            elif world != null:
+                arena_width = world.get("width", 1000.0)
+                arena_height = world.get("height", 1000.0)
+
+            var dist_left = ball.x
+            var dist_right = arena_width - ball.x
+            var dist_top = ball.y
+            var dist_bottom = arena_height - ball.y
+
+            var closest_wall = "left"
+            var min_dist = dist_left
+            if dist_right < min_dist:
+                closest_wall = "right"
+                min_dist = dist_right
+            if dist_top < min_dist:
+                closest_wall = "top"
+                min_dist = dist_top
+            if dist_bottom < min_dist:
+                closest_wall = "bottom"
+                min_dist = dist_bottom
+
+            var jump_range = 400.0
+            var start_x = ball.x
+            var start_y = ball.y
+
+            var ricochet_dx = 0.0
+            var ricochet_dy = 0.0
+
+            if closest_wall == "left":
+                ball.x = 0.0
+                ricochet_dx = jump_range
+                ricochet_dy = randf_range(-jump_range, jump_range)
+            elif closest_wall == "right":
+                ball.x = arena_width
+                ricochet_dx = -jump_range
+                ricochet_dy = randf_range(-jump_range, jump_range)
+            elif closest_wall == "top":
+                ball.y = 0.0
+                ricochet_dy = jump_range
+                ricochet_dx = randf_range(-jump_range, jump_range)
+            else:
+                ball.y = arena_height
+                ricochet_dy = -jump_range
+                ricochet_dx = randf_range(-jump_range, jump_range)
+
+            var r_dist = sqrt(ricochet_dx*ricochet_dx + ricochet_dy*ricochet_dy)
+            if r_dist > 0.0001:
+                ricochet_dx = (ricochet_dx / r_dist) * jump_range
+                ricochet_dy = (ricochet_dy / r_dist) * jump_range
+
+            var target_x = ball.x + ricochet_dx
+            var target_y = ball.y + ricochet_dy
+
+            var immunity = ball.get("immunity_timer") if "immunity_timer" in ball else 0.0
+            if ball.has_method("set_meta"):
+                ball.set_meta("immunity_timer", max(immunity, 1.0))
+            else:
+                ball.immunity_timer = max(immunity, 1.0)
+
+            var enemies = _get_enemies()
+            var b_rad = ball.get("radius") if "radius" in ball else 10.0
+            var b_dmg = ball.get("damage") if "damage" in ball else 10.0
+
+            for enemy in enemies:
+                var e_rad = enemy.get("radius") if "radius" in enemy else 10.0
+                var px = enemy.x
+                var py = enemy.y
+                var x1 = ball.x
+                var y1 = ball.y
+                var x2 = target_x
+                var y2 = target_y
+
+                var line_mag = sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1))
+                var dist_to_path = 0.0
+                if line_mag < 0.000001:
+                    dist_to_path = sqrt((px - x1)*(px - x1) + (py - y1)*(py - y1))
+                else:
+                    var u = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / (line_mag * line_mag)
+                    var ix = 0.0
+                    var iy = 0.0
+                    if u < 0.00001 or u > 1.0:
+                        ix = x1 if u < 0.00001 else x2
+                        iy = y1 if u < 0.00001 else y2
+                    else:
+                        ix = x1 + u * (x2 - x1)
+                        iy = y1 + u * (y2 - y1)
+                    dist_to_path = sqrt((px - ix)*(px - ix) + (py - iy)*(py - iy))
+
+                if dist_to_path < b_rad + e_rad + 40.0:
+                    var dmg = b_dmg * 5.0
+                    if enemy.has_method("take_damage"):
+                        enemy.take_damage(dmg)
+                    elif "hp" in enemy:
+                        enemy.hp -= dmg
+
+                    var kb_force = 100.0
+                    if r_dist > 0.0001:
+                        enemy.x += (ricochet_dx / r_dist) * kb_force
+                        enemy.y += (ricochet_dy / r_dist) * kb_force
+
+            ball.x = max(0.0, min(arena_width, target_x))
+            ball.y = max(0.0, min(arena_height, target_y))
+
+            var cooldown = ball.get("SKILL_COOLDOWN") if "SKILL_COOLDOWN" in ball else (ball.get("skill_cooldown") if "skill_cooldown" in ball else 5.0)
+            if ball.has_method("set_meta"):
+                ball.set_meta("skill_timer", cooldown)
+            else:
+                ball.skill_timer = cooldown
+
         elif skill_name == "dash":
             _spawn_skill_particles("dash")
             var dash_range_mult = 1.0
@@ -14483,6 +14600,7 @@ func _spawn_skill_particles(skill_name: String = ""):
             particles.color = Color(0.6, 0.4, 0.2, 0.8) # Brownish trail
             particles.lifetime = 0.4
             particles.explosiveness = 0.6
+
         elif skill_name == "dash":
             particles.amount = int(20 * tier_multiplier)
             particles.spread = 20.0 * (1.0 + (tier_multiplier - 1.0) * 0.5)

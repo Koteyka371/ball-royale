@@ -29,7 +29,7 @@ def test_ninja_initialization():
     assert ball.PERCEPTION_RADIUS == 350
     assert ball.AGGRESSION == 0.8
     assert ball.COLOR == "black"
-    assert ball.SKILL == "flank"
+    assert ball.SKILL == "wall_jump"
     assert ball.SKILL_COOLDOWN == 4.0
     assert ball.ATTACK_RANGE == 21.0
 
