@@ -1130,6 +1130,10 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    if "speed_debuff_timer" in self.ball and typeof(self.ball.speed_debuff_timer) in [TYPE_FLOAT, TYPE_INT] and self.ball.speed_debuff_timer > 0.0:
+        self.ball.speed_debuff_timer -= delta
+        if self.ball.speed_debuff_timer <= 0.0:
+            self.ball.speed_debuff_multiplier = 1.0
 
     var is_d_aura_active = false
     var d_aura_val = 0.0
@@ -4889,6 +4893,117 @@ func execute(strategy: String, delta: float):
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
 
+
+                elif hazard.kind == "deployable_thin_hazard_line":
+                    var is_active = true
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        is_active = hazard.get("active", true)
+                    else:
+                        is_active = hazard.get("active") if "active" in hazard else true
+
+                    var h_team = ""
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        h_team = hazard.get("team", "")
+                    else:
+                        h_team = hazard.get("team") if "team" in hazard else ""
+
+                    var b_team = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        b_team = self.ball.get("team", "")
+                    else:
+                        b_team = self.ball.team
+
+                    if is_active and h_team != b_team:
+                        var x1 = 0.0
+                        var y1 = 0.0
+                        var x2 = 0.0
+                        var y2 = 0.0
+
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            x1 = hazard.get("start_x", hazard.x)
+                            y1 = hazard.get("start_y", hazard.y)
+                            x2 = hazard.get("end_x", hazard.x)
+                            y2 = hazard.get("end_y", hazard.y)
+                        else:
+                            x1 = hazard.get("start_x") if "start_x" in hazard else hazard.x
+                            y1 = hazard.get("start_y") if "start_y" in hazard else hazard.y
+                            x2 = hazard.get("end_x") if "end_x" in hazard else hazard.x
+                            y2 = hazard.get("end_y") if "end_y" in hazard else hazard.y
+
+                        var px = 0.0
+                        var py = 0.0
+                        var b_radius = 10.0
+                        var b_id = 0
+
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            px = self.ball.x
+                            py = self.ball.y
+                            b_radius = self.ball.get("radius", 10.0)
+                            b_id = self.ball.get("id", 0)
+                        else:
+                            px = self.ball.x
+                            py = self.ball.y
+                            b_radius = self.ball.radius
+                            b_id = self.ball.id
+
+                        var l2 = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
+                        var dist = 0.0
+                        if l2 == 0.0:
+                            var dx_p = px - x1
+                            var dy_p = py - y1
+                            dist = sqrt(dx_p * dx_p + dy_p * dy_p)
+                        else:
+                            var t_proj = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2
+                            var t = max(0.0, min(1.0, t_proj))
+                            var proj_x = x1 + t * (x2 - x1)
+                            var proj_y = y1 + t * (y2 - y1)
+                            var dx_p = px - proj_x
+                            var dy_p = py - proj_y
+                            dist = sqrt(dx_p * dx_p + dy_p * dy_p)
+
+                        if dist < b_radius:
+                            var hit_ids = []
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hit_ids = hazard.get("hit_ids", [])
+                            else:
+                                hit_ids = hazard.get("hit_ids") if "hit_ids" in hazard else []
+
+                            var already_hit = false
+                            for h_id in hit_ids:
+                                if h_id == b_id:
+                                    already_hit = true
+                                    break
+
+                            if not already_hit:
+                                hit_ids.append(b_id)
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["hit_ids"] = hit_ids
+                                else:
+                                    hazard.hit_ids = hit_ids
+
+                                var hazard_damage = 50.0
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard_damage = hazard.get("damage", 50.0)
+                                else:
+                                    hazard_damage = hazard.damage if "damage" in hazard else 50.0
+
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["hp"] -= hazard_damage
+                                else:
+                                    if self.ball.has_method("take_damage"):
+                                        self.ball.take_damage(hazard_damage)
+                                    else:
+                                        self.ball.hp -= hazard_damage
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = false
+
+                                # Speed debuff
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["speed_debuff_timer"] = 5.0
+                                    self.ball["speed_debuff_multiplier"] = 0.5
+                                else:
+                                    self.ball.speed_debuff_timer = max(self.ball.speed_debuff_timer if "speed_debuff_timer" in self.ball else 0.0, 5.0)
+                                    self.ball.speed_debuff_multiplier = min(self.ball.speed_debuff_multiplier if "speed_debuff_multiplier" in self.ball else 1.0, 0.5)
 
                 elif hazard.kind == "laser_tripwire":
                     var is_active = true
@@ -14947,6 +15062,63 @@ func _use_skill():
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
 
                 self.world.arena.hazards.append(trap)
+        elif skill_name == "deployable_thin_hazard_line":
+            var enemies = _get_enemies()
+            var end_x = self.ball.x + 300.0
+            var end_y = self.ball.y
+            if enemies.size() > 0:
+                var target = null
+                var min_dist = 9999999.0
+                for e in enemies:
+                    var dx = e.x - self.ball.x
+                    var dy = e.y - self.ball.y
+                    var dist_sq = dx*dx + dy*dy
+                    if dist_sq < min_dist:
+                        min_dist = dist_sq
+                        target = e
+
+                if target != null:
+                    var dx = target.x - self.ball.x
+                    var dy = target.y - self.ball.y
+                    var dist = sqrt(min_dist)
+                    if dist > 0:
+                        end_x = self.ball.x + (dx/dist) * 300.0
+                        end_y = self.ball.y + (dy/dist) * 300.0
+
+            var t_team = ""
+            var b_id = 0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                t_team = self.ball.get("team", "")
+                b_id = self.ball.get("id", 0)
+            else:
+                if "team" in self.ball: t_team = self.ball.team
+                if "id" in self.ball: b_id = self.ball.id
+
+            var hazard_line = {
+                "id": "hazard_line_" + str(b_id) + "_" + str(self.world.tick),
+                "kind": "deployable_thin_hazard_line",
+                "x": self.ball.x,
+                "y": self.ball.y,
+                "start_x": self.ball.x,
+                "start_y": self.ball.y,
+                "end_x": end_x,
+                "end_y": end_y,
+                "radius": 10.0,
+                "damage": 50.0,
+                "team": t_team,
+                "timer": 15.0,
+                "active": true,
+                "hit_ids": []
+            }
+            if "arena" in self.world and self.world.arena != null:
+                if "hazards" in self.world.arena:
+                    self.world.arena.hazards.append(hazard_line)
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball.skill_timer = 10.0
+            else:
+                self.ball.skill_timer = 10.0
+
         elif skill_name == "laser_tripwire":
             var enemies = _get_enemies()
             var target = null
