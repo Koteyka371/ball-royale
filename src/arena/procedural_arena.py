@@ -514,6 +514,32 @@ class ProceduralArena:
             # Process hazard-to-hazard combos
             if hasattr(self, "hazards"):
                 for hazard in self.hazards:
+                    if hazard.kind == "bounce_laser":
+                        if not hasattr(hazard, "vx"):
+                            import random
+                            import math
+                            angle = random.uniform(0, 2 * math.pi)
+                            speed = getattr(hazard, "speed", 300.0)
+                            hazard.vx = math.cos(angle) * speed
+                            hazard.vy = math.sin(angle) * speed
+
+                        hazard.x += hazard.vx * delta
+                        hazard.y += hazard.vy * delta
+
+                        if hazard.x - hazard.radius < 0:
+                            hazard.x = hazard.radius
+                            hazard.vx = abs(hazard.vx)
+                        elif getattr(self, "width", 2000.0) and hazard.x + hazard.radius > self.width:
+                            hazard.x = self.width - hazard.radius
+                            hazard.vx = -abs(hazard.vx)
+
+                        if hazard.y - hazard.radius < 0:
+                            hazard.y = hazard.radius
+                            hazard.vy = abs(hazard.vy)
+                        elif getattr(self, "height", 2000.0) and hazard.y + hazard.radius > self.height:
+                            hazard.y = self.height - hazard.radius
+                            hazard.vy = -abs(hazard.vy)
+
                     if hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
                         # Expand over time
                         hazard.radius += 2.0 * delta

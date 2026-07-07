@@ -3829,6 +3829,18 @@ class Action:
                                 self.ball.x += (dx/dist) * 200.0 * delta
                                 self.ball.y += (dy/dist) * 200.0 * delta
                             continue
+                        elif hazard.kind == "bounce_laser":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < (hazard.radius + self.ball.radius) ** 2:
+                                damage_amount = getattr(hazard, "damage", 25.0) * delta
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(damage_amount)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= damage_amount
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
                         elif hazard.kind == "spinning_laser":
                             if getattr(hazard, "is_on", True):
                                 angle = getattr(hazard, "angle", 0.0)
