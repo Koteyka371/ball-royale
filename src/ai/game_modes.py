@@ -7817,6 +7817,127 @@ class PolarityShiftMode(GameMode):
 
 
 
+class SolarEclipseEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Solar Eclipse Event"
+        self.description = "A rare Solar Eclipse gradually darkens the arena, reducing vision except for those with night vision. Solar panels stop working and shadow boosters spawn frequently."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+        self.darkness_level = 0.0
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        # Give some balls night vision randomly
+        import random
+        for b in balls:
+            if random.random() < 0.3:
+                b.has_night_vision = True
+            else:
+                b.has_night_vision = False
+            b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+
+        # Spawn some solar panels initially
+        if hasattr(world, "arena"):
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+
+            for _ in range(5):
+                x = random.uniform(100, getattr(world.arena, "width", 1000) - 100)
+                y = random.uniform(100, getattr(world.arena, "height", 1000) - 100)
+                sp = Hazard(id=55000+len(world.arena.hazards), x=x, y=y, radius=30.0, kind="solar_panel", damage=0.0)
+                setattr(sp, "hp", 100.0)
+                world.arena.hazards.append(sp)
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 30.0:
+            if random.random() < 0.2:  # 20% chance every 30 seconds
+                self.event_active = True
+                self.event_duration = 20.0
+                self.event_timer = 0.0
+                self.darkness_level = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("solar_eclipse_warning", {"type": "weather_warning", "message": "A SOLAR ECLIPSE IS BEGINNING!"})
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            if self.event_duration > 15.0:
+                self.darkness_level += delta / 5.0 # fade to 1.0 over 5 seconds
+            elif self.event_duration < 5.0:
+                self.darkness_level -= delta / 5.0 # fade back to 0.0 over 5 seconds
+            self.darkness_level = max(0.0, min(1.0, self.darkness_level))
+
+            # Spawn shadow boosters during max eclipse
+            if self.darkness_level > 0.8:
+                self.spawn_timer += delta
+                if self.spawn_timer >= 2.0:
+                    self.spawn_timer = 0.0
+                    if hasattr(world, "arena"):
+                        class TempBooster:
+                            def __init__(self, kind, x, y):
+                                self.kind = kind
+                                self.x = x
+                                self.y = y
+                                self.active = True
+                                self.radius = 15.0
+                        if not hasattr(world, "boosters"):
+                            world.boosters = []
+                        x = random.uniform(100, getattr(world.arena, "width", 1000) - 100)
+                        y = random.uniform(100, getattr(world.arena, "height", 1000) - 100)
+                        world.boosters.append(TempBooster("shadow_booster", x, y))
+
+            if self.event_duration <= 0:
+                self.event_active = False
+                self.darkness_level = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("solar_eclipse_end", {"type": "weather_warning", "message": "The solar eclipse has ended."})
+
+        # Apply logic
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                # Perception logic
+                base = getattr(b, "base_perception_radius", 250.0)
+                if self.darkness_level > 0:
+                    if getattr(b, "has_night_vision", False):
+                        # Night vision isn't affected
+                        b.perception_radius = base
+                    else:
+                        b.perception_radius = max(50.0, base * (1.0 - (self.darkness_level * 0.8)))
+                else:
+                    b.perception_radius = base
+
+                # Solar panel interaction
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        if getattr(h, "kind", "") == "solar_panel":
+                            dist_sq = (b.x - h.x)**2 + (b.y - h.y)**2
+                            # If they overlap and there's enough sunlight (darkness < 0.5)
+                            if dist_sq < (getattr(b, "radius", 15.0) + getattr(h, "radius", 30.0))**2:
+                                if self.darkness_level < 0.5:
+                                    if hasattr(b, "hp"):
+                                        b.hp = min(getattr(b, "max_hp", 100), b.hp + 5.0 * delta)
+
+
 class LunarEclipseEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -8725,6 +8846,7 @@ GAME_MODES = {
     "unstable_portals_event": UnstablePortalsEventMode(),
     "minefield_event": MinefieldEventMode(),
     "weather_chaos": WeatherChaosMode(),
+    "solar_eclipse_event": SolarEclipseEventMode(),
     "lunar_eclipse_event": LunarEclipseEventMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),

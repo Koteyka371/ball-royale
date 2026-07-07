@@ -9758,6 +9758,195 @@ class PolarityShiftMode extends GameMode:
 
 
 
+class SolarEclipseEventMode extends GameMode:
+    var event_timer = 0.0
+    var event_active = false
+    var event_duration = 0.0
+    var darkness_level = 0.0
+    var spawn_timer = 0.0
+
+    func _init():
+        name = "Solar Eclipse Event"
+        description = "A rare Solar Eclipse gradually darkens the arena, reducing vision except for those with night vision. Solar panels stop working and shadow boosters spawn frequently."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        for b in balls:
+            if randf() < 0.3:
+                if b is Dictionary:
+                    b.has_night_vision = true
+                elif b.has_method("set_meta"):
+                    b.set_meta("has_night_vision", true)
+            else:
+                if b is Dictionary:
+                    b.has_night_vision = false
+                elif b.has_method("set_meta"):
+                    b.set_meta("has_night_vision", false)
+
+            var pr = 250.0
+            if b is Dictionary and "perception_radius" in b:
+                pr = b.perception_radius
+            elif b.has_method("get_meta") and b.has_meta("perception_radius"):
+                pr = b.get_meta("perception_radius")
+            elif "perception_radius" in b:
+                pr = b.perception_radius
+
+            if b is Dictionary:
+                b.base_perception_radius = pr
+            elif b.has_method("set_meta"):
+                b.set_meta("base_perception_radius", pr)
+
+        if world != null and "arena" in world and world.arena != null:
+            if not "hazards" in world.arena or world.arena.hazards == null:
+                world.arena.hazards = []
+
+            for i in range(5):
+                var aw = 1000.0
+                if "width" in world.arena: aw = world.arena.width
+                var ah = 1000.0
+                if "height" in world.arena: ah = world.arena.height
+
+                var x = randf_range(100.0, aw - 100.0)
+                var y = randf_range(100.0, ah - 100.0)
+
+                var sp = {
+                    "id": 55000 + world.arena.hazards.size(),
+                    "x": x,
+                    "y": y,
+                    "radius": 30.0,
+                    "kind": "solar_panel",
+                    "damage": 0.0,
+                    "hp": 100.0,
+                    "has_method": Callable(func(method_name): return false)
+                }
+                world.arena.hazards.append(sp)
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        if not event_active:
+            event_timer += delta
+
+        if not event_active and event_timer > 30.0:
+            if randf() < 0.2:
+                event_active = true
+                event_duration = 20.0
+                event_timer = 0.0
+                darkness_level = 0.0
+                if world != null and world.has_method("add_event"):
+                    world.add_event("solar_eclipse_warning", {"type": "weather_warning", "message": "A SOLAR ECLIPSE IS BEGINNING!"})
+            else:
+                event_timer = 0.0
+
+        if event_active:
+            event_duration -= delta
+            if event_duration > 15.0:
+                darkness_level += delta / 5.0
+            elif event_duration < 5.0:
+                darkness_level -= delta / 5.0
+            darkness_level = max(0.0, min(1.0, darkness_level))
+
+            if darkness_level > 0.8:
+                spawn_timer += delta
+                if spawn_timer >= 2.0:
+                    spawn_timer = 0.0
+                    if world != null and "arena" in world and world.arena != null:
+                        if not "boosters" in world or world.boosters == null:
+                            world.boosters = []
+
+                        var aw = 1000.0
+                        if "width" in world.arena: aw = world.arena.width
+                        var ah = 1000.0
+                        if "height" in world.arena: ah = world.arena.height
+
+                        var x = randf_range(100.0, aw - 100.0)
+                        var y = randf_range(100.0, ah - 100.0)
+                        var sb = {
+                            "kind": "shadow_booster",
+                            "x": x,
+                            "y": y,
+                            "active": true,
+                            "radius": 15.0,
+                            "has_method": Callable(func(method_name): return false)
+                        }
+                        world.boosters.append(sb)
+
+            if event_duration <= 0:
+                event_active = false
+                darkness_level = 0.0
+                if world != null and world.has_method("add_event"):
+                    world.add_event("solar_eclipse_end", {"type": "weather_warning", "message": "The solar eclipse has ended."})
+
+        for b in balls:
+            var alive = false
+            if b is Dictionary and "alive" in b: alive = b.alive
+            elif "alive" in b: alive = b.alive
+
+            var ball_type = ""
+            if b is Dictionary and "ball_type" in b: ball_type = b.ball_type
+            elif "ball_type" in b: ball_type = b.ball_type
+
+            if alive and ball_type != "spectator":
+                var base_pr = 250.0
+                if b is Dictionary and "base_perception_radius" in b: base_pr = b.base_perception_radius
+                elif b.has_method("get_meta") and b.has_meta("base_perception_radius"): base_pr = b.get_meta("base_perception_radius")
+                elif "base_perception_radius" in b: base_pr = b.base_perception_radius
+
+                var has_nv = false
+                if b is Dictionary and "has_night_vision" in b: has_nv = b.has_night_vision
+                elif b.has_method("get_meta") and b.has_meta("has_night_vision"): has_nv = b.get_meta("has_night_vision")
+
+                var final_pr = base_pr
+                if darkness_level > 0:
+                    if not has_nv:
+                        final_pr = max(50.0, base_pr * (1.0 - (darkness_level * 0.8)))
+
+                if b is Dictionary:
+                    b.perception_radius = final_pr
+                elif "perception_radius" in b:
+                    b.perception_radius = final_pr
+
+                if world != null and "arena" in world and world.arena != null and "hazards" in world.arena and world.arena.hazards != null:
+                    for h in world.arena.hazards:
+                        var hk = ""
+                        if h is Dictionary and "kind" in h: hk = h.kind
+                        elif "kind" in h: hk = h.kind
+
+                        if hk == "solar_panel":
+                            var hx = 0.0
+                            if h is Dictionary and "x" in h: hx = h.x
+                            elif "x" in h: hx = h.x
+                            var hy = 0.0
+                            if h is Dictionary and "y" in h: hy = h.y
+                            elif "y" in h: hy = h.y
+
+                            var bx = 0.0
+                            if b is Dictionary and "x" in b: bx = b.x
+                            elif "x" in b: bx = b.x
+                            var by = 0.0
+                            if b is Dictionary and "y" in b: by = b.y
+                            elif "y" in b: by = b.y
+
+                            var b_rad = 15.0
+                            if b is Dictionary and "radius" in b: b_rad = b.radius
+                            elif "radius" in b: b_rad = b.radius
+                            var h_rad = 30.0
+                            if h is Dictionary and "radius" in h: h_rad = h.radius
+                            elif "radius" in h: h_rad = h.radius
+
+                            var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+                            if dist_sq < (b_rad + h_rad) * (b_rad + h_rad):
+                                if darkness_level < 0.5:
+                                    var max_hp = 100.0
+                                    if b is Dictionary and "max_hp" in b: max_hp = b.max_hp
+                                    elif "max_hp" in b: max_hp = b.max_hp
+                                    var cur_hp = max_hp
+                                    if b is Dictionary and "hp" in b: cur_hp = b.hp
+                                    elif "hp" in b: cur_hp = b.hp
+
+                                    var new_hp = min(max_hp, cur_hp + 5.0 * delta)
+                                    if b is Dictionary: b.hp = new_hp
+                                    elif "hp" in b: b.hp = new_hp
+
+
 class LunarEclipseEventMode extends GameMode:
     var event_timer = 0.0
     var event_active = false
@@ -11256,6 +11445,7 @@ var GAME_MODES = {
 	"unstable_portals_event": UnstablePortalsEventMode.new(),
 	"minefield_event": MinefieldEventMode.new(),
     "weather_chaos": WeatherChaosMode.new(),
+	"solar_eclipse_event": SolarEclipseEventMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
     "domination": DominationMode.new(),
     "black_hole": BlackHoleMode.new(),
