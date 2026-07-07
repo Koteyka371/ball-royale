@@ -1131,6 +1131,52 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    var is_d_aura_active = false
+    var d_aura_val = 0.0
+    if "decoy_aura_timer" in self.ball:
+        d_aura_val = float(self.ball.decoy_aura_timer)
+    elif self.ball is Dictionary and self.ball.has("decoy_aura_timer"):
+        d_aura_val = float(self.ball["decoy_aura_timer"])
+
+    if d_aura_val > 0.0:
+        d_aura_val -= delta
+        if d_aura_val > 0:
+            is_d_aura_active = true
+            var base_s_aura = 2.0
+            if "base_speed" in self.ball: base_s_aura = float(self.ball.base_speed)
+            elif self.ball is Dictionary and self.ball.has("base_speed"): base_s_aura = float(self.ball["base_speed"])
+
+            if "speed" in self.ball:
+                self.ball.speed = base_s_aura * 1.2
+            elif self.ball is Dictionary:
+                self.ball["speed"] = base_s_aura * 1.2
+
+            if "stamina" in self.ball and "max_stamina" in self.ball:
+                var max_st = float(self.ball.max_stamina)
+                var st = float(self.ball.stamina)
+                st = min(max_st, st + 10.0 * delta)
+                self.ball.stamina = st
+            elif self.ball is Dictionary and self.ball.has("stamina") and self.ball.has("max_stamina"):
+                var max_st = float(self.ball["max_stamina"])
+                var st = float(self.ball["stamina"])
+                st = min(max_st, st + 10.0 * delta)
+                self.ball["stamina"] = st
+        else:
+            d_aura_val = 0.0
+            var base_s_aura = 2.0
+            if "base_speed" in self.ball: base_s_aura = float(self.ball.base_speed)
+            elif self.ball is Dictionary and self.ball.has("base_speed"): base_s_aura = float(self.ball["base_speed"])
+
+            if "speed" in self.ball:
+                self.ball.speed = base_s_aura
+            elif self.ball is Dictionary:
+                self.ball["speed"] = base_s_aura
+
+        if self.ball is Dictionary:
+            self.ball["decoy_aura_timer"] = d_aura_val
+        else:
+            self.ball.decoy_aura_timer = d_aura_val
+
     # Nemesis Reveal Passive
     var n_reveal = 5.0
     if "nemesis_reveal_timer" in self.ball:
@@ -3660,6 +3706,55 @@ func execute(strategy: String, delta: float):
 
 
     if is_decoy:
+        if "balls" in self.world:
+            for b in self.world.balls:
+                var b_alive = false
+                if "alive" in b: b_alive = b.alive
+                elif b is Dictionary and b.has("alive"): b_alive = b["alive"]
+
+                var b_id = -1
+                if "id" in b: b_id = b.id
+                elif b is Dictionary and b.has("id"): b_id = b["id"]
+
+                var m_id = -1
+                if "id" in self.ball: m_id = self.ball.id
+                elif self.ball is Dictionary and self.ball.has("id"): m_id = self.ball["id"]
+
+                if b_alive and b_id != m_id:
+                    var b_team = ""
+                    if "team" in b: b_team = b.team
+                    elif b is Dictionary and b.has("team"): b_team = b["team"]
+
+                    var m_team = ""
+                    if "team" in self.ball: m_team = self.ball.team
+                    elif self.ball is Dictionary and self.ball.has("team"): m_team = self.ball["team"]
+
+                    if b_team == m_team:
+                        var b_x = 0.0
+                        if "x" in b: b_x = b.x
+                        elif b is Dictionary and b.has("x"): b_x = b["x"]
+
+                        var b_y = 0.0
+                        if "y" in b: b_y = b.y
+                        elif b is Dictionary and b.has("y"): b_y = b["y"]
+
+                        var m_x = 0.0
+                        if "x" in self.ball: m_x = self.ball.x
+                        elif self.ball is Dictionary and self.ball.has("x"): m_x = self.ball["x"]
+
+                        var m_y = 0.0
+                        if "y" in self.ball: m_y = self.ball.y
+                        elif self.ball is Dictionary and self.ball.has("y"): m_y = self.ball["y"]
+
+                        var dx = m_x - b_x
+                        var dy = m_y - b_y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist <= 150.0:
+                            if b is Dictionary:
+                                b["decoy_aura_timer"] = 0.5
+                            else:
+                                b.decoy_aura_timer = 0.5
+
         var dt = 0.0
         if "decoy_timer" in my_ball:
             my_ball.decoy_timer -= delta
