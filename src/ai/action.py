@@ -703,6 +703,24 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if getattr(self.ball, "siren_feared_timer", 0.0) > 0:
+            self.ball.siren_feared_timer -= delta
+            # force run away
+            fx = getattr(self.ball, "siren_fear_source_x", self.ball.x)
+            fy = getattr(self.ball, "siren_fear_source_y", self.ball.y)
+            dx = self.ball.x - fx
+            dy = self.ball.y - fy
+            import math
+            dist = math.sqrt(dx*dx + dy*dy)
+            if dist > 0.0001:
+                nx = dx / dist
+                ny = dy / dist
+                spd = getattr(self.ball, "speed", 2.0) * 1.5 # run fast in fear
+                self.ball.x += nx * spd * delta * 60
+                self.ball.y += ny * spd * delta * 60
+            # optionally skip rest of execute if feared, or let them also do other stuff
+            return
         import math
 
         # Nemesis Reveal Passive
@@ -1936,6 +1954,40 @@ class Action:
                         if dist <= 150.0:
                             heal_amount = 5.0 * delta
                             b.hp = min(getattr(b, "max_hp", 100), getattr(b, "hp", 100) + heal_amount)
+
+        if getattr(self.ball, "is_decoy", False):
+            if getattr(self.ball, "decoy_type", "") == "siren":
+                if not hasattr(self.ball, "siren_ping_timer"):
+                    self.ball.siren_ping_timer = 1.0
+
+                self.ball.siren_ping_timer -= delta
+                if self.ball.siren_ping_timer <= 0:
+                    self.ball.siren_ping_timer = 1.0 # Reset
+
+                    # Siren ping effect: reveal hidden enemies within wide radius (e.g. 250), cause fear
+                    wide_radius = 250.0
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", "") != getattr(self.ball, "team", ""):
+                                dx = b.x - self.ball.x
+                                dy = b.y - self.ball.y
+                                import math
+                                dist = math.sqrt(dx*dx + dy*dy)
+                                if dist <= wide_radius:
+                                    # Reveal hidden
+                                    if getattr(b, "is_hidden", False):
+                                        b.is_hidden = False
+                                    if getattr(b, "stealth_active", False):
+                                        b.stealth_active = False
+
+                                    # Cause fear
+                                    if hasattr(b, "emotion"):
+                                        b.emotion = "fear"
+
+                                    if not hasattr(b, "siren_feared_timer") or getattr(b, "siren_feared_timer", 0.0) <= 0:
+                                        b.siren_feared_timer = 1.0 # 1.0 second fear CC
+                                        b.siren_fear_source_x = self.ball.x
+                                        b.siren_fear_source_y = self.ball.y
 
         if getattr(self.ball, "is_decoy", False):
             self.ball.decoy_timer -= delta
@@ -5975,6 +6027,28 @@ class Action:
             if dist <= ball_radius + 10:
                 if getattr(nearest, "kind", None) == "drone_item":
                     self.ball.has_drone = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "siren_decoy_booster":
+                    import copy
+                    if hasattr(self.world, "balls"):
+                        decoy = copy.copy(self.ball)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        decoy.hp = getattr(self.ball, "hp", 100)
+                        decoy.max_hp = getattr(self.ball, "max_hp", 100)
+                        decoy.damage = 0
+                        decoy.is_decoy = True
+                        decoy.decoy_timer = 5.0
+                        decoy.owner_id = getattr(self.ball, "id", None)
+                        decoy.decoy_type = "siren" # emits loud pings, reveals hidden, causes fear
+
+                        # Add tracking for the pings
+                        decoy.siren_ping_timer = 1.0 # Ping every 1 sec
+
+                        self.world.balls.append(decoy)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

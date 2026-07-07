@@ -3515,6 +3515,72 @@ func execute(strategy: String, delta: float):
         is_decoy = my_ball.get_meta("is_decoy")
 
     if is_decoy:
+        var decoy_type = ""
+        if "decoy_type" in my_ball:
+            decoy_type = my_ball.decoy_type
+        elif my_ball.has_method("get_meta") and my_ball.has_meta("decoy_type"):
+            decoy_type = my_ball.get_meta("decoy_type")
+
+        if decoy_type == "siren":
+            var pt = 1.0
+            if "siren_ping_timer" in my_ball:
+                pt = my_ball.siren_ping_timer
+            elif my_ball.has_method("get_meta") and my_ball.has_meta("siren_ping_timer"):
+                pt = my_ball.get_meta("siren_ping_timer")
+
+            pt -= delta
+            if pt <= 0.0:
+                pt = 1.0
+                var wide_radius = 250.0
+                if world != null and "balls" in world:
+                    for b in world.balls:
+                        var b_team = ""
+                        if "team" in b: b_team = b.team
+                        elif b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        var m_team = ""
+                        if "team" in my_ball: m_team = my_ball.team
+                        elif my_ball.has_method("get_meta") and my_ball.has_meta("team"): m_team = my_ball.get_meta("team")
+
+                        if b != my_ball and b_alive and b_team != m_team:
+                            var dx = b.x - my_ball.x
+                            var dy = b.y - my_ball.y
+                            var dist = sqrt(dx*dx + dy*dy)
+                            if dist <= wide_radius:
+                                if "is_hidden" in b: b.is_hidden = false
+                                elif b.has_method("set_meta"): b.set_meta("is_hidden", false)
+
+                                if "stealth_active" in b: b.stealth_active = false
+                                elif b.has_method("set_meta"): b.set_meta("stealth_active", false)
+
+                                if "emotion" in b: b.emotion = "fear"
+                                elif b.has_method("set_meta"): b.set_meta("emotion", "fear")
+
+                                var ft = 0.0
+                                if "siren_feared_timer" in b: ft = b.siren_feared_timer
+                                elif b.has_method("get_meta") and b.has_meta("siren_feared_timer"): ft = b.get_meta("siren_feared_timer")
+
+                                if ft <= 0.0:
+                                    if "siren_feared_timer" in b:
+                                        b.siren_feared_timer = 1.0
+                                        b.siren_fear_source_x = my_ball.x
+                                        b.siren_fear_source_y = my_ball.y
+                                    elif b.has_method("set_meta"):
+                                        b.set_meta("siren_feared_timer", 1.0)
+                                        b.set_meta("siren_fear_source_x", my_ball.x)
+                                        b.set_meta("siren_fear_source_y", my_ball.y)
+
+            if "siren_ping_timer" in my_ball:
+                my_ball.siren_ping_timer = pt
+            elif my_ball.has_method("set_meta"):
+                my_ball.set_meta("siren_ping_timer", pt)
+
+
+    if is_decoy:
         var dt = 0.0
         if "decoy_timer" in my_ball:
             my_ball.decoy_timer -= delta
@@ -10334,6 +10400,54 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx >= 0:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "siren_decoy_booster":
+                var decoy = null
+                if self.ball.has_method("duplicate"):
+                    decoy = self.ball.duplicate()
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    decoy = self.ball.duplicate()
+
+                if decoy != null:
+                    var next_id = randi() % 90000 + 10000
+                    if self.world != null and "next_id" in self.world:
+                        next_id = self.world.next_id
+
+                    if typeof(decoy) == TYPE_DICTIONARY:
+                        decoy["id"] = next_id
+                        if "hp" in self.ball: decoy["hp"] = self.ball.hp
+                        else: decoy["hp"] = 100.0
+                        if "max_hp" in self.ball: decoy["max_hp"] = self.ball.max_hp
+                        else: decoy["max_hp"] = 100.0
+                        decoy["damage"] = 0
+                        decoy["is_decoy"] = true
+                        decoy["decoy_timer"] = 5.0
+                        decoy["owner_id"] = self_id_stat
+                        decoy["decoy_type"] = "siren"
+                        decoy["siren_ping_timer"] = 1.0
+                    elif decoy.has_method("set_meta"):
+                        decoy.set_meta("id", next_id)
+                        var chp = 100.0
+                        if "hp" in self.ball: chp = self.ball.hp
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"): chp = self.ball.get_meta("hp")
+                        decoy.set_meta("hp", chp)
+                        var cmhp = 100.0
+                        if "max_hp" in self.ball: cmhp = self.ball.max_hp
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): cmhp = self.ball.get_meta("max_hp")
+                        decoy.set_meta("max_hp", cmhp)
+                        decoy.set_meta("damage", 0)
+                        decoy.set_meta("is_decoy", true)
+                        decoy.set_meta("decoy_timer", 5.0)
+                        decoy.set_meta("owner_id", self_id_stat)
+                        decoy.set_meta("decoy_type", "siren")
+                        decoy.set_meta("siren_ping_timer", 1.0)
+
+                    if self.world != null and "balls" in self.world:
+                        self.world.balls.append(decoy)
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "decoy_item":
                 var decoy = null
                 if typeof(self.ball) == TYPE_DICTIONARY:
