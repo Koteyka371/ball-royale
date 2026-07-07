@@ -11683,7 +11683,7 @@
     },
     {
       "id": "idea-678",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Overcharge Aura",
@@ -18912,6 +18912,108 @@
         "src/arena/trap_disarm_kit.py",
         "src/arena/trap_disarm_kit.gd",
         "tests/test_trap_disarm_kit.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1103",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tangle Mode",
+      "description": "Players are paired randomly and any damage taken by one player is shared with the other, requiring tight coordination and careful play.",
+      "allowed_paths": [
+        "src/ai/quantum_tangle.py",
+        "src/ai/quantum_tangle.gd",
+        "tests/test_quantum_tangle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1104",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall Ricochet Combos",
+      "description": "After a ball is pulled into a wall by the reverse gravity booster (or just hits a wall at high speeds), the ball should get a 'combo window'. Hitting an enemy immediately after bouncing off the wall gives double damage or increased knockback, encouraging skilled placement near walls.",
+      "allowed_paths": [
+        "src/ai/wall_ricochet_combos.py",
+        "src/ai/wall_ricochet_combos.gd",
+        "tests/test_wall_ricochet_combos.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1105",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grappling Hook Refactor",
+      "description": "Make the grappling hook pull you towards geometry if it hits a wall instead of another player.",
+      "allowed_paths": [
+        "src/ai/grappling_hook_refactor.py",
+        "src/ai/grappling_hook_refactor.gd",
+        "tests/test_grappling_hook_refactor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1106",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Anti-Gravity Hazard Traps",
+      "description": "Introduce a new type of placeable hazard trap that creates a localized zero-gravity or reverse-gravity bubble. Any enemy ball stepping inside loses all friction and gets slowly pushed towards the edge of the arena, making them easy targets for snipers and tricksters.",
+      "allowed_paths": [
+        "src/arena/anti_gravity_traps.py",
+        "src/arena/anti_gravity_traps.gd",
+        "tests/test_anti_gravity_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1107",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Evolving Arena Mode",
+      "description": "The arena boundaries constantly shift and evolve, forcing players to adapt to an ever-changing layout while avoiding hazards.",
+      "allowed_paths": [
+        "src/arena/evolving_arena.py",
+        "src/arena/evolving_arena.gd",
+        "tests/test_evolving_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1108",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Stations",
+      "description": "Add capture-able weather stations in the arena that let a team control the weather in their sector.",
+      "allowed_paths": [
+        "src/ai/stations.py",
+        "src/ai/stations.gd",
+        "tests/test_stations.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-678] Decoy Overcharge Aura — *2026-07-07 19:21:40 UTC*
+
+While a decoy is active, it emits an aura that grants slightly increased speed and stamina regeneration to allies within a certain radius, providing a buffing utility before it explodes or is destroyed.
+
+---
+
 ## [idea-649] Weather Resistant Items — *2026-07-07 19:15:24 UTC*
 
 Boots or goggles that specifically negate the negative movement or vision debuffs applied by certain weather effects.
