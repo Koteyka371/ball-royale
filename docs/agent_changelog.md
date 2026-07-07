@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-683] Bumper Cars Mutator — *2026-07-07 19:51:36 UTC*
+
+A physics-based mutator where collisions between balls deal minimal damage but apply massive knockback. The arena gradually shrinks towards a central spike pit, turning the game into a chaotic sumo-style knockout match where positioning is key.
+
+---
+
 ## [idea-652] Rewind Powerup — *2026-07-07 19:48:46 UTC*
 
 A rare collectible booster that temporarily stores a ball's position, health, and cooldown states, then instantly rewinds them 3 seconds into the past if their HP drops below zero.

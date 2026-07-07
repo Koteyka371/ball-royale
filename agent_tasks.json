@@ -11768,7 +11768,7 @@
     },
     {
       "id": "idea-683",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Cars Mutator",
@@ -19065,6 +19065,74 @@
         "src/ai/tether_pull_booster.py",
         "src/ai/tether_pull_booster.gd",
         "tests/test_tether_pull_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1112",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Minefield Utility Skill",
+      "description": "A skill that spawns 3 small mines that orbit the player ball continuously. If an enemy comes within a small radius, the mines detach and seek the enemy before detonating.",
+      "allowed_paths": [
+        "src/ai/orbital_minefield_utility_skill.py",
+        "src/ai/orbital_minefield_utility_skill.gd",
+        "tests/test_orbital_minefield_utility_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1113",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Mine",
+      "description": "A trap that looks like a high-tier healing spring or booster. When collected, instead of granting the effect, it creates a temporary fake clone of the player that taunts enemy AI into attacking it while granting the player brief invisibility.",
+      "allowed_paths": [
+        "src/ai/mirage_mine.py",
+        "src/ai/mirage_mine.gd",
+        "tests/test_mirage_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1114",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Clone Swap",
+      "description": "A survival skill where the ball spawns a decoy and after 3 seconds, instantly swaps positions with the decoy, confusing enemies and redirecting aggro.",
+      "allowed_paths": [
+        "src/ai/mirage_clone_swap.py",
+        "src/ai/mirage_clone_swap.gd",
+        "tests/test_mirage_clone_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1115",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Game Mode",
+      "description": "A game mode where every kill triggers an explosion that scales in radius and damage based on the killed ball's current killstreak. Players must carefully manage their spacing to avoid chain wipes.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_game.py",
+        "src/ai/chain_reaction_game.gd",
+        "tests/test_chain_reaction_game.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
