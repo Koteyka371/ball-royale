@@ -4532,6 +4532,47 @@ class MovingSafeZoneMode extends GameMode:
 
 
 
+
+class PoisonGasZoneMode extends MovingSafeZoneMode:
+	var tick_timer: float = 0.0
+
+	func _init() -> void:
+		super._init()
+		name = "Poison Gas Zone"
+		description = "A dynamic battle royale where a deadly poison gas engulfs the arena. The safe zone moves randomly and shrinks, forcing players together. Severe DoT damage outside."
+		outside_damage_per_second = 30.0
+		shrink_rate = 12.0
+		move_speed = 40.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+
+		for b in balls:
+			if not b.alive: continue
+			var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+			var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+
+			var dx = b_x - zone_x
+			var dy = b_y - zone_y
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > zone_radius:
+				if "poison_timer" in b:
+					b.poison_timer += delta * 2.0
+				elif b.has_method("set_meta"):
+					var cur = 0.0
+					if b.has_meta("poison_timer"):
+						cur = b.get_meta("poison_timer")
+					b.set_meta("poison_timer", cur + delta * 2.0)
+
+		tick_timer += delta
+		if tick_timer > 0.5:
+			tick_timer = 0.0
+			if world.has_method("add_event"):
+				world.add_event("poison_gas_ambient", {"zone_x": zone_x, "zone_y": zone_y, "radius": zone_radius})
+
+
 class ShrinkingDangerZoneMode extends GameMode:
     var zone_x: float = 500.0
     var zone_y: float = 500.0
@@ -11281,6 +11322,7 @@ var GAME_MODES = {
     "safe_zone": SafeZoneMode.new(),
     "dynamic_safe_zone": DynamicSafeZoneMode.new(),
     "moving_safe_zone": MovingSafeZoneMode.new(),
+    "poison_gas_zone": PoisonGasZoneMode.new(),
     "bounty_hunt": BountyHuntMode.new(),
     "earthquake": EarthquakeMode.new(),
     "inverse_mirror_arena": InverseMirrorArenaMode.new(),
