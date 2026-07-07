@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A new hazard type that pairs up random balls in the arena. Whatever damage one takes, the other also takes for a limited duration. Can cause chain reactions if multiple pairs overlap."
+}
