@@ -1,0 +1,4 @@
+{
+  "title": "Sabotage Zone in Escort",
+  "description": "In Escort and Dual Payload modes, an 'anti-payload' hazard zone sporadically spawns on the map. If a payload passes through this zone, its speed is temporarily halved, regardless of how many allies are near it. Attackers can strategically use push/pull tools to force payloads into these zones to buy more time."
+}
