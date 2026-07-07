@@ -1,0 +1,4 @@
+{
+    "title": "Decoy Drone Item",
+    "description": "An item that deploys a moving decoy drone. Unlike the standard decoy item which spawns a stationary decoy of the player, this drone actively moves away from the user to bait enemy AI into chasing it, mimicking player movement patterns."
+}
