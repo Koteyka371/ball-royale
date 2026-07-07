@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-634] Wall Jump Ability — *2026-07-07 16:46:17 UTC*
+
+Introduce a new active skill for certain ball types (e.g., Ninja or Acrobat) that allows them to purposefully dash into an arena boundary to trigger an instant, high-speed 'Wall Jump' ricochet, dealing massive damage to any entity caught in the rebound path while briefly granting immunity.
+
+---
+
 ## [idea-658] Revenge Burst — *2026-07-07 16:30:53 UTC*
 
 An explosive ability that deals more damage the more nemeses you have alive on the field, giving a comeback mechanic.
