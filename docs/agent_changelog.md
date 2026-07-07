@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-644] Juggernaut Mode — *2026-07-07 12:38:49 UTC*
+
+Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut.
+
+---
+
 ## [idea-587] Cursed Bumpers — *2026-07-06 23:22:07 UTC*
 
 Some bumpers provide a massive immediate boost to speed and damage, but apply a slow damage-over-time or stamina drain effect that lasts until the ball hits a normal bumper.
