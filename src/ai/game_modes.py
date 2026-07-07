@@ -5882,11 +5882,85 @@ class GuildVsGuildMode(GameMode):
             else:
                 cp["progress"] = max(0, cp["progress"] - delta * 5)
 
+        # Apply bounty effects
+        if not hasattr(self, "bounties_checked"):
+            self.bounties_checked = True
+            try:
+                from system.guild import GuildManager
+                gm = GuildManager()
+
+                # Fetch all bounties once per match instead of every tick
+                bounty_targets = set()
+                for guild_name in self.guilds.keys():
+                    bounties = gm.get_bounties_on_guild(guild_name)
+                    has_bounty_from_opponent = False
+                    for other_guild in self.guilds.keys():
+                        if other_guild != guild_name and bounties.get(other_guild, 0) > 0:
+                            has_bounty_from_opponent = True
+                            break
+                    if has_bounty_from_opponent:
+                        bounty_targets.add(guild_name)
+
+                # Apply the effect to the balls in those guilds
+                for ball in self.world.balls:
+                    ball_guild = None
+                    for guild, members in self.guilds.items():
+                        if ball.id in members:
+                            ball_guild = guild
+                            break
+
+                    if ball_guild in bounty_targets:
+                        ball.is_bounty_target = True
+                        if hasattr(self.world, 'add_event'):
+                            self.world.add_event("visual_effect", {
+                                "type": "bounty_highlight",
+                                "target": ball.id,
+                                "color": "red",
+                                "duration": 9999.0
+                            })
+            except ImportError:
+                pass
+
+
         # Check win condition (one guild owns all CPs)
         owners = [cp["owner"] for cp in self.control_points if cp["owner"] is not None]
         if len(owners) == len(self.control_points) and len(set(owners)) == 1:
             winner = owners[0]
             self._end_match(winner)
+
+    def on_ball_died(self, ball, killer):
+        # GameMode super class does not have on_ball_died in all cases
+        if hasattr(super(), 'on_ball_died'):
+            super().on_ball_died(ball, killer)
+
+        if killer and getattr(ball, "is_bounty_target", False):
+            # Find the killer's guild and ball's guild
+            killer_guild = None
+            ball_guild = None
+            for guild, members in self.guilds.items():
+                if killer.id in members:
+                    killer_guild = guild
+                if ball.id in members:
+                    ball_guild = guild
+
+            if killer_guild and ball_guild and killer_guild != ball_guild:
+                # Provide double the standard elimination points (assuming standard is 10)
+                killer.score = getattr(killer, "score", 0) + 10
+
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("bounty_claimed", {
+                        "guild": killer_guild,
+                        "target_guild": ball_guild,
+                        "reward": 2 # Visual feedback for double points
+                    })
+
+                if not hasattr(self, 'bounty_rewards'):
+                    self.bounty_rewards = {}
+
+                if killer_guild not in self.bounty_rewards:
+                    self.bounty_rewards[killer_guild] = 0
+
+                self.bounty_rewards[killer_guild] += 2
 
     def _end_match(self, winner_guild):
         self.territory_captured = True
