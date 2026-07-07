@@ -7959,6 +7959,22 @@ func execute(strategy: String, delta: float):
     var stun_taken = current_stun - start_stun
     var silence_taken = current_silence - start_silence
 
+    var shield_active = false
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        shield_active = self.ball.get("shield_booster_active", false)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("shield_booster_active"):
+        shield_active = self.ball.get_meta("shield_booster_active")
+
+    if damage_taken > 0 and shield_active:
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["hp"] = start_hp
+            self.ball["shield_booster_active"] = false
+        else:
+            self.ball.hp = start_hp
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("shield_booster_active", false)
+        damage_taken = 0
+
     var quantum_target = null
     if "quantum_entanglement_target" in self.ball: quantum_target = self.ball.quantum_entanglement_target
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_entanglement_target"): quantum_target = self.ball.get_meta("quantum_entanglement_target")
@@ -11757,6 +11773,20 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "shield_booster":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["shield_booster_active"] = true
+                else:
+                    self.ball.set_meta("shield_booster_active", true)
+
+                if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "stamina_booster":
                 var max_stam = 100.0
                 var current_stam = 0.0
@@ -14983,7 +15013,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "shield_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -16400,7 +16430,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "shield_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y

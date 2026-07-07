@@ -728,7 +728,7 @@ class BattleRoyaleMode extends GameMode:
                     if "height" in world.arena: arena_height = world.arena.height
 
                 rng.randomize()
-                var booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster"]
+                var booster_kinds = ["speed_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "shield_booster"]
                 var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
                 var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
                 var b_x = rng.randf_range(100, arena_width - 100)
