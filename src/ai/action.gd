@@ -4273,6 +4273,96 @@ func execute(strategy: String, delta: float):
                                                 b.hp -= hazard.damage * 2.0
                                                 if b.hp <= 0:
                                                     b.alive = false
+                    elif hazard.kind == "shuffle_trap":
+                        var radius = 300.0
+                        var nearby_players = []
+                        if "balls" in self.world:
+                            for b in self.world.balls:
+                                if _get_id(b) != _get_id(self.ball):
+                                    var b_alive = true
+                                    if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null:
+                                        b_alive = b.get("alive")
+                                    elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+                                        b_alive = b.alive
+                                    elif typeof(b) == TYPE_OBJECT and "alive" in b:
+                                        b_alive = b.alive
+
+                                    if b_alive:
+                                        var bx = 0.0
+                                        var by = 0.0
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            if b.has("x"): bx = b.x
+                                            if b.has("y"): by = b.y
+                                        else:
+                                            if "x" in b: bx = b.x
+                                            elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                                            if "y" in b: by = b.y
+                                            elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                                        var sx = 0.0
+                                        var sy = 0.0
+                                        if typeof(self.ball) == TYPE_DICTIONARY:
+                                            if self.ball.has("x"): sx = self.ball.x
+                                            if self.ball.has("y"): sy = self.ball.y
+                                        else:
+                                            if "x" in self.ball: sx = self.ball.x
+                                            elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): sx = self.ball.get_meta("x")
+                                            if "y" in self.ball: sy = self.ball.y
+                                            elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): sy = self.ball.get_meta("y")
+
+                                        var dist = sqrt((bx - sx)*(bx - sx) + (by - sy)*(by - sy))
+                                        if dist <= radius:
+                                            nearby_players.append(b)
+
+                        if nearby_players.size() > 0:
+                            var target = nearby_players[randi() % nearby_players.size()]
+
+                            var my_inv = []
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): my_inv = self.ball.get_meta("inventory")
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory"): my_inv = self.ball.inventory
+                            elif "inventory" in self.ball: my_inv = self.ball.inventory
+
+                            var my_skill = null
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("active_skill"): my_skill = self.ball.get_meta("active_skill")
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("active_skill"): my_skill = self.ball.active_skill
+                            elif "active_skill" in self.ball: my_skill = self.ball.active_skill
+
+                            var target_inv = []
+                            if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("inventory"): target_inv = target.get_meta("inventory")
+                            elif typeof(target) == TYPE_DICTIONARY and target.has("inventory"): target_inv = target.inventory
+                            elif typeof(target) == TYPE_OBJECT and "inventory" in target: target_inv = target.inventory
+
+                            var target_skill = null
+                            if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("active_skill"): target_skill = target.get_meta("active_skill")
+                            elif typeof(target) == TYPE_DICTIONARY and target.has("active_skill"): target_skill = target.active_skill
+                            elif typeof(target) == TYPE_OBJECT and "active_skill" in target: target_skill = target.active_skill
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["inventory"] = target_inv
+                                self.ball["active_skill"] = target_skill
+                                self.ball["shuffle_booster_timer"] = 10.0
+                                self.ball["shuffle_booster_target"] = target
+                            else:
+                                if "inventory" in self.ball: self.ball.inventory = target_inv
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", target_inv)
+                                if "active_skill" in self.ball: self.ball.active_skill = target_skill
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("active_skill", target_skill)
+
+                                if "shuffle_booster_timer" in self.ball: self.ball.shuffle_booster_timer = 10.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("shuffle_booster_timer", 10.0)
+                                if "shuffle_booster_target" in self.ball: self.ball.shuffle_booster_target = target
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("shuffle_booster_target", target)
+
+                            if typeof(target) == TYPE_DICTIONARY:
+                                target["inventory"] = my_inv
+                                target["active_skill"] = my_skill
+                            else:
+                                if "inventory" in target: target.inventory = my_inv
+                                elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("inventory", my_inv)
+                                if "active_skill" in target: target.active_skill = my_skill
+                                elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("active_skill", my_skill)
+
+                        hazard.duration = 0.0
                     elif hazard.kind == "swap_trap":
                         var valid_targets = []
                         if "balls" in self.world:

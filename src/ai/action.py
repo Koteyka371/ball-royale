@@ -2396,6 +2396,41 @@ class Action:
                                             b.hp -= hazard.damage * 2.0
                                             if b.hp <= 0:
                                                 b.alive = False
+                    elif hazard.kind == "shuffle_trap":
+                        import random
+                        import math
+                        radius = 300.0 # Match shuffle_booster's range
+                        nearby_players = []
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if b != self.ball and getattr(b, "alive", True):
+                                    dist = math.sqrt((b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)
+                                    if dist <= radius:
+                                        nearby_players.append(b)
+
+                        if nearby_players:
+                            target = random.choice(nearby_players)
+
+                            temp_inv = getattr(self.ball, "inventory", [])
+                            temp_skill = getattr(self.ball, "active_skill", None)
+
+                            self.ball.inventory = getattr(target, "inventory", [])
+                            self.ball.active_skill = getattr(target, "active_skill", None)
+
+                            target.inventory = temp_inv
+                            target.active_skill = temp_skill
+
+                            self.ball.shuffle_booster_timer = 10.0
+                            self.ball.shuffle_booster_target = target
+
+                            if hasattr(self.world, 'events'):
+                                self.world.events.append({
+                                    "type": "shuffle",
+                                    "source": getattr(self.ball, 'id', None),
+                                    "target": getattr(target, 'id', None)
+                                })
+
+                        hazard.duration = 0.0 # Destroy the trap after use
                     elif hazard.kind == "swap_trap":
                         import random
                         my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))

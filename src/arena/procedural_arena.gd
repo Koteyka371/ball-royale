@@ -150,6 +150,8 @@ func generate():
         var kind = "spikes"
         if r < 0.05:
             kind = "swap_trap"
+        elif r < 0.10:
+            kind = "shuffle_trap"
         elif r < 0.25:
             kind = "lava"
         elif r < 0.34:
