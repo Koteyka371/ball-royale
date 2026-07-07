@@ -11377,7 +11377,7 @@
     },
     {
       "id": "idea-660",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Synergy Traps",
@@ -19133,6 +19133,74 @@
         "src/ai/chain_reaction_game.py",
         "src/ai/chain_reaction_game.gd",
         "tests/test_chain_reaction_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1116",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Holo-Decoy Augment",
+      "description": "An advanced deploy_decoy variant where the decoys phase out immediately upon taking fatal damage, blinding all enemies in a 300 unit radius for 3 seconds instead of exploding, turning defensive plays into aggressive counter-attacks.",
+      "allowed_paths": [
+        "src/ai/holo_decoy_augment.py",
+        "src/ai/holo_decoy_augment.gd",
+        "tests/test_holo_decoy_augment.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1117",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Network Passive",
+      "description": "A new passive ability that connects all active decoys on the field via an energy beam. Enemies that cross the beam take constant low damage and have their movement speed reduced by 30%.",
+      "allowed_paths": [
+        "src/ai/decoy_network_passive.py",
+        "src/ai/decoy_network_passive.gd",
+        "tests/test_decoy_network_passive.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1118",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Tag",
+      "description": "Instead of avoiding the 'IT' player, being 'IT' gives passive points. When a player collides with 'IT', they steal the status. To prevent stalling, the 'IT' status drains max HP slowly, forcing them to tag someone else eventually.",
+      "allowed_paths": [
+        "src/ai/reverse_tag.py",
+        "src/ai/reverse_tag.gd",
+        "tests/test_reverse_tag.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1119",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "King of the Hill - Gravity Well",
+      "description": "A game mode where balls must stay near a central point to earn points. However, a gravity well pulses every 10 seconds, pushing everyone away, requiring players to time their movements.",
+      "allowed_paths": [
+        "src/ai/king_of_the_hill_gravity_well.py",
+        "src/ai/king_of_the_hill_gravity_well.gd",
+        "tests/test_king_of_the_hill_gravity_well.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

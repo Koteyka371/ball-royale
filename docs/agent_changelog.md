@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-660] Weather Synergy Traps — *2026-07-07 20:12:29 UTC*
+
+Traps that react dynamically to current weather conditions, e.g., puddle traps becoming electrified during a thunderstorm or freezing during a blizzard to root enemies.
+
+---
+
 ## [idea-682] Mirror Image Decoys — *2026-07-07 19:51:41 UTC*
 
 The deploy_decoy ability creates two decoys instead of one. The extra decoy behaves similarly but takes double damage. If both decoys explode simultaneously, their explosion radiuses combine for a massive blast.
