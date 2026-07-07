@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-667] Nemesis Leaderboard and Rewards — *2026-07-07 18:54:49 UTC*
+
+Expand the nemesis system to include a global leaderboard displaying the most notorious rivalries. Players who defeat their nemeses during special timed events could earn unique cosmetics, titles, and bonus prestige tokens.
+
+---
+
 ## [idea-655] Necromancer Bone Armor — *2026-07-07 18:54:45 UTC*
 
 Necromancer periodically generates bone armor stacks that mitigate flat damage from incoming attacks.
