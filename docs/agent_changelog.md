@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-585] Bounty Contracts — *2026-07-07 21:28:34 UTC*
+
+Allow guilds to place bounties on other guilds. When a bounty is placed, members of the opposing guild are highlighted on the map and yield double points/rewards when eliminated during a match.
+
+---
+
 ## [idea-695] Reflect Shield Overcharge Mode — *2026-07-07 21:10:38 UTC*
 
 A game mode where reflect shields have 300% capacity but passively drain the owner's stamina while active. If the shield breaks, the explosion radius and damage are doubled.
