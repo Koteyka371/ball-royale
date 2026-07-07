@@ -8305,6 +8305,76 @@ class HazardBilliardsMode extends GameMode:
 
 
 
+
+class MinefieldSafeZoneMode extends SafeZoneMode:
+	var mine_spawn_timer: float = 0.0
+	var base_mine_spawn_interval: float = 2.0
+	var mines_spawned: int = 0
+
+	func _init() -> void:
+		super._init()
+		name = "Minefield Safe Zone"
+		description = "The safe zone shrinks over time, and the shrinking border leaves behind an increasing density of explosive landmines."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("width"): arena_width = float(world.arena.width)
+					if world.arena.has("height"): arena_height = float(world.arena.height)
+				else:
+					if "width" in world.arena: arena_width = float(world.arena.width)
+					if "height" in world.arena: arena_height = float(world.arena.height)
+		else:
+			if "arena" in world and world.arena != null:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var max_arena_dim = max(arena_width, arena_height)
+		var shrink_ratio = max(0.0, min(1.0, 1.0 - (zone_radius / (max_arena_dim / 2.0))))
+
+		var current_interval = base_mine_spawn_interval * (1.0 - shrink_ratio * 0.8)
+		current_interval = max(0.1, current_interval)
+
+		mine_spawn_timer += delta
+		if mine_spawn_timer >= current_interval:
+			mine_spawn_timer = 0.0
+
+			var arena_hazards = null
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.has("arena") and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						if world.arena.has("hazards"): arena_hazards = world.arena.hazards
+					else:
+						if "hazards" in world.arena: arena_hazards = world.arena.hazards
+			else:
+				if "arena" in world and world.arena != null:
+					if "hazards" in world.arena: arena_hazards = world.arena.hazards
+
+			if arena_hazards != null:
+				var angle = randf_range(0, PI * 2.0)
+				var dist = zone_radius + randf_range(10.0, 50.0)
+				var mx = zone_x + cos(angle) * dist
+				var my = zone_y + sin(angle) * dist
+
+				mx = max(0.0, min(arena_width, mx))
+				my = max(0.0, min(arena_height, my))
+
+				var h_id = arena_hazards.size() + randi() % 90000 + 10000 + mines_spawned
+
+				var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+				var mine = HazardObj.new(h_id, mx, my, 25.0, "hidden_mine", 45.0)
+				mine.active = true
+				if mine.has_method("set_meta"):
+					mine.set_meta("active", true)
+					mine.set_meta("duration", -1.0)
+				arena_hazards.append(mine)
+				mines_spawned += 1
+
 class InverseSafeZoneMode extends GameMode:
     var zone_x: float = 500.0
     var zone_y: float = 500.0
@@ -11320,6 +11390,7 @@ var GAME_MODES = {
     "shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
     "inverse_safe_zone": InverseSafeZoneMode.new(),
     "safe_zone": SafeZoneMode.new(),
+    "minefield_safe_zone": MinefieldSafeZoneMode.new(),
     "dynamic_safe_zone": DynamicSafeZoneMode.new(),
     "moving_safe_zone": MovingSafeZoneMode.new(),
     "poison_gas_zone": PoisonGasZoneMode.new(),
