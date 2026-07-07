@@ -1,0 +1,4 @@
+{
+  "title": "Payload Abilities Based on Teammates",
+  "description": "As more teammates stand near a payload in Tug of War or Escort mode, the payload gains temporary abilities (like a small healing aura, a reflecting shield, or damaging pulses to enemies)."
+}

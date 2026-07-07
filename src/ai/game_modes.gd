@@ -7813,17 +7813,20 @@ class TugOfWarMode extends GameMode:
 							blue_count += 1
 
 				var move_speed = 50.0
+				var speed_multiplier = 1.0
 
 				if red_count > blue_count:
+					speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
 					if typeof(payload) == TYPE_DICTIONARY:
-						payload["x"] += move_speed * delta * (red_count - blue_count)
+						payload["x"] += move_speed * delta * (red_count - blue_count) * speed_multiplier
 					else:
-						payload.x += move_speed * delta * (red_count - blue_count)
+						payload.x += move_speed * delta * (red_count - blue_count) * speed_multiplier
 				elif blue_count > red_count:
+					speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
 					if typeof(payload) == TYPE_DICTIONARY:
-						payload["x"] -= move_speed * delta * (blue_count - red_count)
+						payload["x"] -= move_speed * delta * (blue_count - red_count) * speed_multiplier
 					else:
-						payload.x -= move_speed * delta * (blue_count - red_count)
+						payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
 
 				px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
 				if px < 50.0:
