@@ -6713,6 +6713,49 @@ class Action:
                         setattr(meteor, 'target_radius', 30.0)
                         setattr(meteor, 'duration', 5.0)
                         self.world.arena.hazards.append(meteor)
+            elif skill_name == "chain_bounce_attack":
+                enemies = self._get_enemies()
+                if enemies:
+                    # Find closest enemy
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dist = math.sqrt((target.x - self.ball.x)**2 + (target.y - self.ball.y)**2)
+                    if dist <= 300.0:
+                        current_damage = 30.0
+                        if hasattr(target, "hp"):
+                            target.hp -= current_damage
+                        elif hasattr(target, "take_damage"):
+                            target.take_damage(current_damage)
+
+                        if hasattr(self, "_spawn_directed_particles"):
+                            self._spawn_directed_particles(self.ball, target, "chain_lightning")
+
+                        bounced_enemies = {target}
+                        current_pos = target
+                        for _ in range(3):
+                            current_damage *= 0.75
+                            next_target = None
+                            best_dist = float("inf")
+                            for e in enemies:
+                                if e not in bounced_enemies and getattr(e, "alive", True):
+                                    d = (e.x - current_pos.x)**2 + (e.y - current_pos.y)**2
+                                    if d < best_dist and d < 40000.0:  # 200 range
+                                        best_dist = d
+                                        next_target = e
+                            if next_target:
+                                if hasattr(next_target, "hp"):
+                                    next_target.hp -= current_damage
+                                elif hasattr(next_target, "take_damage"):
+                                    next_target.take_damage(current_damage)
+
+                                if hasattr(self, "_spawn_directed_particles"):
+                                    self._spawn_directed_particles(current_pos, next_target, "chain_lightning")
+
+                                bounced_enemies.add(next_target)
+                                current_pos = next_target
+                            else:
+                                break
+                        self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
             elif skill_name == "entangle":
                 enemies = self._get_enemies()
                 if enemies:

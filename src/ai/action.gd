@@ -11617,6 +11617,70 @@ func _use_skill():
                     meteor.target_radius = 30.0
                     meteor.set_meta("duration", 5.0)
                     arena.hazards.append(meteor)
+        elif skill_name == "chain_bounce_attack":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = null
+                var min_dist = 9999999.0
+                for e in enemies:
+                    var dx = e.x - self.ball.x
+                    var dy = e.y - self.ball.y
+                    var dist_sq = dx*dx + dy*dy
+                    if dist_sq < min_dist:
+                        min_dist = dist_sq
+                        target = e
+                if target != null and min_dist <= 90000.0:
+                    var current_damage = 30.0
+                    if target.has_method("take_damage"):
+                        target.take_damage(current_damage)
+                    elif "hp" in target:
+                        target.hp -= current_damage
+                    elif target.has_method("set_meta") and target.has_meta("hp"):
+                        target.set_meta("hp", target.get_meta("hp") - current_damage)
+
+                    if self.has_method("_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, target, "chain_lightning")
+
+                    var bounced_enemies = [target]
+                    var current_pos = target
+                    for i in range(3):
+                        current_damage *= 0.75
+                        var next_target = null
+                        var best_dist = 40000.0 # 200 range squared
+                        for e in enemies:
+                            if bounced_enemies.find(e) == -1:
+                                var is_alive = true
+                                if "alive" in e: is_alive = e.alive
+                                elif e.has_method("has_meta") and e.has_meta("alive"): is_alive = e.get_meta("alive")
+                                if is_alive:
+                                    var dx2 = e.x - current_pos.x
+                                    var dy2 = e.y - current_pos.y
+                                    var dist_sq2 = dx2*dx2 + dy2*dy2
+                                    if dist_sq2 < best_dist:
+                                        best_dist = dist_sq2
+                                        next_target = e
+                        if next_target != null:
+                            if next_target.has_method("take_damage"):
+                                next_target.take_damage(current_damage)
+                            elif "hp" in next_target:
+                                next_target.hp -= current_damage
+                            elif next_target.has_method("set_meta") and next_target.has_meta("hp"):
+                                next_target.set_meta("hp", next_target.get_meta("hp") - current_damage)
+
+                            if self.has_method("_spawn_directed_particles"):
+                                self._spawn_directed_particles(current_pos, next_target, "chain_lightning")
+
+                            bounced_enemies.append(next_target)
+                            current_pos = next_target
+                        else:
+                            break
+                    if "skill_cooldown" in self.ball:
+                        self.ball.skill_timer = self.ball.skill_cooldown
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"):
+                        self.ball.set_meta("skill_timer", self.ball.get_meta("skill_cooldown"))
+                    else:
+                        self.ball.skill_timer = 5.0
+
         elif skill_name == "entangle":
             var enemies = _get_enemies()
             if enemies.size() > 0:
