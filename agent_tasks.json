@@ -11938,7 +11938,7 @@
     },
     {
       "id": "idea-693",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Speed Boost",
@@ -19558,6 +19558,109 @@
         "src/arena/magnetic_minefield.py",
         "src/arena/magnetic_minefield.gd",
         "tests/test_magnetic_minefield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1141",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Singularity Trap",
+      "description": "A rare deployable trap that sucks in nearby players and projectiles, gradually slowing them down and increasing collision damage within its event horizon before violently exploding.",
+      "allowed_paths": [
+        "src/arena/quantum_singularity_trap.py",
+        "src/arena/quantum_singularity_trap.gd",
+        "tests/test_quantum_singularity_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1142",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Headquarters Customization & Siege Defense",
+      "description": "Allow guilds to spend resources on building automated defenses (turrets, traps, barricades) in their HQ area on the persistent GvG map. Opposing guilds can attempt HQ sieges, where breaking defenses steals resources directly from the defending guild's vault. Successfully holding off a siege grants guild XP to the defenders.",
+      "allowed_paths": [
+        "src/ui/guild_headquarters_customization_siege_defense.py",
+        "src/ui/guild_headquarters_customization_siege_defense.gd",
+        "src/ai/guild_headquarters_customization_siege_defense.py",
+        "tests/test_guild_headquarters_customization_siege_defense.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1143",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Glitch Ball Sub-Type",
+      "description": "A new ball type 'Glitch' that randomly teleports short distances when hit and occasionally reverses its own movement vector, making it highly unpredictable but hard to control.",
+      "allowed_paths": [
+        "src/ai/glitch_ball_sub_type.py",
+        "src/ai/glitch_ball_sub_type.gd",
+        "tests/test_glitch_ball_sub_type.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1144",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Mercenary Role",
+      "description": "Add a new 'Bounty Hunter' ball type specifically balanced around hunting marked targets. When hitting an enemy with a bounty, the Bounty Hunter gains temporary speed and attack speed buffs. Additionally, if a Bounty Hunter secures a bounty kill, a percentage of the reward is distributed to their personal profile currency rather than strictly guild resources.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_mercenary_role.py",
+        "src/ai/bounty_hunter_mercenary_role.gd",
+        "tests/test_bounty_hunter_mercenary_role.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1145",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Payload Mode",
+      "description": "The payload in Tug of War moves incredibly fast but bounces off walls and players instead of being a slow and steady push. Players must carefully angle themselves to reflect the payload towards the enemy goal, akin to air hockey.",
+      "allowed_paths": [
+        "src/ai/bouncing_payload.py",
+        "src/ai/bouncing_payload.gd",
+        "tests/test_bouncing_payload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1146",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Swap Mode",
+      "description": "Two payloads are spawned, one for each team. The twist is that each team needs to push the *other* team's payload into the opposing goal. The payloads deal slight damage if a team member is near their own payload, forcing them to focus on the enemy payload.",
+      "allowed_paths": [
+        "src/ai/payload_swap.py",
+        "src/ai/payload_swap.gd",
+        "tests/test_payload_swap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

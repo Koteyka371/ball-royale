@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-693] Payload Speed Boost — *2026-07-07 21:51:10 UTC*
+
+The payload moves faster when more teammates are near it.
+
+---
+
 ## [idea-701] Solar Flare Weather Event — *2026-07-07 21:28:39 UTC*
 
 Periodically, the arena suffers an extreme solar flare that disables all deployed hazards and traps and prevents active skills from regenerating for 5 seconds.
