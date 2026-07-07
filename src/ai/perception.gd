@@ -65,21 +65,24 @@ func scan() -> Dictionary:
     if "cosmetic" in self.ball:
         cosmetic = str(self.ball.cosmetic).to_lower().replace(" ", "_")
     var ignores_fog = cosmetic == "thermal_goggles"
+    var ignores_sandstorm = cosmetic in ["desert_goggles", "sand_goggles"]
+    var ignores_snow = cosmetic in ["snow_goggles", "ski_goggles"]
+    var ignores_rain = cosmetic in ["rain_goggles", "waterproof_goggles"]
 
     if self.world != null and "arena" in self.world and "is_foggy" in self.world.arena:
         if self.world.arena.is_foggy and not ignores_fog and not is_lunar:
             perception_radius = min(perception_radius, 80.0)
     if self.world != null and "arena" in self.world and "is_raining" in self.world.arena:
-        if self.world.arena.is_raining and not is_lunar:
+        if self.world.arena.is_raining and not ignores_rain and not is_lunar:
             perception_radius = perception_radius * 0.8
     if self.world != null and "arena" in self.world and "is_windy" in self.world.arena:
         if self.world.arena.is_windy and not is_lunar:
             perception_radius = perception_radius * 0.7
     if self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena:
-        if self.world.arena.is_sandstorming and ("ball_type" in self.ball and self.ball.ball_type != "sand_elemental") and not is_lunar:
+        if self.world.arena.is_sandstorming and not ignores_sandstorm and ("ball_type" in self.ball and self.ball.ball_type != "sand_elemental") and not is_lunar:
             perception_radius = perception_radius * 0.3
     if self.world != null and "arena" in self.world and "is_snowing" in self.world.arena:
-        if self.world.arena.is_snowing and ("ball_type" in self.ball and self.ball.ball_type != "snow_yeti") and not is_lunar:
+        if self.world.arena.is_snowing and not ignores_snow and ("ball_type" in self.ball and self.ball.ball_type != "snow_yeti") and not is_lunar:
             perception_radius = perception_radius * 0.6
 
     var data = {

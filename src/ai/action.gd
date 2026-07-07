@@ -3140,7 +3140,9 @@ func execute(strategy: String, delta: float):
         var cosmetic = ""
         if "cosmetic" in my_ball:
             cosmetic = str(my_ball.cosmetic).to_lower().replace(" ", "_")
-        var ignores_mud = cosmetic in ["mud_tires", "spiked_tires"]
+        var ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
+        var ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires"]
+        var ignores_wind = cosmetic in ["heavy_boots", "lead_boots"]
 
         # Reset flag every frame
         if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
@@ -3156,7 +3158,7 @@ func execute(strategy: String, delta: float):
             wind_dy = world.arena.get("wind_dy")
 
         var is_wind_riding_f = false
-        if wind_dx != 0.0 or wind_dy != 0.0:
+        if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind:
             var b_type_f = null
             if "BALL_TYPE" in my_ball: b_type_f = my_ball.BALL_TYPE
             elif "ball_type" in my_ball: b_type_f = my_ball.ball_type
@@ -3171,7 +3173,7 @@ func execute(strategy: String, delta: float):
                 my_ball.x += my_ball.vx * delta * 0.2
                 my_ball.y += my_ball.vy * delta * 0.2
         var b_type_slip = my_ball.get("ball_type") if typeof(my_ball) == TYPE_OBJECT or (typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("ball_type")) else ""
-        if world.arena.get("is_snowing") == true and not is_wind_riding_f and b_type_slip != "snow_yeti":
+        if world.arena.get("is_snowing") == true and not ignores_snow_ice and not is_wind_riding_f and b_type_slip != "snow_yeti":
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.4
                 my_ball.y += my_ball.vy * delta * 0.4
@@ -3179,7 +3181,7 @@ func execute(strategy: String, delta: float):
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.vx *= 0.95
                 my_ball.vy *= 0.95
-        if world.arena.get("is_windy") == true:
+        if world.arena.get("is_windy") == true and not ignores_wind:
             var _is_wr = false
             if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("has_meta") and my_ball.has_meta("is_wind_riding"):
                 _is_wr = my_ball.get_meta("is_wind_riding")
@@ -3189,7 +3191,7 @@ func execute(strategy: String, delta: float):
                 if "vx" in my_ball and "vy" in my_ball:
                     my_ball.x += my_ball.vx * delta * 0.2
                     my_ball.y += my_ball.vy * delta * 0.2
-        if wind_dx != 0.0 or wind_dy != 0.0:
+        if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind:
             my_ball.x += wind_dx * delta
             my_ball.y += wind_dy * delta
 
