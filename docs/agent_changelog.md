@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-586] Quantum Teleporter Nodes — *2026-07-07 12:42:03 UTC*
+
+Place quantum teleporter nodes around the map. Entering one node instantly teleports a ball to a paired node on the other side of the arena. This creates high-risk, high-reward escape routes or flanking paths, but teleporters have a brief cooldown and leave a visual trail revealing the destination.
+
+---
+
 ## [idea-644] Juggernaut Mode — *2026-07-07 12:38:49 UTC*
 
 Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut.

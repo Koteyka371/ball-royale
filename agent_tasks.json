@@ -10118,7 +10118,7 @@
     },
     {
       "id": "idea-586",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Teleporter Nodes",
@@ -18283,6 +18283,40 @@
         "src/arena/aura_syphoning_trap.py",
         "src/arena/aura_syphoning_trap.gd",
         "tests/test_aura_syphoning_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1066",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Sponsor Drops",
+      "description": "During the match, special drop boxes appear periodically. Destroying them grants a permanent sponsor buff to the ball that lands the final hit.",
+      "allowed_paths": [
+        "src/ai/random_sponsor_drops.py",
+        "src/ai/random_sponsor_drops.gd",
+        "tests/test_random_sponsor_drops.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1067",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Hazard Mode",
+      "description": "A battle royale mode where the safe zone slowly shrinks. Any balls outside the safe zone continuously take damage until they return or die.",
+      "allowed_paths": [
+        "src/arena/shrinking.py",
+        "src/arena/shrinking.gd",
+        "tests/test_shrinking.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
