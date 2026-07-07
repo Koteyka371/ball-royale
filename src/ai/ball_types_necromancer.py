@@ -32,6 +32,8 @@ class Necromancer:
         self.attack_timer = 0.0
         self.attack_range = float(self.ATTACK_RANGE)
         self.personality = Personality("aggressive")
+        self.bone_armor_stacks = 0
+        self.bone_armor_timer = 0.0
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -80,9 +82,26 @@ class Necromancer:
     def take_damage(self, amount: float) -> None:
         if self.hp == self.max_hp and amount > 0:
             self.first_hit_taken = True
+
+        # Apply bone armor mitigation
+        if self.bone_armor_stacks > 0 and amount > 0:
+            # Consume 1 stack to mitigate flat damage (e.g., up to 10 flat reduction)
+            reduction = min(10.0, amount)
+            amount -= reduction
+            self.bone_armor_stacks -= 1
+
         self.hp -= amount
         if self.hp <= 0:
             self.alive = False
+
+    def tick(self, delta: float) -> None:
+        if not self.alive:
+            return
+        self.bone_armor_timer += delta
+        while self.bone_armor_timer >= 5.0:  # Periodically generate
+            self.bone_armor_timer -= 5.0
+            if getattr(self, 'bone_armor_stacks', 0) < 5:  # Max 5 stacks
+                self.bone_armor_stacks = getattr(self, 'bone_armor_stacks', 0) + 1
 
     def use_skill(self) -> bool:
         if self.skill_timer <= 0:
