@@ -8521,7 +8521,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami"]
         import random
         self.random = random
 
@@ -8574,6 +8574,7 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "heatwave": booster_kind = "cooling_booster"
             elif self.current_weather == "acid_rain": booster_kind = "hazmat_booster"
             elif self.current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
+            elif self.current_weather == "tsunami": booster_kind = "life_jacket_booster"
 
             if booster_kind and hasattr(world, "boosters"):
                 arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
@@ -8606,6 +8607,7 @@ class ExtremeWeatherMode(GameMode):
             has_cooling = getattr(b, "cooling_booster_timer", 0.0) > 0
             has_hazmat = getattr(b, "hazmat_booster_timer", 0.0) > 0
             has_anchor = getattr(b, "heavy_anchor_booster_timer", 0.0) > 0
+            has_life_jacket = getattr(b, "life_jacket_booster_timer", 0.0) > 0
 
             if self.current_weather == "blizzard":
                 if not has_thermal:
@@ -8631,6 +8633,14 @@ class ExtremeWeatherMode(GameMode):
                         angle = self.random.uniform(0, 2 * math.pi)
                         b.x += math.cos(angle) * 100.0 * delta
                         b.y += math.sin(angle) * 100.0 * delta
+            elif self.current_weather == "tsunami":
+                if not has_life_jacket:
+                    if hasattr(b, "x"):
+                        b.x += 300.0 * delta
+                        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+                        if b.x >= arena_w - 20:
+                            if hasattr(b, "take_damage"): b.take_damage(20.0 * delta)
+                            elif hasattr(b, "hp"): b.hp -= 20.0 * delta
 
 
 class JuggernautMode(GameMode):
