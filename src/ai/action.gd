@@ -11780,7 +11780,9 @@ func _use_skill():
                 all_entities = self.world.get_balls()
 
             var valid_targets = []
+            var decoy_targets = []
             var self_id = self.ball.id if "id" in self.ball else self.ball.get("id") if self.ball is Dictionary else self.ball.get_meta("id") if self.ball.has_method("has_meta") else null
+
             for e in all_entities:
                 var e_id = e.id if "id" in e else e.get("id") if e is Dictionary else e.get_meta("id") if e.has_method("has_meta") else null
                 var e_alive = e.alive if "alive" in e else e.get("alive", true) if e is Dictionary else e.get_meta("alive") if e.has_method("has_meta") and e.has_meta("alive") else true
@@ -11789,11 +11791,26 @@ func _use_skill():
                 elif e is Dictionary and e.has("ball_type"): e_type = e.get("ball_type")
                 elif e.has_method("has_meta") and e.has_meta("ball_type"): e_type = e.get_meta("ball_type")
 
-                if e_id != self_id and e_alive and e_type != "spectator":
+                var e_is_decoy = e.is_decoy if "is_decoy" in e else e.get("is_decoy", false) if e is Dictionary else e.get_meta("is_decoy") if e.has_method("has_meta") and e.has_meta("is_decoy") else false
+                var e_owner_id = e.owner_id if "owner_id" in e else e.get("owner_id", null) if e is Dictionary else e.get_meta("owner_id") if e.has_method("has_meta") and e.has_meta("owner_id") else null
+
+                if e_alive and e_is_decoy and e_owner_id == self_id:
+                    decoy_targets.append(e)
+                elif e_id != self_id and e_alive and e_type != "spectator" and not e_is_decoy:
                     valid_targets.append(e)
 
-            if valid_targets.size() > 0:
-                var target = null
+            var target = null
+
+            if decoy_targets.size() > 0:
+                var max_dist_sq = -1.0
+                for e in decoy_targets:
+                    var e_x = e.x if "x" in e else e.get("position").x if e.get("position") != null else 0.0
+                    var e_y = e.y if "y" in e else e.get("position").y if e.get("position") != null else 0.0
+                    var d_sq = (e_x - self.ball.x) * (e_x - self.ball.x) + (e_y - self.ball.y) * (e_y - self.ball.y)
+                    if d_sq > max_dist_sq:
+                        max_dist_sq = d_sq
+                        target = e
+            elif valid_targets.size() > 0:
                 var min_dist_sq = 99999999.0
                 for e in valid_targets:
                     var e_x = e.x if "x" in e else e.get("position").x if e.get("position") != null else 0.0

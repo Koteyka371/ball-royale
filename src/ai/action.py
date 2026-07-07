@@ -6820,11 +6820,21 @@ class Action:
                 self.ball.energy_shield_timer = 3.0
             elif skill_name == "trickster_swap":
                 all_entities = getattr(self.world, "balls", [])
-                valid_targets = [e for e in all_entities if getattr(e, "id", None) != self.ball.id and getattr(e, "alive", True) and getattr(e, "ball_type", "") != "spectator"]
-                if valid_targets:
-                    # Find closest valid target (can be enemy or ally)
-                    target = min(valid_targets, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
 
+                # First try to find active decoys owned by this trickster
+                decoy_targets = [e for e in all_entities if getattr(e, "alive", True) and getattr(e, "is_decoy", False) and getattr(e, "owner_id", None) == self.ball.id]
+
+                target = None
+                if decoy_targets:
+                    # Swap with the furthest decoy to escape
+                    target = max(decoy_targets, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                else:
+                    valid_targets = [e for e in all_entities if getattr(e, "id", None) != self.ball.id and getattr(e, "alive", True) and getattr(e, "ball_type", "") != "spectator" and not getattr(e, "is_decoy", False)]
+                    if valid_targets:
+                        # Find closest valid target (can be enemy or ally)
+                        target = min(valid_targets, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+
+                if target:
                     # Swap positions
                     temp_x, temp_y = self.ball.x, self.ball.y
                     self.ball.x, self.ball.y = target.x, target.y
