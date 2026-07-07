@@ -11598,7 +11598,7 @@
     },
     {
       "id": "idea-673",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Inversion Booster",
@@ -18827,6 +18827,91 @@
         "src/ai/nemesis_faction_war.py",
         "src/ai/nemesis_faction_war.gd",
         "tests/test_nemesis_faction_war.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1098",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Reactive Traps",
+      "description": "Introduce generic trap objects in procedural arenas that change their behavior based on the current weather. For instance, a basic proximity mine could become a frost mine during blizzards, freezing enemies instead of dealing pure damage, or turn into an electric tether during thunderstorms.",
+      "allowed_paths": [
+        "src/arena/reactive_traps.py",
+        "src/arena/reactive_traps.gd",
+        "tests/test_reactive_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1099",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tsunami Wave Entity",
+      "description": "Convert the tsunami weather event to visually and physically spawn a giant, screen-wide wave entity that travels across the screen from one side, acting as a massive moving hazard that players must outrun or use boosters to dive under.",
+      "allowed_paths": [
+        "src/ai/tsunami_wave_entity.py",
+        "src/ai/tsunami_wave_entity.gd",
+        "tests/test_tsunami_wave_entity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1100",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Earthquake Weather Event",
+      "description": "A new weather event in ExtremeWeatherMode where the ground shakes violently, randomly applying forces to players in random directions and temporarily disabling standard steering controls.",
+      "allowed_paths": [
+        "src/ai/earthquake.py",
+        "src/ai/earthquake.gd",
+        "tests/test_earthquake.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1101",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lava Interactions for Skills",
+      "description": "Expand elemental terrain interactions to lava hazards. For example, using a water-based skill like Elemental Burst over lava could create a steam cloud that provides temporary stealth to nearby allies, or using Earth-based attacks could temporarily solidify the lava into walkable ground.",
+      "allowed_paths": [
+        "src/ai/lava_interactions_for_skills.py",
+        "src/ai/lava_interactions_for_skills.gd",
+        "tests/test_lava_interactions_for_skills.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1102",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trap Disarm Kit",
+      "description": "A new rare item 'Trap Disarm Kit'. When used, it temporarily reveals all invisible traps in a large radius and destroys any trap the user rolls over for the next 5 seconds without triggering them.",
+      "allowed_paths": [
+        "src/arena/trap_disarm_kit.py",
+        "src/arena/trap_disarm_kit.gd",
+        "tests/test_trap_disarm_kit.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

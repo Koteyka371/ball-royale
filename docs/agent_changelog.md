@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-673] Gravity Inversion Booster — *2026-07-07 19:15:15 UTC*
+
+A booster that temporarily flips gravity for all enemy balls, making them stick to walls and ceilings.
+
+---
+
 ## [idea-676] Decoy Swap Ability — *2026-07-07 19:07:12 UTC*
 
 An ability that allows the player to swap places with one of their active decoys, confusing enemies and escaping dangerous situations.
