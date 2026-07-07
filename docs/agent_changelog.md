@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-676] Decoy Swap Ability — *2026-07-07 19:07:12 UTC*
+
+An ability that allows the player to swap places with one of their active decoys, confusing enemies and escaping dangerous situations.
+
+---
+
 ## [idea-674] Terrain interactions with elements — *2026-07-07 19:07:06 UTC*
 
 When elemental attacks like elemental burst hit certain terrains (e.g. water puddles or ice), they trigger secondary effects such as extending the radius or freezing enemies.
