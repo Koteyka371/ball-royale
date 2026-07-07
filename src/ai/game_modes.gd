@@ -153,6 +153,55 @@ class GameMode:
 		pass
 
 
+
+		var pm = null
+		if "profile_manager" in world:
+			pm = world.profile_manager
+		elif world.has_method("get_meta") and world.has_meta("profile_manager"):
+			pm = world.get_meta("profile_manager")
+
+		if pm != null and "data" in pm and typeof(pm.data) == TYPE_DICTIONARY and pm.data.has("temporary_buffs"):
+			var buffs = pm.data["temporary_buffs"]
+			if buffs.has("bounty_placer_buff") and buffs["bounty_placer_buff"] > 0:
+				buffs["bounty_placer_buff"] -= 1
+				for b in balls:
+					if "id" in b and b.id == "local_player":
+						if not b.has_meta("_original_base_damage"):
+							var obd = b.base_damage if "base_damage" in b else (b.damage if "damage" in b else 10.0)
+							b.set_meta("_original_base_damage", obd)
+						b.base_damage = b.get_meta("_original_base_damage") * 1.5
+						b.damage = b.base_damage
+
+				if buffs["bounty_placer_buff"] <= 0:
+					buffs.erase("bounty_placer_buff")
+					for b in balls:
+						if "id" in b and b.id == "local_player":
+							if b.has_meta("_original_base_damage"):
+								b.base_damage = b.get_meta("_original_base_damage")
+								b.damage = b.base_damage
+	func on_ball_died(world, ball, killer = null) -> void:
+		if killer != null and "id" in ball and "id" in killer:
+			var pm = null
+			if "profile_manager" in world:
+				pm = world.profile_manager
+			elif world.has_method("get_meta") and world.has_meta("profile_manager"):
+				pm = world.get_meta("profile_manager")
+
+			if pm != null and pm.has_method("get_player_bounties"):
+				var target_id = str(ball.id)
+				var killer_id = str(killer.id)
+				var bounties = pm.get_player_bounties()
+				if bounties.has(target_id) and bounties[target_id].has("reward") and bounties[target_id]["reward"] > 0:
+					var claim_result = pm.claim_player_bounty(target_id, killer_id)
+					var reward = claim_result[0]
+					var placer = claim_result[1]
+					if reward > 0:
+						pm.apply_bounty_placer_buff(placer)
+						if world.has_method("add_event"):
+							world.add_event("bounty_claimed", {
+								"message": killer_id + " claimed a nemesis bounty on " + target_id + " for " + str(reward) + " tokens!"
+							})
+
 	func check_winner(world, balls: Array):
 		return null
 

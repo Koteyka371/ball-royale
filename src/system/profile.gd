@@ -251,6 +251,50 @@ func do_prestige() -> bool:
         return true
     return false
 
+
+func place_player_bounty(target_player_id: String, reward_tokens: int) -> bool:
+    var current_tokens = data.get("prestige_tokens", 0)
+    if current_tokens >= reward_tokens:
+        data["prestige_tokens"] = current_tokens - reward_tokens
+        if not data.has("active_bounties"):
+            data["active_bounties"] = {}
+        if not data["active_bounties"].has(target_player_id):
+            data["active_bounties"][target_player_id] = {"reward": 0, "placer": "local_player"}
+        data["active_bounties"][target_player_id]["reward"] += reward_tokens
+        data["active_bounties"][target_player_id]["placer"] = "local_player"
+        save_profile()
+        return true
+    return false
+
+func get_player_bounties() -> Dictionary:
+    if data.has("active_bounties"):
+        return data["active_bounties"]
+    return {}
+
+func claim_player_bounty(target_player_id: String, claiming_player_id: String) -> Array:
+    if data.has("active_bounties"):
+        var bounties = data["active_bounties"]
+        if bounties.has(target_player_id) and bounties[target_player_id].has("reward") and bounties[target_player_id]["reward"] > 0:
+            var reward = bounties[target_player_id]["reward"]
+            var placer = "local_player"
+            if bounties[target_player_id].has("placer"):
+                placer = bounties[target_player_id]["placer"]
+            bounties[target_player_id]["reward"] = 0
+            if claiming_player_id == "local_player":
+                if not data.has("prestige_tokens"):
+                    data["prestige_tokens"] = 0
+                data["prestige_tokens"] += reward
+            save_profile()
+            return [reward, placer]
+    return [0, ""]
+
+func apply_bounty_placer_buff(placer_id: String) -> void:
+    if placer_id == "local_player":
+        if not data.has("temporary_buffs"):
+            data["temporary_buffs"] = {}
+        data["temporary_buffs"]["bounty_placer_buff"] = 300
+        save_profile()
+
 func buy_prestige_upgrade(upgrade_name: String, cost: int) -> bool:
     var current_tokens = data.get("prestige_tokens", 0)
     var upgrades = data.get("prestige_upgrades", {})
@@ -377,6 +421,11 @@ func add_kill(killer_type: String, victim_type: String) -> void:
     if not data["nemeses"][killer_type].has(victim_type):
         data["nemeses"][killer_type][victim_type] = 0
     data["nemeses"][killer_type][victim_type] += 1
+
+    if victim_type == "local_player" and data["nemeses"][killer_type][victim_type] == 2:
+        if data.get("prestige_tokens", 0) >= 5:
+            place_player_bounty(killer_type, 5)
+
     save_profile()
 
 func is_nemesis(killer_type: String, victim_type: String) -> bool:

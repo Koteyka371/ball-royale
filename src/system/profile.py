@@ -243,6 +243,49 @@ class ProfileManager:
         return False
 
 
+
+    def place_player_bounty(self, target_player_id, reward_tokens):
+        current_tokens = self.data.get("prestige_tokens", 0)
+        if current_tokens >= reward_tokens:
+            self.data["prestige_tokens"] = current_tokens - reward_tokens
+            if "active_bounties" not in self.data:
+                self.data["active_bounties"] = {}
+            # We must store who placed the bounty to apply buff later
+            # structure: active_bounties = {target_player_id: {"reward": X, "placer": "local_player"}}
+            if target_player_id not in self.data["active_bounties"]:
+                self.data["active_bounties"][target_player_id] = {"reward": 0, "placer": "local_player"}
+            self.data["active_bounties"][target_player_id]["reward"] += reward_tokens
+            self.data["active_bounties"][target_player_id]["placer"] = "local_player" # Since it's from ProfileManager
+            self.save()
+            return True
+        return False
+
+    def get_player_bounties(self):
+        return self.data.get("active_bounties", {})
+
+    def claim_player_bounty(self, target_player_id, claiming_player_id):
+        bounties = self.data.get("active_bounties", {})
+        if target_player_id in bounties and bounties[target_player_id].get("reward", 0) > 0:
+            reward = bounties[target_player_id]["reward"]
+            placer = bounties[target_player_id].get("placer", "local_player")
+            bounties[target_player_id]["reward"] = 0
+            if claiming_player_id == "local_player":
+                self.data["prestige_tokens"] = self.data.get("prestige_tokens", 0) + reward
+            else:
+                # Give portion to AI
+                pass
+            self.save()
+            return reward, placer
+        return 0, None
+
+    def apply_bounty_placer_buff(self, placer_id):
+        # We only apply it to local_player since we are in ProfileManager
+        if placer_id == "local_player":
+            if "temporary_buffs" not in self.data:
+                self.data["temporary_buffs"] = {}
+            self.data["temporary_buffs"]["bounty_placer_buff"] = 300
+            self.save()
+
     def buy_prestige_upgrade(self, upgrade_name, cost):
         current_tokens = self.data.get("prestige_tokens", 0)
         upgrades = self.data.get("prestige_upgrades", {})
@@ -361,6 +404,12 @@ class ProfileManager:
         if killer_type not in self.data["nemeses"]:
             self.data["nemeses"][killer_type] = {}
         self.data["nemeses"][killer_type][victim_type] = self.data["nemeses"][killer_type].get(victim_type, 0) + 1
+
+        # Only place bounty if the victim is the local player and the killer becomes a nemesis
+        if victim_type == "local_player" and self.data["nemeses"][killer_type][victim_type] == 2:
+            if self.data.get("prestige_tokens", 0) >= 5:
+                self.place_player_bounty(killer_type, 5)
+
         self.save()
 
     def is_nemesis(self, killer_type, victim_type):
