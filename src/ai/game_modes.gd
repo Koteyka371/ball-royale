@@ -11087,7 +11087,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami"]
 
 	func _init():
 		name = "Extreme Weather"
@@ -11167,6 +11167,7 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "heatwave": booster_kind = "cooling_booster"
 			elif current_weather == "acid_rain": booster_kind = "hazmat_booster"
 			elif current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
+			elif current_weather == "tsunami": booster_kind = "life_jacket_booster"
 
 			if booster_kind != "" and world != null and "boosters" in world:
 				var arena_w = 1000
@@ -11192,6 +11193,7 @@ class ExtremeWeatherMode extends GameMode:
 			var has_cooling = b.has_meta("cooling_booster_timer") and b.get_meta("cooling_booster_timer") > 0.0
 			var has_hazmat = b.has_meta("hazmat_booster_timer") and b.get_meta("hazmat_booster_timer") > 0.0
 			var has_anchor = b.has_meta("heavy_anchor_booster_timer") and b.get_meta("heavy_anchor_booster_timer") > 0.0
+			var has_life_jacket = b.has_meta("life_jacket_booster_timer") and b.get_meta("life_jacket_booster_timer") > 0.0
 
 			if current_weather == "blizzard":
 				if not has_thermal:
@@ -11211,6 +11213,14 @@ class ExtremeWeatherMode extends GameMode:
 					var angle = randf_range(0, 2 * PI)
 					b.x += cos(angle) * 100.0 * delta
 					b.y += sin(angle) * 100.0 * delta
+			elif current_weather == "tsunami":
+				if not has_life_jacket:
+					b.x += 300.0 * delta
+					var arena_w = 1000
+					if world != null and "arena" in world and world.arena != null and "width" in world.arena:
+						arena_w = world.arena.width
+					if b.x >= arena_w - 20:
+						b.hp -= 20.0 * delta
 
 
 class JuggernautMode extends GameMode:
