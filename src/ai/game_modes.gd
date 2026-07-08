@@ -5625,6 +5625,154 @@ class VolatileClonesMode extends GameMode:
 							if "balls" in world:
 								world.balls.append(clone)
 
+
+
+class CloneTrailMode extends GameMode:
+	var trail_timer = 0.0
+
+	func _init():
+		super._init()
+		name = "Clone Trail"
+		description = "Every few seconds, a trail of static clones is left behind every ball. If an enemy touches a clone, it detonates and deals damage."
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+		trail_timer += delta
+
+		var clones_to_remove = []
+		for b in balls:
+			var b_is_trail = b.get("is_clone_trail") if typeof(b) == TYPE_DICTIONARY else b.get("is_clone_trail", false)
+			var b_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+			if b_is_trail and b_alive:
+				var detonated = false
+				var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else b.get("team", "")
+				var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+				var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+
+				for e in balls:
+					var e_alive = e.get("alive") if typeof(e) == TYPE_DICTIONARY else e.alive
+					var e_is_trail = e.get("is_clone_trail") if typeof(e) == TYPE_DICTIONARY else e.get("is_clone_trail", false)
+					var e_is_decoy = e.get("is_decoy") if typeof(e) == TYPE_DICTIONARY else e.get("is_decoy", false)
+
+					if e_alive and not e_is_trail and not e_is_decoy:
+						var e_team = e.get("team") if typeof(e) == TYPE_DICTIONARY else e.get("team", e.get("ball_type", ""))
+						if e_team != b_team:
+							var e_x = e.get("x") if typeof(e) == TYPE_DICTIONARY else e.x
+							var e_y = e.get("y") if typeof(e) == TYPE_DICTIONARY else e.y
+							var dist_sq = pow(b_x - e_x, 2) + pow(b_y - e_y, 2)
+							if dist_sq <= 2500.0: # 50^2
+								detonated = true
+								break
+
+				if detonated:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["alive"] = false
+						b["hp"] = 0
+					else:
+						b.alive = false
+						b.hp = 0
+					clones_to_remove.append(b)
+
+					for e in balls:
+						var e_alive = e.get("alive") if typeof(e) == TYPE_DICTIONARY else e.alive
+						var e_is_trail = e.get("is_clone_trail") if typeof(e) == TYPE_DICTIONARY else e.get("is_clone_trail", false)
+						var e_is_decoy = e.get("is_decoy") if typeof(e) == TYPE_DICTIONARY else e.get("is_decoy", false)
+						if e_alive and not e_is_trail and not e_is_decoy:
+							var e_team = e.get("team") if typeof(e) == TYPE_DICTIONARY else e.get("team", e.get("ball_type", ""))
+							if e_team != b_team:
+								var e_x = e.get("x") if typeof(e) == TYPE_DICTIONARY else e.x
+								var e_y = e.get("y") if typeof(e) == TYPE_DICTIONARY else e.y
+								var dist_sq = pow(b_x - e_x, 2) + pow(b_y - e_y, 2)
+								if dist_sq <= 10000.0: # 100^2
+									if typeof(e) == TYPE_DICTIONARY:
+										e["hp"] -= 30.0
+									else:
+										e.hp -= 30.0
+				else:
+					var lifespan = b.get("trail_lifespan") if typeof(b) == TYPE_DICTIONARY else b.get("trail_lifespan", 10.0)
+					lifespan -= delta
+					if typeof(b) == TYPE_DICTIONARY:
+						b["trail_lifespan"] = lifespan
+					else:
+						b.set("trail_lifespan", lifespan)
+					if lifespan <= 0:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["alive"] = false
+							b["hp"] = 0
+						else:
+							b.alive = false
+							b.hp = 0
+						clones_to_remove.append(b)
+
+		if clones_to_remove.size() > 0:
+			var dead_balls = world.get("dead_balls") if typeof(world) == TYPE_DICTIONARY else (world.get_meta("dead_balls") if world.has_meta("dead_balls") else null)
+			if typeof(dead_balls) == TYPE_ARRAY:
+				for c in clones_to_remove:
+					if not dead_balls.has(c):
+						dead_balls.append(c)
+
+		if trail_timer > 3.0:
+			trail_timer = 0.0
+			var new_clones = []
+			for b in balls:
+				var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+				var is_trail = b.get("is_clone_trail") if typeof(b) == TYPE_DICTIONARY else b.get("is_clone_trail", false)
+				var is_decoy = b.get("is_decoy") if typeof(b) == TYPE_DICTIONARY else b.get("is_decoy", false)
+
+				if is_alive and not is_trail and not is_decoy:
+					var clone = b.duplicate(true) if typeof(b) == TYPE_DICTIONARY else b.duplicate()
+					var next_id = world.get("next_id") if typeof(world) == TYPE_DICTIONARY else (world.get_meta("next_id") if typeof(world) == TYPE_OBJECT and world.has_meta("next_id") else randi() % 90000 + 10000)
+
+					var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+					var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id
+
+					if typeof(clone) == TYPE_DICTIONARY:
+						clone["id"] = next_id
+						clone["x"] = b_x
+						clone["y"] = b_y
+						clone["is_clone_trail"] = true
+						clone["clone_owner"] = b_id
+						clone["alive"] = true
+						clone["speed"] = 0
+						clone["damage"] = 0
+						clone["trail_lifespan"] = 10.0
+						clone["skill"] = null
+						clone["skill_timer"] = 9999
+						if clone.has("traits") and typeof(clone["traits"]) == TYPE_ARRAY:
+							clone["traits"] = []
+					else:
+						clone.set("id", next_id)
+						clone.set("x", b_x)
+						clone.set("y", b_y)
+						clone.set("is_clone_trail", true)
+						clone.set("clone_owner", b_id)
+						clone.set("alive", true)
+						clone.set("speed", 0)
+						clone.set("damage", 0)
+						clone.set("trail_lifespan", 10.0)
+						clone.set("skill", null)
+						clone.set("skill_timer", 9999)
+						if clone.get("traits") != null and typeof(clone.get("traits")) == TYPE_ARRAY:
+							clone.set("traits", [])
+
+					new_clones.append(clone)
+					if typeof(world) == TYPE_DICTIONARY:
+						if world.has("next_id"):
+							world["next_id"] += 1
+					elif typeof(world) == TYPE_OBJECT and world.has_meta("next_id"):
+						world.set_meta("next_id", world.get_meta("next_id") + 1)
+
+			if new_clones.size() > 0:
+				if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+					for c in new_clones:
+						world["balls"].append(c)
+				elif typeof(world) == TYPE_OBJECT:
+					var w_balls = world.get("balls") if "balls" in world else (world.get_meta("balls") if world.has_meta("balls") else null)
+					if typeof(w_balls) == TYPE_ARRAY:
+						for c in new_clones:
+							w_balls.append(c)
+
 class CloneChaosMode extends GameMode:
 	var clone_timer = 0.0
 
@@ -12869,6 +13017,7 @@ var GAME_MODES = {
 	"earthquake": EarthquakeMode.new(),
 	"inverse_mirror_arena": InverseMirrorArenaMode.new(),
 	"mirror_match": MirrorMatchMode.new(),
+	"clone_trail": CloneTrailMode.new(),
 	"clone_chaos": CloneChaosMode.new(),
 	"volatile_clones": VolatileClonesMode.new(),
 	"supernova": SupernovaMode.new(),
