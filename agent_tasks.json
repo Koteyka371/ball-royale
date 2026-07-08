@@ -12756,7 +12756,7 @@
     },
     {
       "id": "idea-741",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Weather Alters",
@@ -21023,6 +21023,57 @@
         "src/ai/specific_events.py",
         "src/ai/specific_events.gd",
         "tests/test_specific_events.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1227",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Ball Type: Botanist",
+      "description": "A ball type that plants seeds around the arena which grow into tall grass or temporary healing fruits over time. The Botanist gains camouflage while in tall grass and its basic attacks apply a slowing vines effect.",
+      "allowed_paths": [
+        "src/ai/new_ball_botanist.py",
+        "src/ai/new_ball_botanist.gd",
+        "tests/test_new_ball_botanist.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1228",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Game Mode: Toxic Flood",
+      "description": "A variation of the standard battle royale where the safe zone isn't a shrinking circle, but rather elevated platforms. The floor periodically floods with poison, forcing all players to fight for control of the limited high ground platforms before the flood recedes.",
+      "allowed_paths": [
+        "src/ai/new_game_toxic_flood.py",
+        "src/ai/new_game_toxic_flood.gd",
+        "tests/test_new_game_toxic_flood.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1229",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Reversal Booster",
+      "description": "A new active skill/booster that temporarily stores all incoming kinetic energy (push and pull forces) into a charge meter. When full or upon expiration, it releases the accumulated force in a massive radial shockwave, pushing away all nearby hazards and enemies.",
+      "allowed_paths": [
+        "src/ai/kinetic_reversal_booster.py",
+        "src/ai/kinetic_reversal_booster.gd",
+        "tests/test_kinetic_reversal_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

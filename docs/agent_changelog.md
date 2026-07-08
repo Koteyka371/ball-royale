@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-741] Interactive Weather Alters — *2026-07-08 21:28:05 UTC*
+
+Add control nodes (alters) to the center of the arena that players can capture. Capturing an alter allows a team to instantly change the current weather to their team's advantage (e.g., a Swamp team changing it to Rain to boost their stats). This creates mini-objectives around controlling the environment.
+
+---
+
 ## [idea-646] Alchemist Ball Type — *2026-07-08 21:05:43 UTC*
 
 Introduce a new Alchemist ball type that specifically benefits from poison and DoT mechanics. They gain a slight speed buff when inside a poison_cloud or poison_nova, and their basic attacks have a small chance to apply a very weak, stacking poison effect.
