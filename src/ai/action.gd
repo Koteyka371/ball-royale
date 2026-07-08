@@ -283,6 +283,25 @@ func _attempt_damage(attacker, target) -> void:
 	if pm != null and pm.has_method("is_nemesis") and attacker_type != "" and target_type != "":
 		is_nemesis_active = pm.is_nemesis(attacker_type, target_type)
 
+
+		var has_half_reflect = false
+		if "half_reflect_shield_active" in target and target.half_reflect_shield_active:
+			has_half_reflect = true
+		elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("half_reflect_shield_active") and target.get_meta("half_reflect_shield_active"):
+			has_half_reflect = true
+
+		if has_half_reflect:
+			var base_dmg_refl = 10.0
+			if "damage" in attacker: base_dmg_refl = float(attacker.damage)
+			var refl_dmg = base_dmg_refl * 0.5
+			if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("take_damage"):
+				attacker.take_damage(refl_dmg)
+			elif "hp" in attacker:
+				if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
+					attacker.set_meta("hp", attacker.hp - refl_dmg)
+				else:
+					attacker.hp -= refl_dmg
+			return
 	var target_es = false
 	if "energy_shield_active" in target and target.energy_shield_active:
 		target_es = true
@@ -11159,6 +11178,8 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+
+
             elif "kind" in nearest and nearest.kind == "time_rewind_booster":
                 self.ball.set_meta("time_rewind_booster_active", true)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
@@ -11828,6 +11849,18 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+
+            elif "kind" in nearest and nearest.kind == "half_reflect_shield_booster":
+                self.ball.set_meta("half_reflect_shield_active", true)
+                self.ball.set_meta("half_reflect_shield_timer", 5.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "time_rewind_booster":
                 self.ball.set_meta("time_rewind_booster_active", true)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
@@ -16635,6 +16668,28 @@ func _update_skill_timer(delta: float):
         else:
             self.ball["aura_disruption_timer"] = ad_timer
 
+
+
+    var hrs_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("half_reflect_shield_timer"):
+        hrs_timer = float(self.ball.get_meta("half_reflect_shield_timer"))
+    elif "half_reflect_shield_timer" in self.ball:
+        hrs_timer = float(self.ball.half_reflect_shield_timer)
+
+    if hrs_timer > 0.0:
+        hrs_timer -= delta
+        if hrs_timer <= 0.0:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("half_reflect_shield_active", false)
+                self.ball.set_meta("half_reflect_shield_timer", 0.0)
+            else:
+                self.ball.half_reflect_shield_active = false
+                self.ball.half_reflect_shield_timer = 0.0
+        else:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("half_reflect_shield_timer", hrs_timer)
+            else:
+                self.ball.half_reflect_shield_timer = hrs_timer
 
     var es_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("energy_shield_timer"):
