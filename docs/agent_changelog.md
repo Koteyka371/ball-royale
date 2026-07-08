@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-694] Payload Healing Aura — *2026-07-08 18:19:14 UTC*
+
+Payloads constantly heal nearby teammates to encourage sticking together.
+
+---
+
 ## [idea-702] Dynamic Platforms — *2026-07-08 18:07:26 UTC*
 
 Introduce platforms in the procedural arena that slowly move. Balls standing on them are carried across the map, allowing for strategic repositioning.

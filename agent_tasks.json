@@ -11955,7 +11955,7 @@
     },
     {
       "id": "idea-694",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Healing Aura",
@@ -20291,6 +20291,57 @@
         "src/ai/payload_path_alteration.py",
         "src/ai/payload_path_alteration.gd",
         "tests/test_payload_path_alteration.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1184",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wind Currents",
+      "description": "Introduce dynamic wind currents that slowly push balls and projectiles in a specific direction, altering movement and combat dynamics.",
+      "allowed_paths": [
+        "src/ai/wind_currents.py",
+        "src/ai/wind_currents.gd",
+        "tests/test_wind_currents.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1185",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Transposition",
+      "description": "A new skill that allows a player to instantly teleport to any of their active decoys, instantly exploding the decoy they swapped with to catch enemies off guard.",
+      "allowed_paths": [
+        "src/ai/decoy_transposition.py",
+        "src/ai/decoy_transposition.gd",
+        "tests/test_decoy_transposition.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1186",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Network Shield",
+      "description": "An energy shield that gets stronger based on the number of active allied decoys near the user, giving Decoy Masters immense defensive utility when swarmed.",
+      "allowed_paths": [
+        "src/ai/decoy_network_shield.py",
+        "src/ai/decoy_network_shield.gd",
+        "tests/test_decoy_network_shield.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
