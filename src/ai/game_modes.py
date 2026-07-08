@@ -2963,8 +2963,21 @@ class DominationMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Domination"
-        self.description = "Capture points to gain global buffs for your team."
+        self.description = "Capture points to gain score for your team. Points relocate periodically."
         self.points = []
+        self.team_scores = {"Red": 0.0, "Blue": 0.0}
+        self.target_score = 1000.0
+        self.relocate_timer = 0.0
+        self.relocate_interval = 30.0
+
+    def _randomize_point_locations(self):
+        import random
+        # Assume arena is around 1000x1000
+        for pt in self.points:
+            pt.x = random.uniform(200, 800)
+            pt.y = random.uniform(200, 800)
+            pt.capture_progress = 0.0
+            pt.owner = None
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -2986,8 +2999,6 @@ class DominationMode(GameMode):
                 self.radius = 150.0
                 self.capture_progress = 0.0 # -100 to 100. -100 is Blue, 100 is Red.
                 self.owner = None
-                self.held_time = 0.0
-                self.is_danger_zone = False
 
         self.points = [
             ControlPoint("A", 300, 500),
@@ -2995,27 +3006,32 @@ class DominationMode(GameMode):
             ControlPoint("C", 700, 500)
         ]
 
+        self.team_scores = {"Red": 0.0, "Blue": 0.0}
+        self.relocate_timer = 0.0
+
         if hasattr(world, "boosters"):
-            # Attach to boosters list so UI can draw them if needed, or keep them separate.
-            # We'll just keep them in self.points for logic.
             pass
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
-
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+
+        self.relocate_timer += delta
+        if self.relocate_timer >= self.relocate_interval:
+            self.relocate_timer = 0.0
+            self._randomize_point_locations()
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
                 b.weather_immunity_timer = max(0.0, w_timer - delta)
-            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
-            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death += delta
+
         for pt in self.points:
             red_count = 0
             blue_count = 0
@@ -3029,54 +3045,9 @@ class DominationMode(GameMode):
                             blue_count += 1
 
             if red_count > blue_count:
-                pt.capture_progress += 10.0 * delta
-                # Award XP to capturing team
-                for b in balls:
-                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "team", "") == "Red":
-                        dist_sq = (b.x - pt.x)**2 + (b.y - pt.y)**2
-                        if dist_sq <= pt.radius**2:
-                            b.experience = getattr(b, "experience", 0.0) + 5.0 * delta
-                            b.level = getattr(b, "level", 1)
-                            while b.experience >= 100 * b.level:
-                                b.experience -= 100 * b.level
-                                b.level += 1
-                                import random
-                                stat = random.choice(["max_hp", "damage", "speed"])
-                                if stat == "max_hp":
-                                    b.max_hp = getattr(b, "max_hp", 100) * 1.1
-                                    b.hp = getattr(b, "hp", b.max_hp) + getattr(b, "max_hp", 100) * 0.1
-                                    if b.hp > b.max_hp: b.hp = b.max_hp
-                                elif stat == "damage":
-                                    b.damage = getattr(b, "damage", 10) * 1.1
-                                    if hasattr(b, "base_damage"): b.base_damage *= 1.1
-                                elif stat == "speed":
-                                    b.speed = getattr(b, "speed", 100) * 1.1
-                                    if hasattr(b, "base_speed"): b.base_speed *= 1.1
-
+                pt.capture_progress += 20.0 * delta
             elif blue_count > red_count:
-                pt.capture_progress -= 10.0 * delta
-                # Award XP to capturing team
-                for b in balls:
-                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "team", "") == "Blue":
-                        dist_sq = (b.x - pt.x)**2 + (b.y - pt.y)**2
-                        if dist_sq <= pt.radius**2:
-                            b.experience = getattr(b, "experience", 0.0) + 5.0 * delta
-                            b.level = getattr(b, "level", 1)
-                            while b.experience >= 100 * b.level:
-                                b.experience -= 100 * b.level
-                                b.level += 1
-                                import random
-                                stat = random.choice(["max_hp", "damage", "speed"])
-                                if stat == "max_hp":
-                                    b.max_hp = getattr(b, "max_hp", 100) * 1.1
-                                    b.hp = getattr(b, "hp", b.max_hp) + getattr(b, "max_hp", 100) * 0.1
-                                    if b.hp > b.max_hp: b.hp = b.max_hp
-                                elif stat == "damage":
-                                    b.damage = getattr(b, "damage", 10) * 1.1
-                                    if hasattr(b, "base_damage"): b.base_damage *= 1.1
-                                elif stat == "speed":
-                                    b.speed = getattr(b, "speed", 100) * 1.1
-                                    if hasattr(b, "base_speed"): b.base_speed *= 1.1
+                pt.capture_progress -= 20.0 * delta
 
             pt.capture_progress = max(-100.0, min(100.0, pt.capture_progress))
 
@@ -3088,42 +3059,25 @@ class DominationMode(GameMode):
 
             if new_owner and new_owner != pt.owner:
                 pt.owner = new_owner
-                pt.held_time = 0.0
-                pt.is_danger_zone = False
-                # Apply global buff
-                for b in balls:
-                    if getattr(b, "alive", False) and getattr(b, "team", "") == new_owner:
-                        # Give buff
-                        if hasattr(b, "damage"):
-                            b.damage += 5.0
-                        if hasattr(b, "max_hp"):
-                            b.max_hp += 20.0
-                            b.hp += 20.0
 
-            if pt.owner:
-                pt.held_time += delta
-                if pt.held_time >= 15.0:
-                    pt.is_danger_zone = True
-
-                if pt.is_danger_zone:
-                    for b in balls:
-                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                            dist_sq = (b.x - pt.x)**2 + (b.y - pt.y)**2
-                            if dist_sq <= pt.radius**2:
-                                if hasattr(b, "hp"):
-                                    b.hp -= 20.0 * delta
-                                    if b.hp <= 0:
-                                        b.alive = False
-                                        b.killer = "Danger Zone"
-
+            if pt.owner == "Red":
+                self.team_scores["Red"] += 10.0 * delta
+            elif pt.owner == "Blue":
+                self.team_scores["Blue"] += 10.0 * delta
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        if self.team_scores["Red"] >= self.target_score:
+            return "Red"
+        if self.team_scores["Blue"] >= self.target_score:
+            return "Blue"
+
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
             return "Draw"
 
         teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
         if len(teams_alive) == 1:
+            # We return early if the other team is wiped out, standard BattleRoyale fallback
             return list(teams_alive)[0]
 
         return None

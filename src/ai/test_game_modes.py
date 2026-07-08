@@ -312,8 +312,8 @@ def test_domination_mode():
     world.arena = MockArena()
     balls = [MockBall(1, "warrior"), MockBall(2, "scout"), MockBall(3, "mage"), MockBall(4, "tank")]
 
-    # Initialize some required stats to test the buff
     for b in balls:
+        b.alive = True
         b.damage = 10.0
         b.max_hp = 100.0
         b.hp = 100.0
@@ -330,29 +330,35 @@ def test_domination_mode():
     assert len(mode.points) == 3
     pt = mode.points[0]
 
+    mode.relocate_interval = 20.0
+    mode.target_score = 100.0
+
     # Move Red balls to point A
     balls[0].x, balls[0].y = pt.x, pt.y
     balls[1].x, balls[1].y = pt.x, pt.y
-    # Move Blue ball away
+    # Move Blue balls away
     balls[2].x, balls[2].y = 0, 0
     balls[3].x, balls[3].y = 0, 0
 
-    # Tick should capture the point over time
-    # 10.0 per tick * 10 ticks = 100
-    for _ in range(10):
-        mode.tick(world, balls, delta=1.0)
+    mode.tick(world, balls, delta=1.0)
+    assert pt.capture_progress > 0
 
+    # Cap point
+    mode.tick(world, balls, delta=5.0)
     assert pt.owner == "Red"
+    assert mode.team_scores["Red"] > 0
 
-    # Red should receive buff: +5 damage, +20 max hp
-    assert balls[0].damage == 15.0
-    assert balls[0].max_hp == 120.0
-    assert balls[0].hp == 120.0
+    mode.team_scores["Red"] = 150.0
+    assert mode.check_winner(world, balls) == "Red"
 
-    # Blue should not
-    assert balls[2].damage == 10.0
-    assert balls[2].max_hp == 100.0
-    assert balls[2].hp == 100.0
+    # Test relocation
+    old_x, old_y = pt.x, pt.y
+    mode.relocate_timer = 20.0
+    mode.tick(world, balls, delta=1.0)
+    # They should have relocated
+    assert pt.x != old_x or pt.y != old_y
+    assert pt.owner is None
+    assert pt.capture_progress == 0.0
 
 
 def test_bumper_balls_mode():
