@@ -6832,6 +6832,88 @@ class UnstablePortalsEventMode(GameMode):
 
 
 
+
+
+class LightningStrikeEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Lightning Strike Event"
+        self.description = "Lightning strikes the arena periodically. Balls caught in the blast radius are stunned and take damage. A visual warning appears briefly before the strike."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.strikes = []
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 10.0:
+            if random.random() < 0.5:
+                self.event_active = True
+                self.event_timer = 0.0
+                self.strikes = []
+
+                num_strikes = random.randint(2, 5)
+                for _ in range(num_strikes):
+                    sx = random.uniform(100, 700)
+                    sy = random.uniform(100, 500)
+                    delay = random.uniform(1.0, 3.0)
+                    self.strikes.append({
+                        "id": f"lightning_{random.randint(10000, 99999)}",
+                        "x": sx,
+                        "y": sy,
+                        "radius": 40.0,
+                        "timer": delay,
+                        "state": "warning"
+                    })
+
+                if hasattr(world, "add_event"):
+                    world.add_event("lightning_warning", {"message": "LIGHTNING STORM IMMINENT!"})
+
+        if self.event_active:
+            if len(self.strikes) == 0:
+                self.event_active = False
+                self.event_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("lightning_storm_ended", {"message": "Storm passed."})
+
+            active_strikes = []
+            for s in self.strikes:
+                s["timer"] -= delta
+                if s["state"] == "warning":
+                    if s["timer"] <= 0:
+                        s["state"] = "active"
+                        s["timer"] = 0.5
+
+                        for b in balls:
+                            if getattr(b, "alive", True):
+                                dist = math.hypot(b.x - s["x"], b.y - s["y"])
+                                if dist < s["radius"] + getattr(b, "radius", 15.0):
+                                    if hasattr(world, "_deal_damage"):
+                                        world._deal_damage(None, b, 30.0)
+                                    b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("stun", {"id": getattr(b, "id", "unknown"), "duration": 2.0})
+                        if hasattr(world, "add_event"):
+                            world.add_event("lightning_strike", {"x": s["x"], "y": s["y"], "radius": s["radius"]})
+                    active_strikes.append(s)
+                elif s["state"] == "active":
+                    if s["timer"] > 0:
+                        active_strikes.append(s)
+
+            self.strikes = active_strikes
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") not in ["lightning_warning", "lightning_strike"]]
+
+                for s in self.strikes:
+                    kind = "lightning_warning" if s["state"] == "warning" else "lightning_strike"
+                    world.arena.hazards.append(Hazard(s["id"], s["x"], s["y"], s["radius"], kind, 0))
+
 class MeteorCrashEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -9704,6 +9786,7 @@ GAME_MODES = {
     "unstable_portals_event": UnstablePortalsEventMode(),
     "minefield_event": MinefieldEventMode(),
     "meteor_crash_event": MeteorCrashEventMode(),
+    "lightning_strike_event": LightningStrikeEventMode(),
     "weather_chaos": WeatherChaosMode(),
     "lunar_eclipse_event": LunarEclipseEventMode(),
     "domination": DominationMode(),

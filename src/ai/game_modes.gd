@@ -8142,6 +8142,113 @@ class UnstablePortalsEventMode extends GameMode:
 		portals = new_portals
 
 
+class LightningStrikeEventMode extends GameMode:
+	var event_timer: float = 0.0
+	var event_active: bool = false
+	var strikes: Array = []
+
+	func _init():
+		super._init()
+		name = "Lightning Strike Event"
+		description = "Lightning strikes the arena periodically. Balls caught in the blast radius are stunned and take damage. A visual warning appears briefly before the strike."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 10.0:
+			if randf() < 0.5:
+				event_active = true
+				event_timer = 0.0
+				strikes.clear()
+
+				var num_strikes = (randi() % 4) + 2 # 2 to 5
+				for i in range(num_strikes):
+					var sx = randf_range(100.0, 700.0)
+					var sy = randf_range(100.0, 500.0)
+					var delay = randf_range(1.0, 3.0)
+					strikes.append({
+						"id": "lightning_" + str(randi() % 100000),
+						"x": sx,
+						"y": sy,
+						"radius": 40.0,
+						"timer": delay,
+						"state": "warning"
+					})
+
+				if world.has_method("add_event"):
+					world.add_event("lightning_warning", {"message": "LIGHTNING STORM IMMINENT!"})
+
+		if event_active:
+			if strikes.size() == 0:
+				event_active = false
+				event_timer = 0.0
+				if world.has_method("add_event"):
+					world.add_event("lightning_storm_ended", {"message": "Storm passed."})
+
+			var active_strikes = []
+			for s in strikes:
+				s["timer"] -= delta
+				if s["state"] == "warning":
+					if s["timer"] <= 0:
+						s["state"] = "active"
+						s["timer"] = 0.5
+
+						for b in balls:
+							var alive = true
+							if "alive" in b: alive = b.alive
+							elif typeof(b) == TYPE_OBJECT and b.has_meta("alive"): alive = b.get_meta("alive")
+							elif typeof(b) == TYPE_OBJECT and "alive" in b: alive = b.alive
+
+							if alive:
+								var bx = b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else b.x)
+								var by = b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else b.y)
+								var br = b.radius if "radius" in b else (b.get_meta("radius") if typeof(b) == TYPE_OBJECT and b.has_meta("radius") else 15.0)
+
+								var dist = Vector2(bx - s["x"], by - s["y"]).length()
+								if dist < s["radius"] + br:
+									if world.has_method("_deal_damage"):
+										world._deal_damage(null, b, 30.0)
+
+									var current_stun = 0.0
+									if "stun_timer" in b: current_stun = b.stun_timer
+									elif typeof(b) == TYPE_OBJECT and b.has_meta("stun_timer"): current_stun = b.get_meta("stun_timer")
+
+									var new_stun = max(current_stun, 2.0)
+									if "stun_timer" in b: b.stun_timer = new_stun
+									elif typeof(b) == TYPE_OBJECT: b.set_meta("stun_timer", new_stun)
+
+									if world.has_method("add_event"):
+										var bid = b.id if "id" in b else (b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_meta("id") else "unknown")
+										world.add_event("stun", {"id": bid, "duration": 2.0})
+
+						if world.has_method("add_event"):
+							world.add_event("lightning_strike", {"x": s["x"], "y": s["y"], "radius": s["radius"]})
+					active_strikes.append(s)
+				elif s["state"] == "active":
+					if s["timer"] > 0:
+						active_strikes.append(s)
+
+			strikes = active_strikes
+
+			if world.has_method("get") and world.get("arena") != null and "hazards" in world.arena:
+				var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+				var new_hazards = []
+				for h in world.arena.hazards:
+					var kind = ""
+					if "kind" in h: kind = h.kind
+					elif typeof(h) == TYPE_OBJECT and h.has_meta("kind"): kind = h.get_meta("kind")
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+
+					if kind != "lightning_warning" and kind != "lightning_strike":
+						new_hazards.append(h)
+				world.arena.hazards = new_hazards
+
+				for s in strikes:
+					var kind = "lightning_warning" if s["state"] == "warning" else "lightning_strike"
+					var new_hazard = HazardClass.new(s["id"], s["x"], s["y"], s["radius"], kind, 0)
+					world.arena.hazards.append(new_hazard)
+
 class MeteorCrashEventMode extends GameMode:
 	var event_timer: float = 0.0
 	var event_active: bool = false
@@ -12428,6 +12535,7 @@ var GAME_MODES = {
 	"unstable_portals_event": UnstablePortalsEventMode.new(),
 	"minefield_event": MinefieldEventMode.new(),
 	"meteor_crash_event": MeteorCrashEventMode.new(),
+	"lightning_strike_event": LightningStrikeEventMode.new(),
 	"weather_chaos": WeatherChaosMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
 	"domination": DominationMode.new(),
