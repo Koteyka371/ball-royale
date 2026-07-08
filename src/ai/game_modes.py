@@ -6865,6 +6865,101 @@ class PinballMode(GameMode):
                             b._hazard_slam_cd = 1.0
                             break
 
+
+class InvisibleWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Invisible Walls"
+        self.description = "The arena contains several invisible walls that only become temporarily visible when a player or attack collides with them."
+        self.wall_visibility = {} # Dict to keep track of wall visibility
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "arena") or not world.arena:
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        arena_w = getattr(world.arena, "width", 800)
+        arena_h = getattr(world.arena, "height", 600)
+
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.target_radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+
+        for i in range(5):
+            h_id = 96000 + len(world.arena.hazards) + i
+            x = random.uniform(200, arena_w - 200)
+            y = random.uniform(200, arena_h - 200)
+            wall = Hazard(id=h_id, x=x, y=y, radius=60.0, kind="invisible_wall", damage=0.0)
+            setattr(wall, "visible", False)
+            setattr(wall, "reveal_timer", 0.0)
+            world.arena.hazards.append(wall)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "invisible_wall":
+                    # Update reveal timer
+                    reveal_timer = getattr(h, "reveal_timer", 0.0)
+                    if reveal_timer > 0:
+                        h.reveal_timer -= delta
+                        if h.reveal_timer <= 0:
+                            h.visible = False
+
+                    # Check collisions with balls
+                    for b in balls:
+                        if not getattr(b, "alive", True): continue
+                        dx = b.x - h.x
+                        dy = b.y - h.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist < h.radius + getattr(b, "radius", 20.0):
+                            # Reveal wall
+                            h.visible = True
+                            h.reveal_timer = 2.0
+
+                            # Simple bounce
+                            if dist > 0:
+                                nx = dx / dist
+                                ny = dy / dist
+                                b.x = h.x + nx * (h.radius + getattr(b, "radius", 20.0))
+                                b.y = h.y + ny * (h.radius + getattr(b, "radius", 20.0))
+                                # Approximate bounce
+                                if hasattr(b, "vx") and hasattr(b, "vy"):
+                                    dot = b.vx * nx + b.vy * ny
+                                    if dot < 0:
+                                        b.vx -= 2 * dot * nx
+                                        b.vy -= 2 * dot * ny
+
+                    # Check collisions with attacks
+                    if hasattr(world, "attacks"):
+                        for atk in world.attacks:
+                            if getattr(atk, "active", True):
+                                ax = getattr(atk, "x", 0.0)
+                                ay = getattr(atk, "y", 0.0)
+                                ar = getattr(atk, "radius", 5.0)
+                                dx = ax - h.x
+                                dy = ay - h.y
+                                dist = math.sqrt(dx*dx + dy*dy)
+                                if dist < h.radius + ar:
+                                    h.visible = True
+                                    h.reveal_timer = 2.0
+                                    setattr(atk, "active", False)
+
 class MirrorWallsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -10660,6 +10755,7 @@ GAME_MODES = {
     "daily_mutator": DailyMutatorMode(),
     "exploding_decoys": ExplodingDecoysMode(),
     "factory": FactoryMode(),
+    "invisible_walls": InvisibleWallsMode(),
     "mirror_walls": MirrorWallsMode(),
     "stamina_regen": StaminaRegenMode(),
     "zero_gravity": ZeroGravityMode(),
