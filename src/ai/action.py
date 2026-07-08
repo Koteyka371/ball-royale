@@ -1848,8 +1848,8 @@ class Action:
         # Weather friction
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-            ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
-            ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires"]
+            ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"] or getattr(self.ball, "spiked_tires_active", False)
+            ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires"] or getattr(self.ball, "snowshoes_active", False)
             ignores_wind = cosmetic in ["heavy_boots", "lead_boots"]
             is_kite = cosmetic == "kite"
 
@@ -3232,7 +3232,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "snowshoes":
+                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "snowshoes" and not getattr(self.ball, "snowshoes_active", False):
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
                                         self.ball.y += self.ball.vy * delta
@@ -3245,7 +3245,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "snowshoes":
+                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "snowshoes" and not getattr(self.ball, "snowshoes_active", False):
                                     self.ball.is_frictionless = True
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
@@ -3257,7 +3257,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "snowshoes":
+                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "snowshoes" and not getattr(self.ball, "snowshoes_active", False):
                                     self.ball.is_frictionless = True
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
@@ -3337,7 +3337,7 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            if getattr(self.ball, "ball_type", "") == "snow_yeti" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") == "snowshoes":
+                            if getattr(self.ball, "ball_type", "") == "snow_yeti" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") == "snowshoes" or getattr(self.ball, "snowshoes_active", False):
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * (2.0 if getattr(self.ball, "ball_type", "") == "snow_yeti" else 1.0)
                                 if hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = False
@@ -7033,6 +7033,23 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "snowshoes_booster":
+                    self.ball.snowshoes_active = True
+                    self.ball.snowshoes_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "spiked_tires_booster":
+                    self.ball.spiked_tires_active = True
+                    self.ball.spiked_tires_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "grapple_booster":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -9895,6 +9912,18 @@ class Action:
                                 elif closest_wall == "bottom":
                                     if hasattr(other, "y"): other.y += push_strength
 
+
+        if getattr(self.ball, "snowshoes_timer", 0.0) > 0:
+            self.ball.snowshoes_timer -= delta
+            if self.ball.snowshoes_timer <= 0:
+                self.ball.snowshoes_active = False
+                self.ball.snowshoes_timer = 0.0
+
+        if getattr(self.ball, "spiked_tires_timer", 0.0) > 0:
+            self.ball.spiked_tires_timer -= delta
+            if self.ball.spiked_tires_timer <= 0:
+                self.ball.spiked_tires_active = False
+                self.ball.spiked_tires_timer = 0.0
         if getattr(self.ball, "emp_immunity_timer", 0.0) > 0:
             self.ball.emp_immunity_timer -= delta
             if self.ball.emp_immunity_timer < 0:

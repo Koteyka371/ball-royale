@@ -3405,8 +3405,8 @@ func execute(strategy: String, delta: float):
         var cosmetic = ""
         if "cosmetic" in my_ball:
             cosmetic = str(my_ball.cosmetic).to_lower().replace(" ", "_")
-        var ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
-        var ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires"]
+        var ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"] or (my_ball.has_method("has_meta") and my_ball.has_meta("spiked_tires_active") and my_ball.get_meta("spiked_tires_active")) or (typeof(my_ball) == TYPE_DICTIONARY and my_ball.get("spiked_tires_active", false))
+        var ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires"] or (my_ball.has_method("has_meta") and my_ball.has_meta("snowshoes_active") and my_ball.get_meta("snowshoes_active")) or (typeof(my_ball) == TYPE_DICTIONARY and my_ball.get("snowshoes_active", false))
         var ignores_wind = cosmetic in ["heavy_boots", "lead_boots"]
 
         # Reset flag every frame
@@ -5611,7 +5611,7 @@ func execute(strategy: String, delta: float):
                             var cos_slip = ""
                             if "cosmetic" in self.ball:
                                 cos_slip = str(self.ball.cosmetic).to_lower().replace(" ", "_")
-                            if cos_slip != "snowshoes":
+                            if cos_slip != "snowshoes" and not ((self.ball.has_method("has_meta") and self.ball.has_meta("snowshoes_active") and self.ball.get_meta("snowshoes_active")) or (typeof(self.ball) == TYPE_DICTIONARY and self.ball.get("snowshoes_active", false))):
                                 if "vx" in self.ball and "vy" in self.ball:
                                     self.ball.x += self.ball.vx * delta
                                     self.ball.y += self.ball.vy * delta
@@ -9077,6 +9077,43 @@ func execute(strategy: String, delta: float):
                 if inv_t < 0: inv_t = 0.0
                 self.ball.set_meta("invert_timer", inv_t)
 
+
+        var sn_timer = 0.0
+        if "snowshoes_timer" in self.ball:
+            sn_timer = float(self.ball.snowshoes_timer)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("snowshoes_timer"):
+            sn_timer = float(self.ball.get_meta("snowshoes_timer"))
+        if sn_timer > 0:
+            sn_timer -= delta
+            if sn_timer <= 0:
+                sn_timer = 0.0
+                if "snowshoes_active" in self.ball:
+                    self.ball.snowshoes_active = false
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("snowshoes_active", false)
+            if "snowshoes_timer" in self.ball:
+                self.ball.snowshoes_timer = sn_timer
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("snowshoes_timer", sn_timer)
+
+        var sp_timer = 0.0
+        if "spiked_tires_timer" in self.ball:
+            sp_timer = float(self.ball.spiked_tires_timer)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("spiked_tires_timer"):
+            sp_timer = float(self.ball.get_meta("spiked_tires_timer"))
+        if sp_timer > 0:
+            sp_timer -= delta
+            if sp_timer <= 0:
+                sp_timer = 0.0
+                if "spiked_tires_active" in self.ball:
+                    self.ball.spiked_tires_active = false
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("spiked_tires_active", false)
+            if "spiked_tires_timer" in self.ball:
+                self.ball.spiked_tires_timer = sp_timer
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("spiked_tires_timer", sp_timer)
+
         var emp_imm_timer = 0.0
         if "emp_immunity_timer" in self.ball:
             emp_imm_timer = float(self.ball.emp_immunity_timer)
@@ -12194,6 +12231,33 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+
+            elif "kind" in nearest and nearest.kind == "snowshoes_booster":
+                if "snowshoes_active" in self.ball: self.ball.snowshoes_active = true
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("snowshoes_active", true)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["snowshoes_active"] = true
+                if "snowshoes_timer" in self.ball: self.ball.snowshoes_timer = 15.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("snowshoes_timer", 15.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["snowshoes_timer"] = 15.0
+                if "arena" in self.world and "hazards" in self.world.arena:
+                    var _idx = self.world.arena.hazards.find(nearest)
+                    if _idx != -1: self.world.arena.hazards.remove_at(_idx)
+                if "boosters" in self.world:
+                    var _idx = self.world.boosters.find(nearest)
+                    if _idx != -1: self.world.boosters.remove_at(_idx)
+            elif "kind" in nearest and nearest.kind == "spiked_tires_booster":
+                if "spiked_tires_active" in self.ball: self.ball.spiked_tires_active = true
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("spiked_tires_active", true)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["spiked_tires_active"] = true
+                if "spiked_tires_timer" in self.ball: self.ball.spiked_tires_timer = 15.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("spiked_tires_timer", 15.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["spiked_tires_timer"] = 15.0
+                if "arena" in self.world and "hazards" in self.world.arena:
+                    var _idx = self.world.arena.hazards.find(nearest)
+                    if _idx != -1: self.world.arena.hazards.remove_at(_idx)
+                if "boosters" in self.world:
+                    var _idx = self.world.boosters.find(nearest)
+                    if _idx != -1: self.world.boosters.remove_at(_idx)
             elif "kind" in nearest and nearest.kind == "grapple_booster":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
