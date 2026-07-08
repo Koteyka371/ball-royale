@@ -13374,6 +13374,61 @@ func _use_skill():
                     meteor.target_radius = 30.0
                     meteor.set_meta("duration", 5.0)
                     arena.hazards.append(meteor)
+        elif skill_name == "bouncing_blade":
+            var enemies = self._get_enemies()
+            if enemies.size() > 0:
+                var target = null
+                var min_dist = INF
+                for e in enemies:
+                    var d = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if d < min_dist:
+                        min_dist = d
+                        target = e
+                if min_dist <= 90000.0: # 300 range squared
+                    var current_damage = 30.0
+                    if "hp" in target:
+                        target.hp -= current_damage
+                    elif target.has_method("set_meta") and target.has_meta("hp"):
+                        target.set_meta("hp", target.get_meta("hp") - current_damage)
+
+                    if self.has_method("_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, target, "slash")
+
+                    var bounced_enemies = [target]
+                    var current_pos = target
+                    for i in range(4):
+                        current_damage *= 0.6
+                        var next_target = null
+                        var best_dist = 40000.0 # 200 range squared
+                        for e in enemies:
+                            if bounced_enemies.find(e) == -1:
+                                var is_alive = true
+                                if "alive" in e: is_alive = e.alive
+                                elif e.has_method("get_meta") and e.has_meta("alive"): is_alive = e.get_meta("alive")
+                                if is_alive:
+                                    var d = pow(e.x - current_pos.x, 2) + pow(e.y - current_pos.y, 2)
+                                    if d < best_dist:
+                                        best_dist = d
+                                        next_target = e
+                        if next_target != null:
+                            if "hp" in next_target:
+                                next_target.hp -= current_damage
+                            elif next_target.has_method("set_meta") and next_target.has_meta("hp"):
+                                next_target.set_meta("hp", next_target.get_meta("hp") - current_damage)
+
+                            if self.has_method("_spawn_directed_particles"):
+                                self._spawn_directed_particles(current_pos, next_target, "slash")
+
+                            bounced_enemies.append(next_target)
+                            current_pos = next_target
+                        else:
+                            break
+                    if "skill_timer" in self.ball:
+                        var cooldown = 5.0
+                        if "skill_cooldown" in self.ball:
+                            cooldown = self.ball.skill_cooldown
+                        self.ball.skill_timer = cooldown
+
         elif skill_name == "chain_bounce_attack":
             var enemies = _get_enemies()
             if enemies.size() > 0:
