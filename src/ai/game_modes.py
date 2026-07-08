@@ -795,7 +795,7 @@ class BattleRoyaleMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
-            if self.weather == "meteor_shower":
+            if getattr(self, "weather", "") == "meteor_shower":
                 if not hasattr(self, "meteor_spawn_timer"):
                     self.meteor_spawn_timer = 0.0
                     self.active_meteors = getattr(self, "active_meteors", [])
@@ -2794,7 +2794,7 @@ class WeatherChaosMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
-            if self.weather == "meteor_shower":
+            if getattr(self, "weather", "") == "meteor_shower":
                 if not hasattr(self, "meteor_spawn_timer"):
                     self.meteor_spawn_timer = 0.0
                     self.active_meteors = getattr(self, "active_meteors", [])
@@ -6481,7 +6481,7 @@ class MagneticCollisionsMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
-            if self.weather == "meteor_shower":
+            if getattr(self, "weather", "") == "meteor_shower":
                 if not hasattr(self, "meteor_spawn_timer"):
                     self.meteor_spawn_timer = 0.0
                     self.active_meteors = getattr(self, "active_meteors", [])
@@ -9517,7 +9517,7 @@ class SweepingPaddlesMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
-            if self.weather == "meteor_shower":
+            if getattr(self, "weather", "") == "meteor_shower":
                 if not hasattr(self, "meteor_spawn_timer"):
                     self.meteor_spawn_timer = 0.0
                     self.active_meteors = getattr(self, "active_meteors", [])
