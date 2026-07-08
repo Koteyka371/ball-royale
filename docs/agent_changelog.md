@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-698] Decoy Hologram Projector — *2026-07-08 20:17:47 UTC*
+
+A consumable item that spawns 3 fragile holograms of the player that run in different directions to confuse enemies. The holograms vanish immediately if they take any damage.
+
+---
+
 ## [idea-713] Kinetic Rebounder Module — *2026-07-08 20:06:44 UTC*
 
 A booster item that surrounds the ball in a kinetic shield, converting incoming projectile damage into speed and attack power for their next melee attack.

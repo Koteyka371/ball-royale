@@ -12023,7 +12023,7 @@
     },
     {
       "id": "idea-698",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Hologram Projector",
@@ -20784,6 +20784,57 @@
         "src/ai/dynamic_music_tempo_for_chants.py",
         "src/ai/dynamic_music_tempo_for_chants.gd",
         "tests/test_dynamic_music_tempo_for_chants.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1213",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vehicle Mounts",
+      "description": "Players can find and mount stationary vehicles like tanks or hovercrafts across the arena. While mounted, they inherit the vehicle's health and damage stats, but lose their personal mobility traits. If the vehicle is destroyed, they are ejected with temporary stun.",
+      "allowed_paths": [
+        "src/ai/vehicle_mounts.py",
+        "src/ai/vehicle_mounts.gd",
+        "tests/test_vehicle_mounts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1214",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Grenades",
+      "description": "A new tactical throwable that temporarily disables nearby enemies' abilities and deployed traps. Hitting an opponent with an EMP briefly sets their speed to zero and shuts off any active shield buffs.",
+      "allowed_paths": [
+        "src/ai/emp_grenades.py",
+        "src/ai/emp_grenades.gd",
+        "tests/test_emp_grenades.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1215",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Strike Ability",
+      "description": "A new active skill where the ball leaves behind a ghostly echo at its current position. Upon taking lethal damage or pressing the ability again, the ball teleports back to the echo, unleashing a shockwave based on the damage it took since placing the echo.",
+      "allowed_paths": [
+        "src/ai/echo_strike_ability.py",
+        "src/ai/echo_strike_ability.gd",
+        "tests/test_echo_strike_ability.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
