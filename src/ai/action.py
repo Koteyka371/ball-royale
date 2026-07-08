@@ -218,6 +218,15 @@ class Action:
         if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
             is_nemesis_active = pm.is_nemesis(attacker.ball_type, target.ball_type)
 
+
+        if getattr(target, "half_reflect_shield_active", False):
+            original_damage = getattr(attacker, "damage", 10.0)
+            refl_dmg = original_damage * 0.5
+            if hasattr(attacker, "take_damage"):
+                attacker.take_damage(refl_dmg)
+            elif hasattr(attacker, "hp"):
+                attacker.hp -= refl_dmg
+            return
         if getattr(target, "energy_shield_active", False):
             import math
             a_x = getattr(attacker, 'x', 0.0)
@@ -6771,6 +6780,15 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("grapple_hook")
+
+                elif getattr(nearest, "kind", None) == "half_reflect_shield_booster":
+                    self.ball.half_reflect_shield_active = True
+                    self.ball.half_reflect_shield_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "time_rewind_booster":
                     self.ball.time_rewind_booster_active = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -9409,6 +9427,11 @@ class Action:
             if self.ball.aura_disruption_timer < 0:
                 self.ball.aura_disruption_timer = 0.0
 
+
+        if hasattr(self.ball, "half_reflect_shield_timer") and self.ball.half_reflect_shield_timer > 0:
+            self.ball.half_reflect_shield_timer -= delta
+            if self.ball.half_reflect_shield_timer <= 0:
+                self.ball.half_reflect_shield_active = False
         if hasattr(self.ball, "energy_shield_timer") and self.ball.energy_shield_timer > 0:
             self.ball.energy_shield_timer -= delta
             if self.ball.energy_shield_timer <= 0:

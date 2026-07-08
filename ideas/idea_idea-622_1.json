@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Trap",
+  "description": "A new trap type where the player triggering the trap becomes entangled with the nearest enemy. For 10 seconds, any damage taken by one is shared equally with the other, and their movement vectors are slightly pulled toward each other."
+}
