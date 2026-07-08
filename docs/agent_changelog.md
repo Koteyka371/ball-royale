@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-686] Chain Lightning Hazard — *2026-07-08 18:28:53 UTC*
+
+A new weather event or procedural hazard that shoots chain lightning between nearby balls, damaging them and forcing them to spread out.
+
+---
+
 ## [idea-722] Decoy Remote Detonation — *2026-07-08 18:19:19 UTC*
 
 Allow players to manually trigger their decoy explosions by activating their decoy skill again while it's already active.

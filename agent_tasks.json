@@ -11819,7 +11819,7 @@
     },
     {
       "id": "idea-686",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Lightning Hazard",
@@ -20342,6 +20342,40 @@
         "src/ai/decoy_network_shield.py",
         "src/ai/decoy_network_shield.gd",
         "tests/test_decoy_network_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1187",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Boost Zones",
+      "description": "The payload leaves a temporary speed boost trail or creates an aura that increases the movement speed of any nearby teammates, allowing the controlling team to better maneuver around the payload and defend it.",
+      "allowed_paths": [
+        "src/ai/payload_boost_zones.py",
+        "src/ai/payload_boost_zones.gd",
+        "tests/test_payload_boost_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1188",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Overcharged Payload Explosion",
+      "description": "If a team manages to push the payload to the enemy goal with maximum players nearby, the payload detonates with a massive area-of-effect explosion, heavily damaging any remaining defenders caught in the blast and creating a spectacular end to the round.",
+      "allowed_paths": [
+        "src/ai/overcharged_payload_explosion.py",
+        "src/ai/overcharged_payload_explosion.gd",
+        "tests/test_overcharged_payload_explosion.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
