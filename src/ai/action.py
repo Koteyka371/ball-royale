@@ -2229,6 +2229,13 @@ class Action:
                                     dy = other.y - b.y
                                     dist = math.sqrt(dx*dx + dy*dy)
                                     if dist <= radius:
+                                        if is_ally and getattr(other, "is_decoy", False):
+                                            other.hp = 0
+                                            if not hasattr(other, "traits"):
+                                                other.traits = []
+                                            if "volatile_decoy" not in other.traits:
+                                                other.traits.append("volatile_decoy")
+
                                         decoy_type = getattr(b, "decoy_type", "")
                                         if decoy_type == "healing" and is_ally:
                                             heal_amount = 30.0
