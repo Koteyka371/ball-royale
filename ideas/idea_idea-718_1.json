@@ -1,0 +1,4 @@
+{
+  "title": "Payload Path Alteration",
+  "description": "Allow Attackers to capture hack points around the map to temporarily alter the payload's path, forcing the Defenders to take a longer route."
+}

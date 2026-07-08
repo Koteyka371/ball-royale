@@ -2305,6 +2305,8 @@ class EscortMode extends GameMode:
 	var goal_x: float = 900.0
 	var goal_y: float = 500.0
 	var timer: float = 180.0
+	var ability_timer: float = 0.0
+	var current_ability: int = 0
 
 	func _init() -> void:
 		name = "Escort Mode"
@@ -2454,6 +2456,72 @@ class EscortMode extends GameMode:
 					else:
 						payload.x += (dx / dist) * spd
 						payload.y += (dy / dist) * spd
+
+				# Payload abilities logic
+				ability_timer += delta
+				if ability_timer >= 8.0:
+					ability_timer = 0.0
+
+					if current_ability == 0:
+						if "arena" in world and "hazards" in world.arena:
+							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+							var barrier = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, px, py, 40.0, "energy_barrier", 0.0)
+							barrier.set_meta("duration", 10.0)
+							barrier.set_meta("team", payload_team)
+							world.arena.hazards.append(barrier)
+
+							if "events" in world:
+								world.events.append({
+									"type": "payload_ability",
+									"ability": "barrier",
+									"x": px,
+									"y": py
+								})
+						current_ability = 1
+					else:
+						for b in balls:
+							var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+							if b_type == "spectator":
+								continue
+							var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+							if not b_alive:
+								continue
+							var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+							var p_id = payload.get("id") if typeof(payload) == TYPE_DICTIONARY else payload.get("id")
+							if b_id != null and p_id != null and b_id == p_id:
+								continue
+							if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
+								continue
+
+							var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+							if b_team == "Attackers":
+								var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+								var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+								var dx2 = bx - px
+								var dy2 = by - py
+								var dist2 = sqrt(dx2 * dx2 + dy2 * dy2)
+								if dist2 <= 200.0 and dist2 > 0:
+									var kb_force = 300.0
+									var nvx = (dx2 / dist2) * kb_force
+									var nvy = (dy2 / dist2) * kb_force
+
+									var b_vx = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("vx", 0.0)
+									var b_vy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("vy", 0.0)
+									if typeof(b) == TYPE_DICTIONARY:
+										b["vx"] = b_vx + nvx
+										b["vy"] = b_vy + nvy
+									else:
+										b.set("vx", b_vx + nvx)
+										b.set("vy", b_vy + nvy)
+
+						if "events" in world:
+							world.events.append({
+								"type": "payload_ability",
+								"ability": "knockback",
+								"x": px,
+								"y": py
+							})
+						current_ability = 0
 
 	func check_winner(world, balls: Array):
 		if payload == null:
