@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-688] Sniper Laser Tripwire — *2026-07-08 18:41:40 UTC*
+
+A deployable thin hazard line. When an enemy crosses it, they take significant instant damage and their movement speed is halved for 5 seconds.
+
+---
+
 ## [idea-705]  EMP Strike Variation — *2026-07-08 18:41:36 UTC*
 
 Add a variant of the orbital strike (EMP Strike) that deals 0 damage but instantly drains all skill cooldowns and stamina of any ball caught inside the blast zone for 5 seconds.
