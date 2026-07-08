@@ -18,6 +18,7 @@ class GuildManager:
                         guild["hq"] = {
                             "statues": [],
                             "banners": [],
+                "cosmetics": [],
                             "training_arena_unlocked": False
                         }
                     if "guild_xp" not in guild:
@@ -40,6 +41,7 @@ class GuildManager:
 
         self.data["guilds"][guild_name] = {
             "members": [creator_id],
+            "level": 1,
             "resources": 0,
             "buffs": {
                 "bonus_hp": 0,
@@ -56,6 +58,7 @@ class GuildManager:
             "hq": {
                 "statues": [],
                 "banners": [],
+                "cosmetics": [],
                 "training_arena_unlocked": False
             }
         }
@@ -89,10 +92,21 @@ class GuildManager:
             return True
         return False
 
-    def unlock_buff(self, guild_name, buff_name, cost):
+
+    def upgrade_guild_level(self, guild_name, cost):
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
-            if guild["resources"] >= cost and buff_name in guild["buffs"]:
+            if guild.get("gvg_points", 0) >= cost:
+                guild["gvg_points"] -= cost
+                guild["level"] = guild.get("level", 1) + 1
+                self.save()
+                return True
+        return False
+
+    def unlock_buff(self, guild_name, buff_name, cost, required_level=1):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild["resources"] >= cost and buff_name in guild["buffs"] and guild.get("level", 1) >= required_level:
                 guild["resources"] -= cost
                 guild["buffs"][buff_name] += 1
                 self.save()
@@ -270,17 +284,17 @@ class GuildManager:
                     return True
         return False
 
-    def unlock_hq_feature(self, guild_name, feature_type, feature_id, cost):
+    def unlock_hq_feature(self, guild_name, feature_type, feature_id, cost, required_level=1):
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
-            if guild["resources"] >= cost:
+            if guild["resources"] >= cost and guild.get("level", 1) >= required_level:
                 if feature_type == "training_arena":
                     if not guild.get("hq", {}).get("training_arena_unlocked", False):
                         guild["resources"] -= cost
                         guild.setdefault("hq", {})["training_arena_unlocked"] = True
                         self.save()
                         return True
-                elif feature_type in ["statues", "banners"]:
+                elif feature_type in ["statues", "banners", "cosmetics"]:
                     if feature_id not in guild.setdefault("hq", {}).setdefault(feature_type, []):
                         guild["resources"] -= cost
                         guild["hq"][feature_type].append(feature_id)
@@ -291,9 +305,11 @@ class GuildManager:
     def get_hq_status(self, guild_name):
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
-            return guild.get("hq", {
-                "statues": [],
-                "banners": [],
-                "training_arena_unlocked": False
-            })
+            hq = guild.get("hq", {})
+            return {
+                "statues": hq.get("statues", []),
+                "banners": hq.get("banners", []),
+                "cosmetics": hq.get("cosmetics", []),
+                "training_arena_unlocked": hq.get("training_arena_unlocked", False)
+            }
         return None
