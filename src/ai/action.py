@@ -933,6 +933,21 @@ class Action:
                 if h in self.world.arena.hazards:
                     self.world.arena.hazards.remove(h)
 
+            # Check slime hazards
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "slime":
+                    h_owner = getattr(hazard, "owner_id", None)
+                    h_team = getattr(hazard, "team", None)
+                    b_id = getattr(self.ball, "id", None)
+                    b_team = getattr(self.ball, "team", "NO_TEAM")
+
+                    if h_owner != b_id and (h_team is None or b_team is None or h_team != b_team or h_team == "NO_TEAM"):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq < (getattr(hazard, "radius", 12.0) + getattr(self.ball, "radius", 10.0))**2:
+                            # Slow down the enemy
+                            self.ball.speed_debuff_timer = max(getattr(self.ball, "speed_debuff_timer", 0.0), 0.5)
+                            self.ball.speed_debuff_multiplier = 0.5
+
         if getattr(self.ball, "is_active_clone", False) and getattr(self.ball, "alive", True):
             self.ball.mimic_timer = getattr(self.ball, "mimic_timer", 10.0) - delta
             if self.ball.mimic_timer <= 0 or getattr(self.ball, "hp", 1.0) <= 0:
@@ -5741,6 +5756,27 @@ class Action:
 
         self.ball.x += comb_nx * boosted_speed * delta * 60
         self.ball.y += comb_ny * boosted_speed * delta * 60
+
+        # Leave a slime trail while fleeing to slow down enemies
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Don't spawn too many, maybe a timer or random chance
+            if not hasattr(self.ball, "slime_trail_timer"):
+                self.ball.slime_trail_timer = 0.0
+
+            self.ball.slime_trail_timer -= delta
+            if self.ball.slime_trail_timer <= 0:
+                hazard = type('SlimeHazard', (object,), {})()
+                hazard.x = self.ball.x
+                hazard.y = self.ball.y
+                hazard.radius = 12.0
+                hazard.damage = 0.0
+                hazard.kind = "slime"
+                hazard.duration = 3.0
+                hazard.owner_id = getattr(self.ball, "id", None)
+                hazard.creation_time = getattr(self.world, "time", 0.0)
+                hazard.team = getattr(self.ball, "team", None)
+                self.world.arena.hazards.append(hazard)
+                self.ball.slime_trail_timer = 0.5  # drop slime every 0.5 seconds
 
     def _evaluate_target_strength_deterministic(self, e: Any) -> tuple[float, float, float, int]:
         max_hp = float(getattr(e, "max_hp", getattr(e, "hp", 0.0)))

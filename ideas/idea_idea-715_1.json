@@ -1,0 +1,4 @@
+{
+    "title": "Slime Bounce Pads",
+    "description": "Hazard objects that apply a large velocity impulse in the opposite direction of approach when a ball touches them, but cover them in slime (speed debuff) for 3 seconds."
+}
