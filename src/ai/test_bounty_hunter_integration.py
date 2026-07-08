@@ -33,3 +33,38 @@ def test_bounty_hunter_damage():
     action = Action(hunter, world)
     action._attempt_damage(hunter, target3)
     assert target3.hp == 100.0 - 25.0
+
+def test_bounty_hunter_kill_buff():
+    from ai.action import Action
+    from ai.ball_types_bounty_hunter import BountyHunter
+
+    class MockWorld:
+        def _deal_damage(self, attacker, target):
+            target.hp -= attacker.damage
+
+    class MockTarget:
+        def __init__(self, hp, is_bounty=False, high_threat=False):
+            self.hp = hp
+            self.max_hp = 100.0
+            self.is_bounty = is_bounty
+            self.high_threat = high_threat
+            self.id = 2
+
+    world = MockWorld()
+    hunter = BountyHunter(1)
+    hunter.hp = 10.0 # start at low health
+
+    # Kill a normal target
+    target1 = MockTarget(hp=10.0)
+    action = Action(hunter, world)
+    action._attempt_damage(hunter, target1)
+    assert target1.hp <= 0.0
+    assert hunter.hp == 10.0 # No heal
+
+    # Kill a bounty target
+    target2 = MockTarget(hp=10.0, is_bounty=True)
+    action = Action(hunter, world)
+    action._attempt_damage(hunter, target2)
+    assert target2.hp <= 0.0
+    assert hunter.hp == hunter.max_hp # Full heal!
+    assert getattr(hunter, "speed_boost_timer", 0.0) == 3.0 # Speed boost

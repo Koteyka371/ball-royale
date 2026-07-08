@@ -775,6 +775,15 @@ func _attempt_damage(attacker, target) -> void:
 			if attacker.has_meta("charge_level"): cl = float(attacker.get_meta("charge_level"))
 			attacker.set_meta("charge_level", min(100.0, cl + 20.0))
 
+		if b_type_attacker == "bounty_hunter" and (target_is_bounty or target_high_threat):
+			if "hp" in attacker and "max_hp" in attacker:
+				attacker.hp = attacker.max_hp
+			if "speed_boost_timer" in attacker:
+				attacker.speed_boost_timer += 3.0
+			elif attacker.has_method("set_meta"):
+				var sb_timer = float(attacker.get_meta("speed_boost_timer")) if attacker.has_meta("speed_boost_timer") else 0.0
+				attacker.set_meta("speed_boost_timer", sb_timer + 3.0)
+
 		var sponsor = ""
 		if "sponsor" in attacker:
 			sponsor = attacker.sponsor
