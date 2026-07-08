@@ -14433,6 +14433,25 @@ func _use_skill():
                 elif e.has_method("has_meta") and e.has_meta("hp"):
                     enemies_before[e] = e.get_meta("hp")
 
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if typeof(self.world) == TYPE_DICTIONARY:
+                if "arena" in self.world and typeof(self.world.arena) == TYPE_DICTIONARY:
+                    if "width" in self.world.arena: arena_width = self.world.arena.width
+                    if "height" in self.world.arena: arena_height = self.world.arena.height
+                else:
+                    if "width" in self.world: arena_width = self.world.width
+                    if "height" in self.world: arena_height = self.world.height
+            elif typeof(self.world) == TYPE_OBJECT:
+                if "arena" in self.world and self.world.arena != null:
+                    if "width" in self.world.arena: arena_width = self.world.arena.width
+                    if "height" in self.world.arena: arena_height = self.world.arena.height
+                else:
+                    if "width" in self.world: arena_width = self.world.width
+                    if "height" in self.world: arena_height = self.world.height
+
+            var dir_x = 1.0
+            var dir_y = 0.0
             if enemies.size() > 0:
                 var target = null
                 var min_dist_sq = INF
@@ -14445,12 +14464,65 @@ func _use_skill():
                 var dy = target.y - self.ball.y
                 var dist = sqrt(min_dist_sq)
                 if dist > 0.0001:
-                    self.ball.x += (dx/dist) * dash_dist
-                    self.ball.y += (dy/dist) * dash_dist
+                    dir_x = dx / dist
+                    dir_y = dy / dist
             else:
                 var angle = randf() * PI * 2.0
-                self.ball.x += cos(angle) * dash_dist
-                self.ball.y += sin(angle) * dash_dist
+                dir_x = cos(angle)
+                dir_y = sin(angle)
+
+            var remaining_dist = dash_dist
+            var b_rad = 10.0
+            if "radius" in self.ball:
+                b_rad = self.ball.radius
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"):
+                b_rad = self.ball.get_meta("radius")
+
+            for i in range(10):
+                if remaining_dist <= 0:
+                    break
+
+                var dist_to_x_wall = INF
+                if dir_x > 0:
+                    dist_to_x_wall = (arena_width - b_rad - self.ball.x) / dir_x
+                elif dir_x < 0:
+                    dist_to_x_wall = (b_rad - self.ball.x) / dir_x
+
+                var dist_to_y_wall = INF
+                if dir_y > 0:
+                    dist_to_y_wall = (arena_height - b_rad - self.ball.y) / dir_y
+                elif dir_y < 0:
+                    dist_to_y_wall = (b_rad - self.ball.y) / dir_y
+
+                var dist_to_wall = min(dist_to_x_wall, dist_to_y_wall)
+
+                if dist_to_wall <= 0.0001:
+                    if dist_to_x_wall <= 0.0001: dir_x *= -1
+                    if dist_to_y_wall <= 0.0001: dir_y *= -1
+                    self.ball.x = max(b_rad, min(arena_width - b_rad, self.ball.x))
+                    self.ball.y = max(b_rad, min(arena_height - b_rad, self.ball.y))
+                    continue
+
+                if remaining_dist <= dist_to_wall:
+                    self.ball.x += dir_x * remaining_dist
+                    self.ball.y += dir_y * remaining_dist
+                    break
+                else:
+                    self.ball.x += dir_x * dist_to_wall
+                    self.ball.y += dir_y * dist_to_wall
+                    remaining_dist -= dist_to_wall
+
+                    if dist_to_x_wall < dist_to_y_wall:
+                        self.ball.x = arena_width - b_rad if dir_x > 0 else b_rad
+                        dir_x *= -1
+                    elif dist_to_y_wall < dist_to_x_wall:
+                        self.ball.y = arena_height - b_rad if dir_y > 0 else b_rad
+                        dir_y *= -1
+                    else:
+                        self.ball.x = arena_width - b_rad if dir_x > 0 else b_rad
+                        self.ball.y = arena_height - b_rad if dir_y > 0 else b_rad
+                        dir_x *= -1
+                        dir_y *= -1
 
             var killed_enemy = false
             for e in _get_enemies():
@@ -14714,6 +14786,25 @@ func _use_skill():
                 elif e.has_method("has_meta") and e.has_meta("hp"):
                     enemies_before[e] = e.get_meta("hp")
 
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if typeof(self.world) == TYPE_DICTIONARY:
+                if "arena" in self.world and typeof(self.world.arena) == TYPE_DICTIONARY:
+                    if "width" in self.world.arena: arena_width = self.world.arena.width
+                    if "height" in self.world.arena: arena_height = self.world.arena.height
+                else:
+                    if "width" in self.world: arena_width = self.world.width
+                    if "height" in self.world: arena_height = self.world.height
+            elif typeof(self.world) == TYPE_OBJECT:
+                if "arena" in self.world and self.world.arena != null:
+                    if "width" in self.world.arena: arena_width = self.world.arena.width
+                    if "height" in self.world.arena: arena_height = self.world.arena.height
+                else:
+                    if "width" in self.world: arena_width = self.world.width
+                    if "height" in self.world: arena_height = self.world.height
+
+            var dir_x = 1.0
+            var dir_y = 0.0
             if enemies.size() > 0:
                 var target = null
                 var min_dist_sq = INF
@@ -14726,12 +14817,65 @@ func _use_skill():
                 var dy = target.y - self.ball.y
                 var dist = sqrt(min_dist_sq)
                 if dist > 0.0001:
-                    self.ball.x += (dx/dist) * dash_dist
-                    self.ball.y += (dy/dist) * dash_dist
+                    dir_x = dx / dist
+                    dir_y = dy / dist
             else:
                 var angle = randf() * PI * 2.0
-                self.ball.x += cos(angle) * dash_dist
-                self.ball.y += sin(angle) * dash_dist
+                dir_x = cos(angle)
+                dir_y = sin(angle)
+
+            var remaining_dist = dash_dist
+            var b_rad = 10.0
+            if "radius" in self.ball:
+                b_rad = self.ball.radius
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"):
+                b_rad = self.ball.get_meta("radius")
+
+            for i in range(10):
+                if remaining_dist <= 0:
+                    break
+
+                var dist_to_x_wall = INF
+                if dir_x > 0:
+                    dist_to_x_wall = (arena_width - b_rad - self.ball.x) / dir_x
+                elif dir_x < 0:
+                    dist_to_x_wall = (b_rad - self.ball.x) / dir_x
+
+                var dist_to_y_wall = INF
+                if dir_y > 0:
+                    dist_to_y_wall = (arena_height - b_rad - self.ball.y) / dir_y
+                elif dir_y < 0:
+                    dist_to_y_wall = (b_rad - self.ball.y) / dir_y
+
+                var dist_to_wall = min(dist_to_x_wall, dist_to_y_wall)
+
+                if dist_to_wall <= 0.0001:
+                    if dist_to_x_wall <= 0.0001: dir_x *= -1
+                    if dist_to_y_wall <= 0.0001: dir_y *= -1
+                    self.ball.x = max(b_rad, min(arena_width - b_rad, self.ball.x))
+                    self.ball.y = max(b_rad, min(arena_height - b_rad, self.ball.y))
+                    continue
+
+                if remaining_dist <= dist_to_wall:
+                    self.ball.x += dir_x * remaining_dist
+                    self.ball.y += dir_y * remaining_dist
+                    break
+                else:
+                    self.ball.x += dir_x * dist_to_wall
+                    self.ball.y += dir_y * dist_to_wall
+                    remaining_dist -= dist_to_wall
+
+                    if dist_to_x_wall < dist_to_y_wall:
+                        self.ball.x = arena_width - b_rad if dir_x > 0 else b_rad
+                        dir_x *= -1
+                    elif dist_to_y_wall < dist_to_x_wall:
+                        self.ball.y = arena_height - b_rad if dir_y > 0 else b_rad
+                        dir_y *= -1
+                    else:
+                        self.ball.x = arena_width - b_rad if dir_x > 0 else b_rad
+                        self.ball.y = arena_height - b_rad if dir_y > 0 else b_rad
+                        dir_x *= -1
+                        dir_y *= -1
 
             var killed_enemy = false
             for e in _get_enemies():

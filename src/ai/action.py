@@ -8236,18 +8236,74 @@ class Action:
 
                 enemies_before = {id(e): getattr(e, "hp", 1.0) for e in enemies}
 
+                arena_width = getattr(self.world.arena, "width", getattr(self.world, "width", 1000.0)) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000.0)
+                arena_height = getattr(self.world.arena, "height", getattr(self.world, "height", 1000.0)) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000.0)
+
                 if enemies:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     dx = target.x - self.ball.x
                     dy = target.y - self.ball.y
                     dist = math.sqrt(dx*dx + dy*dy)
                     if dist > 0.0001:
-                        self.ball.x += (dx/dist) * dash_dist
-                        self.ball.y += (dy/dist) * dash_dist
+                        dir_x = dx / dist
+                        dir_y = dy / dist
+                    else:
+                        dir_x = 1.0
+                        dir_y = 0.0
                 else:
                     angle = random.uniform(0, 2 * math.pi)
-                    self.ball.x += math.cos(angle) * dash_dist
-                    self.ball.y += math.sin(angle) * dash_dist
+                    dir_x = math.cos(angle)
+                    dir_y = math.sin(angle)
+
+                remaining_dist = dash_dist
+                b_rad = getattr(self.ball, "radius", 10.0)
+
+                # Perform bounce logic
+                for _ in range(10):
+                    if remaining_dist <= 0:
+                        break
+
+                    dist_to_x_wall = float('inf')
+                    if dir_x > 0:
+                        dist_to_x_wall = (arena_width - b_rad - self.ball.x) / dir_x
+                    elif dir_x < 0:
+                        dist_to_x_wall = (b_rad - self.ball.x) / dir_x
+
+                    dist_to_y_wall = float('inf')
+                    if dir_y > 0:
+                        dist_to_y_wall = (arena_height - b_rad - self.ball.y) / dir_y
+                    elif dir_y < 0:
+                        dist_to_y_wall = (b_rad - self.ball.y) / dir_y
+
+                    dist_to_wall = min(dist_to_x_wall, dist_to_y_wall)
+
+                    if dist_to_wall <= 0.0001:
+                        if dist_to_x_wall <= 0.0001: dir_x *= -1
+                        if dist_to_y_wall <= 0.0001: dir_y *= -1
+                        self.ball.x = max(b_rad, min(arena_width - b_rad, self.ball.x))
+                        self.ball.y = max(b_rad, min(arena_height - b_rad, self.ball.y))
+                        continue
+
+                    if remaining_dist <= dist_to_wall:
+                        self.ball.x += dir_x * remaining_dist
+                        self.ball.y += dir_y * remaining_dist
+                        break
+                    else:
+                        self.ball.x += dir_x * dist_to_wall
+                        self.ball.y += dir_y * dist_to_wall
+                        remaining_dist -= dist_to_wall
+
+                        if dist_to_x_wall < dist_to_y_wall:
+                            self.ball.x = arena_width - b_rad if dir_x > 0 else b_rad
+                            dir_x *= -1
+                        elif dist_to_y_wall < dist_to_x_wall:
+                            self.ball.y = arena_height - b_rad if dir_y > 0 else b_rad
+                            dir_y *= -1
+                        else:
+                            self.ball.x = arena_width - b_rad if dir_x > 0 else b_rad
+                            self.ball.y = arena_height - b_rad if dir_y > 0 else b_rad
+                            dir_x *= -1
+                            dir_y *= -1
 
                 killed_enemy = False
                 for enemy in self._get_enemies():
@@ -8442,18 +8498,74 @@ class Action:
                 # Keep track of enemies alive before dash using object ids or id()
                 enemies_before = {id(e): getattr(e, "hp", 1.0) for e in enemies}
 
+                arena_width = getattr(self.world.arena, "width", getattr(self.world, "width", 1000.0)) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000.0)
+                arena_height = getattr(self.world.arena, "height", getattr(self.world, "height", 1000.0)) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000.0)
+
                 if enemies:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     dx = target.x - self.ball.x
                     dy = target.y - self.ball.y
                     dist = math.sqrt(dx*dx + dy*dy)
                     if dist > 0.0001:
-                        self.ball.x += (dx/dist) * dash_dist
-                        self.ball.y += (dy/dist) * dash_dist
+                        dir_x = dx / dist
+                        dir_y = dy / dist
+                    else:
+                        dir_x = 1.0
+                        dir_y = 0.0
                 else:
                     angle = random.uniform(0, 2 * math.pi)
-                    self.ball.x += math.cos(angle) * dash_dist
-                    self.ball.y += math.sin(angle) * dash_dist
+                    dir_x = math.cos(angle)
+                    dir_y = math.sin(angle)
+
+                remaining_dist = dash_dist
+                b_rad = getattr(self.ball, "radius", 10.0)
+
+                # Perform bounce logic
+                for _ in range(10):
+                    if remaining_dist <= 0:
+                        break
+
+                    dist_to_x_wall = float('inf')
+                    if dir_x > 0:
+                        dist_to_x_wall = (arena_width - b_rad - self.ball.x) / dir_x
+                    elif dir_x < 0:
+                        dist_to_x_wall = (b_rad - self.ball.x) / dir_x
+
+                    dist_to_y_wall = float('inf')
+                    if dir_y > 0:
+                        dist_to_y_wall = (arena_height - b_rad - self.ball.y) / dir_y
+                    elif dir_y < 0:
+                        dist_to_y_wall = (b_rad - self.ball.y) / dir_y
+
+                    dist_to_wall = min(dist_to_x_wall, dist_to_y_wall)
+
+                    if dist_to_wall <= 0.0001:
+                        if dist_to_x_wall <= 0.0001: dir_x *= -1
+                        if dist_to_y_wall <= 0.0001: dir_y *= -1
+                        self.ball.x = max(b_rad, min(arena_width - b_rad, self.ball.x))
+                        self.ball.y = max(b_rad, min(arena_height - b_rad, self.ball.y))
+                        continue
+
+                    if remaining_dist <= dist_to_wall:
+                        self.ball.x += dir_x * remaining_dist
+                        self.ball.y += dir_y * remaining_dist
+                        break
+                    else:
+                        self.ball.x += dir_x * dist_to_wall
+                        self.ball.y += dir_y * dist_to_wall
+                        remaining_dist -= dist_to_wall
+
+                        if dist_to_x_wall < dist_to_y_wall:
+                            self.ball.x = arena_width - b_rad if dir_x > 0 else b_rad
+                            dir_x *= -1
+                        elif dist_to_y_wall < dist_to_x_wall:
+                            self.ball.y = arena_height - b_rad if dir_y > 0 else b_rad
+                            dir_y *= -1
+                        else:
+                            self.ball.x = arena_width - b_rad if dir_x > 0 else b_rad
+                            self.ball.y = arena_height - b_rad if dir_y > 0 else b_rad
+                            dir_x *= -1
+                            dir_y *= -1
 
                 # Deal damage to enemies we pass through or land on
                 killed_enemy = False

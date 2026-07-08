@@ -1,0 +1,4 @@
+{
+    "title": "Pinball Dash Combo",
+    "description": "If a ball dashes and bounces off walls multiple times during a single dash execution (hitting a corner or dashing parallel near walls), their next immediate basic attack or dash deals bonus damage based on the number of ricochets."
+}
