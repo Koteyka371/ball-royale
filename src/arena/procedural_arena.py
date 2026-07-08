@@ -1265,7 +1265,13 @@ class ProceduralArena:
         # Check hazards
         for h in self.hazards:
             import math
-            if math.isnan(h.x) or math.isnan(h.y) or math.isnan(h.radius):
+            try:
+                x = float(h.x)
+                y = float(h.y)
+                r = float(h.radius)
+            except (TypeError, ValueError):
+                continue
+            if math.isnan(x) or math.isnan(y) or math.isnan(r) or math.isinf(x) or math.isinf(y) or math.isinf(r):
                 continue
             grid_x = int(h.x // 100)
             grid_y = int(h.y // 100)
