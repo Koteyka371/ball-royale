@@ -3493,7 +3493,10 @@ class Action:
                                             if bdist_sq > 0.0001:
                                                 bdist = math.sqrt(bdist_sq)
                                                 bnx, bny = bdx / bdist, bdy / bdist
-                                                pull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 80.0 * delta * lifetime_mult
+                                                is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
+                                                if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
+                                                radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
+                                                pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, bdist)) * 80.0 * delta * lifetime_mult
                                                 b.x += bnx * pull_strength
                                                 b.y += bny * pull_strength
                                                 if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") and hasattr(b, "vx") and hasattr(b, "vy"):
@@ -3540,7 +3543,10 @@ class Action:
                                         lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") else 1.0
                                         bdist = math.sqrt(bdist_sq)
                                         bnx, bny = bdx / bdist, bdy / bdist
-                                        bpull_strength = (hazard.radius * 2.0 / max(10.0, bdist)) * 50.0 * delta * lifetime_mult
+                                        is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
+                                        if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
+                                        radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
+                                        bpull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, bdist)) * 50.0 * delta * lifetime_mult
                                         b.x += bnx * bpull_strength
                                         b.y += bny * bpull_strength
                                         if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
@@ -3559,7 +3565,10 @@ class Action:
                                 lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") else 1.0
                                 dist = math.sqrt(dist_sq)
                                 nx, ny = dx / dist, dy / dist
-                                pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta * lifetime_mult
+                                is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
+                                if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
+                                radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
+                                pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 50.0 * delta * lifetime_mult
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
                                 if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
@@ -4165,7 +4174,10 @@ class Action:
                             # Pull effect, launch, and damage
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
-                            pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 200.0 * delta
+                            is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
+                            if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
+                            radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
+                            pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 200.0 * delta
                             nx, ny = dx / max(0.1, dist), dy / max(0.1, dist)
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength

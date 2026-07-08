@@ -6287,7 +6287,11 @@ func execute(strategy: String, delta: float):
                                     var lifetime_mult = 1.0
                                     if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"] and hazard.has_meta("lifetime"):
                                         lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
-                                    var bpull_strength = (hazard.radius * 2.0 / bmin_dist) * 50.0 * delta * lifetime_mult
+                                    var is_ts = false
+                                    if "arena" in self.world and self.world.arena != null and "weather" in self.world.arena and self.world.arena.weather == "thunderstorm": is_ts = true
+                                    elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm": is_ts = true
+                                    var radius_mult = 1.5 if is_ts and hazard.kind == "tornado" else 1.0
+                                    var bpull_strength = (hazard.radius * 2.0 * radius_mult / bmin_dist) * 50.0 * delta * lifetime_mult
                                     b.x += bnx * bpull_strength
                                     b.y += bny * bpull_strength
                                     if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"]:
@@ -6339,7 +6343,11 @@ func execute(strategy: String, delta: float):
                             var min_dist = 10.0
                             if dist > min_dist:
                                 min_dist = dist
-                            var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta * lifetime_mult
+                            var is_ts = false
+                            if "arena" in self.world and self.world.arena != null and "weather" in self.world.arena and self.world.arena.weather == "thunderstorm": is_ts = true
+                            elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm": is_ts = true
+                            var radius_mult = 1.5 if is_ts and hazard.kind == "tornado" else 1.0
+                            var pull_strength = (hazard.radius * 2.0 * radius_mult / min_dist) * 50.0 * delta * lifetime_mult
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
                             if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"]:
@@ -7371,7 +7379,11 @@ func execute(strategy: String, delta: float):
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
                         var md = max(0.1, dist)
-                        var pull_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 200.0 * delta
+                        var is_ts = false
+                        if "arena" in self.world and self.world.arena != null and "weather" in self.world.arena and self.world.arena.weather == "thunderstorm": is_ts = true
+                        elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm": is_ts = true
+                        var radius_mult = 1.5 if is_ts and hazard.kind == "tornado" else 1.0
+                        var pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 200.0 * delta
                         var nx = dx / md
                         var ny = dy / md
                         self.ball.x += nx * pull_strength
