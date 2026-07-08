@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-717] Guild Wars System — *2026-07-08 17:08:08 UTC*
+
+Players can join or create guilds. Guilds can compete in guild vs guild battles to earn guild points. Points are used to upgrade guild level, which unlocks exclusive buffs, banners, and special cosmetics for all members.
+
+---
+
 ## [idea-622] Reflective Shields — *2026-07-08 17:08:02 UTC*
 
 An activated ability or item that gives players a temporary reflective shield. Any projectile or targeted hazard damage during this window reflects half of the damage back to the attacker.
