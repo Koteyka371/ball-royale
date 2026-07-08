@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-704] Orbital Strike Debris — *2026-07-08 21:37:02 UTC*
+
+When an orbital strike finishes, spawn 3-5 temporary debris hazards around its impact zone. These slow down balls heavily as they navigate the crater area for the next 10 seconds, but give cover from projectiles.
+
+---
+
 ## [idea-739] Bumper Car Arena Mode — *2026-07-08 21:36:58 UTC*
 
 A game mode where balls deal zero direct damage. Instead, balls bounce off each other with massively increased knockback, and the only way to eliminate opponents is to push them into outer hazard zones.
