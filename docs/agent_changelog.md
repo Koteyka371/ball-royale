@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-719] Escort Diverging Paths — *2026-07-08 18:41:45 UTC*
+
+Add diverging paths for the payload to choose from in Escort Mode, some with less hazards but longer, others with higher risks but faster.
+
+---
+
 ## [idea-688] Sniper Laser Tripwire — *2026-07-08 18:41:40 UTC*
 
 A deployable thin hazard line. When an enemy crosses it, they take significant instant damage and their movement speed is halved for 5 seconds.
