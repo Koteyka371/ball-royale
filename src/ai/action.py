@@ -2812,43 +2812,49 @@ class Action:
                                         self.world.add_event("stun", {"id": b_id, "duration": 2.0})
 
                     elif hazard.kind == "deployable_thin_hazard_line":
-                        if getattr(hazard, "active", True) and getattr(hazard, "team", "") != getattr(self.ball, "team", ""):
-                            # Line segment distance
-                            x1, y1 = getattr(hazard, "start_x", hazard.x), getattr(hazard, "start_y", hazard.y)
-                            x2, y2 = getattr(hazard, "end_x", hazard.x), getattr(hazard, "end_y", hazard.y)
-                            px, py = self.ball.x, self.ball.y
+                        hazard_is_active = getattr(hazard, "active", True)
+                        hazard_team = getattr(hazard, "team", "")
+                        my_team = getattr(self.ball, "team", "")
 
-                            l2 = (x1 - x2)**2 + (y1 - y2)**2
-                            if l2 == 0:
-                                dist = math.hypot(px - x1, py - y1)
+                        if hazard_is_active and hazard_team != my_team:
+                            # Calculate shortest distance from ball to the hazard line segment
+                            h_start_x, h_start_y = getattr(hazard, "start_x", hazard.x), getattr(hazard, "start_y", hazard.y)
+                            h_end_x, h_end_y = getattr(hazard, "end_x", hazard.x), getattr(hazard, "end_y", hazard.y)
+                            ball_px, ball_py = self.ball.x, self.ball.y
+
+                            line_len_sq = (h_start_x - h_end_x)**2 + (h_start_y - h_end_y)**2
+                            if line_len_sq == 0:
+                                distance_to_line = math.hypot(ball_px - h_start_x, ball_py - h_start_y)
                             else:
-                                t = max(0, min(1, ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2))
-                                proj_x = x1 + t * (x2 - x1)
-                                proj_y = y1 + t * (y2 - y1)
-                                dist = math.hypot(px - proj_x, py - proj_y)
+                                dot_product = (ball_px - h_start_x) * (h_end_x - h_start_x) + (ball_py - h_start_y) * (h_end_y - h_start_y)
+                                t_param = max(0, min(1, dot_product / line_len_sq))
+                                projection_x = h_start_x + t_param * (h_end_x - h_start_x)
+                                projection_y = h_start_y + t_param * (h_end_y - h_start_y)
+                                distance_to_line = math.hypot(ball_px - projection_x, ball_py - projection_y)
 
-                            if dist < self.ball.radius:
+                            if distance_to_line < self.ball.radius:
                                 b_id = getattr(self.ball, "id", None)
                                 hit_ids = getattr(hazard, "hit_ids", [])
-                                if b_id not in hit_ids:
-                                    hazard.hit_ids.append(b_id)
-                                    hazard_damage = getattr(hazard, "damage", 50.0)
 
-                                    # Simple inline damage logic
+                                if b_id not in hit_ids:
+                                    # Register hit so damage isn't applied every frame
+                                    hazard.hit_ids.append(b_id)
+
+                                    # Apply significant instant damage
+                                    damage_amount = getattr(hazard, "damage", 50.0)
                                     if getattr(self.ball, "reflect_shield_active", False):
-                                        capacity = getattr(self.ball, "reflect_shield_capacity", 50.0)
-                                        damage_to_reflect = min(capacity, hazard_damage)
-                                        capacity -= hazard_damage
-                                        if capacity <= 0:
+                                        shield_cap = getattr(self.ball, "reflect_shield_capacity", 50.0)
+                                        shield_cap -= damage_amount
+                                        if shield_cap <= 0:
                                             self.ball.reflect_shield_active = False
                                             self.ball.reflect_shield_capacity = 0.0
                                         else:
-                                            self.ball.reflect_shield_capacity = capacity
+                                            self.ball.reflect_shield_capacity = shield_cap
                                     else:
                                         mitigation = getattr(self.ball, "damage_mitigation", 0.0)
-                                        self.ball.hp -= hazard_damage * (1.0 - mitigation)
+                                        self.ball.hp -= damage_amount * (1.0 - mitigation)
 
-                                    # Speed debuff for 5 seconds
+                                    # Movement speed is halved for 5 seconds
                                     self.ball.speed_debuff_timer = max(getattr(self.ball, "speed_debuff_timer", 0.0), 5.0)
                                     self.ball.speed_debuff_multiplier = min(getattr(self.ball, "speed_debuff_multiplier", 1.0), 0.5)
 
