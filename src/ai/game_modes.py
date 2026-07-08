@@ -384,9 +384,13 @@ class BattleRoyaleMode(GameMode):
         self.sudden_death_black_hole_spawned = False
         self.tornado_spawn_timer = 0.0
         self.final_boss_spawned = False
+        self.altars = []
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.altars = [{"x": arena_w/2, "y": arena_h/2, "radius": 150.0, "capture_progress": 0.0, "owner": None}]
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -717,15 +721,17 @@ class BattleRoyaleMode(GameMode):
         if controller:
             self.weather_timer = 0.0
             ctype = getattr(controller, "ball_type", "default")
-            pref = "clear"
-            if ctype in ["elementalist"]: pref = "thunderstorm"
-            elif ctype in ["druid", "healer"]: pref = "rain"
-            elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
-            elif ctype in ["mage", "conjurer"]: pref = "snow"
-            elif ctype in ["speed", "scout"]: pref = "wind"
-            elif ctype in ["tank", "brawler"]: pref = "heatwave"
-            elif ctype in ["swarm"]: pref = "sandstorm"
-            else: pref = "thunderstorm" # Default for others picking it up
+            # Check if altar control node is captured
+            weather_prefs = {
+                "elementalist": "thunderstorm",
+                "druid": "rain", "healer": "rain",
+                "rogue": "fog", "assassin": "fog", "stealth": "fog",
+                "mage": "snow", "conjurer": "snow",
+                "speed": "wind", "scout": "wind",
+                "tank": "heatwave", "brawler": "heatwave",
+                "swarm": "sandstorm"
+            }
+            pref = weather_prefs.get(ctype, "thunderstorm") # Default for others picking it up
 
             old_weather = self.weather
             if old_weather != pref:
@@ -2726,18 +2732,19 @@ class WeatherChaosMode(GameMode):
                         if altar["capture_progress"] <= 0:
                             altar["owner"] = max_team
                             altar["capture_progress"] = 0.0
-                            # Weather change triggered
+                            # Altar control node weather change triggered
                             self.weather_timer = 0.0
                             ctype = max_team
-                            pref = "clear"
-                            if ctype in ["elementalist"]: pref = "thunderstorm"
-                            elif ctype in ["druid", "healer", "swamp"]: pref = "rain"
-                            elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
-                            elif ctype in ["mage", "conjurer"]: pref = "snow"
-                            elif ctype in ["speed", "scout"]: pref = "wind"
-                            elif ctype in ["tank", "brawler"]: pref = "heatwave"
-                            elif ctype in ["swarm"]: pref = "sandstorm"
-                            else: pref = "thunderstorm"
+                            weather_prefs = {
+                                "elementalist": "thunderstorm",
+                                "druid": "rain", "healer": "rain", "swamp": "rain",
+                                "rogue": "fog", "assassin": "fog", "stealth": "fog",
+                                "mage": "snow", "conjurer": "snow",
+                                "speed": "wind", "scout": "wind",
+                                "tank": "heatwave", "brawler": "heatwave",
+                                "swarm": "sandstorm"
+                            }
+                            pref = weather_prefs.get(ctype, "thunderstorm")
 
                             if self.weather != pref:
                                 self.weather = pref
@@ -2757,15 +2764,17 @@ class WeatherChaosMode(GameMode):
         if controller:
             self.weather_timer = 0.0
             ctype = getattr(controller, "ball_type", "default")
-            pref = "clear"
-            if ctype in ["elementalist"]: pref = "thunderstorm"
-            elif ctype in ["druid", "healer"]: pref = "rain"
-            elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
-            elif ctype in ["mage", "conjurer"]: pref = "snow"
-            elif ctype in ["speed", "scout"]: pref = "wind"
-            elif ctype in ["tank", "brawler"]: pref = "heatwave"
-            elif ctype in ["swarm"]: pref = "sandstorm"
-            else: pref = "thunderstorm"
+            # Check if altar control node is captured
+            weather_prefs = {
+                "elementalist": "thunderstorm",
+                "druid": "rain", "healer": "rain",
+                "rogue": "fog", "assassin": "fog", "stealth": "fog",
+                "mage": "snow", "conjurer": "snow",
+                "speed": "wind", "scout": "wind",
+                "tank": "heatwave", "brawler": "heatwave",
+                "swarm": "sandstorm"
+            }
+            pref = weather_prefs.get(ctype, "thunderstorm")
 
             old_weather = self.weather
             if old_weather != pref:

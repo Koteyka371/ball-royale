@@ -1,4 +1,4 @@
 {
-  "title": "Altar Sabotage Mechanic",
-  "description": "Players can drop negative modifiers onto altars instead of just capturing them. When an altar is sabotaged, it deals tick damage to the other team attempting to capture it."
+  "title": "Blight Booster",
+  "description": "A new booster that applies 'Blight' to the ball that collects it. For a short duration, any other ball they collide with also contracts the blight, which causes slow movement speed and reduces max HP temporarily. It creates a 'tag' dynamic where infected players want to spread it."
 }

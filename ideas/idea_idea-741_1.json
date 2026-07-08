@@ -1,4 +1,4 @@
 {
-  "title": "Weather prediction tool booster",
-  "description": "Add a new booster that predicts the next weather condition accurately and gives the capturing player an aura buff when the predicted weather starts."
+  "title": "Orbital Debris Hazard",
+  "description": "Introduce an Orbital Debris hazard that sweeps randomly across the arena. Balls that fall into the debris field suffer continuous collision damage and are pulled slightly towards the center of the debris. It acts as a moving area-of-denial effect."
 }
