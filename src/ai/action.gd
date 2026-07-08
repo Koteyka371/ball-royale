@@ -11786,6 +11786,7 @@ func _collect_booster(delta: float):
                         if clone.has_method("set_meta"):
                             clone.set_meta("owner_id", self_id_stat)
                             clone.set_meta("is_hologram", true)
+                            clone.set_meta("hologram_timer", 5.0)
                             clone.set_meta("hologram_dir_x", cos(angle))
                             clone.set_meta("hologram_dir_y", sin(angle))
                             clone.set_meta("skill_timer", 9999.0)
@@ -11796,6 +11797,7 @@ func _collect_booster(delta: float):
                         elif typeof(clone) == TYPE_DICTIONARY:
                             clone["owner_id"] = self_id_stat
                             clone["is_hologram"] = true
+                            clone["hologram_timer"] = 5.0
                             clone["hologram_dir_x"] = cos(angle)
                             clone["hologram_dir_y"] = sin(angle)
                             clone["skill_timer"] = 9999.0

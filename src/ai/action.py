@@ -6809,6 +6809,7 @@ class Action:
                             clone.speed = getattr(self.ball, "speed", 2.0)
                             clone.owner_id = getattr(self.ball, "id", None)
                             clone.is_hologram = True
+                            clone.hologram_timer = 5.0
 
                             clone.skill_timer = 9999.0
                             clone.attack_timer = 9999.0

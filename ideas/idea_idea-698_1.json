@@ -1,4 +1,4 @@
 {
-    "title": "Decoy Grenade",
-    "description": "An item that can be thrown at a target location. Upon landing, it emits fake footstep sounds and creates visual noise (similar to multiple players moving) to draw enemy fire and mask real player movements."
+  "title": "Quantum Swap Hazard",
+  "description": "A rare hazard that instantly swaps the positions of the two balls that enter it simultaneously, causing confusion and possible accidental trap collisions."
 }
