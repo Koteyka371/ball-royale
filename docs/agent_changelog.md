@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-624] Dynamic Temperature System — *2026-07-08 14:11:12 UTC*
+
+Expand the weather logic to include a persistent 'temperature' variable for the arena, which determines how long ice slicks last or how quickly mud dries into solid ground. Characters with certain abilities (like fireball) could dynamically melt ice patches into puddles of water, creating interesting environmental interactions.
+
+---
+
 ## [idea-689] Shrinking Speed Cap Mode — *2026-07-08 13:59:19 UTC*
 
 As the game progresses, the maximum speed cap for all entities decreases steadily, forcing players into more strategic and confined maneuvering.

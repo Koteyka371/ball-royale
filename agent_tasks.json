@@ -10765,7 +10765,7 @@
     },
     {
       "id": "idea-624",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Temperature System",
@@ -19933,6 +19933,40 @@
         "src/ai/reverse_escort.py",
         "src/ai/reverse_escort.gd",
         "tests/test_reverse_escort.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1163",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Escalation Scaling",
+      "description": "Bounties dynamically increase their reward pool over time based on the distance traveled by the targeted player, incentivizing fast and prolonged chases while adding risk-reward for running away.",
+      "allowed_paths": [
+        "src/ai/bounty_escalation_scaling.py",
+        "src/ai/bounty_escalation_scaling.gd",
+        "tests/test_bounty_escalation_scaling.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1164",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Magnet Zones",
+      "description": "Hazard zones that push players away from their center rather than pulling them in, creating impassable barriers unless players have a speed or dash boost to push through.",
+      "allowed_paths": [
+        "src/ai/reverse_magnet_zones.py",
+        "src/ai/reverse_magnet_zones.gd",
+        "tests/test_reverse_magnet_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
