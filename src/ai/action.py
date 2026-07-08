@@ -15,6 +15,10 @@ class HomingMissileHazard:
         self.owner_id = None
         self.active = True
 
+
+class LaserBeamNode:
+    pass
+
 class Action:
 
 
@@ -2815,6 +2819,47 @@ class Action:
 
 
 
+
+                    elif hazard.kind == "laser_beam":
+                        if getattr(hazard, "active", True) and getattr(hazard, "team", "") != getattr(self.ball, "team", ""):
+                            # Line segment distance
+                            x1, y1 = getattr(hazard, "start_x", getattr(hazard, "x", 0.0)), getattr(hazard, "start_y", getattr(hazard, "y", 0.0))
+                            x2, y2 = getattr(hazard, "end_x", getattr(hazard, "x", 0.0)), getattr(hazard, "end_y", getattr(hazard, "y", 0.0))
+                            px, py = self.ball.x, self.ball.y
+
+                            l2 = (x1 - x2)**2 + (y1 - y2)**2
+                            if l2 == 0:
+                                dist = math.hypot(px - x1, py - y1)
+                            else:
+                                t = max(0, min(1, ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2))
+                                proj_x = x1 + t * (x2 - x1)
+                                proj_y = y1 + t * (y2 - y1)
+                                dist = math.hypot(px - proj_x, py - proj_y)
+
+                            if dist < self.ball.radius + 15.0:
+                                b_id = getattr(self.ball, "id", None)
+                                hit_ids = getattr(hazard, "hit_ids", [])
+                                if b_id not in hit_ids:
+                                    hazard.hit_ids.append(b_id)
+                                    hazard_damage = getattr(hazard, "damage", 100.0)
+
+                                    if getattr(self.ball, "reflect_shield_active", False):
+                                        capacity = getattr(self.ball, "reflect_shield_capacity", 50.0)
+                                        damage_to_reflect = min(capacity, hazard_damage)
+                                        capacity -= hazard_damage
+                                        if capacity <= 0:
+                                            self.ball.reflect_shield_active = False
+                                            self.ball.reflect_shield_capacity = 0.0
+                                        else:
+                                            self.ball.reflect_shield_capacity = capacity
+                                    else:
+                                        mitigation = getattr(self.ball, "damage_mitigation", 0.0)
+                                        if hasattr(self.ball, "take_damage"):
+                                            self.ball.take_damage(hazard_damage * (1.0 - mitigation))
+                                        elif hasattr(self.ball, "hp"):
+                                            self.ball.hp -= hazard_damage * (1.0 - mitigation)
+                                            if self.ball.hp <= 0:
+                                                self.ball.alive = False
                     elif hazard.kind == "laser_tripwire":
                         if getattr(hazard, "active", True) and getattr(hazard, "team", "") != getattr(self.ball, "team", ""):
                             # Line segment distance
@@ -2858,6 +2903,32 @@ class Action:
 
                                     if hasattr(self.world, "add_event"):
                                         self.world.add_event("stun", {"id": b_id, "duration": 2.0})
+
+                                    # Shoot powerful laser beam
+                                    beam = LaserBeamNode()
+                                    beam.id = f"laser_beam_{b_id}_{self.world.tick}"
+                                    beam.kind = "laser_beam"
+                                    beam.start_x = getattr(hazard, "start_x", hazard.x)
+                                    beam.start_y = getattr(hazard, "start_y", getattr(hazard, "y", 0.0))
+                                    beam.x = beam.start_x
+                                    beam.y = beam.start_y
+                                    beam.radius = 15.0
+                                    dx = self.ball.x - beam.start_x
+                                    dy = self.ball.y - beam.start_y
+                                    dist_to_ball = math.hypot(dx, dy)
+                                    if dist_to_ball > 0:
+                                        dx /= dist_to_ball
+                                        dy /= dist_to_ball
+                                    else:
+                                        dx, dy = 1, 0
+                                    beam.end_x = beam.start_x + dx * 1000.0
+                                    beam.end_y = beam.start_y + dy * 1000.0
+                                    beam.damage = 100.0
+                                    beam.team = getattr(hazard, "team", "")
+                                    beam.timer = 1.0
+                                    beam.active = True
+                                    beam.hit_ids = []
+                                    self.world.arena.hazards.append(beam)
 
                     elif hazard.kind == "deployable_thin_hazard_line":
                         hazard_is_active = getattr(hazard, "active", True)
