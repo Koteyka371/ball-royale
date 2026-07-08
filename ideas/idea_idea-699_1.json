@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Ball Type",
+  "description": "A ball type that pairs its health and speed to an enemy at the start of the round. Any damage it takes is partially distributed to the enemy, forcing opponents to rethink target prioritization."
+}
