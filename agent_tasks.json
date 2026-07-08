@@ -12892,7 +12892,7 @@
     },
     {
       "id": "idea-749",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Juggernaut Ball Type",
@@ -21125,6 +21125,40 @@
         "src/arena/blackout_traps.py",
         "src/arena/blackout_traps.gd",
         "tests/test_blackout_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1233",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slime Bounce Pads",
+      "description": "Hazard objects that apply a large velocity impulse in the opposite direction of approach when a ball touches them, but cover them in slime (speed debuff) for 3 seconds.",
+      "allowed_paths": [
+        "src/ai/slime_bounce_pads.py",
+        "src/ai/slime_bounce_pads.gd",
+        "tests/test_slime_bounce_pads.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1234",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slime Monster Boss",
+      "description": "A boss that shoots out balls of slime. It leaves a massive trail of slime behind it, slowing down everyone who gets too close to its tail. When destroyed, splits into two smaller, faster slimes.",
+      "allowed_paths": [
+        "src/ai/slime_monster_boss.py",
+        "src/ai/slime_monster_boss.gd",
+        "tests/test_slime_monster_boss.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

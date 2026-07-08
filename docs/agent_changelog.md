@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-749] Juggernaut Ball Type — *2026-07-08 22:19:30 UTC*
+
+A new ball type that gains temporary shield and damage boost based on the number of enemies within its perception radius, making it incredibly dangerous in crowded areas but weak in 1v1 engagements.
+
+---
+
 ## [idea-715] Slime Trails — *2026-07-08 21:53:22 UTC*
 
 Players leave behind a temporary trail of slime that slows down any opponents that cross it, giving evasive players a strong kiting tool.
