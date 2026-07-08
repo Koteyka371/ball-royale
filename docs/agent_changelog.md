@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-732] Laser Tripwire — *2026-07-08 19:43:20 UTC*
+
+A tripwire that shoots a powerful laser beam when a player crosses it.
+
+---
+
 ## [idea-737] Quantum Entanglement Booster — *2026-07-08 19:43:15 UTC*
 
 An item that pairs the collector with the closest enemy. Any damage taken by either ball is shared between both, creating new strategic dilemmas.
