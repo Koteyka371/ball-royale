@@ -877,7 +877,7 @@ class BattleRoyaleMode(GameMode):
                                 self.target_radius = radius
 
                     for m in self.active_meteors:
-                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                         setattr(h, "duration", m["delay"])
                         world.arena.hazards.append(h)
                     for c in self.craters:
@@ -2876,7 +2876,7 @@ class WeatherChaosMode(GameMode):
                                 self.target_radius = radius
 
                     for m in self.active_meteors:
-                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                         setattr(h, "duration", m["delay"])
                         world.arena.hazards.append(h)
                     for c in self.craters:
@@ -4030,6 +4030,20 @@ class EMPBurstMode(GameMode):
         super().tick(world, balls, delta)
 
         self.spawn_timer += delta
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+                    self.target_radius = 0.0
+
         if self.spawn_timer >= 5.0:
             self.spawn_timer = 0.0
 
@@ -6017,6 +6031,20 @@ class GravityWellMode(GameMode):
                 gw.invert_timer = random.uniform(3.0, 5.0)
 
         self.spawn_timer += delta
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+                    self.target_radius = 0.0
+
         if self.spawn_timer >= 5.0:
             self.spawn_timer = 0.0
 
@@ -6535,7 +6563,7 @@ class MagneticCollisionsMode(GameMode):
                                 self.target_radius = radius
 
                     for m in self.active_meteors:
-                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                         setattr(h, "duration", m["delay"])
                         world.arena.hazards.append(h)
                     for c in self.craters:
@@ -6706,7 +6734,7 @@ class PinballMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
-            if self.weather == "meteor_shower":
+            if getattr(self, "weather", "") == "meteor_shower":
                 if not hasattr(self, "meteor_spawn_timer"):
                     self.meteor_spawn_timer = 0.0
                     self.active_meteors = getattr(self, "active_meteors", [])
@@ -6788,7 +6816,7 @@ class PinballMode(GameMode):
                                 self.target_radius = radius
 
                     for m in self.active_meteors:
-                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                         setattr(h, "duration", m["delay"])
                         world.arena.hazards.append(h)
                     for c in self.craters:
@@ -8895,7 +8923,7 @@ class MeteorShowerMode(GameMode):
                         self.target_radius = radius
 
             for m in self.active_meteors:
-                h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                 setattr(h, "duration", m["delay"])
                 world.arena.hazards.append(h)
             for c in self.craters:
@@ -9571,7 +9599,7 @@ class SweepingPaddlesMode(GameMode):
                                 self.target_radius = radius
 
                     for m in self.active_meteors:
-                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                         setattr(h, "duration", m["delay"])
                         world.arena.hazards.append(h)
                     for c in self.craters:
@@ -10144,7 +10172,7 @@ class ExtremeWeatherMode(GameMode):
                             self.target_radius = radius
 
                 for m in self.active_meteors:
-                    h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                    h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                     setattr(h, "duration", m["delay"])
                     world.arena.hazards.append(h)
                 for c in self.craters:
@@ -10644,6 +10672,71 @@ class BlackoutEventMode(GameMode):
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)
 
 
+class WeaponCollectionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Weapon Collection"
+        self.description = "Players start with no attacks. Weapons randomly drop around the map, and players must collect them to deal damage."
+        self.weapon_spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.weapon_spawn_timer = 0.0
+
+        for b in balls:
+            b.base_damage = 0.0
+            b.damage = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.weapon_spawn_timer += delta
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+
+
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+                    self.target_radius = 0.0
+
+        if self.weapon_spawn_timer >= 3.0:
+            self.weapon_spawn_timer = 0.0
+
+            x = random.uniform(50, arena_width - 50)
+            y = random.uniform(50, arena_height - 50)
+
+            weapon_id = len(world.arena.hazards) + random.randint(10000, 99999)
+            weapon = Hazard(id=weapon_id, x=x, y=y, radius=15.0, kind="weapon_drop", damage=0.0)
+            world.arena.hazards.append(weapon)
+
+        for b in balls:
+            for h in world.arena.hazards:
+                if getattr(h, "active", True) and getattr(h, "kind", "") == "weapon_drop":
+                    dist_sq = (b.x - h.x)**2 + (b.y - h.y)**2
+                    combined_rad = getattr(b, "radius", 10.0) + getattr(h, "radius", 15.0)
+                    if dist_sq < combined_rad * combined_rad:
+                        h.active = False
+                        current_base = getattr(b, "base_damage", 0.0)
+                        b.base_damage = current_base + 10.0
+                        b.damage = b.base_damage
+
+
 GAME_MODES = {
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
@@ -10740,7 +10833,8 @@ GAME_MODES = {
     "hazard_billiards": HazardBilliardsMode(),
     "time_rewind": TimeRewindMode(),
     "rhythm_panels": RhythmPanelsMode(),
-    "cursed_buff_zone": CursedBuffZoneMode()
+    "cursed_buff_zone": CursedBuffZoneMode(),
+    "weapon_collection": WeaponCollectionMode()
 }
 
 try:
@@ -10748,6 +10842,7 @@ try:
     GAME_MODES["interactive_training"] = InteractiveTrainingMode()
 except ImportError:
     pass
+
 
 class RollingBouldersMode(GameMode):
     def __init__(self):
@@ -10771,6 +10866,8 @@ class RollingBouldersMode(GameMode):
 
         arena_width = getattr(world.arena, "width", 1000)
         arena_height = getattr(world.arena, "height", 1000)
+
+
 
         try:
             from arena.procedural_arena import Hazard

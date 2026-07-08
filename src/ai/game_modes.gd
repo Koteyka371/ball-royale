@@ -11344,6 +11344,7 @@ class LunarEclipseEventMode extends GameMode:
 				if world != null and world.has_method("add_event"):
 					world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
 
+
 class RollingBouldersMode extends GameMode:
 	var spawn_timer = 0.0
 	var rng = RandomNumberGenerator.new()
@@ -13464,6 +13465,105 @@ class BlackoutEventMode extends GameMode:
 						b.perception_radius = base_perc
 
 
+class WeaponCollectionMode extends GameMode:
+	var weapon_spawn_timer = 0.0
+
+	func _init():
+		name = "Weapon Collection"
+		description = "Players start with no attacks. Weapons randomly drop around the map, and players must collect them to deal damage."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		weapon_spawn_timer = 0.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if not world.has("arena"):
+				world["arena"] = {}
+			if not world["arena"].has("hazards"):
+				world["arena"]["hazards"] = []
+		else:
+			if world.get("arena") != null:
+				if not ("hazards" in world.arena):
+					world.arena.hazards = []
+
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				b["base_damage"] = 0.0
+				b["damage"] = 0.0
+			else:
+				if b.has_method("set"):
+					b.set("base_damage", 0.0)
+					b.set("damage", 0.0)
+
+	func tick(world, balls: Array) -> void:
+		var delta = 0.016
+		super.tick(world, balls)
+		weapon_spawn_timer += delta
+
+		var arena_width = 1000
+		var arena_height = 1000
+		var hazards = []
+
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_width = world["arena"].get("width", 1000)
+			arena_height = world["arena"].get("height", 1000)
+			hazards = world["arena"].get("hazards", [])
+		elif typeof(world) != TYPE_DICTIONARY and world.get("arena") != null:
+			arena_width = world.arena.get("width") if world.arena.get("width") != null else 1000
+			arena_height = world.arena.get("height") if world.arena.get("height") != null else 1000
+			hazards = world.arena.hazards
+
+		if weapon_spawn_timer >= 3.0:
+			weapon_spawn_timer = 0.0
+			var x = randf_range(50, arena_width - 50)
+			var y = randf_range(50, arena_height - 50)
+			var w_id = hazards.size() + randi() % 90000 + 10000
+
+			var hazard_class = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+			var weapon = null
+			if hazard_class:
+				weapon = hazard_class.new(w_id, x, y, 15.0, "weapon_drop", 0.0)
+			else:
+				weapon = {
+					"id": w_id,
+					"x": x,
+					"y": y,
+					"radius": 15.0,
+					"kind": "weapon_drop",
+					"damage": 0.0,
+					"active": true
+				}
+			hazards.append(weapon)
+
+		for b in balls:
+			var bx = b["x"] if typeof(b) == TYPE_DICTIONARY else b.get("x")
+			var by = b["y"] if typeof(b) == TYPE_DICTIONARY else b.get("y")
+			var br = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else (b.get("radius") if b.get("radius") != null else 10.0)
+
+			for h in hazards:
+				var h_active = h.get("active", true) if typeof(h) == TYPE_DICTIONARY else h.get("active")
+				var h_kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.get("kind")
+				if h_active and h_kind == "weapon_drop":
+					var hx = h.get("x", 0) if typeof(h) == TYPE_DICTIONARY else h.get("x")
+					var hy = h.get("y", 0) if typeof(h) == TYPE_DICTIONARY else h.get("y")
+					var hr = h.get("radius", 15.0) if typeof(h) == TYPE_DICTIONARY else h.get("radius")
+					var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+					var combined_rad = br + hr
+					if dist_sq < combined_rad * combined_rad:
+						if typeof(h) == TYPE_DICTIONARY:
+							h["active"] = false
+						else:
+							h.set("active", false)
+
+						if typeof(b) == TYPE_DICTIONARY:
+							var cur_base = b.get("base_damage", 0.0)
+							b["base_damage"] = cur_base + 10.0
+							b["damage"] = b["base_damage"]
+						else:
+							var cur_base = b.get("base_damage") if b.get("base_damage") != null else 0.0
+							b.set("base_damage", cur_base + 10.0)
+							b.set("damage", b.get("base_damage"))
+
+
 var GAME_MODES = {
 	"blackout_event": BlackoutEventMode.new(),
 	"solar_flare": SolarFlareMode.new(),
@@ -13568,6 +13668,7 @@ var GAME_MODES = {
 	"time_rewind": TimeRewindMode.new(),
 	"rhythm_panels": RhythmPanelsMode.new(),
 	"cursed_buff_zone": CursedBuffZoneMode.new(),
+	"weapon_collection": WeaponCollectionMode.new(),
 	"soul_link": SoulLinkMode.new(),
 	"clan_tournament": ClanTournamentMode.new(),
 	"tag_team": TagTeamMode.new(),
