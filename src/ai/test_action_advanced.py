@@ -740,6 +740,40 @@ def test_decoy_explosion_explosive():
     assert getattr(enemy, "stutter_timer", 0.0) == 2.0
     assert enemy.hp == 70.0
 
+def test_decoy_explosion_chain_reaction():
+    from ai.action import Action
+    world = MockWorld()
+
+    decoy1 = MockBall(x=100, y=100)
+    decoy1.is_decoy = True
+    decoy1.alive = True
+    decoy1.hp = 0
+    decoy1.decoy_type = "explosive"
+    decoy1.team = "decoy_team"
+    decoy1.owner_id = 111
+    decoy1.decoy_timer = 5.0
+    decoy1.id = 999
+
+    decoy2 = MockBall(x=150, y=150)
+    decoy2.is_decoy = True
+    decoy2.alive = True
+    decoy2.hp = 100
+    decoy2.decoy_type = "explosive"
+    decoy2.team = "decoy_team"
+    decoy2.owner_id = 112
+    decoy2.decoy_timer = 5.0
+    decoy2.id = 998
+    decoy2.traits = []
+
+    world.balls = [decoy1, decoy2]
+
+    action = Action(decoy1, world)
+    action.execute("idle", 0.1)
+
+    assert getattr(decoy1, "_decoy_exploded", False) is True
+    assert decoy2.hp == 0
+    assert "volatile_decoy" in decoy2.traits
+
 def test_decoy_explosion_reward():
     from ai.action import Action
     world = MockWorld()

@@ -4084,6 +4084,27 @@ func execute(strategy: String, delta: float):
                                 if dist <= radius:
                                     var is_enemy = (other_team != b_team)
                                     var is_ally = (other_team == b_team)
+                                    var is_other_decoy = false
+                                    if "is_decoy" in other: is_other_decoy = other.is_decoy
+                                    elif other.has_method("get_meta") and other.has_meta("is_decoy"): is_other_decoy = other.get_meta("is_decoy")
+
+                                    if is_ally and is_other_decoy:
+                                        if "hp" in other: other.hp = 0.0
+                                        elif other.has_method("set_meta"): other.set_meta("hp", 0.0)
+
+                                        var other_traits = []
+                                        if "traits" in other:
+                                            other_traits = other.traits
+                                        elif other.has_method("get_meta") and other.has_meta("traits"):
+                                            other_traits = other.get_meta("traits")
+
+                                        if typeof(other_traits) == TYPE_ARRAY and not other_traits.has("volatile_decoy"):
+                                            other_traits.append("volatile_decoy")
+                                            if "traits" in other:
+                                                other.traits = other_traits
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("traits", other_traits)
+
                                     var b_decoy_type = b.decoy_type if "decoy_type" in b else (b.get_meta("decoy_type") if b.has_method("has_meta") and b.has_meta("decoy_type") else "")
 
                                     if b_decoy_type == "healing" and is_ally:
