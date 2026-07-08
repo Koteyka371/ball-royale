@@ -21164,6 +21164,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1235",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Booster",
+      "description": "Increases the max number of chain lightning bounces by 1 but reduces initial damage by 15%.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_booster.py",
+        "src/ai/chain_reaction_booster.gd",
+        "tests/test_chain_reaction_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
