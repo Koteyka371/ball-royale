@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-679] Shrinking Floor Grid — *2026-07-08 12:49:35 UTC*
+
+Instead of a smooth circular shrinking zone, the arena is made of hexagonal tiles that independently glow red and fall away, reducing the safe map area into fragmented islands that players must jump between.
+
+---
+
 ## [idea-684] Capture the Point (King of the Hill variant) — *2026-07-08 11:39:11 UTC*
 
 Multiple control points spawn around the arena. Teams must stand inside the control points to capture them and accumulate points. The points periodically change locations. The team that reaches the target score first wins.
