@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-725] Bouncy dash variant — *2026-07-08 19:04:16 UTC*
+
+Dash that bounces off walls.
+
+---
+
 ## [idea-714] Shrinking Safe Zones with Moving Centers — *2026-07-08 18:54:41 UTC*
 
 Instead of a static shrinking circle, the center of the safe zone drifts around the map while shrinking, forcing players to constantly adapt their positioning.

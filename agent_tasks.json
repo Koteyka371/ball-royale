@@ -12483,7 +12483,7 @@
     },
     {
       "id": "idea-725",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy dash variant",
@@ -20478,6 +20478,57 @@
         "src/ai/decoy_network.py",
         "src/ai/decoy_network.gd",
         "tests/test_decoy_network.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1195",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Chat Bounties",
+      "description": "Spectators can use '!bounty <ball_id>' to place a bounty on a specific ball. If that ball is killed within a certain timeframe, the killer gets a massive score boost and a unique visual effect.",
+      "allowed_paths": [
+        "src/ai/interactive_chat_bounties.py",
+        "src/ai/interactive_chat_bounties.gd",
+        "tests/test_interactive_chat_bounties.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1196",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Twitch Chat Controlled Weather Event",
+      "description": "Allow real spectators to type '!weather <type>' to change the arena temperature or spawn specific weather hazards like tornados or blizzards when the hype level is high.",
+      "allowed_paths": [
+        "src/ai/twitch_chat_controlled.py",
+        "src/ai/twitch_chat_controlled.gd",
+        "tests/test_twitch_chat_controlled.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1197",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Chains",
+      "description": "A new 'Storm Link' booster that physically tethers two balls together using a miniature cyclone. The tether applies minor constant damage but drastically speeds up both players if they move in the same direction, rewarding extreme coordination or punishing unwilling captives.",
+      "allowed_paths": [
+        "src/ai/tornado_chains.py",
+        "src/ai/tornado_chains.gd",
+        "tests/test_tornado_chains.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
