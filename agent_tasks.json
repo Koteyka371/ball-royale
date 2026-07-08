@@ -12142,7 +12142,7 @@
     },
     {
       "id": "idea-705",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": " EMP Strike Variation",
@@ -20376,6 +20376,40 @@
         "src/ai/overcharged_payload_explosion.py",
         "src/ai/overcharged_payload_explosion.gd",
         "tests/test_overcharged_payload_explosion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1189",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Polarity Overload",
+      "description": "A game mode where every ball is assigned a random Positive or Negative charge. Balls of opposite charges are pulled toward each other, while balls of the same charge repel. The charges periodically flip during the match.",
+      "allowed_paths": [
+        "src/ai/magnetic_polarity_overload.py",
+        "src/ai/magnetic_polarity_overload.gd",
+        "tests/test_magnetic_polarity_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1190",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Hazards",
+      "description": "A hazard that spawns in pairs across the arena. Any damage or status effect taken by a ball near one hazard is partially duplicated and dealt to any ball standing near its paired hazard.",
+      "allowed_paths": [
+        "src/arena/quantum_entanglement_hazards.py",
+        "src/arena/quantum_entanglement_hazards.gd",
+        "tests/test_quantum_entanglement_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

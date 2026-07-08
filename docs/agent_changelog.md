@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-705]  EMP Strike Variation — *2026-07-08 18:41:36 UTC*
+
+Add a variant of the orbital strike (EMP Strike) that deals 0 damage but instantly drains all skill cooldowns and stamina of any ball caught inside the blast zone for 5 seconds.
+
+---
+
 ## [idea-686] Chain Lightning Hazard — *2026-07-08 18:28:53 UTC*
 
 A new weather event or procedural hazard that shoots chain lightning between nearby balls, damaging them and forcing them to spread out.
