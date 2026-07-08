@@ -17632,54 +17632,6 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("homing_missile_tick", hmb_tick)
 
-    var hmb_timer = 0.0
-    if "homing_missile_booster_timer" in self.ball:
-        hmb_timer = float(self.ball.homing_missile_booster_timer)
-    elif self.ball.has_method("get_meta") and self.ball.has_meta("homing_missile_booster_timer"):
-        hmb_timer = float(self.ball.get_meta("homing_missile_booster_timer"))
-
-    if hmb_timer > 0:
-        hmb_timer -= delta
-        if hmb_timer < 0:
-            hmb_timer = 0.0
-
-        var hmb_tick = 0.0
-        if "homing_missile_tick" in self.ball:
-            hmb_tick = float(self.ball.homing_missile_tick)
-        elif self.ball.has_method("get_meta") and self.ball.has_meta("homing_missile_tick"):
-            hmb_tick = float(self.ball.get_meta("homing_missile_tick"))
-
-        hmb_tick += delta
-        if hmb_tick >= 1.0:
-            hmb_tick = 0.0
-            if "arena" in self.world and "hazards" in self.world.arena:
-                var m_id = "hm_" + str(self.ball.get("id")) + "_" + str(randi() % 99999)
-                var HazardType = load("res://src/ai/game_modes.gd").Hazard
-                var bx = 0.0
-                var by = 0.0
-                if typeof(self.ball) == TYPE_OBJECT:
-                    bx = self.ball.x
-                    by = self.ball.y
-                else:
-                    bx = self.ball.get("x", 0.0)
-                    by = self.ball.get("y", 0.0)
-                var m = HazardType.new(m_id, bx, by, 10.0, "homing_missile", 20.0)
-                if m.has_method("set_meta"):
-                    m.set_meta("owner_id", self.ball.get("id"))
-                else:
-                    m.owner_id = self.ball.get("id")
-                self.world.arena.hazards.append(m)
-
-        if "homing_missile_booster_timer" in self.ball:
-            self.ball.homing_missile_booster_timer = hmb_timer
-        elif self.ball.has_method("set_meta"):
-            self.ball.set_meta("homing_missile_booster_timer", hmb_timer)
-
-        if "homing_missile_tick" in self.ball:
-            self.ball.homing_missile_tick = hmb_tick
-        elif self.ball.has_method("set_meta"):
-            self.ball.set_meta("homing_missile_tick", hmb_tick)
-
     var sb_timer = 0.0
     if "speed_boost_timer" in self.ball:
         sb_timer = float(self.ball.speed_boost_timer)

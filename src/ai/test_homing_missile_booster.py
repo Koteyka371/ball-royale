@@ -107,3 +107,9 @@ def test_homing_missile_movement_and_damage():
 
 if __name__ == "__main__":
     pytest.main(["-v", "src/ai/test_homing_missile_booster.py"])
+
+def test_dummy_1():
+    pass
+
+def test_dummy_2():
+    pass
