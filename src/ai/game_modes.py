@@ -2662,6 +2662,9 @@ class WeatherChaosMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.altars = [{"x": arena_w/2, "y": arena_h/2, "radius": 150.0, "capture_progress": 0.0, "owner": None}]
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -2697,6 +2700,59 @@ class WeatherChaosMode(GameMode):
             if getattr(b, "alive", False) and getattr(b, "weather_control_timer", 0.0) > 0:
                 controller = b
                 break
+
+        if not hasattr(self, "altars"):
+            self.altars = []
+        for altar in self.altars:
+            teams_present = {}
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    dist_sq = (bx - altar["x"])**2 + (by - altar["y"])**2
+                    if dist_sq <= altar["radius"]**2:
+                        team = getattr(b, "team", getattr(b, "ball_type", None))
+                        teams_present[team] = teams_present.get(team, 0) + 1
+
+            if teams_present:
+                max_team = max(teams_present, key=teams_present.get)
+                # Check if it is a clear majority
+                is_tie = sum(1 for t, v in teams_present.items() if v == teams_present[max_team]) > 1
+                if not is_tie:
+                    if altar["owner"] == max_team:
+                        altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+                    else:
+                        altar["capture_progress"] -= 20.0 * delta
+                        if altar["capture_progress"] <= 0:
+                            altar["owner"] = max_team
+                            altar["capture_progress"] = 0.0
+                            # Weather change triggered
+                            self.weather_timer = 0.0
+                            ctype = max_team
+                            pref = "clear"
+                            if ctype in ["elementalist"]: pref = "thunderstorm"
+                            elif ctype in ["druid", "healer", "swamp"]: pref = "rain"
+                            elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
+                            elif ctype in ["mage", "conjurer"]: pref = "snow"
+                            elif ctype in ["speed", "scout"]: pref = "wind"
+                            elif ctype in ["tank", "brawler"]: pref = "heatwave"
+                            elif ctype in ["swarm"]: pref = "sandstorm"
+                            else: pref = "thunderstorm"
+
+                            if self.weather != pref:
+                                self.weather = pref
+                                if hasattr(world, "add_event"):
+                                    world.add_event("weather_change", {"weather": self.weather})
+                                if self.weather == "wind":
+                                    rnd = getattr(self, "random", __import__("random"))
+                                    self.wind_dx = rnd.uniform(-50.0, 50.0)
+                                    self.wind_dy = rnd.uniform(-50.0, 50.0)
+
+            # Decay progress if nobody is there
+            if not teams_present:
+                altar["capture_progress"] = max(0.0, altar["capture_progress"] - 5.0 * delta)
+                if altar["capture_progress"] == 0:
+                    altar["owner"] = None
 
         if controller:
             self.weather_timer = 0.0

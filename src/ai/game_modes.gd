@@ -3215,6 +3215,14 @@ class WeatherChaosMode extends GameMode:
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_w = world.arena.width
+			if "height" in world.arena: arena_h = world.arena.height
+		var altars = [{"x": arena_w/2, "y": arena_h/2, "radius": 150.0, "capture_progress": 0.0, "owner": null}]
+		if has_method("set_meta"):
+			set_meta("altars", altars)
 		for b in balls:
 			if b.ball_type != "spectator":
 				b.team = b.ball_type
@@ -3248,6 +3256,71 @@ class WeatherChaosMode extends GameMode:
 			if is_alive and c_timer > 0:
 				controller = b
 				break
+
+		var altars = []
+		if has_meta("altars"):
+			altars = get_meta("altars")
+		for altar in altars:
+			var teams_present = {}
+			for b in balls:
+				var is_alive = false
+				if "alive" in b: is_alive = b.alive
+				elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+				if is_alive and b.ball_type != "spectator":
+					var dist_sq = (b.x - altar["x"]) * (b.x - altar["x"]) + (b.y - altar["y"]) * (b.y - altar["y"])
+					if dist_sq <= altar["radius"] * altar["radius"]:
+						var team = b.ball_type
+						if "team" in b: team = b.team
+						if not teams_present.has(team):
+							teams_present[team] = 0
+						teams_present[team] += 1
+
+			if teams_present.size() > 0:
+				var max_team = ""
+				var max_val = -1
+				for t in teams_present.keys():
+					if teams_present[t] > max_val:
+						max_val = teams_present[t]
+						max_team = t
+
+				var tie_count = 0
+				for t in teams_present.keys():
+					if teams_present[t] == max_val:
+						tie_count += 1
+
+				if tie_count == 1:
+					if altar["owner"] == max_team:
+						altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+					else:
+						altar["capture_progress"] -= 20.0 * delta
+						if altar["capture_progress"] <= 0:
+							altar["owner"] = max_team
+							altar["capture_progress"] = 0.0
+							weather_timer = 0.0
+							var pref = "clear"
+							if max_team in ["elementalist"]: pref = "thunderstorm"
+							elif max_team in ["druid", "healer", "swamp"]: pref = "rain"
+							elif max_team in ["rogue", "assassin", "stealth"]: pref = "fog"
+							elif max_team in ["mage", "conjurer"]: pref = "snow"
+							elif max_team in ["speed", "scout"]: pref = "wind"
+							elif max_team in ["tank", "brawler"]: pref = "heatwave"
+							elif max_team in ["swarm"]: pref = "sandstorm"
+							else: pref = "thunderstorm"
+
+							if weather != pref:
+								weather = pref
+								if world != null and world.has_method("add_event"):
+									world.add_event("weather_change", {"weather": weather})
+								if weather == "wind":
+									if has_method("set_meta"):
+										set_meta("wind_dx", (randf() * 100.0) - 50.0)
+										set_meta("wind_dy", (randf() * 100.0) - 50.0)
+			else:
+				altar["capture_progress"] = max(0.0, altar["capture_progress"] - 5.0 * delta)
+				if altar["capture_progress"] == 0:
+					altar["owner"] = null
+		if has_method("set_meta"):
+			set_meta("altars", altars)
 
 		if controller != null:
 			weather_timer = 0.0
