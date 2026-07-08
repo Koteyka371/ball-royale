@@ -1,6 +1,6 @@
 import unittest
 import math
-from ai.action import Action
+from src.ai.action import Action
 
 class MockWorld:
     def __init__(self):
