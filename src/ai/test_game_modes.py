@@ -354,6 +354,10 @@ def test_domination_mode():
     # Test relocation
     old_x, old_y = pt.x, pt.y
     mode.relocate_timer = 20.0
+    # Move balls completely away so they don't immediately start capturing
+    balls[0].x, balls[0].y = 0, 0
+    balls[1].x, balls[1].y = 0, 0
+
     mode.tick(world, balls, delta=1.0)
     # They should have relocated
     assert pt.x != old_x or pt.y != old_y
