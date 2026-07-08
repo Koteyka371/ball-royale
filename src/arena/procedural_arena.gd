@@ -1077,6 +1077,26 @@ func update_zone(current_tick: int, delta: float) -> void:
                             h.set_meta("active", false)
                         if "active" in h:
                             h.active = false
+                        var num_debris = randi_range(3, 5)
+                        for i in range(num_debris):
+                            var debris_id = 9000 + hazards.size() + new_craters.size() + (randi() % 1000)
+                            var hx = float(h.x if "x" in h else (h.get_meta("x") if h.has_meta("x") else 0.0))
+                            var hy = float(h.y if "y" in h else (h.get_meta("y") if h.has_meta("y") else 0.0))
+                            var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 400.0))
+                            var offset_x = randf_range(-hr, hr)
+                            var offset_y = randf_range(-hr, hr)
+                            var debris_rad = randf_range(30.0, 60.0)
+                            var debris = load("res://src/arena/procedural_arena.gd").Hazard.new(debris_id, hx + offset_x, hy + offset_y, debris_rad, "orbital_debris", 0.0)
+                            debris.set_meta("duration", 10.0)
+                            new_craters.append(debris)
+            elif "kind" in h and h.kind == "orbital_debris":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
             elif "kind" in h and h.kind == "fire_zone":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta

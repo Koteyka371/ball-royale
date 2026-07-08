@@ -173,7 +173,13 @@ class Action:
                 for h in self.world.arena.hazards:
                     if getattr(h, 'is_disabled_by_flare', False):
                         continue
-                    if getattr(h, "kind", "") == "energy_barrier":
+                    if getattr(h, "kind", "") == "orbital_debris":
+                        hx = h.x
+                        hy = h.y
+                        hr = getattr(h, "radius", 40.0)
+                        if math.hypot(t_x - hx, t_y - hy) <= hr:
+                            return
+                    elif getattr(h, "kind", "") == "energy_barrier":
                         h_team = getattr(h, "team", "")
                         if h_team != a_team:
                             hx = h.x
@@ -3997,6 +4003,13 @@ class Action:
                                         self.ball.alive = False
                             continue
 
+                        elif hazard.kind == "orbital_debris":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist = math.hypot(dx, dy)
+                            if dist < getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 40.0):
+                                self.ball.speed = getattr(self.ball, 'base_speed', 150.0) * 0.2
+                            continue
                         elif hazard.kind == "orbital_strike_active":
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):

@@ -239,7 +239,13 @@ func _attempt_damage(attacker, target) -> void:
 
 		for h in world.arena.hazards:
 			var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
-			if h_kind == "energy_barrier":
+			if h_kind == "orbital_debris":
+				var hx = float(h.x if "x" in h else h.get_meta("x"))
+				var hy = float(h.y if "y" in h else h.get_meta("y"))
+				var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 40.0))
+				if sqrt((t_x2 - hx)*(t_x2 - hx) + (t_y2 - hy)*(t_y2 - hy)) <= hr:
+					return
+			elif h_kind == "energy_barrier":
 				var h_team = h.get_meta("team") if h.has_meta("team") else ""
 				if h_team != a_team:
 					var hx = float(h.x if "x" in h else h.get_meta("x"))
@@ -7134,6 +7140,25 @@ func execute(strategy: String, delta: float):
                                 self.ball.hp -= hd
                                 if self.ball.hp <= 0:
                                     self.ball.alive = false
+                        continue
+                    elif hazard.kind == "orbital_debris":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball: b_rad = self.ball.radius
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"): b_rad = self.ball.get_meta("radius")
+                        var h_rad = 40.0
+                        if "radius" in hazard: h_rad = hazard.radius
+                        elif hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+                        if dist < b_rad + h_rad:
+                            var bs = 150.0
+                            if "base_speed" in self.ball: bs = self.ball.base_speed
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): bs = self.ball.get_meta("base_speed")
+                            if "speed" in self.ball:
+                                self.ball.speed = bs * 0.2
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("speed", bs * 0.2)
                         continue
                     elif hazard.kind == "orbital_strike_active":
                         var hd = hazard.damage * delta
