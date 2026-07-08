@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Rebound Wall",
+  "description": "A new dynamic arena wall that absorbs projectile attacks from players, temporarily reducing its opacity, and then violently explodes back releasing all absorbed kinetic energy as a shockwave after a set damage threshold is reached."
+}

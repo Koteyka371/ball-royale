@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A new hazard type that, when triggered, instantly swaps the positions of the closest two entities near the hazard, briefly disorienting them and dealing minor disruption damage."
+}
