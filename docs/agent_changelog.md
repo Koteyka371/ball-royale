@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-661] Meteor Swarm Event — *2026-07-08 13:25:47 UTC*
+
+A random game event where meteors crash into the arena, creating temporary hazardous craters and leaving behind rare materials when destroyed.
+
+---
+
 ## [idea-699] Reverse Tug of War Mode — *2026-07-08 13:25:42 UTC*
 
 Like Tug of War, but the payload moves AWAY from the team that has more players nearby. Teams must zone out enemies and avoid getting too close to the payload to push it towards the enemy goal.
