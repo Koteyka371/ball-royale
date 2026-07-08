@@ -3677,8 +3677,9 @@ class Action:
                                                 if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
                                                 radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
                                                 pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, bdist)) * 80.0 * delta * lifetime_mult
-                                                b.x += bnx * pull_strength
-                                                b.y += bny * pull_strength
+                                                if getattr(b, "anchor_booster_timer", 0.0) <= 0:
+                                                    b.x += bnx * pull_strength
+                                                    b.y += bny * pull_strength
                                                 if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") and hasattr(b, "vx") and hasattr(b, "vy"):
                                                     # Slingshot velocity addition
                                                     import math as _math
@@ -3687,8 +3688,9 @@ class Action:
                                                         slingshot_strength = pull_strength * 2.0 / delta
                                                         dot = bnx * b.vx + bny * b.vy
                                                         if dot > -speed * 0.8: # If not flying directly into it
-                                                            b.vx += bnx * slingshot_strength * delta
-                                                            b.vy += bny * slingshot_strength * delta
+                                                            if getattr(b, "anchor_booster_timer", 0.0) <= 0:
+                                                                b.vx += bnx * slingshot_strength * delta
+                                                                b.vy += bny * slingshot_strength * delta
                                                 if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                                     # Wind physics: tangential orbital pull
                                                     tx, ty = -bny, bnx
@@ -3749,8 +3751,9 @@ class Action:
                                 if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
                                 radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
                                 pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 50.0 * delta * lifetime_mult
-                                self.ball.x += nx * pull_strength
-                                self.ball.y += ny * pull_strength
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    self.ball.x += nx * pull_strength
+                                    self.ball.y += ny * pull_strength
                                 if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                     # Slingshot velocity addition
                                     import math as _math
@@ -3759,8 +3762,9 @@ class Action:
                                         slingshot_strength = pull_strength * 2.0 / delta
                                         dot = nx * self.ball.vx + ny * self.ball.vy
                                         if dot > -speed * 0.8: # If not flying directly into it
-                                            self.ball.vx += nx * slingshot_strength * delta
-                                            self.ball.vy += ny * slingshot_strength * delta
+                                            if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                                self.ball.vx += nx * slingshot_strength * delta
+                                                self.ball.vy += ny * slingshot_strength * delta
                                 if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                     # Wind physics: tangential orbital pull
                                     tx, ty = -ny, nx
@@ -9959,8 +9963,9 @@ class Action:
                             if dist > 0.0001:
                                 nx, ny = (hazard.x - self.ball.x) / dist, (hazard.y - self.ball.y) / dist
                                 pull_strength = 100.0 * delta
-                                self.ball.x += nx * pull_strength
-                                self.ball.y += ny * pull_strength
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    self.ball.x += nx * pull_strength
+                                    self.ball.y += ny * pull_strength
                                 if hasattr(self.ball, "hp"):
                                     # Continuous damage when triggered
                                     dmg = getattr(hazard, "damage", 10.0) * delta

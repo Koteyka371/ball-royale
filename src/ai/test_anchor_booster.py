@@ -72,8 +72,7 @@ def test_anchor_booster():
 
     print("Test passed!")
 
-if __name__ == "__main__":
-    test_anchor_booster()
+
 
 def test_anchor_booster_immunity_vortex():
     ball = MockBall()
@@ -127,7 +126,67 @@ def test_anchor_booster_immunity_quicksand():
 
     assert not getattr(ball, "is_in_quicksand", False)
 
+
+
+def test_anchor_booster_immunity_black_hole():
+    ball = MockBall()
+    ball.anchor_booster_timer = 5.0
+    ball.x = 100.0
+    ball.y = 100.0
+    ball.vx = 0.0
+    ball.vy = 0.0
+    ball.speed = 0.0
+    ball.base_speed = 0.0
+
+    black_hole = type('MockHazard', (), {'id': 99, 'x': 500, 'y': 500, 'kind': 'massive_black_hole', 'radius': 500, 'damage': 0.0, 'duration': 9999, 'lifetime': 1.0})()
+
+    world = MockWorld()
+    world.balls = [ball]
+    world.entities = [ball]
+    world.arena.hazards = [black_hole]
+    world.arena.wind_dx = 0.0
+    world.arena.wind_dy = 0.0
+    world.tick = 1
+
+    action = Action(ball, world)
+
+    # We stub standard methods to prevent other logic from interfering
+    action._idle = lambda d: None
+    action._chase = lambda d: None
+    action._attack = lambda d: None
+    action._process_physics = lambda delta: None
+
+    action.execute("idle", 0.1)
+
+    assert ball.x == 100.0
+    assert ball.y == 100.0
+
 if __name__ == "__main__":
+    test_anchor_booster()
     test_anchor_booster_immunity_vortex()
     test_anchor_booster_immunity_quicksand()
-    print("All additional tests passed!")
+    test_anchor_booster_immunity_black_hole()
+    test_anchor_booster_immunity_pull_trap()
+    print("All tests passed!")
+
+def test_anchor_booster_immunity_pull_trap():
+    ball = MockBall()
+    ball.anchor_booster_timer = 5.0
+    ball.x = 100.0
+    ball.y = 100.0
+
+    pull_trap = type('MockHazard', (), {'id': 99, 'x': 105, 'y': 100, 'kind': 'pull_trap', 'radius': 50, 'damage': 0.0, 'owner_id': 999})()
+
+    world = MockWorld()
+    world.balls = [ball]
+    world.entities = [ball]
+    world.arena.hazards = [pull_trap]
+
+    action = Action(ball, world)
+    action._idle = lambda d: None
+    action._chase = lambda d: None
+    action._attack = lambda d: None
+    action._process_physics = lambda delta: None
+    action.execute("idle", 0.1)
+
+    assert ball.x == 100.0

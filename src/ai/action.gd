@@ -6360,8 +6360,13 @@ func execute(strategy: String, delta: float):
                             if dist > min_dist:
                                 min_dist = dist
                             var pull_strength = (hazard.radius * 2.0 / min_dist) * 50.0 * delta
-                            self.ball.x += nx * pull_strength
-                            self.ball.y += ny * pull_strength
+                            var anchor_timer = 0.0
+                            if "anchor_booster_timer" in self.ball: anchor_timer = float(self.ball.anchor_booster_timer)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer = float(self.ball.get_meta("anchor_booster_timer"))
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): anchor_timer = float(self.ball["anchor_booster_timer"])
+                            if anchor_timer <= 0:
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
                 elif hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
                     var current_tick = 0
                     if "tick" in self.world:
@@ -6471,8 +6476,13 @@ func execute(strategy: String, delta: float):
                                     elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm": is_ts = true
                                     var radius_mult = 1.5 if is_ts and hazard.kind == "tornado" else 1.0
                                     var bpull_strength = (hazard.radius * 2.0 * radius_mult / bmin_dist) * 50.0 * delta * lifetime_mult
-                                    b.x += bnx * bpull_strength
-                                    b.y += bny * bpull_strength
+                                    var b_anchor_timer = 0.0
+                                    if "anchor_booster_timer" in b: b_anchor_timer = float(b.anchor_booster_timer)
+                                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("anchor_booster_timer"): b_anchor_timer = float(b.get_meta("anchor_booster_timer"))
+                                    elif typeof(b) == TYPE_DICTIONARY and b.has("anchor_booster_timer"): b_anchor_timer = float(b["anchor_booster_timer"])
+                                    if b_anchor_timer <= 0:
+                                        b.x += bnx * bpull_strength
+                                        b.y += bny * bpull_strength
                                     if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"]:
                                         var has_vx = false
                                         if "vx" in b: has_vx = true
@@ -6494,10 +6504,15 @@ func execute(strategy: String, delta: float):
                                                 var slingshot_strength = bpull_strength * 2.0 / delta
                                                 var dot = bnx * b_vx + bny * b_vy
                                                 if dot > -speed * 0.8:
-                                                    if "vx" in b: b.vx += bnx * slingshot_strength * delta
-                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vx", b_vx + bnx * slingshot_strength * delta)
-                                                    if "vy" in b: b.vy += bny * slingshot_strength * delta
-                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vy", b_vy + bny * slingshot_strength * delta)
+                                                    var b_anchor_timer2 = 0.0
+                                                    if "anchor_booster_timer" in b: b_anchor_timer2 = float(b.anchor_booster_timer)
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("anchor_booster_timer"): b_anchor_timer2 = float(b.get_meta("anchor_booster_timer"))
+                                                    elif typeof(b) == TYPE_DICTIONARY and b.has("anchor_booster_timer"): b_anchor_timer2 = float(b["anchor_booster_timer"])
+                                                    if b_anchor_timer2 <= 0:
+                                                        if "vx" in b: b.vx += bnx * slingshot_strength * delta
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vx", b_vx + bnx * slingshot_strength * delta)
+                                                        if "vy" in b: b.vy += bny * slingshot_strength * delta
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vy", b_vy + bny * slingshot_strength * delta)
                                     if hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
                                         var tx = -bny
                                         var ty = bnx
@@ -6527,8 +6542,13 @@ func execute(strategy: String, delta: float):
                             elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm": is_ts = true
                             var radius_mult = 1.5 if is_ts and hazard.kind == "tornado" else 1.0
                             var pull_strength = (hazard.radius * 2.0 * radius_mult / min_dist) * 50.0 * delta * lifetime_mult
-                            self.ball.x += nx * pull_strength
-                            self.ball.y += ny * pull_strength
+                            var anchor_timer = 0.0
+                            if "anchor_booster_timer" in self.ball: anchor_timer = float(self.ball.anchor_booster_timer)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer = float(self.ball.get_meta("anchor_booster_timer"))
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): anchor_timer = float(self.ball["anchor_booster_timer"])
+                            if anchor_timer <= 0:
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
                             if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"]:
                                 var has_vx = false
                                 if "vx" in self.ball: has_vx = true
@@ -6550,10 +6570,15 @@ func execute(strategy: String, delta: float):
                                         var slingshot_strength = pull_strength * 2.0 / delta
                                         var dot = nx * b_vx + ny * b_vy
                                         if dot > -speed * 0.8:
-                                            if "vx" in self.ball: self.ball.vx += nx * slingshot_strength * delta
-                                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vx", b_vx + nx * slingshot_strength * delta)
-                                            if "vy" in self.ball: self.ball.vy += ny * slingshot_strength * delta
-                                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vy", b_vy + ny * slingshot_strength * delta)
+                                            var anchor_timer2 = 0.0
+                                            if "anchor_booster_timer" in self.ball: anchor_timer2 = float(self.ball.anchor_booster_timer)
+                                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer2 = float(self.ball.get_meta("anchor_booster_timer"))
+                                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): anchor_timer2 = float(self.ball["anchor_booster_timer"])
+                                            if anchor_timer2 <= 0:
+                                                if "vx" in self.ball: self.ball.vx += nx * slingshot_strength * delta
+                                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vx", b_vx + nx * slingshot_strength * delta)
+                                                if "vy" in self.ball: self.ball.vy += ny * slingshot_strength * delta
+                                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vy", b_vy + ny * slingshot_strength * delta)
                             if hazard.kind in ["tornado", "local_tornado"]:
                                 var tx = -ny
                                 var ty = nx
@@ -7610,8 +7635,13 @@ func execute(strategy: String, delta: float):
                         var pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 200.0 * delta
                         var nx = dx / md
                         var ny = dy / md
-                        self.ball.x += nx * pull_strength
-                        self.ball.y += ny * pull_strength
+                        var anchor_timer = 0.0
+                        if "anchor_booster_timer" in self.ball: anchor_timer = float(self.ball.anchor_booster_timer)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer = float(self.ball.get_meta("anchor_booster_timer"))
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): anchor_timer = float(self.ball["anchor_booster_timer"])
+                        if anchor_timer <= 0:
+                            self.ball.x += nx * pull_strength
+                            self.ball.y += ny * pull_strength
                         var tx = -ny
                         var ty = nx
                         var orbital_strength = pull_strength * 1.5
