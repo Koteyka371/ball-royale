@@ -1,4 +1,0 @@
-{
-    "title": "Quantum Entanglement Mine",
-    "description": "A deployable mine that, when triggered, links the health of the triggering enemy with the deploying player for 10 seconds. Any damage taken by either party during this period is shared equally."
-}

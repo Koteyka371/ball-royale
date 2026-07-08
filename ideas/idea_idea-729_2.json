@@ -1,4 +1,0 @@
-{
-  "title": "Interactive Chat Bounties",
-  "description": "Spectators can use '!bounty <ball_id>' to place a bounty on a specific ball. If that ball is killed within a certain timeframe, the killer gets a massive score boost and a unique visual effect."
-}

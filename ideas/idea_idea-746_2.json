@@ -1,4 +1,0 @@
-{
-  "title": "Time Loop Mode",
-  "description": "Every 30 seconds, the game state (positions, health) rewinds to where it was 5 seconds ago, forcing players to rethink their strategies or re-engage."
-}

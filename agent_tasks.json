@@ -21079,6 +21079,57 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1230",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Debris Repulsor Mod",
+      "description": "A new hazard modifier that causes orbital debris to push balls away continuously rather than just slowing them down, making the crater area extremely slippery and harder to navigate for any balls trying to find cover.",
+      "allowed_paths": [
+        "src/ai/debris_repulsor_mod.py",
+        "src/ai/debris_repulsor_mod.gd",
+        "tests/test_debris_repulsor_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1231",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Teleport Mutator",
+      "description": "A new mutator for balls where their dash skill is replaced by a short-range instantaneous teleport, which can pass through thin walls but has a longer cooldown.",
+      "allowed_paths": [
+        "src/ai/quantum_teleport_mutator.py",
+        "src/ai/quantum_teleport_mutator.gd",
+        "tests/test_quantum_teleport_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1232",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blackout Traps",
+      "description": "Introduce a new trap that, when triggered, heavily reduces the vision range of the ball for a few seconds, forcing them into a disadvantageous position in team fights.",
+      "allowed_paths": [
+        "src/arena/blackout_traps.py",
+        "src/arena/blackout_traps.gd",
+        "tests/test_blackout_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
