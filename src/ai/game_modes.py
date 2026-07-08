@@ -9191,6 +9191,118 @@ class ReverseTugOfWarMode(GameMode):
 
 
 
+
+class HexGridRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Hex Grid Royale"
+        self.description = "The arena is made of hexagonal tiles that independently glow red and fall away, reducing the safe map area into fragmented islands."
+        self.tiles = []
+        self.hex_size = 60.0
+        self.center_x = 500.0
+        self.center_y = 500.0
+        self.grid_radius = 6
+        self.time_between_drops = 1.5
+        self.warning_duration = 2.0
+        self.drop_timer = 0.0
+        self.damage_per_second = 50.0
+        self.tick_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.tiles = []
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.center_x = arena_width / 2.0
+        self.center_y = arena_height / 2.0
+
+        import math
+        tile_id = 0
+        for q in range(-self.grid_radius, self.grid_radius + 1):
+            r1 = max(-self.grid_radius, -q - self.grid_radius)
+            r2 = min(self.grid_radius, -q + self.grid_radius)
+            for r in range(r1, r2 + 1):
+                x = self.hex_size * math.sqrt(3) * (q + r/2.0)
+                y = self.hex_size * 3.0/2.0 * r
+
+                self.tiles.append({
+                    "id": tile_id,
+                    "q": q,
+                    "r": r,
+                    "x": self.center_x + x,
+                    "y": self.center_y + y,
+                    "state": "safe",  # safe, warning, fallen
+                    "timer": 0.0
+                })
+                tile_id += 1
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.tick_timer += delta
+        self.drop_timer += delta
+
+        import math
+        import random
+
+        # Check warnings and drop tiles
+        for t in self.tiles:
+            if t["state"] == "warning":
+                t["timer"] += delta
+                if t["timer"] >= self.warning_duration:
+                    t["state"] = "fallen"
+                    world.add_event("hex_tile_fallen", {"x": t["x"], "y": t["y"]})
+
+        # Start new warnings
+        if self.drop_timer >= self.time_between_drops:
+            self.drop_timer = 0.0
+            safe_tiles = [t for t in self.tiles if t["state"] == "safe"]
+            if safe_tiles:
+                t = random.choice(safe_tiles)
+                t["state"] = "warning"
+                t["timer"] = 0.0
+
+                # Drop an extra tile to speed up occasionally
+                if random.random() < 0.3 and len(safe_tiles) > 1:
+                    t2 = random.choice([tt for tt in safe_tiles if tt != t])
+                    t2["state"] = "warning"
+                    t2["timer"] = 0.0
+
+        # Ensure there are some hex warning indicators
+        # Spawning generic warning hazards for tiles in warning state
+        # Usually hazards have id, x, y, radius, kind, damage
+        for t in self.tiles:
+            if t["state"] == "warning":
+                # Only spawn the hazard once when entering the warning state
+                if t["timer"] == 0.0 or getattr(t, "_warn_spawned", False) == False:
+                    t["_warn_spawned"] = True
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            world.arena.hazards.append(Hazard(
+                                id=f"hex_warn_{t['id']}",
+                                x=t["x"], y=t["y"], radius=self.hex_size, kind="hex_warning", damage=0.0
+                            ))
+                        except ImportError:
+                            pass
+
+        valid_balls = [b for b in balls if getattr(b, "alive", False)]
+        for b in valid_balls:
+            closest_tile = None
+            min_dist = float('inf')
+            for t in self.tiles:
+                dx = b.x - t["x"]
+                dy = b.y - t["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist < min_dist:
+                    min_dist = dist
+                    closest_tile = t
+
+            in_tile = min_dist < self.hex_size * 0.9
+
+            if not in_tile or not closest_tile or closest_tile["state"] == "fallen":
+                if hasattr(b, "take_damage"):
+                    b.take_damage(self.damage_per_second * delta)
+
 GAME_MODES = {
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
@@ -9265,6 +9377,7 @@ GAME_MODES = {
     "shrinking_danger_zone": ShrinkingDangerZoneMode(),
     "inverse_safe_zone": InverseSafeZoneMode(),
     "safe_zone": SafeZoneMode(),
+    "hex_grid_royale": HexGridRoyaleMode(),
     "minefield_safe_zone": MinefieldSafeZoneMode(),
     "dynamic_safe_zone": DynamicSafeZoneMode(),
     "moving_safe_zone": MovingSafeZoneMode(),

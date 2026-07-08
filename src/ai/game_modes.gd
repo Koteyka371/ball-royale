@@ -11856,6 +11856,142 @@ class ReverseTugOfWarMode extends GameMode:
 
 
 
+class HexGridRoyaleMode extends GameMode:
+	var tiles: Array = []
+	var hex_size: float = 60.0
+	var center_x: float = 500.0
+	var center_y: float = 500.0
+	var grid_radius: int = 6
+	var time_between_drops: float = 1.5
+	var warning_duration: float = 2.0
+	var drop_timer: float = 0.0
+	var damage_per_second: float = 50.0
+	var tick_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Hex Grid Royale"
+		description = "The arena is made of hexagonal tiles that independently glow red and fall away, reducing the safe map area into fragmented islands."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		tiles = []
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("width"): arena_width = float(world.arena.width)
+					if world.arena.has("height"): arena_height = float(world.arena.height)
+				else:
+					if "width" in world.arena: arena_width = float(world.arena.width)
+					if "height" in world.arena: arena_height = float(world.arena.height)
+		else:
+			if "arena" in world and world.arena:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("width"): arena_width = float(world.arena.width)
+					if world.arena.has("height"): arena_height = float(world.arena.height)
+				else:
+					if "width" in world.arena: arena_width = float(world.arena.width)
+					if "height" in world.arena: arena_height = float(world.arena.height)
+
+		center_x = arena_width / 2.0
+		center_y = arena_height / 2.0
+
+		var tile_id = 0
+		for q in range(-grid_radius, grid_radius + 1):
+			var r1 = max(-grid_radius, -q - grid_radius)
+			var r2 = min(grid_radius, -q + grid_radius)
+			for r in range(r1, r2 + 1):
+				var x = hex_size * sqrt(3) * (q + r/2.0)
+				var y = hex_size * 3.0/2.0 * r
+
+				tiles.append({
+					"id": tile_id,
+					"q": q,
+					"r": r,
+					"x": center_x + x,
+					"y": center_y + y,
+					"state": "safe",
+					"timer": 0.0
+				})
+				tile_id += 1
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		tick_timer += delta
+		drop_timer += delta
+
+		# Check warnings and drop tiles
+		for t in tiles:
+			if t.state == "warning":
+				if t.timer == 0.0 or not t.has("warn_spawned"):
+					t["warn_spawned"] = true
+					if typeof(world) == TYPE_DICTIONARY:
+						if world.has("add_event"):
+							world.add_event("hex_tile_warning", {"x": t.x, "y": t.y})
+					else:
+						if world.has_method("add_event"):
+							world.add_event("hex_tile_warning", {"x": t.x, "y": t.y})
+
+				t.timer += delta
+				if t.timer >= warning_duration:
+					t.state = "fallen"
+					if typeof(world) == TYPE_DICTIONARY:
+						if world.has("add_event"):
+							world.add_event("hex_tile_fallen", {"x": t.x, "y": t.y})
+					else:
+						if world.has_method("add_event"):
+							world.add_event("hex_tile_fallen", {"x": t.x, "y": t.y})
+
+		# Start new warnings
+		if drop_timer >= time_between_drops:
+			drop_timer = 0.0
+			var safe_tiles = []
+			for t in tiles:
+				if t.state == "safe":
+					safe_tiles.append(t)
+
+			if safe_tiles.size() > 0:
+				var t = safe_tiles[randi() % safe_tiles.size()]
+				t.state = "warning"
+				t.timer = 0.0
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if is_alive:
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				else:
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+
+				var closest_tile = null
+				var min_dist = 999999.0
+				for t in tiles:
+					var dx = bx - t.x
+					var dy = by - t.y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist < min_dist:
+						min_dist = dist
+						closest_tile = t
+
+				var in_tile = min_dist < hex_size * 0.9
+
+				if not in_tile or closest_tile == null or closest_tile.state == "fallen":
+					if typeof(b) == TYPE_DICTIONARY:
+						pass # Handled server-side
+					else:
+						if b.has_method("take_damage"):
+							b.take_damage(damage_per_second * delta)
+
 var GAME_MODES = {
 	"solar_flare": SolarFlareMode.new(),
 	"extreme_weather": ExtremeWeatherMode.new(),
@@ -11936,6 +12072,7 @@ var GAME_MODES = {
 	"shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
 	"inverse_safe_zone": InverseSafeZoneMode.new(),
 	"safe_zone": SafeZoneMode.new(),
+	"hex_grid_royale": HexGridRoyaleMode.new(),
 	"minefield_safe_zone": MinefieldSafeZoneMode.new(),
 	"dynamic_safe_zone": DynamicSafeZoneMode.new(),
 	"moving_safe_zone": MovingSafeZoneMode.new(),
