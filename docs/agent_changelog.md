@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-690] Weather Influences Tornadoes — *2026-07-08 14:19:19 UTC*
+
+In 'Thunderstorm' weather, tornadoes naturally move faster around the arena and have an increased tangential pull radius.
+
+---
+
 ## [idea-624] Dynamic Temperature System — *2026-07-08 14:11:12 UTC*
 
 Expand the weather logic to include a persistent 'temperature' variable for the arena, which determines how long ice slicks last or how quickly mud dries into solid ground. Characters with certain abilities (like fireball) could dynamically melt ice patches into puddles of water, creating interesting environmental interactions.

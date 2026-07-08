@@ -11887,7 +11887,7 @@
     },
     {
       "id": "idea-690",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Influences Tornadoes",
@@ -19967,6 +19967,40 @@
         "src/ai/reverse_magnet_zones.py",
         "src/ai/reverse_magnet_zones.gd",
         "tests/test_reverse_magnet_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1165",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Temperature-Dependent Powerups",
+      "description": "Create powerups that scale in effectiveness based on the arena temperature, such as a Heat Shield that blocks more damage in high-temperature environments.",
+      "allowed_paths": [
+        "src/ai/temperature_dependent_powerups.py",
+        "src/ai/temperature_dependent_powerups.gd",
+        "tests/test_temperature_dependent_powerups.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1166",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wind System",
+      "description": "Introduce global wind vectors that slightly alter ball movement trajectories and hazard positions (like poison gas or tornadoes).",
+      "allowed_paths": [
+        "src/ai/wind.py",
+        "src/ai/wind.gd",
+        "tests/test_wind.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
