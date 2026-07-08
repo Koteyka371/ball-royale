@@ -140,6 +140,9 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+        if getattr(target, "quantum_state_timer", 0.0) > 0:
+            return  # Dodge all incoming attacks
+
 
         # Intercept damage logic for shield_drone
         if getattr(target, 'ball_type', '') != 'shield_drone':
@@ -879,6 +882,9 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             hazards_to_remove = []
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, "quantum_state_timer", 0.0) > 0:
+                    continue  # Pass through hazards unscathed
+
                 if getattr(hazard, "kind", "") == "thrown_status_absorber":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
@@ -8308,6 +8314,13 @@ class Action:
                     target.quantum_entanglement_timer = 10.0
                     if hasattr(self, "_spawn_directed_particles"):
                         self._spawn_directed_particles(self.ball, target, "quantum_entanglement")
+            elif skill_name == "quantum_state":
+                stamina = getattr(self.ball, "stamina", 0.0)
+                if stamina >= 50.0:
+                    self.ball.stamina = stamina - 50.0
+                    self.ball.quantum_state_timer = 3.0
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+                    self._spawn_skill_particles("quantum_state")
             elif skill_name == "health_link":
                 allies = self._get_allies()
                 if allies:
@@ -10058,6 +10071,9 @@ class Action:
 
         if hasattr(self.ball, "infinite_stamina_timer") and self.ball.infinite_stamina_timer > 0:
             self.ball.infinite_stamina_timer -= delta
+
+        if hasattr(self.ball, "quantum_state_timer") and self.ball.quantum_state_timer > 0:
+            self.ball.quantum_state_timer -= delta
 
         if hasattr(self.ball, "link_booster_timer") and self.ball.link_booster_timer > 0:
             self.ball.link_booster_timer -= delta

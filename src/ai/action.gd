@@ -180,6 +180,13 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+    if target != null:
+        var is_quantum = false
+        if "quantum_state_timer" in target and target.quantum_state_timer > 0: is_quantum = true
+        elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("quantum_state_timer") and target.get_meta("quantum_state_timer") > 0: is_quantum = true
+        if is_quantum:
+            return # Dodge all incoming attacks
+
 
 	var target_b_type = ""
 	if "ball_type" in target: target_b_type = str(target.ball_type)
@@ -4542,6 +4549,12 @@ func execute(strategy: String, delta: float):
 
         if "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
+                var is_quantum = false
+                if "quantum_state_timer" in self.ball and self.ball.quantum_state_timer > 0: is_quantum = true
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_state_timer") and self.ball.get_meta("quantum_state_timer") > 0: is_quantum = true
+                if is_quantum:
+                    continue # Pass through hazards unscathed
+
                 if hazard.kind == "temporal_rift":
 			continue
                 if hazard.kind in ["explosive_barrel", "volatile_barrel"]:
@@ -6580,6 +6593,12 @@ func execute(strategy: String, delta: float):
 
         if ball_type != "spectator" and "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
+                var is_quantum = false
+                if "quantum_state_timer" in self.ball and self.ball.quantum_state_timer > 0: is_quantum = true
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_state_timer") and self.ball.get_meta("quantum_state_timer") > 0: is_quantum = true
+                if is_quantum:
+                    continue # Pass through hazards unscathed
+
                 var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
                 if dist < (self.ball.radius + hazard.radius):
                     if hazard.kind == "temporal_rift":
@@ -16457,6 +16476,14 @@ func _spawn_skill_particles(skill_name: String = ""):
             particles["color"] = "purple"
             particles["speed"] = 400.0
             particles["lifetime"] = 0.5
+        elif skill_name == "quantum_state":
+            particles.amount = int(30 * tier_multiplier)
+            particles.spread = 360.0
+            particles.initial_velocity_min = 30.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.initial_velocity_max = 60.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.color = Color(0.1, 0.8, 1.0, 0.6) # Cyan, slightly transparent
+            particles.lifetime = 0.6 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.explosiveness = 0.8
         elif skill_name == "chaos_link":
             var all_balls = []
             if "balls" in self.world:
@@ -16530,6 +16557,30 @@ func _spawn_skill_particles(skill_name: String = ""):
                         target["quantum_entanglement_timer"] = 10.0
                     if self.has_method("_spawn_directed_particles"):
                         self._spawn_directed_particles(self.ball, target, "quantum_entanglement")
+        elif skill_name == "quantum_state":
+            var current_stamina = 0.0
+            if "stamina" in self.ball: current_stamina = self.ball.stamina
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"): current_stamina = self.ball.get_meta("stamina")
+            if current_stamina >= 50.0:
+                if "stamina" in self.ball: self.ball.stamina = current_stamina - 50.0
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("stamina", current_stamina - 50.0)
+
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("quantum_state_timer", 3.0)
+                else:
+                    self.ball.quantum_state_timer = 3.0
+
+                if self.ball.has_method("set_meta"):
+                    var cd = 10.0
+                    if self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+                    self.ball.set_meta("skill_timer", cd)
+                else:
+                    var cd = 10.0
+                    if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+                    self.ball.skill_timer = cd
+
+                if self.has_method("_spawn_skill_particles"):
+                    self._spawn_skill_particles("quantum_state")
         elif skill_name == "health_link":
             var allies_hl = []
             if "balls" in self.world:
@@ -17674,6 +17725,20 @@ func _update_skill_timer(delta: float):
             self.ball.infinite_stamina_timer = inf_stam_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("infinite_stamina_timer", inf_stam_timer)
+
+    var qs_timer = 0.0
+    if "quantum_state_timer" in self.ball:
+        qs_timer = self.ball.quantum_state_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("quantum_state_timer"):
+        qs_timer = self.ball.get_meta("quantum_state_timer")
+
+    if qs_timer > 0:
+        qs_timer -= delta
+        if "quantum_state_timer" in self.ball:
+            self.ball.quantum_state_timer = qs_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("quantum_state_timer", qs_timer)
+
 
     var link_timer = 0.0
     if "link_booster_timer" in self.ball:
