@@ -24,6 +24,7 @@ func load_guilds():
                     data["guilds"][g_name]["hq"] = {
                         "statues": [],
                         "banners": [],
+            "cosmetics": [],
                         "training_arena_unlocked": false
                     }
                 if not data["guilds"][g_name].has("guild_xp"):
@@ -47,6 +48,7 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
 
     data["guilds"][guild_name] = {
         "members": [creator_id],
+        "level": 1,
         "resources": 0,
         "buffs": {
             "bonus_hp": 0,
@@ -63,6 +65,7 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
         "hq": {
             "statues": [],
             "banners": [],
+            "cosmetics": [],
             "training_arena_unlocked": false
         }
     }
@@ -96,10 +99,30 @@ func donate_resources(guild_name: String, amount: int) -> bool:
         return true
     return false
 
-func unlock_buff(guild_name: String, buff_name: String, cost: int) -> bool:
+
+func upgrade_guild_level(guild_name: String, cost: int) -> bool:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
-        if guild["resources"] >= cost and guild["buffs"].has(buff_name):
+        var points = 0
+        if guild.has("gvg_points"):
+            points = guild["gvg_points"]
+
+        if points >= cost:
+            guild["gvg_points"] = points - cost
+            if not guild.has("level"):
+                guild["level"] = 1
+            guild["level"] += 1
+            save_guilds()
+            return true
+    return false
+
+func unlock_buff(guild_name: String, buff_name: String, cost: int, required_level: int = 1) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        var current_level = 1
+        if guild.has("level"):
+            current_level = guild["level"]
+        if guild["resources"] >= cost and guild["buffs"].has(buff_name) and current_level >= required_level:
             guild["resources"] -= cost
             guild["buffs"][buff_name] += 1
             save_guilds()
@@ -300,12 +323,16 @@ func claim_boss_reward(guild_name: String, player_id: String, week_id: String, r
                 return true
     return false
 
-func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: String, cost: int) -> bool:
+func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: String, cost: int, required_level: int = 1) -> bool:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
-        if guild["resources"] >= cost:
+        var current_level = 1
+        if guild.has("level"):
+            current_level = guild["level"]
+        if guild["resources"] >= cost and current_level >= required_level:
             if not guild.has("hq"):
-                guild["hq"] = {"statues": [], "banners": [], "training_arena_unlocked": false}
+                guild["hq"] = {"statues": [], "banners": [],
+            "cosmetics": [], "training_arena_unlocked": false}
 
             if feature_type == "training_arena":
                 if not guild["hq"]["training_arena_unlocked"]:
@@ -313,7 +340,7 @@ func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: Str
                     guild["hq"]["training_arena_unlocked"] = true
                     save_guilds()
                     return true
-            elif feature_type in ["statues", "banners"]:
+            elif feature_type in ["statues", "banners", "cosmetics"]:
                 if not guild["hq"].has(feature_type):
                     guild["hq"][feature_type] = []
                 if not guild["hq"][feature_type].has(feature_id):
@@ -326,7 +353,11 @@ func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: Str
 func get_hq_status(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
+        var hq = {"statues": [], "banners": [], "cosmetics": [], "training_arena_unlocked": false}
         if guild.has("hq"):
-            return guild["hq"]
-        return {"statues": [], "banners": [], "training_arena_unlocked": false}
+            if guild["hq"].has("statues"): hq["statues"] = guild["hq"]["statues"]
+            if guild["hq"].has("banners"): hq["banners"] = guild["hq"]["banners"]
+            if guild["hq"].has("cosmetics"): hq["cosmetics"] = guild["hq"]["cosmetics"]
+            if guild["hq"].has("training_arena_unlocked"): hq["training_arena_unlocked"] = guild["hq"]["training_arena_unlocked"]
+        return hq
     return {}

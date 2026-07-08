@@ -211,3 +211,33 @@ def test_guild_perk_progression(temp_guild_file):
     gm.record_gvg_match("PerkGuild", "OtherGuild", "PerkGuild") # +50 XP, total 100
     assert gm.unlock_perk("PerkGuild", "hp_10_percent", 100, required_perk="hp_5_percent") == True
     assert "hp_10_percent" in gm.get_guild_perks("PerkGuild")
+
+def test_guild_level_up(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("LevelGuild", "player1")
+    gm.create_guild("OtherGuild", "player2")
+
+    # Needs points
+    assert gm.upgrade_guild_level("LevelGuild", 10) == False
+
+    gm.record_gvg_match("LevelGuild", "OtherGuild", "LevelGuild") # +10 points
+
+    # Try unlock buff requiring level 2
+    gm.donate_resources("LevelGuild", 100)
+    assert gm.unlock_buff("LevelGuild", "bonus_hp", 50, required_level=2) == False
+
+    # Try unlock HQ cosmetic requiring level 2
+    assert gm.unlock_hq_feature("LevelGuild", "cosmetics", "gold_trim", 50, required_level=2) == False
+
+    # Upgrade level
+    assert gm.upgrade_guild_level("LevelGuild", 10) == True
+
+    guild = gm.get_guild("LevelGuild")
+    assert guild["level"] == 2
+
+    # Now unlock should work
+    assert gm.unlock_buff("LevelGuild", "bonus_hp", 50, required_level=2) == True
+    assert gm.unlock_hq_feature("LevelGuild", "cosmetics", "gold_trim", 50, required_level=2) == True
+
+    hq_status = gm.get_hq_status("LevelGuild")
+    assert "gold_trim" in hq_status["cosmetics"]
