@@ -539,26 +539,26 @@ class ProceduralArena:
             import math
             # Process hazard-to-hazard combos
 
+            # Update platforms
+            if hasattr(self, "platforms"):
+                for p in self.platforms:
+                    p.x += p.vx * delta
+                    p.y += p.vy * delta
 
-        # Update platforms
-        if hasattr(self, "platforms"):
-            for p in self.platforms:
-                p.x += p.vx * delta
-                p.y += p.vy * delta
+                    if p.x < p.width / 2:
+                        p.x = p.width / 2
+                        p.vx *= -1
+                    elif p.x > self.width - p.width / 2:
+                        p.x = self.width - p.width / 2
+                        p.vx *= -1
 
-                if p.x < p.width / 2:
-                    p.x = p.width / 2
-                    p.vx *= -1
-                elif p.x > self.width - p.width / 2:
-                    p.x = self.width - p.width / 2
-                    p.vx *= -1
+                    if p.y < p.height / 2:
+                        p.y = p.height / 2
+                        p.vy *= -1
+                    elif p.y > self.height - p.height / 2:
+                        p.y = self.height - p.height / 2
+                        p.vy *= -1
 
-                if p.y < p.height / 2:
-                    p.y = p.height / 2
-                    p.vy *= -1
-                elif p.y > self.height - p.height / 2:
-                    p.y = self.height - p.height / 2
-                    p.vy *= -1
 
             if hasattr(self, "hazards"):
                 for hazard in self.hazards:
