@@ -153,7 +153,7 @@ class BasicArena:
                 if current_tick % 120 == 0:
                     import random
                     if hasattr(self, "_trigger_event"):
-                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "anomaly_zone", "massive_black_hole_event"]), current_tick)
+                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "emp_strike", "anomaly_zone", "massive_black_hole_event"]), current_tick)
                     else:
                         event_type = random.choice(["meteor_shower", "gravity_shift", "anomaly_zone", "massive_black_hole_event"])
                         if event_type == "meteor_shower":

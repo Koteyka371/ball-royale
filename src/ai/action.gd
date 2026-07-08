@@ -2996,7 +2996,7 @@ func execute(strategy: String, delta: float):
 				var my_rad = 10.0
 				if "radius" in self.ball:
 					my_rad = float(self.ball.radius)
-				var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
 				if dist <= hazard.get("radius", 0.0) + my_rad:
 					var drain_rate = hazard.get("damage", 5.0)
 					var old_max = self.ball.max_hp if "max_hp" in self.ball else 100.0
@@ -3034,7 +3034,7 @@ func execute(strategy: String, delta: float):
 				var my_rad = 10.0
 				if "radius" in self.ball:
 					my_rad = float(self.ball.radius)
-				var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
 				var h_rad = 50.0
 				if "radius" in hazard: h_rad = float(hazard.radius)
 				if dist <= h_rad + my_rad:
@@ -3083,7 +3083,7 @@ func execute(strategy: String, delta: float):
 				var my_rad = 10.0
 				if "radius" in self.ball:
 					my_rad = float(self.ball.radius)
-				var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
 				if dist <= hazard.radius + my_rad:
 					var time_scale = 0.5
 					if "time_scale" in hazard:
@@ -4410,7 +4410,7 @@ func execute(strategy: String, delta: float):
             if "safe_zone_radius" in self.world.arena:
                 r = self.world.arena.safe_zone_radius
 
-            var dist = sqrt((self.ball.x - cx) * (self.ball.x - cx) + (self.ball.y - cy) * (self.ball.y - cy))
+            var s_dist = sqrt((self.ball.x - cx) * (self.ball.x - cx) + (self.ball.y - cy) * (self.ball.y - cy))
             var ball_r = 10.0
             if "radius" in self.ball: ball_r = self.ball.radius
             elif self.ball.has_method("get_radius"): ball_r = self.ball.get_radius()
@@ -6426,7 +6426,7 @@ func execute(strategy: String, delta: float):
 
         if ball_type != "spectator" and "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
-                var dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+                var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
                 if dist < (self.ball.radius + hazard.radius):
                     if hazard.kind == "temporal_rift":
 			continue
@@ -7160,6 +7160,32 @@ func execute(strategy: String, delta: float):
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("speed", bs * 0.2)
                         continue
+                    elif hazard.kind == "emp_strike_active":
+                        var shielded = false
+                        for dome in arena.hazards:
+                            if dome.kind == "orbital_shield_dome":
+                                var s_dist = sqrt((self.ball.x - dome.x)*(self.ball.x - dome.x) + (self.ball.y - dome.y)*(self.ball.y - dome.y))
+                                var s_r = 300.0
+                                if "radius" in dome:
+                                    s_r = dome.radius
+                                if s_dist <= s_r:
+                                    shielded = true
+                                    break
+                        if not shielded:
+                            if "stamina" in self.ball:
+                                self.ball.stamina = 0.0
+                            elif self.ball.has_method("set_meta") and self.ball.has_meta("stamina"):
+                                self.ball.set_meta("stamina", 0.0)
+
+                            var cd = 5.0
+                            if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("skill_cooldown"): cd = self.ball.get_meta("skill_cooldown")
+
+                            if "skill_timer" in self.ball:
+                                self.ball.skill_timer = cd
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("skill_timer", cd)
+                        continue
                     elif hazard.kind == "orbital_strike_active":
                         var hd = hazard.damage * delta
                         var is_qs = false
@@ -7173,11 +7199,11 @@ func execute(strategy: String, delta: float):
                         var shielded = false
                         for dome in arena.hazards:
                             if dome.kind == "orbital_shield_dome":
-                                var dist = sqrt((self.ball.x - dome.x)*(self.ball.x - dome.x) + (self.ball.y - dome.y)*(self.ball.y - dome.y))
-                                var r = 300.0
+                                var s_dist = sqrt((self.ball.x - dome.x)*(self.ball.x - dome.x) + (self.ball.y - dome.y)*(self.ball.y - dome.y))
+                                var s_r = 300.0
                                 if "radius" in dome:
-                                    r = dome.radius
-                                if dist <= r:
+                                    s_r = dome.radius
+                                if s_dist <= s_r:
                                     shielded = true
                                     break
 
@@ -7235,11 +7261,11 @@ func execute(strategy: String, delta: float):
                         var shielded = false
                         for dome in arena.hazards:
                             if dome.kind == "orbital_shield_dome":
-                                var dist = sqrt((self.ball.x - dome.x)*(self.ball.x - dome.x) + (self.ball.y - dome.y)*(self.ball.y - dome.y))
-                                var r = 300.0
+                                var s_dist = sqrt((self.ball.x - dome.x)*(self.ball.x - dome.x) + (self.ball.y - dome.y)*(self.ball.y - dome.y))
+                                var s_r = 300.0
                                 if "radius" in dome:
-                                    r = dome.radius
-                                if dist <= r:
+                                    s_r = dome.radius
+                                if s_dist <= s_r:
                                     shielded = true
                                     break
 

@@ -795,6 +795,13 @@ class ProceduralArena:
                             h.kind = "orbital_strike_active"
                             h.duration = 0.5
                             h.damage = 1000.0
+                elif getattr(h, "kind", "") == "emp_strike":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.kind = "emp_strike_active"
+                            h.duration = 5.0
+                            h.damage = 0.0
                 elif getattr(h, "kind", "") == "lightning_strike":
                     if hasattr(h, "duration"):
                         h.duration -= delta
@@ -884,6 +891,11 @@ class ProceduralArena:
                                 debris = Hazard(id=debris_id, x=h.x + offset_x, y=h.y + offset_y, radius=debris_rad, kind="orbital_debris", damage=0.0)
                                 debris.duration = 10.0
                                 new_craters.append(debris)
+                elif getattr(h, "kind", "") == "emp_strike_active":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
                 elif getattr(h, "kind", "") == "orbital_debris":
                     if hasattr(h, "duration"):
                         h.duration -= delta
@@ -1112,6 +1124,12 @@ class ProceduralArena:
         if event_type == "orbital_strike":
             h_id = 5000 + len(self.hazards)
             strike = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=400.0, kind="orbital_strike", damage=0.0)
+            strike.target_radius = 400.0
+            setattr(strike, "duration", 3.0)
+            self.hazards.append(strike)
+        elif event_type == "emp_strike":
+            h_id = 5000 + len(self.hazards)
+            strike = Hazard(id=h_id, x=self.width/2, y=self.height/2, radius=400.0, kind="emp_strike", damage=0.0)
             strike.target_radius = 400.0
             setattr(strike, "duration", 3.0)
             self.hazards.append(strike)

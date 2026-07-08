@@ -1066,7 +1066,7 @@ class BattleRoyaleShrinkingZoneArena(ProceduralArena):
                 if current_tick % 120 == 0:
                     import random
                     if hasattr(self, "_trigger_event"):
-                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "anomaly_zone"]), current_tick)
+                        self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "emp_strike", "anomaly_zone"]), current_tick)
                     else:
                         event_type = random.choice(["meteor_shower", "gravity_shift", "anomaly_zone"])
                         if event_type == "meteor_shower":

@@ -4016,6 +4016,22 @@ class Action:
                             if dist < getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 40.0):
                                 self.ball.speed = getattr(self.ball, 'base_speed', 150.0) * 0.2
                             continue
+                        elif hazard.kind == "emp_strike_active":
+                            # Check if under an orbital shield dome
+                            shielded = False
+                            for dome in self.world.arena.hazards:
+                                if dome.kind == "orbital_shield_dome":
+                                    if _math.hypot(self.ball.x - dome.x, self.ball.y - dome.y) <= getattr(dome, "radius", 300.0):
+                                        shielded = True
+                                        break
+                            if not shielded:
+                                if hasattr(self.ball, "stamina"):
+                                    self.ball.stamina = 0.0
+                                if hasattr(self.ball, "skill_cooldown"):
+                                    self.ball.skill_timer = self.ball.skill_cooldown
+                                else:
+                                    self.ball.skill_timer = 5.0
+                            continue
                         elif hazard.kind == "orbital_strike_active":
                             hazard_damage = hazard.damage * delta
                             if getattr(self.ball, "is_in_quicksand", False):
