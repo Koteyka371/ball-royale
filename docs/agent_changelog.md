@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-702] Dynamic Platforms — *2026-07-08 18:07:26 UTC*
+
+Introduce platforms in the procedural arena that slowly move. Balls standing on them are carried across the map, allowing for strategic repositioning.
+
+---
+
 ## [idea-723] Chain Reaction Decoys — *2026-07-08 18:07:21 UTC*
 
 If a decoy explosion hits another allied decoy, it causes a chain reaction, exploding the second decoy with increased radius and damage.
