@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-728] Echo Clones Mode — *2026-07-08 19:40:50 UTC*
+
+Every few seconds, a trail of static clones is left behind every ball. If an enemy touches a clone, it detonates and deals damage.
+
+---
+
 ## [idea-638] Clone Mine Trap — *2026-07-08 19:30:57 UTC*
 
 A hazard that triggers when a ball gets near, immediately spawning hostile clone enemies of that ball that target the original ball.
