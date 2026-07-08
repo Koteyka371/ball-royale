@@ -1,0 +1,4 @@
+{
+  "title": "Slingshot Hazard",
+  "description": "Add a hazard type that functions as an elastic band. When a ball hits it, the ball gets attached and starts pulling back. Once tension is built up, the band snaps, launching the ball across the arena with greatly increased speed and causing damage upon colliding with another ball or obstacle."
+}

@@ -1,0 +1,4 @@
+{
+  "title": "Mimic Ball Class",
+  "description": "Introduce a new 'Mimic' ball class that copies the primary skill of the last enemy that hit it (or the last enemy it hit). It would constantly cycle its active capabilities, making it unpredictable, while allowing players to turn their opponents' own special attacks against them."
+}

@@ -128,6 +128,104 @@ class GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+
+	if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+		if "hazards" in world.arena:
+			var hazards_to_remove = []
+			for h in world.arena.hazards:
+				var kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					kind = str(h.get("kind", ""))
+				else:
+					kind = str(h.kind) if "kind" in h else ""
+
+				if kind == "slime_trail":
+					var h_duration = 0.0
+					var h_x = 0.0
+					var h_y = 0.0
+					var h_r = 0.0
+					var h_owner = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						h_duration = float(h.get("duration", 0.0))
+						h_duration -= delta
+						h["duration"] = h_duration
+						if h_duration <= 0:
+							hazards_to_remove.append(h)
+						h_x = float(h.get("x", 0.0))
+						h_y = float(h.get("y", 0.0))
+						h_r = float(h.get("radius", 20.0))
+						h_owner = str(h.get("owner_team", ""))
+					else:
+						if "duration" in h:
+							h_duration = float(h.duration)
+							h_duration -= delta
+							h.duration = h_duration
+							if h_duration <= 0:
+								hazards_to_remove.append(h)
+						elif h.has_method("get_meta"):
+							h_duration = float(h.get_meta("duration", 0.0))
+							h_duration -= delta
+							h.set_meta("duration", h_duration)
+							if h_duration <= 0:
+								hazards_to_remove.append(h)
+
+						h_x = float(h.x) if "x" in h else 0.0
+						h_y = float(h.y) if "y" in h else 0.0
+						h_r = float(h.radius) if "radius" in h else 20.0
+						if "owner_team" in h:
+							h_owner = str(h.owner_team)
+						elif h.has_method("get_meta") and h.has_meta("owner_team"):
+							h_owner = str(h.get_meta("owner_team"))
+
+					for b in balls:
+						var b_alive = false
+						var b_team = ""
+						var b_x = 0.0
+						var b_y = 0.0
+						var b_r = 0.0
+						var b_base_speed = 2.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b_alive = bool(b.get("alive", true))
+							b_team = str(b.get("team", b.get("ball_type", "")))
+							b_x = float(b.get("x", 0.0))
+							b_y = float(b.get("y", 0.0))
+							b_r = float(b.get("radius", 10.0))
+							b_base_speed = float(b.get("base_speed", 2.0))
+						else:
+							b_alive = bool(b.alive) if "alive" in b else true
+							b_team = str(b.team) if "team" in b else (str(b.ball_type) if "ball_type" in b else "")
+							b_x = float(b.x) if "x" in b else 0.0
+							b_y = float(b.y) if "y" in b else 0.0
+							b_r = float(b.radius) if "radius" in b else 10.0
+							b_base_speed = float(b.base_speed) if "base_speed" in b else 2.0
+
+						if b_alive and b_team != h_owner:
+							var dist_sq = (b_x - h_x) * (b_x - h_x) + (b_y - h_y) * (b_y - h_y)
+							var r_sq = (b_r + h_r) * (b_r + h_r)
+							if dist_sq < r_sq:
+								if typeof(b) == TYPE_DICTIONARY:
+									b["speed_debuff_timer"] = 1.0
+									b["speed_debuff_multiplier"] = 0.5
+									if "speed" in b:
+										b["speed"] = b_base_speed * 0.5
+								else:
+									if "speed_debuff_timer" in b:
+										b.speed_debuff_timer = 1.0
+									elif b.has_method("set_meta"):
+										b.set_meta("speed_debuff_timer", 1.0)
+
+									if "speed_debuff_multiplier" in b:
+										b.speed_debuff_multiplier = 0.5
+									elif b.has_method("set_meta"):
+										b.set_meta("speed_debuff_multiplier", 0.5)
+
+									if "speed" in b:
+										b.speed = b_base_speed * 0.5
+
+			for h in hazards_to_remove:
+				var idx = world.arena.hazards.find(h)
+				if idx != -1:
+					world.arena.hazards.remove_at(idx)
 		var match_time = 0.0
 		if typeof(world) == TYPE_DICTIONARY:
 			match_time = world.get("match_time", 0.0) + delta
@@ -835,7 +933,7 @@ class BattleRoyaleMode extends GameMode:
 					if "height" in world.arena: arena_height = world.arena.height
 
 				rng.randomize()
-				var booster_kinds = ["damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "half_reflect_shield_booster"]
+				var booster_kinds = ["slime_trail_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "half_reflect_shield_booster"]
 				var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
 				var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
 				var b_x = rng.randf_range(100, arena_width - 100)
@@ -14540,7 +14638,7 @@ class ItemMorphMode extends GameMode:
 	var morph_timer: float = 0.0
 	var morph_interval: float = 10.0
 	var rng = RandomNumberGenerator.new()
-	var booster_kinds = ["damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "half_reflect_shield_booster"]
+	var booster_kinds = ["slime_trail_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "half_reflect_shield_booster"]
 
 	func _init().():
 		name = "Item Morph"

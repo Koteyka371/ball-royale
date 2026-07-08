@@ -91,6 +91,29 @@ class GameMode:
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "slime_trail":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            hazards_to_remove.append(h)
+
+                    for b in balls:
+                        if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(h, "owner_team", ""):
+                            dist_sq = (b.x - h.x)**2 + (b.y - h.y)**2
+                            r_sq = (getattr(b, "radius", 10.0) + h.radius)**2
+                            if dist_sq < r_sq:
+                                b.speed_debuff_timer = 1.0
+                                b.speed_debuff_multiplier = 0.5
+                                if hasattr(b, "speed") and hasattr(b, "base_speed"):
+                                    b.speed = b.base_speed * 0.5
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
 
@@ -690,7 +713,7 @@ class BattleRoyaleMode(GameMode):
                         self.ball_type = "booster"
                         self.active = True
 
-                booster_kinds = ["damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "half_reflect_shield_booster"]
+                booster_kinds = ["slime_trail_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "half_reflect_shield_booster"]
                 chosen_kind = rnd.choice(booster_kinds)
                 b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
                 b_x = rnd.uniform(100, arena_width - 100)
@@ -11922,7 +11945,7 @@ class ItemMorphMode(GameMode):
         super().__init__()
         self.morph_timer = 0.0
         self.morph_interval = 10.0
-        self.booster_kinds = ["damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "half_reflect_shield_booster"]
+        self.booster_kinds = ["slime_trail_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "cursed_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "half_reflect_shield_booster"]
         import random
         self.random = random
 

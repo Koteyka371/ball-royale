@@ -764,6 +764,42 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "slime_trail_booster_timer", 0.0) > 0:
+            self.ball.slime_trail_booster_timer -= delta
+            if self.ball.slime_trail_booster_timer <= 0:
+                self.ball.slime_trail_booster_timer = 0.0
+
+            # Spawn slime trail hazard only if moving
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                last_x = getattr(self.ball, "slime_last_x", self.ball.x)
+                last_y = getattr(self.ball, "slime_last_y", self.ball.y)
+
+                dist_moved_sq = (self.ball.x - last_x)**2 + (self.ball.y - last_y)**2
+
+                if dist_moved_sq > 400.0: # Only spawn every 20 pixels
+                    self.ball.slime_last_x = self.ball.x
+                    self.ball.slime_last_y = self.ball.y
+
+                    try:
+                        from arena.procedural_arena import Hazard
+
+                        hazard = Hazard(
+                            id=int(__import__('random').random() * 1000000),
+                            x=self.ball.x,
+                            y=self.ball.y,
+                            radius=20.0,
+                            kind="slime_trail",
+                            damage=0.0
+                        )
+                        hazard.owner_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                        hazard.owner_id = getattr(self.ball, "id", None)
+                        hazard.duration = 5.0
+                        self.world.arena.hazards.append(hazard)
+                    except ImportError:
+                        pass
+
+
+        # Process hazards
 
         # Platforms
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "platforms"):
@@ -7206,6 +7242,8 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "magnet_booster":
                     self.ball.pull_booster_timer = 5.0
+                elif getattr(nearest, "kind", None) == "slime_trail_booster":
+                    self.ball.slime_trail_booster_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
