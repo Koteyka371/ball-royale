@@ -12773,7 +12773,7 @@
     },
     {
       "id": "idea-742",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-Specific Boss Monsters",
@@ -20972,6 +20972,23 @@
         "src/arena/gravity_wells.py",
         "src/arena/gravity_wells.gd",
         "tests/test_gravity_wells.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1224",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Loop Mode",
+      "description": "Every 30 seconds, the game state (positions, health) rewinds to where it was 5 seconds ago, forcing players to rethink their strategies or re-engage.",
+      "allowed_paths": [
+        "src/ai/time_loop.py",
+        "src/ai/time_loop.gd",
+        "tests/test_time_loop.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
