@@ -11992,6 +11992,171 @@ class HexGridRoyaleMode extends GameMode:
 						if b.has_method("take_damage"):
 							b.take_damage(damage_per_second * delta)
 
+
+class TickingPayloadMode extends GameMode:
+	var payload = null
+	var red_goal_x: float = 100.0
+	var blue_goal_x: float = 900.0
+	var timer: float = 120.0
+	var explosion_radius: float = 200.0
+	var winner_team = null
+
+	func _init() -> void:
+		name = "Ticking Payload"
+		description = "A single payload starts in the center with a ticking timer. If it reaches an enemy goal before time runs out, it explodes and deals massive damage to the enemy team's core. If the timer runs out while it's in the middle, it explodes and kills players nearby."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_DICTIONARY:
+			if not "dead_balls" in world:
+				world["dead_balls"] = []
+		else:
+			if not world.has_meta("dead_balls"):
+				world.set_meta("dead_balls", [])
+
+		var valid_balls = []
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type", "") != "spectator":
+					valid_balls.append(b)
+			else:
+				if b.get("ball_type") != "spectator":
+					valid_balls.append(b)
+
+		var mid = valid_balls.size() / 2
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if typeof(b) == TYPE_DICTIONARY:
+				b["team"] = "Red" if i < mid else "Blue"
+			else:
+				b.set("team", "Red" if i < mid else "Blue")
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if "arena" in world and world.arena:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+		else:
+			if world.get("arena"):
+				var arena = world.get("arena")
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena_width = arena.get("width", 1000.0)
+					arena_height = arena.get("height", 1000.0)
+				else:
+					arena_width = arena.get("width")
+					arena_height = arena.get("height")
+
+		red_goal_x = 100.0
+		blue_goal_x = arena_width - 100.0
+
+		payload = {
+			"ball_type": "payload",
+			"is_payload": true,
+			"is_invulnerable": true,
+			"speed": 0.0,
+			"base_speed": 0.0,
+			"damage": 0.0,
+			"base_damage": 0.0,
+			"max_hp": 10000.0,
+			"hp": 10000.0,
+			"x": arena_width / 2.0,
+			"y": arena_height / 2.0,
+			"alive": true,
+			"team": "Neutral",
+			"radius": 20.0
+		}
+		balls.append(payload)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if winner_team != null:
+			return
+
+		if timer > 0:
+			timer -= delta
+		else:
+			if payload != null and typeof(payload) == TYPE_DICTIONARY and payload.get("alive", false):
+				payload["alive"] = false
+				payload["hp"] = 0
+				for b in balls:
+					if b != payload:
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						if b_alive and b_type != "spectator":
+							var b_x = b.get("x", 0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var b_y = b.get("y", 0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var p_x = payload.get("x", 0)
+							var p_y = payload.get("y", 0)
+							var dx = b_x - p_x
+							var dy = b_y - p_y
+							var dist = sqrt(dx * dx + dy * dy)
+							if dist <= explosion_radius:
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = 0
+									b["alive"] = false
+								else:
+									b.set("hp", 0)
+									b.set("alive", false)
+								if typeof(world) == TYPE_DICTIONARY and "dead_balls" in world:
+									world["dead_balls"].append(b)
+								elif typeof(world) == TYPE_OBJECT and world.has_meta("dead_balls"):
+									var d = world.get_meta("dead_balls")
+									d.append(b)
+									world.set_meta("dead_balls", d)
+				winner_team = "Draw"
+			return
+
+		if payload != null and typeof(payload) == TYPE_DICTIONARY and payload.get("alive", false):
+			var red_count = 0
+			var blue_count = 0
+
+			for b in balls:
+				if b == payload:
+					continue
+				var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+				var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+				if not b_alive or b_type == "spectator":
+					continue
+
+				var b_x = b.get("x", 0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+				var b_y = b.get("y", 0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+				var p_x = payload.get("x", 0)
+				var p_y = payload.get("y", 0)
+
+				var dx = b_x - p_x
+				var dy = b_y - p_y
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist < 150.0:
+					var team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+					if team == "Red":
+						red_count += 1
+					elif team == "Blue":
+						blue_count += 1
+
+			var move_speed = 50.0
+
+			if red_count > blue_count:
+				var speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
+				payload["x"] += move_speed * delta * (red_count - blue_count) * speed_multiplier
+			elif blue_count > red_count:
+				var speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
+				payload["x"] -= move_speed * delta * (blue_count - red_count) * speed_multiplier
+
+			var px = payload.get("x", 0.0)
+			if px <= red_goal_x:
+				payload["alive"] = false
+				payload["hp"] = 0
+				winner_team = "Blue"
+			elif px >= blue_goal_x:
+				payload["alive"] = false
+				payload["hp"] = 0
+				winner_team = "Red"
+
+	func check_winner(world, balls: Array):
+		return winner_team
+
+
 var GAME_MODES = {
 	"solar_flare": SolarFlareMode.new(),
 	"extreme_weather": ExtremeWeatherMode.new(),
@@ -12026,6 +12191,7 @@ var GAME_MODES = {
 	"blackout": BlackoutMode.new(),
 	"dual_payload": DualPayloadMode.new(),
 	"tug_of_war": TugOfWarMode.new(),
+	"ticking_payload": TickingPayloadMode.new(),
 	"reverse_tug_of_war": ReverseTugOfWarMode.new(),
 	"reverse_gravity_event": ReverseGravityEventMode.new(),
 	"escort": EscortMode.new(),
