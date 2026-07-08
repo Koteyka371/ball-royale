@@ -7,19 +7,94 @@ class CrowdSystem:
         self.excitement_level = 0.0
         self.max_excitement = 100.0
         self.team_alive_counts = {}
+        self.active_vote = None
+        self.votes = {}
+        self.vote_timer = 0
+        self.vote_cooldown = 0
         self.last_kill_tick = 0
         self.kill_streak = {}
-        self.active_vote = None
-        self.vote_timer = 0
-        self.votes = {}
-        self.vote_cooldown = 0
         self.ball_positions = {}
         self.camping_time = {}
         self.underdog_team = None
         self.match_started = False
         self.match_ended = False
+        self.external_commands = []
+
+    def queue_external_command(self, user: str, command: str):
+        if not hasattr(self, 'external_commands'):
+            self.external_commands = []
+        self.external_commands.append((user, command))
+
+    def process_external_command(self, user: str, command: str, balls: 'List[Any]'):
+        parts = command.strip().split()
+        if not parts:
+            return
+
+        cmd = parts[0].lower()
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+
+        if cmd == "!spawn" and len(parts) >= 2:
+            hazard_kind = parts[1]
+            target = None
+            if len(parts) >= 3:
+                try:
+                    tid = int(parts[2])
+                    target = next((b for b in alive_balls if getattr(b, "id", -1) == tid), None)
+                except ValueError:
+                    pass
+            if not target and alive_balls:
+                target = random.choice(alive_balls)
+
+            if target and hasattr(self.world, 'add_event'):
+                self.world.add_event("spawn_hazard", {
+                    "x": getattr(target, "x", 0),
+                    "y": getattr(target, "y", 0),
+                    "kind": hazard_kind
+                })
+                self.world.add_event("crowd_throw", {"message": f"Viewer {user} spawned a {hazard_kind}!"})
+                self.excitement_level += 5.0
+
+        elif cmd == "!drop" and len(parts) >= 2:
+            booster_kind = parts[1]
+            target = None
+            if len(parts) >= 3:
+                try:
+                    tid = int(parts[2])
+                    target = next((b for b in alive_balls if getattr(b, "id", -1) == tid), None)
+                except ValueError:
+                    pass
+            if not target and alive_balls:
+                target = random.choice(alive_balls)
+
+            if target and hasattr(self.world, 'add_event'):
+                self.world.add_event("spawn_booster", {
+                    "x": getattr(target, "x", 0),
+                    "y": getattr(target, "y", 0),
+                    "kind": booster_kind,
+                    "value": 30.0
+                })
+                self.world.add_event("crowd_throw", {"message": f"Viewer {user} dropped a {booster_kind} booster!"})
+                self.excitement_level += 5.0
+
+        elif cmd == "!vote" and len(parts) >= 2:
+            option = parts[1]
+            if getattr(self, 'active_vote', None) and getattr(self, 'votes', None) is not None:
+                if option in self.votes:
+                    self.votes[option] += 1
+                else:
+                    self.votes[option] = 1
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": f"Viewer {user} voted for {option}!"})
+
+    def _process_external_commands(self, balls: 'List[Any]'):
+        if not hasattr(self, 'external_commands'):
+            self.external_commands = []
+        while self.external_commands:
+            user, command = self.external_commands.pop(0)
+            self.process_external_command(user, command, balls)
 
     def tick(self, balls: List[Any], kill_log: List[Dict[str, Any]], tick: int):
+        self._process_external_commands(balls)
         self._check_bets_and_winner(balls, tick)
         self._update_excitement(tick)
         self._check_events(balls, kill_log, tick)

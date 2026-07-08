@@ -58,3 +58,59 @@ def test_multikill_booster():
     booster_events = [e for e in world.events if e[0] == "spawn_booster"]
     assert len(booster_events) > 0
     assert booster_events[-1][1]["kind"] == "speed"
+
+
+def test_external_command_spawn():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    ball = MockBall(1, "red", "tank")
+    ball.x = 100.0
+    ball.y = 100.0
+    balls = [ball]
+
+    system.queue_external_command("TwitchUser1", "!spawn lava_pit 1")
+    system.tick(balls, [], 1)
+
+    events = [e[0] for e in world.events]
+    assert "spawn_hazard" in events
+    hazard_events = [e for e in world.events if e[0] == "spawn_hazard"]
+    assert len(hazard_events) > 0
+    assert hazard_events[-1][1]["kind"] == "lava_pit"
+    assert hazard_events[-1][1]["x"] == 100.0
+
+def test_external_command_drop():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    ball = MockBall(2, "blue", "speedster")
+    ball.x = 200.0
+    ball.y = 200.0
+    balls = [ball]
+
+    system.queue_external_command("TwitchUser2", "!drop shield 2")
+    system.tick(balls, [], 1)
+
+    events = [e[0] for e in world.events]
+    assert "spawn_booster" in events
+    booster_events = [e for e in world.events if e[0] == "spawn_booster"]
+    assert len(booster_events) > 0
+    assert booster_events[-1][1]["kind"] == "shield"
+    assert booster_events[-1][1]["x"] == 200.0
+
+def test_external_command_vote():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    balls = []
+
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava", "spike"]}
+    system.votes = {"lava": 0, "spike": 0}
+    system.vote_timer = 100
+
+    import random
+    old_random = random.random
+    random.random = lambda: 1.0
+    system.queue_external_command("TwitchUser3", "!vote lava")
+    system.tick(balls, [], 1)
+    random.random = old_random
+
+    assert system.votes["lava"] == 1
+    assert system.votes["spike"] == 0
