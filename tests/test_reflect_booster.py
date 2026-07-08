@@ -1,5 +1,5 @@
 import pytest
-from action import Action
+from ai.action import Action
 
 class MockWorld:
     def __init__(self):
