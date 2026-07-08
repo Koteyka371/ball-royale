@@ -6891,6 +6891,106 @@ class UnstablePortalsEventMode(GameMode):
 
 
 
+class ChainLightningStormMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chain Lightning Storm"
+        self.description = "A massive electrical storm periodically targets players. When struck, balls release chain lightning that damages and repels nearby entities. Keep your distance!"
+        self.event_timer = 0.0
+        self.event_active = False
+        self.strikes = []
+        self.weather = "thunderstorm"
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 15.0:
+            if random.random() < 0.6:
+                self.event_active = True
+                self.event_timer = 0.0
+                self.strikes = []
+
+                # Target random balls for a strike
+                num_strikes = min(len(balls), random.randint(2, 4))
+                targets = random.sample(balls, num_strikes) if balls else []
+
+                for target in targets:
+                    delay = random.uniform(1.0, 2.5)
+                    self.strikes.append({
+                        "id": f"chain_strike_{random.randint(10000, 99999)}",
+                        "x": target.x,
+                        "y": target.y,
+                        "radius": 50.0,
+                        "timer": delay,
+                        "state": "warning"
+                    })
+
+                if hasattr(world, "add_event"):
+                    world.add_event("chain_lightning_warning", {"message": "CHAIN LIGHTNING STORM IMMINENT! SPREAD OUT!"})
+
+        if self.event_active:
+            if len(self.strikes) == 0:
+                self.event_active = False
+                self.event_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("chain_lightning_ended", {"message": "The storm has passed."})
+
+            active_strikes = []
+            for strike in self.strikes:
+                strike["timer"] -= delta
+                if strike["state"] == "warning":
+                    if strike["timer"] <= 0:
+                        strike["state"] = "active"
+                        strike["timer"] = 0.2 # Active flash duration
+
+                        # Apply effects
+                        for b in balls:
+                            if not getattr(b, "alive", True): continue
+                            dx = b.x - strike["x"]
+                            dy = b.y - strike["y"]
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist < strike["radius"]:
+                                # Direct hit
+                                if hasattr(world, "_deal_damage"):
+                                    class DummyAttacker:
+                                        id = "storm"
+                                        sponsor = ""
+                                        damage = 30.0
+                                    world._deal_damage(DummyAttacker(), b, damage=30.0)
+                                elif hasattr(b, "take_damage"):
+                                    b.take_damage(30.0)
+                                elif hasattr(b, "hp"):
+                                    b.hp -= 30.0
+
+                                # Set chain lightning timer to trigger the native mechanic
+                                b.chain_lightning_timer = getattr(b, "chain_lightning_timer", 0.0) + 5.0
+
+                                # Repulse away from the center
+                                if dist > 0.001:
+                                    repulse_force = 200.0 * (1.0 - dist / strike["radius"])
+                                    b.x += (dx/dist) * repulse_force * delta
+                                    b.y += (dy/dist) * repulse_force * delta
+                        active_strikes.append(strike)
+                    else:
+                        active_strikes.append(strike)
+                elif strike["state"] == "active":
+                    if strike["timer"] > 0:
+                        active_strikes.append(strike)
+
+            self.strikes = active_strikes
+
+            # Filter hazards in world to draw warnings
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") not in ["chain_lightning_warning", "chain_lightning_active"]]
+                from arena.procedural_arena import Hazard
+                for s in self.strikes:
+                    kind = "chain_lightning_warning" if s["state"] == "warning" else "chain_lightning_active"
+                    world.arena.hazards.append(Hazard(id=s["id"], x=s["x"], y=s["y"], radius=s["radius"], kind=kind, damage=0.0))
+
 class LightningStrikeEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -9850,6 +9950,7 @@ GAME_MODES = {
     "reverse_event": ReverseEventMode(),
     "unstable_portals_event": UnstablePortalsEventMode(),
     "minefield_event": MinefieldEventMode(),
+    "chain_lightning_storm": ChainLightningStormMode(),
     "meteor_crash_event": MeteorCrashEventMode(),
     "lightning_strike_event": LightningStrikeEventMode(),
     "weather_chaos": WeatherChaosMode(),
