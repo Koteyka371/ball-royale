@@ -140,6 +140,14 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+        import random
+        if getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower() == 'alchemist' and random.random() < 0.25:
+            # 25% chance to apply a weak stacking poison effect
+            target.poison_timer = getattr(target, 'poison_timer', 0.0) + 2.0
+            # A weak poison, base damage is handled in game loop, but let's just make it tick damage or something
+            target.dot_duration = getattr(target, 'dot_duration', 0.0) + 2.0
+            target.dot_damage_per_tick = getattr(target, 'dot_damage_per_tick', 0.0) + 2.0
+
 
         # Intercept damage logic for shield_drone
         if getattr(target, 'ball_type', '') != 'shield_drone':
@@ -764,6 +772,21 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        import math
+        # Reset alchemist speed buff at the start of tick
+        if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'alchemist':
+            self.ball.speed_multiplier = 1.0
+            # Check for poison_cloud or poison_nova
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for hazard in self.world.arena.hazards:
+                    if getattr(hazard, 'kind', '') in ['poison_cloud', 'poison_nova']:
+                        dx = self.ball.x - getattr(hazard, 'x', 0.0)
+                        dy = self.ball.y - getattr(hazard, 'y', 0.0)
+                        dist = math.hypot(dx, dy)
+                        if dist <= getattr(hazard, 'radius', 0.0):
+                            self.ball.speed_multiplier = 1.3
+                            break
+
 
         # Platforms
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "platforms"):
@@ -4130,10 +4153,14 @@ class Action:
                             dist = math.hypot(dx, dy)
                             nova_thickness = 40.0
                             if hazard.radius - nova_thickness <= dist <= hazard.radius + nova_thickness:
-                                # Apply severe DOT
-                                self.ball.poison_timer = getattr(self.ball, "poison_timer", 0.0) + 2.0
-                                # Also apply some direct damage
-                                hazard_damage = hazard.damage * delta
+                                if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'alchemist':
+                                    pass # Alchemists are immune to poison nova damage
+                                else:
+                                    # Apply severe DOT
+                                    self.ball.poison_timer = getattr(self.ball, "poison_timer", 0.0) + 2.0
+                                    # Also apply some direct damage
+                                    hazard_damage = hazard.damage * delta
+
                                 if getattr(self.ball, "is_in_quicksand", False):
                                     hazard_damage *= 2.0
                                 if hasattr(self.ball, "take_damage"):
@@ -4318,12 +4345,16 @@ class Action:
                                             self.ball.x += (dx/dist) * 100.0 * delta
                                             self.ball.y += (dy/dist) * 100.0 * delta
                         elif hazard.kind == "poison_cloud":
-                            self.ball.dot_duration = 3.0
-                            self.ball.dot_damage_per_tick = hazard.damage
-                            # Immediate application
-                            hazard_damage = hazard.damage * delta
-                            if getattr(self.ball, "is_in_quicksand", False):
-                                hazard_damage *= 2.0
+                            if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'alchemist':
+                                pass # Alchemists are immune to poison cloud damage
+                            else:
+                                self.ball.dot_duration = 3.0
+                                self.ball.dot_damage_per_tick = hazard.damage
+                                # Immediate application
+                                hazard_damage = hazard.damage * delta
+                                if getattr(self.ball, "is_in_quicksand", False):
+                                    hazard_damage *= 2.0
+
                         elif hazard.kind == "hidden_mine":
                             # Detonate on proximity, disable AI abilities and attacks for 5s
                             dx = hazard.x - self.ball.x

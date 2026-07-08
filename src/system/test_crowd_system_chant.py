@@ -1,5 +1,5 @@
 import pytest
-from src.system.crowd_system import CrowdSystem
+from system.crowd_system import CrowdSystem
 
 class MockWorld:
     def __init__(self):

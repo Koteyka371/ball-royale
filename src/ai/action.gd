@@ -180,6 +180,25 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+	var attacker_type = attacker.get("ball_type")
+	if attacker_type == null and "BALL_TYPE" in attacker: attacker_type = attacker.BALL_TYPE
+	if attacker_type != null and str(attacker_type).to_lower() == "alchemist":
+		if randf() < 0.25:
+			if target.has_method("set_meta"):
+				var pt = target.get_meta("poison_timer") if target.has_meta("poison_timer") else 0.0
+				target.set_meta("poison_timer", pt + 2.0)
+				var dd = target.get_meta("dot_duration") if target.has_meta("dot_duration") else 0.0
+				target.set_meta("dot_duration", dd + 2.0)
+				var dp = target.get_meta("dot_damage_per_tick") if target.has_meta("dot_damage_per_tick") else 0.0
+				target.set_meta("dot_damage_per_tick", dp + 2.0)
+			elif typeof(target) == TYPE_DICTIONARY:
+				var pt = target.get("poison_timer", 0.0)
+				target["poison_timer"] = pt + 2.0
+				var dd = target.get("dot_duration", 0.0)
+				target["dot_duration"] = dd + 2.0
+				var dp = target.get("dot_damage_per_tick", 0.0)
+				target["dot_damage_per_tick"] = dp + 2.0
+
 
 	var target_b_type = ""
 	if "ball_type" in target: target_b_type = str(target.ball_type)
@@ -1217,6 +1236,20 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var b_type = self.ball.get("ball_type")
+	if b_type == null and "BALL_TYPE" in self.ball: b_type = self.ball.BALL_TYPE
+	if b_type != null and str(b_type).to_lower() == "alchemist":
+		self.ball.speed_multiplier = 1.0
+		if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+			for hazard in self.world.arena.hazards:
+				if hazard.get("kind") in ["poison_cloud", "poison_nova"]:
+					var hx = hazard.get("x", 0.0)
+					var hy = hazard.get("y", 0.0)
+					var dist = sqrt(pow(self.ball.x - hx, 2) + pow(self.ball.y - hy, 2))
+					if dist <= hazard.get("radius", 0.0):
+						self.ball.speed_multiplier = 1.3
+						break
+
 
     # Platforms
     if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "platforms" in self.world.arena:
