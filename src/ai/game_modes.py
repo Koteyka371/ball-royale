@@ -747,7 +747,7 @@ class BattleRoyaleMode(GameMode):
 
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse", "meteor_shower"]
                 rnd = getattr(self, "random", __import__("random"))
                 old_weather = self.weather
                 self.weather = rnd.choice(weathers)
@@ -794,6 +794,97 @@ class BattleRoyaleMode(GameMode):
                         pass
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
+
+            if self.weather == "meteor_shower":
+                if not hasattr(self, "meteor_spawn_timer"):
+                    self.meteor_spawn_timer = 0.0
+                    self.active_meteors = getattr(self, "active_meteors", [])
+                    self.craters = getattr(self, "craters", [])
+
+                self.meteor_spawn_timer += delta
+                import random
+
+                if self.meteor_spawn_timer >= 1.5:
+                    self.meteor_spawn_timer = 0.0
+                    arena_width = getattr(world.arena, "width", 1000)
+                    arena_height = getattr(world.arena, "height", 1000)
+                    x = random.uniform(50, arena_width - 50)
+                    y = random.uniform(50, arena_height - 50)
+
+                    self.active_meteors.append({
+                        "id": f"meteor_{random.randint(10000, 99999)}",
+                        "x": x,
+                        "y": y,
+                        "delay": 2.0,
+                        "radius": 30.0
+                    })
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "meteor_warning", "x": x, "y": y, "radius": 30.0})
+
+            # update meteors and craters
+            if hasattr(self, "active_meteors"):
+                still_active = []
+                for m in self.active_meteors:
+                    m["delay"] -= delta
+                    if m["delay"] <= 0:
+                        self.craters.append({
+                            "id": f"crater_{__import__('random').randint(10000, 99999)}",
+                            "x": m["x"],
+                            "y": m["y"],
+                            "radius": m["radius"] * 1.5,
+                            "duration": 15.0
+                        })
+                        import math
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - m["x"], b.y - m["y"]) <= m["radius"]:
+                                    if hasattr(b, "take_damage"): b.take_damage(200.0)
+                                    else: b.hp = getattr(b, "hp", 100) - 200.0
+                    else:
+                        still_active.append(m)
+                self.active_meteors = still_active
+
+                still_craters = []
+                import math
+                for c in self.craters:
+                    c["duration"] -= delta
+                    if c["duration"] > 0:
+                        still_craters.append(c)
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
+                                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                    if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                                    else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
+                self.craters = still_craters
+
+                if hasattr(world, "arena"):
+                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+                                self.target_radius = radius
+
+                    for m in self.active_meteors:
+                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                        setattr(h, "duration", m["delay"])
+                        world.arena.hazards.append(h)
+                    for c in self.craters:
+                        h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                        setattr(h, "duration", c["duration"])
+                        world.arena.hazards.append(h)
+
 
             if self.weather == "sandstorm":
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
@@ -2661,7 +2752,7 @@ class WeatherChaosMode(GameMode):
 
             if self.weather_timer > 10.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
                 import random
                 rnd = getattr(self, "random", random)
                 old_weather = self.weather
@@ -2702,6 +2793,97 @@ class WeatherChaosMode(GameMode):
 
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
+
+            if self.weather == "meteor_shower":
+                if not hasattr(self, "meteor_spawn_timer"):
+                    self.meteor_spawn_timer = 0.0
+                    self.active_meteors = getattr(self, "active_meteors", [])
+                    self.craters = getattr(self, "craters", [])
+
+                self.meteor_spawn_timer += delta
+                import random
+
+                if self.meteor_spawn_timer >= 1.5:
+                    self.meteor_spawn_timer = 0.0
+                    arena_width = getattr(world.arena, "width", 1000)
+                    arena_height = getattr(world.arena, "height", 1000)
+                    x = random.uniform(50, arena_width - 50)
+                    y = random.uniform(50, arena_height - 50)
+
+                    self.active_meteors.append({
+                        "id": f"meteor_{random.randint(10000, 99999)}",
+                        "x": x,
+                        "y": y,
+                        "delay": 2.0,
+                        "radius": 30.0
+                    })
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "meteor_warning", "x": x, "y": y, "radius": 30.0})
+
+            # update meteors and craters
+            if hasattr(self, "active_meteors"):
+                still_active = []
+                for m in self.active_meteors:
+                    m["delay"] -= delta
+                    if m["delay"] <= 0:
+                        self.craters.append({
+                            "id": f"crater_{__import__('random').randint(10000, 99999)}",
+                            "x": m["x"],
+                            "y": m["y"],
+                            "radius": m["radius"] * 1.5,
+                            "duration": 15.0
+                        })
+                        import math
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - m["x"], b.y - m["y"]) <= m["radius"]:
+                                    if hasattr(b, "take_damage"): b.take_damage(200.0)
+                                    else: b.hp = getattr(b, "hp", 100) - 200.0
+                    else:
+                        still_active.append(m)
+                self.active_meteors = still_active
+
+                still_craters = []
+                import math
+                for c in self.craters:
+                    c["duration"] -= delta
+                    if c["duration"] > 0:
+                        still_craters.append(c)
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
+                                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                    if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                                    else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
+                self.craters = still_craters
+
+                if hasattr(world, "arena"):
+                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+                                self.target_radius = radius
+
+                    for m in self.active_meteors:
+                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                        setattr(h, "duration", m["delay"])
+                        world.arena.hazards.append(h)
+                    for c in self.craters:
+                        h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                        setattr(h, "duration", c["duration"])
+                        world.arena.hazards.append(h)
+
 
             if self.weather == "heatwave":
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
@@ -6177,6 +6359,97 @@ class MagneticCollisionsMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
+            if self.weather == "meteor_shower":
+                if not hasattr(self, "meteor_spawn_timer"):
+                    self.meteor_spawn_timer = 0.0
+                    self.active_meteors = getattr(self, "active_meteors", [])
+                    self.craters = getattr(self, "craters", [])
+
+                self.meteor_spawn_timer += delta
+                import random
+
+                if self.meteor_spawn_timer >= 1.5:
+                    self.meteor_spawn_timer = 0.0
+                    arena_width = getattr(world.arena, "width", 1000)
+                    arena_height = getattr(world.arena, "height", 1000)
+                    x = random.uniform(50, arena_width - 50)
+                    y = random.uniform(50, arena_height - 50)
+
+                    self.active_meteors.append({
+                        "id": f"meteor_{random.randint(10000, 99999)}",
+                        "x": x,
+                        "y": y,
+                        "delay": 2.0,
+                        "radius": 30.0
+                    })
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "meteor_warning", "x": x, "y": y, "radius": 30.0})
+
+            # update meteors and craters
+            if hasattr(self, "active_meteors"):
+                still_active = []
+                for m in self.active_meteors:
+                    m["delay"] -= delta
+                    if m["delay"] <= 0:
+                        self.craters.append({
+                            "id": f"crater_{__import__('random').randint(10000, 99999)}",
+                            "x": m["x"],
+                            "y": m["y"],
+                            "radius": m["radius"] * 1.5,
+                            "duration": 15.0
+                        })
+                        import math
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - m["x"], b.y - m["y"]) <= m["radius"]:
+                                    if hasattr(b, "take_damage"): b.take_damage(200.0)
+                                    else: b.hp = getattr(b, "hp", 100) - 200.0
+                    else:
+                        still_active.append(m)
+                self.active_meteors = still_active
+
+                still_craters = []
+                import math
+                for c in self.craters:
+                    c["duration"] -= delta
+                    if c["duration"] > 0:
+                        still_craters.append(c)
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
+                                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                    if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                                    else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
+                self.craters = still_craters
+
+                if hasattr(world, "arena"):
+                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+                                self.target_radius = radius
+
+                    for m in self.active_meteors:
+                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                        setattr(h, "duration", m["delay"])
+                        world.arena.hazards.append(h)
+                    for c in self.craters:
+                        h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                        setattr(h, "duration", c["duration"])
+                        world.arena.hazards.append(h)
+
+
             arena_width = getattr(world.arena, "width", 1000)
             arena_height = getattr(world.arena, "height", 1000)
 
@@ -6338,6 +6611,97 @@ class PinballMode(GameMode):
         if hasattr(world, "arena") and world.arena:
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
+
+            if self.weather == "meteor_shower":
+                if not hasattr(self, "meteor_spawn_timer"):
+                    self.meteor_spawn_timer = 0.0
+                    self.active_meteors = getattr(self, "active_meteors", [])
+                    self.craters = getattr(self, "craters", [])
+
+                self.meteor_spawn_timer += delta
+                import random
+
+                if self.meteor_spawn_timer >= 1.5:
+                    self.meteor_spawn_timer = 0.0
+                    arena_width = getattr(world.arena, "width", 1000)
+                    arena_height = getattr(world.arena, "height", 1000)
+                    x = random.uniform(50, arena_width - 50)
+                    y = random.uniform(50, arena_height - 50)
+
+                    self.active_meteors.append({
+                        "id": f"meteor_{random.randint(10000, 99999)}",
+                        "x": x,
+                        "y": y,
+                        "delay": 2.0,
+                        "radius": 30.0
+                    })
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "meteor_warning", "x": x, "y": y, "radius": 30.0})
+
+            # update meteors and craters
+            if hasattr(self, "active_meteors"):
+                still_active = []
+                for m in self.active_meteors:
+                    m["delay"] -= delta
+                    if m["delay"] <= 0:
+                        self.craters.append({
+                            "id": f"crater_{__import__('random').randint(10000, 99999)}",
+                            "x": m["x"],
+                            "y": m["y"],
+                            "radius": m["radius"] * 1.5,
+                            "duration": 15.0
+                        })
+                        import math
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - m["x"], b.y - m["y"]) <= m["radius"]:
+                                    if hasattr(b, "take_damage"): b.take_damage(200.0)
+                                    else: b.hp = getattr(b, "hp", 100) - 200.0
+                    else:
+                        still_active.append(m)
+                self.active_meteors = still_active
+
+                still_craters = []
+                import math
+                for c in self.craters:
+                    c["duration"] -= delta
+                    if c["duration"] > 0:
+                        still_craters.append(c)
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
+                                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                    if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                                    else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
+                self.craters = still_craters
+
+                if hasattr(world, "arena"):
+                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+                                self.target_radius = radius
+
+                    for m in self.active_meteors:
+                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                        setattr(h, "duration", m["delay"])
+                        world.arena.hazards.append(h)
+                    for c in self.craters:
+                        h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                        setattr(h, "duration", c["duration"])
+                        world.arena.hazards.append(h)
+
             import random
             arena_width = getattr(world.arena, "width", 1000)
             arena_height = getattr(world.arena, "height", 1000)
@@ -8347,26 +8711,81 @@ class MeteorShowerMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Meteor Shower"
-        self.description = "High damage hazards fall from the sky."
+        self.description = "High damage meteors fall from the sky and destroy the terrain, leaving craters."
         self.spawn_timer = 0.0
+        self.active_meteors = []
+        self.craters = []
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         self.spawn_timer = 0.0
+        self.active_meteors = []
+        self.craters = []
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
+        import random
 
         self.spawn_timer += delta
 
-        # Spawn meteors periodically
         if self.spawn_timer >= 1.0:
             self.spawn_timer = 0.0
-            import random
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+            x = random.uniform(50, arena_width - 50)
+            y = random.uniform(50, arena_height - 50)
 
-            # Use fallback dictionary if Hazard is not easily imported, but procedural arena should be available
+            self.active_meteors.append({
+                "id": f"meteor_{random.randint(10000, 99999)}",
+                "x": x,
+                "y": y,
+                "delay": 2.0,
+                "radius": 30.0
+            })
+
+        still_active = []
+        for m in self.active_meteors:
+            m["delay"] -= delta
+            if m["delay"] <= 0:
+                self.craters.append({
+                    "id": f"crater_{random.randint(10000, 99999)}",
+                    "x": m["x"],
+                    "y": m["y"],
+                    "radius": m["radius"] * 1.5,
+                    "duration": 15.0
+                })
+                # Deal immediate impact damage
+                import math
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        if math.hypot(b.x - m["x"], b.y - m["y"]) <= m["radius"]:
+                            if hasattr(b, "take_damage"): b.take_damage(200.0)
+                            else: b.hp = getattr(b, "hp", 100) - 200.0
+            else:
+                still_active.append(m)
+        self.active_meteors = still_active
+
+        still_craters = []
+        import math
+        for c in self.craters:
+            c["duration"] -= delta
+            if c["duration"] > 0:
+                still_craters.append(c)
+                # Crater slows down and damages balls
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
+                            b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                            if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                            else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
+        self.craters = still_craters
+
+        # update hazards for visual/external systems
+        if hasattr(world, "arena"):
+            world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+
             try:
                 from arena.procedural_arena import Hazard
             except ImportError:
@@ -8379,20 +8798,17 @@ class MeteorShowerMode(GameMode):
                         self.kind = kind
                         self.damage = damage
                         self.active = True
-                        self.target_radius = 0.0
+                        self.target_radius = radius
 
-            arena_width = getattr(world.arena, "width", 1000)
-            arena_height = getattr(world.arena, "height", 1000)
+            for m in self.active_meteors:
+                h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                setattr(h, "duration", m["delay"])
+                world.arena.hazards.append(h)
+            for c in self.craters:
+                h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                setattr(h, "duration", c["duration"])
+                world.arena.hazards.append(h)
 
-            x = random.uniform(50, arena_width - 50)
-            y = random.uniform(50, arena_height - 50)
-
-            h_id = 15000 + len(world.arena.hazards) + random.randint(0, 10000)
-            meteor = Hazard(id=h_id, x=x, y=y, radius=30.0, kind="meteor", damage=200.0)
-            setattr(meteor, "duration", 5.0)
-            meteor.target_radius = 30.0
-
-            world.arena.hazards.append(meteor)
 
 
 class CursedBuffZoneMode(GameMode):
@@ -8979,6 +9395,97 @@ class SweepingPaddlesMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
+            if self.weather == "meteor_shower":
+                if not hasattr(self, "meteor_spawn_timer"):
+                    self.meteor_spawn_timer = 0.0
+                    self.active_meteors = getattr(self, "active_meteors", [])
+                    self.craters = getattr(self, "craters", [])
+
+                self.meteor_spawn_timer += delta
+                import random
+
+                if self.meteor_spawn_timer >= 1.5:
+                    self.meteor_spawn_timer = 0.0
+                    arena_width = getattr(world.arena, "width", 1000)
+                    arena_height = getattr(world.arena, "height", 1000)
+                    x = random.uniform(50, arena_width - 50)
+                    y = random.uniform(50, arena_height - 50)
+
+                    self.active_meteors.append({
+                        "id": f"meteor_{random.randint(10000, 99999)}",
+                        "x": x,
+                        "y": y,
+                        "delay": 2.0,
+                        "radius": 30.0
+                    })
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "meteor_warning", "x": x, "y": y, "radius": 30.0})
+
+            # update meteors and craters
+            if hasattr(self, "active_meteors"):
+                still_active = []
+                for m in self.active_meteors:
+                    m["delay"] -= delta
+                    if m["delay"] <= 0:
+                        self.craters.append({
+                            "id": f"crater_{__import__('random').randint(10000, 99999)}",
+                            "x": m["x"],
+                            "y": m["y"],
+                            "radius": m["radius"] * 1.5,
+                            "duration": 15.0
+                        })
+                        import math
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - m["x"], b.y - m["y"]) <= m["radius"]:
+                                    if hasattr(b, "take_damage"): b.take_damage(200.0)
+                                    else: b.hp = getattr(b, "hp", 100) - 200.0
+                    else:
+                        still_active.append(m)
+                self.active_meteors = still_active
+
+                still_craters = []
+                import math
+                for c in self.craters:
+                    c["duration"] -= delta
+                    if c["duration"] > 0:
+                        still_craters.append(c)
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
+                                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                    if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                                    else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
+                self.craters = still_craters
+
+                if hasattr(world, "arena"):
+                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+                                self.target_radius = radius
+
+                    for m in self.active_meteors:
+                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                        setattr(h, "duration", m["delay"])
+                        world.arena.hazards.append(h)
+                    for c in self.craters:
+                        h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                        setattr(h, "duration", c["duration"])
+                        world.arena.hazards.append(h)
+
+
             arena_width = getattr(world.arena, "width", 1000)
             arena_height = getattr(world.arena, "height", 1000)
 
@@ -9339,7 +9846,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower"]
         import random
         self.random = random
 
@@ -9393,6 +9900,7 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "acid_rain": booster_kind = "hazmat_booster"
             elif self.current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
             elif self.current_weather == "tsunami": booster_kind = "life_jacket_booster"
+            elif self.current_weather == "meteor_shower": booster_kind = "meteor_shield_booster"
 
             if booster_kind and hasattr(world, "boosters"):
                 arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
@@ -9426,6 +9934,7 @@ class ExtremeWeatherMode(GameMode):
             has_hazmat = getattr(b, "hazmat_booster_timer", 0.0) > 0
             has_anchor = getattr(b, "heavy_anchor_booster_timer", 0.0) > 0
             has_life_jacket = getattr(b, "life_jacket_booster_timer", 0.0) > 0
+            has_meteor_shield = getattr(b, "meteor_shield_booster_timer", 0.0) > 0
 
             if self.current_weather == "blizzard":
                 if not has_thermal:
@@ -9459,6 +9968,95 @@ class ExtremeWeatherMode(GameMode):
                         if b.x >= arena_w - 20:
                             if hasattr(b, "take_damage"): b.take_damage(20.0 * delta)
                             elif hasattr(b, "hp"): b.hp -= 20.0 * delta
+
+        if self.current_weather == "meteor_shower":
+            if not hasattr(self, "meteor_spawn_timer"):
+                self.meteor_spawn_timer = 0.0
+                self.active_meteors = getattr(self, "active_meteors", [])
+                self.craters = getattr(self, "craters", [])
+
+            self.meteor_spawn_timer += delta
+            import random
+
+            if self.meteor_spawn_timer >= 1.0:
+                self.meteor_spawn_timer = 0.0
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+                x = random.uniform(50, arena_width - 50)
+                y = random.uniform(50, arena_height - 50)
+
+                self.active_meteors.append({
+                    "id": f"meteor_{random.randint(10000, 99999)}",
+                    "x": x,
+                    "y": y,
+                    "delay": 2.0,
+                    "radius": 30.0
+                })
+
+        # update meteors and craters
+        if hasattr(self, "active_meteors"):
+            still_active = []
+            for m in self.active_meteors:
+                m["delay"] -= delta
+                if m["delay"] <= 0:
+                    self.craters.append({
+                        "id": f"crater_{__import__('random').randint(10000, 99999)}",
+                        "x": m["x"],
+                        "y": m["y"],
+                        "radius": m["radius"] * 1.5,
+                        "duration": 15.0
+                    })
+                    import math
+                    for b in balls:
+                        has_meteor_shield = getattr(b, "meteor_shield_booster_timer", 0.0) > 0
+                        if getattr(b, "alive", False) and not has_meteor_shield:
+                            if math.hypot(b.x - m["x"], b.y - m["y"]) <= m["radius"]:
+                                if hasattr(b, "take_damage"): b.take_damage(200.0)
+                                else: b.hp = getattr(b, "hp", 100) - 200.0
+                else:
+                    still_active.append(m)
+            self.active_meteors = still_active
+
+            still_craters = []
+            import math
+            for c in self.craters:
+                c["duration"] -= delta
+                if c["duration"] > 0:
+                    still_craters.append(c)
+                    for b in balls:
+                        has_meteor_shield = getattr(b, "meteor_shield_booster_timer", 0.0) > 0
+                        if getattr(b, "alive", False) and not has_meteor_shield:
+                            if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
+                                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                                else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
+            self.craters = still_craters
+
+            if hasattr(world, "arena"):
+                world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+                            self.target_radius = radius
+
+                for m in self.active_meteors:
+                    h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+                    setattr(h, "duration", m["delay"])
+                    world.arena.hazards.append(h)
+                for c in self.craters:
+                    h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                    setattr(h, "duration", c["duration"])
+                    world.arena.hazards.append(h)
 
 
 class JuggernautMode(GameMode):

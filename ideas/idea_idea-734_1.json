@@ -1,0 +1,4 @@
+{
+    "title": "Meteor Shower Core Mechanic Integration",
+    "description": "Expand meteor shower behavior so it creates small craters that linger in the arena for a few seconds. Balls falling into craters receive a temporary 'slow' debuff, turning a random hazard into a tactical space control mechanism."
+}

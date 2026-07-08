@@ -915,7 +915,7 @@ class BattleRoyaleMode extends GameMode:
 			self.weather_timer += delta
 			if self.weather_timer > 15.0:
 				self.weather_timer = 0.0
-				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse"]
+				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse", "meteor_shower"]
 				var old_weather = self.weather
 				self.weather = weathers[randi() % weathers.size()]
 				if old_weather != self.weather:
@@ -974,6 +974,101 @@ class BattleRoyaleMode extends GameMode:
 
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
+
+			var current_weather = weather
+			if current_weather == null and self.has_meta("weather"): current_weather = self.get_meta("weather")
+			if current_weather == "meteor_shower":
+				if not self.has_meta("meteor_spawn_timer"):
+					self.set_meta("meteor_spawn_timer", 0.0)
+					self.set_meta("active_meteors", [])
+					self.set_meta("craters", [])
+				var m_timer = self.get_meta("meteor_spawn_timer") + delta
+				self.set_meta("meteor_spawn_timer", m_timer)
+				if m_timer >= 1.5:
+					self.set_meta("meteor_spawn_timer", 0.0)
+					var arena_width = 1000
+					var arena_height = 1000
+					if world != null and "arena" in world and world.arena != null:
+						arena_width = world.arena.width
+						arena_height = world.arena.height
+					var rx = (randf() * (arena_width - 100)) + 50
+					var ry = (randf() * (arena_height - 100)) + 50
+					var am = self.get_meta("active_meteors")
+					am.append({
+						"id": "meteor_" + str(randi() % 100000),
+						"x": rx,
+						"y": ry,
+						"delay": 2.0,
+						"radius": 30.0
+					})
+					self.set_meta("active_meteors", am)
+					if world != null and world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "meteor_warning", "x": rx, "y": ry, "radius": 30.0})
+
+			if self.has_meta("active_meteors"):
+				var am = self.get_meta("active_meteors")
+				var cr = self.get_meta("craters")
+				var still_active = []
+				for m in am:
+					m["delay"] -= delta
+					if m["delay"] <= 0:
+						cr.append({
+							"id": "crater_" + str(randi() % 100000),
+							"x": m["x"],
+							"y": m["y"],
+							"radius": m["radius"] * 1.5,
+							"duration": 15.0
+						})
+						for b in balls:
+							if b.alive:
+								var dx = b.x - m["x"]
+								var dy = b.y - m["y"]
+								if sqrt(dx*dx + dy*dy) <= m["radius"]:
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
+									else: b.hp -= 200.0
+					else:
+						still_active.append(m)
+				self.set_meta("active_meteors", still_active)
+
+				var still_craters = []
+				for c in cr:
+					c["duration"] -= delta
+					if c["duration"] > 0:
+						still_craters.append(c)
+						for b in balls:
+							if b.alive:
+								var dx = b.x - c["x"]
+								var dy = b.y - c["y"]
+								if sqrt(dx*dx + dy*dy) <= c["radius"]:
+									var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+									b.speed = base_speed * 0.5
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
+									else: b.hp -= 10.0 * delta
+				self.set_meta("craters", still_craters)
+
+				if world != null and "arena" in world and world.arena != null:
+					if not "hazards" in world.arena:
+						world.arena.hazards = []
+					var new_hazards = []
+					for h in world.arena.hazards:
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+						elif h is Object and "kind" in h: kind = h.kind
+						if kind != "meteor" and kind != "meteor_crater":
+							new_hazards.append(h)
+					world.arena.hazards = new_hazards
+
+					var ProceduralArenaScript2 = load("res://src/arena/procedural_arena.gd") if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+					for m in still_active:
+						if ProceduralArenaScript2:
+							var h = ProceduralArenaScript2.Hazard.new(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+							h.set_meta("duration", m["delay"])
+							world.arena.hazards.append(h)
+					for c in still_craters:
+						if ProceduralArenaScript2:
+							var h = ProceduralArenaScript2.Hazard.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+							h.set_meta("duration", c["duration"])
+							world.arena.hazards.append(h)
 
 			if self.weather == "wind":
 				if randf() < 0.1 * delta:
@@ -3238,7 +3333,7 @@ class WeatherChaosMode extends GameMode:
 
 			if weather_timer > 10.0:
 				weather_timer = 0.0
-				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm"]
+				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
 				var old_weather = weather
 				if not has_meta("next_weather"):
 					set_meta("next_weather", weathers[randi() % weathers.size()])
@@ -3306,6 +3401,101 @@ class WeatherChaosMode extends GameMode:
 
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
+
+			var current_weather = weather
+			if current_weather == null and self.has_meta("weather"): current_weather = self.get_meta("weather")
+			if current_weather == "meteor_shower":
+				if not self.has_meta("meteor_spawn_timer"):
+					self.set_meta("meteor_spawn_timer", 0.0)
+					self.set_meta("active_meteors", [])
+					self.set_meta("craters", [])
+				var m_timer = self.get_meta("meteor_spawn_timer") + delta
+				self.set_meta("meteor_spawn_timer", m_timer)
+				if m_timer >= 1.5:
+					self.set_meta("meteor_spawn_timer", 0.0)
+					var arena_width = 1000
+					var arena_height = 1000
+					if world != null and "arena" in world and world.arena != null:
+						arena_width = world.arena.width
+						arena_height = world.arena.height
+					var rx = (randf() * (arena_width - 100)) + 50
+					var ry = (randf() * (arena_height - 100)) + 50
+					var am = self.get_meta("active_meteors")
+					am.append({
+						"id": "meteor_" + str(randi() % 100000),
+						"x": rx,
+						"y": ry,
+						"delay": 2.0,
+						"radius": 30.0
+					})
+					self.set_meta("active_meteors", am)
+					if world != null and world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "meteor_warning", "x": rx, "y": ry, "radius": 30.0})
+
+			if self.has_meta("active_meteors"):
+				var am = self.get_meta("active_meteors")
+				var cr = self.get_meta("craters")
+				var still_active = []
+				for m in am:
+					m["delay"] -= delta
+					if m["delay"] <= 0:
+						cr.append({
+							"id": "crater_" + str(randi() % 100000),
+							"x": m["x"],
+							"y": m["y"],
+							"radius": m["radius"] * 1.5,
+							"duration": 15.0
+						})
+						for b in balls:
+							if b.alive:
+								var dx = b.x - m["x"]
+								var dy = b.y - m["y"]
+								if sqrt(dx*dx + dy*dy) <= m["radius"]:
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
+									else: b.hp -= 200.0
+					else:
+						still_active.append(m)
+				self.set_meta("active_meteors", still_active)
+
+				var still_craters = []
+				for c in cr:
+					c["duration"] -= delta
+					if c["duration"] > 0:
+						still_craters.append(c)
+						for b in balls:
+							if b.alive:
+								var dx = b.x - c["x"]
+								var dy = b.y - c["y"]
+								if sqrt(dx*dx + dy*dy) <= c["radius"]:
+									var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+									b.speed = base_speed * 0.5
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
+									else: b.hp -= 10.0 * delta
+				self.set_meta("craters", still_craters)
+
+				if world != null and "arena" in world and world.arena != null:
+					if not "hazards" in world.arena:
+						world.arena.hazards = []
+					var new_hazards = []
+					for h in world.arena.hazards:
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+						elif h is Object and "kind" in h: kind = h.kind
+						if kind != "meteor" and kind != "meteor_crater":
+							new_hazards.append(h)
+					world.arena.hazards = new_hazards
+
+					var ProceduralArenaScript2 = load("res://src/arena/procedural_arena.gd") if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+					for m in still_active:
+						if ProceduralArenaScript2:
+							var h = ProceduralArenaScript2.Hazard.new(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+							h.set_meta("duration", m["delay"])
+							world.arena.hazards.append(h)
+					for c in still_craters:
+						if ProceduralArenaScript2:
+							var h = ProceduralArenaScript2.Hazard.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+							h.set_meta("duration", c["duration"])
+							world.arena.hazards.append(h)
 
 			if weather == "heatwave" and not is_imm:
 				if randf() < 0.05 * delta:
@@ -7115,6 +7305,101 @@ class MagneticCollisionsMode extends GameMode:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
 
+			var current_weather = weather
+			if current_weather == null and self.has_meta("weather"): current_weather = self.get_meta("weather")
+			if current_weather == "meteor_shower":
+				if not self.has_meta("meteor_spawn_timer"):
+					self.set_meta("meteor_spawn_timer", 0.0)
+					self.set_meta("active_meteors", [])
+					self.set_meta("craters", [])
+				var m_timer = self.get_meta("meteor_spawn_timer") + delta
+				self.set_meta("meteor_spawn_timer", m_timer)
+				if m_timer >= 1.5:
+					self.set_meta("meteor_spawn_timer", 0.0)
+					var arena_width = 1000
+					var arena_height = 1000
+					if world != null and "arena" in world and world.arena != null:
+						arena_width = world.arena.width
+						arena_height = world.arena.height
+					var rx = (randf() * (arena_width - 100)) + 50
+					var ry = (randf() * (arena_height - 100)) + 50
+					var am = self.get_meta("active_meteors")
+					am.append({
+						"id": "meteor_" + str(randi() % 100000),
+						"x": rx,
+						"y": ry,
+						"delay": 2.0,
+						"radius": 30.0
+					})
+					self.set_meta("active_meteors", am)
+					if world != null and world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "meteor_warning", "x": rx, "y": ry, "radius": 30.0})
+
+			if self.has_meta("active_meteors"):
+				var am = self.get_meta("active_meteors")
+				var cr = self.get_meta("craters")
+				var still_active = []
+				for m in am:
+					m["delay"] -= delta
+					if m["delay"] <= 0:
+						cr.append({
+							"id": "crater_" + str(randi() % 100000),
+							"x": m["x"],
+							"y": m["y"],
+							"radius": m["radius"] * 1.5,
+							"duration": 15.0
+						})
+						for b in balls:
+							if b.alive:
+								var dx = b.x - m["x"]
+								var dy = b.y - m["y"]
+								if sqrt(dx*dx + dy*dy) <= m["radius"]:
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
+									else: b.hp -= 200.0
+					else:
+						still_active.append(m)
+				self.set_meta("active_meteors", still_active)
+
+				var still_craters = []
+				for c in cr:
+					c["duration"] -= delta
+					if c["duration"] > 0:
+						still_craters.append(c)
+						for b in balls:
+							if b.alive:
+								var dx = b.x - c["x"]
+								var dy = b.y - c["y"]
+								if sqrt(dx*dx + dy*dy) <= c["radius"]:
+									var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+									b.speed = base_speed * 0.5
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
+									else: b.hp -= 10.0 * delta
+				self.set_meta("craters", still_craters)
+
+				if world != null and "arena" in world and world.arena != null:
+					if not "hazards" in world.arena:
+						world.arena.hazards = []
+					var new_hazards = []
+					for h in world.arena.hazards:
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+						elif h is Object and "kind" in h: kind = h.kind
+						if kind != "meteor" and kind != "meteor_crater":
+							new_hazards.append(h)
+					world.arena.hazards = new_hazards
+
+					var ProceduralArenaScript2 = load("res://src/arena/procedural_arena.gd") if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+					for m in still_active:
+						if ProceduralArenaScript2:
+							var h = ProceduralArenaScript2.Hazard.new(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+							h.set_meta("duration", m["delay"])
+							world.arena.hazards.append(h)
+					for c in still_craters:
+						if ProceduralArenaScript2:
+							var h = ProceduralArenaScript2.Hazard.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+							h.set_meta("duration", c["duration"])
+							world.arena.hazards.append(h)
+
 			if weather == "heatwave" and not is_imm:
 				if randf() < 0.05 * delta:
 					var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
@@ -7364,6 +7649,101 @@ class PinballMode extends GameMode:
 		if "arena" in world and world.arena != null:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
+
+			var current_weather = weather
+			if current_weather == null and self.has_meta("weather"): current_weather = self.get_meta("weather")
+			if current_weather == "meteor_shower":
+				if not self.has_meta("meteor_spawn_timer"):
+					self.set_meta("meteor_spawn_timer", 0.0)
+					self.set_meta("active_meteors", [])
+					self.set_meta("craters", [])
+				var m_timer = self.get_meta("meteor_spawn_timer") + delta
+				self.set_meta("meteor_spawn_timer", m_timer)
+				if m_timer >= 1.5:
+					self.set_meta("meteor_spawn_timer", 0.0)
+					var arena_width = 1000
+					var arena_height = 1000
+					if world != null and "arena" in world and world.arena != null:
+						arena_width = world.arena.width
+						arena_height = world.arena.height
+					var rx = (randf() * (arena_width - 100)) + 50
+					var ry = (randf() * (arena_height - 100)) + 50
+					var am = self.get_meta("active_meteors")
+					am.append({
+						"id": "meteor_" + str(randi() % 100000),
+						"x": rx,
+						"y": ry,
+						"delay": 2.0,
+						"radius": 30.0
+					})
+					self.set_meta("active_meteors", am)
+					if world != null and world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "meteor_warning", "x": rx, "y": ry, "radius": 30.0})
+
+			if self.has_meta("active_meteors"):
+				var am = self.get_meta("active_meteors")
+				var cr = self.get_meta("craters")
+				var still_active = []
+				for m in am:
+					m["delay"] -= delta
+					if m["delay"] <= 0:
+						cr.append({
+							"id": "crater_" + str(randi() % 100000),
+							"x": m["x"],
+							"y": m["y"],
+							"radius": m["radius"] * 1.5,
+							"duration": 15.0
+						})
+						for b in balls:
+							if b.alive:
+								var dx = b.x - m["x"]
+								var dy = b.y - m["y"]
+								if sqrt(dx*dx + dy*dy) <= m["radius"]:
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
+									else: b.hp -= 200.0
+					else:
+						still_active.append(m)
+				self.set_meta("active_meteors", still_active)
+
+				var still_craters = []
+				for c in cr:
+					c["duration"] -= delta
+					if c["duration"] > 0:
+						still_craters.append(c)
+						for b in balls:
+							if b.alive:
+								var dx = b.x - c["x"]
+								var dy = b.y - c["y"]
+								if sqrt(dx*dx + dy*dy) <= c["radius"]:
+									var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+									b.speed = base_speed * 0.5
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
+									else: b.hp -= 10.0 * delta
+				self.set_meta("craters", still_craters)
+
+				if world != null and "arena" in world and world.arena != null:
+					if not "hazards" in world.arena:
+						world.arena.hazards = []
+					var new_hazards = []
+					for h in world.arena.hazards:
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+						elif h is Object and "kind" in h: kind = h.kind
+						if kind != "meteor" and kind != "meteor_crater":
+							new_hazards.append(h)
+					world.arena.hazards = new_hazards
+
+					var ProceduralArenaScript2 = load("res://src/arena/procedural_arena.gd") if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+					for m in still_active:
+						if ProceduralArenaScript2:
+							var h = ProceduralArenaScript2.Hazard.new(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+							h.set_meta("duration", m["delay"])
+							world.arena.hazards.append(h)
+					for c in still_craters:
+						if ProceduralArenaScript2:
+							var h = ProceduralArenaScript2.Hazard.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+							h.set_meta("duration", c["duration"])
+							world.arena.hazards.append(h)
 
 			if weather == "heatwave" and not is_imm:
 				if randf() < 0.05 * 0.016:
@@ -10104,17 +10484,22 @@ class BlizzardMode extends GameMode:
 
 class MeteorShowerMode extends GameMode:
 	var spawn_timer = 0.0
+	var active_meteors = []
+	var craters = []
 	var rng = RandomNumberGenerator.new()
 
 	func _init():
 		super()
 		name = "Meteor Shower"
-		description = "High damage hazards fall from the sky."
+		description = "High damage meteors fall from the sky and destroy the terrain, leaving craters."
 
 	func setup(world, balls):
 		super.setup(world, balls)
 		if not "hazards" in world.arena:
 			world.arena.hazards = []
+		spawn_timer = 0.0
+		active_meteors = []
+		craters = []
 
 	func tick(world, balls, delta = 0.016):
 		super.tick(world, balls, delta)
@@ -10129,13 +10514,74 @@ class MeteorShowerMode extends GameMode:
 			var x = rng.randf_range(50.0, arena_width - 50.0)
 			var y = rng.randf_range(50.0, arena_height - 50.0)
 
-			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
-			var h_id = 15000 + world.arena.hazards.size() + rng.randi_range(0, 10000)
-			var meteor = ProceduralArena.Hazard.new(h_id, x, y, 30.0, "meteor", 200.0)
-			meteor.target_radius = 30.0
-			meteor.set_meta("duration", 5.0)
+			active_meteors.append({
+				"id": "meteor_" + str(rng.randi_range(10000, 99999)),
+				"x": x,
+				"y": y,
+				"delay": 2.0,
+				"radius": 30.0
+			})
 
-			world.arena.hazards.append(meteor)
+		var still_active = []
+		for m in active_meteors:
+			m["delay"] -= delta
+			if m["delay"] <= 0:
+				craters.append({
+					"id": "crater_" + str(rng.randi_range(10000, 99999)),
+					"x": m["x"],
+					"y": m["y"],
+					"radius": m["radius"] * 1.5,
+					"duration": 15.0
+				})
+				for b in balls:
+					if b.alive:
+						var dx = b.x - m["x"]
+						var dy = b.y - m["y"]
+						if sqrt(dx*dx + dy*dy) <= m["radius"]:
+							if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
+							else: b.hp -= 200.0
+			else:
+				still_active.append(m)
+		active_meteors = still_active
+
+		var still_craters = []
+		for c in craters:
+			c["duration"] -= delta
+			if c["duration"] > 0:
+				still_craters.append(c)
+				for b in balls:
+					if b.alive:
+						var dx = b.x - c["x"]
+						var dy = b.y - c["y"]
+						if sqrt(dx*dx + dy*dy) <= c["radius"]:
+							var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+							b.speed = base_speed * 0.5
+							if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
+							else: b.hp -= 10.0 * delta
+
+		craters = still_craters
+
+		if world != null and "arena" in world:
+			var new_hazards = []
+			for h in world.arena.hazards:
+				var kind = ""
+				if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+				elif h is Object and "kind" in h: kind = h.kind
+				if kind != "meteor" and kind != "meteor_crater":
+					new_hazards.append(h)
+			world.arena.hazards = new_hazards
+
+			var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd") if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+			for m in active_meteors:
+				if ProceduralArenaScript:
+					var h = ProceduralArenaScript.Hazard.new(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+					h.set_meta("duration", m["delay"])
+					world.arena.hazards.append(h)
+			for c in craters:
+				if ProceduralArenaScript:
+					var h = ProceduralArenaScript.Hazard.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+					h.set_meta("duration", c["duration"])
+					world.arena.hazards.append(h)
 
 
 class SoulLinkMode extends GameMode:
@@ -11481,6 +11927,101 @@ class SweepingPaddlesMode extends GameMode:
 		if "arena" in world and world.arena != null:
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
+
+			var current_weather = weather
+			if current_weather == null and self.has_meta("weather"): current_weather = self.get_meta("weather")
+			if current_weather == "meteor_shower":
+				if not self.has_meta("meteor_spawn_timer"):
+					self.set_meta("meteor_spawn_timer", 0.0)
+					self.set_meta("active_meteors", [])
+					self.set_meta("craters", [])
+				var m_timer = self.get_meta("meteor_spawn_timer") + delta
+				self.set_meta("meteor_spawn_timer", m_timer)
+				if m_timer >= 1.5:
+					self.set_meta("meteor_spawn_timer", 0.0)
+					var arena_width = 1000
+					var arena_height = 1000
+					if world != null and "arena" in world and world.arena != null:
+						arena_width = world.arena.width
+						arena_height = world.arena.height
+					var rx = (randf() * (arena_width - 100)) + 50
+					var ry = (randf() * (arena_height - 100)) + 50
+					var am = self.get_meta("active_meteors")
+					am.append({
+						"id": "meteor_" + str(randi() % 100000),
+						"x": rx,
+						"y": ry,
+						"delay": 2.0,
+						"radius": 30.0
+					})
+					self.set_meta("active_meteors", am)
+					if world != null and world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "meteor_warning", "x": rx, "y": ry, "radius": 30.0})
+
+			if self.has_meta("active_meteors"):
+				var am = self.get_meta("active_meteors")
+				var cr = self.get_meta("craters")
+				var still_active = []
+				for m in am:
+					m["delay"] -= delta
+					if m["delay"] <= 0:
+						cr.append({
+							"id": "crater_" + str(randi() % 100000),
+							"x": m["x"],
+							"y": m["y"],
+							"radius": m["radius"] * 1.5,
+							"duration": 15.0
+						})
+						for b in balls:
+							if b.alive:
+								var dx = b.x - m["x"]
+								var dy = b.y - m["y"]
+								if sqrt(dx*dx + dy*dy) <= m["radius"]:
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
+									else: b.hp -= 200.0
+					else:
+						still_active.append(m)
+				self.set_meta("active_meteors", still_active)
+
+				var still_craters = []
+				for c in cr:
+					c["duration"] -= delta
+					if c["duration"] > 0:
+						still_craters.append(c)
+						for b in balls:
+							if b.alive:
+								var dx = b.x - c["x"]
+								var dy = b.y - c["y"]
+								if sqrt(dx*dx + dy*dy) <= c["radius"]:
+									var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+									b.speed = base_speed * 0.5
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
+									else: b.hp -= 10.0 * delta
+				self.set_meta("craters", still_craters)
+
+				if world != null and "arena" in world and world.arena != null:
+					if not "hazards" in world.arena:
+						world.arena.hazards = []
+					var new_hazards = []
+					for h in world.arena.hazards:
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+						elif h is Object and "kind" in h: kind = h.kind
+						if kind != "meteor" and kind != "meteor_crater":
+							new_hazards.append(h)
+					world.arena.hazards = new_hazards
+
+					var ProceduralArenaScript2 = load("res://src/arena/procedural_arena.gd") if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+					for m in still_active:
+						if ProceduralArenaScript2:
+							var h = ProceduralArenaScript2.Hazard.new(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+							h.set_meta("duration", m["delay"])
+							world.arena.hazards.append(h)
+					for c in still_craters:
+						if ProceduralArenaScript2:
+							var h = ProceduralArenaScript2.Hazard.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+							h.set_meta("duration", c["duration"])
+							world.arena.hazards.append(h)
 
 			var arena_width = 1000.0
 			var arena_height = 1000.0
