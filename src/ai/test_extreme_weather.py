@@ -59,6 +59,46 @@ def test_extreme_weather_mode_setup_and_tick():
     }[mode.current_weather]
     assert kind == expected
 
+def test_extreme_weather_boss_spawn_and_drop():
+    from ai.game_modes import ExtremeWeatherMode
+
+    mode = ExtremeWeatherMode()
+    world = MockWorld()
+    b1 = MockBall()
+    world.balls = [b1]
+
+    mode.setup(world, world.balls)
+    mode.weather_timer = 15.0  # Force a weather change
+    mode.current_weather = "clear"  # Change from clear to random
+    # Mocking random.choice to always pick blizzard
+    import random
+    class MockRandom:
+        def choice(self, seq): return "blizzard"
+        def uniform(self, a, b): return a + (b-a)/2.0
+        def randint(self, a, b): return a
+    mode.random = MockRandom()
+
+    mode.tick(world, world.balls, 0.1)
+
+    assert mode.current_weather == "blizzard"
+    # Should have spawned Frost Titan boss
+    boss = next((b for b in world.balls if getattr(b, "ball_type", "") == "mega_minion"), None)
+    assert boss is not None
+    assert boss.name == "Frost Titan"
+    assert boss.drop_booster == "mega_thermal_booster"
+    assert boss.team == "boss"
+    assert boss.hp == 1000.0
+
+    # Kill boss
+    boss.take_damage(1000.0)
+    mode.tick(world, world.balls, 0.1)
+
+    # Should have dropped mega booster
+    assert boss.alive is False
+    assert len(world.boosters) > 0
+    mega_booster = next((b for b in world.boosters if b.kind == "mega_thermal_booster"), None)
+    assert mega_booster is not None
+
 def test_extreme_weather_mode_effects():
     from ai.game_modes import ExtremeWeatherMode
 

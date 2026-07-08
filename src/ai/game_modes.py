@@ -10175,6 +10175,51 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "tsunami": booster_kind = "life_jacket_booster"
             elif self.current_weather == "meteor_shower": booster_kind = "meteor_shield_booster"
 
+            # Spawn a Boss / Mega-Minion for the current weather
+            if hasattr(world, "balls"):
+                boss_map = {
+                    "blizzard": "Frost Titan",
+                    "heatwave": "Inferno Lord",
+                    "acid_rain": "Toxic Behemoth",
+                    "hurricane": "Storm Caller",
+                    "tsunami": "Leviathan",
+                    "meteor_shower": "Astral Destroyer"
+                }
+
+                boss_name = boss_map.get(self.current_weather)
+                if boss_name:
+                    boss_id = getattr(world, "next_id", self.random.randint(100000, 999999))
+                    if hasattr(world, "next_id"):
+                        world.next_id += 1
+
+                    arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+                    arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+                    class ExtremeWeatherBoss:
+                        def __init__(self, bid, name, bkind):
+                            self.id = bid
+                            self.ball_type = "mega_minion"
+                            self.name = name
+                            self.x = arena_w / 2.0
+                            self.y = arena_h / 2.0
+                            self.vx = 0.0
+                            self.vy = 0.0
+                            self.radius = 45.0
+                            self.hp = 1000.0
+                            self.max_hp = 1000.0
+                            self.damage = 50.0
+                            self.speed = 50.0
+                            self.alive = True
+                            self.team = "boss"
+                            self.drop_booster = "mega_" + bkind
+
+                        def take_damage(self, amount):
+                            self.hp -= amount
+
+                    if booster_kind:
+                        boss_obj = ExtremeWeatherBoss(boss_id, boss_name, booster_kind)
+                        world.balls.append(boss_obj)
+
             if booster_kind and hasattr(world, "boosters"):
                 arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
                 arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
@@ -10194,6 +10239,22 @@ class ExtremeWeatherMode(GameMode):
 
         # Apply effects
         for b in balls:
+            if getattr(b, "ball_type", None) == "mega_minion":
+                if b.hp <= 0 and getattr(b, "alive", True):
+                    b.alive = False
+                    if hasattr(world, "boosters") and hasattr(b, "drop_booster"):
+                        class MegaBooster:
+                            def __init__(self, kind, x, y):
+                                self.kind = kind
+                                self.x = x
+                                self.y = y
+                                self.active = True
+                                self.radius = 20.0
+                        world.boosters.append(MegaBooster(b.drop_booster, getattr(b, "x", 500.0), getattr(b, "y", 500.0)))
+                        if hasattr(world, "add_event"):
+                            world.add_event("boss_defeated", {"message": f"{getattr(b, 'name', 'Boss')} was defeated! Mega booster dropped!"})
+                continue
+
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator" or getattr(b, "is_decoy", False):
@@ -10202,12 +10263,28 @@ class ExtremeWeatherMode(GameMode):
             b.speed = getattr(b, "base_speed", 100.0)
             b.damage = getattr(b, "base_damage", 10.0)
 
-            has_thermal = getattr(b, "thermal_booster_timer", 0.0) > 0
-            has_cooling = getattr(b, "cooling_booster_timer", 0.0) > 0
-            has_hazmat = getattr(b, "hazmat_booster_timer", 0.0) > 0
-            has_anchor = getattr(b, "heavy_anchor_booster_timer", 0.0) > 0
-            has_life_jacket = getattr(b, "life_jacket_booster_timer", 0.0) > 0
-            has_meteor_shield = getattr(b, "meteor_shield_booster_timer", 0.0) > 0
+            has_thermal = getattr(b, "thermal_booster_timer", 0.0) > 0 or getattr(b, "mega_thermal_booster_timer", 0.0) > 0
+            has_cooling = getattr(b, "cooling_booster_timer", 0.0) > 0 or getattr(b, "mega_cooling_booster_timer", 0.0) > 0
+            has_hazmat = getattr(b, "hazmat_booster_timer", 0.0) > 0 or getattr(b, "mega_hazmat_booster_timer", 0.0) > 0
+            has_anchor = getattr(b, "heavy_anchor_booster_timer", 0.0) > 0 or getattr(b, "mega_heavy_anchor_booster_timer", 0.0) > 0
+            has_life_jacket = getattr(b, "life_jacket_booster_timer", 0.0) > 0 or getattr(b, "mega_life_jacket_booster_timer", 0.0) > 0
+            has_meteor_shield = getattr(b, "meteor_shield_booster_timer", 0.0) > 0 or getattr(b, "mega_meteor_shield_booster_timer", 0.0) > 0
+
+            # Mega boosters give global buffs
+            if getattr(b, "mega_thermal_booster_timer", 0.0) > 0: b.damage *= 1.5
+            if getattr(b, "mega_cooling_booster_timer", 0.0) > 0: b.speed *= 1.5
+            if getattr(b, "mega_hazmat_booster_timer", 0.0) > 0: b.hp = min(getattr(b, "max_hp", 100), b.hp + 5.0 * delta)
+            if getattr(b, "mega_heavy_anchor_booster_timer", 0.0) > 0:
+                if not hasattr(b, "_base_mass"): b._base_mass = getattr(b, "mass", 1.0)
+                b.mass = b._base_mass * 2.0
+            else:
+                if hasattr(b, "_base_mass"): b.mass = getattr(b, "_base_mass")
+            if getattr(b, "mega_life_jacket_booster_timer", 0.0) > 0:
+                if not hasattr(b, "_base_dash_range_mult"): b._base_dash_range_mult = getattr(b, "dash_range_mult", 1.0)
+                b.dash_range_mult = b._base_dash_range_mult * 1.5
+            else:
+                if hasattr(b, "_base_dash_range_mult"): b.dash_range_mult = getattr(b, "_base_dash_range_mult")
+            if getattr(b, "mega_meteor_shield_booster_timer", 0.0) > 0: b.damage *= 2.0
 
             if self.current_weather == "blizzard":
                 if not has_thermal:
