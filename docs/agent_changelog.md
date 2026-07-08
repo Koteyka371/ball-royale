@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-731] Bounty Reward System — *2026-07-08 19:23:25 UTC*
+
+When a Bounty Hunter successfully defeats a target marked as a bounty, they instantly receive a full health restore and a temporary speed boost.
+
+---
+
 ## [idea-734] Meteor Shower Event — *2026-07-08 19:23:20 UTC*
 
 A random weather event where meteors fall from the sky, damaging balls and destroying terrain in the arena.
