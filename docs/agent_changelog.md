@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-622] Reflective Shields — *2026-07-08 17:08:02 UTC*
+
+An activated ability or item that gives players a temporary reflective shield. Any projectile or targeted hazard damage during this window reflects half of the damage back to the attacker.
+
+---
+
 ## [idea-711] Blackout Weather Event — *2026-07-08 14:57:22 UTC*
 
 Add a periodic blackout event where the arena is fully dark, and balls rely purely on short-range vision.
