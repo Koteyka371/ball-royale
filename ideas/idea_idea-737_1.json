@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Swap Item",
+    "description": "An item that, upon pickup, links the player's position with a random enemy. After 5 seconds, they instantly swap positions on the map, disrupting strategies and forcing players to adapt."
+}

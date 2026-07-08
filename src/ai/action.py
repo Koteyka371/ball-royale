@@ -4795,7 +4795,7 @@ class Action:
 
         link_target = getattr(self.ball, "damage_link_target", None)
         if link_target and getattr(link_target, "alive", True):
-            dist_sq = (self.ball.x - link_target.x)**2 + (self.ball.y - link_target.y)**2
+            dist_sq = float((self.ball.x - link_target.x)**2 + (self.ball.y - link_target.y)**2)
             if dist_sq > 90000:  # Distance > 300 yanks them back together
                 import math
                 dist = math.sqrt(dist_sq)
@@ -7189,6 +7189,28 @@ class Action:
                                 current_pos = next_target
                             else:
                                 break
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "damage_link_booster":
+                    closest_enemy = None
+                    closest_dist = float('inf')
+
+                    enemies = self._get_enemies()
+                    if enemies:
+                        for b in enemies:
+                            dist = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                            if dist < closest_dist:
+                                closest_dist = dist
+                                closest_enemy = b
+
+                    if closest_enemy:
+                        self.ball.damage_link_target = closest_enemy
+                        closest_enemy.damage_link_target = self.ball
+                        if hasattr(self, "_spawn_directed_particles"):
+                            self._spawn_directed_particles(self.ball, closest_enemy, "damage_link")
+
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
@@ -9782,7 +9804,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "shield_booster", "homing_missile_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "shield_booster", "homing_missile_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

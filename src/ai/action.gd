@@ -8532,7 +8532,7 @@ func execute(strategy: String, delta: float):
     elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_link_target"): link_target = self.ball.get_meta("damage_link_target")
 
     if link_target != null and ("alive" in link_target and link_target.alive):
-        var dist_sq = pow(self.ball.x - link_target.x, 2) + pow(self.ball.y - link_target.y, 2)
+        var dist_sq = float(pow(self.ball.x - link_target.x, 2) + pow(self.ball.y - link_target.y, 2))
         if dist_sq > 90000.0:  # Distance > 300 yanks them back together
             var dist = sqrt(dist_sq)
             var dx = link_target.x - self.ball.x
@@ -12537,6 +12537,36 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "damage_link_booster":
+                var enemies_link = _get_enemies()
+                if enemies_link.size() > 0:
+                    var link_target = null
+                    var min_dist_link_sq = INF
+                    for e in enemies_link:
+                        var d_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                        if d_sq < min_dist_link_sq:
+                            min_dist_link_sq = d_sq
+                            link_target = e
+                    if link_target != null:
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("damage_link_target", link_target)
+                        else:
+                            self.ball.damage_link_target = link_target
+
+                        if link_target.has_method("set_meta"):
+                            link_target.set_meta("damage_link_target", self.ball)
+                        elif "damage_link_target" in link_target:
+                            link_target.damage_link_target = self.ball
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "link_booster":
                 var enemies_link = _get_enemies()
                 if enemies_link.size() > 0:
@@ -17278,7 +17308,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "shield_booster", "homing_missile_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "shield_booster", "homing_missile_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
