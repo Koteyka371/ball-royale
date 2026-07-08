@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-729] Interactive Twitch Integration — *2026-07-08 18:54:36 UTC*
+
+Allow real spectators via Twitch or YouTube chat to vote on the crowd events in real-time by typing keywords into chat, bypassing the simulated probability-based voting system.
+
+---
+
 ## [idea-719] Escort Diverging Paths — *2026-07-08 18:41:45 UTC*
 
 Add diverging paths for the payload to choose from in Escort Mode, some with less hazards but longer, others with higher risks but faster.

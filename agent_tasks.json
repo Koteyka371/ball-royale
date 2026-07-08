@@ -12551,7 +12551,7 @@
     },
     {
       "id": "idea-729",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Twitch Integration",
@@ -20410,6 +20410,74 @@
         "src/arena/quantum_entanglement_hazards.py",
         "src/arena/quantum_entanglement_hazards.gd",
         "tests/test_quantum_entanglement_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1191",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Reversal Shield",
+      "description": "A temporary shield that converts 100% of incoming damage into a burst of movement speed and maximum stamina, allowing for a rapid counter-attack or escape.",
+      "allowed_paths": [
+        "src/ai/kinetic_reversal_shield.py",
+        "src/ai/kinetic_reversal_shield.gd",
+        "tests/test_kinetic_reversal_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1192",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Ball Variant",
+      "description": "A new ball type that perfectly reflects any negative status effect (like EMP or poison) back to the hazard source (destroying it) or directly to the attacker, but is highly vulnerable to pure kinetic damage.",
+      "allowed_paths": [
+        "src/ai/mirror_ball_variant.py",
+        "src/ai/mirror_ball_variant.gd",
+        "tests/test_mirror_ball_variant.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1193",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Gravity Mine",
+      "description": "A mine that, instead of exploding, pulls all nearby enemies and physics objects toward its center for 3 seconds before detonating, creating devastating localized combos.",
+      "allowed_paths": [
+        "src/ai/magnetic_gravity_mine.py",
+        "src/ai/magnetic_gravity_mine.gd",
+        "tests/test_magnetic_gravity_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1194",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Network System",
+      "description": "Introduces a sophisticated network of decoys where players can deploy multiple interconnected holograms. Enemies hitting one decoy take damage that ripples across the entire network, punishing aggressive, untargeted playstyles.",
+      "allowed_paths": [
+        "src/ai/decoy_network.py",
+        "src/ai/decoy_network.gd",
+        "tests/test_decoy_network.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
