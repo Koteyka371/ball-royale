@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-689] Shrinking Speed Cap Mode — *2026-07-08 13:59:19 UTC*
+
+As the game progresses, the maximum speed cap for all entities decreases steadily, forcing players into more strategic and confined maneuvering.
+
+---
+
 ## [idea-661] Meteor Swarm Event — *2026-07-08 13:25:47 UTC*
 
 A random game event where meteors crash into the arena, creating temporary hazardous craters and leaving behind rare materials when destroyed.

@@ -11870,7 +11870,7 @@
     },
     {
       "id": "idea-689",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Speed Cap Mode",
@@ -19831,6 +19831,108 @@
         "src/arena/abyssal_anchor.py",
         "src/arena/abyssal_anchor.gd",
         "tests/test_abyssal_anchor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1157",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Strike Satellite Event",
+      "description": "An event where a slowly moving satellite crosshair tracks players in the arena. Once it locks on for a few seconds, it fires a devastating orbital beam that creates an irradiated zone reducing stamina regen for a short time.",
+      "allowed_paths": [
+        "src/ai/orbital_strike_satellite.py",
+        "src/ai/orbital_strike_satellite.gd",
+        "tests/test_orbital_strike_satellite.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1158",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Target Switch",
+      "description": "During Bounty Hunter mode, the targeted player swaps randomly every 30 seconds. A siren effect sounds, and a new player becomes the high-value target, requiring dynamic on-the-fly strategy shifts from all teams.",
+      "allowed_paths": [
+        "src/ai/bounty_target_switch.py",
+        "src/ai/bounty_target_switch.gd",
+        "tests/test_bounty_target_switch.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1159",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Crystallized Armor Booster",
+      "description": "A rare booster that coats the player in hardened crystal. The armor fully negates the next 3 instances of damage, but each hit slows the player's movement speed slightly until the armor breaks entirely, sending shrapnel outward.",
+      "allowed_paths": [
+        "src/ai/crystallized_armor_booster.py",
+        "src/ai/crystallized_armor_booster.gd",
+        "tests/test_crystallized_armor_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1160",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Musical Chairs Game Mode",
+      "description": "Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The number of safe zones decreases each round.",
+      "allowed_paths": [
+        "src/ai/musical_chairs_game.py",
+        "src/ai/musical_chairs_game.gd",
+        "tests/test_musical_chairs_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1161",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Ball Type",
+      "description": "A ball type that pairs its health and speed to an enemy at the start of the round. Any damage it takes is partially distributed to the enemy, forcing opponents to rethink target prioritization.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_ball.py",
+        "src/ai/quantum_entanglement_ball.gd",
+        "tests/test_quantum_entanglement_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1162",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Escort Mode",
+      "description": "Similar to Escort Mode, but instead of one team escorting an invulnerable payload, both teams must push the payload toward the center, acting as a shared 'Tug of War' towards a mutual goal point where it generates points over time for the team holding it closer.",
+      "allowed_paths": [
+        "src/ai/reverse_escort.py",
+        "src/ai/reverse_escort.gd",
+        "tests/test_reverse_escort.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
