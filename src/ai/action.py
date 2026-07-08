@@ -743,6 +743,8 @@ class Action:
         # Platforms
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "platforms"):
             for p in self.world.arena.platforms:
+                if not getattr(p, "is_active", True):
+                    continue
                 # Simple AABB collision
                 if (p.x - p.width/2 <= self.ball.x <= p.x + p.width/2) and (p.y - p.height/2 <= self.ball.y <= p.y + p.height/2):
                     self.ball.x += p.vx * delta

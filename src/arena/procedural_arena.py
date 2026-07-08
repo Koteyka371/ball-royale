@@ -39,6 +39,7 @@ class Platform:
     height: float
     vx: float
     vy: float
+    is_active: bool = True
 
 class ProceduralArena:
     def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int | None = None):
@@ -542,6 +543,8 @@ class ProceduralArena:
             # Update platforms
             if hasattr(self, "platforms"):
                 for p in self.platforms:
+                    if not getattr(p, "is_active", True):
+                        continue
                     p.x += p.vx * delta
                     p.y += p.vy * delta
 

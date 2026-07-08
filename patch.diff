@@ -1,0 +1,18 @@
+<<<<<<< SEARCH
+class Platform:
+    x: float
+    y: float
+    width: float
+    height: float
+    vx: float
+    vy: float
+=======
+class Platform:
+    x: float
+    y: float
+    width: float
+    height: float
+    vx: float
+    vy: float
+    active: bool = True
+>>>>>>> REPLACE

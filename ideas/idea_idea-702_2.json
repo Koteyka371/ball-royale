@@ -1,4 +1,4 @@
 {
-  "title": "Wind Currents",
-  "description": "Introduce dynamic wind currents that slowly push balls and projectiles in a specific direction, altering movement and combat dynamics."
+    "title": "Platform Docking Stations",
+    "description": "Specific areas in the procedural arena serve as 'docking stations' for moving platforms. When a platform docks, it releases a small burst of healing or stamina regeneration to any balls currently standing on it."
 }

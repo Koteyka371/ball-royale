@@ -25,6 +25,7 @@ class Platform:
     var height: float
     var vx: float
     var vy: float
+    var is_active: bool = true
 
     func _init(_x: float, _y: float, _w: float, _h: float, _vx: float, _vy: float):
         x = _x
@@ -608,6 +609,8 @@ func update_zone(current_tick: int, delta: float) -> void:
 
         # Update platforms
         for p in platforms:
+            if not p.get("is_active", true):
+                continue
             p.x += p.vx * delta
             p.y += p.vy * delta
 

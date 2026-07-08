@@ -1169,6 +1169,10 @@ func execute(strategy: String, delta: float):
     # Platforms
     if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "platforms" in self.world.arena:
         for p in self.world.arena.platforms:
+            if typeof(p) == TYPE_OBJECT and not p.get("is_active", true):
+                continue
+            elif typeof(p) == TYPE_DICTIONARY and not p.get("is_active", true):
+                continue
             # Simple AABB collision
             var bx = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball["x"]
             var by = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball["y"]

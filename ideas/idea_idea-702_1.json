@@ -1,4 +1,4 @@
 {
-  "title": "Teleportation Portals",
-  "description": "Add teleportation portals to the arena that allow balls to instantly travel from one side of the map to another, introducing new ambush and escape mechanics."
+    "title": "Platform Destruction Events",
+    "description": "Periodically, high-damage hazards like meteor strikes can destroy moving platforms, forcing balls on them to quickly jump off or take damage when the platform shatters."
 }
