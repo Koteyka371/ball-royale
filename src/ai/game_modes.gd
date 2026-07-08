@@ -3415,10 +3415,21 @@ class WeatherChaosMode extends GameMode:
 
 class DominationMode extends GameMode:
 	var points = []
+	var team_scores = {"Red": 0.0, "Blue": 0.0}
+	var target_score = 1000.0
+	var relocate_timer = 0.0
+	var relocate_interval = 30.0
 
 	func _init() -> void:
 		name = "Domination"
-		description = "Capture points to gain global buffs for your team."
+		description = "Capture points to gain score for your team. Points relocate periodically."
+
+	func _randomize_point_locations():
+		for pt in points:
+			pt.x = randf_range(200.0, 800.0)
+			pt.y = randf_range(200.0, 800.0)
+			pt.capture_progress = 0.0
+			pt.owner = null
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -3434,13 +3445,14 @@ class DominationMode extends GameMode:
 					b.team = "Blue"
 
 		points = []
-		points.append({"id": "A", "x": 300, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
-		points.append({"id": "B", "x": 500, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
-		points.append({"id": "C", "x": 700, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null, "held_time": 0.0, "is_danger_zone": false})
+		points.append({"id": "A", "x": 300, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null})
+		points.append({"id": "B", "x": 500, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null})
+		points.append({"id": "C", "x": 700, "y": 500, "radius": 150.0, "capture_progress": 0.0, "owner": null})
 
+		team_scores = {"Red": 0.0, "Blue": 0.0}
+		relocate_timer = 0.0
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
-		# Evaluate crowd system
 		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
 			var crowd = world.get_node("CrowdSystem")
 			var kill_log = []
@@ -3453,6 +3465,12 @@ class DominationMode extends GameMode:
 
 		if not "dead_balls" in world:
 			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+
+		relocate_timer += delta
+		if relocate_timer >= relocate_interval:
+			relocate_timer = 0.0
+			_randomize_point_locations()
+
 		for b in balls:
 			if not b.alive:
 				if not world.get_meta("dead_balls").has(b):
@@ -3462,6 +3480,7 @@ class DominationMode extends GameMode:
 				else:
 					if b.has_method("get_meta") and b.has_meta("time_since_death"):
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
 		for pt in points:
 			var red_count = 0
 			var blue_count = 0
@@ -3475,78 +3494,9 @@ class DominationMode extends GameMode:
 							blue_count += 1
 
 			if red_count > blue_count:
-				pt.capture_progress += 10.0 * delta
-				for b in balls:
-					var b_type = null
-					if "ball_type" in b: b_type = b.ball_type
-					if ("alive" in b) and b.alive and b_type != "spectator":
-						var team = ""
-						if "team" in b: team = b.team
-						if team == "Red":
-							var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
-							if dist_sq <= pt.radius*pt.radius:
-								if not ("experience" in b): b.experience = 0.0
-								if not ("level" in b): b.level = 1
-								b.experience += 5.0 * delta
-								while b.experience >= 100 * b.level:
-									b.experience -= 100 * b.level
-									b.level += 1
-									var rng = randf()
-									var stat = "max_hp"
-									if rng > 0.66: stat = "damage"
-									elif rng > 0.33: stat = "speed"
-
-									if stat == "max_hp":
-										if "max_hp" in b: b.max_hp *= 1.1
-										else: b.max_hp = 110.0
-										if "hp" in b: b.hp += b.max_hp * 0.1
-										else: b.hp = b.max_hp
-										if b.hp > b.max_hp: b.hp = b.max_hp
-									elif stat == "damage":
-										if "damage" in b: b.damage *= 1.1
-										else: b.damage = 11.0
-										if "base_damage" in b: b.base_damage *= 1.1
-									elif stat == "speed":
-										if "speed" in b: b.speed *= 1.1
-										else: b.speed = 110.0
-										if "base_speed" in b: b.base_speed *= 1.1
-
+				pt.capture_progress += 20.0 * delta
 			elif blue_count > red_count:
-				pt.capture_progress -= 10.0 * delta
-				for b in balls:
-					var b_type = null
-					if "ball_type" in b: b_type = b.ball_type
-					if ("alive" in b) and b.alive and b_type != "spectator":
-						var team = ""
-						if "team" in b: team = b.team
-						if team == "Blue":
-							var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
-							if dist_sq <= pt.radius*pt.radius:
-								if not ("experience" in b): b.experience = 0.0
-								if not ("level" in b): b.level = 1
-								b.experience += 5.0 * delta
-								while b.experience >= 100 * b.level:
-									b.experience -= 100 * b.level
-									b.level += 1
-									var rng = randf()
-									var stat = "max_hp"
-									if rng > 0.66: stat = "damage"
-									elif rng > 0.33: stat = "speed"
-
-									if stat == "max_hp":
-										if "max_hp" in b: b.max_hp *= 1.1
-										else: b.max_hp = 110.0
-										if "hp" in b: b.hp += b.max_hp * 0.1
-										else: b.hp = b.max_hp
-										if b.hp > b.max_hp: b.hp = b.max_hp
-									elif stat == "damage":
-										if "damage" in b: b.damage *= 1.1
-										else: b.damage = 11.0
-										if "base_damage" in b: b.base_damage *= 1.1
-									elif stat == "speed":
-										if "speed" in b: b.speed *= 1.1
-										else: b.speed = 110.0
-										if "base_speed" in b: b.base_speed *= 1.1
+				pt.capture_progress -= 20.0 * delta
 
 			pt.capture_progress = clamp(pt.capture_progress, -100.0, 100.0)
 
@@ -3558,40 +3508,20 @@ class DominationMode extends GameMode:
 
 			if new_owner != null and new_owner != pt.owner:
 				pt.owner = new_owner
-				if pt.has("held_time"):
-					pt.held_time = 0.0
-				if pt.has("is_danger_zone"):
-					pt.is_danger_zone = false
-				# Apply global buff
-				for b in balls:
-					if b.alive and b.get("team") == new_owner:
-						# Give buff
-						if b.get("damage") != null:
-							b.damage += 5.0
-						if b.get("max_hp") != null:
-							b.max_hp += 20.0
-							b.hp += 20.0
 
-			if pt.get("owner") != null:
-				if pt.has("held_time"):
-					pt.held_time += delta
-					if pt.held_time >= 15.0:
-						pt.is_danger_zone = true
-
-				if pt.get("is_danger_zone", false):
-					for b in balls:
-						if b.alive and b.ball_type != "spectator":
-							var dist_sq = (b.x - pt.x)*(b.x - pt.x) + (b.y - pt.y)*(b.y - pt.y)
-							if dist_sq <= pt.radius * pt.radius:
-								if b.get("hp") != null:
-									b.hp -= 20.0 * delta
-									if b.hp <= 0:
-										b.alive = false
-										if b.has_method("set"):
-											b.killer = "Danger Zone"
-
+			if pt.owner == "Red":
+				team_scores["Red"] += 10.0 * delta
+			elif pt.owner == "Blue":
+				team_scores["Blue"] += 10.0 * delta
 
 	func check_winner(world, balls: Array):
+		if team_scores["Red"] >= target_score:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return "Red"
+		if team_scores["Blue"] >= target_score:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return "Blue"
+
 		var alive = []
 		for b in balls:
 			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
