@@ -12841,7 +12841,7 @@
     },
     {
       "id": "idea-746",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole mode",
@@ -20835,6 +20835,143 @@
         "src/ai/echo_strike_ability.py",
         "src/ai/echo_strike_ability.gd",
         "tests/test_echo_strike_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1216",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chronosphere Arena Event",
+      "description": "An arena-wide event where a massive chronosphere spawns. Entering it drastically increases cooldown recovery, but moving outside of it slows all animations, physics, and movement by 50% until the sphere collapses.",
+      "allowed_paths": [
+        "src/arena/chronosphere_arena.py",
+        "src/arena/chronosphere_arena.gd",
+        "tests/test_chronosphere_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1217",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Leap Modifier",
+      "description": "A rare game mode modifier where instead of standard dashes, ball abilities have a chance to trigger a randomized, short-range teleport around the arena. This creates high-stakes, unpredictable positioning during engagements, making both escapes and chases thrilling.",
+      "allowed_paths": [
+        "src/ai/quantum_leap.py",
+        "src/ai/quantum_leap.gd",
+        "tests/test_quantum_leap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1218",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bribe Wars UI",
+      "description": "A new HUD element specifically for spectators and players that shows a live tug-of-war meter during votes. The meter visually shifts left or right as players spend skill points and prestige tokens to actively out-bribe each other on the outcome.",
+      "allowed_paths": [
+        "src/ui/bribe_wars_ui.py",
+        "src/ui/bribe_wars_ui.gd",
+        "src/ai/bribe_wars_ui.py",
+        "tests/test_bribe_wars_ui.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1219",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corruptible Crowd Modes",
+      "description": "Introduces game modes or periodic events where the base cost of bribing the crowd fluctuates dynamically based on 'Corruptibility Level', encouraging players to strategically time their bribes to cheaply cancel hazards or overwhelm enemies.",
+      "allowed_paths": [
+        "src/ai/corruptible_crowd_modes.py",
+        "src/ai/corruptible_crowd_modes.gd",
+        "tests/test_corruptible_crowd_modes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1220",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather prediction tool booster",
+      "description": "Add a new booster that predicts the next weather condition accurately and gives the capturing player an aura buff when the predicted weather starts.",
+      "allowed_paths": [
+        "src/ai/prediction_tool_booster.py",
+        "src/ai/prediction_tool_booster.gd",
+        "tests/test_prediction_tool_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1221",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Altar Sabotage Mechanic",
+      "description": "Players can drop negative modifiers onto altars instead of just capturing them. When an altar is sabotaged, it deals tick damage to the other team attempting to capture it.",
+      "allowed_paths": [
+        "src/ai/altar_sabotage_mechanic.py",
+        "src/ai/altar_sabotage_mechanic.gd",
+        "tests/test_altar_sabotage_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1222",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleport Anchor Traps",
+      "description": "Introduce a new player-deployable trap called the 'Anchor Trap'. When an enemy ball enters the trap's radius, their movement abilities (like dash or teleport) are completely disabled for 5 seconds, effectively rooting them in the general area and disabling escape mechanics.",
+      "allowed_paths": [
+        "src/arena/teleport_anchor_traps.py",
+        "src/arena/teleport_anchor_traps.gd",
+        "tests/test_teleport_anchor_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1223",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Wells Hazard",
+      "description": "Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously.",
+      "allowed_paths": [
+        "src/arena/gravity_wells.py",
+        "src/arena/gravity_wells.gd",
+        "tests/test_gravity_wells.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

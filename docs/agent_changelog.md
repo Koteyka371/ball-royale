@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-746] Black Hole mode — *2026-07-08 20:41:57 UTC*
+
+A new mode where a black hole in the center slowly grows and pulls players inwards.
+
+---
+
 ## [idea-698] Decoy Hologram Projector — *2026-07-08 20:17:47 UTC*
 
 A consumable item that spawns 3 fragile holograms of the player that run in different directions to confuse enemies. The holograms vanish immediately if they take any damage.
