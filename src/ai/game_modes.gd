@@ -12850,6 +12850,47 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
 			elif current_weather == "tsunami": booster_kind = "life_jacket_booster"
 
+			var boss_map = {
+				"blizzard": "Frost Titan",
+				"heatwave": "Inferno Lord",
+				"acid_rain": "Toxic Behemoth",
+				"hurricane": "Storm Caller",
+				"tsunami": "Leviathan",
+				"meteor_shower": "Astral Destroyer"
+			}
+
+			if current_weather in boss_map and world != null and "balls" in world:
+				var boss_name = boss_map[current_weather]
+				var boss_id = randi() % 900000 + 100000
+				if "next_id" in world:
+					boss_id = world.next_id
+					world.next_id += 1
+
+				var arena_w = 1000
+				var arena_h = 1000
+				if "arena" in world and world.arena != null:
+					if "width" in world.arena: arena_w = world.arena.width
+					if "height" in world.arena: arena_h = world.arena.height
+
+				var boss = {
+					"id": boss_id,
+					"ball_type": "mega_minion",
+					"name": boss_name,
+					"x": arena_w / 2.0,
+					"y": arena_h / 2.0,
+					"vx": 0.0,
+					"vy": 0.0,
+					"radius": 45.0,
+					"hp": 1000.0,
+					"max_hp": 1000.0,
+					"damage": 50.0,
+					"speed": 50.0,
+					"alive": true,
+					"team": "boss",
+					"drop_booster": "mega_" + booster_kind
+				}
+				world.balls.append(boss)
+
 			if booster_kind != "" and world != null and "boosters" in world:
 				var arena_w = 1000
 				var arena_h = 1000
@@ -12864,17 +12905,56 @@ class ExtremeWeatherMode extends GameMode:
 					world.boosters.append(booster)
 
 		for b in balls:
+			if "ball_type" in b and b.ball_type == "mega_minion":
+				if "hp" in b and b.hp <= 0 and b.get("alive", true):
+					b.alive = false
+					if world != null and "boosters" in world and "drop_booster" in b:
+						world.boosters.append({
+							"kind": b.drop_booster,
+							"x": b.get("x", 500.0),
+							"y": b.get("y", 500.0),
+							"active": true,
+							"radius": 20.0
+						})
+						if world.has_method("add_event"):
+							world.add_event("boss_defeated", {"message": b.get("name", "Boss") + " was defeated! Mega booster dropped!"})
+				continue
+
 			if not b.alive or b.ball_type == "spectator" or b.get("is_decoy", false):
 				continue
 
 			if b.has_meta("base_speed"): b.speed = b.get_meta("base_speed")
 			if b.has_meta("base_damage"): b.damage = b.get_meta("base_damage")
 
-			var has_thermal = b.has_meta("thermal_booster_timer") and b.get_meta("thermal_booster_timer") > 0.0
-			var has_cooling = b.has_meta("cooling_booster_timer") and b.get_meta("cooling_booster_timer") > 0.0
-			var has_hazmat = b.has_meta("hazmat_booster_timer") and b.get_meta("hazmat_booster_timer") > 0.0
-			var has_anchor = b.has_meta("heavy_anchor_booster_timer") and b.get_meta("heavy_anchor_booster_timer") > 0.0
-			var has_life_jacket = b.has_meta("life_jacket_booster_timer") and b.get_meta("life_jacket_booster_timer") > 0.0
+			var has_thermal = (b.has_meta("thermal_booster_timer") and b.get_meta("thermal_booster_timer") > 0.0) or (b.has_meta("mega_thermal_booster_timer") and b.get_meta("mega_thermal_booster_timer") > 0.0)
+			var has_cooling = (b.has_meta("cooling_booster_timer") and b.get_meta("cooling_booster_timer") > 0.0) or (b.has_meta("mega_cooling_booster_timer") and b.get_meta("mega_cooling_booster_timer") > 0.0)
+			var has_hazmat = (b.has_meta("hazmat_booster_timer") and b.get_meta("hazmat_booster_timer") > 0.0) or (b.has_meta("mega_hazmat_booster_timer") and b.get_meta("mega_hazmat_booster_timer") > 0.0)
+			var has_anchor = (b.has_meta("heavy_anchor_booster_timer") and b.get_meta("heavy_anchor_booster_timer") > 0.0) or (b.has_meta("mega_heavy_anchor_booster_timer") and b.get_meta("mega_heavy_anchor_booster_timer") > 0.0)
+			var has_life_jacket = (b.has_meta("life_jacket_booster_timer") and b.get_meta("life_jacket_booster_timer") > 0.0) or (b.has_meta("mega_life_jacket_booster_timer") and b.get_meta("mega_life_jacket_booster_timer") > 0.0)
+
+			if b.has_meta("mega_thermal_booster_timer") and b.get_meta("mega_thermal_booster_timer") > 0.0: b.damage *= 1.5
+			if b.has_meta("mega_cooling_booster_timer") and b.get_meta("mega_cooling_booster_timer") > 0.0: b.speed *= 1.5
+			if b.has_meta("mega_hazmat_booster_timer") and b.get_meta("mega_hazmat_booster_timer") > 0.0:
+				var max_hp = 100.0
+				if b.has_meta("max_hp"): max_hp = b.get_meta("max_hp")
+				b.hp = min(max_hp, b.hp + 5.0 * delta)
+			if b.has_meta("mega_heavy_anchor_booster_timer") and b.get_meta("mega_heavy_anchor_booster_timer") > 0.0:
+				if "mass" in b:
+					if not b.has_meta("_base_mass"): b.set_meta("_base_mass", b.mass)
+					b.mass = b.get_meta("_base_mass") * 2.0
+				elif b.has_meta("mass"):
+					if not b.has_meta("_base_mass"): b.set_meta("_base_mass", b.get_meta("mass"))
+					b.set_meta("mass", b.get_meta("_base_mass") * 2.0)
+			else:
+				if "mass" in b and b.has_meta("_base_mass"): b.mass = b.get_meta("_base_mass")
+				elif b.has_meta("mass") and b.has_meta("_base_mass"): b.set_meta("mass", b.get_meta("_base_mass"))
+
+			if b.has_meta("mega_life_jacket_booster_timer") and b.get_meta("mega_life_jacket_booster_timer") > 0.0:
+				if "dash_range_mult" in b:
+					if not b.has_meta("_base_dash_range_mult"): b.set_meta("_base_dash_range_mult", b.dash_range_mult)
+					b.dash_range_mult = b.get_meta("_base_dash_range_mult") * 1.5
+			else:
+				if "dash_range_mult" in b and b.has_meta("_base_dash_range_mult"): b.dash_range_mult = b.get_meta("_base_dash_range_mult")
 
 			if current_weather == "blizzard":
 				if not has_thermal:
