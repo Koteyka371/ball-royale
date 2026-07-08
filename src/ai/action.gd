@@ -1165,6 +1165,21 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+    # Platforms
+    if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "platforms" in self.world.arena:
+        for p in self.world.arena.platforms:
+            # Simple AABB collision
+            var bx = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball["x"]
+            var by = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball["y"]
+            if (p.x - p.width/2 <= bx and bx <= p.x + p.width/2) and (p.y - p.height/2 <= by and by <= p.y + p.height/2):
+                if typeof(self.ball) == TYPE_OBJECT:
+                    self.ball.x += p.vx * delta
+                    self.ball.y += p.vy * delta
+                else:
+                    self.ball["x"] += p.vx * delta
+                    self.ball["y"] += p.vy * delta
+
     if "speed_debuff_timer" in self.ball and typeof(self.ball.speed_debuff_timer) in [TYPE_FLOAT, TYPE_INT] and self.ball.speed_debuff_timer > 0.0:
         self.ball.speed_debuff_timer -= delta
         if self.ball.speed_debuff_timer <= 0.0:

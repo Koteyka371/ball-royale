@@ -30,6 +30,16 @@ class Hazard:
     target_radius: float = 0.0
 
 
+
+@dataclass
+class Platform:
+    x: float
+    y: float
+    width: float
+    height: float
+    vx: float
+    vy: float
+
 class ProceduralArena:
     def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int | None = None):
         if seed is not None:
@@ -39,6 +49,7 @@ class ProceduralArena:
         self.num_rooms = num_rooms
         self.rooms: List[Room] = []
         self.corridors: List[Corridor] = []
+        self.platforms: List[Platform] = []
         self.hazards: List[Hazard] = []
         self.wind_dx = 0.0
         self.wind_dy = 0.0
@@ -427,6 +438,20 @@ class ProceduralArena:
             self.hazards.append(t1)
             self.hazards.append(t2)
 
+
+        # Generate platforms
+        num_platforms = random.randint(3, 7)
+        for _ in range(num_platforms):
+            pw = random.uniform(100, 250)
+            ph = random.uniform(100, 250)
+            px = random.uniform(pw, self.width - pw)
+            py = random.uniform(ph, self.height - ph)
+            angle = random.uniform(0, 2 * math.pi)
+            speed = random.uniform(20.0, 50.0)
+            vx = math.cos(angle) * speed
+            vy = math.sin(angle) * speed
+            self.platforms.append(Platform(px, py, pw, ph, vx, vy))
+
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         if not self.rooms:
             return (random.uniform(radius, self.width - radius),
@@ -513,6 +538,28 @@ class ProceduralArena:
                 }
             import math
             # Process hazard-to-hazard combos
+
+            # Update platforms
+            if hasattr(self, "platforms"):
+                for p in self.platforms:
+                    p.x += p.vx * delta
+                    p.y += p.vy * delta
+
+                    if p.x < p.width / 2:
+                        p.x = p.width / 2
+                        p.vx *= -1
+                    elif p.x > self.width - p.width / 2:
+                        p.x = self.width - p.width / 2
+                        p.vx *= -1
+
+                    if p.y < p.height / 2:
+                        p.y = p.height / 2
+                        p.vy *= -1
+                    elif p.y > self.height - p.height / 2:
+                        p.y = self.height - p.height / 2
+                        p.vy *= -1
+
+
             if hasattr(self, "hazards"):
                 for hazard in self.hazards:
                     if hazard.kind == "bounce_laser":

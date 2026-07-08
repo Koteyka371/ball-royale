@@ -14,6 +14,7 @@ def test_void_mage_summon_black_hole():
     world.arena.width = 1000.0
     world.arena.height = 1000.0
     world.arena.hazards = []
+    world.arena.platforms = []
     world.boosters = []
 
     mage = VoidMage(1, 500.0, 500.0)

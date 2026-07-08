@@ -6,6 +6,7 @@ var height: float
 var num_rooms: int
 var rooms: Array = []
 var corridors: Array = []
+var platforms: Array = []
 var hazards: Array = []
 var rng: RandomNumberGenerator
 
@@ -15,6 +16,23 @@ var last_tick: int = -1
 var danger_grid: Dictionary = {}
 var boundary_states: Dictionary = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
 var temperature: float = 20.0
+
+
+class Platform:
+    var x: float
+    var y: float
+    var width: float
+    var height: float
+    var vx: float
+    var vy: float
+
+    func _init(_x: float, _y: float, _w: float, _h: float, _vx: float, _vy: float):
+        x = _x
+        y = _y
+        width = _w
+        height = _h
+        vx = _vx
+        vy = _vy
 
 class Hazard:
     var id: int
@@ -498,6 +516,20 @@ func generate():
         hazards.append(t1)
         hazards.append(t2)
 
+
+    # Generate platforms
+    var num_platforms = rng.randi_range(3, 7)
+    for i in range(num_platforms):
+        var pw = rng.randf_range(100.0, 250.0)
+        var ph = rng.randf_range(100.0, 250.0)
+        var px = rng.randf_range(pw, width - pw)
+        var py = rng.randf_range(ph, height - ph)
+        var angle = rng.randf_range(0, 2 * PI)
+        var speed = rng.randf_range(20.0, 50.0)
+        var pvx = cos(angle) * speed
+        var pvy = sin(angle) * speed
+        platforms.append(Platform.new(px, py, pw, ph, pvx, pvy))
+
 func get_random_spawn_point(radius: float) -> Array:
     if rooms.size() == 0:
         return [rng.randf_range(radius, width - radius), rng.randf_range(radius, height - radius)]
@@ -573,6 +605,27 @@ func update_zone(current_tick: int, delta: float) -> void:
                 "left": states[2],
                 "right": states[3]
             }
+
+        # Update platforms
+        for p in platforms:
+            p.x += p.vx * delta
+            p.y += p.vy * delta
+
+            # Simple bounds collision
+            if p.x - p.width/2 < 0:
+                p.x = p.width/2
+                p.vx *= -1
+            elif p.x + p.width/2 > width:
+                p.x = width - p.width/2
+                p.vx *= -1
+
+            if p.y - p.height/2 < 0:
+                p.y = p.height/2
+                p.vy *= -1
+            elif p.y + p.height/2 > height:
+                p.y = height - p.height/2
+                p.vy *= -1
+
         if "hazards" in self:
             for hazard in hazards:
                 if hazard.kind == "bounce_laser":

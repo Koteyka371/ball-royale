@@ -740,6 +740,14 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        # Platforms
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "platforms"):
+            for p in self.world.arena.platforms:
+                # Simple AABB collision
+                if (p.x - p.width/2 <= self.ball.x <= p.x + p.width/2) and (p.y - p.height/2 <= self.ball.y <= p.y + p.height/2):
+                    self.ball.x += p.vx * delta
+                    self.ball.y += p.vy * delta
+
         if getattr(self.ball, "speed_debuff_timer", 0.0) > 0:
             self.ball.speed_debuff_timer -= delta
             if self.ball.speed_debuff_timer <= 0:
