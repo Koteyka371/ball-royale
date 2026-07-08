@@ -12654,7 +12654,7 @@
     },
     {
       "id": "idea-735",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weapon Drop Mode",
@@ -20750,6 +20750,40 @@
         "src/ai/quantum_teleportation_pads.py",
         "src/ai/quantum_teleportation_pads.gd",
         "tests/test_quantum_teleportation_pads.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1211",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chant Streak Visual Effects",
+      "description": "Add visual particle effects to the UI or around players when their team is on a chant streak to hype up the excitement.",
+      "allowed_paths": [
+        "src/ai/chant_streak_visual_effects.py",
+        "src/ai/chant_streak_visual_effects.gd",
+        "tests/test_chant_streak_visual_effects.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1212",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Music Tempo for Chants",
+      "description": "Increase the tempo of the background music as a team builds up their chant streak, reflecting the growing adrenaline.",
+      "allowed_paths": [
+        "src/ai/dynamic_music_tempo_for_chants.py",
+        "src/ai/dynamic_music_tempo_for_chants.gd",
+        "tests/test_dynamic_music_tempo_for_chants.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
