@@ -1159,6 +1159,25 @@ class Action:
                     self.world.arena.hazards.append(bh)
                 self.ball.inventory.remove("deployable_black_hole")
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "thumper_item" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                import random
+                th_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                try:
+                    from arena.procedural_arena import Hazard
+                    thumper = Hazard(th_id, self.ball.x, self.ball.y, 40.0, "thumper", 0.0)
+                except ImportError:
+                    class FallbackThumper:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                    thumper = FallbackThumper(th_id, self.ball.x, self.ball.y, 40.0, "thumper", 0.0)
+                setattr(thumper, 'duration', 10.0)
+                setattr(thumper, 'pulse_timer', 0.0)
+                setattr(thumper, 'owner_id', getattr(self.ball, 'id', None))
+                self.world.arena.hazards.append(thumper)
+                self.ball.inventory.remove("thumper_item")
+
+
         # Check inventory for traps to place if fleeing or defending
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "status_absorber_item" in self.ball.inventory:
             enemies = self._get_enemies()
@@ -1443,6 +1462,45 @@ class Action:
 
                         # Set a flag to easily revert or track if needed
                         self.ball._vampiric_drained = True
+
+                elif getattr(hazard, "kind", "") == "thumper":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+
+                    # Periodic seismic pulse
+                    current_timer = getattr(hazard, "pulse_timer", 0.0) + delta
+                    if current_timer >= 2.0:
+                        current_timer = 0.0
+
+                        # Find enemies and disable skills
+                        if hasattr(self.world, "balls"):
+                            owner_id = getattr(hazard, "owner_id", None)
+                            owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id), None)
+                            owner_team = getattr(owner, "team", getattr(owner, "ball_type", "")) if owner else ""
+
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True) and getattr(b, "id", None) != owner_id:
+                                    b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                    if b_team != owner_team or owner_team == "":
+                                        dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                                        if dist_sq <= 160000.0:  # 400.0 radius squared
+                                            b.skill_timer = max(getattr(b, "skill_timer", 0.0), 3.0)
+
+                        # Draw aggro from tornados
+                        for h in self.world.arena.hazards:
+                            if getattr(h, "kind", "") == "tornado":
+                                h_dx = hazard.x - h.x
+                                h_dy = hazard.y - h.y
+                                h_dist = math.hypot(h_dx, h_dy)
+                                if h_dist > 0.0001:
+                                    # Set velocity towards thumper, e.g. speed 150
+                                    h.vx = (h_dx / h_dist) * 150.0
+                                    h.vy = (h_dy / h_dist) * 150.0
+
+                    setattr(hazard, "pulse_timer", current_timer)
+
 
         # Temporal rift logic to modify local delta
         if getattr(self.ball, "empowerment_boost_timer", 0.0) > 0:
@@ -7262,17 +7320,32 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
-                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
-                        self.world.boosters.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "deployable_black_hole":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("deployable_black_hole")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "thumper_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("thumper_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+
+
+
                 elif getattr(nearest, "kind", None) == "reverse_gravity_booster":
                     self.ball.reverse_gravity_booster_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

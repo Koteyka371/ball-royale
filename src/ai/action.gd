@@ -2600,6 +2600,21 @@ func execute(strategy: String, delta: float):
 					inv.erase("deployable_black_hole")
 					self.ball.set_meta("inventory", inv)
 
+		if inv.has("thumper_item"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var th_id = arena.hazards.size() + randi() % 10000
+				var th = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					th = load("res://src/arena/procedural_arena.gd").Hazard.new(th_id, self.ball.x, self.ball.y, 40.0, "thumper", 0.0)
+					th.set_meta("duration", 10.0)
+					th.set_meta("pulse_timer", 0.0)
+					if "id" in self.ball: th.set_meta("owner_id", self.ball.id)
+					arena.hazards.append(th)
+					inv.erase("thumper_item")
+					self.ball.set_meta("inventory", inv)
+
+
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("placeable_trap"):
@@ -3134,6 +3149,59 @@ func execute(strategy: String, delta: float):
 						if "hp" in self.ball and self.ball.hp > new_max:
 							self.ball.hp = new_max
 						self.ball.set_meta("_vampiric_drained", true)
+
+			elif hazard.get("kind") == "thumper":
+				if hazard.has_meta("duration"):
+					var h_dur = hazard.get_meta("duration")
+					if h_dur > 0:
+						hazard.set_meta("duration", h_dur - delta)
+						if hazard.get_meta("duration") <= 0:
+							hazard.set_meta("duration", 0.0)
+
+				var current_timer = 0.0
+				if hazard.has_meta("pulse_timer"):
+					current_timer = hazard.get_meta("pulse_timer")
+				current_timer += delta
+
+				if current_timer >= 2.0:
+					current_timer = 0.0
+
+					var owner_id = null
+					if hazard.has_meta("owner_id"):
+						owner_id = hazard.get_meta("owner_id")
+
+					var owner_team = ""
+					if "balls" in self.world:
+						for b in self.world.balls:
+							if "id" in b and b.id == owner_id:
+								owner_team = b.team if "team" in b else b.ball_type
+								break
+
+					if "balls" in self.world:
+						for b in self.world.balls:
+							var is_alive = b.alive if "alive" in b else true
+							if is_alive and (not "id" in b or b.id != owner_id):
+								var b_team = b.team if "team" in b else b.ball_type
+								if b_team != owner_team or owner_team == "":
+									var dist_sq = (b.x - hazard.x)*(b.x - hazard.x) + (b.y - hazard.y)*(b.y - hazard.y)
+									if dist_sq <= 160000.0:
+										var cur_skill = b.skill_timer if "skill_timer" in b else 0.0
+										if cur_skill < 3.0:
+											b.skill_timer = 3.0
+
+					if "arena" in self.world and "hazards" in self.world.arena:
+						for h in self.world.arena.hazards:
+							var h_kind = h.kind if "kind" in h else h.get("kind")
+							if h_kind == "tornado":
+								var h_dx = hazard.x - h.x
+								var h_dy = hazard.y - h.y
+								var h_dist = sqrt(h_dx*h_dx + h_dy*h_dy)
+								if h_dist > 0.0001:
+									h.set_meta("vx", (h_dx / h_dist) * 150.0)
+									h.set_meta("vy", (h_dy / h_dist) * 150.0)
+
+				hazard.set_meta("pulse_timer", current_timer)
+
 
 	# Temporal rift logic to modify local delta
 	var emp_timer = 0.0
@@ -12650,6 +12718,23 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+
+            elif "kind" in nearest and nearest.kind == "thumper_item":
+                var inv = []
+                if "inventory" in self.ball: inv = self.ball.inventory
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                inv.append("thumper_item")
+                if "inventory" in self.ball: self.ball.inventory = inv
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "shield_booster":
                 if typeof(self.ball) == TYPE_DICTIONARY:
                     self.ball["shield_booster_active"] = true
