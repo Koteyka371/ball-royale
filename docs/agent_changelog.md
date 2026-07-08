@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-722] Decoy Remote Detonation — *2026-07-08 18:19:19 UTC*
+
+Allow players to manually trigger their decoy explosions by activating their decoy skill again while it's already active.
+
+---
+
 ## [idea-694] Payload Healing Aura — *2026-07-08 18:19:14 UTC*
 
 Payloads constantly heal nearby teammates to encourage sticking together.
