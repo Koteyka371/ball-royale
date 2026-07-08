@@ -45,7 +45,7 @@ def test_extreme_weather_mode_setup_and_tick():
     # Tick for 15s to trigger weather change
     mode.tick(world, balls, 15.0)
 
-    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami"]
+    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower"]
     assert len(world.boosters) == 2 # 2 balls, 1 booster each spawned
 
     kind = world.boosters[0].kind
@@ -54,7 +54,8 @@ def test_extreme_weather_mode_setup_and_tick():
         "heatwave": "cooling_booster",
         "acid_rain": "hazmat_booster",
         "hurricane": "heavy_anchor_booster",
-        "tsunami": "life_jacket_booster"
+        "tsunami": "life_jacket_booster",
+        "meteor_shower": "meteor_shield_booster"
     }[mode.current_weather]
     assert kind == expected
 
@@ -109,3 +110,10 @@ def test_extreme_weather_mode_effects():
     mode.tick(world, balls, 1.0)
     assert b1.hp == 80.0 # 100 - 20 * 1.0
     assert b1.x == 1280.0
+
+    # Test meteor shower
+    mode.current_weather = "meteor_shower"
+    world.arena.hazards = []
+    mode.tick(world, balls, 1.0)
+    assert len(world.arena.hazards) >= 1
+    assert getattr(world.arena.hazards[0], "kind", "") == "meteor"
