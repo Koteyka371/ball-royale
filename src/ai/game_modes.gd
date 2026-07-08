@@ -8167,6 +8167,81 @@ class PinballMode extends GameMode:
 
 							break
 
+class InvisibleWallsMode extends GameMode:
+	func _init():
+		name = "Invisible Walls"
+		description = "The arena contains several invisible walls that only become temporarily visible when a player or attack collides with them."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+
+			var arena_w = world.arena.width if "width" in world.arena else 800.0
+			var arena_h = world.arena.height if "height" in world.arena else 600.0
+
+			var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+
+			for i in range(5):
+				var h_id = 96000 + world.arena.hazards.size() + i
+				var hx = randf_range(200, arena_w - 200)
+				var hy = randf_range(200, arena_h - 200)
+
+				if HazardClass != null:
+					var wall = HazardClass.new(h_id, hx, hy, 60.0, "invisible_wall", 0.0)
+					wall.set_meta("visible", false)
+					wall.set_meta("reveal_timer", 0.0)
+					world.arena.hazards.append(wall)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if "hazards" in world.arena:
+				for h in world.arena.hazards:
+					if typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "invisible_wall":
+						var reveal_timer = h.get_meta("reveal_timer") if h.has_meta("reveal_timer") else 0.0
+						if reveal_timer > 0:
+							reveal_timer -= delta
+							h.set_meta("reveal_timer", reveal_timer)
+							if reveal_timer <= 0:
+								h.set_meta("visible", false)
+
+						for b in balls:
+							if typeof(b) == TYPE_OBJECT and "alive" in b and b.alive:
+								var dx = b.x - h.x
+								var dy = b.y - h.y
+								var b_rad = b.radius if "radius" in b else 20.0
+								var dist = sqrt(dx*dx + dy*dy)
+								if dist < h.radius + b_rad:
+									h.set_meta("visible", true)
+									h.set_meta("reveal_timer", 2.0)
+
+									if dist > 0:
+										var nx = dx / dist
+										var ny = dy / dist
+										b.x = h.x + nx * (h.radius + b_rad)
+										b.y = h.y + ny * (h.radius + b_rad)
+										if "vx" in b and "vy" in b:
+											var dot = b.vx * nx + b.vy * ny
+											if dot < 0:
+												b.vx -= 2 * dot * nx
+												b.vy -= 2 * dot * ny
+
+						if "attacks" in world:
+							for atk in world.attacks:
+								if typeof(atk) == TYPE_OBJECT and ("active" in atk and atk.active):
+									var ax = atk.x if "x" in atk else 0.0
+									var ay = atk.y if "y" in atk else 0.0
+									var ar = atk.radius if "radius" in atk else 5.0
+									var dx = ax - h.x
+									var dy = ay - h.y
+									var dist = sqrt(dx*dx + dy*dy)
+									if dist < h.radius + ar:
+										h.set_meta("visible", true)
+										h.set_meta("reveal_timer", 2.0)
+										atk.active = false
+
 class MirrorWallsMode extends GameMode:
 	func _init():
 		super._init()
@@ -13659,6 +13734,7 @@ var GAME_MODES = {
 	"daily_mutator": DailyMutatorMode.new(),
 	"exploding_decoys": ExplodingDecoysMode.new(),
 	"factory": FactoryMode.new(),
+	"invisible_walls": InvisibleWallsMode.new(),
 	"mirror_walls": MirrorWallsMode.new(),
 	"stamina_regen": StaminaRegenMode.new(),
 	"zero_gravity": ZeroGravityMode.new(),

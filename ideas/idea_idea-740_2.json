@@ -1,0 +1,4 @@
+{
+    "title": "Gravity Wells Hazard",
+    "description": "Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously."
+}
