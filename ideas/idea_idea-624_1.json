@@ -1,0 +1,4 @@
+{
+  "title": "Wind System",
+  "description": "Introduce global wind vectors that slightly alter ball movement trajectories and hazard positions (like poison gas or tornadoes)."
+}

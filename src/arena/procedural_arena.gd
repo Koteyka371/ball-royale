@@ -14,6 +14,7 @@ var safe_zone_center: Array
 var last_tick: int = -1
 var danger_grid: Dictionary = {}
 var boundary_states: Dictionary = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
+var temperature: float = 20.0
 
 class Hazard:
     var id: int
@@ -677,6 +678,65 @@ func update_zone(current_tick: int, delta: float) -> void:
                                         other_hazard.set_meta("active", false)
                                     else:
                                         other_hazard.active = false
+
+            for hazard in hazards:
+                if hazard.kind == "ice_patch" or hazard.kind == "ice_patches":
+                    if not (hazard.has_method("has_meta") and hazard.has_meta("duration")):
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("duration", 20.0)
+
+                    var h_dur = 20.0
+                    if hazard.has_method("has_meta") and hazard.has_meta("duration"):
+                        h_dur = hazard.get_meta("duration")
+
+                    if temperature > 0.0:
+                        h_dur -= temperature * 0.1 * delta
+
+                    for other_h in hazards:
+                        var is_active = true
+                        if other_h.has_method("has_meta") and other_h.has_meta("active"):
+                            is_active = other_h.get_meta("active")
+                        elif "active" in other_h:
+                            is_active = other_h.active
+
+                        if is_active and other_h.kind in ["fire_zone", "lava", "fire_ring", "firenado", "local_firenado"]:
+                            var dx = hazard.x - other_h.x
+                            var dy = hazard.y - other_h.y
+                            var dist = sqrt(dx*dx + dy*dy)
+                            if dist < hazard.radius + (other_h.radius if "radius" in other_h else 10.0):
+                                h_dur = 0.0
+                                break
+
+                    if h_dur <= 0.0:
+                        hazard.kind = "puddle"
+                        h_dur = 20.0
+                    if hazard.has_method("set_meta"):
+                        hazard.set_meta("duration", h_dur)
+
+                elif hazard.kind == "puddle":
+                    if not (hazard.has_method("has_meta") and hazard.has_meta("duration")):
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("duration", 20.0)
+
+                    var h_dur = 20.0
+                    if hazard.has_method("has_meta") and hazard.has_meta("duration"):
+                        h_dur = hazard.get_meta("duration")
+
+                    if temperature > 0.0:
+                        h_dur -= temperature * 0.1 * delta
+                        if h_dur <= 0.0:
+                            if hazard.has_method("set_meta"):
+                                hazard.set_meta("active", false)
+                            else:
+                                hazard.active = false
+                    elif temperature < 0.0:
+                        h_dur -= -temperature * 0.1 * delta
+                        if h_dur <= 0.0:
+                            hazard.kind = "ice_patch"
+                            h_dur = 20.0
+
+                    if hazard.has_method("set_meta"):
+                        hazard.set_meta("duration", h_dur)
 
             for hazard in hazards:
                 if hazard.kind == "slip_zone":
