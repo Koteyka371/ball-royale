@@ -1022,6 +1022,14 @@ func update_zone(current_tick: int, delta: float) -> void:
                         h.kind = "orbital_strike_active"
                         h.set_meta("duration", 0.5)
                         h.damage = 1000.0
+            elif "kind" in h and h.kind == "emp_strike":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.kind = "emp_strike_active"
+                        h.set_meta("duration", 5.0)
+                        h.damage = 0.0
             elif "kind" in h and h.kind == "lightning_strike":
                 if h.has_meta("duration"):
                     var dur = h.get_meta("duration") - delta
@@ -1767,6 +1775,12 @@ func _trigger_event(event_type: String, current_tick: int) -> void:
     if event_type == "orbital_strike":
         var h_id = 5000 + hazards.size()
         var strike = ProceduralArena.Hazard.new(h_id, width/2, height/2, 400.0, "orbital_strike", 0.0)
+        strike.target_radius = 400.0
+        strike.set_meta("duration", 3.0)
+        hazards.append(strike)
+    elif event_type == "emp_strike":
+        var h_id = 5000 + hazards.size()
+        var strike = ProceduralArena.Hazard.new(h_id, width/2, height/2, 400.0, "emp_strike", 0.0)
         strike.target_radius = 400.0
         strike.set_meta("duration", 3.0)
         hazards.append(strike)

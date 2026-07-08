@@ -315,7 +315,7 @@ class BattleRoyaleShrinkingZoneArena extends ProceduralArena:
             else:
                 if current_tick % 120 == 0:
                     if has_method("_trigger_event"):
-                        var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "anomaly_zone"]
+                        var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "emp_strike", "anomaly_zone"]
                         call("_trigger_event", event_types[randi() % event_types.size()], current_tick)
                     else:
                         var event_types = ["meteor_shower", "gravity_shift", "anomaly_zone"]

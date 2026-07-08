@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Swap Hazard",
+    "description": "A hazard zone that sporadically swaps the positions of two random balls inside its radius every 5 seconds, heavily disrupting positioning and team coordination."
+}
