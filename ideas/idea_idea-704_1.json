@@ -1,0 +1,4 @@
+{
+  "title": "Orbital Magnet Hazard",
+  "description": "A new hazard type that activates near the end of the match. It acts as an area-of-effect magnet, pulling all balls, boosters, and even smaller hazards slowly toward its center. Navigating through it requires using dash mechanics or bouncing off nearby obstacles to escape its pull."
+}
