@@ -20040,6 +20040,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1169",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Zones based on Players",
+      "description": "A game mode where the safe zone's size decreases much faster when more players are outside of it, encouraging players to fight for the center.",
+      "allowed_paths": [
+        "src/ai/shrinking_zones_based_on_players.py",
+        "src/ai/shrinking_zones_based_on_players.gd",
+        "tests/test_shrinking_zones_based_on_players.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
