@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zone based on Kills",
-  "description": "The safe zone shrinks naturally over time, but every time a team gets a kill, the safe zone pauses its shrinking for 5 seconds."
-}

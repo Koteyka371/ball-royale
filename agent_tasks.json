@@ -19785,6 +19785,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1154",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone based on Kills",
+      "description": "The safe zone shrinks naturally over time, but every time a team gets a kill, the safe zone pauses its shrinking for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone_based_on_kills.py",
+        "src/ai/shrinking_safe_zone_based_on_kills.gd",
+        "tests/test_shrinking_safe_zone_based_on_kills.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
