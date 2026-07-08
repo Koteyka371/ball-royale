@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-709] Gravity Boots — *2026-07-08 21:05:37 UTC*
+
+A passive item that makes the ball immune to pull forces like black holes and magnets.
+
+---
+
 ## [idea-742] Weather-Specific Boss Monsters — *2026-07-08 21:02:40 UTC*
 
 Introduce mega-minions or 'Bosses' that only spawn during rare extreme weather events (e.g., a Lightning Elemental during a Thunderstorm, or a Frost Titan during a Blizzard). Defeating them drops powerful, unique boosters that cannot be acquired otherwise, giving players a major incentive to risk fighting in dangerous weather conditions.

@@ -12210,7 +12210,7 @@
     },
     {
       "id": "idea-709",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Boots",
@@ -20989,6 +20989,40 @@
         "src/ai/time_loop.py",
         "src/ai/time_loop.gd",
         "tests/test_time_loop.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1225",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather forecasting",
+      "description": "Have a ball type that gets a prediction on what weather might come next.",
+      "allowed_paths": [
+        "src/ai/forecasting.py",
+        "src/ai/forecasting.gd",
+        "tests/test_forecasting.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1226",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather specific events",
+      "description": "Have specific small weather events, like small rain, slight breeze, rather than just extreme weather. Have specific balls that benefit from certain weather, like a sandstorm element giving speed boost, or wind element being blown away by hurricane.",
+      "allowed_paths": [
+        "src/ai/specific_events.py",
+        "src/ai/specific_events.gd",
+        "tests/test_specific_events.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
