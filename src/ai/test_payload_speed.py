@@ -35,6 +35,7 @@ def test_escort_mode_speed_mult():
         MockBall(x=500.0, y=500.0, team="Defenders")  # far teammate
     ]
     mode_slow.setup(world, balls_slow) # setup overrides x and y of payload!
+    mode_slow.chosen_path = 0 # force straight line path for deterministic test
     payload_slow = mode_slow.payload
 
     # We must set coordinates AFTER setup
@@ -51,6 +52,7 @@ def test_escort_mode_speed_mult():
         MockBall(x=150.0, y=500.0, team="Defenders")  # close teammate
     ]
     mode_fast.setup(world, balls_fast)
+    mode_fast.chosen_path = 0 # force straight line path
     payload_fast = mode_fast.payload
 
     payload_fast.x = 100.0
@@ -106,6 +108,7 @@ def test_dual_payload_speed_mult():
         MockBall(x=850.0, y=500.0, team="Blue")  # close blue teammate
     ]
     mode_fast.setup(world, balls_fast)
+    mode_fast.chosen_path = 0 # force straight line path
     # Fix coordinates after setup
     mode_fast.payload_red.x = 100.0
     mode_fast.payload_red.y = 500.0

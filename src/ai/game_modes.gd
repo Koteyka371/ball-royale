@@ -2307,10 +2307,19 @@ class EscortMode extends GameMode:
 	var timer: float = 180.0
 	var ability_timer: float = 0.0
 	var current_ability: int = 0
+	var paths: Array = []
+	var chosen_path: int = 0
+	var current_waypoint_index: int = 0
+	var hazard_timer: float = 0.0
 
 	func _init() -> void:
 		name = "Escort Mode"
 		description = "One team defends an invulnerable payload moving towards a goal. The other tries to delay it until time runs out."
+		paths = [
+			{"waypoints": [Vector2(500.0, 500.0), Vector2(900.0, 500.0)], "risk": "high"},
+			{"waypoints": [Vector2(300.0, 200.0), Vector2(700.0, 200.0), Vector2(900.0, 500.0)], "risk": "low"},
+			{"waypoints": [Vector2(300.0, 800.0), Vector2(700.0, 800.0), Vector2(900.0, 500.0)], "risk": "low"}
+		]
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -2325,6 +2334,10 @@ class EscortMode extends GameMode:
 			else:
 				if b.ball_type != "spectator":
 					valid_balls.append(b)
+
+		chosen_path = randi() % paths.size()
+		current_waypoint_index = 0
+		hazard_timer = 0.0
 
 		var mid = valid_balls.size() / 2
 		var defenders = []
@@ -2446,9 +2459,21 @@ class EscortMode extends GameMode:
 				var base_spd = payload.get("speed", 0) if typeof(payload) == TYPE_DICTIONARY else payload.speed
 				var spd = base_spd * speed_mult
 
-				var dx = goal_x - px
-				var dy = goal_y - py
+				var path_data = paths[chosen_path]
+				var waypoints = path_data["waypoints"]
+				var target_pos = waypoints[current_waypoint_index] if current_waypoint_index < waypoints.size() else Vector2(goal_x, goal_y)
+
+				var dx = target_pos.x - px
+				var dy = target_pos.y - py
 				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist < 10.0 and current_waypoint_index < waypoints.size() - 1:
+					current_waypoint_index += 1
+					target_pos = waypoints[current_waypoint_index]
+					dx = target_pos.x - px
+					dy = target_pos.y - py
+					dist = sqrt(dx * dx + dy * dy)
+
 				if dist > 0:
 					if typeof(payload) == TYPE_DICTIONARY:
 						payload["x"] += (dx / dist) * spd
@@ -2456,6 +2481,21 @@ class EscortMode extends GameMode:
 					else:
 						payload.x += (dx / dist) * spd
 						payload.y += (dy / dist) * spd
+
+				hazard_timer += delta
+				var risk = path_data.get("risk", "low")
+				var hazard_interval = 2.0 if risk == "high" else 6.0
+
+				if hazard_timer >= hazard_interval:
+					hazard_timer = 0.0
+					if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+						var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+						var hx = px + randf_range(-50.0, 50.0)
+						var hy = py + randf_range(-50.0, 50.0)
+						var hazard_types = ["mine", "spike", "fire"]
+						var h_type = hazard_types[randi() % hazard_types.size()]
+						var new_hazard = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, hx, hy, 20.0, h_type, 10.0)
+						world.arena.hazards.append(new_hazard)
 
 				# Payload abilities logic
 				ability_timer += delta

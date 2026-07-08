@@ -1788,6 +1788,14 @@ class EscortMode(GameMode):
         self.timer = 180.0
         self.ability_timer = 0.0
         self.current_ability = 0
+        self.paths = [
+            {"waypoints": [(500.0, 500.0), (900.0, 500.0)], "risk": "high"},
+            {"waypoints": [(300.0, 200.0), (700.0, 200.0), (900.0, 500.0)], "risk": "low"},
+            {"waypoints": [(300.0, 800.0), (700.0, 800.0), (900.0, 500.0)], "risk": "low"}
+        ]
+        self.chosen_path = 0
+        self.current_waypoint_index = 0
+        self.hazard_timer = 0.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -1801,6 +1809,11 @@ class EscortMode(GameMode):
                     b.team = "Defenders"
                 else:
                     b.team = "Attackers"
+
+        import random
+        self.chosen_path = random.randint(0, len(self.paths) - 1)
+        self.current_waypoint_index = 0
+        self.hazard_timer = 0.0
 
         # Transform a defender into the payload, or just use the first defender
         defenders = [b for b in balls if getattr(b, "team", "") == "Defenders"]
@@ -1865,13 +1878,49 @@ class EscortMode(GameMode):
 
             speed_mult = 1.0 + (nearby_teammates * 0.5)
 
-            dx = self.goal_x - getattr(self.payload, "x", 0)
-            dy = self.goal_y - getattr(self.payload, "y", 0)
+            path_data = getattr(self, "paths", [{"waypoints": [(self.goal_x, self.goal_y)], "risk": "low"}])[getattr(self, "chosen_path", 0)]
+            waypoints = path_data["waypoints"]
+            wpt_idx = getattr(self, "current_waypoint_index", 0)
+            if wpt_idx < len(waypoints):
+                target_x, target_y = waypoints[wpt_idx]
+            else:
+                target_x, target_y = self.goal_x, self.goal_y
+
+            dx = target_x - getattr(self.payload, "x", 0)
+            dy = target_y - getattr(self.payload, "y", 0)
             dist = math.hypot(dx, dy)
+
+            if dist < 10.0 and wpt_idx < len(waypoints) - 1:
+                self.current_waypoint_index = wpt_idx + 1
+                target_x, target_y = waypoints[self.current_waypoint_index]
+                dx = target_x - getattr(self.payload, "x", 0)
+                dy = target_y - getattr(self.payload, "y", 0)
+                dist = math.hypot(dx, dy)
+
             if dist > 0:
                 base_speed = getattr(self.payload, "speed", 0.5)
                 self.payload.x += (dx / dist) * base_speed * speed_mult
                 self.payload.y += (dy / dist) * base_speed * speed_mult
+
+            self.hazard_timer = getattr(self, "hazard_timer", 0.0) + delta
+            risk = path_data.get("risk", "low")
+            hazard_interval = 2.0 if risk == "high" else 6.0
+
+            if self.hazard_timer >= hazard_interval:
+                self.hazard_timer = 0.0
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    # Check for Hazard import, do it safely
+                    try:
+                        from arena.procedural_arena import Hazard
+                        import random
+                        h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                        hx = getattr(self.payload, "x", 0) + random.uniform(-50, 50)
+                        hy = getattr(self.payload, "y", 0) + random.uniform(-50, 50)
+                        h_type = random.choice(["mine", "spike", "fire"])
+                        new_hazard = Hazard(h_id, hx, hy, 20.0, h_type, 10.0)
+                        world.arena.hazards.append(new_hazard)
+                    except ImportError:
+                        pass
 
             # Payload unique abilities logic
             self.ability_timer += delta
@@ -1935,19 +1984,6 @@ class EscortMode(GameMode):
         dy = self.goal_y - getattr(self.payload, "y", 0)
 
         if getattr(self, "timer", 0) <= 0:
-            return "Attackers"
-
-        if math.hypot(dx, dy) < 10.0:
-            return "Defenders"
-
-        return None
-
-        import math
-        dx = self.goal_x - self.payload["x"]
-        dy = self.goal_y - self.payload["y"]
-
-        if getattr(self.payload, "hp", self.payload.get("hp", 0)) <= 0 or not self.payload.get("alive", True):
-            self.payload["alive"] = False
             return "Attackers"
 
         if math.hypot(dx, dy) < 10.0:
