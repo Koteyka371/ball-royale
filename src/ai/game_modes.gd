@@ -2386,15 +2386,7 @@ class EscortMode extends GameMode:
 
 					if bdist <= 300.0:
 						var bteam = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
-						if bteam == "Defenders":
-							var bmax_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0 if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
-							var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
-							var new_hp = min(bmax_hp, bhp + 20.0)
-							if typeof(b) == TYPE_DICTIONARY:
-								b["hp"] = new_hp
-							else:
-								b.set("hp", new_hp)
-						elif bteam == "Attackers":
+						if bteam == "Attackers":
 							var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
 							var new_hp = max(0.0, bhp - 20.0)
 							if typeof(b) == TYPE_DICTIONARY:
@@ -2412,6 +2404,35 @@ class EscortMode extends GameMode:
 				var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
 				var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
 				var payload_team = payload.get("team", "") if typeof(payload) == TYPE_DICTIONARY else payload.get("team", "")
+
+				for b in balls:
+					if typeof(b) == TYPE_DICTIONARY and b.has("id") and typeof(payload) == TYPE_DICTIONARY and payload.has("id") and b["id"] == payload["id"]:
+						continue
+					if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
+						continue
+					var balive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if not balive:
+						continue
+					var btype = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if btype == "spectator":
+						continue
+
+					var bteam = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+					if bteam == "Defenders":
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+						var bdx = bx - px
+						var bdy = by - py
+						var bdist = sqrt(bdx*bdx + bdy*bdy)
+
+						if bdist <= 150.0:
+							var bmax_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0 if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
+							var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+							var new_hp = min(bmax_hp, bhp + 15.0 * delta)
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = new_hp
+							else:
+								b.set("hp", new_hp)
 
 				var nearby_teammates = 0
 				for b in balls:
@@ -7824,6 +7845,14 @@ class TugOfWarMode extends GameMode:
 						elif team == "Blue":
 							blue_count += 1
 
+						if team == "Red" or team == "Blue":
+							var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.hp
+							var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.max_hp
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = min(max_hp, hp + 15.0 * delta)
+							else:
+								b.hp = min(max_hp, hp + 15.0 * delta)
+
 				var move_speed = 50.0
 				var speed_multiplier = 1.0
 
@@ -12058,6 +12087,14 @@ class ReverseTugOfWarMode extends GameMode:
 						elif team == "Blue":
 							blue_count += 1
 
+						if team == "Red" or team == "Blue":
+							var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.hp
+							var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.max_hp
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = min(max_hp, hp + 15.0 * delta)
+							else:
+								b.hp = min(max_hp, hp + 15.0 * delta)
+
 				var move_speed = 50.0
 
 				if red_count > blue_count:
@@ -12394,6 +12431,14 @@ class TickingPayloadMode extends GameMode:
 						red_count += 1
 					elif team == "Blue":
 						blue_count += 1
+
+					if team == "Red" or team == "Blue":
+						var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+						var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = min(max_hp, hp + 15.0 * delta)
+						else:
+							b.set("hp", min(max_hp, hp + 15.0 * delta))
 
 			var move_speed = 50.0
 

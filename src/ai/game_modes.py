@@ -1819,6 +1819,7 @@ class EscortMode(GameMode):
         if not hasattr(self, "pulse_timer"):
             self.pulse_timer = 0.0
 
+        # Pulse damage for attackers every 5 seconds
         self.pulse_timer += delta
         if self.pulse_timer >= 5.0:
             self.pulse_timer = 0.0
@@ -1835,15 +1836,22 @@ class EscortMode(GameMode):
                     dist = math.hypot(dx, dy)
 
                     if dist <= 300.0:
-                        if getattr(b, "team", "") == "Defenders":
-                            b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 20.0)
-                        elif getattr(b, "team", "") == "Attackers":
+                        if getattr(b, "team", "") == "Attackers":
                             b.hp = max(0.0, getattr(b, "hp", 100.0) - 20.0)
                             if b.hp <= 0:
                                 b.alive = False
 
         if self.payload and getattr(self.payload, "alive", False):
             import math
+
+            # Continuous healing for nearby defenders
+            for b in balls:
+                if b == self.payload or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+                if getattr(b, "team", "") == "Defenders":
+                    dist = math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0), getattr(b, "y", 0) - getattr(self.payload, "y", 0))
+                    if dist <= 150.0:
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
 
             nearby_teammates = 0
             payload_team = getattr(self.payload, "team", "")
@@ -6629,10 +6637,14 @@ class TugOfWarMode(GameMode):
                 dist = math.hypot(dx, dy)
 
                 if dist < 150.0:
-                    if getattr(b, "team", "") == "Red":
+                    team = getattr(b, "team", "")
+                    if team == "Red":
                         red_count += 1
-                    elif getattr(b, "team", "") == "Blue":
+                    elif team == "Blue":
                         blue_count += 1
+
+                    if team in ["Red", "Blue"]:
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
 
             # Payload moves towards Blue goal if Red has more players nearby, and vice versa
             move_speed = 50.0 # base move speed
@@ -6641,20 +6653,10 @@ class TugOfWarMode(GameMode):
                 # Red pushes towards Blue goal (right)
                 speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
                 self.payload.x += move_speed * delta * (red_count - blue_count) * speed_multiplier
-                # Heal Red team nearby
-                for b in balls:
-                    if getattr(b, "alive", False) and getattr(b, "team", "") == "Red" and b != self.payload:
-                        if math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0), getattr(b, "y", 0) - getattr(self.payload, "y", 0)) < 150.0:
-                            b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
             elif blue_count > red_count:
                 # Blue pushes towards Red goal (left)
                 speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
                 self.payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
-                # Heal Blue team nearby
-                for b in balls:
-                    if getattr(b, "alive", False) and getattr(b, "team", "") == "Blue" and b != self.payload:
-                        if math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0), getattr(b, "y", 0) - getattr(self.payload, "y", 0)) < 150.0:
-                            b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
 
             # Keep in bounds
             if self.payload.x < 50.0:
@@ -9403,10 +9405,14 @@ class ReverseTugOfWarMode(GameMode):
                 dist = math.hypot(dx, dy)
 
                 if dist < 150.0:
-                    if getattr(b, "team", "") == "Red":
+                    team = getattr(b, "team", "")
+                    if team == "Red":
                         red_count += 1
-                    elif getattr(b, "team", "") == "Blue":
+                    elif team == "Blue":
                         blue_count += 1
+
+                    if team in ["Red", "Blue"]:
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
 
             # Payload moves towards Blue goal if Red has more players nearby, and vice versa
             move_speed = 50.0 # base move speed
@@ -9664,10 +9670,14 @@ class TickingPayloadMode(GameMode):
                 dist = math.hypot(dx, dy)
 
                 if dist < 150.0:
-                    if getattr(b, "team", "") == "Red":
+                    team = getattr(b, "team", "")
+                    if team == "Red":
                         red_count += 1
-                    elif getattr(b, "team", "") == "Blue":
+                    elif team == "Blue":
                         blue_count += 1
+
+                    if team in ["Red", "Blue"]:
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
 
             move_speed = 50.0 # base move speed
 
