@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Mirror Boundaries",
+  "description": "An arena mode where hitting a map boundary doesn't just bounce you, but teleports you to the opposite side of the map with inverted velocity."
+}
