@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-747] Shrinking Maps Arena — *2026-07-08 23:22:25 UTC*
+
+An arena type where the physical map boundaries slowly shrink inwards over time, pushing all balls towards a centralized final showdown.
+
+---
+
 ## [idea-720] Chain Lightning — *2026-07-08 22:19:34 UTC*
 
 A new skill or hazard that hits a primary target and bounces to nearby targets, dealing less damage with each bounce.
