@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-684] Capture the Point (King of the Hill variant) — *2026-07-08 11:39:11 UTC*
+
+Multiple control points spawn around the arena. Teams must stand inside the control points to capture them and accumulate points. The points periodically change locations. The team that reaches the target score first wins.
+
+---
+
 ## [idea-685] Invisibility Booster — *2026-07-07 22:54:30 UTC*
 
 A booster that renders a ball temporarily invisible to AI tracking and opponent targeting, giving them a stealth advantage for a short duration.
