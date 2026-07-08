@@ -12887,7 +12887,8 @@ var GAME_MODES = {
 	"illusion_wall": IllusionWallMode.new(),
 
 	"crossfire": CrossfireMode.new(),
-	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new()
+	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new(),
+	"underground_tunnels": UndergroundTunnelMode.new()
 }
 
 
@@ -13777,3 +13778,149 @@ class IllusionWallMode extends GameMode:
 							b.set_meta("interacted_illusion_walls", new_interacted)
 						elif typeof(b) == TYPE_DICTIONARY:
 							b["interacted_illusion_walls"] = new_interacted
+
+
+class UndergroundTunnelMode extends GameMode:
+	var tunnels = []
+	var tunnel_radius = 40.0
+	var travel_speed = 300.0
+	var tunnel_class = null
+
+	class Tunnel:
+		var x1: float
+		var y1: float
+		var x2: float
+		var y2: float
+		func _init(a, b, c, d):
+			x1 = a
+			y1 = b
+			x2 = c
+			y2 = d
+
+	func _init():
+		name = "Underground Tunnels"
+		description = "Procedural arenas can spawn underground tunnels, allowing balls to temporarily travel underneath obstacles. While underground, balls are invisible and cannot be targeted, but can only emerge at specific tunnel exits."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		tunnels = []
+		for i in range(3):
+			var x1 = randf_range(200, 800)
+			var y1 = randf_range(200, 800)
+			var x2 = randf_range(200, 800)
+			var y2 = randf_range(200, 800)
+			tunnels.append(Tunnel.new(x1, y1, x2, y2))
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+
+			for i in range(tunnels.size()):
+				var t = tunnels[i]
+				# Entrance A
+				world.arena.hazards.append({
+					"id": "tunnel_" + str(i) + "_a",
+					"x": t.x1, "y": t.y1,
+					"radius": tunnel_radius,
+					"kind": "tunnel_entrance"
+				})
+				# Entrance B
+				world.arena.hazards.append({
+					"id": "tunnel_" + str(i) + "_b",
+					"x": t.x2, "y": t.y2,
+					"radius": tunnel_radius,
+					"kind": "tunnel_entrance"
+				})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var b_alive = true
+			if "alive" in b: b_alive = b.alive
+			elif b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+			if not b_alive: continue
+
+			var is_underground = false
+			if "underground" in b: is_underground = b.underground
+			elif b.has_method("has_meta") and b.has_meta("underground"): is_underground = b.get_meta("underground")
+
+			if is_underground:
+				var tx = b.x
+				var ty = b.y
+				if "tunnel_target_x" in b: tx = b.tunnel_target_x
+				elif b.has_method("has_meta") and b.has_meta("tunnel_target_x"): tx = b.get_meta("tunnel_target_x")
+				if "tunnel_target_y" in b: ty = b.tunnel_target_y
+				elif b.has_method("has_meta") and b.has_meta("tunnel_target_y"): ty = b.get_meta("tunnel_target_y")
+
+				var dx = tx - b.x
+				var dy = ty - b.y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist <= travel_speed * delta:
+					b.x = tx
+					b.y = ty
+					if "underground" in b: b.underground = false
+					elif b.has_method("set_meta"): b.set_meta("underground", false)
+
+					if "is_invisible" in b: b.is_invisible = false
+					elif b.has_method("set_meta"): b.set_meta("is_invisible", false)
+
+					if "tunnel_cooldown" in b: b.tunnel_cooldown = 1.0
+					elif b.has_method("set_meta"): b.set_meta("tunnel_cooldown", 1.0)
+				else:
+					b.x += (dx / dist) * travel_speed * delta
+					b.y += (dy / dist) * travel_speed * delta
+
+				continue
+
+			var cd = 0.0
+			if "tunnel_cooldown" in b: cd = b.tunnel_cooldown
+			elif b.has_method("has_meta") and b.has_meta("tunnel_cooldown"): cd = b.get_meta("tunnel_cooldown")
+
+			if cd > 0:
+				var new_cd = max(0.0, cd - delta)
+				if "tunnel_cooldown" in b: b.tunnel_cooldown = new_cd
+				elif b.has_method("set_meta"): b.set_meta("tunnel_cooldown", new_cd)
+				continue
+
+			for t in tunnels:
+				var dist_a = sqrt(pow(b.x - t.x1, 2) + pow(b.y - t.y1, 2))
+				if dist_a < tunnel_radius:
+					if "underground" in b: b.underground = true
+					elif b.has_method("set_meta"): b.set_meta("underground", true)
+
+					if "is_invisible" in b: b.is_invisible = true
+					elif b.has_method("set_meta"): b.set_meta("is_invisible", true)
+
+					if "tunnel_target_x" in b: b.tunnel_target_x = t.x2
+					elif b.has_method("set_meta"): b.set_meta("tunnel_target_x", t.x2)
+
+					if "tunnel_target_y" in b: b.tunnel_target_y = t.y2
+					elif b.has_method("set_meta"): b.set_meta("tunnel_target_y", t.y2)
+
+					if "vx" in b: b.vx = 0.0
+					elif b.has_method("set_meta"): b.set_meta("vx", 0.0)
+					if "vy" in b: b.vy = 0.0
+					elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
+					break
+
+				var dist_b = sqrt(pow(b.x - t.x2, 2) + pow(b.y - t.y2, 2))
+				if dist_b < tunnel_radius:
+					if "underground" in b: b.underground = true
+					elif b.has_method("set_meta"): b.set_meta("underground", true)
+
+					if "is_invisible" in b: b.is_invisible = true
+					elif b.has_method("set_meta"): b.set_meta("is_invisible", true)
+
+					if "tunnel_target_x" in b: b.tunnel_target_x = t.x1
+					elif b.has_method("set_meta"): b.set_meta("tunnel_target_x", t.x1)
+
+					if "tunnel_target_y" in b: b.tunnel_target_y = t.y1
+					elif b.has_method("set_meta"): b.set_meta("tunnel_target_y", t.y1)
+
+					if "vx" in b: b.vx = 0.0
+					elif b.has_method("set_meta"): b.set_meta("vx", 0.0)
+					if "vy" in b: b.vy = 0.0
+					elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
+					break

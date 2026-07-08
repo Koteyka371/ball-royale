@@ -11161,3 +11161,115 @@ class SolarFlareMode(GameMode):
 GAME_MODES["solar_flare"] = SolarFlareMode()
 
 GAME_MODES["blackout_event"] = BlackoutEventMode()
+
+
+class UndergroundTunnelMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Underground Tunnels"
+        self.description = "Procedural arenas can spawn underground tunnels, allowing balls to temporarily travel underneath obstacles. While underground, balls are invisible and cannot be targeted, but can only emerge at specific tunnel exits."
+        self.tunnels = []
+        self.tunnel_radius = 40.0
+        self.travel_speed = 300.0
+
+    class Tunnel:
+        def __init__(self, x1, y1, x2, y2):
+            self.x1 = x1
+            self.y1 = y1
+            self.x2 = x2
+            self.y2 = y2
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.tunnels = []
+        import random
+        # Create a few tunnels
+        for _ in range(3):
+            x1 = random.uniform(200, 800)
+            y1 = random.uniform(200, 800)
+            x2 = random.uniform(200, 800)
+            y2 = random.uniform(200, 800)
+            self.tunnels.append(self.Tunnel(x1, y1, x2, y2))
+
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        for i, t in enumerate(self.tunnels):
+            # Entrance A
+            world.arena.hazards.append({
+                "id": f"tunnel_{i}_a",
+                "x": t.x1, "y": t.y1,
+                "radius": self.tunnel_radius,
+                "kind": "tunnel_entrance"
+            })
+            # Entrance B
+            world.arena.hazards.append({
+                "id": f"tunnel_{i}_b",
+                "x": t.x2, "y": t.y2,
+                "radius": self.tunnel_radius,
+                "kind": "tunnel_entrance"
+            })
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            is_underground = getattr(b, "underground", False)
+            if is_underground:
+                # Travel towards target
+                tx = getattr(b, "tunnel_target_x", b.x)
+                ty = getattr(b, "tunnel_target_y", b.y)
+                dx = tx - b.x
+                dy = ty - b.y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist <= self.travel_speed * delta:
+                    # Arrived
+                    b.x = tx
+                    b.y = ty
+                    b.underground = False
+                    b.is_invisible = False
+                    b.tunnel_cooldown = 1.0
+                else:
+                    b.x += (dx / dist) * self.travel_speed * delta
+                    b.y += (dy / dist) * self.travel_speed * delta
+
+                continue
+
+            # Handle entry if not underground
+            cd = getattr(b, "tunnel_cooldown", 0.0)
+            if cd > 0:
+                b.tunnel_cooldown = max(0.0, cd - delta)
+                continue
+
+            # Check overlap with any tunnel entrance
+            for t in self.tunnels:
+                # Check entrance A
+                dist_a = math.sqrt((b.x - t.x1)**2 + (b.y - t.y1)**2)
+                if dist_a < self.tunnel_radius:
+                    b.underground = True
+                    b.is_invisible = True
+                    b.tunnel_target_x = t.x2
+                    b.tunnel_target_y = t.y2
+                    b.vx = 0.0
+                    b.vy = 0.0
+                    break
+
+                # Check entrance B
+                dist_b = math.sqrt((b.x - t.x2)**2 + (b.y - t.y2)**2)
+                if dist_b < self.tunnel_radius:
+                    b.underground = True
+                    b.is_invisible = True
+                    b.tunnel_target_x = t.x1
+                    b.tunnel_target_y = t.y1
+                    b.vx = 0.0
+                    b.vy = 0.0
+                    break
+
+GAME_MODES["underground_tunnels"] = UndergroundTunnelMode()

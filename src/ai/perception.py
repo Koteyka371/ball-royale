@@ -153,6 +153,7 @@ class Perception:
             active_flares = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == "flare" and getattr(h, "active", True)]
 
         for e in entities.get("enemies", []):
+            if getattr(e, "underground", False): continue
             if intersects_smoke(e):
                 continue
 
@@ -207,7 +208,7 @@ class Perception:
             filtered_enemies.append(e)
 
         data["enemies"] = filtered_enemies
-        data["allies"] = [e for e in entities.get("allies", []) if not intersects_smoke(e)]
+        data["allies"] = [e for e in entities.get("allies", []) if not intersects_smoke(e) and not getattr(e, "underground", False)]
         data["boosters"] = [e for e in entities.get("boosters", []) if not intersects_smoke(e)]
         data["traps"] = [e for e in entities.get("traps", []) if not intersects_smoke(e)]
 
