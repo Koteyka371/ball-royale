@@ -49,6 +49,7 @@ class ProceduralArena:
         self.last_tick = -1
         self.danger_grid: dict[tuple[int, int], float] = {}
         self.boundary_states = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
+        self.temperature = 20.0
 
         self.generate()
 
@@ -578,6 +579,42 @@ class ProceduralArena:
                                 elif other_hazard.kind not in ("sinkhole", "massive_sinkhole") and getattr(other_hazard, "active", True):
                                     hazard.radius += other_hazard.radius * 0.1
                                     other_hazard.active = False
+
+                for hazard in self.hazards:
+                    if getattr(hazard, "kind", "") == "ice_patch" or getattr(hazard, "kind", "") == "ice_patches":
+                        if not hasattr(hazard, "duration"):
+                            hazard.duration = 20.0
+                        if self.temperature > 0.0:
+                            hazard.duration -= self.temperature * 0.1 * delta
+
+                        # Melt via fire
+                        for other_hazard in self.hazards:
+                            if getattr(other_hazard, "active", True) and other_hazard.kind in ("fire_zone", "lava", "fire_ring", "firenado", "local_firenado"):
+                                import math
+                                hx_diff = hazard.x - other_hazard.x
+                                hy_diff = hazard.y - other_hazard.y
+                                dist = math.hypot(hx_diff, hy_diff)
+                                if dist < hazard.radius + getattr(other_hazard, "radius", 10.0):
+                                    hazard.duration = 0.0
+                                    break
+
+                        if hazard.duration <= 0.0:
+                            hazard.kind = "puddle"
+                            hazard.duration = 20.0
+
+                    elif getattr(hazard, "kind", "") == "puddle":
+                        if not hasattr(hazard, "duration"):
+                            hazard.duration = 20.0
+
+                        if self.temperature > 0.0:
+                            hazard.duration -= self.temperature * 0.1 * delta
+                            if hazard.duration <= 0.0:
+                                hazard.active = False
+                        elif self.temperature < 0.0:
+                            hazard.duration -= -self.temperature * 0.1 * delta
+                            if hazard.duration <= 0.0:
+                                hazard.kind = "ice_patch"
+                                hazard.duration = 20.0
 
                 for hazard in self.hazards:
                     if hazard.kind == "slip_zone":

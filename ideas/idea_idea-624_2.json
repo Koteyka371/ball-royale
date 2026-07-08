@@ -1,0 +1,4 @@
+{
+  "title": "Temperature-Dependent Powerups",
+  "description": "Create powerups that scale in effectiveness based on the arena temperature, such as a Heat Shield that blocks more damage in high-temperature environments."
+}
