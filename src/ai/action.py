@@ -8686,6 +8686,9 @@ class Action:
 
                 dir_x = 0.0
                 dir_y = 0.0
+                teleport_x = self.ball.x
+                teleport_y = self.ball.y
+
                 if enemies:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     dx = target.x - self.ball.x
@@ -8694,56 +8697,35 @@ class Action:
                     if dist > 0.0001:
                         dir_x = dx / dist
                         dir_y = dy / dist
+                        if dist <= dash_dist:
+                            teleport_x = target.x
+                            teleport_y = target.y
+                        else:
+                            teleport_x = self.ball.x + dir_x * dash_dist
+                            teleport_y = self.ball.y + dir_y * dash_dist
                     else:
                         angle = random.uniform(0, 2 * math.pi)
                         dir_x = math.cos(angle)
                         dir_y = math.sin(angle)
+                        teleport_x = self.ball.x + dir_x * dash_dist
+                        teleport_y = self.ball.y + dir_y * dash_dist
                 else:
                     angle = random.uniform(0, 2 * math.pi)
                     dir_x = math.cos(angle)
                     dir_y = math.sin(angle)
+                    teleport_x = self.ball.x + dir_x * dash_dist
+                    teleport_y = self.ball.y + dir_y * dash_dist
 
-                rem_dist = dash_dist
                 my_radius = getattr(self.ball, "radius", 10.0)
-                step = 5.0
 
-                while rem_dist > 0.001:
-                    current_step = min(step, rem_dist)
-                    next_x = self.ball.x + dir_x * current_step
-                    next_y = self.ball.y + dir_y * current_step
+                # Teleport instantly
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                    res = self.world.arena.clamp_position(teleport_x, teleport_y, my_radius)
+                    if isinstance(res, (list, tuple)):
+                        teleport_x, teleport_y = res[0], res[1]
 
-                    bounced = False
-                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
-                        res = self.world.arena.clamp_position(next_x, next_y, my_radius)
-                        if isinstance(res, (list, tuple)):
-                            cx = res[0]
-                            cy = res[1]
-                            if len(res) > 2:
-                                bounced = res[2]
-                            else:
-                                bounced = (abs(cx - next_x) > 0.001 or abs(cy - next_y) > 0.001)
-                        else:
-                            cx, cy = next_x, next_y
-                    else:
-                        cx, cy = next_x, next_y
-
-                    if bounced:
-                        actual_dist = math.sqrt((cx - self.ball.x)**2 + (cy - self.ball.y)**2)
-                        leftover_step = max(0.0, current_step - actual_dist)
-
-                        if abs(cx - next_x) > 0.001:
-                            dir_x = -dir_x
-                            if hasattr(self.ball, 'vx'): self.ball.vx = -self.ball.vx
-                        if abs(cy - next_y) > 0.001:
-                            dir_y = -dir_y
-                            if hasattr(self.ball, 'vy'): self.ball.vy = -self.ball.vy
-
-                        cx += dir_x * leftover_step
-                        cy += dir_y * leftover_step
-
-                    self.ball.x = cx
-                    self.ball.y = cy
-                    rem_dist -= current_step
+                self.ball.x = teleport_x
+                self.ball.y = teleport_y
 
                 # Deal damage to enemies we pass through or land on
                 killed_enemy = False

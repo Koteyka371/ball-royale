@@ -56,12 +56,11 @@ class MockBall:
         self.hp = 100.0
         self.team = "A"
 
-def test_dash_bounce():
+def test_dash_teleport():
     # Place ball near right wall (x=990), with 10 radius.
     # The wall is at 1000, max x is 990.
     # Ball is at x=950, dashing perfectly right -> distance 100.
-    # It should hit the wall at x=990, travelling 40 units.
-    # It should bounce left and travel 60 units to x=930.
+    # It should hit the wall at x=990, teleporting directly.
     ball = MockBall(950.0, 500.0, 10.0, 0.0)
 
     # We add a fake enemy perfectly right to force direction
@@ -79,9 +78,6 @@ def test_dash_bounce():
     # Manually trigger the dash
     action._use_skill()
 
-    # Check if ball bounced correctly
-    assert abs(ball.x - 930.0) < 1.0, f"Expected ball x to be 930, but got {ball.x}"
+    # Check if ball teleported and stopped at the wall correctly
+    assert abs(ball.x - 990.0) < 1.0, f"Expected ball x to be 990, but got {ball.x}"
     assert ball.y == 500.0
-
-    # Check if velocity got reversed
-    assert ball.vx < 0.0, "Expected velocity to reverse on X axis"
