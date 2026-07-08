@@ -11003,7 +11003,7 @@
     },
     {
       "id": "idea-638",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clone Mine Trap",
@@ -20546,6 +20546,142 @@
         "src/arena/bouncy_wall_traps.py",
         "src/arena/bouncy_wall_traps.gd",
         "tests/test_bouncy_wall_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1199",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Laser Event",
+      "description": "A slow-moving orbital laser tracks the highest-scoring ball, forcing them to constantly stay on the move while dodging other attacks.",
+      "allowed_paths": [
+        "src/ai/orbital_laser.py",
+        "src/ai/orbital_laser.gd",
+        "tests/test_orbital_laser.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1200",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Event: Meteor Shower",
+      "description": "Randomly drops explosive meteors from the sky that damage any players caught in their blast radius.",
+      "allowed_paths": [
+        "src/ai/new_meteor_shower.py",
+        "src/ai/new_meteor_shower.gd",
+        "tests/test_new_meteor_shower.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1201",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Phased Shift Skill",
+      "description": "A temporary active skill that renders the player partially invisible and immune to terrain hazards for 3 seconds, but unable to deal damage. Good for escaping tight situations.",
+      "allowed_paths": [
+        "src/ai/phased_shift_skill.py",
+        "src/ai/phased_shift_skill.gd",
+        "tests/test_phased_shift_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1202",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Shower Core Mechanic Integration",
+      "description": "Expand meteor shower behavior so it creates small craters that linger in the arena for a few seconds. Balls falling into craters receive a temporary 'slow' debuff, turning a random hazard into a tactical space control mechanism.",
+      "allowed_paths": [
+        "src/ai/meteor_shower_core_mechanic_integration.py",
+        "src/ai/meteor_shower_core_mechanic_integration.gd",
+        "tests/test_meteor_shower_core_mechanic_integration.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1203",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmic Storm Event Mode",
+      "description": "Combine the meteor shower with zero-gravity periods. When meteors fall during zero-g, they bounce off the ground unpredictably and carry momentum, making positioning extremely chaotic and challenging.",
+      "allowed_paths": [
+        "src/ai/cosmic_storm.py",
+        "src/ai/cosmic_storm.gd",
+        "tests/test_cosmic_storm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1204",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Grenade",
+      "description": "An item that can be thrown at a target location. Upon landing, it emits fake footstep sounds and creates visual noise (similar to multiple players moving) to draw enemy fire and mask real player movements.",
+      "allowed_paths": [
+        "src/ai/decoy_grenade.py",
+        "src/ai/decoy_grenade.gd",
+        "tests/test_decoy_grenade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1205",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grapple Hook Mechanics",
+      "description": "Balls can equip a grapple hook to swing around obstacles and quickly cross gaps or evade enemies.",
+      "allowed_paths": [
+        "src/ai/grapple_hook_mechanics.py",
+        "src/ai/grapple_hook_mechanics.gd",
+        "tests/test_grapple_hook_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1206",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Item: Cloaking Device",
+      "description": "An item that temporarily renders the player invisible to enemy AI, preventing targeting for a short duration.",
+      "allowed_paths": [
+        "src/ai/new_item_cloaking_device.py",
+        "src/ai/new_item_cloaking_device.gd",
+        "tests/test_new_item_cloaking_device.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

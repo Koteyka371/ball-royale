@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-638] Clone Mine Trap — *2026-07-08 19:30:57 UTC*
+
+A hazard that triggers when a ball gets near, immediately spawning hostile clone enemies of that ball that target the original ball.
+
+---
+
 ## [idea-731] Bounty Reward System — *2026-07-08 19:23:25 UTC*
 
 When a Bounty Hunter successfully defeats a target marked as a bounty, they instantly receive a full health restore and a temporary speed boost.
