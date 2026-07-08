@@ -934,14 +934,16 @@ class ProceduralArena:
                         h.duration -= delta
                         if h.duration <= 0:
                             h.active = False
+                            # Spawn temporary debris hazards for cover and slow down
                             import random
-                            num_debris = random.randint(3, 5)
-                            for i in range(num_debris):
+                            num_debris_hazards = random.randint(3, 5)
+                            for i in range(num_debris_hazards):
                                 debris_id = 9000 + len(self.hazards) + len(new_craters) + random.randint(0, 1000)
                                 offset_x = random.uniform(-h.radius, h.radius)
                                 offset_y = random.uniform(-h.radius, h.radius)
                                 debris_rad = random.uniform(30.0, 60.0)
                                 debris = Hazard(id=debris_id, x=h.x + offset_x, y=h.y + offset_y, radius=debris_rad, kind="orbital_debris", damage=0.0)
+                                # Lasts for 10 seconds
                                 debris.duration = 10.0
                                 new_craters.append(debris)
                 elif getattr(h, "kind", "") == "emp_strike_active":

@@ -1148,8 +1148,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                             h.set_meta("active", false)
                         if "active" in h:
                             h.active = false
-                        var num_debris = randi_range(3, 5)
-                        for i in range(num_debris):
+                        # Spawn temporary debris hazards for cover and slow down
+                        var num_debris_hazards = randi_range(3, 5)
+                        for i in range(num_debris_hazards):
                             var debris_id = 9000 + hazards.size() + new_craters.size() + (randi() % 1000)
                             var hx = float(h.x if "x" in h else (h.get_meta("x") if h.has_meta("x") else 0.0))
                             var hy = float(h.y if "y" in h else (h.get_meta("y") if h.has_meta("y") else 0.0))
@@ -1158,6 +1159,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                             var offset_y = randf_range(-hr, hr)
                             var debris_rad = randf_range(30.0, 60.0)
                             var debris = load("res://src/arena/procedural_arena.gd").Hazard.new(debris_id, hx + offset_x, hy + offset_y, debris_rad, "orbital_debris", 0.0)
+                            # Lasts for 10 seconds
                             debris.set_meta("duration", 10.0)
                             new_craters.append(debris)
             elif "kind" in h and h.kind == "orbital_debris":

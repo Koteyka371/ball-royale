@@ -186,6 +186,7 @@ class Action:
                     if getattr(h, 'is_disabled_by_flare', False):
                         continue
                     if getattr(h, "kind", "") == "orbital_debris":
+                        # Debris provides cover from projectiles
                         hx = h.x
                         hy = h.y
                         hr = getattr(h, "radius", 40.0)
@@ -4189,11 +4190,13 @@ class Action:
                             continue
 
                         elif hazard.kind == "orbital_debris":
+                            # Debris hazards slow down balls heavily in the crater area
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
                             dist = math.hypot(dx, dy)
                             if dist < getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 40.0):
-                                self.ball.speed = getattr(self.ball, 'base_speed', 150.0) * 0.2
+                                slow_factor = 0.2
+                                self.ball.speed = getattr(self.ball, 'base_speed', 150.0) * slow_factor
                             continue
                         elif hazard.kind == "emp_strike_active":
                             # Check if under an orbital shield dome
