@@ -128,6 +128,38 @@ class GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var match_time = 0.0
+		if typeof(world) == TYPE_DICTIONARY:
+			match_time = world.get("match_time", 0.0) + delta
+			world["match_time"] = match_time
+		elif world.has_method("get_meta"):
+			match_time = world.get_meta("match_time") if world.has_meta("match_time") else 0.0
+			match_time += delta
+			world.set_meta("match_time", match_time)
+
+		var speed_cap = max(30.0, 300.0 - (match_time * 1.5))
+
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				b_alive = b.get("alive", false)
+				var b_type = b.get("ball_type", null)
+				if b_alive and b_type != "spectator":
+					if b.has("speed"):
+						b["speed"] = min(b["speed"], speed_cap)
+					if b.has("base_speed"):
+						b["base_speed"] = min(b["base_speed"], speed_cap)
+			else:
+				b_alive = b.alive
+				var b_type = b.ball_type if "ball_type" in b else null
+				if b_alive and b_type != "spectator":
+					if "speed" in b:
+						b.speed = min(b.speed, speed_cap)
+					if "base_speed" in b:
+						b.base_speed = min(b.base_speed, speed_cap)
+					elif b.has_method("has_meta") and b.has_meta("base_speed"):
+						b.set_meta("base_speed", min(b.get_meta("base_speed"), speed_cap))
+
 		# Evaluate crowd system
 		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
 			var crowd = world.get_node("CrowdSystem")

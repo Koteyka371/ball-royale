@@ -93,7 +93,27 @@ class GameMode:
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+
+        if not hasattr(world, "match_time") or not isinstance(getattr(world, "match_time"), (int, float)):
+            world.match_time = 0.0
+
+        try:
+            world.match_time += delta
+        except Exception:
+            world.match_time = delta
+
+        try:
+            speed_cap = max(30.0, 300.0 - (world.match_time * 1.5))
+        except Exception:
+            speed_cap = 300.0
+
         for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if hasattr(b, "speed") and isinstance(b.speed, (int, float)):
+                    b.speed = min(b.speed, speed_cap)
+                if hasattr(b, "base_speed") and isinstance(b.base_speed, (int, float)):
+                    b.base_speed = min(b.base_speed, speed_cap)
+
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
                 b.weather_immunity_timer = max(0.0, w_timer - delta)
