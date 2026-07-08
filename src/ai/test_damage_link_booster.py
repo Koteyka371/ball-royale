@@ -34,6 +34,7 @@ def test_damage_link_booster_collection():
     enemy = FakeBall(50.0, 0.0)
     enemy.team = "enemy"
     enemy.ball_type = "basic2"
+    enemy.ball_type = "basic2"
 
     world = MagicMock()
     world.balls = [ball, enemy]
@@ -57,6 +58,7 @@ def test_damage_link_booster_damage_sharing():
     ball = FakeBall(0.0, 0.0)
     enemy = FakeBall(50.0, 0.0)
     enemy.team = "enemy"
+    enemy.ball_type = "basic2"
     enemy.ball_type = "basic2"
 
     ball.damage_link_target = enemy
