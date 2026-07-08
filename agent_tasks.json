@@ -12688,7 +12688,7 @@
     },
     {
       "id": "idea-737",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Booster",
@@ -20699,6 +20699,23 @@
         "src/ai/shrinking_safe_haven_booster.py",
         "src/ai/shrinking_safe_haven_booster.gd",
         "tests/test_shrinking_safe_haven_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1208",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Temporal Collapse",
+      "description": "As the match progresses, the edges of the arena start breaking down into 'void tiles'. Touching these tiles slows the player down and randomly rewinds their movement to a previous position, disorienting them and forcing fights into the center.",
+      "allowed_paths": [
+        "src/ai/temporal_collapse.py",
+        "src/ai/temporal_collapse.gd",
+        "tests/test_temporal_collapse.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

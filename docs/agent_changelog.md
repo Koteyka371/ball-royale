@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-737] Quantum Entanglement Booster — *2026-07-08 19:43:15 UTC*
+
+An item that pairs the collector with the closest enemy. Any damage taken by either ball is shared between both, creating new strategic dilemmas.
+
+---
+
 ## [idea-728] Echo Clones Mode — *2026-07-08 19:40:50 UTC*
 
 Every few seconds, a trail of static clones is left behind every ball. If an enemy touches a clone, it detonates and deals damage.
