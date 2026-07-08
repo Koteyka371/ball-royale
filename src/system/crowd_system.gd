@@ -4,6 +4,8 @@ var world
 var excitement_level = 0.0
 var max_excitement = 100.0
 var team_alive_counts = {}
+var ball_popularity = {}
+var sign_timer = 0
 var last_kill_tick = 0
 var kill_streak = {}
 var active_vote = null
@@ -133,6 +135,7 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
     _throw_buffs_if_needed(balls, current_tick)
     _throw_hazards_if_bored(balls, current_tick)
     _process_votes(balls, current_tick)
+    _update_signs(balls, current_tick)
 
 func _check_bets_and_winner(balls: Array, current_tick: int):
     if not match_started and balls.size() > 1:
@@ -299,6 +302,10 @@ func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
         return
 
     var killer_id = kill_info["killer_id"]
+    if killer_id != null:
+        if not ball_popularity.has(killer_id):
+            ball_popularity[killer_id] = 0.0
+        ball_popularity[killer_id] += 1.0
 
     if not kill_streak.has(killer_id):
         kill_streak[killer_id] = 1
@@ -645,3 +652,66 @@ func _resolve_vote(balls: Array):
     active_vote = null
     votes.clear()
     vote_cooldown = 1000
+
+func _update_signs(balls: Array, current_tick: int):
+    var keys_to_remove = []
+    for b_id in ball_popularity.keys():
+        ball_popularity[b_id] *= 0.999
+        if ball_popularity[b_id] < 0.1:
+            keys_to_remove.append(b_id)
+
+    for b_id in keys_to_remove:
+        ball_popularity.erase(b_id)
+
+    sign_timer += 1
+    if sign_timer >= 60:
+        sign_timer = 0
+        if world == null or not world.has_method("add_event"):
+            return
+
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") and b.get("ball_type") != "spectator":
+                var b_id = b.get("id")
+                var pop = 0.0
+                if ball_popularity.has(b_id):
+                    pop = ball_popularity[b_id]
+
+                if pop > 0.5:
+                    var team = b.get("team")
+                    if team == null or team == "":
+                        team = b.get("ball_type")
+                    if team == null or team == "":
+                        team = "Player"
+
+                    var size = min(3.0, 1.0 + pop * 0.2)
+                    var edge_angle = randf() * 360.0
+                    var messages = ["Go " + str(team) + "!", "Ball " + str(b_id) + " FTW!", str(team) + " Rules!", "Cheering for " + str(b_id) + "!"]
+                    var msg = messages[randi() % messages.size()]
+
+                    world.add_event("crowd_sign", {
+                        "ball_id": b_id,
+                        "team": team,
+                        "size": size,
+                        "message": msg,
+                        "angle": edge_angle
+                    })
+            elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.get("ball_type") != "spectator":
+                var b_id = b.get("id", -1)
+                var pop = 0.0
+                if ball_popularity.has(b_id):
+                    pop = ball_popularity[b_id]
+
+                if pop > 0.5:
+                    var team = b.get("team", b.get("ball_type", "Player"))
+                    var size = min(3.0, 1.0 + pop * 0.2)
+                    var edge_angle = randf() * 360.0
+                    var messages = ["Go " + str(team) + "!", "Ball " + str(b_id) + " FTW!", str(team) + " Rules!", "Cheering for " + str(b_id) + "!"]
+                    var msg = messages[randi() % messages.size()]
+
+                    world.add_event("crowd_sign", {
+                        "ball_id": b_id,
+                        "team": team,
+                        "size": size,
+                        "message": msg,
+                        "angle": edge_angle
+                    })

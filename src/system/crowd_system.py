@@ -7,6 +7,8 @@ class CrowdSystem:
         self.excitement_level = 0.0
         self.max_excitement = 100.0
         self.team_alive_counts = {}
+        self.ball_popularity = {}
+        self.sign_timer = 0
         self.active_vote = None
         self.votes = {}
         self.vote_timer = 0
@@ -104,6 +106,7 @@ class CrowdSystem:
         self._throw_buffs_if_needed(balls, tick)
         self._throw_hazards_if_bored(balls, tick)
         self._process_votes(balls, tick)
+        self._update_signs(balls, tick)
 
     def _check_camping(self, balls: List[Any], tick: int):
         for b in balls:
@@ -207,6 +210,9 @@ class CrowdSystem:
     def _handle_kill(self, kill_info: Dict, tick: int, balls: List[Any]):
         killer_id = kill_info.get("killer_id")
         victim_id = kill_info.get("victim_id")
+
+        if killer_id is not None:
+            self.ball_popularity[killer_id] = self.ball_popularity.get(killer_id, 0.0) + 1.0
 
         # Track streak
         if killer_id not in self.kill_streak:
@@ -405,3 +411,34 @@ class CrowdSystem:
         self.active_vote = None
         self.votes = {}
         self.vote_cooldown = 1000  # Long cooldown before next vote
+
+    def _update_signs(self, balls: List[Any], tick: int):
+        # Decay popularity
+        for b_id in list(self.ball_popularity.keys()):
+            self.ball_popularity[b_id] *= 0.999
+            if self.ball_popularity[b_id] < 0.1:
+                del self.ball_popularity[b_id]
+
+        self.sign_timer += 1
+        if self.sign_timer >= 60:
+            self.sign_timer = 0
+            if not hasattr(self.world, 'add_event'):
+                return
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                    b_id = getattr(b, "id", -1)
+                    pop = self.ball_popularity.get(b_id, 0.0)
+                    if pop > 0.5:
+                        team = getattr(b, "team", getattr(b, "ball_type", "Player"))
+                        size = min(3.0, 1.0 + pop * 0.2)
+                        edge_angle = random.uniform(0, 360)
+                        messages = [f"Go {team}!", f"Ball {b_id} FTW!", f"{team} Rules!", f"Cheering for {b_id}!"]
+
+                        self.world.add_event("crowd_sign", {
+                            "ball_id": b_id,
+                            "team": team,
+                            "size": size,
+                            "message": random.choice(messages),
+                            "angle": edge_angle
+                        })
