@@ -5017,7 +5017,7 @@ func execute(strategy: String, delta: float):
                                         if self.ball.hp <= 0:
                                             self.ball.alive = false
 
-                                # Speed debuff
+                                # Movement speed is halved for 5 seconds
                                 if typeof(self.ball) == TYPE_DICTIONARY:
                                     self.ball["speed_debuff_timer"] = 5.0
                                     self.ball["speed_debuff_multiplier"] = 0.5
