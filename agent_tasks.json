@@ -12329,7 +12329,7 @@
     },
     {
       "id": "idea-716",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Underground Tunnel Network",
@@ -20529,6 +20529,23 @@
         "src/ai/tornado_chains.py",
         "src/ai/tornado_chains.gd",
         "tests/test_tornado_chains.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1198",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Wall Traps",
+      "description": "Add placeable traps that act as jump pads, forcing balls that dash into them or get knocked into them to ricochet at high speeds in an unpredictable direction.",
+      "allowed_paths": [
+        "src/arena/bouncy_wall_traps.py",
+        "src/arena/bouncy_wall_traps.gd",
+        "tests/test_bouncy_wall_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

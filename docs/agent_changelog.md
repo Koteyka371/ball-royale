@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-716] Underground Tunnel Network — *2026-07-08 19:23:13 UTC*
+
+Procedural arenas can spawn underground tunnels, allowing balls to temporarily travel underneath obstacles. While underground, balls are invisible and cannot be targeted, but can only emerge at specific tunnel exits.
+
+---
+
 ## [idea-725] Bouncy dash variant — *2026-07-08 19:04:16 UTC*
 
 Dash that bounces off walls.
