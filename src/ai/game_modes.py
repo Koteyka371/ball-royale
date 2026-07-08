@@ -555,8 +555,9 @@ class BattleRoyaleMode(GameMode):
             for h in world.arena.hazards:
                 if getattr(h, "kind", "") == "tornado":
                     if hasattr(h, "vx") and hasattr(h, "vy"):
-                        h.x += h.vx * delta
-                        h.y += h.vy * delta
+                        speed_mult = 1.5 if getattr(self, "weather", "") == "thunderstorm" else 1.0
+                        h.x += h.vx * speed_mult * delta
+                        h.y += h.vy * speed_mult * delta
                         # Bounce off walls
                         arena_width = getattr(world.arena, "width", 1000)
                         arena_height = getattr(world.arena, "height", 1000)

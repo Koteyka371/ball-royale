@@ -723,8 +723,9 @@ class BattleRoyaleMode extends GameMode:
 					if h.has_meta("vx") and h.has_meta("vy"):
 						var vx = h.get_meta("vx")
 						var vy = h.get_meta("vy")
-						h.x += vx * delta
-						h.y += vy * delta
+						var speed_mult = 1.5 if self.weather == "thunderstorm" else 1.0
+						h.x += vx * speed_mult * delta
+						h.y += vy * speed_mult * delta
 						var aw = 1000.0
 						var ah = 1000.0
 						if "width" in world.arena: aw = world.arena.width
