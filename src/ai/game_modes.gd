@@ -6182,6 +6182,61 @@ class SumoKnockoutMode extends GameMode:
 			if world.has_method("add_event"):
 				world.add_event("zone_shrink_update", {"zone_x": zone_x, "zone_y": zone_y, "radius": zone_radius})
 
+
+class PacifistKnockoutMode extends GameMode:
+	func _init() -> void:
+		name = "Pacifist Knockout"
+		description = "Balls deal zero direct damage. Instead, balls bounce off each other with massively increased knockback, and the only way to eliminate opponents is to push them into outer hazard zones."
+
+	func setup(world, balls: Array) -> void:
+		for b in balls:
+			b.damage = 0.0
+			if "base_damage" in b:
+				b.base_damage = 0.0
+			if not b.has_meta("mutators"):
+				b.set_meta("mutators", [])
+			var mutators = b.get_meta("mutators")
+			if not mutators.has("pacifist_knockout"):
+				mutators.append("pacifist_knockout")
+				b.set_meta("mutators", mutators)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+		elif "width" in world:
+			arena_width = world.width
+			arena_height = world.height
+
+		var margin = 150.0
+
+		for b in balls:
+			if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
+				continue
+
+			var radius = b.get("radius", 10.0)
+			var in_hazard = false
+			if b.x - radius < margin or b.x + radius > arena_width - margin:
+				in_hazard = true
+			if b.y - radius < margin or b.y + radius > arena_height - margin:
+				in_hazard = true
+
+			if in_hazard:
+				if b.has_method("take_damage"):
+					b.take_damage(200.0 * delta)
+				elif "hp" in b:
+					b.hp -= 200.0 * delta
+					if b.hp <= 0:
+						b.hp = 0
+						if b.has_method("set"):
+							b.set("alive", false)
+						else:
+							b.alive = false
+
 class BumperBallsMode extends GameMode:
 	func _init() -> void:
 		name = "Bumper Balls"
@@ -13936,6 +13991,7 @@ var GAME_MODES = {
 	"modifier_zones_safe_zone": ModifierZonesSafeZoneMode.new(),
 	"draft_royale": DraftRoyaleMode.new(),
 	"tournament": TournamentMode.new(),
+	"pacifist_knockout": PacifistKnockoutMode.new(),
 	"bumper_balls": BumperBallsMode.new(),
 	"sumo_knockout": SumoKnockoutMode.new(),
 	"bouncy_terrain": BouncyTerrainMode.new(),

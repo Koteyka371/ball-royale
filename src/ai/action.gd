@@ -16786,7 +16786,9 @@ func _resolve_collisions() -> bool:
             if in_anomaly_zone:
                 knockback_multiplier = 5.0
             elif self.world != null and "game_mode" in self.world and self.world.game_mode != null:
-                if "name" in self.world.game_mode and self.world.game_mode.name == "Bumper Balls":
+                if "name" in self.world.game_mode and self.world.game_mode.name == "Pacifist Knockout":
+                    knockback_multiplier = 5.0
+                elif "name" in self.world.game_mode and self.world.game_mode.name == "Bumper Balls":
                     knockback_multiplier = 5.0
                 elif "name" in self.world.game_mode and self.world.game_mode.name == "Zero Gravity":
                     knockback_multiplier = 5.0

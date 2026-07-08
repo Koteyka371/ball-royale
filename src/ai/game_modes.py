@@ -5365,6 +5365,54 @@ class SumoKnockoutMode(GameMode):
             if hasattr(world, "add_event"):
                 world.add_event("zone_shrink_update", {"zone_x": self.zone_x, "zone_y": self.zone_y, "radius": self.zone_radius})
 
+
+class PacifistKnockoutMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pacifist Knockout"
+        self.description = "Balls deal zero direct damage. Instead, balls bounce off each other with massively increased knockback, and the only way to eliminate opponents is to push them into outer hazard zones."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        for b in balls:
+            b.damage = 0.0
+            if hasattr(b, 'base_damage'):
+                b.base_damage = 0.0
+            if not hasattr(b, "mutators"):
+                b.mutators = []
+            if "pacifist_knockout" not in b.mutators:
+                b.mutators.append("pacifist_knockout")
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "height", 1000)
+
+        margin = 150.0
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            bx = getattr(b, "x", arena_width / 2)
+            by = getattr(b, "y", arena_height / 2)
+            radius = getattr(b, "radius", 10.0)
+
+            in_hazard = False
+            if bx - radius < margin or bx + radius > arena_width - margin:
+                in_hazard = True
+            if by - radius < margin or by + radius > arena_height - margin:
+                in_hazard = True
+
+            if in_hazard:
+                if hasattr(b, "take_damage"):
+                    b.take_damage(200.0 * delta)
+                elif hasattr(b, "hp"):
+                    b.hp -= 200.0 * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+
 class BumperBallsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -11070,6 +11118,7 @@ GAME_MODES = {
     "reverse_gravity_event": ReverseGravityEventMode(),
     "escort": EscortMode(),
     "tournament": TournamentMode(),
+    "pacifist_knockout": PacifistKnockoutMode(),
     "bumper_balls": BumperBallsMode(),
     "sumo_knockout": SumoKnockoutMode(),
     "bouncy_terrain": BouncyTerrainMode(),
