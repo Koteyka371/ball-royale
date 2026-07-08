@@ -59,9 +59,9 @@
     "agent-7": {
       "name": "Jules Worker 7",
       "area": "content",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-641",
+      "status": "assigned",
+      "started_at": "2026-07-08T20:17:21.142184+00:00",
       "cycles_today": 1
     },
     "agent-8": {
@@ -75,9 +75,9 @@
     "agent-9": {
       "name": "Jules Worker 9",
       "area": "behaviors",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-707",
+      "status": "assigned",
+      "started_at": "2026-07-08T20:17:21.142184+00:00",
       "cycles_today": 0
     },
     "agent-10": {
@@ -99,9 +99,9 @@
     "agent-12": {
       "name": "Jules Worker 12",
       "area": "ai-core",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-709",
+      "status": "assigned",
+      "started_at": "2026-07-08T20:17:21.142184+00:00",
       "cycles_today": 3
     },
     "agent-13": {
@@ -155,9 +155,9 @@
     "agent-19": {
       "name": "Jules Worker 19",
       "area": "tests",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-733",
+      "started_at": "2026-07-08T20:17:21.142184+00:00",
       "cycles_today": 0
     },
     "agent-20": {
@@ -219,9 +219,9 @@
     "agent-27": {
       "name": "Jules Worker 27",
       "area": "content",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-744",
+      "started_at": "2026-07-08T20:17:21.142184+00:00",
       "cycles_today": 1
     },
     "agent-28": {
@@ -235,9 +235,9 @@
     "agent-29": {
       "name": "Jules Worker 29",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-745",
+      "started_at": "2026-07-08T20:17:21.142184+00:00",
       "cycles_today": 2
     },
     "agent-30": {
