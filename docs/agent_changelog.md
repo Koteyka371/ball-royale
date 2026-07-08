@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-627] Thunderstorm Modifier — *2026-07-08 17:08:20 UTC*
+
+Periodically, lightning strikes the arena. Balls caught in the blast radius are stunned for a short duration and take damage. A visual warning appears briefly before the strike.
+
+---
+
 ## [idea-697] Interactive Streamer Mode — *2026-07-08 17:08:14 UTC*
 
 Integrate Twitch or similar platforms where actual viewers can type commands to throw specific hazards or power-ups into the arena, directly mapping real-world crowd interactions to the in-game crowd system.
