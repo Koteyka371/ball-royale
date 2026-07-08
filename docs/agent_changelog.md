@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-711] Blackout Weather Event — *2026-07-08 14:57:22 UTC*
+
+Add a periodic blackout event where the arena is fully dark, and balls rely purely on short-range vision.
+
+---
+
 ## [idea-710] Zone Tracking Missiles — *2026-07-08 14:26:41 UTC*
 
 Add a new booster that fires homing missiles towards the safe zone center, damaging enemies clustered there.
