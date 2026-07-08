@@ -119,6 +119,66 @@ func process_external_command(user: String, command: String, balls: Array):
             if world != null and world.has_method("add_event"):
                 world.add_event("crowd_cheer", {"message": "Viewer " + user + " voted for " + option + "!"})
 
+func player_bribe_vote(player_id: String, action: String, option: String = "") -> bool:
+    if active_vote == null or votes.is_empty():
+        return false
+
+    var pm = null
+    if world != null and world.has_method("get_profile_manager"):
+        pm = world.get_profile_manager()
+    elif typeof(world) == TYPE_OBJECT and "profile_manager" in world:
+        pm = world.profile_manager
+    elif typeof(world) == TYPE_DICTIONARY and world.has("profile_manager"):
+        pm = world["profile_manager"]
+
+    if pm == null:
+        return false
+
+    var pm_data = null
+    if typeof(pm) == TYPE_OBJECT and pm.has_method("get"):
+        pm_data = pm.get("data")
+    elif typeof(pm) == TYPE_DICTIONARY and pm.has("data"):
+        pm_data = pm["data"]
+    elif typeof(pm) == TYPE_DICTIONARY:
+        pm_data = pm
+
+    if pm_data == null:
+        return false
+
+    var currency_type = "skill_points"
+    var currency_cost = 50
+
+    var current_sp = pm_data.get("skill_points", 0)
+    var current_pt = pm_data.get("prestige_tokens", 0)
+
+    if current_sp >= 50:
+        pm_data["skill_points"] = current_sp - 50
+    elif current_pt >= 1:
+        pm_data["prestige_tokens"] = current_pt - 1
+        currency_cost = 1
+        currency_type = "prestige_tokens"
+    else:
+        return false
+
+    if action == "cancel":
+        if world != null and world.has_method("add_event"):
+            world.add_event("vote_cancelled", {"message": "Player " + player_id + " bribed the crowd to cancel the vote!"})
+        active_vote = null
+        votes.clear()
+        vote_cooldown = 1000
+        return true
+    elif action == "skew" and votes.has(option):
+        votes[option] += 5
+        if world != null and world.has_method("add_event"):
+            world.add_event("crowd_cheer", {"message": "Player " + player_id + " bribed the crowd to favor " + option + "!"})
+        return true
+
+    if currency_type == "skill_points":
+        pm_data["skill_points"] = pm_data.get("skill_points", 0) + 50
+    else:
+        pm_data["prestige_tokens"] = pm_data.get("prestige_tokens", 0) + 1
+    return false
+
 func _process_external_commands(balls: Array):
     while external_commands.size() > 0:
         var cmd_info = external_commands.pop_front()

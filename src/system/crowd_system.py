@@ -88,6 +88,50 @@ class CrowdSystem:
                 if hasattr(self.world, 'add_event'):
                     self.world.add_event("crowd_cheer", {"message": f"Viewer {user} voted for {option}!"})
 
+    def player_bribe_vote(self, player_id: str, action: str, option: str = None) -> bool:
+        if not self.active_vote or not self.votes:
+            return False
+
+        pm = None
+        if hasattr(self.world, "get_profile_manager"):
+            pm = self.world.get_profile_manager()
+        elif hasattr(self.world, "profile_manager"):
+            pm = self.world.profile_manager
+
+        if not pm or not hasattr(pm, "data"):
+            return False
+
+        currency_type = "skill_points"
+        currency_cost = 50
+
+        if pm.data.get("skill_points", 0) >= 50:
+            pm.data["skill_points"] -= 50
+        elif pm.data.get("prestige_tokens", 0) >= 1:
+            pm.data["prestige_tokens"] -= 1
+            currency_cost = 1
+            currency_type = "prestige_tokens"
+        else:
+            return False
+
+        if action == "cancel":
+            if hasattr(self.world, 'add_event'):
+                self.world.add_event("vote_cancelled", {"message": f"Player {player_id} bribed the crowd to cancel the vote!"})
+            self.active_vote = None
+            self.votes = {}
+            self.vote_cooldown = 1000
+            return True
+        elif action == "skew" and option in self.votes:
+            self.votes[option] += 5
+            if hasattr(self.world, 'add_event'):
+                self.world.add_event("crowd_cheer", {"message": f"Player {player_id} bribed the crowd to favor {option}!"})
+            return True
+
+        if currency_type == "skill_points":
+            pm.data["skill_points"] += 50
+        else:
+            pm.data["prestige_tokens"] += 1
+        return False
+
     def _process_external_commands(self, balls: 'List[Any]'):
         if not hasattr(self, 'external_commands'):
             self.external_commands = []

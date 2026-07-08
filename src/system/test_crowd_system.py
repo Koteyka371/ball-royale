@@ -1,9 +1,14 @@
 import pytest
 from system.crowd_system import CrowdSystem
 
+class MockProfileManager:
+    def __init__(self):
+        self.data = {"skill_points": 100, "prestige_tokens": 5}
+
 class MockWorld:
     def __init__(self):
         self.events = []
+        self.profile_manager = MockProfileManager()
 
     def add_event(self, t, data):
         self.events.append((t, data))
@@ -148,3 +153,38 @@ def test_real_spectators_disable_simulated_votes():
     assert total_votes_after == 1
 
     random.random = old_random
+
+def test_player_bribe_vote_cancel():
+    world = MockWorld()
+    system = CrowdSystem(world)
+
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava", "spike"]}
+    system.votes = {"lava": 0, "spike": 0}
+    system.vote_timer = 100
+
+    # Should use skill_points first
+    result = system.player_bribe_vote("player1", "cancel")
+    assert result == True
+    assert system.active_vote is None
+    assert world.profile_manager.data["skill_points"] == 50
+    assert world.profile_manager.data["prestige_tokens"] == 5
+    events = [e[0] for e in world.events]
+    assert "vote_cancelled" in events
+
+def test_player_bribe_vote_skew():
+    world = MockWorld()
+    # Modify profile manager to have no skill points but enough prestige tokens
+    world.profile_manager.data["skill_points"] = 0
+    system = CrowdSystem(world)
+
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava", "spike"]}
+    system.votes = {"lava": 2, "spike": 0}
+    system.vote_timer = 100
+
+    result = system.player_bribe_vote("player2", "skew", "spike")
+    assert result == True
+    assert system.votes["spike"] == 5
+    assert world.profile_manager.data["skill_points"] == 0
+    assert world.profile_manager.data["prestige_tokens"] == 4
+    events = [e[0] for e in world.events]
+    assert "crowd_cheer" in events
