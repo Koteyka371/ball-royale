@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-736] Chant-driven Boosters — *2026-07-08 19:56:40 UTC*
+
+If a team's chant lasts for a consecutive amount of time due to high excitement and dominance, players on that team get a temporary 'Adrenaline' buff boosting their speed.
+
+---
+
 ## [idea-732] Laser Tripwire — *2026-07-08 19:43:20 UTC*
 
 A tripwire that shoots a powerful laser beam when a player crosses it.
