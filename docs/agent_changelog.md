@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-697] Interactive Streamer Mode — *2026-07-08 17:08:14 UTC*
+
+Integrate Twitch or similar platforms where actual viewers can type commands to throw specific hazards or power-ups into the arena, directly mapping real-world crowd interactions to the in-game crowd system.
+
+---
+
 ## [idea-717] Guild Wars System — *2026-07-08 17:08:08 UTC*
 
 Players can join or create guilds. Guilds can compete in guild vs guild battles to earn guild points. Points are used to upgrade guild level, which unlocks exclusive buffs, banners, and special cosmetics for all members.
