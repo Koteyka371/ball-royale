@@ -168,6 +168,11 @@ func scan() -> Dictionary:
 
     data["enemies"] = []
     for e in entities.get("enemies", []):
+        var is_under_g = false
+        if "underground" in e: is_under_g = e.underground
+        elif e.has_method("has_meta") and e.has_meta("underground"): is_under_g = e.get_meta("underground")
+        if is_under_g: continue
+
         if intersects_smoke.call(e): continue
 
         var revealed_by_flare = false
@@ -217,6 +222,11 @@ func scan() -> Dictionary:
         data["enemies"].append(e)
     data["allies"] = []
     for e in entities.get("allies", []):
+        var is_under_g = false
+        if "underground" in e: is_under_g = e.underground
+        elif e.has_method("has_meta") and e.has_meta("underground"): is_under_g = e.get_meta("underground")
+        if is_under_g: continue
+
         if not intersects_smoke.call(e): data["allies"].append(e)
     data["boosters"] = []
     for e in entities.get("boosters", []):
