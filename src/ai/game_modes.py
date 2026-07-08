@@ -9151,11 +9151,13 @@ class ReverseTugOfWarMode(GameMode):
             move_speed = 50.0 # base move speed
 
             if red_count > blue_count:
-                # Red pushes towards Blue goal (right)
-                self.payload.x -= move_speed * delta * (red_count - blue_count) # Inverted
+                # Payload moves AWAY from Blue goal (towards Red goal, left) if Red has more players
+                speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
+                self.payload.x -= move_speed * delta * (red_count - blue_count) * speed_multiplier
             elif blue_count > red_count:
-                # Blue pushes towards Red goal (left)
-                self.payload.x += move_speed * delta * (blue_count - red_count) # Inverted
+                # Payload moves AWAY from Red goal (towards Blue goal, right) if Blue has more players
+                speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
+                self.payload.x += move_speed * delta * (blue_count - red_count) * speed_multiplier
 
             # Keep in bounds
             if self.payload.x < 50.0:
