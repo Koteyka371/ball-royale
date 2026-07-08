@@ -19,6 +19,8 @@ class CrowdSystem:
         self.match_started = False
         self.match_ended = False
         self.external_commands = []
+        self.consecutive_chants = 0
+        self.last_chant_team = None
         self.has_real_spectators = False
 
     def queue_external_command(self, user: str, command: str):
@@ -203,6 +205,35 @@ class CrowdSystem:
                 if alive_teams[leading_team] >= 2 and hasattr(self.world, 'add_event'):
                     self.world.add_event("crowd_cheer", {"message": f"Let's go Team {leading_team}! Let's go!", "volume": 1.0})
                     self.world.add_event("audio_event", {"sound": "team_chant", "volume": 0.8})
+
+                    # Track consecutive chants for Adrenaline buff
+                    if not hasattr(self, 'last_chant_team'):
+                        self.last_chant_team = leading_team
+                        self.consecutive_chants = 1
+                    elif self.last_chant_team == leading_team:
+                        self.consecutive_chants += 1
+                    else:
+                        self.last_chant_team = leading_team
+                        self.consecutive_chants = 1
+
+                    # If 3 or more consecutive chants, apply Adrenaline buff
+                    if self.consecutive_chants >= 3:
+                        self.world.add_event("crowd_cheer", {"message": f"Team {leading_team} is fueled by the crowd's energy! Adrenaline buff applied!", "volume": 1.2})
+                        self.world.add_event("audio_event", {"sound": "adrenaline_rush", "volume": 1.0})
+                        for b in balls:
+                            if getattr(b, "alive", False) and getattr(b, "team", getattr(b, "ball_type", "")) == leading_team:
+                                self.world.add_event("spawn_booster", {
+                                    "x": getattr(b, "x", 0),
+                                    "y": getattr(b, "y", 0),
+                                    "kind": "speed",
+                                    "value": 50.0
+                                })
+                else:
+                    self.last_chant_team = None
+                    self.consecutive_chants = 0
+        elif tick % 200 == 0:
+            self.last_chant_team = None
+            self.consecutive_chants = 0
 
     def _handle_kill(self, kill_info: Dict, tick: int, balls: List[Any]):
         killer_id = kill_info.get("killer_id")

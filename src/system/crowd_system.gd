@@ -294,6 +294,50 @@ func _check_events(balls: Array, kill_log: Array, current_tick: int):
                 world.add_event("crowd_cheer", {"message": "Let's go Team %s! Let's go!" % leading_team, "volume": 1.0})
                 world.add_event("audio_event", {"sound": "team_chant", "volume": 0.8})
 
+                if not _has_meta_safe("last_chant_team"):
+                    set_meta("last_chant_team", leading_team)
+                    set_meta("consecutive_chants", 1)
+                elif get_meta("last_chant_team") == leading_team:
+                    set_meta("consecutive_chants", get_meta("consecutive_chants") + 1)
+                else:
+                    set_meta("last_chant_team", leading_team)
+                    set_meta("consecutive_chants", 1)
+
+                if get_meta("consecutive_chants") >= 3:
+                    world.add_event("crowd_cheer", {"message": "Team %s is fueled by the crowd's energy! Adrenaline buff applied!" % leading_team, "volume": 1.2})
+                    world.add_event("audio_event", {"sound": "adrenaline_rush", "volume": 1.0})
+                    for b in balls:
+                        var is_alive = false
+                        var team = ""
+                        var b_x = 0.0
+                        var b_y = 0.0
+                        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                            is_alive = b.get("alive") if b.get("alive") != null else false
+                            team = b.get("team")
+                            if team == null or team == "":
+                                team = b.get("ball_type")
+                            b_x = float(b.get("x")) if b.get("x") != null else 0.0
+                            b_y = float(b.get("y")) if b.get("y") != null else 0.0
+                        elif typeof(b) == TYPE_DICTIONARY:
+                            is_alive = b.get("alive", false)
+                            team = b.get("team", b.get("ball_type", ""))
+                            b_x = float(b.get("x", 0.0))
+                            b_y = float(b.get("y", 0.0))
+
+                        if is_alive and team == leading_team:
+                            world.add_event("spawn_booster", {
+                                "x": b_x,
+                                "y": b_y,
+                                "kind": "speed",
+                                "value": 50.0
+                            })
+            else:
+                set_meta("last_chant_team", null)
+                set_meta("consecutive_chants", 0)
+    elif current_tick % 200 == 0:
+        set_meta("last_chant_team", null)
+        set_meta("consecutive_chants", 0)
+
 func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
     if not kill_info.has("killer_id"):
         return
@@ -645,3 +689,6 @@ func _resolve_vote(balls: Array):
     active_vote = null
     votes.clear()
     vote_cooldown = 1000
+
+func _has_meta_safe(key: String) -> bool:
+    return has_meta(key)
