@@ -20057,6 +20057,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1170",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Neon Disco Event Mode",
+      "description": "The arena turns into a disco floor during this event. The ground changes colors rhythmically, and balls must stay on the matching color to avoid taking damage. Balls gain increased speed and stamina regeneration while on the correct color.",
+      "allowed_paths": [
+        "src/ai/neon_disco.py",
+        "src/ai/neon_disco.gd",
+        "tests/test_neon_disco.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1171",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar Eclipse Event Mode",
+      "description": "An event where the sun is gradually blocked. As the eclipse progresses, vision gradually decreases, solar panels provide less power, and at full totality, shadow monsters spawn rapidly and all balls become temporarily invisible to each other.",
+      "allowed_paths": [
+        "src/ai/solar_eclipse.py",
+        "src/ai/solar_eclipse.gd",
+        "tests/test_solar_eclipse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
