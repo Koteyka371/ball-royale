@@ -7693,7 +7693,13 @@ class Action:
 
             elif skill_name == "master_decoys":
                 import copy
-                if hasattr(self.world, "balls"):
+                active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
+                if active_decoys:
+                    for d in active_decoys:
+                        d.hp = 0
+                        d.alive = False
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+                elif hasattr(self.world, "balls"):
                     import random
                     import math
 
@@ -7836,18 +7842,25 @@ class Action:
                                 break
 
                     if active_clone:
-                        # Swap positions
-                        my_x, my_y = getattr(self.ball, "x", 0.0), getattr(self.ball, "y", 0.0)
-                        clone_x, clone_y = getattr(active_clone, "x", 0.0), getattr(active_clone, "y", 0.0)
+                        if getattr(active_clone, "has_swapped", False):
+                            active_clone.hp = 0
+                            active_clone.alive = False
+                            self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+                        else:
+                            # Swap positions
+                            my_x, my_y = getattr(self.ball, "x", 0.0), getattr(self.ball, "y", 0.0)
+                            clone_x, clone_y = getattr(active_clone, "x", 0.0), getattr(active_clone, "y", 0.0)
 
-                        self.ball.x, self.ball.y = clone_x, clone_y
-                        active_clone.x, active_clone.y = my_x, my_y
+                            self.ball.x, self.ball.y = clone_x, clone_y
+                            active_clone.x, active_clone.y = my_x, my_y
+                            active_clone.has_swapped = True
+                            self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
 
-                        if hasattr(self.world, "events"):
-                            self.world.events.append({
-                                'type': 'visual_effect',
-                                'data': {'type': 'line', 'x': my_x, 'y': my_y, 'tx': clone_x, 'ty': clone_y, 'color': 'purple'}
-                            })
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({
+                                    'type': 'visual_effect',
+                                    'data': {'type': 'line', 'x': my_x, 'y': my_y, 'tx': clone_x, 'ty': clone_y, 'color': 'purple'}
+                                })
                     else:
                         clone = copy.copy(self.ball)
                         clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
@@ -7873,7 +7886,13 @@ class Action:
             elif skill_name == "global_mirage":
                 import copy
                 import random
-                if hasattr(self.world, "balls"):
+                active_illusions = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_illusion", False) and getattr(b, "mimic_owner", None) == self.ball.id and getattr(b, "alive", True)]
+                if active_illusions:
+                    for d in active_illusions:
+                        d.hp = 0
+                        d.alive = False
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+                elif hasattr(self.world, "balls"):
                     new_decoys = []
                     for b in self.world.balls:
                         if not getattr(b, "alive", True):
@@ -7913,7 +7932,13 @@ class Action:
                 import copy
                 import math
                 import random
-                if hasattr(self.world, "balls"):
+                active_illusions = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_illusion", False) and getattr(b, "mimic_owner", None) == self.ball.id and getattr(b, "alive", True)]
+                if active_illusions:
+                    for d in active_illusions:
+                        d.hp = 0
+                        d.alive = False
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+                elif hasattr(self.world, "balls"):
                     for i in range(3):
                         decoy = copy.copy(self.ball)
                         decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
@@ -7941,7 +7966,13 @@ class Action:
                         self.world.balls.append(decoy)
             elif skill_name == "deploy_illusion":
                 import copy
-                if hasattr(self.world, "balls"):
+                active_illusions = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_illusion", False) and getattr(b, "mimic_owner", None) == self.ball.id and getattr(b, "alive", True)]
+                if active_illusions:
+                    for d in active_illusions:
+                        d.hp = 0
+                        d.alive = False
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+                elif hasattr(self.world, "balls"):
                     illusion = copy.copy(self.ball)
                     illusion.id = getattr(self.world, "next_id", random.randint(10000, 99999))
                     if hasattr(self.world, "next_id"):
