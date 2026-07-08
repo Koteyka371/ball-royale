@@ -9303,6 +9303,135 @@ class HexGridRoyaleMode(GameMode):
                 if hasattr(b, "take_damage"):
                     b.take_damage(self.damage_per_second * delta)
 
+
+class TickingPayloadMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Ticking Payload"
+        self.description = "A single payload starts in the center with a ticking timer. If it reaches an enemy goal before time runs out, it explodes and deals massive damage to the enemy team's core. If the timer runs out while it's in the middle, it explodes and kills players nearby."
+        self.payload = None
+        self.red_goal_x = 100.0
+        self.blue_goal_x = 900.0
+        self.timer = 120.0
+        self.explosion_radius = 200.0
+        self.winner = None
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(valid_balls) // 2
+
+        red_team = []
+        blue_team = []
+
+        for i, b in enumerate(valid_balls):
+            if i < mid:
+                b.team = "Red"
+                red_team.append(b)
+            else:
+                b.team = "Blue"
+                blue_team.append(b)
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.red_goal_x = 100.0
+        self.blue_goal_x = arena_width - 100.0
+
+        # Find or create a payload
+        class PayloadObj:
+            pass
+        self.payload = PayloadObj()
+        self.payload.ball_type = "payload"
+        self.payload.is_payload = True
+        self.payload.is_invulnerable = True
+        self.payload.speed = 0.0
+        self.payload.base_speed = 0.0
+        self.payload.damage = 0.0
+        self.payload.base_damage = 0.0
+        self.payload.max_hp = 10000.0
+        self.payload.hp = 10000.0
+        self.payload.x = arena_width / 2.0
+        self.payload.y = arena_height / 2.0
+        self.payload.alive = True
+        self.payload.team = "Neutral"
+        self.payload.radius = 20.0
+        balls.append(self.payload)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if self.winner is not None:
+            return
+
+        if getattr(self, "timer", 0) > 0:
+            self.timer -= delta
+        else:
+            if getattr(self.payload, "alive", False):
+                self.payload.alive = False
+                self.payload.hp = 0
+                import math
+                for b in balls:
+                    if getattr(b, "alive", False) and b != self.payload and getattr(b, "ball_type", None) != "spectator":
+                        dist = math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0), getattr(b, "y", 0) - getattr(self.payload, "y", 0))
+                        if dist <= self.explosion_radius:
+                            b.hp = 0
+                            b.alive = False
+                            if hasattr(world, "dead_balls"):
+                                world.dead_balls.append(b)
+                self.winner = "Draw"
+            return
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        if self.payload and getattr(self.payload, "alive", False):
+            import math
+
+            # Count nearby players to determine movement
+            red_count = 0
+            blue_count = 0
+
+            for b in balls:
+                if b == self.payload or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+
+                dx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
+                dy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
+                dist = math.hypot(dx, dy)
+
+                if dist < 150.0:
+                    if getattr(b, "team", "") == "Red":
+                        red_count += 1
+                    elif getattr(b, "team", "") == "Blue":
+                        blue_count += 1
+
+            move_speed = 50.0 # base move speed
+
+            if red_count > blue_count:
+                # Red pushes towards Blue goal (right)
+                speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
+                self.payload.x += move_speed * delta * (red_count - blue_count) * speed_multiplier
+            elif blue_count > red_count:
+                # Blue pushes towards Red goal (left)
+                speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
+                self.payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
+
+            # Check for goals
+            if self.payload.x <= self.red_goal_x:
+                self.payload.alive = False
+                self.payload.hp = 0
+                self.winner = "Blue"
+                # explosion effects on core would be handled by game logic / check_winner
+            elif self.payload.x >= self.blue_goal_x:
+                self.payload.alive = False
+                self.payload.hp = 0
+                self.winner = "Red"
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        return self.winner
+
+
 GAME_MODES = {
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
@@ -9336,6 +9465,7 @@ GAME_MODES = {
     "draft_royale": DraftRoyaleMode(),
     "dual_payload": DualPayloadMode(),
     "tug_of_war": TugOfWarMode(),
+    "ticking_payload": TickingPayloadMode(),
     "reverse_tug_of_war": ReverseTugOfWarMode(),
     "reverse_gravity_event": ReverseGravityEventMode(),
     "escort": EscortMode(),

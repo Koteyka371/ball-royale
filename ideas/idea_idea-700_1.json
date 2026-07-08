@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Escort Mode",
+  "description": "Similar to Escort Mode, but instead of one team escorting an invulnerable payload, both teams must push the payload toward the center, acting as a shared 'Tug of War' towards a mutual goal point where it generates points over time for the team holding it closer."
+}
