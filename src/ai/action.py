@@ -9491,6 +9491,8 @@ class Action:
                 in_anomaly_zone = getattr(self.ball, "in_anomaly_zone", False)
                 if in_anomaly_zone:
                     knockback_multiplier = 5.0
+                elif gm and getattr(gm, "name", "") == "Pacifist Knockout":
+                    knockback_multiplier = 5.0
                 elif gm and getattr(gm, "name", "") == "Bumper Balls":
                     knockback_multiplier = 5.0
                 elif gm and getattr(gm, "name", "") == "Zero Gravity":

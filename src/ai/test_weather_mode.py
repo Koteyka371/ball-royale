@@ -315,7 +315,7 @@ def test_weather_mode_sandstorm_shelter():
     b2.x, b2.y = 100, 100
 
     # Sheltered by flare
-    b3 = MockBall(3, "scout")
+    b3 = MockBall(3, "swarm")
     # Move b3 closer to the center to not be hit by safe zone damage
     b3.x, b3.y = 500, 500
 

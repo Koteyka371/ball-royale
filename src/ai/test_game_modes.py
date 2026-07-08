@@ -1169,3 +1169,50 @@ def test_exploding_decoys_mode_radius():
     action.execute("none", 1.0)
 
     assert enemy.hp == 20 # 100 - 80 damage
+
+
+def test_pacifist_knockout_mode():
+    from ai.game_modes import PacifistKnockoutMode
+    mode = PacifistKnockoutMode()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.width = 1000
+            self.height = 1000
+    class MockBall:
+        def __init__(self, id, ball_type="player"):
+            self.id = id
+            self.ball_type = ball_type
+            self.x = 500
+            self.y = 500
+            self.radius = 10
+            self.alive = True
+            self.damage = 10.0
+            self.hp = 100.0
+            self.team = f"team_{id}"
+            self.mutators = []
+
+    world = MockWorld()
+    balls = [MockBall(1), MockBall(2)]
+    mode.setup(world, balls)
+
+    assert balls[0].damage == 0.0
+    assert balls[1].damage == 0.0
+    assert "pacifist_knockout" in balls[0].mutators
+
+    balls[0].x = 500
+    balls[0].y = 500
+    mode.tick(world, balls, delta=1.0)
+    assert balls[0].hp == 100.0
+    assert balls[0].alive is True
+
+    balls[1].x = 100
+    balls[1].y = 500
+    mode.tick(world, balls, delta=1.0)
+    assert balls[1].hp < 100.0
+    assert balls[1].alive is False
