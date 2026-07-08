@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-739] Bumper Car Arena Mode — *2026-07-08 21:36:58 UTC*
+
+A game mode where balls deal zero direct damage. Instead, balls bounce off each other with massively increased knockback, and the only way to eliminate opponents is to push them into outer hazard zones.
+
+---
+
 ## [idea-741] Interactive Weather Alters — *2026-07-08 21:28:05 UTC*
 
 Add control nodes (alters) to the center of the arena that players can capture. Capturing an alter allows a team to instantly change the current weather to their team's advantage (e.g., a Swamp team changing it to Rain to boost their stats). This creates mini-objectives around controlling the environment.
