@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-710] Zone Tracking Missiles — *2026-07-08 14:26:41 UTC*
+
+Add a new booster that fires homing missiles towards the safe zone center, damaging enemies clustered there.
+
+---
+
 ## [idea-690] Weather Influences Tornadoes — *2026-07-08 14:19:19 UTC*
 
 In 'Thunderstorm' weather, tornadoes naturally move faster around the arena and have an increased tangential pull radius.

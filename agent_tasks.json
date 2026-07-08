@@ -12227,7 +12227,7 @@
     },
     {
       "id": "idea-710",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Zone Tracking Missiles",
@@ -20001,6 +20001,40 @@
         "src/ai/wind.py",
         "src/ai/wind.gd",
         "tests/test_wind.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1167",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Manipulation Booster",
+      "description": "A new booster that allows the user to change the current arena weather for 10 seconds. This could be used defensively (e.g. summoning rain to put out fire/reduce fire damage, or fog to reduce enemy perception) or offensively (e.g. thunderstorm to speed up tornadoes and increase their pull radius).",
+      "allowed_paths": [
+        "src/ai/manipulation_booster.py",
+        "src/ai/manipulation_booster.gd",
+        "tests/test_manipulation_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1168",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Skill Modification",
+      "description": "Balls with the tornado skill can now absorb elemental properties of other hazards they collide with. For example, if a player's tornado collides with a poison puddle, it becomes a poison_tornado, or colliding with a fire trap turns it into a firenado, adding extra utility and combo potential to their kit.",
+      "allowed_paths": [
+        "src/ai/tornado_skill_modification.py",
+        "src/ai/tornado_skill_modification.gd",
+        "tests/test_tornado_skill_modification.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
