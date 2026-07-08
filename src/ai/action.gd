@@ -11533,31 +11533,33 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "instant_rewind_booster":
-                var history = []
+                # Instantly rewinds position and health to where they were 3 seconds ago
+                var state_history_array = []
                 if typeof(self.ball) == TYPE_DICTIONARY:
-                    history = self.ball.get("state_history", [])
+                    state_history_array = self.ball.get("state_history", [])
                 else:
                     if self.ball.has_method("has_meta") and self.ball.has_meta("state_history"):
-                        history = self.ball.get_meta("state_history")
+                        state_history_array = self.ball.get_meta("state_history")
                     elif "state_history" in self.ball:
-                        history = self.ball.state_history
-                if history.size() > 0:
-                    var past = history[0]
+                        state_history_array = self.ball.state_history
+
+                if state_history_array.size() > 0:
+                    var past_state = state_history_array[0]
                     if typeof(self.ball) == TYPE_DICTIONARY:
-                        self.ball["x"] = past.get("x", self.ball.get("x", 0.0))
-                        self.ball["y"] = past.get("y", self.ball.get("y", 0.0))
-                        self.ball["hp"] = past.get("hp", self.ball.get("max_hp", 100.0))
-                        if "attack_timer" in past: self.ball["attack_timer"] = past["attack_timer"]
-                        if "skill_timer" in past: self.ball["skill_timer"] = past["skill_timer"]
+                        self.ball["x"] = past_state.get("x", self.ball.get("x", 0.0))
+                        self.ball["y"] = past_state.get("y", self.ball.get("y", 0.0))
+                        self.ball["hp"] = past_state.get("hp", self.ball.get("max_hp", 100.0))
+                        if "attack_timer" in past_state: self.ball["attack_timer"] = past_state["attack_timer"]
+                        if "skill_timer" in past_state: self.ball["skill_timer"] = past_state["skill_timer"]
                     else:
-                        self.ball.x = past.get("x", self.ball.x)
-                        self.ball.y = past.get("y", self.ball.y)
+                        self.ball.x = past_state.get("x", self.ball.x)
+                        self.ball.y = past_state.get("y", self.ball.y)
                         if "hp" in self.ball:
-                            self.ball.hp = past.get("hp", self.ball.max_hp if "max_hp" in self.ball else 100.0)
-                        if "attack_timer" in past and "attack_timer" in self.ball:
-                            self.ball.attack_timer = past["attack_timer"]
-                        if "skill_timer" in past and "skill_timer" in self.ball:
-                            self.ball.skill_timer = past["skill_timer"]
+                            self.ball.hp = past_state.get("hp", self.ball.max_hp if "max_hp" in self.ball else 100.0)
+                        if "attack_timer" in past_state and "attack_timer" in self.ball:
+                            self.ball.attack_timer = past_state["attack_timer"]
+                        if "skill_timer" in past_state and "skill_timer" in self.ball:
+                            self.ball.skill_timer = past_state["skill_timer"]
 
                     if self.world != null and "events" in self.world:
                         self.world.events.append({"type": "time_rewind", "data": {"id": self.ball.get("id", -1) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id}})
@@ -12330,31 +12332,33 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "instant_rewind_booster":
-                var history = []
+                # Instantly rewinds position and health to where they were 3 seconds ago
+                var state_history_array = []
                 if typeof(self.ball) == TYPE_DICTIONARY:
-                    history = self.ball.get("state_history", [])
+                    state_history_array = self.ball.get("state_history", [])
                 else:
                     if self.ball.has_method("has_meta") and self.ball.has_meta("state_history"):
-                        history = self.ball.get_meta("state_history")
+                        state_history_array = self.ball.get_meta("state_history")
                     elif "state_history" in self.ball:
-                        history = self.ball.state_history
-                if history.size() > 0:
-                    var past = history[0]
+                        state_history_array = self.ball.state_history
+
+                if state_history_array.size() > 0:
+                    var past_state = state_history_array[0]
                     if typeof(self.ball) == TYPE_DICTIONARY:
-                        self.ball["x"] = past.get("x", self.ball.get("x", 0.0))
-                        self.ball["y"] = past.get("y", self.ball.get("y", 0.0))
-                        self.ball["hp"] = past.get("hp", self.ball.get("max_hp", 100.0))
-                        if "attack_timer" in past: self.ball["attack_timer"] = past["attack_timer"]
-                        if "skill_timer" in past: self.ball["skill_timer"] = past["skill_timer"]
+                        self.ball["x"] = past_state.get("x", self.ball.get("x", 0.0))
+                        self.ball["y"] = past_state.get("y", self.ball.get("y", 0.0))
+                        self.ball["hp"] = past_state.get("hp", self.ball.get("max_hp", 100.0))
+                        if "attack_timer" in past_state: self.ball["attack_timer"] = past_state["attack_timer"]
+                        if "skill_timer" in past_state: self.ball["skill_timer"] = past_state["skill_timer"]
                     else:
-                        self.ball.x = past.get("x", self.ball.x)
-                        self.ball.y = past.get("y", self.ball.y)
+                        self.ball.x = past_state.get("x", self.ball.x)
+                        self.ball.y = past_state.get("y", self.ball.y)
                         if "hp" in self.ball:
-                            self.ball.hp = past.get("hp", self.ball.max_hp if "max_hp" in self.ball else 100.0)
-                        if "attack_timer" in past and "attack_timer" in self.ball:
-                            self.ball.attack_timer = past["attack_timer"]
-                        if "skill_timer" in past and "skill_timer" in self.ball:
-                            self.ball.skill_timer = past["skill_timer"]
+                            self.ball.hp = past_state.get("hp", self.ball.max_hp if "max_hp" in self.ball else 100.0)
+                        if "attack_timer" in past_state and "attack_timer" in self.ball:
+                            self.ball.attack_timer = past_state["attack_timer"]
+                        if "skill_timer" in past_state and "skill_timer" in self.ball:
+                            self.ball.skill_timer = past_state["skill_timer"]
 
                     if self.world != null and "events" in self.world:
                         self.world.events.append({"type": "time_rewind", "data": {"id": self.ball.get("id", -1) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id}})

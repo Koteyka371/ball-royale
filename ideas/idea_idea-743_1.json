@@ -1,4 +1,1 @@
-{
-    "title": "Quantum Entanglement Trap",
-    "description": "A trap that links two players together regardless of distance. Damage taken by one is partially dealt to the other, and movement speeds are averaged out for the duration of the effect."
-}
+{"title": "Gravity Inversion Granade", "description": "A consumable item that, when thrown, creates an AoE zone where enemies are propelled upwards instead of down, messing up their movement patterns."}

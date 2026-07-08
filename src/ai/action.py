@@ -7090,14 +7090,18 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "instant_rewind_booster":
-                    history = getattr(self.ball, "state_history", [])
-                    if history:
-                        past = history[0]
-                        self.ball.x = past.get("x", self.ball.x)
-                        self.ball.y = past.get("y", self.ball.y)
-                        self.ball.hp = past.get("hp", getattr(self.ball, "max_hp", 100.0))
-                        if "attack_timer" in past: self.ball.attack_timer = past["attack_timer"]
-                        if "skill_timer" in past: self.ball.skill_timer = past["skill_timer"]
+                    # Instantly rewinds position and health to where they were 3 seconds ago
+                    state_history = getattr(self.ball, "state_history", [])
+                    if len(state_history) > 0:
+                        past_state = state_history[0]
+                        self.ball.x = past_state.get("x", getattr(self.ball, "x", 0.0))
+                        self.ball.y = past_state.get("y", getattr(self.ball, "y", 0.0))
+                        self.ball.hp = past_state.get("hp", getattr(self.ball, "max_hp", 100.0))
+
+                        if "attack_timer" in past_state:
+                            self.ball.attack_timer = past_state["attack_timer"]
+                        if "skill_timer" in past_state:
+                            self.ball.skill_timer = past_state["skill_timer"]
 
                         if hasattr(self.world, "events"):
                             self.world.events.append({"type": "time_rewind", "data": {"id": getattr(self.ball, "id", None)}})
