@@ -10888,7 +10888,73 @@ class WeaponCollectionMode(GameMode):
                         b.damage = b.base_damage
 
 
+class CenterBlackHoleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Center Black Hole"
+        self.description = "A black hole in the center slowly grows and pulls players inwards."
+        self.bh_id = 999999
+        self.growth_rate = 5.0  # radius per second
+        self.pull_strength = 200.0
+        self.damage = 10.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        cx = world.arena.width / 2.0
+        cy = world.arena.height / 2.0
+
+        # Check if one already exists
+        existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not existing:
+            from arena.procedural_arena import Hazard
+            bh = Hazard(
+                id=self.bh_id,
+                x=cx,
+                y=cy,
+                radius=10.0,
+                kind="black_hole",
+                damage=self.damage
+            )
+            world.arena.hazards.append(bh)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if not hasattr(world.arena, "hazards"):
+            return
+
+        bh = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not bh:
+            return
+
+        # Grow the black hole
+        bh.radius += self.growth_rate * delta
+
+        # Pull players
+        import math
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            dx = bh.x - b.x
+            dy = bh.y - b.y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > 0:
+                # Apply pull inversely proportional to distance, or constant depending on design.
+                # Let's use constant pull towards center for simplicity, or slightly scaling.
+                # The prompt says "pulls players inwards"
+                # pull_factor = self.pull_strength / max(100.0, dist)
+
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.vx += (dx / dist) * self.pull_strength * delta
+                    b.vy += (dy / dist) * self.pull_strength * delta
+
+
 GAME_MODES = {
+    "center_black_hole": CenterBlackHoleMode(),
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
     "sweeping_paddles": SweepingPaddlesMode(),

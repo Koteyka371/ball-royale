@@ -13712,9 +13712,108 @@ class WeaponCollectionMode extends GameMode:
 							b.set("damage", b.get("base_damage"))
 
 
+class CenterBlackHoleMode extends GameMode:
+	var bh_id = 999999
+	var growth_rate = 5.0
+	var pull_strength = 200.0
+	var damage = 10.0
+
+	func _init():
+		super()
+		name = "Center Black Hole"
+		description = "A black hole in the center slowly grows and pulls players inwards."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var cx = world.arena.width / 2.0
+		var cy = world.arena.height / 2.0
+
+		var existing = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "black_hole" and h.get("id", null) == bh_id:
+					existing = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "black_hole" and h.get("id") == bh_id:
+					existing = h
+					break
+
+		if not existing:
+			world.arena.hazards.append({
+				"id": bh_id,
+				"x": cx,
+				"y": cy,
+				"radius": 10.0,
+				"kind": "black_hole",
+				"damage": damage,
+				"active": true
+			})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if not "hazards" in world.arena:
+			return
+
+		var bh = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "black_hole" and h.get("id", null) == bh_id:
+					bh = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "black_hole" and h.get("id") == bh_id:
+					bh = h
+					break
+
+		if bh == null:
+			return
+
+		if typeof(bh) == TYPE_DICTIONARY:
+			bh["radius"] += growth_rate * delta
+		elif typeof(bh) == TYPE_OBJECT:
+			bh.set("radius", bh.get("radius") + growth_rate * delta)
+
+		var bh_x = bh.get("x") if typeof(bh) == TYPE_OBJECT else bh["x"]
+		var bh_y = bh.get("y") if typeof(bh) == TYPE_OBJECT else bh["y"]
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
+
+			if not is_alive:
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_OBJECT else b["x"]
+			var by = b.get("y") if typeof(b) == TYPE_OBJECT else b["y"]
+
+			var dx = bh_x - bx
+			var dy = bh_y - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > 0:
+				var pull_x = (dx / dist) * pull_strength * delta
+				var pull_y = (dy / dist) * pull_strength * delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					if "vx" in b and "vy" in b:
+						b["vx"] += pull_x
+						b["vy"] += pull_y
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_method("get") and b.get("vx") != null and b.get("vy") != null:
+						b.set("vx", b.get("vx") + pull_x)
+						b.set("vy", b.get("vy") + pull_y)
+
 var GAME_MODES = {
 	"blackout_event": BlackoutEventMode.new(),
 	"solar_flare": SolarFlareMode.new(),
+	"center_black_hole": CenterBlackHoleMode.new(),
 	"extreme_weather": ExtremeWeatherMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
