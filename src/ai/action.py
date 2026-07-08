@@ -4708,6 +4708,12 @@ class Action:
         stun_taken = current_stun - start_stun
         silence_taken = current_silence - start_silence
 
+
+        if damage_taken > 0 and getattr(self.ball, "is_hologram", False):
+            self.ball.hp = 0
+            if hasattr(self.ball, "alive"):
+                self.ball.alive = False
+            return
         if damage_taken > 0 and getattr(self.ball, "shield_booster_active", False):
             self.ball.hp = start_hp
             damage_taken = 0
@@ -4795,6 +4801,28 @@ class Action:
                     link_target.silence_timer = getattr(link_target, "silence_timer", 0.0) + silence_taken * 0.5
                     link_target.damage_link_is_receiving_silence = False
 
+
+        if getattr(self.ball, "is_hologram", False):
+            import math
+            import random
+            hx = getattr(self.ball, "hologram_dir_x", 1.0)
+            hy = getattr(self.ball, "hologram_dir_y", 0.0)
+            spd = getattr(self.ball, "speed", 2.0)
+            self.ball.x += hx * spd * delta * 60
+            self.ball.y += hy * spd * delta * 60
+
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                cx, cy, bounced = self.world.arena.clamp_position(self.ball.x, self.ball.y, getattr(self.ball, "radius", 10))
+                if bounced:
+                    self.ball.hologram_dir_x = -hx + (random.random() - 0.5) * 0.5
+                    self.ball.hologram_dir_y = -hy + (random.random() - 0.5) * 0.5
+                    dist = math.sqrt(self.ball.hologram_dir_x**2 + self.ball.hologram_dir_y**2)
+                    if dist > 0:
+                        self.ball.hologram_dir_x /= dist
+                        self.ball.hologram_dir_y /= dist
+                self.ball.x = cx
+                self.ball.y = cy
+            return
         if strategy == "flee":
             self._flee(delta)
         elif strategy == "ricochet_attack":
@@ -6633,6 +6661,43 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("nemesis_compass_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "hologram_booster":
+                    import copy
+                    import math
+                    if hasattr(self.world, "balls"):
+                        for i in range(3):
+                            clone = copy.copy(self.ball)
+                            clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                            if hasattr(self.world, "next_id"):
+                                self.world.next_id += 1
+
+                            clone.hp = 1.0
+                            clone.max_hp = 1.0
+                            clone.damage = 0.0
+                            if hasattr(clone, "base_damage"): clone.base_damage = 0.0
+                            clone.speed = getattr(self.ball, "speed", 2.0)
+                            clone.owner_id = getattr(self.ball, "id", None)
+                            clone.is_hologram = True
+
+                            clone.skill_timer = 9999.0
+                            clone.attack_timer = 9999.0
+                            clone.SKILL = None
+                            clone.skill = None
+                            clone.active_skill = None
+
+                            angle = i * (2 * math.pi / 3) + __import__('random').random() * math.pi / 6
+                            clone.x += math.cos(angle) * 15
+                            clone.y += math.sin(angle) * 15
+                            clone.hologram_dir_x = math.cos(angle)
+                            clone.hologram_dir_y = math.sin(angle)
+
+                            self.world.balls.append(clone)
+
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

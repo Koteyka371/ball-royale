@@ -8339,6 +8339,23 @@ func execute(strategy: String, delta: float):
     var stun_taken = current_stun - start_stun
     var silence_taken = current_silence - start_silence
 
+
+    var is_hologram_stat = false
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        is_hologram_stat = self.ball.get("is_hologram", false)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_hologram"):
+        is_hologram_stat = self.ball.get_meta("is_hologram")
+
+    if damage_taken > 0 and is_hologram_stat:
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["hp"] = 0.0
+            if "alive" in self.ball: self.ball["alive"] = false
+        else:
+            self.ball.hp = 0.0
+            if "alive" in self.ball: self.ball.alive = false
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+        return
+
     var shield_active = false
     if typeof(self.ball) == TYPE_DICTIONARY:
         shield_active = self.ball.get("shield_booster_active", false)
@@ -8546,6 +8563,63 @@ func execute(strategy: String, delta: float):
                 if "damage_link_is_receiving_silence" in link_target: link_target.damage_link_is_receiving_silence = false
                 elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_is_receiving_silence", false)
 
+
+    if is_hologram_stat:
+        var hx = 1.0
+        var hy = 0.0
+        var bspeed = 2.0
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            hx = self.ball.get("hologram_dir_x", 1.0)
+            hy = self.ball.get("hologram_dir_y", 0.0)
+            bspeed = self.ball.get("speed", 2.0)
+        else:
+            if self.ball.has_method("has_meta") and self.ball.has_meta("hologram_dir_x"): hx = self.ball.get_meta("hologram_dir_x")
+            if self.ball.has_method("has_meta") and self.ball.has_meta("hologram_dir_y"): hy = self.ball.get_meta("hologram_dir_y")
+            if "speed" in self.ball: bspeed = self.ball.speed
+
+        var bx = 0.0
+        var by = 0.0
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            bx = self.ball.get("x", 0.0)
+            by = self.ball.get("y", 0.0)
+        else:
+            bx = self.ball.x
+            by = self.ball.y
+
+        bx += hx * bspeed * delta * 60.0
+        by += hy * bspeed * delta * 60.0
+
+        if self.world != null and "arena" in self.world and self.world.arena != null and self.world.arena.has_method("clamp_position"):
+            var bradius = 10.0
+            if typeof(self.ball) == TYPE_DICTIONARY: bradius = self.ball.get("radius", 10.0)
+            elif "radius" in self.ball: bradius = self.ball.radius
+
+            var clamp_res = self.world.arena.clamp_position(bx, by, bradius)
+            bx = clamp_res[0]
+            by = clamp_res[1]
+            var bounced = clamp_res[2]
+            if bounced:
+                hx = -hx + (randf() - 0.5) * 0.5
+                hy = -hy + (randf() - 0.5) * 0.5
+                var dist = sqrt(hx*hx + hy*hy)
+                if dist > 0:
+                    hx /= dist
+                    hy /= dist
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["hologram_dir_x"] = hx
+                    self.ball["hologram_dir_y"] = hy
+                else:
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("hologram_dir_x", hx)
+                        self.ball.set_meta("hologram_dir_y", hy)
+
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["x"] = bx
+            self.ball["y"] = by
+        else:
+            self.ball.x = bx
+            self.ball.y = by
+        return
     if strategy == "flee":
         _flee(delta)
     elif strategy == "ricochet_attack":
@@ -11597,6 +11671,65 @@ func _collect_booster(delta: float):
                 inv.append("nemesis_compass_item")
                 self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "hologram_booster":
+                for i in range(3):
+                    var clone = null
+                    if self.ball.has_method("duplicate"):
+                        clone = self.ball.duplicate()
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        clone = self.ball.duplicate()
+
+                    if clone != null:
+                        if "id" in clone:
+                            clone.id = randi() % 90000 + 10000
+                        if "hp" in clone and "max_hp" in clone:
+                            clone.max_hp = 1.0
+                            clone.hp = 1.0
+                        if "damage" in clone: clone.damage = 0.0
+                        if "base_damage" in clone: clone.base_damage = 0.0
+                        if "speed" in clone and "speed" in self.ball: clone.speed = self.ball.speed
+
+                        var angle = i * (2.0 * PI / 3.0) + (randf() * PI / 6.0)
+                        if "x" in clone and "y" in clone:
+                            clone.x += cos(angle) * 15.0
+                            clone.y += sin(angle) * 15.0
+
+                        var self_id_stat = -2
+                        if "id" in self.ball: self_id_stat = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id_stat = self.ball.get_meta("id")
+
+                        if clone.has_method("set_meta"):
+                            clone.set_meta("owner_id", self_id_stat)
+                            clone.set_meta("is_hologram", true)
+                            clone.set_meta("hologram_dir_x", cos(angle))
+                            clone.set_meta("hologram_dir_y", sin(angle))
+                            clone.set_meta("skill_timer", 9999.0)
+                            clone.set_meta("attack_timer", 9999.0)
+                            clone.set_meta("SKILL", null)
+                            clone.set_meta("skill", null)
+                            clone.set_meta("active_skill", null)
+                        elif typeof(clone) == TYPE_DICTIONARY:
+                            clone["owner_id"] = self_id_stat
+                            clone["is_hologram"] = true
+                            clone["hologram_dir_x"] = cos(angle)
+                            clone["hologram_dir_y"] = sin(angle)
+                            clone["skill_timer"] = 9999.0
+                            clone["attack_timer"] = 9999.0
+                            clone["SKILL"] = null
+                            clone["skill"] = null
+                            clone["active_skill"] = null
+
+                        if self.world != null and "balls" in self.world:
+                            self.world.balls.append(clone)
+
+                if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
