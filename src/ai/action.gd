@@ -1265,6 +1265,45 @@ func execute(strategy: String, delta: float):
                     self.ball["x"] += p.vx * delta
                     self.ball["y"] += p.vy * delta
 
+    if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+        for hazard in self.world.arena.hazards:
+            if hazard.get("kind") == "slime":
+                var h_owner = hazard.get("owner_id")
+                var h_team = hazard.get("team")
+
+                var b_id = null
+                var b_team = null
+                if typeof(self.ball) == TYPE_OBJECT:
+                    if "id" in self.ball: b_id = self.ball.id
+                    if "team" in self.ball: b_team = self.ball.team
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("id"): b_id = self.ball["id"]
+                    if self.ball.has("team"): b_team = self.ball["team"]
+
+                if h_owner != b_id and (h_team == null or b_team == null or h_team != b_team or h_team == "NO_TEAM"):
+                    var hx = hazard.get("x", 0.0)
+                    var hy = hazard.get("y", 0.0)
+                    var bx = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball["x"]
+                    var by = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball["y"]
+
+                    var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+                    var h_rad = hazard.get("radius", 12.0)
+                    var b_rad = 10.0
+                    if typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: b_rad = self.ball.radius
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): b_rad = self.ball["radius"]
+
+                    if dist < (h_rad + b_rad):
+                        if typeof(self.ball) == TYPE_OBJECT:
+                            var current_timer = 0.0
+                            if "speed_debuff_timer" in self.ball: current_timer = self.ball.speed_debuff_timer
+                            self.ball.speed_debuff_timer = max(current_timer, 0.5)
+                            self.ball.speed_debuff_multiplier = 0.5
+                        else:
+                            var current_timer = 0.0
+                            if self.ball.has("speed_debuff_timer"): current_timer = self.ball["speed_debuff_timer"]
+                            self.ball["speed_debuff_timer"] = max(current_timer, 0.5)
+                            self.ball["speed_debuff_multiplier"] = 0.5
+
     if "speed_debuff_timer" in self.ball and typeof(self.ball.speed_debuff_timer) in [TYPE_FLOAT, TYPE_INT] and self.ball.speed_debuff_timer > 0.0:
         self.ball.speed_debuff_timer -= delta
         if self.ball.speed_debuff_timer <= 0.0:
@@ -10006,6 +10045,51 @@ func _flee(delta: float):
 
     self.ball.x += comb_nx * boosted_speed * delta * 60.0
     self.ball.y += comb_ny * boosted_speed * delta * 60.0
+
+    if self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+        var slime_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("slime_trail_timer"):
+            slime_timer = self.ball.get_meta("slime_trail_timer")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("slime_trail_timer"):
+            slime_timer = self.ball["slime_trail_timer"]
+        elif "slime_trail_timer" in self.ball:
+            slime_timer = self.ball.slime_trail_timer
+
+        slime_timer -= delta
+
+        if slime_timer <= 0:
+            var b_id = null
+            var b_team = null
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "id" in self.ball: b_id = self.ball.id
+                if "team" in self.ball: b_team = self.ball.team
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("id"): b_id = self.ball["id"]
+                if self.ball.has("team"): b_team = self.ball["team"]
+
+            var current_time = 0.0
+            if self.world != null and "time" in self.world:
+                current_time = self.world.time
+
+            self.world.arena.hazards.append({
+                "x": self.ball.x,
+                "y": self.ball.y,
+                "radius": 12.0,
+                "damage": 0.0,
+                "kind": "slime",
+                "duration": 3.0,
+                "owner_id": b_id,
+                "team": b_team,
+                "creation_time": current_time
+            })
+            slime_timer = 0.5
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("slime_trail_timer", slime_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["slime_trail_timer"] = slime_timer
+        elif "slime_trail_timer" in self.ball:
+            self.ball.slime_trail_timer = slime_timer
 
 func _evaluate_target_strength_deterministic(e: Object) -> Array:
     var e_max_hp = 0.0
