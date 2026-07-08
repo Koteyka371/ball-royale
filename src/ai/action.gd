@@ -1250,6 +1250,42 @@ func execute(strategy: String, delta: float):
 						self.ball.speed_multiplier = 1.3
 						break
 
+	if b_type != null and str(b_type).to_lower() == "gladiator":
+		var nearby_enemies = _get_enemies().size()
+
+		var b_dmg_mult = 1.0
+		if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_damage_multiplier"):
+			b_dmg_mult = self.ball.get_meta("base_damage_multiplier")
+		elif "base_damage_multiplier" in self.ball:
+			b_dmg_mult = self.ball.base_damage_multiplier
+		elif "damage_multiplier" in self.ball:
+			b_dmg_mult = self.ball.damage_multiplier
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("base_damage_multiplier", b_dmg_mult)
+			else:
+				self.ball["base_damage_multiplier"] = b_dmg_mult
+
+		if nearby_enemies > 0:
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("damage_multiplier", b_dmg_mult * (1.0 + (0.5 * nearby_enemies)))
+			elif "damage_multiplier" in self.ball:
+				self.ball.damage_multiplier = b_dmg_mult * (1.0 + (0.5 * nearby_enemies))
+		else:
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("damage_multiplier", b_dmg_mult)
+			elif "damage_multiplier" in self.ball:
+				self.ball.damage_multiplier = b_dmg_mult
+
+		if nearby_enemies >= 2:
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("reflect_shield_active", true)
+				self.ball.set_meta("reflect_shield_timer", 0.5)
+				self.ball.set_meta("reflect_shield_capacity", 20.0 * nearby_enemies)
+			else:
+				self.ball["reflect_shield_active"] = true
+				self.ball["reflect_shield_timer"] = 0.5
+				self.ball["reflect_shield_capacity"] = 20.0 * nearby_enemies
+
 
     # Platforms
     if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "platforms" in self.world.arena:

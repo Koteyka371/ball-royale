@@ -788,6 +788,25 @@ class Action:
                             self.ball.speed_multiplier = 1.3
                             break
 
+        if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'gladiator':
+            # Gladiator logic: gains temporary shield and damage boost based on nearby enemies
+            nearby_enemies = len(self._get_enemies())
+
+            # Base damage is modified
+            if not hasattr(self.ball, "base_damage_multiplier"):
+                self.ball.base_damage_multiplier = getattr(self.ball, "damage_multiplier", 1.0)
+
+            if nearby_enemies > 0:
+                self.ball.damage_multiplier = self.ball.base_damage_multiplier * (1.0 + (0.5 * nearby_enemies))
+            else:
+                self.ball.damage_multiplier = self.ball.base_damage_multiplier
+
+            # Temporary shield if 2 or more enemies are nearby
+            if nearby_enemies >= 2:
+                self.ball.reflect_shield_active = True
+                self.ball.reflect_shield_timer = 0.5
+                self.ball.reflect_shield_capacity = 20.0 * nearby_enemies
+
 
         # Platforms
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "platforms"):
