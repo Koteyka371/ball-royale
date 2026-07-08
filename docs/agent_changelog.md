@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-715] Slime Trails — *2026-07-08 21:53:22 UTC*
+
+Players leave behind a temporary trail of slime that slows down any opponents that cross it, giving evasive players a strong kiting tool.
+
+---
+
 ## [idea-704] Orbital Strike Debris — *2026-07-08 21:37:02 UTC*
 
 When an orbital strike finishes, spawn 3-5 temporary debris hazards around its impact zone. These slow down balls heavily as they navigate the crater area for the next 10 seconds, but give cover from projectiles.
