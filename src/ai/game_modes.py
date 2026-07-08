@@ -9613,6 +9613,44 @@ class TickingPayloadMode(GameMode):
         return self.winner
 
 
+
+
+class BlackoutEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Blackout Event"
+        self.description = "A sudden blackout event where the arena goes pitch black, and balls must rely purely on short-range vision."
+        self.timer = 0.0
+        self.is_blackout = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        self.timer = 0.0
+        self.is_blackout = False
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.timer += delta
+
+        if self.timer >= 5.0:
+            self.timer = 0.0
+            self.is_blackout = not self.is_blackout
+            if hasattr(world, "add_event"):
+                msg = "The arena went dark!" if self.is_blackout else "Vision restored!"
+                world.add_event("blackout_event", {"message": msg})
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if self.is_blackout:
+                    b.perception_radius = 50.0
+                else:
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+
+
 GAME_MODES = {
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
@@ -10818,3 +10856,5 @@ class SolarFlareMode(GameMode):
                     h.is_disabled_by_flare = self.is_flaring
 
 GAME_MODES["solar_flare"] = SolarFlareMode()
+
+GAME_MODES["blackout_event"] = BlackoutEventMode()
