@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-718] Payload Abilities — *2026-07-08 17:48:01 UTC*
+
+The payload in Escort Mode should have a unique set of abilities, like dropping a barrier to shield defenders or temporarily knocking back attackers.
+
+---
+
 ## [idea-627] Thunderstorm Modifier — *2026-07-08 17:08:20 UTC*
 
 Periodically, lightning strikes the arena. Balls caught in the blast radius are stunned for a short duration and take damage. A visual warning appears briefly before the strike.

@@ -12364,7 +12364,7 @@
     },
     {
       "id": "idea-718",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Abilities",
@@ -20086,6 +20086,177 @@
         "src/ai/solar_eclipse.py",
         "src/ai/solar_eclipse.gd",
         "tests/test_solar_eclipse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1172",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Relay Booster",
+      "description": "A rare booster that, when collected, temporarily links the collector to the game's hazard spawner. For the next 10 seconds, the player is immune to orbital strikes and debris, and any orbital strikes that occur will automatically target the enemies closest to the player, turning a hazard into an offensive tool.",
+      "allowed_paths": [
+        "src/ai/orbital_relay_booster.py",
+        "src/ai/orbital_relay_booster.gd",
+        "tests/test_orbital_relay_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1173",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lightning Rod Booster",
+      "description": "A new booster that acts as a lightning rod. When collected, the ball becomes immune to lightning strikes for 20 seconds. More importantly, if a lightning strike occurs nearby while the booster is active, the strike is redirected directly onto the player, converting the damage into a massive healing burst and a stamina refill instead of stunning them.",
+      "allowed_paths": [
+        "src/ai/lightning_rod_booster.py",
+        "src/ai/lightning_rod_booster.gd",
+        "tests/test_lightning_rod_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1174",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Grenade",
+      "description": "Disables enemy abilities for 3 seconds in an area.",
+      "allowed_paths": [
+        "src/ai/emp_grenade.py",
+        "src/ai/emp_grenade.gd",
+        "tests/test_emp_grenade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1175",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Alliances and Wars",
+      "description": "Allow guilds to form alliances or declare wars against rival guilds, with exclusive territory control benefits and resource taxes imposed on the losing side.",
+      "allowed_paths": [
+        "src/ui/guild_alliances_and_wars.py",
+        "src/ui/guild_alliances_and_wars.gd",
+        "src/ai/guild_alliances_and_wars.py",
+        "tests/test_guild_alliances_and_wars.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1176",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Reversal Field",
+      "description": "An environmental hazard zone. While inside, all active beneficial auras (like healing or damage boosts) on players invert their effects, causing steady damage or reducing attack damage until they exit.",
+      "allowed_paths": [
+        "src/ai/aura_reversal_field.py",
+        "src/ai/aura_reversal_field.gd",
+        "tests/test_aura_reversal_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1177",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Magnet Hazard",
+      "description": "A new hazard type that activates near the end of the match. It acts as an area-of-effect magnet, pulling all balls, boosters, and even smaller hazards slowly toward its center. Navigating through it requires using dash mechanics or bouncing off nearby obstacles to escape its pull.",
+      "allowed_paths": [
+        "src/arena/orbital_magnet.py",
+        "src/arena/orbital_magnet.gd",
+        "tests/test_orbital_magnet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1178",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Twitch Interactive Leaderboard",
+      "description": "Create a viewer loyalty leaderboard that tracks which Twitch viewers spawned the most impactful hazards or voted correctly in the crowd system. Top viewers receive cosmetic badges when their name appears in the kill feed.",
+      "allowed_paths": [
+        "src/ai/twitch_interactive_leaderboard.py",
+        "src/ai/twitch_interactive_leaderboard.gd",
+        "tests/test_twitch_interactive_leaderboard.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1179",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supercharged Balls Event",
+      "description": "If a ball is struck by a lightning hazard and survives the stun, it gains a 'Supercharged' status for 10 seconds. Supercharged balls move 50% faster, emit tiny electric sparks that deal minor damage over time to nearby enemies, and their next attack stuns the target.",
+      "allowed_paths": [
+        "src/ai/supercharged_balls.py",
+        "src/ai/supercharged_balls.gd",
+        "tests/test_supercharged_balls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1180",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Crowd Emotes Over Arenas",
+      "description": "Allow viewers to type specific emote commands that spawn bouncy, physics-based emote emojis in the arena. They deal no damage but can clutter the map or act as tiny dynamic obstacles for balls.",
+      "allowed_paths": [
+        "src/arena/crowd_emotes_over_arenas.py",
+        "src/arena/crowd_emotes_over_arenas.gd",
+        "tests/test_crowd_emotes_over_arenas.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1181",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Laser",
+      "description": "A laser beam that bounces off arena walls.",
+      "allowed_paths": [
+        "src/ai/bouncing_laser.py",
+        "src/ai/bouncing_laser.gd",
+        "tests/test_bouncing_laser.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
