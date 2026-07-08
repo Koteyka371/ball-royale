@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-714] Shrinking Safe Zones with Moving Centers — *2026-07-08 18:54:41 UTC*
+
+Instead of a static shrinking circle, the center of the safe zone drifts around the map while shrinking, forcing players to constantly adapt their positioning.
+
+---
+
 ## [idea-729] Interactive Twitch Integration — *2026-07-08 18:54:36 UTC*
 
 Allow real spectators via Twitch or YouTube chat to vote on the crowd events in real-time by typing keywords into chat, bypassing the simulated probability-based voting system.
