@@ -1,4 +1,4 @@
-from game_modes import GameMode
+from ai.game_modes import GameMode
 from unittest.mock import MagicMock
 import time
 

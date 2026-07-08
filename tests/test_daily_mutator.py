@@ -1,4 +1,4 @@
-from game_modes import DailyMutatorMode
+from ai.game_modes import DailyMutatorMode
 import time
 
 class MockProfileManager:

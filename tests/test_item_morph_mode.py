@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from game_modes import ItemMorphMode
+from ai.game_modes import ItemMorphMode
 
 def test_item_morph_mode():
     mode = ItemMorphMode()

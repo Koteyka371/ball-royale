@@ -616,7 +616,7 @@ class MockBallForChaosLink:
             self.alive = False
 
 def test_chaos_link_skill():
-    from action import Action
+    from ai.action import Action
     world = MockWorldForChaosLink()
     world.width = 1000
     world.height = 1000
@@ -774,7 +774,7 @@ def test_decoy_explosion_reward():
     assert getattr(owner, "score") == 5
 
 def test_deploy_decoy_multiple_swaps():
-    from ai.test_action_advanced import MockWorld, MockBall
+    from tests.test_action_advanced import MockWorld, MockBall
     from ai.action import Action
     world = MockWorld()
     world.next_id = 200

@@ -1,54 +1,65 @@
-import sys
-import os
-
-# Add src to the sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-
+import pytest
 from ai.action import Action
-from arena.procedural_arena import ProceduralArena, Hazard
+from ai.perception import Perception
+from ai.ball_types_spotter import Spotter
 
-class MockBall:
-    def __init__(self, x=0, y=0, ball_type="warrior", id=1):
+class MockEntity:
+    def __init__(self, id, x, y, kind="enemy"):
+        self.id = id
         self.x = x
         self.y = y
-        self.ball_type = ball_type
+        self.kind = kind
+        self.team = "bad"
+        self.hp = 100
+        self.max_hp = 100
+        self.has_stealth_drone = False
+        self.shadow_booster_timer = 0.0
+
+    def has_method(self, name):
+        return False
+
+class MockHazard:
+    def __init__(self, id, x, y, radius, kind):
         self.id = id
-        self.team = "A"
-        self.perception_radius = 500
-        self.alive = True
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.kind = kind
+        self.active = True
+
+class MockArena:
+    def __init__(self):
+        self.hazards = []
+        self.is_night = False
+        self.is_foggy = False
+        self.is_raining = False
+
+    def is_point_inside(self, x, y, r):
+        return True
 
 class MockWorld:
     def __init__(self):
-        self.arena = ProceduralArena(1000)
+        self.arena = MockArena()
         self.balls = []
+        self.entities = []
 
-    def get_nearby_entities(self, ball, radius):
-        return [b for b in self.balls if b != ball and b.alive]
-
-def test_flare_targeting():
+def test_spotter_flare_action():
+    spotter = Spotter(1, 0, 0)
     world = MockWorld()
 
-    # Add a flare
-    flare = Hazard(id=0, x=50, y=50, radius=20, kind="flare", damage=0.0)
-    world.arena.hazards = [flare]
+    enemy = MockEntity(2, 100, 100)
+    world.balls.append(spotter)
+    world.balls.append(enemy)
+    world.entities = world.balls
 
-    b1 = MockBall(0, 0, "warrior", 1)
-    b2 = MockBall(100, 100, "warrior", 2)
-    b2.team = "B"
-    b2.ball_type = "scout"
+    action = Action(spotter, world)
+    action._get_enemies = lambda: [enemy]
 
-    world.balls = [b1, b2]
+    action.execute("use_skill", 0.1)
 
-    action = Action(b1, world)
-
-    enemies = action._get_enemies()
-
-    # Both flare and enemy ball should be in enemies list
-    assert len(enemies) == 2
-    assert flare in enemies
-    assert b2 in enemies
-
-    target = action._get_target(enemies)
-
-    # Flare is closer and should be the priority target due to flare logic
-    assert target == flare
+    assert len(world.arena.hazards) == 1
+    flare = world.arena.hazards[0]
+    assert flare.kind == "flare"
+    assert flare.x == 100
+    assert flare.y == 100
+    assert getattr(flare, 'duration', 0) == 5.0

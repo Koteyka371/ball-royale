@@ -1,5 +1,5 @@
 from ai.action import Action
-from ai.test_action_advanced import MockBall, MockEntity, MockWorld
+from tests.test_action_advanced import MockBall, MockEntity, MockWorld
 from unittest.mock import Mock
 
 def test_reflect_shield_skill():

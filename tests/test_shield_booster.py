@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock
-from action import Action
+from ai.action import Action
 
 class MockBall:
     def __init__(self):

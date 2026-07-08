@@ -1,6 +1,6 @@
 import unittest
 from ai.action import Action
-from ai.test_action_advanced import MockBall
+from tests.test_action_advanced import MockBall
 
 class MockWorld:
     def __init__(self):

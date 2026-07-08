@@ -1,6 +1,6 @@
 import pytest
 from ai.game_modes import GAME_MODES
-from ai.test_action_advanced import MockWorld
+from tests.test_action_advanced import MockWorld
 
 class FakeBall:
     def __init__(self, x=0.0, y=0.0):

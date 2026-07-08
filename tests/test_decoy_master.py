@@ -44,7 +44,7 @@ def test_decoy_master_skill():
     assert "healing" in decoy_types
 
 def test_healing_decoy_explosion():
-    from ai.test_action_advanced import MockBall
+    from tests.test_action_advanced import MockBall
 
     world = MockWorld()
 

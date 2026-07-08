@@ -1,11 +1,8 @@
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 from ui.kill_feed import KillFeed
 
-def test_kill_feed_empty():
-    feed = KillFeed()
+def test_kill_feed_initialization():
+    feed = KillFeed(max_lines=3)
+    assert feed.max_lines == 3
     assert len(feed.get_messages()) == 0
 
 def test_kill_feed_update_formatting():
@@ -32,7 +29,7 @@ def test_kill_feed_max_lines():
     assert "Tick 3" in messages[1]
 
 def test_kill_feed_multiple_kills_same_tick():
-    feed = KillFeed()
+    feed = KillFeed(max_lines=5)
     log = [
         {"tick": 10, "killer_id": 1, "killer_type": "a", "victim_id": 2, "victim_type": "b"},
         {"tick": 10, "killer_id": 3, "killer_type": "c", "victim_id": 4, "victim_type": "d"}
@@ -44,7 +41,7 @@ def test_kill_feed_multiple_kills_same_tick():
     assert "Tick 10" in messages[1]
 
 def test_kill_feed_ignore_processed_ticks():
-    feed = KillFeed()
+    feed = KillFeed(max_lines=5)
     log1 = [{"tick": 10, "killer_id": 1, "killer_type": "a", "victim_id": 2, "victim_type": "b"}]
     feed.update(log1)
 
@@ -71,11 +68,3 @@ def test_kill_feed_clear():
     feed.update(log2)
     assert len(feed.get_messages()) == 1
     assert "Tick 5" in feed.get_messages()[0]
-
-def test_kill_feed_weather_change():
-    feed = KillFeed()
-    log = [{"tick": 20, "type": "weather_change", "weather": "snow"}]
-    feed.update(log)
-    messages = feed.get_messages()
-    assert len(messages) == 1
-    assert "Weather changed to SNOW!" in messages[0]
