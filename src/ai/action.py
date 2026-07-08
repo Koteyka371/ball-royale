@@ -6914,6 +6914,21 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "skill_reroll_booster":
+                    import random
+                    possible_skills = ["dash", "shield", "heal", "teleport", "clone", "grapple", "stealth", "chain_lightning", "black_hole", "meteor"]
+                    current_skill = getattr(self.ball, "skill", None)
+                    available = [s for s in possible_skills if s != current_skill]
+                    if not available:
+                        available = possible_skills
+                    new_skill = random.choice(available)
+                    self.ball.skill = new_skill
+                    self.ball.SKILL = new_skill
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "time_rewind_booster":
                     self.ball.time_rewind_booster_active = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

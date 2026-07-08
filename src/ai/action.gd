@@ -12091,6 +12091,39 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
+                var possible_skills = ["dash", "shield", "heal", "teleport", "clone", "grapple", "stealth", "chain_lightning", "black_hole", "meteor"]
+                var current_skill = null
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill"): current_skill = self.ball["skill"]
+                elif typeof(self.ball) == TYPE_OBJECT and "skill" in self.ball: current_skill = self.ball.skill
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("skill"): current_skill = self.ball.get_meta("skill")
+
+                var available = []
+                for s in possible_skills:
+                    if s != current_skill:
+                        available.append(s)
+                if available.size() == 0:
+                    available = possible_skills
+
+                var new_skill = available[randi() % available.size()]
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["skill"] = new_skill
+                    self.ball["SKILL"] = new_skill
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill", new_skill)
+                    self.ball.set_meta("SKILL", new_skill)
+                else:
+                    if "skill" in self.ball: self.ball.skill = new_skill
+                    if "SKILL" in self.ball: self.ball.SKILL = new_skill
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "time_rewind_booster":
                 self.ball.set_meta("time_rewind_booster_active", true)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
