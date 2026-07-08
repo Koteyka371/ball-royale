@@ -19,10 +19,10 @@
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": "idea-638",
-      "status": "working",
-      "started_at": "2026-07-08T18:27:47.828346+00:00",
-      "cycles_today": 3
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 2
     },
     "agent-4": {
       "name": "Jules Content",
