@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-699] Reverse Tug of War Mode — *2026-07-08 13:25:42 UTC*
+
+Like Tug of War, but the payload moves AWAY from the team that has more players nearby. Teams must zone out enemies and avoid getting too close to the payload to push it towards the enemy goal.
+
+---
+
 ## [idea-700] Payload Bomb Mode — *2026-07-08 13:25:36 UTC*
 
 A single payload starts in the center with a ticking timer. If it reaches an enemy goal before time runs out, it explodes and deals massive damage to the enemy team's core. If the timer runs out while it's in the middle, it explodes and kills players nearby.
