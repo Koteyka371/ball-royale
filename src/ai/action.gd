@@ -14445,8 +14445,10 @@ func _use_skill():
                 var dy = target.y - self.ball.y
                 var dist = sqrt(min_dist_sq)
                 if dist > 0.0001:
-                    self.ball.x += (dx/dist) * dash_dist
-                    self.ball.y += (dy/dist) * dash_dist
+
+                    self.ball.x = target.x
+
+                    self.ball.y = target.y
             else:
                 var angle = randf() * PI * 2.0
                 self.ball.x += cos(angle) * dash_dist
@@ -14726,8 +14728,10 @@ func _use_skill():
                 var dy = target.y - self.ball.y
                 var dist = sqrt(min_dist_sq)
                 if dist > 0.0001:
-                    self.ball.x += (dx/dist) * dash_dist
-                    self.ball.y += (dy/dist) * dash_dist
+
+                    self.ball.x = target.x
+
+                    self.ball.y = target.y
             else:
                 var angle = randf() * PI * 2.0
                 self.ball.x += cos(angle) * dash_dist

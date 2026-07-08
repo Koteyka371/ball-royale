@@ -1,0 +1,4 @@
+{
+  "title": "Teleport Explosion",
+  "description": "After a ball teleports, it leaves behind a delayed blast at its previous position, dealing damage to enemies caught within its radius."
+}
