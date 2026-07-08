@@ -15,11 +15,115 @@ var camping_time = {}
 var underdog_team = null
 var match_started = false
 var match_ended = false
+var external_commands = []
 
 func _init(p_world):
     world = p_world
 
+
+func queue_external_command(user: String, command: String):
+    external_commands.append({"user": user, "command": command})
+
+func process_external_command(user: String, command: String, balls: Array):
+    var parts = command.strip_edges().split(" ", false)
+    if parts.size() == 0:
+        return
+
+    var cmd = parts[0].to_lower()
+    var alive_balls = []
+    for b in balls:
+        if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") and b.get("ball_type") != "spectator":
+            alive_balls.append(b)
+        elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.get("ball_type") != "spectator":
+            alive_balls.append(b)
+
+    if cmd == "!spawn" and parts.size() >= 2:
+        var hazard_kind = parts[1]
+        var target = null
+        if parts.size() >= 3:
+            var tid = parts[2].to_int()
+            for b in alive_balls:
+                var b_id = -1
+                if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                    b_id = b.get("id")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                    b_id = b["id"]
+                if b_id == tid:
+                    target = b
+                    break
+
+        if target == null and not alive_balls.is_empty():
+            target = alive_balls[randi() % alive_balls.size()]
+
+        if target != null and world != null and world.has_method("add_event"):
+            var t_x = 0.0
+            var t_y = 0.0
+            if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+                t_x = float(target.get("x")) if target.get("x") != null else 0.0
+                t_y = float(target.get("y")) if target.get("y") != null else 0.0
+            elif typeof(target) == TYPE_DICTIONARY:
+                t_x = float(target.get("x", 0.0))
+                t_y = float(target.get("y", 0.0))
+
+            world.add_event("spawn_hazard", {
+                "x": t_x,
+                "y": t_y,
+                "kind": hazard_kind
+            })
+            world.add_event("crowd_throw", {"message": "Viewer " + user + " spawned a " + hazard_kind + "!"})
+            excitement_level += 5.0
+
+    elif cmd == "!drop" and parts.size() >= 2:
+        var booster_kind = parts[1]
+        var target = null
+        if parts.size() >= 3:
+            var tid = parts[2].to_int()
+            for b in alive_balls:
+                var b_id = -1
+                if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                    b_id = b.get("id")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                    b_id = b["id"]
+                if b_id == tid:
+                    target = b
+                    break
+
+        if target == null and not alive_balls.is_empty():
+            target = alive_balls[randi() % alive_balls.size()]
+
+        if target != null and world != null and world.has_method("add_event"):
+            var t_x = 0.0
+            var t_y = 0.0
+            if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+                t_x = float(target.get("x")) if target.get("x") != null else 0.0
+                t_y = float(target.get("y")) if target.get("y") != null else 0.0
+            elif typeof(target) == TYPE_DICTIONARY:
+                t_x = float(target.get("x", 0.0))
+                t_y = float(target.get("y", 0.0))
+
+            world.add_event("spawn_booster", {
+                "x": t_x,
+                "y": t_y,
+                "kind": booster_kind,
+                "value": 30.0
+            })
+            world.add_event("crowd_throw", {"message": "Viewer " + user + " dropped a " + booster_kind + " booster!"})
+            excitement_level += 5.0
+
+    elif cmd == "!vote" and parts.size() >= 2:
+        var option = parts[1]
+        if active_vote != null and votes.has(option):
+            votes[option] += 1
+            if world != null and world.has_method("add_event"):
+                world.add_event("crowd_cheer", {"message": "Viewer " + user + " voted for " + option + "!"})
+
+func _process_external_commands(balls: Array):
+    while external_commands.size() > 0:
+        var cmd_info = external_commands.pop_front()
+        process_external_command(cmd_info["user"], cmd_info["command"], balls)
+
 func tick(balls: Array, kill_log: Array, current_tick: int):
+    _process_external_commands(balls)
     _check_bets_and_winner(balls, current_tick)
     _update_excitement(current_tick)
     _check_events(balls, kill_log, current_tick)
