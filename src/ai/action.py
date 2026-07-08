@@ -1021,6 +1021,35 @@ class Action:
                         if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                             self.ball.is_in_quicksand = True
                         break
+                elif getattr(h, "kind", "") == "clone_spawner" and getattr(h, "active", True):
+                    dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
+                    if dist_sq < h.radius**2:
+                        h.active = False
+
+                        import copy
+                        # Avoid deepcopying entire object because of world reference potentially
+                        import random
+                        new_id = getattr(self.ball, "id", 0) + 1000 + random.randint(0, 1000)
+
+                        # Use duplicate or manual cloning if available, else just simple copy.
+                        clone = copy.copy(self.ball)
+                        clone.id = new_id
+                        clone.team = "hostile_clones"
+                        clone.is_hostile_clone = True
+                        clone.is_decoy = False
+
+                        # Find a spot near original
+                        clone.x = self.ball.x + random.uniform(-20, 20)
+                        clone.y = self.ball.y + random.uniform(-20, 20)
+
+                        if hasattr(self.world, "balls"):
+                            self.world.balls.append(clone)
+
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("clone_spawner_trigger", {"x": h.x, "y": h.y, "ball_id": self.ball.id})
+                        elif hasattr(self.world, "events"):
+                            self.world.events.append(("clone_spawner_trigger", {"x": h.x, "y": h.y, "ball_id": getattr(self.ball, "id", 0)}))
+
 
         # Magnet passive: pull boosters and smaller entities
         if getattr(self.ball, "BALL_TYPE", "") == "magnet":

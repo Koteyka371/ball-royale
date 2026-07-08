@@ -5620,6 +5620,48 @@ func execute(strategy: String, delta: float):
                                 self.ball.hp = 0
                                 if "killer" in self.ball:
                                     self.ball.killer = "fire_zone"
+                elif hazard.kind == "clone_spawner" and hazard.get("active", true):
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    var hr = float(hazard.get("radius", 40.0))
+                    if dist < hr:
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["active"] = false
+                        else:
+                            hazard.set("active", false)
+
+                        var clone = null
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            clone = self.ball.duplicate(true)
+                        else:
+                            clone = self.ball.duplicate()
+
+                        var new_id = self.ball.get("id", 0) + 1000 + (randi() % 1000)
+                        if typeof(clone) == TYPE_DICTIONARY:
+                            clone["id"] = new_id
+                            clone["team"] = "hostile_clones"
+                            clone["is_hostile_clone"] = true
+                            clone["is_decoy"] = false
+                            clone["x"] = self.ball.get("x", 0) + randf_range(-20.0, 20.0)
+                            clone["y"] = self.ball.get("y", 0) + randf_range(-20.0, 20.0)
+                        else:
+                            clone.set("id", new_id)
+                            clone.set("team", "hostile_clones")
+                            clone.set("is_hostile_clone", true)
+                            clone.set("is_decoy", false)
+                            clone.set("x", self.ball.get("x", 0) + randf_range(-20.0, 20.0))
+                            clone.set("y", self.ball.get("y", 0) + randf_range(-20.0, 20.0))
+
+                        if world != null and "balls" in world:
+                            world.balls.append(clone)
+
+                        if world != null:
+                            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                                world.add_event("clone_spawner_trigger", {"x": hazard.x, "y": hazard.y, "ball_id": self.ball.get("id", 0)})
+                            elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+                                world.events.append(["clone_spawner_trigger", {"x": hazard.x, "y": hazard.y, "ball_id": self.ball.get("id", 0)}])
+
                 elif hazard.kind == "quicksand":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

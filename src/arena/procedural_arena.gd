@@ -235,6 +235,8 @@ func generate():
             kind = "tall_grass"
         elif r < 0.99995:
             kind = "shuffle_booster"
+        elif r < 0.99996:
+            kind = "clone_spawner"
         else:
             kind = "switch"
 
@@ -246,6 +248,9 @@ func generate():
         elif kind == "lava":
             radius = rng.randf_range(30.0, 60.0)
             damage = 50.0
+        elif kind == "clone_spawner":
+            radius = 40.0
+            damage = 0.0
         elif kind == "proximity_trap":
             radius = rng.randf_range(20.0, 40.0)
             damage = 30.0
