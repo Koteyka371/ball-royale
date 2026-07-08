@@ -479,6 +479,10 @@ class Action:
             else:
                 attacker.kills = 1
 
+            if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False)):
+                attacker.hp = getattr(attacker, "max_hp", 100.0)
+                attacker.speed_boost_timer = getattr(attacker, "speed_boost_timer", 0.0) + 3.0
+
             if hasattr(attacker, "sponsor"):
                 if attacker.sponsor == "aggressor":
                     attacker.damage = getattr(attacker, "damage", 10.0) * 1.1
