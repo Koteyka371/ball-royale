@@ -12057,7 +12057,7 @@
     },
     {
       "id": "idea-700",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Bomb Mode",
@@ -19797,6 +19797,40 @@
         "src/ai/shrinking_safe_zone_based_on_kills.py",
         "src/ai/shrinking_safe_zone_based_on_kills.gd",
         "tests/test_shrinking_safe_zone_based_on_kills.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1155",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Mode",
+      "description": "A new GameMode where players occasionally swap positions with an enemy player at random intervals, confusing targeting and causing chaos. The swap is telegraphed by a small portal particle effect beneath the players 1 second before the swap happens.",
+      "allowed_paths": [
+        "src/ai/quantum_swap.py",
+        "src/ai/quantum_swap.gd",
+        "tests/test_quantum_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1156",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Abyssal Anchor Hazard",
+      "description": "A new heavy hazard type that drops in the arena and periodically unleashes a massive magnetic shockwave that pulls players toward it while dealing damage. If a player touches the center of the anchor, they are completely stunned for 2 seconds.",
+      "allowed_paths": [
+        "src/arena/abyssal_anchor.py",
+        "src/arena/abyssal_anchor.gd",
+        "tests/test_abyssal_anchor.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

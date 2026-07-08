@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-700] Payload Bomb Mode — *2026-07-08 13:25:36 UTC*
+
+A single payload starts in the center with a ticking timer. If it reaches an enemy goal before time runs out, it explodes and deals massive damage to the enemy team's core. If the timer runs out while it's in the middle, it explodes and kills players nearby.
+
+---
+
 ## [idea-679] Shrinking Floor Grid — *2026-07-08 12:49:35 UTC*
 
 Instead of a smooth circular shrinking zone, the arena is made of hexagonal tiles that independently glow red and fall away, reducing the safe map area into fragmented islands that players must jump between.
