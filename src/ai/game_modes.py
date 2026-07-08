@@ -109,6 +109,40 @@ class GameMode:
 
 
 
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            missiles = [h for h in world.arena.hazards if getattr(h, "kind", "") == "homing_missile"]
+            for m in missiles:
+                # Find target center
+                target_x = getattr(world.arena, "safe_zone_x", getattr(world.arena, "width", 1000) / 2)
+                target_y = getattr(world.arena, "safe_zone_y", getattr(world.arena, "height", 1000) / 2)
+
+                dx = target_x - getattr(m, "x", 0)
+                dy = target_y - getattr(m, "y", 0)
+                dist = (dx**2 + dy**2)**0.5
+                if dist > 0:
+                    speed = 300.0 * delta
+                    m.x += (dx/dist) * speed
+                    m.y += (dy/dist) * speed
+
+                hit = False
+                for b in balls:
+                    if not getattr(b, "alive", False): continue
+                    if getattr(b, "id", None) == getattr(m, "owner_id", None): continue
+
+                    bx = getattr(b, "x", 0)
+                    by = getattr(b, "y", 0)
+                    b_dist = ((bx - m.x)**2 + (by - m.y)**2)**0.5
+                    if b_dist < getattr(m, "radius", 10.0) + getattr(b, "radius", 15.0):
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(getattr(m, "damage", 20.0))
+                        else:
+                            b.hp = getattr(b, "hp", 100) - getattr(m, "damage", 20.0)
+                        hit = True
+
+                if hit or dist < 10.0:
+                    if m in world.arena.hazards:
+                        world.arena.hazards.remove(m)
+
         # --- BOUNTY PLACER BUFF TICK ---
         pm = getattr(world, "profile_manager", None)
         if pm and hasattr(pm, "data") and "temporary_buffs" in pm.data:
