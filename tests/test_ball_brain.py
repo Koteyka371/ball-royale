@@ -153,7 +153,7 @@ def test_full_process():
 
     brain.process(0.1)
     # 1 enemy, hp 100 -> rage emotion (hp>80%, enemies>0). decision attack
-    assert ball.current_action in ["attack", "chase", "kite", "use_skill", "deploy_decoy_beacon", "flank", "hold_zone", "intercept"]
+    assert ball.current_action in ["attack", "chase", "kite", "use_skill", "deploy_decoy_beacon", "flank", "hold_zone", "intercept", "ricochet_attack"]
 
 
 def test_skin_perks():

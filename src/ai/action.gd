@@ -181,6 +181,16 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 
 func _attempt_damage(attacker, target) -> void:
 
+	var is_holo = false
+	if "is_hologram" in target: is_holo = target.is_hologram
+	elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("is_hologram"): is_holo = target.get_meta("is_hologram")
+	if is_holo:
+		if "hp" in target: target.hp = 0
+		elif target.has_method("set_meta"): target.set_meta("hp", 0)
+		if "alive" in target: target.alive = false
+		elif target.has_method("set_meta"): target.set_meta("alive", false)
+		return
+
 	var target_b_type = ""
 	if "ball_type" in target: target_b_type = str(target.ball_type)
 	if target_b_type != "shield_drone":
@@ -12411,6 +12421,62 @@ func _collect_booster(delta: float):
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1: self.world.boosters.remove_at(idx)
+			elif "kind" in nearest and nearest.kind == "hologram_booster":
+				for i in range(3):
+					var holo
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						holo = self.ball.duplicate(true)
+					else:
+						holo = self.ball.duplicate()
+					var w_next_id = 10000 + (randi() % 90000)
+					if self.world != null and "next_id" in self.world:
+						w_next_id = self.world.next_id
+						self.world.next_id += 1
+					if "id" in holo: holo.id = w_next_id
+					elif typeof(holo) == TYPE_OBJECT and holo.has_method("set_meta"): holo.set_meta("id", w_next_id)
+
+					if "hp" in holo: holo.hp = 1.0
+					elif typeof(holo) == TYPE_OBJECT and holo.has_method("set_meta"): holo.set_meta("hp", 1.0)
+
+					if "max_hp" in holo: holo.max_hp = 1.0
+					elif typeof(holo) == TYPE_OBJECT and holo.has_method("set_meta"): holo.set_meta("max_hp", 1.0)
+
+					if "is_hologram" in holo: holo.is_hologram = true
+					elif typeof(holo) == TYPE_OBJECT and holo.has_method("set_meta"): holo.set_meta("is_hologram", true)
+
+					if "hologram_timer" in holo: holo.hologram_timer = 10.0
+					elif typeof(holo) == TYPE_OBJECT and holo.has_method("set_meta"): holo.set_meta("hologram_timer", 10.0)
+
+					if "skill" in holo: holo.skill = null
+					elif typeof(holo) == TYPE_OBJECT and holo.has_method("set_meta"): holo.set_meta("skill", null)
+
+					if "active_skill" in holo: holo.active_skill = null
+					elif typeof(holo) == TYPE_OBJECT and holo.has_method("set_meta"): holo.set_meta("active_skill", null)
+
+					if "SKILL" in holo: holo.SKILL = null
+					elif typeof(holo) == TYPE_OBJECT and holo.has_method("set_meta"): holo.set_meta("SKILL", null)
+
+					var angle = (2 * PI / 3) * i + randf_range(-0.2, 0.2)
+					var spd = 5.0
+					if "speed" in self.ball: spd = self.ball.speed
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed"): spd = self.ball.get_meta("speed")
+					spd *= 1.5
+
+					var hvx = cos(angle) * spd
+					var hvy = sin(angle) * spd
+					if "vx" in holo: holo.vx = hvx
+					elif typeof(holo) == TYPE_OBJECT and holo.has_method("set_meta"): holo.set_meta("vx", hvx)
+					if "vy" in holo: holo.vy = hvy
+					elif typeof(holo) == TYPE_OBJECT and holo.has_method("set_meta"): holo.set_meta("vy", hvy)
+
+					if self.world != null and "balls" in self.world:
+						self.world.balls.append(holo)
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1: self.world.arena.hazards.remove_at(idx)
+				if self.world != null and "boosters" in self.world:
+					var idx = self.world.boosters.find(nearest)
+					if idx != -1: self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "chain_lightning":
                 var dur = 5.0
                 if "duration" in nearest: dur = nearest.duration

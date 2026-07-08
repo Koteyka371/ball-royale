@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A hazard that triggers periodically. When a player is inside the hazard zone when it activates, they randomly swap positions with another player elsewhere in the arena, disorienting both players."
+}
