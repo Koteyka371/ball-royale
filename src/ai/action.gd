@@ -4995,21 +4995,21 @@ func execute(strategy: String, delta: float):
                         b_team = self.ball.team
 
                     if is_active and h_team != b_team:
-                        var x1 = 0.0
-                        var y1 = 0.0
-                        var x2 = 0.0
-                        var y2 = 0.0
+                        var start_pt_x = 0.0
+                        var start_pt_y = 0.0
+                        var end_pt_x = 0.0
+                        var end_pt_y = 0.0
 
                         if typeof(hazard) == TYPE_DICTIONARY:
-                            x1 = hazard.get("start_x", hazard.x)
-                            y1 = hazard.get("start_y", hazard.y)
-                            x2 = hazard.get("end_x", hazard.x)
-                            y2 = hazard.get("end_y", hazard.y)
+                            start_pt_x = hazard.get("start_x", hazard.x)
+                            start_pt_y = hazard.get("start_y", hazard.y)
+                            end_pt_x = hazard.get("end_x", hazard.x)
+                            end_pt_y = hazard.get("end_y", hazard.y)
                         else:
-                            x1 = hazard.get("start_x") if "start_x" in hazard else hazard.x
-                            y1 = hazard.get("start_y") if "start_y" in hazard else hazard.y
-                            x2 = hazard.get("end_x") if "end_x" in hazard else hazard.x
-                            y2 = hazard.get("end_y") if "end_y" in hazard else hazard.y
+                            start_pt_x = hazard.get("start_x") if "start_x" in hazard else hazard.x
+                            start_pt_y = hazard.get("start_y") if "start_y" in hazard else hazard.y
+                            end_pt_x = hazard.get("end_x") if "end_x" in hazard else hazard.x
+                            end_pt_y = hazard.get("end_y") if "end_y" in hazard else hazard.y
 
                         var px = 0.0
                         var py = 0.0
@@ -5027,17 +5027,17 @@ func execute(strategy: String, delta: float):
                             b_radius = self.ball.radius
                             b_id = self.ball.id
 
-                        var l2 = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
+                        var length_sq = (start_pt_x - end_pt_x) * (start_pt_x - end_pt_x) + (start_pt_y - end_pt_y) * (start_pt_y - end_pt_y)
                         var dist = 0.0
-                        if l2 == 0.0:
-                            var dx_p = px - x1
-                            var dy_p = py - y1
+                        if length_sq == 0.0:
+                            var dx_p = px - start_pt_x
+                            var dy_p = py - start_pt_y
                             dist = sqrt(dx_p * dx_p + dy_p * dy_p)
                         else:
-                            var t_proj = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2
+                            var t_proj = ((px - start_pt_x) * (end_pt_x - start_pt_x) + (py - start_pt_y) * (end_pt_y - start_pt_y)) / length_sq
                             var t = max(0.0, min(1.0, t_proj))
-                            var proj_x = x1 + t * (x2 - x1)
-                            var proj_y = y1 + t * (y2 - y1)
+                            var proj_x = start_pt_x + t * (end_pt_x - start_pt_x)
+                            var proj_y = start_pt_y + t * (end_pt_y - start_pt_y)
                             var dx_p = px - proj_x
                             var dy_p = py - proj_y
                             dist = sqrt(dx_p * dx_p + dy_p * dy_p)
@@ -5062,6 +5062,7 @@ func execute(strategy: String, delta: float):
                                 else:
                                     hazard.hit_ids = hit_ids
 
+                                # Calculate significant instant damage
                                 var hazard_damage = 50.0
                                 if typeof(hazard) == TYPE_DICTIONARY:
                                     hazard_damage = hazard.get("damage", 50.0)
@@ -5078,7 +5079,7 @@ func execute(strategy: String, delta: float):
                                         if self.ball.hp <= 0:
                                             self.ball.alive = false
 
-                                # Movement speed is halved for 5 seconds
+                                # Halve the movement speed of the enemy for 5 seconds (50% speed debuff)
                                 if typeof(self.ball) == TYPE_DICTIONARY:
                                     self.ball["speed_debuff_timer"] = 5.0
                                     self.ball["speed_debuff_multiplier"] = 0.5
@@ -5106,21 +5107,21 @@ func execute(strategy: String, delta: float):
                         b_team = self.ball.team
 
                     if is_active and h_team != b_team:
-                        var x1 = 0.0
-                        var y1 = 0.0
-                        var x2 = 0.0
-                        var y2 = 0.0
+                        var start_pt_x = 0.0
+                        var start_pt_y = 0.0
+                        var end_pt_x = 0.0
+                        var end_pt_y = 0.0
 
                         if typeof(hazard) == TYPE_DICTIONARY:
-                            x1 = hazard.get("start_x", hazard.x)
-                            y1 = hazard.get("start_y", hazard.y)
-                            x2 = hazard.get("end_x", hazard.x)
-                            y2 = hazard.get("end_y", hazard.y)
+                            start_pt_x = hazard.get("start_x", hazard.x)
+                            start_pt_y = hazard.get("start_y", hazard.y)
+                            end_pt_x = hazard.get("end_x", hazard.x)
+                            end_pt_y = hazard.get("end_y", hazard.y)
                         else:
-                            x1 = hazard.get("start_x") if "start_x" in hazard else hazard.x
-                            y1 = hazard.get("start_y") if "start_y" in hazard else hazard.y
-                            x2 = hazard.get("end_x") if "end_x" in hazard else hazard.x
-                            y2 = hazard.get("end_y") if "end_y" in hazard else hazard.y
+                            start_pt_x = hazard.get("start_x") if "start_x" in hazard else hazard.x
+                            start_pt_y = hazard.get("start_y") if "start_y" in hazard else hazard.y
+                            end_pt_x = hazard.get("end_x") if "end_x" in hazard else hazard.x
+                            end_pt_y = hazard.get("end_y") if "end_y" in hazard else hazard.y
 
                         var px = 0.0
                         var py = 0.0
@@ -5138,17 +5139,17 @@ func execute(strategy: String, delta: float):
                             b_radius = self.ball.radius
                             b_id = self.ball.id
 
-                        var l2 = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
+                        var length_sq = (start_pt_x - end_pt_x) * (start_pt_x - end_pt_x) + (start_pt_y - end_pt_y) * (start_pt_y - end_pt_y)
                         var dist = 0.0
-                        if l2 == 0.0:
-                            var dx_p = px - x1
-                            var dy_p = py - y1
+                        if length_sq == 0.0:
+                            var dx_p = px - start_pt_x
+                            var dy_p = py - start_pt_y
                             dist = sqrt(dx_p * dx_p + dy_p * dy_p)
                         else:
-                            var t_proj = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2
+                            var t_proj = ((px - start_pt_x) * (end_pt_x - start_pt_x) + (py - start_pt_y) * (end_pt_y - start_pt_y)) / length_sq
                             var t = max(0.0, min(1.0, t_proj))
-                            var proj_x = x1 + t * (x2 - x1)
-                            var proj_y = y1 + t * (y2 - y1)
+                            var proj_x = start_pt_x + t * (end_pt_x - start_pt_x)
+                            var proj_y = start_pt_y + t * (end_pt_y - start_pt_y)
                             var dx_p = px - proj_x
                             var dy_p = py - proj_y
                             dist = sqrt(dx_p * dx_p + dy_p * dy_p)

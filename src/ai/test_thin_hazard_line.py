@@ -47,13 +47,13 @@ class MockWorld:
 
 def test_deployable_thin_hazard_line_skill():
     world = MockWorld()
-    b1 = MockBall(1, 0, 0, "A")
-    b2 = MockBall(2, 50, 0, "B") # Enemy nearby
-    world.balls = [b1, b2]
+    ball_1 = MockBall(1, 0, 0, "A")
+    ball_2 = MockBall(2, 50, 0, "B") # Enemy nearby
+    world.balls = [ball_1, ball_2]
 
-    action = Action(b1, world)
+    action = Action(ball_1, world)
     action._process_physics = lambda dt: None
-    action._get_enemies = lambda: [b2]
+    action._get_enemies = lambda: [ball_2]
 
     action._use_skill()
 
@@ -62,19 +62,19 @@ def test_deployable_thin_hazard_line_skill():
     assert hazard.kind == "deployable_thin_hazard_line"
     assert hazard.team == "A"
     assert hazard.damage == 50.0
-    assert b1.skill_timer == 10.0
+    assert ball_1.skill_timer == 10.0
 
     # Check physics logic when enemy touches the hazard line
-    b2_action = Action(b2, world)
+    ball_2_action = Action(ball_2, world)
 
-    b2_action.execute("idle", 1.0)
+    ball_2_action.execute("idle", 1.0)
 
-    assert b2.hp == 50.0
-    assert b2.speed_debuff_timer == 5.0
-    assert b2.speed_debuff_multiplier == 0.5
-    assert b2.id in hazard.hit_ids
+    assert ball_2.hp == 50.0
+    assert ball_2.speed_debuff_timer == 5.0
+    assert ball_2.speed_debuff_multiplier == 0.5
+    assert ball_2.id in hazard.hit_ids
 
     # Second tick, should not hit again
     world.tick = 2
-    b2_action.execute("idle", 1.0)
-    assert b2.hp == 50.0
+    ball_2_action.execute("idle", 1.0)
+    assert ball_2.hp == 50.0
