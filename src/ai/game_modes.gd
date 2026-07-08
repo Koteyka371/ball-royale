@@ -8109,6 +8109,121 @@ class UnstablePortalsEventMode extends GameMode:
 		portals = new_portals
 
 
+class MeteorCrashEventMode extends GameMode:
+	var event_timer: float = 0.0
+	var event_active: bool = false
+	var meteors: Array = []
+	var craters: Array = []
+
+	func _init():
+		super._init()
+		name = "Meteor Crash Event"
+		description = "Meteors crash into the arena, creating hazardous craters that yield rare materials when destroyed."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 20.0:
+			if randf() < 0.2:
+				event_active = true
+				event_timer = 0.0
+				meteors.clear()
+				craters.clear()
+
+				var num_meteors = (randi() % 4) + 3 # 3 to 6
+				for i in range(num_meteors):
+					var mx = randf_range(100, 700)
+					var my = randf_range(100, 500)
+					var delay = randf_range(2.0, 5.0)
+					meteors.append({
+						"id": "meteor_" + str(randi() % 100000),
+						"x": mx,
+						"y": my,
+						"delay": delay,
+						"radius": 30.0
+					})
+				if world.has_method("add_event"):
+					world.add_event("meteor_crash_event", {"message": "METEOR CRASH! Watch out!"})
+			else:
+				event_timer = 0.0
+
+		if event_active:
+			if meteors.size() == 0 and craters.size() == 0:
+				event_active = false
+				event_timer = 0.0
+				if world.has_method("add_event"):
+					world.add_event("meteor_crash_ended", {"message": "Meteor crash ended."})
+
+			var active_meteors = []
+			for m in meteors:
+				m["delay"] -= delta
+				if m["delay"] <= 0:
+					for b in balls:
+						if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive"):
+							continue
+						var dist = Vector2(b.x - m["x"], b.y - m["y"]).length()
+						if dist <= m["radius"] * 1.5:
+							if b.has_method("take_damage"):
+								b.take_damage(30)
+							elif "hp" in b:
+								b.hp -= 30
+
+					craters.append({
+						"id": "crater_" + str(randi() % 100000),
+						"x": m["x"],
+						"y": m["y"],
+						"radius": m["radius"],
+						"hp": 100.0,
+						"duration": 15.0
+					})
+				else:
+					active_meteors.append(m)
+			meteors = active_meteors
+
+			var active_craters = []
+			for c in craters:
+				c["duration"] -= delta
+
+				for b in balls:
+					if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive"):
+						continue
+					var dist = Vector2(b.x - c["x"], b.y - c["y"]).length()
+					if dist <= c["radius"]:
+						if b.has_method("take_damage"):
+							b.take_damage(10 * delta)
+						elif "hp" in b:
+							b.hp -= 10 * delta
+						c["hp"] -= 30 * delta
+
+				if c["duration"] <= 0 or c["hp"] <= 0:
+					if c["hp"] <= 0:
+						if world.has_method("get") and world.get("boosters") != null:
+							var b_id = 9000 + world.boosters.size() + (randi() % 1000)
+							# Assuming booster is just dictionary or similar, let's create a dictionary
+							world.boosters.append({"id": b_id, "x": c["x"], "y": c["y"], "kind": "rare_material", "radius": 10})
+				else:
+					active_craters.append(c)
+			craters = active_craters
+
+			if "arena" in world and world.arena != null and "hazards" in world.arena:
+				var h_list = []
+				for h in world.arena.hazards:
+					if h is Object and "kind" in h and h.kind not in ["meteor_indicator", "meteor_crater"]:
+						h_list.append(h)
+					elif typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] not in ["meteor_indicator", "meteor_crater"]:
+						h_list.append(h)
+				world.arena.hazards = h_list
+
+				# We will instantiate Hazard if possible or use dicts
+				var Hazard = null
+				# The Godot way usually relies on instancing or just dictionaries if it's the client side logic
+				# Let's just use dicts since action.gd handles both objects and dicts
+				for m in meteors:
+					world.arena.hazards.append({"id": m["id"], "x": m["x"], "y": m["y"], "radius": m["radius"], "kind": "meteor_indicator", "damage": 0})
+				for c in craters:
+					world.arena.hazards.append({"id": c["id"], "x": c["x"], "y": c["y"], "radius": c["radius"], "kind": "meteor_crater", "damage": 10})
+
 class MinefieldEventMode extends GameMode:
 	var event_timer: float = 0.0
 	var event_active: bool = false
@@ -11912,6 +12027,7 @@ var GAME_MODES = {
 	"reverse_event": ReverseEventMode.new(),
 	"unstable_portals_event": UnstablePortalsEventMode.new(),
 	"minefield_event": MinefieldEventMode.new(),
+	"meteor_crash_event": MeteorCrashEventMode.new(),
 	"weather_chaos": WeatherChaosMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
 	"domination": DominationMode.new(),
