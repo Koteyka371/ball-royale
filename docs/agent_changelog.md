@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-723] Chain Reaction Decoys — *2026-07-08 18:07:21 UTC*
+
+If a decoy explosion hits another allied decoy, it causes a chain reaction, exploding the second decoy with increased radius and damage.
+
+---
+
 ## [idea-718] Payload Abilities — *2026-07-08 17:48:01 UTC*
 
 The payload in Escort Mode should have a unique set of abilities, like dropping a barrier to shield defenders or temporarily knocking back attackers.

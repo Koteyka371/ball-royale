@@ -12449,7 +12449,7 @@
     },
     {
       "id": "idea-723",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Decoys",
@@ -20257,6 +20257,40 @@
         "src/ai/bouncing_laser.py",
         "src/ai/bouncing_laser.gd",
         "tests/test_bouncing_laser.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1182",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Escort Supply Drops",
+      "description": "Periodically spawn supply drops near the payload containing powerful buffs (e.g., invulnerability or instant ultimate charge). The drops can be contested by either team.",
+      "allowed_paths": [
+        "src/ai/escort_supply_drops.py",
+        "src/ai/escort_supply_drops.gd",
+        "tests/test_escort_supply_drops.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1183",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Path Alteration",
+      "description": "Allow Attackers to capture hack points around the map to temporarily alter the payload's path, forcing the Defenders to take a longer route.",
+      "allowed_paths": [
+        "src/ai/payload_path_alteration.py",
+        "src/ai/payload_path_alteration.gd",
+        "tests/test_payload_path_alteration.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
