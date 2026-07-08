@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-734] Meteor Shower Event — *2026-07-08 19:23:20 UTC*
+
+A random weather event where meteors fall from the sky, damaging balls and destroying terrain in the arena.
+
+---
+
 ## [idea-716] Underground Tunnel Network — *2026-07-08 19:23:13 UTC*
 
 Procedural arenas can spawn underground tunnels, allowing balls to temporarily travel underneath obstacles. While underground, balls are invisible and cannot be targeted, but can only emerge at specific tunnel exits.
