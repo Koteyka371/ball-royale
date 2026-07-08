@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-646] Alchemist Ball Type — *2026-07-08 21:05:43 UTC*
+
+Introduce a new Alchemist ball type that specifically benefits from poison and DoT mechanics. They gain a slight speed buff when inside a poison_cloud or poison_nova, and their basic attacks have a small chance to apply a very weak, stacking poison effect.
+
+---
+
 ## [idea-709] Gravity Boots — *2026-07-08 21:05:37 UTC*
 
 A passive item that makes the ball immune to pull forces like black holes and magnets.
