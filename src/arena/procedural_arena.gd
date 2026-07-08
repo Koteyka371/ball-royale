@@ -195,6 +195,8 @@ func generate():
             kind = "breakable_wall"
         elif r < 0.997:
             kind = "tornado"
+        elif r < 0.9985:
+            kind = "chain_lightning_strike"
         elif r < 0.999:
             kind = "lightning_storm"
         elif r < 0.9995:
@@ -324,6 +326,9 @@ func generate():
         elif kind == "lightning_storm":
             radius = rng.randf_range(30.0, 60.0)
             damage = 0.0
+        elif kind == "chain_lightning_strike":
+            radius = rng.randf_range(40.0, 60.0)
+            damage = 25.0
         elif kind == "tether_trap":
             radius = rng.randf_range(50.0, 100.0)
             damage = 0.0
@@ -1128,6 +1133,39 @@ func update_zone(current_tick: int, delta: float) -> void:
                         rooms.append(new_room)
                         if has_method("queue_redraw"):
                             call("queue_redraw")
+
+            elif "kind" in h and h.kind == "chain_lightning_strike":
+                var timer = 0.0
+                if h.has_meta("timer"):
+                    timer = h.get_meta("timer")
+                timer += delta
+                if timer > 2.0:
+                    timer = 0.0
+                    var warning_id = 9500 + hazards.size() + new_craters.size()
+                    var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+                    var warning = ProceduralArenaScript.Hazard.new(warning_id, h.x, h.y, h.radius * 1.5, "chain_lightning_warning", 0.0)
+                    warning.set_meta("duration", 0.5)
+                    new_craters.append(warning)
+                if h.has_method("set_meta"): h.set_meta("timer", timer)
+            elif "kind" in h and h.kind == "chain_lightning_warning":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.set_meta("active", false)
+                        if "active" in h: h.active = false
+                        var active_id = 9600 + hazards.size() + new_craters.size()
+                        var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+                        var active_strike = ProceduralArenaScript.Hazard.new(active_id, h.x, h.y, h.radius, "chain_lightning_active", 25.0)
+                        active_strike.set_meta("duration", 0.2)
+                        new_craters.append(active_strike)
+            elif "kind" in h and h.kind == "chain_lightning_active":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        h.set_meta("active", false)
+                        if "active" in h: h.active = false
             elif h.id >= 1000 and h.radius < h.target_radius:
                 h.radius += (h.target_radius / 600.0) * delta * 60.0
                 if h.radius > h.target_radius:

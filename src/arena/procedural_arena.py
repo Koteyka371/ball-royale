@@ -122,7 +122,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "swap_trap", "shuffle_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "vortex", "frictionless_zone", "singularity", "ice_patches", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster"])
+            kind = random.choice(["spikes", "lava", "fake_booster", "swap_trap", "shuffle_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "vortex", "frictionless_zone", "singularity", "ice_patches", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "chain_lightning_strike"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -171,6 +171,9 @@ class ProceduralArena:
             elif kind == "lightning_storm":
                 radius = random.uniform(30.0, 60.0)
                 damage = 0.0
+            elif kind == "chain_lightning_strike":
+                radius = random.uniform(40.0, 60.0)
+                damage = 25.0
             elif kind == "tether_trap":
                 radius = random.uniform(50.0, 100.0)
                 damage = 0.0
@@ -917,6 +920,32 @@ class ProceduralArena:
                                 self.rooms.append(new_room)
                             except ImportError:
                                 pass
+                elif getattr(h, "kind", "") == "chain_lightning_strike":
+                    if not hasattr(h, "timer"):
+                        setattr(h, "timer", 0.0)
+                    h.timer += delta
+                    if h.timer > 2.0:
+                        h.timer = 0.0
+                        # Chain lightning strikes release a quick warning then a burst
+                        warning_id = 9500 + len(self.hazards) + len(new_craters)
+                        warning = Hazard(id=warning_id, x=h.x, y=h.y, radius=h.radius * 1.5, kind="chain_lightning_warning", damage=0.0)
+                        setattr(warning, "duration", 0.5)
+                        new_craters.append(warning)
+                elif getattr(h, "kind", "") == "chain_lightning_warning":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                            active_id = 9600 + len(self.hazards) + len(new_craters)
+                            active_strike = Hazard(id=active_id, x=h.x, y=h.y, radius=h.radius, kind="chain_lightning_active", damage=25.0)
+                            setattr(active_strike, "duration", 0.2)
+                            new_craters.append(active_strike)
+                elif getattr(h, "kind", "") == "chain_lightning_active":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+
                 elif getattr(h, "id", 0) >= 1000 and hasattr(h, "target_radius"):
                     if h.radius < h.target_radius:
                         # Grow proportionally to reach target in roughly 600 ticks

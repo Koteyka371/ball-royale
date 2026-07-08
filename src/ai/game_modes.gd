@@ -8142,6 +8142,130 @@ class UnstablePortalsEventMode extends GameMode:
 		portals = new_portals
 
 
+class ChainLightningStormMode extends GameMode:
+	var event_timer: float = 0.0
+	var event_active: bool = false
+	var strikes: Array = []
+	var weather: String = "thunderstorm"
+
+	func _init():
+		super._init()
+		name = "Chain Lightning Storm"
+		description = "A massive electrical storm periodically targets players. When struck, balls release chain lightning that damages and repels nearby entities. Keep your distance!"
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 15.0:
+			if randf() < 0.6:
+				event_active = true
+				event_timer = 0.0
+				strikes.clear()
+
+				var num_strikes = min(balls.size(), (randi() % 3) + 2)
+				var targets = []
+				for b in balls:
+					if b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive"): continue
+					elif "alive" in b and not b.alive: continue
+					targets.append(b)
+
+				targets.shuffle()
+				var actual_strikes = min(num_strikes, targets.size())
+
+				for i in range(actual_strikes):
+					var target = targets[i]
+					var delay = randf_range(1.0, 2.5)
+					strikes.append({
+						"id": "chain_strike_" + str(randi() % 90000 + 10000),
+						"x": target.x,
+						"y": target.y,
+						"radius": 50.0,
+						"timer": delay,
+						"state": "warning"
+					})
+
+				if world.has_method("add_event"):
+					world.add_event("chain_lightning_warning", {"message": "CHAIN LIGHTNING STORM IMMINENT! SPREAD OUT!"})
+
+		if event_active:
+			if strikes.size() == 0:
+				event_active = false
+				event_timer = 0.0
+				if world.has_method("add_event"):
+					world.add_event("chain_lightning_ended", {"message": "The storm has passed."})
+
+			var active_strikes = []
+			for strike in strikes:
+				strike["timer"] -= delta
+				if strike["state"] == "warning":
+					if strike["timer"] <= 0:
+						strike["state"] = "active"
+						strike["timer"] = 0.2
+
+						for b in balls:
+							var is_alive = true
+							if b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+							elif "alive" in b: is_alive = b.alive
+							if not is_alive: continue
+
+							var dx = b.x - strike["x"]
+							var dy = b.y - strike["y"]
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist < strike["radius"]:
+								if world.has_method("_deal_damage"):
+									var DummyAttacker = {}
+									DummyAttacker["id"] = "storm"
+									DummyAttacker["sponsor"] = ""
+									DummyAttacker["damage"] = 30.0
+									world._deal_damage(DummyAttacker, b, 30.0)
+								elif b.has_method("take_damage"):
+									b.take_damage(30.0)
+								elif "hp" in b:
+									b.hp -= 30.0
+
+								var cur_timer = 0.0
+								if "chain_lightning_timer" in b: cur_timer = b.chain_lightning_timer
+								elif b.has_method("get_meta") and b.has_meta("chain_lightning_timer"): cur_timer = b.get_meta("chain_lightning_timer")
+
+								if "chain_lightning_timer" in b:
+									b.chain_lightning_timer = cur_timer + 5.0
+								elif b.has_method("set_meta"):
+									b.set_meta("chain_lightning_timer", cur_timer + 5.0)
+
+								if dist > 0.001:
+									var repulse_force = 200.0 * (1.0 - dist / strike["radius"])
+									b.x += (dx/dist) * repulse_force * delta
+									b.y += (dy/dist) * repulse_force * delta
+
+						active_strikes.append(strike)
+					else:
+						active_strikes.append(strike)
+				elif strike["state"] == "active":
+					if strike["timer"] > 0:
+						active_strikes.append(strike)
+			strikes = active_strikes
+
+			if world.has_method("has_meta") or "arena" in world:
+				var arena = null
+				if "arena" in world: arena = world.arena
+				elif world.has_method("get_meta") and world.has_meta("arena"): arena = world.get_meta("arena")
+
+				if arena != null and "hazards" in arena:
+					var new_hazards = []
+					for h in arena.hazards:
+						var kind = ""
+						if h is Object and "kind" in h: kind = h.kind
+						elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+						if kind not in ["chain_lightning_warning", "chain_lightning_active"]:
+							new_hazards.append(h)
+					arena.hazards = new_hazards
+
+					for s in strikes:
+						var kind = "chain_lightning_warning"
+						if s["state"] == "active": kind = "chain_lightning_active"
+						arena.hazards.append({"id": s["id"], "x": s["x"], "y": s["y"], "radius": s["radius"], "kind": kind, "damage": 0.0})
+
 class LightningStrikeEventMode extends GameMode:
 	var event_timer: float = 0.0
 	var event_active: bool = false
@@ -12536,6 +12660,7 @@ var GAME_MODES = {
 	"minefield_event": MinefieldEventMode.new(),
 	"meteor_crash_event": MeteorCrashEventMode.new(),
 	"lightning_strike_event": LightningStrikeEventMode.new(),
+	"chain_lightning_storm": ChainLightningStormMode.new(),
 	"weather_chaos": WeatherChaosMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
 	"domination": DominationMode.new(),
