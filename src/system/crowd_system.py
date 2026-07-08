@@ -19,11 +19,13 @@ class CrowdSystem:
         self.match_started = False
         self.match_ended = False
         self.external_commands = []
+        self.has_real_spectators = False
 
     def queue_external_command(self, user: str, command: str):
         if not hasattr(self, 'external_commands'):
             self.external_commands = []
         self.external_commands.append((user, command))
+        self.has_real_spectators = True
 
     def process_external_command(self, user: str, command: str, balls: 'List[Any]'):
         parts = command.strip().split()
@@ -325,8 +327,9 @@ class CrowdSystem:
         self.vote_timer -= 1
 
         # Simulate spectators casting votes
-        if random.random() < 0.05:  # Random spectator votes
-            self._simulate_spectator_vote()
+        if not self.has_real_spectators:
+            if random.random() < 0.05:  # Random spectator votes
+                self._simulate_spectator_vote()
 
         if self.vote_timer <= 0:
             self._resolve_vote(balls)

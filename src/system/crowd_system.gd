@@ -16,6 +16,7 @@ var underdog_team = null
 var match_started = false
 var match_ended = false
 var external_commands = []
+var has_real_spectators = false
 
 func _init(p_world):
     world = p_world
@@ -23,6 +24,7 @@ func _init(p_world):
 
 func queue_external_command(user: String, command: String):
     external_commands.append({"user": user, "command": command})
+    has_real_spectators = true
 
 func process_external_command(user: String, command: String, balls: Array):
     var parts = command.strip_edges().split(" ", false)
@@ -538,8 +540,9 @@ func _process_votes(balls: Array, current_tick: int):
 
     vote_timer -= 1
 
-    if randf() < 0.05:
-        _simulate_spectator_vote()
+    if not has_real_spectators:
+        if randf() < 0.05:
+            _simulate_spectator_vote()
 
     if vote_timer <= 0:
         _resolve_vote(balls)

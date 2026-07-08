@@ -114,3 +114,37 @@ def test_external_command_vote():
 
     assert system.votes["lava"] == 1
     assert system.votes["spike"] == 0
+
+def test_real_spectators_disable_simulated_votes():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    balls = []
+
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava", "spike"]}
+    system.votes = {"lava": 0, "spike": 0}
+    system.vote_timer = 100
+
+    import random
+    old_random = random.random
+    random.random = lambda: 0.01  # Guarantee simulated vote if enabled
+
+    # Tick without real spectators
+    system.tick(balls, [], 1)
+    # The simulated spectator should have cast a vote (since 0.01 < 0.05)
+    total_votes = sum(system.votes.values())
+    assert total_votes > 0
+
+    # Clear votes and simulate real spectator joining
+    system.votes = {"lava": 0, "spike": 0}
+    system.queue_external_command("TwitchUser", "!vote spike")
+
+    # Tick with real spectators
+    system.tick(balls, [], 2)
+    # The real user voted for spike
+    # The simulated spectator should NOT have cast a vote
+    assert system.votes["spike"] == 1
+    assert system.votes["lava"] == 0
+    total_votes_after = sum(system.votes.values())
+    assert total_votes_after == 1
+
+    random.random = old_random
