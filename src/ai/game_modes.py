@@ -1786,6 +1786,8 @@ class EscortMode(GameMode):
         self.goal_x = 900.0
         self.goal_y = 500.0
         self.timer = 180.0
+        self.ability_timer = 0.0
+        self.current_ability = 0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -1870,6 +1872,59 @@ class EscortMode(GameMode):
                 base_speed = getattr(self.payload, "speed", 0.5)
                 self.payload.x += (dx / dist) * base_speed * speed_mult
                 self.payload.y += (dy / dist) * base_speed * speed_mult
+
+            # Payload unique abilities logic
+            self.ability_timer += delta
+            if self.ability_timer >= 8.0:
+                self.ability_timer = 0.0
+                px = getattr(self.payload, "x", 0)
+                py = getattr(self.payload, "y", 0)
+
+                if self.current_ability == 0:
+                    # Drop barrier
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        from arena.procedural_arena import Hazard
+                        import random
+                        h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                        barrier = Hazard(h_id, px, py, 40.0, "energy_barrier", 0.0)
+                        setattr(barrier, 'duration', 10.0)
+                        setattr(barrier, 'team', getattr(self.payload, "team", "Defenders"))
+                        world.arena.hazards.append(barrier)
+
+                        if hasattr(world, "events"):
+                            world.events.append({
+                                "type": "payload_ability",
+                                "ability": "barrier",
+                                "x": px,
+                                "y": py
+                            })
+                    self.current_ability = 1
+                else:
+                    # Knockback attackers
+                    for b in balls:
+                        if b == self.payload or getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", False):
+                            continue
+                        if getattr(b, "team", "") == "Attackers":
+                            bx = getattr(b, "x", 0)
+                            by = getattr(b, "y", 0)
+                            dx2 = bx - px
+                            dy2 = by - py
+                            dist2 = math.hypot(dx2, dy2)
+                            if dist2 <= 200.0 and dist2 > 0:
+                                kb_force = 300.0
+                                nvx = (dx2 / dist2) * kb_force
+                                nvy = (dy2 / dist2) * kb_force
+                                b.vx = getattr(b, "vx", 0) + nvx
+                                b.vy = getattr(b, "vy", 0) + nvy
+
+                    if hasattr(world, "events"):
+                        world.events.append({
+                            "type": "payload_ability",
+                            "ability": "knockback",
+                            "x": px,
+                            "y": py
+                        })
+                    self.current_ability = 0
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         if not self.payload:

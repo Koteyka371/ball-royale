@@ -441,6 +441,7 @@ def test_escort_mode():
     from ai.game_modes import EscortMode
     mode = EscortMode()
     world = MockWorld()
+    world.events = []
     class MockArena:
         def __init__(self):
             self.width = 1000
@@ -474,6 +475,52 @@ def test_escort_mode():
     payload.y = 500.0
     mode.timer = 0.0
     assert mode.check_winner(world, balls) == "Attackers"
+
+def test_escort_mode_abilities():
+    from ai.game_modes import EscortMode
+    mode = EscortMode()
+    world = MockWorld()
+    world.events = []
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+    world.arena = MockArena()
+    balls = [MockBall(1, "warrior"), MockBall(2, "scout")]
+
+    mode.setup(world, balls)
+    payload = mode.payload
+
+    # Needs to be true for target checking
+    balls[1].alive = True
+
+    # Trigger ability 1: Barrier
+    mode.ability_timer = 7.9
+    mode.current_ability = 0
+    mode.tick(world, balls, delta=0.2)
+    assert mode.ability_timer == 0.0
+    assert mode.current_ability == 1
+    assert len(world.arena.hazards) == 1
+    assert getattr(world.arena.hazards[0], 'kind', '') == 'energy_barrier'
+    assert len(world.events) == 1
+    assert world.events[0]["ability"] == "barrier"
+
+    # Trigger ability 2: Knockback
+    world.events.clear()
+    balls[1].team = "Attackers"
+    balls[1].x = getattr(payload, "x", 0) + 50
+    balls[1].y = getattr(payload, "y", 0)
+    balls[1].vx = 0
+    balls[1].vy = 0
+
+    mode.ability_timer = 7.9
+    mode.tick(world, balls, delta=0.2)
+    assert mode.ability_timer == 0.0
+    assert mode.current_ability == 0
+    assert len(world.events) == 1
+    assert world.events[0]["ability"] == "knockback"
+    assert getattr(balls[1], "vx") > 0  # Knocked back
 
 def test_pitch_black_mode():
     from ai.game_modes import GAME_MODES
