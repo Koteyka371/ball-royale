@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-720] Chain Lightning — *2026-07-08 22:19:34 UTC*
+
+A new skill or hazard that hits a primary target and bounces to nearby targets, dealing less damage with each bounce.
+
+---
+
 ## [idea-749] Juggernaut Ball Type — *2026-07-08 22:19:30 UTC*
 
 A new ball type that gains temporary shield and damage boost based on the number of enemies within its perception radius, making it incredibly dangerous in crowded areas but weak in 1v1 engagements.
