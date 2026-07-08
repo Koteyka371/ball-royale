@@ -5076,6 +5076,100 @@ class VolatileClonesMode(GameMode):
                         if hasattr(world, "balls"):
                             world.balls.append(clone)
 
+
+
+class CloneTrailMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Clone Trail"
+        self.description = "Every few seconds, a trail of static clones is left behind every ball. If an enemy touches a clone, it detonates and deals damage."
+        self.trail_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.trail_timer += delta
+
+        # Process existing clones for detonation and lifespan
+        clones_to_remove = []
+        for b in balls:
+            if getattr(b, "is_clone_trail", False) and getattr(b, "alive", True):
+                # Detonation logic
+                detonated = False
+                for e in balls:
+                    if getattr(e, "alive", True) and not getattr(e, "is_clone_trail", False) and not getattr(e, "is_decoy", False):
+                        if getattr(e, "team", getattr(e, "ball_type", "")) != getattr(b, "team", ""):
+                            dist_sq = (b.x - e.x)**2 + (b.y - e.y)**2
+                            if dist_sq <= 50.0**2:
+                                detonated = True
+                                break
+
+                if detonated:
+                    b.alive = False
+                    b.hp = 0
+                    clones_to_remove.append(b)
+                    # Deal AoE damage
+                    for e in balls:
+                        if getattr(e, "alive", True) and not getattr(e, "is_clone_trail", False) and not getattr(e, "is_decoy", False):
+                            if getattr(e, "team", getattr(e, "ball_type", "")) != getattr(b, "team", ""):
+                                dist_sq = (b.x - e.x)**2 + (b.y - e.y)**2
+                                if dist_sq <= 100.0**2:
+                                    # Deal damage
+                                    if hasattr(world, "_deal_damage"):
+                                        temp_attacker = type('temp', (), {'damage': 30.0, 'team': b.team})()
+                                        world._deal_damage(temp_attacker, e)
+                                    else:
+                                        e.hp -= 30.0
+                else:
+                    # Lifespan logic
+                    if not hasattr(b, "trail_lifespan"):
+                        b.trail_lifespan = 10.0
+                    b.trail_lifespan -= delta
+                    if b.trail_lifespan <= 0:
+                        b.alive = False
+                        b.hp = 0
+                        clones_to_remove.append(b)
+
+        if hasattr(world, "dead_balls"):
+            for c in clones_to_remove:
+                if c not in world.dead_balls:
+                    world.dead_balls.append(c)
+
+        if self.trail_timer > 3.0:
+            self.trail_timer = 0.0
+            new_clones = []
+            for b in balls:
+                if getattr(b, "alive", False) and not getattr(b, "is_clone_trail", False) and not getattr(b, "is_decoy", False):
+                    import copy
+                    import random
+                    clone = copy.copy(b)
+                    clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+                    if hasattr(world, "next_id"):
+                        world.next_id += 1
+                    clone.x = getattr(b, "x", 0)
+                    clone.y = getattr(b, "y", 0)
+                    clone.hp = getattr(b, "hp", 100)
+                    clone.max_hp = getattr(b, "max_hp", 100)
+                    clone.team = getattr(b, "team", getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")))
+                    clone.is_clone_trail = True # custom flag to distinguish and prevent default action.py logic if needed
+                    clone.clone_owner = b.id
+                    clone.alive = True
+                    clone.speed = 0
+                    clone.damage = 0
+                    clone.trail_lifespan = 10.0 # 10 seconds lifespan
+                    clone.skill_timer = 9999
+                    clone.skill = None
+                    if hasattr(clone, "SKILL"):
+                        clone.SKILL = None
+                    if hasattr(clone, "active_skill"):
+                        clone.active_skill = None
+                    if hasattr(clone, "traits"):
+                        clone.traits = []
+
+                    new_clones.append(clone)
+
+            if hasattr(world, "balls"):
+                world.balls.extend(new_clones)
+
 class CloneChaosMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -10637,6 +10731,7 @@ GAME_MODES = {
     "earthquake": EarthquakeMode(),
     "inverse_mirror_arena": InverseMirrorArenaMode(),
     "mirror_match": MirrorMatchMode(),
+    "clone_trail": CloneTrailMode(),
     "clone_chaos": CloneChaosMode(),
     "volatile_clones": VolatileClonesMode(),
     "supernova": SupernovaMode(),
