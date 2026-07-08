@@ -14132,6 +14132,8 @@ func _use_skill():
                 self.ball.team_message = {"type": "action_skill_used", "radius": 150}
         elif skill_name == "numpy":
             var enemies = _get_enemies()
+            var dir_x = 0.0
+            var dir_y = 0.0
             if enemies.size() > 0:
                 var target = null
                 var min_dist_sq = INF
@@ -14433,6 +14435,8 @@ func _use_skill():
                 elif e.has_method("has_meta") and e.has_meta("hp"):
                     enemies_before[e] = e.get_meta("hp")
 
+            var dir_x = 0.0
+            var dir_y = 0.0
             if enemies.size() > 0:
                 var target = null
                 var min_dist_sq = INF
@@ -14445,12 +14449,67 @@ func _use_skill():
                 var dy = target.y - self.ball.y
                 var dist = sqrt(min_dist_sq)
                 if dist > 0.0001:
-                    self.ball.x += (dx/dist) * dash_dist
-                    self.ball.y += (dy/dist) * dash_dist
+                    dir_x = dx / dist
+                    dir_y = dy / dist
+                else:
+                    var angle = randf() * PI * 2.0
+                    dir_x = cos(angle)
+                    dir_y = sin(angle)
             else:
                 var angle = randf() * PI * 2.0
-                self.ball.x += cos(angle) * dash_dist
-                self.ball.y += sin(angle) * dash_dist
+                dir_x = cos(angle)
+                dir_y = sin(angle)
+
+            var rem_dist = dash_dist
+            var my_radius = 10.0
+            if "radius" in self.ball:
+                my_radius = self.ball.radius
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"):
+                my_radius = self.ball.get_meta("radius")
+
+            var step_dist = 5.0
+
+            while rem_dist > 0.001:
+                var current_step = min(step_dist, rem_dist)
+                var next_x = self.ball.x + dir_x * current_step
+                var next_y = self.ball.y + dir_y * current_step
+
+                var bounced = false
+                var cx = next_x
+                var cy = next_y
+                if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and self.world.arena.has_method("clamp_position"):
+                    var result = self.world.arena.clamp_position(next_x, next_y, my_radius)
+                    if typeof(result) == TYPE_ARRAY and result.size() >= 2:
+                        cx = result[0]
+                        cy = result[1]
+                        if result.size() > 2:
+                            bounced = result[2]
+                        else:
+                            bounced = (abs(cx - next_x) > 0.001 or abs(cy - next_y) > 0.001)
+
+                if bounced:
+                    var actual_dist = sqrt(pow(cx - self.ball.x, 2) + pow(cy - self.ball.y, 2))
+                    var leftover_step = max(0.0, current_step - actual_dist)
+
+                    if abs(cx - next_x) > 0.001:
+                        dir_x = -dir_x
+                        if "vx" in self.ball:
+                            self.ball.vx = -self.ball.vx
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"):
+                            self.ball.set_meta("vx", -self.ball.get_meta("vx"))
+                    if abs(cy - next_y) > 0.001:
+                        dir_y = -dir_y
+                        if "vy" in self.ball:
+                            self.ball.vy = -self.ball.vy
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"):
+                            self.ball.set_meta("vy", -self.ball.get_meta("vy"))
+
+                    cx += dir_x * leftover_step
+                    cy += dir_y * leftover_step
+
+                self.ball.x = cx
+                self.ball.y = cy
+                rem_dist -= current_step
 
             var killed_enemy = false
             for e in _get_enemies():
@@ -14726,12 +14785,62 @@ func _use_skill():
                 var dy = target.y - self.ball.y
                 var dist = sqrt(min_dist_sq)
                 if dist > 0.0001:
-                    self.ball.x += (dx/dist) * dash_dist
-                    self.ball.y += (dy/dist) * dash_dist
+                    dir_x = dx / dist
+                    dir_y = dy / dist
+                else:
+                    var angle = randf() * PI * 2.0
+                    dir_x = cos(angle)
+                    dir_y = sin(angle)
             else:
                 var angle = randf() * PI * 2.0
-                self.ball.x += cos(angle) * dash_dist
-                self.ball.y += sin(angle) * dash_dist
+                dir_x = cos(angle)
+                dir_y = sin(angle)
+
+            var rem_dist = dash_dist
+            var my_radius = 10.0
+            if "radius" in self.ball:
+                my_radius = self.ball.radius
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"):
+                my_radius = self.ball.get_meta("radius")
+
+            for _i in range(10):
+                var next_x = self.ball.x + dir_x * rem_dist
+                var next_y = self.ball.y + dir_y * rem_dist
+
+                var bounced = false
+                var cx = next_x
+                var cy = next_y
+                if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and self.world.arena.has_method("clamp_position"):
+                    var result = self.world.arena.clamp_position(next_x, next_y, my_radius)
+                    cx = result[0]
+                    cy = result[1]
+                    bounced = result[2]
+
+                if bounced:
+                    var actual_dist = sqrt(pow(cx - self.ball.x, 2) + pow(cy - self.ball.y, 2))
+                    rem_dist = max(0.0, rem_dist - actual_dist)
+
+                    if abs(cx - next_x) > 0.001:
+                        dir_x = -dir_x
+                        if "vx" in self.ball:
+                            self.ball.vx = -self.ball.vx
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"):
+                            self.ball.set_meta("vx", -self.ball.get_meta("vx"))
+                    if abs(cy - next_y) > 0.001:
+                        dir_y = -dir_y
+                        if "vy" in self.ball:
+                            self.ball.vy = -self.ball.vy
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"):
+                            self.ball.set_meta("vy", -self.ball.get_meta("vy"))
+
+                    self.ball.x = cx
+                    self.ball.y = cy
+                    if rem_dist <= 0.001:
+                        break
+                else:
+                    self.ball.x = next_x
+                    self.ball.y = next_y
+                    break
 
             var killed_enemy = false
             for e in _get_enemies():
