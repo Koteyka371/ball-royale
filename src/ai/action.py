@@ -225,6 +225,14 @@ class Action:
             is_nemesis_active = pm.is_nemesis(attacker.ball_type, target.ball_type)
 
 
+        if getattr(target, "kinetic_shield_active", False) and is_ranged:
+            # Absorb ranged attack
+            inc_dmg = getattr(attacker, "damage", 10.0)
+            target.kinetic_shield_stored_damage = getattr(target, "kinetic_shield_stored_damage", 0.0) + inc_dmg
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
+            return
+
         if getattr(target, "half_reflect_shield_active", False):
             original_damage = getattr(attacker, "damage", 10.0)
             refl_dmg = original_damage * 0.5
@@ -271,6 +279,15 @@ class Action:
                         break
 
         original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
+
+        if getattr(attacker, "kinetic_shield_stored_damage", 0.0) > 0 and not is_ranged:
+            stored_dmg = attacker.kinetic_shield_stored_damage
+            original_damage += stored_dmg
+            # Apply speed boost
+            attacker.speed_boost_timer = getattr(attacker, "speed_boost_timer", 0.0) + 3.0
+            # Remove shield
+            attacker.kinetic_shield_active = False
+            attacker.kinetic_shield_stored_damage = 0.0
 
         if getattr(target, "takes_double_damage", False):
             original_damage *= 2.0
@@ -816,6 +833,12 @@ class Action:
                     if hasattr(self.world, "events"):
                         self.world.events.append({"type": "time_rewind", "data": {"id": getattr(self.ball, "id", None)}})
                 return
+
+        if getattr(self.ball, "kinetic_shield_timer", 0.0) > 0:
+            self.ball.kinetic_shield_timer -= delta
+            if self.ball.kinetic_shield_timer <= 0:
+                self.ball.kinetic_shield_active = False
+                self.ball.kinetic_shield_stored_damage = 0.0
 
         if getattr(self.ball, "shuffle_booster_timer", 0.0) > 0:
             self.ball.shuffle_booster_timer -= delta
@@ -6464,6 +6487,15 @@ class Action:
             if dist <= ball_radius + 10:
                 if getattr(nearest, "kind", None) == "drone_item":
                     self.ball.has_drone = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "kinetic_shield_booster":
+                    self.ball.kinetic_shield_active = True
+                    self.ball.kinetic_shield_timer = 10.0
+                    self.ball.kinetic_shield_stored_damage = 0.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

@@ -290,6 +290,25 @@ func _attempt_damage(attacker, target) -> void:
 		is_nemesis_active = pm.is_nemesis(attacker_type, target_type)
 
 
+		var has_kinetic = false
+		if "kinetic_shield_active" in target and target.kinetic_shield_active:
+			has_kinetic = true
+		elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("kinetic_shield_active") and target.get_meta("kinetic_shield_active"):
+			has_kinetic = true
+
+		if has_kinetic and is_ranged_attack:
+			var inc_dmg = 10.0
+			if "damage" in attacker: inc_dmg = float(attacker.damage)
+			if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"):
+				var cur_stored = target.get_meta("kinetic_shield_stored_damage") if target.has_meta("kinetic_shield_stored_damage") else 0.0
+				target.set_meta("kinetic_shield_stored_damage", cur_stored + inc_dmg)
+			else:
+				var cur_stored = target.kinetic_shield_stored_damage if "kinetic_shield_stored_damage" in target else 0.0
+				target.kinetic_shield_stored_damage = cur_stored + inc_dmg
+			if world != null and "events" in world:
+				world.events.append({"type": "visual_effect", "data": {"type": "shield_block", "x": t_x2, "y": t_y2}})
+			return
+
 		var has_half_reflect = false
 		if "half_reflect_shield_active" in target and target.half_reflect_shield_active:
 			has_half_reflect = true
@@ -388,6 +407,30 @@ func _attempt_damage(attacker, target) -> void:
 	var base_dmg = 10.0
 	if "damage" in attacker: base_dmg = float(attacker.damage)
 	var original_damage = base_dmg * damage_reduction
+
+	var a_has_kinetic = false
+	var a_stored_dmg = 0.0
+	if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("kinetic_shield_stored_damage"):
+		a_stored_dmg = float(attacker.get_meta("kinetic_shield_stored_damage"))
+	elif "kinetic_shield_stored_damage" in attacker:
+		a_stored_dmg = float(attacker.kinetic_shield_stored_damage)
+
+	if a_stored_dmg > 0.0 and not is_ranged_attack:
+		original_damage += a_stored_dmg
+		var cur_speed_boost_timer = 0.0
+		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("speed_boost_timer"):
+			cur_speed_boost_timer = float(attacker.get_meta("speed_boost_timer"))
+		elif "speed_boost_timer" in attacker:
+			cur_speed_boost_timer = float(attacker.speed_boost_timer)
+
+		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
+			attacker.set_meta("speed_boost_timer", cur_speed_boost_timer + 3.0)
+			attacker.set_meta("kinetic_shield_active", false)
+			attacker.set_meta("kinetic_shield_stored_damage", 0.0)
+		else:
+			attacker.speed_boost_timer = cur_speed_boost_timer + 3.0
+			attacker.kinetic_shield_active = false
+			attacker.kinetic_shield_stored_damage = 0.0
 
 	if "attack_accuracy" in attacker:
 		attack_accuracy = float(attacker.attack_accuracy)
@@ -1232,6 +1275,29 @@ func execute(strategy: String, delta: float):
             self.ball.decoy_aura_timer = d_aura_val
 
     # Nemesis Reveal Passive
+    var ks_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_shield_timer"):
+        ks_timer = float(self.ball.get_meta("kinetic_shield_timer"))
+    elif "kinetic_shield_timer" in self.ball:
+        ks_timer = float(self.ball.kinetic_shield_timer)
+
+    if ks_timer > 0.0:
+        ks_timer -= delta
+        if ks_timer <= 0.0:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("kinetic_shield_active", false)
+                self.ball.set_meta("kinetic_shield_stored_damage", 0.0)
+                self.ball.set_meta("kinetic_shield_timer", 0.0)
+            else:
+                self.ball.kinetic_shield_active = false
+                self.ball.kinetic_shield_stored_damage = 0.0
+                self.ball.kinetic_shield_timer = 0.0
+        else:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("kinetic_shield_timer", ks_timer)
+            else:
+                self.ball.kinetic_shield_timer = ks_timer
+
     var n_reveal = 5.0
     if "nemesis_reveal_timer" in self.ball:
         n_reveal = float(self.ball.nemesis_reveal_timer)
@@ -11270,6 +11336,23 @@ func _collect_booster(delta: float):
 
             elif "kind" in nearest and nearest.kind == "time_rewind_booster":
                 self.ball.set_meta("time_rewind_booster_active", true)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "kinetic_shield_booster":
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("kinetic_shield_active", true)
+                    self.ball.set_meta("kinetic_shield_timer", 10.0)
+                    self.ball.set_meta("kinetic_shield_stored_damage", 0.0)
+                else:
+                    self.ball.kinetic_shield_active = true
+                    self.ball.kinetic_shield_timer = 10.0
+                    self.ball.kinetic_shield_stored_damage = 0.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
