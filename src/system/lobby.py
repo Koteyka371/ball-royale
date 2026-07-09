@@ -61,7 +61,7 @@ class PreGameLobby:
     def get_mutator_options(self):
         return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards"]
 
-    def cast_mutator_vote(self, player_id, mutator, profile, spend_currency=False):
+    def cast_mutator_vote(self, player_id, mutator, profile, spend_currency=False, currency_type="skill_points"):
         if "mutator_votes" not in self.selections:
             self.selections["mutator_votes"] = {}
 
@@ -77,9 +77,19 @@ class PreGameLobby:
         vote_weight = 1
 
         if spend_currency:
-            if profile.data.get("skill_points", 0) >= 50:
-                profile.add_skill_points(-50)
-                vote_weight = 3
+            if currency_type == "skill_points":
+                if profile.data.get("skill_points", 0) >= 50:
+                    profile.add_skill_points(-50)
+                    vote_weight = 3
+                else:
+                    return False
+            elif currency_type == "mutator_tokens":
+                if profile.data.get("mutator_tokens", 0) >= 1:
+                    profile.data["mutator_tokens"] -= 1
+                    profile.save()
+                    vote_weight = 5
+                else:
+                    return False
             else:
                 return False
 
