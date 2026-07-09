@@ -45,6 +45,46 @@ class PreGameLobby:
         return self.selections.get(key, [])
 
 
+
+    def get_mutator_options(self):
+        return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards"]
+
+    def cast_mutator_vote(self, player_id, mutator, profile, spend_currency=False):
+        if "mutator_votes" not in self.selections:
+            self.selections["mutator_votes"] = {}
+
+        if "player_voted_mutators" not in self.selections:
+            self.selections["player_voted_mutators"] = []
+
+        if player_id in self.selections["player_voted_mutators"]:
+            return False
+
+        if mutator not in self.get_mutator_options():
+            return False
+
+        vote_weight = 1
+
+        if spend_currency:
+            if profile.data.get("skill_points", 0) >= 50:
+                profile.add_skill_points(-50)
+                vote_weight = 3
+            else:
+                return False
+
+        current_votes = self.selections["mutator_votes"].get(mutator, 0)
+        self.selections["mutator_votes"][mutator] = current_votes + vote_weight
+        self.selections["player_voted_mutators"].append(player_id)
+        return True
+
+    def get_winning_mutator(self):
+        votes = self.selections.get("mutator_votes", {})
+        if not votes:
+            import random
+            return random.choice(self.get_mutator_options())
+
+        winning_mutator = max(votes.items(), key=lambda x: x[1])[0]
+        return winning_mutator
+
     def apply_loadout_to_ball(self, ball_id, profile, loadout_name):
         loadout = profile.get_loadout(loadout_name)
         if loadout:

@@ -55,6 +55,57 @@ func get_perks(ball_id: int) -> Array:
     return []
 
 
+
+func get_mutator_options() -> Array:
+    return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards"]
+
+func cast_mutator_vote(player_id: String, mutator: String, profile: ProfileManager, spend_currency: bool = false) -> bool:
+    if not selections.has("mutator_votes"):
+        selections["mutator_votes"] = {}
+
+    if not selections.has("player_voted_mutators"):
+        selections["player_voted_mutators"] = []
+
+    if selections["player_voted_mutators"].has(player_id):
+        return false
+
+    if not get_mutator_options().has(mutator):
+        return false
+
+    var vote_weight = 1
+
+    if spend_currency:
+        var current_points = profile.data.get("skill_points", 0)
+        if current_points >= 50:
+            profile.add_skill_points(-50)
+            vote_weight = 3
+        else:
+            return false
+
+    var current_votes = 0
+    if selections["mutator_votes"].has(mutator):
+        current_votes = selections["mutator_votes"][mutator]
+
+    selections["mutator_votes"][mutator] = current_votes + vote_weight
+    selections["player_voted_mutators"].append(player_id)
+    return true
+
+func get_winning_mutator() -> String:
+    if not selections.has("mutator_votes") or selections["mutator_votes"].is_empty():
+        var opts = get_mutator_options()
+        return opts[randi() % opts.size()]
+
+    var votes = selections["mutator_votes"]
+    var max_votes = -1
+    var winning_mutator = ""
+
+    for mutator in votes.keys():
+        if votes[mutator] > max_votes:
+            max_votes = votes[mutator]
+            winning_mutator = mutator
+
+    return winning_mutator
+
 func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: String) -> bool:
     var loadout = profile.get_loadout(loadout_name)
     if not loadout.is_empty():
