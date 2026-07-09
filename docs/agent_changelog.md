@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-784] Aura Intimidation System — *2026-07-09 20:25:48 UTC*
+
+Lower-level balls have a chance to get the 'fear' emotion simply by being in the immediate proximity of a ball with a massive, high-level cosmetic aura.
+
+---
+
 ## [idea-762] Storm Conduit Hazard — *2026-07-09 20:23:44 UTC*
 
 A new static hazard that becomes active during magnetic storms...

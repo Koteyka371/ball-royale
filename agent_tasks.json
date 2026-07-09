@@ -13487,7 +13487,7 @@
     },
     {
       "id": "idea-784",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Intimidation System",
@@ -22215,6 +22215,40 @@
         "src/ai/season_based_mutators.py",
         "src/ai/season_based_mutators.gd",
         "tests/test_season_based_mutators.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1297",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Relay Booster",
+      "description": "A booster that allows a ball to place a temporary quantum relay beacon. Upon taking fatal damage, the ball is instead teleported to the beacon with 20% health, consuming the relay.",
+      "allowed_paths": [
+        "src/ai/quantum_relay_booster.py",
+        "src/ai/quantum_relay_booster.gd",
+        "tests/test_quantum_relay_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1298",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Deflector Arena Hazard",
+      "description": "An arena hazard that absorbs all kinetic energy from high-speed collisions and charges up. Once fully charged, it unleashes a massive shockwave that pushes all entities away and damages shields.",
+      "allowed_paths": [
+        "src/arena/kinetic_deflector_arena.py",
+        "src/arena/kinetic_deflector_arena.gd",
+        "tests/test_kinetic_deflector_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
