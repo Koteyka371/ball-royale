@@ -1,0 +1,4 @@
+{
+    "title": "Chain Reaction Bombs",
+    "description": "Bombs that, when exploded, will trigger the immediate explosion of any other bombs in their blast radius, allowing for massive field-clearing chain reactions."
+}

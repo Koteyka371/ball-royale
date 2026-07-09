@@ -1609,7 +1609,51 @@ class Action:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
                     continue
-                if getattr(hazard, "kind", "") == "shrapnel":
+
+                if getattr(hazard, "kind", "") == "thrown_bomb":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            # Explode
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+
+                            # Spawn explosion
+                            exp_id = len(self.world.arena.hazards) + 50000
+                            try:
+                                from arena.procedural_arena import Hazard
+                                exp = Hazard(id=exp_id, x=hazard.x, y=hazard.y, radius=150.0, kind="explosion", damage=150.0)
+                                setattr(exp, "duration", 0.5)
+                            except ImportError:
+                                class FallbackHazard:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                                exp = FallbackHazard(exp_id, hazard.x, hazard.y, 150.0, "explosion", 150.0)
+                                setattr(exp, "duration", 0.5)
+                            self.world.arena.hazards.append(exp)
+                        else:
+                            # Pull nearby balls
+                            pull_radius = 200.0
+                            for b in getattr(self.world, "balls", []):
+                                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and b.id != getattr(hazard, "owner_id", None):
+                                    dx = hazard.x - b.x
+                                    dy = hazard.y - b.y
+                                    dist_sq = dx * dx + dy * dy
+                                    if 0 < dist_sq < pull_radius * pull_radius:
+                                        dist = math.sqrt(dist_sq)
+                                        pull_strength = (pull_radius / max(10.0, dist)) * 200.0 * delta
+                                        b.x += (dx / dist) * pull_strength
+                                        b.y += (dy / dist) * pull_strength
+
+                            # Move bomb
+                            hazard.x += getattr(hazard, "vx", 0) * delta
+                            hazard.y += getattr(hazard, "vy", 0) * delta
+                            # Friction
+                            hazard.vx *= (1.0 - 2.0 * delta)
+                            hazard.vy *= (1.0 - 2.0 * delta)
+
+                elif getattr(hazard, "kind", "") == "shrapnel":
                     if getattr(hazard, "duration", 0.0) > 0:
                         hazard.duration -= delta
                         if hazard.duration <= 0:
@@ -7035,7 +7079,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'wall_jump', 'wave_attack', 'yeti_roar']
+                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'wall_jump', 'wave_attack', 'yeti_roar']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -8908,6 +8952,46 @@ class Action:
                     self.world.arena.hazards.append(flare_trap)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
+
+
+            elif skill_name == "throw_bomb":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    enemies = self._get_enemies()
+                    nx, ny = 1.0, 0.0
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        dx = closest_enemy.x - self.ball.x
+                        dy = closest_enemy.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx, ny = dx/dist, dy/dist
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+
+                    thrown_bomb = Hazard(
+                        id=19000 + len(self.world.arena.hazards),
+                        x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                        y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                        radius=20.0,
+                        kind="thrown_bomb",
+                        damage=0.0
+                    )
+                    setattr(thrown_bomb, "vx", nx * 400.0)
+                    setattr(thrown_bomb, "vy", ny * 400.0)
+                    setattr(thrown_bomb, "duration", 2.0)
+                    setattr(thrown_bomb, "owner_id", getattr(self.ball, "id", None))
+                    self.world.arena.hazards.append(thrown_bomb)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
             elif skill_name == "throw_hazard":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

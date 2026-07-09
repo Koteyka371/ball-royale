@@ -12505,7 +12505,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'wall_jump', 'wave_attack', 'yeti_roar']
+                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'wall_jump', 'wave_attack', 'yeti_roar']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -17245,6 +17245,52 @@ func _use_skill():
                         if idx != -1:
                             arena.hazards.remove_at(idx)
 
+
+
+        elif skill_name == "throw_bomb":
+            if "hazards" in self.world.arena:
+                var hazards = self.world.arena.hazards
+                var enemies = self._get_enemies()
+                var nx = 1.0
+                var ny = 0.0
+                if enemies.size() > 0:
+                    var closest_enemy = enemies[0]
+                    var min_dist_sq = INF
+                    for e in enemies:
+                        var dx_e = e.x - self.ball.x
+                        var dy_e = e.y - self.ball.y
+                        var dist_sq = dx_e*dx_e + dy_e*dy_e
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            closest_enemy = e
+                    var dx = closest_enemy.x - self.ball.x
+                    var dy = closest_enemy.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        nx = dx/dist
+                        ny = dy/dist
+
+                var b_radius = 10.0
+                if "radius" in self.ball: b_radius = self.ball.radius
+
+                var thrown_bomb = {
+                    "id": hazards.size() + int(randf() * 90000) + 19000,
+                    "x": self.ball.x + nx * (b_radius + 5.0),
+                    "y": self.ball.y + ny * (b_radius + 5.0),
+                    "radius": 20.0,
+                    "kind": "thrown_bomb",
+                    "damage": 0.0,
+                    "vx": nx * 400.0,
+                    "vy": ny * 400.0,
+                    "duration": 2.0,
+                    "owner_id": self.ball.id if "id" in self.ball else null,
+                    "active": true
+                }
+                hazards.append(thrown_bomb)
+
+                var cd = 5.0
+                if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                self.ball.skill_timer = cd
 
         elif skill_name == "throw_hazard":
             var arena = world.call("get_arena") if world != null and world.has_method("get_arena") else null
