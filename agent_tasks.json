@@ -13317,7 +13317,7 @@
     },
     {
       "id": "idea-774",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Hazard in Windstorm",
@@ -21703,6 +21703,57 @@
         "src/ai/juggernaut_buff.py",
         "src/ai/juggernaut_buff.gd",
         "tests/test_juggernaut_buff.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1267",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Trap",
+      "description": "A deployable trap that, when triggered, temporarily turns the victim into a high-threat bounty target for all bounty hunters on the map.",
+      "allowed_paths": [
+        "src/arena/bounty_trap.py",
+        "src/arena/bounty_trap.gd",
+        "tests/test_bounty_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1268",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Contract Extension",
+      "description": "An item that extends the time a target is marked as a bounty, or instantly resets their bounty indicator if they go into stealth.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_contract_extension.py",
+        "src/ai/bounty_hunter_contract_extension.gd",
+        "tests/test_bounty_hunter_contract_extension.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1269",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shattering Ice Walls Modifier",
+      "description": "An arena modifier where walls are made of ice. Hitting the walls at high speed causes them to shatter, temporarily removing the boundary and creating a perilous drop-off zone, but the ice slowly regenerates over time.",
+      "allowed_paths": [
+        "src/ai/shattering_ice_walls.py",
+        "src/ai/shattering_ice_walls.gd",
+        "tests/test_shattering_ice_walls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

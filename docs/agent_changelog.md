@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-774] Tornado Hazard in Windstorm — *2026-07-09 18:21:29 UTC*
+
+Introduce wandering Tornado hazards specifically during the Windstorm mode. Tornados pull balls towards them and scramble their movement vectors for a brief duration.
+
+---
+
 ## [idea-753] Bouncy Walls — *2026-07-09 17:56:27 UTC*
 
 Add a new hazard or arena modifier where the arena walls become extremely bouncy. If a ball hits the wall at high speed, it ricochets with even more speed, making dodging harder and creating chaotic high-speed collisions.
