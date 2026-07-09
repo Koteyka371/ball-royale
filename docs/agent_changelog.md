@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-744] Time Stop Relic — *2026-07-09 19:08:45 UTC*
+
+An ancient relic that, when collected, completely pauses time for all enemies and hazards for 3 seconds, allowing the user to reposition or escape.
+
+---
+
 ## [idea-712] Quantum Dodge Ability — *2026-07-09 19:02:05 UTC*
 
 Allows a ball to briefly enter a quantum state, dodging all incoming attacks and passing through hazards unscathed. This would cost significant stamina but could turn the tide of an engagement.

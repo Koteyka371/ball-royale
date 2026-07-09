@@ -12807,7 +12807,7 @@
     },
     {
       "id": "idea-744",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Stop Relic",
@@ -21960,6 +21960,57 @@
         "src/ai/gravitational_slingshot_booster.py",
         "src/ai/gravitational_slingshot_booster.gd",
         "tests/test_gravitational_slingshot_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1282",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bribe Auction System",
+      "description": "If multiple players attempt to bribe the same vote event, a short auction is triggered where players bid currency to secure the final decision.",
+      "allowed_paths": [
+        "src/ai/bribe_auction.py",
+        "src/ai/bribe_auction.gd",
+        "tests/test_bribe_auction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1283",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vote Streaks Multiplier",
+      "description": "Viewers get increased voting power when they vote on multiple consecutive options, encouraging consistent chat engagement.",
+      "allowed_paths": [
+        "src/ai/vote_streaks_multiplier.py",
+        "src/ai/vote_streaks_multiplier.gd",
+        "tests/test_vote_streaks_multiplier.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1284",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Overflow State",
+      "description": "If a ball maintains max stamina for 5 continuous seconds, they enter an Overflow state, granting them 20% increased speed and slightly reduced incoming damage until stamina drops below 80%.",
+      "allowed_paths": [
+        "src/ai/stamina_overflow_state.py",
+        "src/ai/stamina_overflow_state.gd",
+        "tests/test_stamina_overflow_state.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
