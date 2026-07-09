@@ -1021,6 +1021,22 @@ func update_zone(current_tick: int, delta: float) -> void:
 
         var new_craters = []
         for h in hazards:
+            var edt = 0.0
+            if h.has_method("has_meta") and h.has_meta("emp_disabled_timer"):
+                edt = h.get_meta("emp_disabled_timer")
+            elif typeof(h) == TYPE_DICTIONARY and h.has("emp_disabled_timer"):
+                edt = h["emp_disabled_timer"]
+            else:
+                if "emp_disabled_timer" in h: edt = h.emp_disabled_timer
+
+            if edt > 0.0:
+                if h.has_method("set_meta"):
+                    h.set_meta("emp_disabled_timer", edt - delta)
+                elif typeof(h) == TYPE_DICTIONARY:
+                    h["emp_disabled_timer"] = edt - delta
+                else:
+                    h.emp_disabled_timer = edt - delta
+
             if h.has_method("has_meta") and h.has_meta("frozen_timer"):
                 var ft = h.get_meta("frozen_timer")
                 if ft > 0:

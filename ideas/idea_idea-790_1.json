@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Relay Booster",
+  "description": "A booster that allows a ball to place a temporary quantum relay beacon. Upon taking fatal damage, the ball is instead teleported to the beacon with 20% health, consuming the relay."
+}

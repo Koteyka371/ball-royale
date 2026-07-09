@@ -12531,6 +12531,89 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "emp_booster":
+                var emp_radius = 800.0
+                if self.world != null and "balls" in self.world:
+                    for other in self.world.balls:
+                        var o_alive = true
+                        if "alive" in other: o_alive = other.alive
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("alive"): o_alive = other["alive"]
+
+                        var o_id = null
+                        if "id" in other: o_id = other.id
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other["id"]
+
+                        var b_id = null
+                        if "id" in self.ball: b_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+
+                        if o_alive and o_id != b_id:
+                            var b_team = ""
+                            if "team" in self.ball: b_team = self.ball.team
+                            elif "ball_type" in self.ball: b_team = self.ball.ball_type
+
+                            var o_team = ""
+                            if "team" in other: o_team = other.team
+                            elif "ball_type" in other: o_team = other.ball_type
+
+                            if o_team != b_team:
+                                var o_x = 0.0
+                                if "x" in other: o_x = other.x
+                                elif typeof(other) == TYPE_DICTIONARY and other.has("x"): o_x = other["x"]
+
+                                var o_y = 0.0
+                                if "y" in other: o_y = other.y
+                                elif typeof(other) == TYPE_DICTIONARY and other.has("y"): o_y = other["y"]
+
+                                var dx = o_x - self.ball.x
+                                var dy = o_y - self.ball.y
+                                if (dx*dx + dy*dy) <= emp_radius * emp_radius:
+                                    if typeof(other) == TYPE_OBJECT and other.has_method("set_meta"):
+                                        other.set_meta("shield", 0.0)
+                                        var current_skill = other.get_meta("skill_timer") if other.has_meta("skill_timer") else 0.0
+                                        other.set_meta("skill_timer", max(current_skill, 10.0))
+                                    elif typeof(other) == TYPE_DICTIONARY:
+                                        other["shield"] = 0.0
+                                        other["skill_timer"] = max(other.get("skill_timer", 0.0), 10.0)
+                                    else:
+                                        if "shield" in other: other.shield = 0.0
+                                        if "skill_timer" in other: other.skill_timer = max(other.skill_timer, 10.0)
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var hazards_arr = self.world.arena.hazards
+                    for h in hazards_arr:
+                        var h_kind = ""
+                        if "kind" in h: h_kind = h.kind
+                        elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
+
+                        if h_kind in ["laser_beam", "gravity_well", "spinning_laser", "laser_tripwire", "laser_wall", "bounce_laser", "orbital_accelerator"]:
+                            var h_x = 0.0
+                            if "x" in h: h_x = h.x
+                            elif typeof(h) == TYPE_DICTIONARY and h.has("x"): h_x = h["x"]
+
+                            var h_y = 0.0
+                            if "y" in h: h_y = h.y
+                            elif typeof(h) == TYPE_DICTIONARY and h.has("y"): h_y = h["y"]
+
+                            var dx = h_x - self.ball.x
+                            var dy = h_y - self.ball.y
+                            if (dx*dx + dy*dy) <= emp_radius * emp_radius:
+                                if typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+                                    h.set_meta("emp_disabled_timer", 10.0)
+                                elif typeof(h) == TYPE_DICTIONARY:
+                                    h["emp_disabled_timer"] = 10.0
+                                else:
+                                    if "emp_disabled_timer" in h:
+                                        h.emp_disabled_timer = 10.0
+
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "nemesis_booster":
                 self.ball.set_meta("nemesis_booster_timer", 5.0)
                 if "nemesis_booster_timer" in self.ball:
@@ -16985,7 +17068,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
