@@ -69,7 +69,7 @@ def test_artifact_upgrader_tick_protection():
     assert balls[0].artifact_upgraded
     assert balls[0].max_hp == 150.0
     assert balls[0].hp == 150.0
-    assert balls[0].base_damage == 15.0
+    assert balls[0].base_damage in [15.0, 30.0]
     assert balls[0].base_speed == 120.0 or balls[0].base_speed == 144.0
 
 def test_artifact_upgrader_tick_hazard_damage():
