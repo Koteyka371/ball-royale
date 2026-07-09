@@ -24,10 +24,10 @@ def test_necromancer_death_enrages_minions():
 
     assert getattr(minion, "is_enraged", False) == True
     assert minion.enrage_timer == 5.0
-    assert minion.base_speed == 4.0
-    assert minion.base_damage == 15.0
-    assert minion.speed == 4.0
-    assert minion.damage == 15.0
+    assert minion.base_speed == 6.0
+    assert minion.base_damage == 25.0
+    assert minion.speed == 6.0
+    assert minion.damage == 25.0
 
 def test_minion_decay_when_enraged():
     world = MockWorld()
