@@ -5497,7 +5497,8 @@ class ModifierZonesSafeZoneMode extends GameMode:
 			{"id": "zone_speed", "x": zone_x - 100, "y": zone_y - 100, "radius": 75.0, "type": "speed"},
 			{"id": "zone_damage", "x": zone_x + 100, "y": zone_y - 100, "radius": 75.0, "type": "damage"},
 			{"id": "zone_heal", "x": zone_x, "y": zone_y + 100, "radius": 75.0, "type": "heal"},
-			{"id": "zone_debuff", "x": zone_x, "y": zone_y, "radius": 75.0, "type": "debuff"}
+			{"id": "zone_debuff", "x": zone_x, "y": zone_y, "radius": 75.0, "type": "debuff"},
+			{"id": "zone_turning", "x": zone_x - 100, "y": zone_y + 100, "radius": 75.0, "type": "turning"}
 		]
 
 		var valid_balls = []
@@ -5596,6 +5597,9 @@ class ModifierZonesSafeZoneMode extends GameMode:
 			zones[2]["y"] = zone_y + 100
 			zones[3]["x"] = zone_x
 			zones[3]["y"] = zone_y
+			if zones.size() > 4:
+				zones[4]["x"] = zone_x - 100
+				zones[4]["y"] = zone_y + 100
 
 		var damage_this_tick = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
 
@@ -5612,6 +5616,7 @@ class ModifierZonesSafeZoneMode extends GameMode:
 			var in_damage_zone = false
 			var in_heal_zone = false
 			var in_debuff_zone = false
+			var in_turning_zone = false
 
 			var b_x = b.get("position").x if b.get("position") != null else b.get("x")
 			var b_y = b.get("position").y if b.get("position") != null else b.get("y")
@@ -5630,6 +5635,8 @@ class ModifierZonesSafeZoneMode extends GameMode:
 						in_heal_zone = true
 					elif zone["type"] == "debuff":
 						in_debuff_zone = true
+					elif zone["type"] == "turning":
+						in_turning_zone = true
 
 			if in_speed_zone:
 				b.speed = b.get_meta("base_speed") * 1.5
@@ -5663,6 +5670,14 @@ class ModifierZonesSafeZoneMode extends GameMode:
 			if in_heal_zone:
 				if "hp" in b and "max_hp" in b:
 					b.hp = min(b.get("max_hp") if b.get("max_hp") != null else 100.0, b.hp + 20.0 * delta)
+
+			if in_turning_zone:
+				b.set_meta("steering_mult", 2.0)
+				b.set_meta("zone_modifier_turning", true)
+			else:
+				if b.has_meta("zone_modifier_turning"):
+					b.set_meta("steering_mult", 1.0)
+					b.remove_meta("zone_modifier_turning")
 
 			var dx_s = b_x - zone_x
 			var dy_s = b_y - zone_y
@@ -6680,7 +6695,8 @@ class ModifierZonesMode extends GameMode:
 			{"id": "zone_speed", "x": arena_width * 0.25, "y": arena_height * 0.25, "radius": 150.0, "type": "speed"},
 			{"id": "zone_damage", "x": arena_width * 0.75, "y": arena_height * 0.25, "radius": 150.0, "type": "damage"},
 			{"id": "zone_heal", "x": arena_width * 0.5, "y": arena_height * 0.75, "radius": 150.0, "type": "heal"},
-			{"id": "zone_debuff", "x": arena_width * 0.5, "y": arena_height * 0.25, "radius": 150.0, "type": "debuff"}
+			{"id": "zone_debuff", "x": arena_width * 0.5, "y": arena_height * 0.25, "radius": 150.0, "type": "debuff"},
+			{"id": "zone_turning", "x": arena_width * 0.5, "y": arena_height * 0.5, "radius": 150.0, "type": "turning"}
 		]
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -6699,6 +6715,7 @@ class ModifierZonesMode extends GameMode:
 			var in_damage_zone = false
 			var in_heal_zone = false
 			var in_debuff_zone = false
+			var in_turning_zone = false
 
 			for zone in zones:
 				var dx = b.x - zone["x"]
@@ -6714,6 +6731,8 @@ class ModifierZonesMode extends GameMode:
 						in_heal_zone = true
 					elif zone["type"] == "debuff":
 						in_debuff_zone = true
+					elif zone["type"] == "turning":
+						in_turning_zone = true
 
 			if in_speed_zone:
 				b.speed = b.get_meta("base_speed") * 1.5
@@ -6747,6 +6766,14 @@ class ModifierZonesMode extends GameMode:
 			if in_heal_zone:
 				var max_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0
 				b.hp = min(max_hp, b.hp + 20.0 * delta)
+
+			if in_turning_zone:
+				b.set_meta("steering_mult", 2.0)
+				b.set_meta("zone_modifier_turning", true)
+			else:
+				if b.has_meta("zone_modifier_turning"):
+					b.set_meta("steering_mult", 1.0)
+					b.remove_meta("zone_modifier_turning")
 
 	func check_winner(world, balls: Array):
 		var alive = []

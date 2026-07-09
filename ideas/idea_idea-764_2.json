@@ -1,0 +1,4 @@
+{
+  "title": "Black Ice Weather Hazard",
+  "description": "A weather type or hazard zone that significantly drops steering capabilities (e.g. steering_mult = 0.1) and applies constant slide physics where the ball can't brake effectively, making arena navigation chaotic."
+}

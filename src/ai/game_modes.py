@@ -4811,7 +4811,8 @@ class ModifierZonesSafeZoneMode(GameMode):
             {"id": "zone_speed", "x": self.zone_x - 100, "y": self.zone_y - 100, "radius": 75.0, "type": "speed"},
             {"id": "zone_damage", "x": self.zone_x + 100, "y": self.zone_y - 100, "radius": 75.0, "type": "damage"},
             {"id": "zone_heal", "x": self.zone_x, "y": self.zone_y + 100, "radius": 75.0, "type": "heal"},
-            {"id": "zone_debuff", "x": self.zone_x, "y": self.zone_y, "radius": 75.0, "type": "debuff"}
+            {"id": "zone_debuff", "x": self.zone_x, "y": self.zone_y, "radius": 75.0, "type": "debuff"},
+            {"id": "zone_turning", "x": self.zone_x - 100, "y": self.zone_y + 100, "radius": 75.0, "type": "turning"}
         ]
 
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -4908,6 +4909,8 @@ class ModifierZonesSafeZoneMode(GameMode):
         self.zones[2]["y"] = self.zone_y + 100
         self.zones[3]["x"] = self.zone_x
         self.zones[3]["y"] = self.zone_y
+        self.zones[4]["x"] = self.zone_x - 100
+        self.zones[4]["y"] = self.zone_y + 100
 
         # Apply modifier logic
         for b in balls:
@@ -4925,6 +4928,7 @@ class ModifierZonesSafeZoneMode(GameMode):
             in_damage_zone = False
             in_heal_zone = False
             in_debuff_zone = False
+            in_turning_zone = False
 
             for zone in self.zones:
                 dx = b.x - zone["x"]
@@ -4940,6 +4944,8 @@ class ModifierZonesSafeZoneMode(GameMode):
                         in_heal_zone = True
                     elif zone["type"] == "debuff":
                         in_debuff_zone = True
+                    elif zone["type"] == "turning":
+                        in_turning_zone = True
 
             if in_speed_zone:
                 b.speed = b.base_speed * 1.5
@@ -4973,6 +4979,14 @@ class ModifierZonesSafeZoneMode(GameMode):
             if in_heal_zone:
                 if hasattr(b, "hp") and hasattr(b, "max_hp"):
                     b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 20.0 * delta)
+
+            if in_turning_zone:
+                b.steering_mult = 2.0
+                b.zone_modifier_turning = True
+            else:
+                if getattr(b, "zone_modifier_turning", False):
+                    b.steering_mult = 1.0
+                    delattr(b, "zone_modifier_turning")
 
             # Apply continuous damage outside the safe zone
             damage_this_tick = self.outside_damage_per_second * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
@@ -5784,7 +5798,8 @@ class ModifierZonesMode(GameMode):
             {"id": "zone_speed", "x": arena_width * 0.25, "y": arena_height * 0.25, "radius": 150.0, "type": "speed"},
             {"id": "zone_damage", "x": arena_width * 0.75, "y": arena_height * 0.25, "radius": 150.0, "type": "damage"},
             {"id": "zone_heal", "x": arena_width * 0.5, "y": arena_height * 0.75, "radius": 150.0, "type": "heal"},
-            {"id": "zone_debuff", "x": arena_width * 0.5, "y": arena_height * 0.25, "radius": 150.0, "type": "debuff"}
+            {"id": "zone_debuff", "x": arena_width * 0.5, "y": arena_height * 0.25, "radius": 150.0, "type": "debuff"},
+            {"id": "zone_turning", "x": arena_width * 0.5, "y": arena_height * 0.5, "radius": 150.0, "type": "turning"}
         ]
 
         for b in balls:
@@ -5812,6 +5827,7 @@ class ModifierZonesMode(GameMode):
             in_damage_zone = False
             in_heal_zone = False
             in_debuff_zone = False
+            in_turning_zone = False
 
             for zone in self.zones:
                 dx = b.x - zone["x"]
@@ -5827,6 +5843,8 @@ class ModifierZonesMode(GameMode):
                         in_heal_zone = True
                     elif zone["type"] == "debuff":
                         in_debuff_zone = True
+                    elif zone["type"] == "turning":
+                        in_turning_zone = True
 
             if in_speed_zone:
                 b.speed = b.base_speed * 1.5
@@ -5860,6 +5878,14 @@ class ModifierZonesMode(GameMode):
             if in_heal_zone:
                 if hasattr(b, "hp") and hasattr(b, "max_hp"):
                     b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 20.0 * delta)
+
+            if in_turning_zone:
+                b.steering_mult = 2.0
+                b.zone_modifier_turning = True
+            else:
+                if getattr(b, "zone_modifier_turning", False):
+                    b.steering_mult = 1.0
+                    delattr(b, "zone_modifier_turning")
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
