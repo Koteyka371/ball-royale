@@ -6171,7 +6171,10 @@ func execute(strategy: String, delta: float):
                         if dist > 0.1:
                             var nx = dx / dist
                             var ny = dy / dist
-                            var pull_strength = 50.0 * delta
+                            var tx = -ny
+                            var ty = nx
+                            var pull_strength = 15.0 * delta
+                            var orbital_strength = 250.0 * delta
 
                             var anchor_t = 0.0
                             if "anchor_booster_timer" in self.ball:
@@ -6180,10 +6183,10 @@ func execute(strategy: String, delta: float):
                                 anchor_t = float(self.ball.get_meta("anchor_booster_timer"))
 
                             if anchor_t <= 0.0:
-                                if "x" in self.ball: self.ball.x += nx * pull_strength
-                                elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength)
-                                if "y" in self.ball: self.ball.y += ny * pull_strength
-                                elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength)
+                                if "x" in self.ball: self.ball.x += nx * pull_strength + tx * orbital_strength
+                                elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength + tx * orbital_strength)
+                                if "y" in self.ball: self.ball.y += ny * pull_strength + ty * orbital_strength
+                                elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength + ty * orbital_strength)
 
                         var dmg = 10.0 * delta
                         if "damage" in hazard: dmg = hazard.damage * delta
