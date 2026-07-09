@@ -194,12 +194,14 @@ class Action:
                         hr = getattr(h, "radius", 40.0)
                         if math.hypot(t_x - hx, t_y - hy) <= hr:
                             return
-                    elif getattr(h, "kind", "") == "energy_barrier":
+                    elif getattr(h, "kind", "") in ["energy_barrier", "smokescreen"]:
                         h_team = getattr(h, "team", "")
                         if h_team != a_team:
                             hx = h.x
                             hy = h.y
                             hr = getattr(h, "radius", 40.0)
+                            if getattr(h, "kind", "") == "smokescreen":
+                                hr = getattr(h, "radius", 80.0)
 
                             dx = t_x - a_x
                             dy = t_y - a_y
@@ -216,7 +218,7 @@ class Action:
                                     disc = math.sqrt(disc)
                                     t1 = (-b2 - disc) / (2*a)
                                     t2 = (-b2 + disc) / (2*a)
-                                    if (0 <= t1 <= 1) or (0 <= t2 <= 1):
+                                    if (0 <= t1 <= 1) or (0 <= t2 <= 1) or (t1 < 0 and t2 > 1):
                                         # Attack is blocked by barrier
 
                                         # Optional: visual effect for shield blocking projectile
@@ -5741,12 +5743,14 @@ class Action:
                 for h in self.world.arena.hazards:
                     if getattr(h, 'is_disabled_by_flare', False):
                         continue
-                    if getattr(h, "kind", "") == "energy_barrier":
+                    if getattr(h, "kind", "") in ["energy_barrier", "smokescreen"]:
                         h_team = getattr(h, "team", "")
                         if h_team != my_team:
                             hx = h.x
                             hy = h.y
                             hr = getattr(h, "radius", 40.0)
+                            if getattr(h, "kind", "") == "smokescreen":
+                                hr = getattr(h, "radius", 80.0)
 
                             # line segment (bx, by) to (ex, ey) intersects circle (hx, hy, hr)?
                             import math
@@ -5765,7 +5769,7 @@ class Action:
                                     disc = math.sqrt(disc)
                                     t1 = (-b2 - disc) / (2*a)
                                     t2 = (-b2 + disc) / (2*a)
-                                    if (0 <= t1 <= 1) or (0 <= t2 <= 1):
+                                    if (0 <= t1 <= 1) or (0 <= t2 <= 1) or (t1 < 0 and t2 > 1):
                                         return False
                             else:
                                 if c <= 0:
