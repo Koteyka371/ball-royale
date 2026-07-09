@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-726] Teleporting dash — *2026-07-09 13:59:07 UTC*
+
+Instead of dashing, teleport to target.
+
+---
+
 ## [idea-740] Invisible Walls Arena — *2026-07-09 10:46:46 UTC*
 
 The arena contains several invisible walls that only become temporarily visible when a player or attack collides with them.
