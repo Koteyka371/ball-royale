@@ -13945,7 +13945,81 @@ class CenterBlackHoleMode extends GameMode:
 						b.set("vx", b.get("vx") + pull_x)
 						b.set("vy", b.get("vy") + pull_y)
 
+
+class SpikedWallsMode extends GameMode:
+	func _init():
+		super._init()
+		self.name = "Spiked Walls"
+		self.description = "The arena walls are lined with spikes. Hitting a wall doesn't just do damage, but also applies a bleeding effect that drains HP slowly over time until the player stops moving."
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+		for b in balls:
+			var is_alive = true
+			if "alive" in b:
+				is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"):
+				is_alive = b.get_meta("alive")
+
+			var is_bleeding = false
+			if "is_bleeding" in b:
+				is_bleeding = b.is_bleeding
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_bleeding"):
+				is_bleeding = b.get_meta("is_bleeding")
+
+			if is_alive and is_bleeding:
+				var vx = 0.0
+				var vy = 0.0
+				if "vx" in b: vx = b.vx
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): vx = b.get_meta("vx")
+				if "vy" in b: vy = b.vy
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vy"): vy = b.get_meta("vy")
+
+				var speed = sqrt(vx*vx + vy*vy)
+				if speed < 10.0:
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("is_bleeding", false)
+					if "is_bleeding" in b:
+						b.is_bleeding = false
+				else:
+					var bleed_dmg = 10.0 * delta
+					if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+						b.take_damage(bleed_dmg)
+					elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+						b["hp"] -= bleed_dmg
+						if b["hp"] <= 0:
+							b["alive"] = false
+					elif "hp" in b:
+						b.hp -= bleed_dmg
+						if b.hp <= 0:
+							b.alive = false
+
+					var current_tick = 0
+					if typeof(world) == TYPE_DICTIONARY and world.has("tick"): current_tick = world["tick"]
+					elif typeof(world) == TYPE_OBJECT and "tick" in world: current_tick = world.tick
+					elif typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and world.has_meta("tick"): current_tick = world.get_meta("tick")
+
+					if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+						if current_tick % 5 == 0:
+							var bx = 0.0
+							var by = 0.0
+							if "x" in b: bx = b.x
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
+							if "y" in b: by = b.y
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y"): by = b.get_meta("y")
+							world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': bx, 'y': by, 'radius': 5.0, 'color': 'red'}})
+					elif typeof(world) == TYPE_OBJECT and "events" in world:
+						if current_tick % 5 == 0:
+							var bx = 0.0
+							var by = 0.0
+							if "x" in b: bx = b.x
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
+							if "y" in b: by = b.y
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y"): by = b.get_meta("y")
+							world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': bx, 'y': by, 'radius': 5.0, 'color': 'red'}})
+
 var GAME_MODES = {
+	"spiked_walls": SpikedWallsMode.new(),
 	"blackout_event": BlackoutEventMode.new(),
 	"solar_flare": SolarFlareMode.new(),
 	"center_black_hole": CenterBlackHoleMode.new(),
