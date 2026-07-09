@@ -775,6 +775,17 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
         import math
 
+        if getattr(self.ball, "speed_overdrive_timer", 0.0) > 0:
+            self.ball.speed_overdrive_timer -= delta
+            if self.ball.speed_overdrive_timer <= 0:
+                self.ball.speed_overdrive_timer = 0.0
+
+            # Immunity logic: clear any slows or stuns if active
+            self.ball.stun_timer = 0.0
+            self.ball.is_stunned = False
+            self.ball.speed_debuff_timer = 0.0
+            self.ball.speed_debuff_multiplier = 1.0
+
         if getattr(self.ball, "ball_type", "") == "trickster":
             if not hasattr(self.ball, "decoy_swap_timer"):
                 import random
@@ -4836,6 +4847,8 @@ class Action:
                                 if powerup == "heal":
                                     self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + (10.0 * combo_multiplier))
                                 elif powerup == "speed":
+                                    if getattr(self.ball, "speed_boost_timer", 0.0) > 0.0:
+                                        self.ball.speed_overdrive_timer = 3.0 * combo_multiplier
                                     self.ball.speed_boost_timer = 3.0 * combo_multiplier
                                 elif powerup == "shield":
                                     self.ball.shield = getattr(self.ball, "shield", 0.0) + (20.0 * combo_multiplier)
@@ -7468,6 +7481,8 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "speed_booster_item":
+                    if getattr(self.ball, "speed_boost_timer", 0.0) > 0.0:
+                        self.ball.speed_overdrive_timer = 5.0
                     self.ball.speed_boost_timer = 5.0
                     self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
