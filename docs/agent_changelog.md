@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-758] Speed Booster Overdrive — *2026-07-09 17:47:10 UTC*
+
+When an entity picks up multiple speed boosters sequentially, rather than simply refreshing the timer, it gains 'Speed Overdrive' which makes it immune to all slow and freeze effects while the overdrive lasts.
+
+---
+
 ## [idea-752] Shrinking Safe Zone — *2026-07-09 17:47:05 UTC*
 
 A battle royale classic mechanic: a circular safe zone slowly shrinks over time. Balls outside the safe zone take continuous damage. This forces players closer together and prevents stalling in the corners of the arena.
