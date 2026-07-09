@@ -1264,6 +1264,43 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	if world != null and typeof(world) == TYPE_OBJECT and "arena" in world:
+		var arena = world.get("arena")
+		if arena != null and typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+			for hazard in arena.hazards:
+				var kind = ""
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): kind = hazard["kind"]
+				elif typeof(hazard) == TYPE_OBJECT and "kind" in hazard: kind = hazard.kind
+
+				if kind == "void_panel":
+					var hx = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]
+					elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: hx = hazard.x
+					var hy = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): hy = hazard["y"]
+					elif typeof(hazard) == TYPE_OBJECT and "y" in hazard: hy = hazard.y
+					var rad = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): rad = hazard["radius"]
+					elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: rad = hazard.radius
+
+					var bx = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bx = self.ball["x"]
+					elif typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: bx = self.ball.x
+					var by = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): by = self.ball["y"]
+					elif typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: by = self.ball.y
+
+					var dx = hx - bx
+					var dy = hy - by
+					if abs(dx) <= rad and abs(dy) <= rad:
+						if world.has_method("_deal_damage"):
+							world._deal_damage(hazard, self.ball, 10000.0)
+						else:
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["hp"] = -10000.0
+							else:
+								self.ball.hp = -10000.0
+
     var my_ball = self.ball
     var is_decoy = false
     if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get_meta") and my_ball.has_meta("is_decoy"):

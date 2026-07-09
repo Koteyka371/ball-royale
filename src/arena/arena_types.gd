@@ -649,6 +649,7 @@ class SpringArena extends ProceduralArena:
 			hazards.append(pad)
 
 const ARENAS = [
+	"falling_panels",
     "spring",
     "shrinking_hazards",
 

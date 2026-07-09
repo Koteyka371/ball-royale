@@ -791,6 +791,19 @@ class Action:
             self.ball._aura_explosion_cd -= delta
         import math
 
+        # Void panel instant death
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "void_panel":
+                    hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    # Use square bounding box collision instead of circular
+                    if abs(hx) <= getattr(hazard, "radius", 0.0) and abs(hy) <= getattr(hazard, "radius", 0.0):
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(hazard, self.ball, 10000.0)
+                        else:
+                            self.ball.hp = -10000.0
+
 
         # Task: Lower-level balls have a chance to get the 'fear' emotion simply by being in the immediate proximity of a ball with a massive, high-level cosmetic aura.
         if not getattr(self.ball, "is_decoy", False) and getattr(self.ball, "cosmetic_aura_scale", 1.0) >= 2.0:
@@ -2769,6 +2782,15 @@ class Action:
 
             if hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
+                    if getattr(hazard, "kind", "") == "void_panel":
+                        hx = hazard.x - self.ball.x
+                        hy = hazard.y - self.ball.y
+                        h_dist = math.sqrt(hx*hx + hy*hy)
+                        if h_dist <= hazard.radius:
+                            # Instant death for falling in the void
+                            self.world._deal_damage(hazard, self.ball, 10000.0)
+                            continue
+
                     if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                         continue
                     if hazard.kind == "temporal_rift":

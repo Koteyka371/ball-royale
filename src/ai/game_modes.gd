@@ -15955,7 +15955,52 @@ class MultipleSafeZonesMode extends GameMode:
 		zones = new_zones
 
 
+class FallingPanelsMode extends GameMode:
+	func _init():
+		super._init()
+		self.name = "Falling Panels"
+		self.description = "The arena slowly breaks away, falling into a void."
+		self.id = "falling_panels"
+
+		self.points_for_kill = 50
+		self.points_for_survival = 100
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		var arena_script = null
+		if ResourceLoader.exists("res://src/arena/falling_panels_arena.gd"):
+			arena_script = load("res://src/arena/falling_panels_arena.gd")
+		if arena_script != null:
+			world.arena = arena_script.new(2000.0, 1, null)
+		for b in balls:
+			var w = world.arena.width if "width" in world.arena else 2000.0
+			var h = world.arena.height if "height" in world.arena else 2000.0
+			var cx = w / 2.0 + randf_range(-200.0, 200.0)
+			var cy = h / 2.0 + randf_range(-200.0, 200.0)
+			if typeof(b) == TYPE_DICTIONARY:
+				b["x"] = cx
+				b["y"] = cy
+			else:
+				b.x = cx
+				b.y = cy
+
+	func is_game_over(world) -> bool:
+		var alive_teams = {}
+		var balls = []
+		if typeof(world) == TYPE_OBJECT and "balls" in world:
+			balls = world.balls
+		elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+			balls = world["balls"]
+
+		for b in balls:
+			var alive = b.alive if "alive" in b else (b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else false)
+			if alive:
+				var team = b.team if "team" in b else (b.get("team", "") if typeof(b) == TYPE_DICTIONARY else "")
+				alive_teams[team] = true
+		return alive_teams.keys().size() <= 1
+
 var GAME_MODES = {
+	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
