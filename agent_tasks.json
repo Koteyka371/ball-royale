@@ -12994,7 +12994,7 @@
     },
     {
       "id": "idea-755",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Spiked Walls Game Mode",
@@ -21176,6 +21176,40 @@
         "src/ai/chain_reaction_booster.py",
         "src/ai/chain_reaction_booster.gd",
         "tests/test_chain_reaction_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1236",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Mirror Boundaries",
+      "description": "An arena mode where hitting a map boundary doesn't just bounce you, but teleports you to the opposite side of the map with inverted velocity.",
+      "allowed_paths": [
+        "src/ai/quantum_mirror_boundaries.py",
+        "src/ai/quantum_mirror_boundaries.gd",
+        "tests/test_quantum_mirror_boundaries.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1237",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamically Rising Lava Floor",
+      "description": "The arena is composed of various elevated platforms. Over time, lava rises from the bottom of the screen, permanently destroying the lowest platforms and forcing players to constantly fight for high ground.",
+      "allowed_paths": [
+        "src/ai/dynamically_rising_lava_floor.py",
+        "src/ai/dynamically_rising_lava_floor.gd",
+        "tests/test_dynamically_rising_lava_floor.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

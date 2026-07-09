@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-755] Spiked Walls Game Mode — *2026-07-09 00:43:16 UTC*
+
+A new mutator/game mode where the arena walls are lined with spikes. Hitting a wall doesn't just do scaling velocity damage, but also applies a bleeding effect that drains HP slowly over time until the player stops moving.
+
+---
+
 ## [idea-747] Shrinking Maps Arena — *2026-07-08 23:22:25 UTC*
 
 An arena type where the physical map boundaries slowly shrink inwards over time, pushing all balls towards a centralized final showdown.
