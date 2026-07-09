@@ -4915,6 +4915,12 @@ class Action:
                             if hasattr(self.ball, "stamina"):
                                 drain_rate = 30.0 * delta
                                 self.ball.stamina = max(0.0, self.ball.stamina - drain_rate)
+
+                                # Occasionally pulse to apply silence if stamina is fully depleted
+                                current_tick = getattr(self.world, "tick", 0)
+                                if current_tick > 0 and current_tick % 120 == 0:
+                                    if self.ball.stamina <= 0.0:
+                                        self.ball.skill_timer = max(getattr(self.ball, "skill_timer", 0.0), 1.0)
                             continue
                         elif hazard.kind == "glitch_zone":
                             self.ball.glitch_timer = 2.0

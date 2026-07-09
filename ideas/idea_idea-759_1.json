@@ -1,0 +1,4 @@
+{
+  "title": "Bouncy Bullet Mutator",
+  "description": "A weekly mutator where all projectiles (bullets, fireballs, snipes) bounce off walls and hazards up to 3 times before dissipating. This creates a chaotic bullet-hell environment, rewarding players with strong defensive skills and positional awareness."
+}
