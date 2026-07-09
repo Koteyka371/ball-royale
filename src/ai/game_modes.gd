@@ -14271,6 +14271,73 @@ class FreezeTagMode extends GameMode:
 
 		return null
 
+class ShrinkingBoundaryMode extends GameMode:
+	var min_x: float = 0.0
+	var max_x: float = 1000.0
+	var min_y: float = 0.0
+	var max_y: float = 1000.0
+	var shrink_rate: float = 10.0
+	var outside_damage_per_second: float = 30.0
+
+	func _init() -> void:
+		name = "Shrinking Boundary"
+		description = "The boundaries of the arena slowly shrink over time, dealing significant damage to anyone caught outside the safe area."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+		min_x = 0.0
+		max_x = arena_width
+		min_y = 0.0
+		max_y = arena_height
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Shrink map boundaries inward
+		if max_x - min_x > 50.0:
+			min_x += shrink_rate * delta
+			max_x -= shrink_rate * delta
+
+		if max_y - min_y > 50.0:
+			min_y += shrink_rate * delta
+			max_y -= shrink_rate * delta
+
+		var damage_this_tick = outside_damage_per_second * delta
+		for b in balls:
+			var b_dict = b
+			var is_dict = typeof(b) == TYPE_DICTIONARY
+
+			var alive = b_dict.get("alive", false) if is_dict else (b.get("alive") if b.has_method("get") else false)
+			var btype = b_dict.get("ball_type", "") if is_dict else (b.get("ball_type") if b.has_method("get") else "")
+
+			if alive and btype != "spectator":
+				var bx = b_dict.get("x", 0.0) if is_dict else b.get("x")
+				var by = b_dict.get("y", 0.0) if is_dict else b.get("y")
+
+				if bx < min_x or bx > max_x or by < min_y or by > max_y:
+					var hp = b_dict.get("hp", 0.0) if is_dict else b.get("hp")
+					hp -= damage_this_tick
+					if hp <= 0:
+						hp = 0
+						if is_dict:
+							b["alive"] = false
+							b["killer"] = "Shrinking Boundary"
+							b["hp"] = 0
+						else:
+							b.set("alive", false)
+							b.set("killer", "Shrinking Boundary")
+							b.set("hp", 0)
+					else:
+						if is_dict:
+							b["hp"] = hp
+						else:
+							b.set("hp", hp)
+
 var GAME_MODES = {
 	"freeze_tag": FreezeTagMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
@@ -14359,6 +14426,7 @@ var GAME_MODES = {
 	"evolutionary_simulation": EvolutionarySimulationMode.new(),
 	"interactive_training": load("res://src/ai/interactive_training.gd").new(),
 	"shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
+	"shrinking_boundary": ShrinkingBoundaryMode.new(),
 	"inverse_safe_zone": InverseSafeZoneMode.new(),
 	"safe_zone": SafeZoneMode.new(),
 	"hex_grid_royale": HexGridRoyaleMode.new(),
