@@ -90,6 +90,11 @@ class CrowdSystem:
                 if hasattr(self.world, 'add_event'):
                     self.world.add_event("crowd_cheer", {"message": f"Viewer {user} voted for {option}!"})
 
+        elif cmd == "!bribe" and len(parts) >= 2:
+            action = parts[1]
+            option = parts[2] if len(parts) >= 3 else None
+            self.player_bribe_vote(user, action, option)
+
     def player_bribe_vote(self, player_id: str, action: str, option: str = None) -> bool:
         if not self.active_vote or not self.votes:
             return False

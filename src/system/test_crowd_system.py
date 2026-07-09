@@ -120,6 +120,38 @@ def test_external_command_vote():
     assert system.votes["lava"] == 1
     assert system.votes["spike"] == 0
 
+def test_external_command_bribe_cancel():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    balls = []
+
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava", "spike"]}
+    system.votes = {"lava": 0, "spike": 0}
+    system.vote_timer = 100
+
+    system.queue_external_command("TwitchUser", "!bribe cancel")
+    system.tick(balls, [], 1)
+
+    assert system.active_vote is None
+    events = [e[0] for e in world.events]
+    assert "vote_cancelled" in events
+
+def test_external_command_bribe_skew():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    balls = []
+
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava", "spike"]}
+    system.votes = {"lava": 0, "spike": 0}
+    system.vote_timer = 100
+
+    system.queue_external_command("TwitchUser", "!bribe skew lava")
+    system.tick(balls, [], 1)
+
+    assert system.votes["lava"] == 5
+    events = [e[0] for e in world.events]
+    assert "crowd_cheer" in events
+
 def test_real_spectators_disable_simulated_votes():
     world = MockWorld()
     system = CrowdSystem(world)
