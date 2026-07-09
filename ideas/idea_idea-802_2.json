@@ -1,0 +1,4 @@
+{
+    "title": "Corrosive Acid Trap",
+    "description": "A deployable hazard item that leaves a puddle of acid on the ground. Any ball moving through the puddle receives a stacking damage-over-time debuff that reduces their maximum speed and slowly eats away at their health for several seconds."
+}

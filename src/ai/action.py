@@ -789,6 +789,13 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
         if getattr(self.ball, "_aura_explosion_cd", 0.0) > 0.0:
             self.ball._aura_explosion_cd -= delta
+
+        if getattr(self.ball, "charging_shockwave_shield_active", False):
+            if getattr(self.ball, "charging_shockwave_shield_timer", 0.0) < 5.0:
+                self.ball.charging_shockwave_shield_timer = getattr(self.ball, "charging_shockwave_shield_timer", 0.0) + delta
+                if self.ball.charging_shockwave_shield_timer > 5.0:
+                    self.ball.charging_shockwave_shield_timer = 5.0
+
         import math
 
         # Void panel instant death
@@ -5170,6 +5177,32 @@ class Action:
             if hasattr(self.ball, "alive"):
                 self.ball.alive = False
             return
+        if damage_taken > 0 and getattr(self.ball, "charging_shockwave_shield_active", False) and getattr(self.ball, "charging_shockwave_shield_timer", 0.0) >= 5.0:
+            self.ball.hp = start_hp
+            damage_taken = 0
+            self.ball.charging_shockwave_shield_timer = 0.0
+
+            # Shockwave logic
+            import math
+            shockwave_radius = 300.0
+            push_force = 1000.0
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shockwave', 'x': self.ball.x, 'y': self.ball.y}})
+
+            if hasattr(self.world, "balls"):
+                for other_ball in self.world.balls:
+                    if other_ball != self.ball and getattr(other_ball, "alive", True) and getattr(other_ball, "team", "") != getattr(self.ball, "team", "unknown"):
+                        dx = other_ball.x - self.ball.x
+                        dy = other_ball.y - self.ball.y
+                        dist = math.hypot(dx, dy)
+                        if 0 < dist <= shockwave_radius:
+                            other_ball.x += (dx / dist) * push_force * 0.1
+                            other_ball.y += (dy / dist) * push_force * 0.1
+                            other_ball.vx = getattr(other_ball, "vx", 0.0) + (dx / dist) * push_force
+                            other_ball.vy = getattr(other_ball, "vy", 0.0) + (dy / dist) * push_force
+                            if hasattr(other_ball, "stun_timer"):
+                                other_ball.stun_timer = max(getattr(other_ball, "stun_timer", 0.0), 1.0)
+
         if damage_taken > 0 and getattr(self.ball, "shield_booster_active", False):
             self.ball.hp = start_hp
             damage_taken = 0
@@ -7705,6 +7738,11 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "charging_shockwave_shield_booster":
+                    self.ball.charging_shockwave_shield_active = True
+                    self.ball.charging_shockwave_shield_timer = 0.0
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "shield_booster":
                     self.ball.shield_booster_active = True
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
@@ -8916,7 +8954,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -10563,7 +10601,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
