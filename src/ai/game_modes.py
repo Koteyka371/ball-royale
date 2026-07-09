@@ -608,7 +608,11 @@ class BattleRoyaleMode(GameMode):
                 b.ball_type = "spectator"
                 b.alive = False
             else:
-                b.team = b.ball_type # Default behavior
+                b.team = b.ball_type
+                if not hasattr(b, "base_speed"):
+                    b.base_speed = getattr(b, "speed", 100.0)
+                if not hasattr(b, "base_damage"):
+                    b.base_damage = getattr(b, "damage", 10.0) # Default behavior
                 if not hasattr(b, "base_perception_radius"):
                     b.base_perception_radius = getattr(b, "perception_radius", 250.0)
                 if not hasattr(b, "base_speed"):
@@ -5374,6 +5378,163 @@ class ShrinkingDangerZoneMode(GameMode):
 
         return None
 
+
+
+class ModifierSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Modifier Safe Zone"
+        self.description = "The safe zone shrinks and periodically applies random buffs or debuffs to everyone inside, forcing players to adapt dynamically."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.min_zone_radius = 50.0
+        self.shrink_rate = 10.0
+        self.zone_target_x = 500.0
+        self.zone_target_y = 500.0
+        self.outside_damage_per_second = 10.0
+        self.modifier_timer = 0.0
+        self.modifier_interval = 5.0
+        self.active_modifier = None
+        self.collapse_triggered = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.collapse_triggered = False
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
+        self.zone_radius = min(arena_width, arena_height) / 2.0
+        self.min_zone_radius = 50.0
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = b.ball_type
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        # Move the safe zone slowly
+        dx = self.zone_target_x - self.zone_x
+        dy = self.zone_target_y - self.zone_y
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            move_speed = 15.0 # pixels per second
+            self.zone_x += (dx / dist) * move_speed * delta
+            self.zone_y += (dy / dist) * move_speed * delta
+        else:
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            buffer = max(100.0, self.zone_radius * 0.5)
+            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+
+        # Count players inside the safe zone to calculate shrink multiplier
+        players_in_zone = 0
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx_b = b.x - self.zone_x
+                dy_b = b.y - self.zone_y
+                dist_b = math.sqrt(dx_b*dx_b + dy_b*dy_b)
+                if dist_b <= self.zone_radius:
+                    players_in_zone += 1
+
+        shrink_multiplier = max(1.0, float(players_in_zone))
+
+        # Shrink the safe zone
+        if self.zone_radius > self.min_zone_radius:
+            self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
+            if self.zone_radius <= self.min_zone_radius:
+                self.zone_radius = self.min_zone_radius
+                if not self.collapse_triggered:
+                    self.collapse_triggered = True
+
+        # Handle modifiers timer
+        self.modifier_timer -= delta
+        if self.modifier_timer <= 0.0:
+            self.modifier_timer = self.modifier_interval
+            modifiers = ["speed_boost", "damage_boost", "slow", "vulnerable", "heal"]
+            self.active_modifier = random.choice(modifiers)
+            # Create a brief event to notify players what just happened
+            if hasattr(world, "add_event"):
+                world.add_event("modifier_safe_zone_trigger", {"modifier": self.active_modifier})
+
+        # Apply modifiers and damage
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dx_b = b.x - self.zone_x
+            dy_b = b.y - self.zone_y
+            dist_b = math.sqrt(dx_b*dx_b + dy_b*dy_b)
+
+            # Reset temporary modifiers based on the base values.
+            # Using base_speed and base_damage to restore after temp effects.
+            if hasattr(b, "base_speed"):
+                b.speed = b.base_speed
+            if hasattr(b, "base_damage"):
+                b.damage = b.base_damage
+
+            if dist_b > self.zone_radius:
+                # Outside safe zone: take damage
+                damage_to_take = self.outside_damage_per_second * delta
+                if hasattr(world, "_deal_damage"):
+                    world._deal_damage(None, b, damage_to_take)
+                else:
+                    b.hp -= damage_to_take
+                if b.hp <= 0:
+                    b.alive = False
+            else:
+                # Inside safe zone: apply active modifier
+                if self.active_modifier == "speed_boost":
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.5
+                elif self.active_modifier == "slow":
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                elif self.active_modifier == "damage_boost":
+                    b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 1.5
+                elif self.active_modifier == "vulnerable":
+                    # Take random tiny damage or simulate vulnerability
+                    pass
+                elif self.active_modifier == "heal":
+                    if b.hp < getattr(b, "max_hp", 100.0):
+                        b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 5.0 * delta)
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams = set()
+        for b in alive:
+            team = getattr(b, "team", None)
+            if team:
+                teams.add(team)
+
+        if len(teams) == 1:
+            return teams.pop()
+        return None
 
 class ModifierZonesSafeZoneMode(GameMode):
     def __init__(self):
@@ -12486,6 +12647,7 @@ GAME_MODES = {
     "blackout": BlackoutMode(),
     "windstorm": WindstormMode(),
     "modifier_zones": ModifierZonesMode(),
+    "modifier_safe_zone": ModifierSafeZoneMode(),
     "modifier_zones_safe_zone": ModifierZonesSafeZoneMode(),
     "draft_royale": DraftRoyaleMode(),
     "dual_payload": DualPayloadMode(),
