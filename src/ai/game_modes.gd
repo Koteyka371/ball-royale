@@ -6319,6 +6319,227 @@ class ShrinkingDangerZoneMode extends GameMode:
 
 		return null
 
+
+class ModifierSafeZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 50.0
+	var shrink_rate: float = 10.0
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
+	var outside_damage_per_second: float = 10.0
+	var modifier_timer: float = 0.0
+	var modifier_interval: float = 5.0
+	var active_modifier: String = ""
+	var collapse_triggered: bool = false
+
+	func _init() -> void:
+		name = "Modifier Safe Zone"
+		description = "The safe zone shrinks and periodically applies random buffs or debuffs to everyone inside, forcing players to adapt dynamically."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		collapse_triggered = false
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+		zone_radius = min(arena_width, arena_height) / 2.0
+		min_zone_radius = 50.0
+
+		for b in balls:
+			var b_type = null
+			if typeof(b) == TYPE_OBJECT and "ball_type" in b:
+				b_type = b.ball_type
+			elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+				b_type = b.ball_type
+
+			if b_type != "spectator":
+				if typeof(b) == TYPE_OBJECT:
+					if "team" in b:
+						b.team = b_type
+					if not "base_speed" in b and "speed" in b:
+						b.base_speed = b.speed
+					if not "base_damage" in b and "damage" in b:
+						b.base_damage = b.damage
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.has("team"):
+						b.team = b_type
+					if not b.has("base_speed") and b.has("speed"):
+						b.base_speed = b.speed
+					if not b.has("base_damage") and b.has("damage"):
+						b.base_damage = b.damage
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Move the safe zone slowly
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 5.0:
+			var move_speed = 15.0
+			zone_x += (dx / dist) * move_speed * delta
+			zone_y += (dy / dist) * move_speed * delta
+		else:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena:
+				if "width" in world.arena:
+					arena_width = float(world.arena.width)
+				if "height" in world.arena:
+					arena_height = float(world.arena.height)
+			var buffer = max(100.0, zone_radius * 0.5)
+			zone_target_x = randf_range(buffer, arena_width - buffer)
+			zone_target_y = randf_range(buffer, arena_height - buffer)
+
+		var players_in_zone = 0
+		for b in balls:
+			var is_alive = false
+			var b_type = null
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_OBJECT:
+				if "alive" in b: is_alive = b.alive
+				if "ball_type" in b: b_type = b.ball_type
+				if "x" in b: bx = b.x
+				if "y" in b: by = b.y
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): is_alive = b.alive
+				if b.has("ball_type"): b_type = b.ball_type
+				if b.has("x"): bx = b.x
+				if b.has("y"): by = b.y
+
+			if is_alive and b_type != "spectator":
+				var dx_b = bx - zone_x
+				var dy_b = by - zone_y
+				var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
+				if dist_b <= zone_radius:
+					players_in_zone += 1
+
+		var shrink_multiplier = max(1.0, float(players_in_zone))
+
+		if zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * shrink_multiplier * delta
+			if zone_radius <= min_zone_radius:
+				zone_radius = min_zone_radius
+				if not collapse_triggered:
+					collapse_triggered = true
+
+		modifier_timer -= delta
+		if modifier_timer <= 0.0:
+			modifier_timer = modifier_interval
+			var modifiers = ["speed_boost", "damage_boost", "slow", "vulnerable", "heal"]
+			active_modifier = modifiers[randi() % modifiers.size()]
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("modifier_safe_zone_trigger", {"modifier": active_modifier})
+
+		for b in balls:
+			var is_alive = false
+			var b_type = null
+			var bx = 0.0
+			var by = 0.0
+			var max_hp = 100.0
+			var cur_hp = 100.0
+			if typeof(b) == TYPE_OBJECT:
+				if "alive" in b: is_alive = b.alive
+				if "ball_type" in b: b_type = b.ball_type
+				if "x" in b: bx = b.x
+				if "y" in b: by = b.y
+				if "max_hp" in b: max_hp = b.max_hp
+				if "hp" in b: cur_hp = b.hp
+				if "base_speed" in b and "speed" in b:
+					b.speed = b.base_speed
+				if "base_damage" in b and "damage" in b:
+					b.damage = b.base_damage
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): is_alive = b.alive
+				if b.has("ball_type"): b_type = b.ball_type
+				if b.has("x"): bx = b.x
+				if b.has("y"): by = b.y
+				if b.has("max_hp"): max_hp = b.max_hp
+				if b.has("hp"): cur_hp = b.hp
+				if b.has("base_speed") and b.has("speed"):
+					b.speed = b.base_speed
+				if b.has("base_damage") and b.has("damage"):
+					b.damage = b.base_damage
+
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var dx_b = bx - zone_x
+			var dy_b = by - zone_y
+			var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
+
+			if dist_b > zone_radius:
+				var damage_to_take = outside_damage_per_second * delta
+				if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+					world._deal_damage(null, b, damage_to_take)
+				else:
+					if typeof(b) == TYPE_OBJECT and "hp" in b:
+						b.hp -= damage_to_take
+						if b.hp <= 0:
+							if "alive" in b: b.alive = false
+					elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+						b.hp -= damage_to_take
+						if b.hp <= 0:
+							if b.has("alive"): b.alive = false
+			else:
+				if active_modifier == "speed_boost":
+					if typeof(b) == TYPE_OBJECT and "speed" in b and "base_speed" in b:
+						b.speed = b.base_speed * 1.5
+					elif typeof(b) == TYPE_DICTIONARY and b.has("speed") and b.has("base_speed"):
+						b.speed = b.base_speed * 1.5
+				elif active_modifier == "slow":
+					if typeof(b) == TYPE_OBJECT and "speed" in b and "base_speed" in b:
+						b.speed = b.base_speed * 0.5
+					elif typeof(b) == TYPE_DICTIONARY and b.has("speed") and b.has("base_speed"):
+						b.speed = b.base_speed * 0.5
+				elif active_modifier == "damage_boost":
+					if typeof(b) == TYPE_OBJECT and "damage" in b and "base_damage" in b:
+						b.damage = b.base_damage * 1.5
+					elif typeof(b) == TYPE_DICTIONARY and b.has("damage") and b.has("base_damage"):
+						b.damage = b.base_damage * 1.5
+				elif active_modifier == "heal":
+					if typeof(b) == TYPE_OBJECT and "hp" in b:
+						b.hp = min(max_hp, b.hp + 5.0 * delta)
+					elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+						b.hp = min(max_hp, b.hp + 5.0 * delta)
+
+	func check_winner(world, balls: Array):
+		var teams = []
+		var alive_count = 0
+		for b in balls:
+			var is_alive = false
+			var b_type = null
+			var b_team = null
+			if typeof(b) == TYPE_OBJECT:
+				if "alive" in b: is_alive = b.alive
+				if "ball_type" in b: b_type = b.ball_type
+				if "team" in b: b_team = b.team
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): is_alive = b.alive
+				if b.has("ball_type"): b_type = b.ball_type
+				if b.has("team"): b_team = b.team
+
+			if is_alive and b_type != "spectator":
+				alive_count += 1
+				if b_team != null and not teams.has(b_team):
+					teams.append(b_team)
+
+		if alive_count == 0:
+			return "Draw"
+		if teams.size() == 1:
+			return teams[0]
+		return null
+
 class ModifierZonesSafeZoneMode extends GameMode:
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -16047,6 +16268,7 @@ var GAME_MODES = {
 	"escort": EscortMode.new(),
 	"windstorm": WindstormMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
+	"modifier_safe_zone": ModifierSafeZoneMode.new(),
 	"modifier_zones_safe_zone": ModifierZonesSafeZoneMode.new(),
 	"draft_royale": DraftRoyaleMode.new(),
 	"tournament": TournamentMode.new(),
