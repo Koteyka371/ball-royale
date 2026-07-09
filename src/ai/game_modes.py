@@ -1599,6 +1599,102 @@ class BattleRoyaleMode(GameMode):
                         delattr(b, "original_mass")
 
 
+        # Periodically spawn shadows that turn into meteors and lava
+        self.meteor_shadow_timer = getattr(self, "meteor_shadow_timer", 0.0) + delta
+        if self.meteor_shadow_timer > 5.0:
+            self.meteor_shadow_timer = 0.0
+            if hasattr(world, "arena") and world.arena:
+                aw = getattr(world.arena, "width", 1000.0)
+                ah = getattr(world.arena, "height", 1000.0)
+                import random
+                mx = random.uniform(100.0, aw - 100.0)
+                my = random.uniform(100.0, ah - 100.0)
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                try:
+                    from arena.procedural_arena import Hazard
+                    shadow = Hazard(id=len(world.arena.hazards) + 9800, x=mx, y=my, radius=10.0, kind="meteor_shadow", damage=0.0)
+                except ImportError:
+                    class FallbackHazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+                    shadow = FallbackHazard(id=len(world.arena.hazards) + 9800, x=mx, y=my, radius=10.0, kind="meteor_shadow", damage=0.0)
+                setattr(shadow, "shadow_timer", 2.0)
+                setattr(shadow, "max_radius", 60.0)
+                world.arena.hazards.append(shadow)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            new_hazards = []
+            for h in world.arena.hazards:
+                kind = getattr(h, "kind", "")
+                if kind == "meteor_shadow":
+                    st = getattr(h, "shadow_timer", 0.0) - delta
+                    setattr(h, "shadow_timer", st)
+                    max_rad = getattr(h, "max_radius", 60.0)
+                    h.radius = min(max_rad, h.radius + (max_rad / 2.0) * delta)
+                    if st <= 0:
+                        hazards_to_remove.append(h)
+                        try:
+                            from arena.procedural_arena import Hazard
+                            lava = Hazard(id=h.id + 100, x=h.x, y=h.y, radius=max_rad, kind="lava_puddle", damage=0.0)
+                        except ImportError:
+                            class FallbackHazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id
+                                    self.x = x
+                                    self.y = y
+                                    self.radius = radius
+                                    self.kind = kind
+                                    self.damage = damage
+                                    self.active = True
+                            lava = FallbackHazard(id=h.id + 100, x=h.x, y=h.y, radius=max_rad, kind="lava_puddle", damage=0.0)
+                        setattr(lava, "lava_duration", 10.0)
+                        new_hazards.append(lava)
+
+                        import math
+                        for b in balls:
+                            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                                dist = math.hypot(getattr(b, 'x', 0) - h.x, getattr(b, 'y', 0) - h.y)
+                                if dist <= max_rad:
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(40.0)
+                                    else:
+                                        b.hp -= 40.0
+                                        if b.hp <= 0:
+                                            b.alive = False
+
+                elif kind == "lava_puddle":
+                    ld = getattr(h, "lava_duration", 0.0) - delta
+                    setattr(h, "lava_duration", ld)
+                    if ld <= 0:
+                        hazards_to_remove.append(h)
+                    else:
+                        import math
+                        for b in balls:
+                            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                                dist = math.hypot(getattr(b, 'x', 0) - h.x, getattr(b, 'y', 0) - h.y)
+                                if dist <= h.radius:
+                                    # DoT damage
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(15.0 * delta)
+                                    else:
+                                        b.hp -= 15.0 * delta
+                                        if b.hp <= 0:
+                                            b.alive = False
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+            for nh in new_hazards:
+                world.arena.hazards.append(nh)
+
         # Meteor Shower final phase logic
         teams_alive = set(getattr(b, "team", None) for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator")
         if self.match_time > 90.0 or len(teams_alive) <= 2:

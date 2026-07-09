@@ -1,0 +1,4 @@
+{
+    "title": "Orbital Laser Strike Event",
+    "description": "Periodically, a massive orbital laser targets the player with the highest score. It takes 3 seconds to lock on, providing a visible warning beam. When it fires, it leaves a scorched earth trail that heavily slows and slightly damages any balls moving through it."
+}
