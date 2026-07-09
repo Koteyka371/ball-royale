@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-752] Shrinking Safe Zone — *2026-07-09 17:47:05 UTC*
+
+A battle royale classic mechanic: a circular safe zone slowly shrinks over time. Balls outside the safe zone take continuous damage. This forces players closer together and prevents stalling in the corners of the arena.
+
+---
+
 ## [idea-751] Quantum Entanglement Tether — *2026-07-09 17:31:59 UTC*
 
 A new booster or mutator that randomly entangles pairs of balls. When entangled, any status effect, knockback force, or damage applied to one ball is also mirrored to the other, encouraging highly strategic cooperative (or intentionally self-destructive) plays to eliminate linked opponents.
