@@ -1292,6 +1292,42 @@ class Action:
                     setattr(bh, 'owner_id', getattr(self.ball, 'id', None))
                     self.world.arena.hazards.append(bh)
                 self.ball.inventory.remove("deployable_black_hole")
+
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "black_hole_grenade" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    pass
+                else:
+                    import random
+                    import math
+                    bh_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+
+                    # Throw logic: aim at nearest enemy or random direction
+                    enemies = self._get_enemies()
+                    target_x, target_y = self.ball.x, self.ball.y
+
+                    if enemies:
+                        target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        dx = target.x - self.ball.x
+                        dy = target.y - self.ball.y
+                        dist = math.hypot(dx, dy)
+                        if dist > 0.0001:
+                            # Throw forward 150 units towards enemy
+                            target_x = self.ball.x + (dx / dist) * 150.0
+                            target_y = self.ball.y + (dy / dist) * 150.0
+                    else:
+                        # Throw randomly
+                        angle = random.uniform(0, 2 * math.pi)
+                        target_x = self.ball.x + math.cos(angle) * 150.0
+                        target_y = self.ball.y + math.sin(angle) * 150.0
+
+                    bh = Hazard(bh_id, target_x, target_y, 60.0, "black_hole", 25.0)
+                    setattr(bh, 'duration', 4.0)
+                    setattr(bh, 'owner_id', getattr(self.ball, 'id', None))
+                    self.world.arena.hazards.append(bh)
+            self.ball.inventory.remove("black_hole_grenade")
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_gravity_well" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 try:
@@ -7546,6 +7582,15 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("deployable_black_hole")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "black_hole_grenade":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("black_hole_grenade")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

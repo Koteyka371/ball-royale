@@ -1,5 +1,5 @@
 import pytest
-from src.ai.game_modes import BattleRoyaleMode
+from ai.game_modes import BattleRoyaleMode
 
 class MockArena:
     def __init__(self):

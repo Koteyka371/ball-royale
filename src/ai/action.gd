@@ -2874,6 +2874,38 @@ func execute(strategy: String, delta: float):
 					arena.hazards.append(bh)
 					inv.erase("deployable_black_hole")
 					self.ball.set_meta("inventory", inv)
+		if inv.has("black_hole_grenade"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var bh_id = arena.hazards.size() + randi() % 10000
+				var bh = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					var target_x = self.ball.x
+					var target_y = self.ball.y
+					var enemies = _get_enemies()
+					if enemies.size() > 0:
+						var target = enemies[0]
+						var min_dist = (target.x - self.ball.x) * (target.x - self.ball.x) + (target.y - self.ball.y) * (target.y - self.ball.y)
+						for i in range(1, enemies.size()):
+							var d = (enemies[i].x - self.ball.x) * (enemies[i].x - self.ball.x) + (enemies[i].y - self.ball.y) * (enemies[i].y - self.ball.y)
+							if d < min_dist:
+								min_dist = d
+								target = enemies[i]
+						var dist = sqrt(min_dist)
+						if dist > 0.0001:
+							target_x = self.ball.x + ((target.x - self.ball.x) / dist) * 150.0
+							target_y = self.ball.y + ((target.y - self.ball.y) / dist) * 150.0
+					else:
+						var angle = randf_range(0, 2 * PI)
+						target_x = self.ball.x + cos(angle) * 150.0
+						target_y = self.ball.y + sin(angle) * 150.0
+
+					bh = load("res://src/arena/procedural_arena.gd").Hazard.new(bh_id, target_x, target_y, 60.0, "black_hole", 25.0)
+					bh.set_meta("duration", 4.0)
+					if "id" in self.ball: bh.set_meta("owner_id", self.ball.id)
+					arena.hazards.append(bh)
+					inv.erase("black_hole_grenade")
+					self.ball.set_meta("inventory", inv)
 		if inv.has("deployable_gravity_well"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -13320,6 +13352,21 @@ func _collect_booster(delta: float):
                 if "inventory" in self.ball: inv = self.ball.inventory
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
                 inv.append("deployable_black_hole")
+                if "inventory" in self.ball: self.ball.inventory = inv
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "black_hole_grenade":
+                var inv = []
+                if "inventory" in self.ball: inv = self.ball.inventory
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                inv.append("black_hole_grenade")
                 if "inventory" in self.ball: self.ball.inventory = inv
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
