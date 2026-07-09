@@ -11207,6 +11207,48 @@ class SpikedWallsMode(GameMode):
                         if getattr(world, "tick", 0) % 5 == 0:
                             world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': b.x, 'y': b.y, 'radius': 5.0, 'color': 'red'}})
 
+class ShrinkingBoundaryMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shrinking Boundary"
+        self.description = "The boundaries of the arena slowly shrink over time, dealing significant damage to anyone caught outside the safe area."
+        self.min_x = 0.0
+        self.max_x = 1000.0
+        self.min_y = 0.0
+        self.max_y = 1000.0
+        self.shrink_rate = 10.0
+        self.outside_damage_per_second = 30.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.min_x = 0.0
+        self.max_x = arena_width
+        self.min_y = 0.0
+        self.max_y = arena_height
+
+    def tick(self, world, balls, delta=0.016):
+        # Shrink map boundaries inward
+        if self.max_x - self.min_x > 50.0:
+            self.min_x += self.shrink_rate * delta
+            self.max_x -= self.shrink_rate * delta
+
+        if self.max_y - self.min_y > 50.0:
+            self.min_y += self.shrink_rate * delta
+            self.max_y -= self.shrink_rate * delta
+
+        # Apply damage
+        damage_this_tick = self.outside_damage_per_second * delta
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if b.x < self.min_x or b.x > self.max_x or b.y < self.min_y or b.y > self.max_y:
+                    b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.killer = "Shrinking Boundary"
+                        b.hp = 0
+
 GAME_MODES = {
     "spiked_walls": SpikedWallsMode(),
     "center_black_hole": CenterBlackHoleMode(),
@@ -11287,6 +11329,7 @@ GAME_MODES = {
     "capture_the_flag": CaptureTheFlagMode(),
     "evolutionary_simulation": EvolutionarySimulationMode(),
     "shrinking_danger_zone": ShrinkingDangerZoneMode(),
+    "shrinking_boundary": ShrinkingBoundaryMode(),
     "inverse_safe_zone": InverseSafeZoneMode(),
     "safe_zone": SafeZoneMode(),
     "hex_grid_royale": HexGridRoyaleMode(),
