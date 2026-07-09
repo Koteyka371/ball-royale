@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-721] Black Hole Bomb — *2026-07-09 22:39:38 UTC*
+
+A throwable or placeable bomb that sucks nearby balls towards it before exploding for massive damage.
+
+---
+
 ## [idea-791] Dynamic Weather Modifiers based on Prestige Level — *2026-07-09 22:35:11 UTC*
 
 Introduce a game mutator that alters arena weather dynamically based on the lobby's average prestige level, adding new hazards like solar flares for high-prestige matches.

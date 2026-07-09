@@ -12415,7 +12415,7 @@
     },
     {
       "id": "idea-721",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Bomb",
@@ -22731,6 +22731,23 @@
         "src/arena/corrosive_acid_trap.py",
         "src/arena/corrosive_acid_trap.gd",
         "tests/test_corrosive_acid_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1327",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmic Anomaly Mode",
+      "description": "A game mode where the arena gravity occasionally shifts, pulling balls towards the edges or a random point instead of the center. High-prestige players can deploy 'gravity anchors' to resist the effect.",
+      "allowed_paths": [
+        "src/ai/cosmic_anomaly.py",
+        "src/ai/cosmic_anomaly.gd",
+        "tests/test_cosmic_anomaly.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
