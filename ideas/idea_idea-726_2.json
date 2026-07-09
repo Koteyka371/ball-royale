@@ -1,0 +1,4 @@
+{
+    "title": "Chain Teleport",
+    "description": "Instead of a single teleport dash, the ball can teleport up to 3 times in quick succession if enemies are clustered within a small radius. Each subsequent jump deals slightly less damage but refreshes a minor stamina burst."
+}

@@ -8624,8 +8624,8 @@ class Action:
                     dy = target.y - self.ball.y
                     dist = math.sqrt(dx*dx + dy*dy)
                     if dist > 0.0001:
-                        self.ball.x += (dx/dist) * dash_dist
-                        self.ball.y += (dy/dist) * dash_dist
+                        self.ball.x = target.x
+                        self.ball.y = target.y
                 else:
                     angle = random.uniform(0, 2 * math.pi)
                     self.ball.x += math.cos(angle) * dash_dist
@@ -8837,12 +8837,8 @@ class Action:
                     if dist > 0.0001:
                         dir_x = dx / dist
                         dir_y = dy / dist
-                        if dist <= dash_dist:
-                            teleport_x = target.x
-                            teleport_y = target.y
-                        else:
-                            teleport_x = self.ball.x + dir_x * dash_dist
-                            teleport_y = self.ball.y + dir_y * dash_dist
+                        teleport_x = target.x
+                        teleport_y = target.y
                     else:
                         angle = random.uniform(0, 2 * math.pi)
                         dir_x = math.cos(angle)
