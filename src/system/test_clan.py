@@ -124,3 +124,14 @@ def test_clan_roles_and_stash(temp_clan_file):
 
     # Stash should not have 'wood' anymore
     assert "wood" not in clan["stash"]
+
+def test_unlock_buff(temp_clan_file):
+    cm = ClanManager(temp_clan_file)
+    cm.create_clan("BuffClan", "p1")
+
+    assert cm.unlock_buff("BuffClan", "Guild_Wide_Passive_Buff") == True
+    assert "Guild_Wide_Passive_Buff" in cm.data["clans"]["BuffClan"]["buffs"]
+
+    # unlock again shouldn't duplicate
+    assert cm.unlock_buff("BuffClan", "Guild_Wide_Passive_Buff") == False
+    assert len(cm.data["clans"]["BuffClan"]["buffs"]) == 1
