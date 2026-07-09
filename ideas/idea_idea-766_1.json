@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Tunnels Game Mode",
+  "description": "A game mode where pairs of connected quantum tunnels spawn across the arena. Balls that enter a tunnel instantly teleport to the paired tunnel's exit, but their velocity vector is randomized upon exit, making escapes unpredictable and creating chaotic ambushes."
+}

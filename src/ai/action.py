@@ -184,7 +184,13 @@ class Action:
         if is_ranged:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
+
+                # Physics Anomaly check: projecties curve around obstacles
+                anomaly_active = any(getattr(h, "kind", "") == "physics_anomaly" for h in self.world.arena.hazards)
+
                 for h in self.world.arena.hazards:
+                    if anomaly_active and getattr(h, "kind", "") in ["orbital_debris", "energy_barrier", "smokescreen"]:
+                        continue  # Curve around
                     if getattr(h, 'is_disabled_by_flare', False):
                         continue
                     if getattr(h, "kind", "") == "orbital_debris":

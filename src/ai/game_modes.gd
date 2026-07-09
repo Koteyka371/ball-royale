@@ -15874,7 +15874,97 @@ class MultipleSafeZonesMode extends GameMode:
 		zones = new_zones
 
 
+
+class PhysicsAnomalyMode extends GameMode:
+	var anomaly_x = 0.0
+	var anomaly_y = 0.0
+
+	func _init() -> void:
+		name = "Physics Anomaly"
+		description = "A central anomaly alters physics: projectiles curve around obstacles, and movement speed increases when moving towards it but decreases when moving away."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var arena_width = 2000.0
+		var arena_height = 2000.0
+		if "width" in world.arena: arena_width = float(world.arena.width)
+		if "height" in world.arena: arena_height = float(world.arena.height)
+
+		anomaly_x = arena_width / 2.0
+		anomaly_y = arena_height / 2.0
+
+		var h_id = 9500 + world.arena.hazards.size() + randi() % 1000
+		var hazard_class = null
+		if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+			var arena_script = load("res://src/arena/procedural_arena.gd")
+			if arena_script != null and arena_script.const_defined("Hazard"):
+				hazard_class = arena_script.Hazard
+
+		if hazard_class != null:
+			var anomaly = hazard_class.new(h_id, anomaly_x, anomaly_y, 100.0, "physics_anomaly", 0.0)
+			world.arena.hazards.append(anomaly)
+		else:
+			var anomaly = {"id": h_id, "x": anomaly_x, "y": anomaly_y, "radius": 100.0, "kind": "physics_anomaly", "damage": 0.0, "active": true, "target_radius": 0.0}
+			world.arena.hazards.append(anomaly)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var alive = false
+			if "alive" in b: alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+
+			var b_type = ""
+			if "ball_type" in b: b_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b.ball_type
+
+			if alive and b_type != "spectator":
+				var bx = 0.0
+				var by = 0.0
+				var vx = 0.0
+				var vy = 0.0
+
+				if "x" in b: bx = b.x
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
+
+				if "y" in b: by = b.y
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+				if "vx" in b: vx = b.vx
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): vx = b.get_meta("vx")
+
+				if "vy" in b: vy = b.vy
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vy"): vy = b.get_meta("vy")
+
+				var dx = anomaly_x - bx
+				var dy = anomaly_y - by
+				var s_dist = sqrt(dx*dx + dy*dy)
+
+				if s_dist > 0.1 and (abs(vx) > 0.1 or abs(vy) > 0.1):
+					var ndx = dx / s_dist
+					var ndy = dy / s_dist
+
+					var speed = sqrt(vx*vx + vy*vy)
+					var nvx = vx / speed
+					var nvy = vy / speed
+
+					var dot = nvx * ndx + nvy * ndy
+					var speed_mod = 1.0 + (dot * 0.5 * delta)
+
+					if "vx" in b: b.vx = vx * speed_mod
+					elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vx", vx * speed_mod)
+
+					if "vy" in b: b.vy = vy * speed_mod
+					elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vy", vy * speed_mod)
+
 var GAME_MODES = {
+	"physics_anomaly": PhysicsAnomalyMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),

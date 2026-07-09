@@ -12355,6 +12355,79 @@ class MultipleSafeZonesMode(GameMode):
         self.zones = new_zones
 
 
+
+class PhysicsAnomalyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Physics Anomaly"
+        self.description = "A central anomaly alters physics: projectiles curve around obstacles, and movement speed increases when moving towards it but decreases when moving away."
+        self.anomaly_x = 0.0
+        self.anomaly_y = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        arena_width = getattr(world.arena, "width", 2000.0)
+        arena_height = getattr(world.arena, "height", 2000.0)
+        self.anomaly_x = arena_width / 2.0
+        self.anomaly_y = arena_height / 2.0
+
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+                    self.target_radius = 0.0
+
+        import random
+        h_id = 9500 + len(world.arena.hazards) + random.randint(0, 1000)
+        anomaly = Hazard(id=h_id, x=self.anomaly_x, y=self.anomaly_y, radius=100.0, kind="physics_anomaly", damage=0.0)
+        world.arena.hazards.append(anomaly)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                vx = getattr(b, "vx", 0.0)
+                vy = getattr(b, "vy", 0.0)
+
+                # Vector from ball to anomaly
+                dx = self.anomaly_x - bx
+                dy = self.anomaly_y - by
+                dist = math.hypot(dx, dy)
+
+                if dist > 0.1 and (abs(vx) > 0.1 or abs(vy) > 0.1):
+                    # Normalize directions
+                    ndx = dx / dist
+                    ndy = dy / dist
+
+                    speed = math.hypot(vx, vy)
+                    nvx = vx / speed
+                    nvy = vy / speed
+
+                    # Dot product to see if moving towards or away
+                    dot = nvx * ndx + nvy * ndy
+
+                    # dot > 0: moving towards, dot < 0: moving away
+                    # Modulate speed by up to +/- 50% based on direction
+                    speed_mod = 1.0 + (dot * 0.5 * delta)
+
+                    b.vx = vx * speed_mod
+                    b.vy = vy * speed_mod
+
 GAME_MODES = {
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
@@ -13922,5 +13995,6 @@ class WeatherClashMode(GameMode):
                     b.damage = base_damage
 
 
+GAME_MODES['physics_anomaly'] = PhysicsAnomalyMode()
 GAME_MODES['freeze_tag'] = FreezeTagMode()
 GAME_MODES['weather_clash'] = WeatherClashMode()

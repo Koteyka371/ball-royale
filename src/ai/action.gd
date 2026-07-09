@@ -261,8 +261,17 @@ func _attempt_damage(attacker, target) -> void:
 		elif attacker.has_method("has_meta") and attacker.has_meta("team"): a_team = attacker.get_meta("team")
 		else: a_team = attacker.ball_type if "ball_type" in attacker else attacker.get_ball_type()
 
+		var anomaly_active = false
+		for h in world.arena.hazards:
+			var h_k = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
+			if h_k == "physics_anomaly":
+				anomaly_active = true
+				break
+
 		for h in world.arena.hazards:
 			var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
+			if anomaly_active and (h_kind == "orbital_debris" or h_kind == "energy_barrier" or h_kind == "smokescreen"):
+				continue # Projectiles curve around obstacles
 			if h_kind == "orbital_debris":
 				var hx = float(h.x if "x" in h else h.get_meta("x"))
 				var hy = float(h.y if "y" in h else h.get_meta("y"))
