@@ -2567,9 +2567,8 @@ class Action:
                                             b_type = getattr(b, "ball_type", "")
                                             b_team = getattr(b, "team", "")
 
-                                            if random.random() < 0.3:
-                                                other.is_confused = True
-                                                other.confusion_timer = 3.0
+                                            other.is_confused = True
+                                            other.confusion_timer = 3.0
 
                                             if b_type == "trickster" or b_team == "trickster":
                                                 # Trickster decoy specific logic

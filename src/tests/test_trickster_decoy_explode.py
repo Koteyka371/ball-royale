@@ -79,3 +79,6 @@ def test_decoy_explosion_all_confuse():
     assert getattr(decoy, "_decoy_exploded", False) is True
     # If the task says "When a decoy explodes, it can inflict a 'confuse' status on nearby enemies"
     # Maybe we should always apply it, or apply it based on a 30% chance for ALL decoys, not just tricksters.
+
+    assert enemy.is_confused is True
+    assert enemy.confusion_timer == 3.0
