@@ -53,6 +53,12 @@ class ProceduralArena:
         self.hazards: List[Hazard] = []
         self.wind_dx = 0.0
         self.wind_dy = 0.0
+        self.weather = "clear"
+        self.is_raining = False
+        self.is_snowing = False
+        self.is_heatwave = False
+        self.is_windy = False
+        self.is_foggy = False
 
         # Shrinking zone
         self.safe_zone_radius = arena_size * 0.7
@@ -543,6 +549,24 @@ class ProceduralArena:
                     "left": states[2],
                     "right": states[3]
                 }
+            if current_tick % 600 == 0 and self.weather != "clear":
+                self.weather = "clear"
+                self.is_raining = False
+                self.is_snowing = False
+                self.is_heatwave = False
+                self.is_windy = False
+                self.is_foggy = False
+            elif current_tick % 600 == 300:
+                # Randomly change weather
+                weathers = ["rain", "snow", "heatwave", "wind", "fog"]
+                import random as rnd
+                self.weather = rnd.choice(weathers)
+                self.is_raining = self.weather == "rain"
+                self.is_snowing = self.weather == "snow"
+                self.is_heatwave = self.weather == "heatwave"
+                self.is_windy = self.weather == "wind"
+                self.is_foggy = self.weather == "fog"
+
             import math
             # Process hazard-to-hazard combos
 
