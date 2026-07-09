@@ -13538,7 +13538,7 @@
     },
     {
       "id": "idea-787",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Confusion Effect",
@@ -22578,6 +22578,57 @@
         "src/arena/shrinking_arenas_mechanic.py",
         "src/arena/shrinking_arenas_mechanic.gd",
         "tests/test_shrinking_arenas_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1318",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lava Eruption Mode",
+      "description": "An arena modification where random sections of the floor erupt into lava geysers, forcing balls to traverse via specific safe paths while increasing their temperature (friction) if they stay near the geysers.",
+      "allowed_paths": [
+        "src/ai/lava_eruption.py",
+        "src/ai/lava_eruption.gd",
+        "tests/test_lava_eruption.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1319",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Collapsing Ceiling Hazard",
+      "description": "Instead of dropping panels from below, introduce a collapsing ceiling that shrinks the vertical height in safe zones. Balls caught under falling debris are briefly stunned and take massive damage.",
+      "allowed_paths": [
+        "src/arena/collapsing_ceiling.py",
+        "src/arena/collapsing_ceiling.gd",
+        "tests/test_collapsing_ceiling.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1320",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Platform Tilt Mechanics",
+      "description": "Introduce dynamic platform tilting where sections of the arena slightly slope over time, causing balls to drift slowly towards the edge or center. This forces players to continuously correct their position.",
+      "allowed_paths": [
+        "src/ai/platform_tilt_mechanics.py",
+        "src/ai/platform_tilt_mechanics.gd",
+        "tests/test_platform_tilt_mechanics.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

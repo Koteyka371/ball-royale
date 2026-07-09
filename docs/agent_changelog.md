@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-787] Decoy Confusion Effect — *2026-07-09 22:11:15 UTC*
+
+When a decoy explodes, it can inflict a 'confuse' status on nearby enemies, reversing their movement controls for a brief duration.
+
+---
+
 ## [idea-798] Collapsing Floor Panels Arena — *2026-07-09 22:04:30 UTC*
 
 An arena where the play area shrinks because large square panels composing the floor glow red and then fall away entirely into a void. Balls that fall into the void instantly die, pushing everyone into a tighter grid as the match progresses.
