@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Mine",
+  "description": "A deployable mine that, when triggered, swaps the positions of the two nearest enemy balls and causes them both to take the damage of the trap, disrupting their strategies."
+}

@@ -1332,6 +1332,21 @@ class Action:
 
 
         # Check inventory for traps to place if fleeing or defending
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "weather_shield_item" in self.ball.inventory:
+            absorbed_effects = {}
+            status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "wet_timer", "cold_timer", "sandblind_timer"]
+            for eff in status_effects:
+                val = getattr(self.ball, eff, 0.0)
+                if val > 0:
+                    absorbed_effects[eff] = val
+                    setattr(self.ball, eff, 0.0) # Cleanse self
+
+            if absorbed_effects:
+                # Convert into a temporary health regeneration boost
+                duration = 3.0 + (len(absorbed_effects) * 1.0)
+                setattr(self.ball, "healing_timer", max(getattr(self.ball, "healing_timer", 0.0), duration))
+                self.ball.inventory.remove("weather_shield_item")
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "status_absorber_item" in self.ball.inventory:
             enemies = self._get_enemies()
             if enemies:
@@ -7120,6 +7135,15 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "weather_shield_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("weather_shield_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "status_absorber_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -8829,7 +8853,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy

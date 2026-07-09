@@ -1,0 +1,4 @@
+{
+  "title": "Echo Strike Booster",
+  "description": "A booster that records the last 3 attacks a ball makes. On activation, it replays those 3 attacks simultaneously towards the nearest enemy, offering huge burst damage potential but long cooldowns."
+}
