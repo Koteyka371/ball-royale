@@ -1,4 +1,0 @@
-{
-  "title": "Emotion Status Interactions",
-  "description": "Expand the emotion system so that emotions interact with specific hazards and mechanics. For example, 'fear' makes balls run slightly faster but lose turning radius, while 'anger' increases damage dealt but reduces defense. Balls with 'calm' are immune to sudden stat changes."
-}

@@ -22444,6 +22444,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1310",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cursed Currency Mode",
+      "description": "Instead of picking up generic boosters, currency pickups now act as both a resource and a burden. The more currency a ball holds, the slower their base speed becomes and their hitbox gets slightly larger, but they deal more damage. Players can deposit this currency at scattered altars (similar to Black Markets) to buy permanent buffs and shed the debuffs, creating a risk-reward dynamic.",
+      "allowed_paths": [
+        "src/ai/cursed_currency.py",
+        "src/ai/cursed_currency.gd",
+        "tests/test_cursed_currency.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
