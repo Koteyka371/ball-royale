@@ -2305,6 +2305,7 @@ class Action:
 
         # Zero gravity processing (friction)
         in_anomaly_zone = False
+        in_bouncy_zone = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
@@ -2316,8 +2317,13 @@ class Action:
                     dy = hazard.y - self.ball.y
                     if (dx*dx + dy*dy) <= getattr(hazard, "radius", 0)**2:
                         in_anomaly_zone = True
-                        break
+                elif getattr(hazard, "kind", "") == "bouncy_zone" and getattr(hazard, "active", True):
+                    dx = hazard.x - self.ball.x
+                    dy = hazard.y - self.ball.y
+                    if (dx*dx + dy*dy) <= getattr(hazard, "radius", 0)**2:
+                        in_bouncy_zone = True
         self.ball.in_anomaly_zone = in_anomaly_zone
+        self.ball.in_bouncy_zone = in_bouncy_zone
 
         gm = getattr(self.world, "game_mode", None)
         is_zero_gravity = False
@@ -10195,7 +10201,10 @@ class Action:
                 knockback_multiplier = 1.0
                 gm = getattr(self.world, "game_mode", None)
                 in_anomaly_zone = getattr(self.ball, "in_anomaly_zone", False)
+                in_bouncy_zone = getattr(self.ball, "in_bouncy_zone", False)
                 if in_anomaly_zone:
+                    knockback_multiplier = 5.0
+                elif in_bouncy_zone:
                     knockback_multiplier = 5.0
                 elif gm and getattr(gm, "name", "") == "Pacifist Knockout":
                     knockback_multiplier = 5.0

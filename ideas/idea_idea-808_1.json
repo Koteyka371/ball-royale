@@ -1,0 +1,4 @@
+{
+  "title": "Sticky Bomb Booster",
+  "description": "A new booster type that when picked up, gives the ball a sticky bomb it can attach to enemies by ramming them. The bomb will detonate after a 3-second delay, doing large AOE damage but knocking back both the attached target and the attacker if they don't retreat."
+}
