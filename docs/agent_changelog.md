@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-789] Mutator Voting System — *2026-07-09 21:57:34 UTC*
+
+Players can spend earned skill points or a new currency to vote on which mutators will be active for the next match, adding a strategic meta-layer to the lobby experience.
+
+---
+
 ## [idea-788] Weekend Boss Invasion — *2026-07-09 21:36:57 UTC*
 
 On weekends, there's a chance a massive Juggernaut Boss spawns in the center of the arena during standard matches. Players must decide whether to team up against the boss for massive rewards or use the chaos to eliminate each other.

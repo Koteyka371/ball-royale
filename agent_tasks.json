@@ -13572,7 +13572,7 @@
     },
     {
       "id": "idea-789",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mutator Voting System",
@@ -22456,6 +22456,41 @@
         "src/ai/cursed_currency.py",
         "src/ai/cursed_currency.gd",
         "tests/test_cursed_currency.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1311",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ball Customization Skins",
+      "description": "Allow players to purchase and equip different cosmetic skins for their balls using prestige tokens or skill points, changing their visual appearance without affecting stats.",
+      "allowed_paths": [
+        "src/ui/ball_customization_skins.py",
+        "src/ui/ball_customization_skins.gd",
+        "src/ai/ball_customization_skins.py",
+        "tests/test_ball_customization_skins.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1312",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Custom Boss Spawns",
+      "description": "Allow viewers to use channel points or specific actions to trigger the spawning of special bosses (like the Juggernaut) dynamically during the match.",
+      "allowed_paths": [
+        "src/ai/custom_boss_spawns.py",
+        "src/ai/custom_boss_spawns.gd",
+        "tests/test_custom_boss_spawns.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
