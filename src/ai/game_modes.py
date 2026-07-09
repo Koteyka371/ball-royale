@@ -11759,7 +11759,147 @@ class EntanglementMutatorMode(GameMode):
             self._init_prev_state(b)
 
 
+
+class MultipleSafeZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Multiple Safe Zones"
+        self.description = "Instead of one big safe zone, multiple tiny safe zones spawn randomly across the map, shrinking and splitting over time."
+        self.zones = [] # list of {"x": float, "y": float, "radius": float, "target_radius": float, "target_x": float, "target_y": float}
+        self.split_timer = 0.0
+        self.min_zone_radius = 50.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        import random
+        # start with 1 zone in the center
+        self.zones = [{
+            "x": arena_width / 2.0,
+            "y": arena_height / 2.0,
+            "radius": min(arena_width, arena_height) / 2.0,
+            "target_radius": min(arena_width, arena_height) / 2.0,
+            "target_x": arena_width / 2.0,
+            "target_y": arena_height / 2.0
+        }]
+        self.split_timer = random.uniform(10.0, 20.0)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        self.split_timer -= delta
+        if self.split_timer <= 0.0:
+            self.split_timer = random.uniform(15.0, 25.0)
+            self._split_zones(world)
+
+        # Update zones
+        for zone in self.zones:
+            # shrink
+            zone["radius"] -= 5.0 * delta
+            if zone["radius"] < self.min_zone_radius:
+                zone["radius"] = self.min_zone_radius
+
+            # move towards target
+            dx = zone["target_x"] - zone["x"]
+            dy = zone["target_y"] - zone["y"]
+            dist = math.sqrt(dx*dx + dy*dy)
+            speed = 20.0 * delta
+            if dist > speed:
+                zone["x"] += (dx/dist) * speed
+                zone["y"] += (dy/dist) * speed
+            else:
+                zone["x"] = zone["target_x"]
+                zone["y"] = zone["target_y"]
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                zone["target_x"] = random.uniform(200, arena_width - 200)
+                zone["target_y"] = random.uniform(200, arena_height - 200)
+
+        # apply damage
+        for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if not getattr(b, "alive", False):
+                continue
+            if is_immune:
+                continue
+
+            in_any_zone = False
+            for zone in self.zones:
+                dx = b.x - zone["x"]
+                dy = b.y - zone["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist <= zone["radius"]:
+                    in_any_zone = True
+                    break
+
+            if not in_any_zone:
+                damage = 10.0 * delta
+                # Ignore shields for storm damage
+                b.hp -= damage
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(b, "id") and b.id not in world.dead_balls:
+                        world.dead_balls.append(b.id)
+                        world.add_event("ball_died", {"id": b.id, "reason": "multiple_safe_zones_storm", "killer_id": -1})
+
+    def _split_zones(self, world):
+        import random
+        import math
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        new_zones = []
+        for zone in self.zones:
+            if zone["radius"] < self.min_zone_radius * 2:
+                new_zones.append(zone)
+                continue
+
+            # Split into 2
+            r1 = zone["radius"] * 0.7
+            r2 = zone["radius"] * 0.7
+
+            angle1 = random.uniform(0, 2 * math.pi)
+            angle2 = angle1 + math.pi
+
+            dist = zone["radius"] * 0.5
+
+            x1 = zone["x"] + math.cos(angle1) * dist
+            y1 = zone["y"] + math.sin(angle1) * dist
+
+            x2 = zone["x"] + math.cos(angle2) * dist
+            y2 = zone["y"] + math.sin(angle2) * dist
+
+            # keep them in bounds
+            x1 = max(r1, min(arena_width - r1, x1))
+            y1 = max(r1, min(arena_height - r1, y1))
+            x2 = max(r2, min(arena_width - r2, x2))
+            y2 = max(r2, min(arena_height - r2, y2))
+
+            new_zones.append({
+                "x": x1, "y": y1, "radius": r1, "target_radius": r1,
+                "target_x": random.uniform(r1, arena_width - r1),
+                "target_y": random.uniform(r1, arena_height - r1)
+            })
+            new_zones.append({
+                "x": x2, "y": y2, "radius": r2, "target_radius": r2,
+                "target_x": random.uniform(r2, arena_width - r2),
+                "target_y": random.uniform(r2, arena_height - r2)
+            })
+
+        self.zones = new_zones
+
+
 GAME_MODES = {
+    "multiple_safe_zones": MultipleSafeZonesMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
     "spiked_walls": SpikedWallsMode(),
     "center_black_hole": CenterBlackHoleMode(),
