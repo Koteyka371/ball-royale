@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-769] Multi-Safe Zones — *2026-07-09 19:38:00 UTC*
+
+Instead of one big safe zone, multiple tiny safe zones spawn randomly across the map, shrinking and splitting over time.
+
+---
+
 ## [idea-783] Decoy Mind Swap — *2026-07-09 19:20:01 UTC*
 
 When a decoy expires naturally (timer runs out), the player has a 50% chance to permanently swap places with the decoy, creating a chaotic repositioning mechanic.
