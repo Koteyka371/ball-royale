@@ -1,0 +1,4 @@
+{
+  "title": "Weather Control Tower",
+  "description": "A centralized structure in the arena that players can attack. Dealing enough damage changes the current weather in the arena, granting buffs or debuffs globally."
+}
