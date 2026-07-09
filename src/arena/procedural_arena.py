@@ -1046,7 +1046,7 @@ class ProceduralArena:
                         if h.duration <= 0:
                             h.active = False
 
-                elif getattr(h, "id", 0) >= 1000 and hasattr(h, "target_radius"):
+                elif isinstance(getattr(h, "id", 0), int) and getattr(h, "id", 0) >= 1000 and hasattr(h, "target_radius"):
                     if h.radius < h.target_radius:
                         # Grow proportionally to reach target in roughly 600 ticks
                         h.radius += (h.target_radius / 600.0) * delta * 60.0 # Assuming 60 ticks per second
