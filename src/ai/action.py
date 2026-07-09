@@ -1029,9 +1029,9 @@ class Action:
             "skill_timer": getattr(self.ball, "skill_timer", 0.0)
         }
         self.ball.state_history.append(current_state)
-        # Keep last 3 seconds (assuming ~60 ticks/sec or so, delta is in args, let's just keep last 180 ticks, 180 * 0.016 is ~3s)
-        # We can also just store delta and prune by time. Let's do simple max ticks to avoid loop over array: 180.
-        if len(self.ball.state_history) > 180:
+        # Keep last 3 seconds (assuming ~60 ticks/sec or so, delta is in args, let's just keep last 188 ticks, 188 * 0.016 is ~3s)
+        # We can also just store delta and prune by time. Let's do simple max ticks to avoid loop over array: 188.
+        if len(self.ball.state_history) > 188:
             self.ball.state_history.pop(0)
 
 
@@ -7166,14 +7166,16 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "instant_rewind_booster":
+                    # Retrieve state from ~3 seconds ago for instant rewind
                     history = getattr(self.ball, "state_history", [])
                     if history:
-                        past = history[0]
-                        self.ball.x = past.get("x", self.ball.x)
-                        self.ball.y = past.get("y", self.ball.y)
-                        self.ball.hp = past.get("hp", getattr(self.ball, "max_hp", 100.0))
-                        if "attack_timer" in past: self.ball.attack_timer = past["attack_timer"]
-                        if "skill_timer" in past: self.ball.skill_timer = past["skill_timer"]
+                        past_state_3s = history[0]
+                        # Rewind positional coordinates and health
+                        self.ball.x = past_state_3s.get("x", self.ball.x)
+                        self.ball.y = past_state_3s.get("y", self.ball.y)
+                        self.ball.hp = past_state_3s.get("hp", getattr(self.ball, "max_hp", 100.0))
+                        if "attack_timer" in past_state_3s: self.ball.attack_timer = past_state_3s["attack_timer"]
+                        if "skill_timer" in past_state_3s: self.ball.skill_timer = past_state_3s["skill_timer"]
 
                         if hasattr(self.world, "events"):
                             self.world.events.append({"type": "time_rewind", "data": {"id": getattr(self.ball, "id", None)}})
