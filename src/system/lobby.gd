@@ -72,7 +72,7 @@ func get_perks(ball_id: int) -> Array:
 func get_mutator_options() -> Array:
     return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards"]
 
-func cast_mutator_vote(player_id: String, mutator: String, profile: ProfileManager, spend_currency: bool = false) -> bool:
+func cast_mutator_vote(player_id: String, mutator: String, profile: ProfileManager, spend_currency: bool = false, currency_type: String = "skill_points") -> bool:
     if not selections.has("mutator_votes"):
         selections["mutator_votes"] = {}
 
@@ -88,10 +88,21 @@ func cast_mutator_vote(player_id: String, mutator: String, profile: ProfileManag
     var vote_weight = 1
 
     if spend_currency:
-        var current_points = profile.data.get("skill_points", 0)
-        if current_points >= 50:
-            profile.add_skill_points(-50)
-            vote_weight = 3
+        if currency_type == "skill_points":
+            var current_points = profile.data.get("skill_points", 0)
+            if current_points >= 50:
+                profile.add_skill_points(-50)
+                vote_weight = 3
+            else:
+                return false
+        elif currency_type == "mutator_tokens":
+            var current_tokens = profile.data.get("mutator_tokens", 0)
+            if current_tokens >= 1:
+                profile.data["mutator_tokens"] = current_tokens - 1
+                profile.save_profile()
+                vote_weight = 5
+            else:
+                return false
         else:
             return false
 

@@ -32,3 +32,26 @@ def test_mutator_vote_system():
 
     if os.path.exists("test_profile_mutator_vote.json"):
         os.remove("test_profile_mutator_vote.json")
+
+def test_mutator_vote_system_with_mutator_tokens():
+    lobby = PreGameLobby()
+    profile = ProfileManager(filename="test_profile_mutator_tokens.json")
+    profile.data["skill_points"] = 100
+    profile.data["mutator_tokens"] = 2
+
+    # Test vote with mutator token
+    assert lobby.cast_mutator_vote("player1", "global_hp", profile, spend_currency=True, currency_type="mutator_tokens") is True
+    assert lobby.selections["mutator_votes"]["global_hp"] == 5
+    assert profile.data["mutator_tokens"] == 1
+
+    # Test vote with mutator token but insufficient balance
+    lobby = PreGameLobby() # reset lobby state
+    profile.data["mutator_tokens"] = 0
+    assert lobby.cast_mutator_vote("player1", "global_cooldown", profile, spend_currency=True, currency_type="mutator_tokens") is False
+    assert "global_cooldown" not in lobby.selections.get("mutator_votes", {})
+
+    # Test fallback
+    assert lobby.cast_mutator_vote("player2", "global_cooldown", profile, spend_currency=True, currency_type="invalid_currency") is False
+
+    if os.path.exists("test_profile_mutator_tokens.json"):
+        os.remove("test_profile_mutator_tokens.json")
