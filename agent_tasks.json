@@ -13795,7 +13795,7 @@
     },
     {
       "id": "idea-802",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New Loadout Item: Repulsor Shield",
@@ -22663,6 +22663,40 @@
         "src/ai/shrinking_grid.py",
         "src/ai/shrinking_grid.gd",
         "tests/test_shrinking_grid.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1323",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Minion Sacrifice",
+      "description": "Allow Necromancers to sacrifice their active minions to instantly heal themselves or gain a temporary shield, giving them an escape option when pressured.",
+      "allowed_paths": [
+        "src/ai/necromancer_minion_sacrifice.py",
+        "src/ai/necromancer_minion_sacrifice.gd",
+        "tests/test_necromancer_minion_sacrifice.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1324",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Soul Collector Trait",
+      "description": "Introduce a trait where other ball types can also drop smaller soul fragments on death that temporarily boost the stats of anyone who collects them, promoting aggressive play.",
+      "allowed_paths": [
+        "src/ai/soul_collector_trait.py",
+        "src/ai/soul_collector_trait.gd",
+        "tests/test_soul_collector_trait.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

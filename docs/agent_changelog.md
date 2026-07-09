@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-802] New Loadout Item: Repulsor Shield — *2026-07-09 22:33:57 UTC*
+
+A shield that charges over time. When fully charged, the first attack taken is negated and an AOE shockwave pushes all nearby enemies away.
+
+---
+
 ## [idea-801] Necromancer Soul Harvest — *2026-07-09 22:30:25 UTC*
 
 When a Necromancer's elite minion dies, it leaves behind a 'soul fragment'. If the Necromancer collects it, they gain a permanent +2 max HP and a slight damage boost, creating a long-term scaling strategy for keeping minions alive.
