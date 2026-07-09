@@ -1,21 +1,13 @@
-1. **Add `projectile_reflect_booster` to game modes**
-   - Update `src/ai/game_modes.py` to add `"projectile_reflect_booster"` to `booster_kinds`.
-   - Update `src/ai/game_modes.gd` to add `"projectile_reflect_booster"` to `booster_kinds`.
-2. **Implement collection logic in Python**
-   - In `src/ai/action.py`, inside `_collect_booster`, add an `elif getattr(nearest, "kind", None) == "projectile_reflect_booster":` block.
-   - Set `self.ball.projectile_reflect_active = True` and `self.ball.projectile_reflect_timer = 5.0` (or some duration). Remove the booster from arena hazards and world boosters.
-   - In the `execute` method of `src/ai/action.py`, decrement `projectile_reflect_timer` and turn off `projectile_reflect_active` when it reaches <= 0.
-3. **Implement collection logic in GDScript**
-   - In `src/ai/action.gd`, inside `_collect_booster`, add an `elif "kind" in nearest and nearest.kind == "projectile_reflect_booster":` block.
-   - Use `self.ball.set_meta("projectile_reflect_active", true)` and `self.ball.set_meta("projectile_reflect_timer", 5.0)` (or equivalent depending on dictionary vs object). Remove the booster appropriately.
-   - In the `execute` method of `src/ai/action.gd`, decrement the timer and disable the effect when it expires.
-4. **Implement effect logic in Python (`_attempt_damage`)**
-   - In `src/ai/action.py`, modify `_attempt_damage` where `is_ranged` is evaluated.
-   - After determining it is a ranged attack (`if is_ranged:`), check `if getattr(target, "projectile_reflect_active", False):`.
-   - If active, reflect the damage back to the attacker using `if hasattr(attacker, "take_damage"): attacker.take_damage(original_damage)` (or `world._deal_damage` if appropriate), spawn a visual effect, and `return` to prevent damage to the target.
-5. **Implement effect logic in GDScript (`_attempt_damage`)**
-   - In `src/ai/action.gd`, modify `_attempt_damage`.
-   - Under `if is_ranged_attack:`, check `if target.get("projectile_reflect_active", false)` (or `get_meta`).
-   - If active, damage the attacker and return.
-6. **Pre-commit step**
-   - Run `pre_commit_instructions` and address metrics, tests, etc. Include the IDEAS INBOX step.
+1. Add `slow_motion_zone` logic to python backend in `src/ai/action.py`.
+   - Update `action.py` in the `_apply_hazards` or similar loop processing hazards in `execute` where we iterate `self.world.arena.hazards` and apply things.
+   - When inside a `slow_motion_zone` hazard:
+     - Halve the entity's speed (we can modify `b.speed` or use a multiplier or just do `delta *= 0.5` similarly to `temporal_rift` which just does `delta *= time_scale`). Wait, the prompt says "Any entities entering the zone have their speed and cooldown reduction halved, while projectiles passing through it stay suspended for a set duration before resuming travel."
+     - Actually, "speed and cooldown reduction halved".
+     - So `self.ball.speed` gets multiplied by 0.5, or we can use `cooldown_mult`. Let's just manually apply `self.ball.speed *= 0.5` and `cooldown_mult *= 0.5`. Or maybe we can just create a new hazard kind `slow_motion_zone`.
+   - Projectiles: Ball Royale doesn't have a rigid `Projectile` class, but there are projectile-like hazards (e.g. `explosive_barrel`, `shrapnel`, `homing_missile`?) Wait, the prompt specifies "while projectiles passing through it stay suspended for a set duration before resuming travel". Maybe we need to track if something is a projectile? We can look at hazards that have a `vx` and `vy` or a specific kind, like `shrapnel`, `thrown_status_absorber`, `homing_missile`, `local_tornado`, `orbital_debris` etc. and suspend them? Or perhaps there is a `projectile` type we can identify.
+
+Let me check `src/ai/game_modes.py` to see what kind of hazards are treated as projectiles. Or I can just check if `hasattr(hazard, 'is_projectile')` or `hazard.kind in ["shrapnel", "homing_missile", "thrown_status_absorber"]`. We can add a `suspension_timer` to hazards that enter the zone.
+
+2. Add same logic to `src/ai/action.gd`.
+3. Create tests in `src/ai/test_slow_motion_zone.py`.
+4. Generate ideas.

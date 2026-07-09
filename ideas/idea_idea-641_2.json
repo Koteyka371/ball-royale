@@ -1,0 +1,4 @@
+{
+  "title": "Blackout Zone",
+  "description": "An area where vision is completely obscured for any entity inside. Players cannot see enemy locations or hazards while within the zone, and AI pathfinding is restricted to memory and recent pings."
+}

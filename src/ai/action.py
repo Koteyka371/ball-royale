@@ -1587,16 +1587,37 @@ class Action:
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
                     continue
                 if getattr(hazard, "kind", "") == "shrapnel":
-                    if getattr(hazard, "duration", 0.0) > 0:
+                    current_tick = getattr(self.world, "tick", 0)
+                    if getattr(hazard, "last_updated_tick", -1) == current_tick:
+                        continue
+                    hazard.last_updated_tick = current_tick
+
+                    is_suspended = False
+                    for other_h in self.world.arena.hazards:
+                        if getattr(other_h, "kind", "") == "slow_motion_zone":
+                            dist = ((hazard.x - other_h.x)**2 + (hazard.y - other_h.y)**2)**0.5
+                            if dist <= getattr(other_h, "radius", 0) + getattr(hazard, "radius", 5.0):
+                                zone_id = getattr(other_h, "id", id(other_h))
+                                if not hasattr(hazard, "suspended_zones"):
+                                    hazard.suspended_zones = {}
+                                if zone_id not in hazard.suspended_zones:
+                                    hazard.suspended_zones[zone_id] = 2.0
+                                if hazard.suspended_zones[zone_id] > 0:
+                                    hazard.suspended_zones[zone_id] -= delta
+                                    is_suspended = True
+                                break
+
+                    if getattr(hazard, "duration", 0.0) > 0 and not is_suspended:
                         hazard.duration -= delta
                         if hazard.duration <= 0:
                             hazard.duration = 0.0
                             # Let cleanup handle or just wait for other cleanup
 
-                    hazard.x += getattr(hazard, "vx", 0) * delta
-                    hazard.y += getattr(hazard, "vy", 0) * delta
-                    hazard.vx *= (1.0 - 2.0 * delta)
-                    hazard.vy *= (1.0 - 2.0 * delta)
+                    if not is_suspended:
+                        hazard.x += getattr(hazard, "vx", 0) * delta
+                        hazard.y += getattr(hazard, "vy", 0) * delta
+                        hazard.vx *= (1.0 - 2.0 * delta)
+                        hazard.vy *= (1.0 - 2.0 * delta)
 
                     dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
                     if dist <= getattr(hazard, "radius", 5.0) + getattr(self.ball, "radius", 10.0):
@@ -2746,6 +2767,24 @@ class Action:
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
+
+                            # Check slow_motion_zone suspension
+                            is_suspended = False
+                            for other_h in self.world.arena.hazards:
+                                if getattr(other_h, "kind", "") == "slow_motion_zone":
+                                    dist = ((hazard.x - other_h.x)**2 + (hazard.y - other_h.y)**2)**0.5
+                                    if dist <= getattr(other_h, "radius", 0) + getattr(hazard, "radius", 10.0):
+                                        zone_id = getattr(other_h, "id", id(other_h))
+                                        if not hasattr(hazard, "suspended_zones"):
+                                            hazard.suspended_zones = {}
+                                        if zone_id not in hazard.suspended_zones:
+                                            hazard.suspended_zones[zone_id] = 2.0  # Suspend for 2 seconds
+                                        if hazard.suspended_zones[zone_id] > 0:
+                                            hazard.suspended_zones[zone_id] -= delta
+                                            is_suspended = True
+                                        break
+                            if is_suspended:
+                                continue
                             if not hasattr(hazard, "vx"):
                                 hazard.vx = 0.0
                             if not hasattr(hazard, "vy"):
@@ -10579,8 +10618,18 @@ class Action:
         is_windy = getattr(arena, 'is_windy', False) if arena else False
 
         cooldown_mult = 1.0
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "slow_motion_zone":
+                    dist = ((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)**0.5
+                    if dist <= getattr(hazard, "radius", 0) + getattr(self.ball, "radius", 10.0):
+                        cooldown_mult *= 0.5
+                        self.ball.speed_debuff_timer = max(getattr(self.ball, "speed_debuff_timer", 0.0), 0.5)
+                        self.ball.speed_debuff_multiplier = 0.5
+                        break
+
         if is_snowing:
-            cooldown_mult = 0.5  # Snow slows down cooldowns (longer wait)
+            cooldown_mult *= 0.5  # Snow slows down cooldowns (longer wait)
         elif is_heatwave:
             cooldown_mult = 1.5  # Heatwave speeds up cooldowns (faster recovery)
         elif is_windy:

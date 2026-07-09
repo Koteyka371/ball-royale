@@ -4952,6 +4952,29 @@ func execute(strategy: String, delta: float):
                     var current_tick = world.get("tick") if world.has_method("get") else 0
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
                         hazard.set_meta("last_updated_tick", current_tick)
+                        var is_suspended = false
+                        for other_h in self.world.arena.hazards:
+                            if other_h.kind == "slow_motion_zone":
+                                var dist = sqrt((hazard.x - other_h.x)*(hazard.x - other_h.x) + (hazard.y - other_h.y)*(hazard.y - other_h.y))
+                                var hr = 10.0
+                                if "radius" in hazard: hr = float(hazard.radius)
+                                var ohr = 0.0
+                                if "radius" in other_h: ohr = float(other_h.radius)
+                                if dist <= ohr + hr:
+                                    var zid = 0
+                                    if "id" in other_h: zid = other_h.id
+                                    elif other_h.has_method("get_instance_id"): zid = other_h.get_instance_id()
+                                    var szones = {}
+                                    if hazard.has_meta("suspended_zones"): szones = hazard.get_meta("suspended_zones")
+                                    if not szones.has(zid): szones[zid] = 2.0
+                                    if szones[zid] > 0:
+                                        szones[zid] -= delta
+                                        hazard.set_meta("suspended_zones", szones)
+                                        is_suspended = true
+                                    break
+
+                        if is_suspended:
+                            continue
                         if not hazard.has_meta("vx"): hazard.set_meta("vx", 0.0)
                         if not hazard.has_meta("vy"): hazard.set_meta("vy", 0.0)
 
@@ -18925,8 +18948,26 @@ func _update_skill_timer(delta: float):
     var is_windy = arena_obj.get("is_windy") if arena_obj != null and "is_windy" in arena_obj else false
 
     var cooldown_mult = 1.0
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for hazard in self.world.arena.hazards:
+            if hazard.get("kind") == "slow_motion_zone":
+                var my_rad = 10.0
+                if "radius" in self.ball: my_rad = float(self.ball.radius)
+                var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+                if s_dist <= hazard.get("radius", 0.0) + my_rad:
+                    cooldown_mult *= 0.5
+                    var current_dt = 0.0
+                    if self.ball.has_method("has_meta") and self.ball.has_meta("speed_debuff_timer"): current_dt = float(self.ball.get_meta("speed_debuff_timer"))
+                    elif "speed_debuff_timer" in self.ball: current_dt = float(self.ball.speed_debuff_timer)
+                    if current_dt < 0.5:
+                        if self.ball.has_method("set_meta"): self.ball.set_meta("speed_debuff_timer", 0.5)
+                        else: self.ball.speed_debuff_timer = 0.5
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("speed_debuff_multiplier", 0.5)
+                    else: self.ball.speed_debuff_multiplier = 0.5
+                    break
+
     if is_snowing:
-        cooldown_mult = 0.5
+        cooldown_mult *= 0.5
     elif is_heatwave:
         cooldown_mult = 1.5
     elif is_windy:

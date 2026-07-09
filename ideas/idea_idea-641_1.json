@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A hazard that entangles the state of two balls. Damage taken by one is split between the two, and healing is mirrored. If they move too far apart, the entanglement breaks violently, damaging both."
+}
