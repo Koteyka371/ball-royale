@@ -11074,7 +11074,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice"]
         import random
         self.random = random
 
@@ -11129,6 +11129,7 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
             elif self.current_weather == "tsunami": booster_kind = "life_jacket_booster"
             elif self.current_weather == "meteor_shower": booster_kind = "meteor_shield_booster"
+            elif self.current_weather == "ice": booster_kind = "thermal_booster"
 
             # Spawn a Boss / Mega-Minion for the current weather
             if hasattr(world, "balls"):
@@ -11138,7 +11139,8 @@ class ExtremeWeatherMode(GameMode):
                     "acid_rain": "Toxic Behemoth",
                     "hurricane": "Storm Caller",
                     "tsunami": "Leviathan",
-                    "meteor_shower": "Astral Destroyer"
+                    "meteor_shower": "Astral Destroyer",
+                    "ice": "Frost Titan"
                 }
 
                 boss_name = boss_map.get(self.current_weather)
@@ -11273,6 +11275,11 @@ class ExtremeWeatherMode(GameMode):
                         if b.x >= arena_w - 20:
                             if hasattr(b, "take_damage"): b.take_damage(20.0 * delta)
                             elif hasattr(b, "hp"): b.hp -= 20.0 * delta
+            elif self.current_weather == "ice":
+                if not is_immune:
+                    b.is_frictionless = True
+                    if not hasattr(b, "is_slipping") or not b.is_slipping:
+                        b.is_slipping = True
 
         if self.current_weather == "meteor_shower":
             if not hasattr(self, "meteor_spawn_timer"):

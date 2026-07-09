@@ -2094,6 +2094,11 @@ class Action:
                     self.ball.x += getattr(self.ball, "vx") * delta * 0.4
                     self.ball.y += getattr(self.ball, "vy") * delta * 0.4
 
+            if getattr(self.world.arena, "is_ice", False) and not ignores_snow_ice:
+                self.ball.is_frictionless = True
+                self.ball.x += getattr(self.ball, "vx") * delta * 0.9
+                self.ball.y += getattr(self.ball, "vy") * delta * 0.9
+
             if getattr(self.world.arena, "is_heatwave", False):
                 # Heatwave: higher friction, momentum stops faster (counteract vx/vy if any is present, or just decrease speed dynamically)
                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
@@ -3565,6 +3570,14 @@ class Action:
                                         self.ball.alive = False
                                 if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
                                     self.ball.stun_timer = 0.5 # Stunned by electricity
+                            elif weather == "ice":
+                                self.ball.is_frictionless = True
+                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    self.ball.x += getattr(self.ball, "vx") * delta * 0.9
+                                    self.ball.y += getattr(self.ball, "vy") * delta * 0.9
+                                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.0
+                                if not hasattr(self.ball, "is_slipping"):
+                                    self.ball.is_slipping = True
                             elif weather in ["blizzard", "snow"]:
                                 self.ball.is_frictionless = True
                                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
