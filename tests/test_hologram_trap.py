@@ -82,7 +82,15 @@ def test_hologram_trap_spawns_hologram_and_explodes():
     # Simulate hologram exploding (timer expiring)
     hologram.hologram_timer = 0.0
     action2 = Action(hologram, world)
-    action2.execute("idle", 0.1)
+
+    import random
+    original_random = random.random
+    random.random = lambda: 0.1
+
+    try:
+        action2.execute("idle", 0.1)
+    finally:
+        random.random = original_random
 
     # Hologram should be dead, and enemy should take 15 damage
     assert not hologram.alive
