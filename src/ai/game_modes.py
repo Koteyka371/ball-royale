@@ -1,3 +1,26 @@
+
+class WeekendBoss:
+    def __init__(self, id_val, x, y):
+        self.id = id_val
+        self.x = x
+        self.y = y
+        self.vx = 0.0
+        self.vy = 0.0
+        self.radius = 40.0
+        self.hp = 2000.0
+        self.max_hp = 2000.0
+        self.alive = True
+        self.ball_type = "juggernaut"
+        self.team = "Boss"
+        self.speed = 100.0
+        self.base_speed = 100.0
+        self.damage = 50.0
+        self.base_damage = 50.0
+        self.perception_radius = 500.0
+        self.base_perception_radius = 500.0
+        self.is_weekend_boss = True
+        self.reward_given = False
+
 from arena import arena_types as ArenaTypes
 from typing import List, Optional, Any
 
@@ -1546,6 +1569,98 @@ class BattleRoyaleMode(GameMode):
                             decoy.active_skill = None
                         world.balls.append(decoy)
 
+
+
+        # Weekend Juggernaut Boss logic
+        if not getattr(self, "_weekend_boss_checked", False):
+            self._weekend_boss_checked = True
+            import datetime
+            is_weekend = datetime.datetime.now().weekday() >= 5
+            if is_weekend:
+                if getattr(self, "random", __import__("random")).random() < 0.2: # 20% chance
+                    self._weekend_boss_spawned = True
+
+                    class WeekendBoss:
+                        def __init__(self, id_val, x, y):
+                            self.id = id_val
+                            self.x = x
+                            self.y = y
+                            self.vx = 0.0
+                            self.vy = 0.0
+                            self.radius = 40.0
+                            self.hp = 2000.0
+                            self.max_hp = 2000.0
+                            self.alive = True
+                            self.ball_type = "juggernaut"
+                            self.team = "Boss"
+                            self.speed = 100.0
+                            self.base_speed = 100.0
+                            self.damage = 50.0
+                            self.base_damage = 50.0
+                            self.perception_radius = 500.0
+                            self.base_perception_radius = 500.0
+                            self.is_weekend_boss = True
+                            self.reward_given = False
+
+                    arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                    arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                    boss_x = arena_width / 2.0
+                    boss_y = arena_height / 2.0
+
+                    boss_id = 99000 + getattr(self, "random", __import__("random")).randint(0, 9999)
+                    new_boss = WeekendBoss(boss_id, boss_x, boss_y)
+
+                    if hasattr(world, "balls"):
+                        world.balls.append(new_boss)
+                        if hasattr(world, "entities") and world.balls is not world.entities:
+                            world.entities.append(new_boss)
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("weekend_boss_spawn", {"message": "A massive Juggernaut Boss has emerged in the center of the arena!"})
+
+        if getattr(self, "_weekend_boss_spawned", False):
+            for b in balls:
+                if getattr(b, "is_weekend_boss", False):
+                    if not getattr(b, "alive", False) and not getattr(b, "reward_given", False):
+                        b.reward_given = True
+                        killer_id = getattr(b, "killer_id", None)
+                        if hasattr(world, "add_event"):
+                            world.add_event("weekend_boss_defeated", {"killer_id": killer_id, "points": 10000, "message": "The Juggernaut Boss was defeated! Massive rewards granted!"})
+
+
+        # Weekend Juggernaut Boss logic
+        if not getattr(self, "_weekend_boss_checked", False):
+            self._weekend_boss_checked = True
+            import datetime
+            is_weekend = datetime.datetime.now().weekday() >= 5
+            if is_weekend:
+                if getattr(self, "random", __import__("random")).random() < 0.2: # 20% chance
+                    self._weekend_boss_spawned = True
+
+                    arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                    arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                    boss_x = arena_width / 2.0
+                    boss_y = arena_height / 2.0
+
+                    boss_id = 99000 + getattr(self, "random", __import__("random")).randint(0, 9999)
+                    new_boss = WeekendBoss(boss_id, boss_x, boss_y)
+
+                    if hasattr(world, "balls"):
+                        world.balls.append(new_boss)
+                        if hasattr(world, "entities") and world.balls is not world.entities:
+                            world.entities.append(new_boss)
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("weekend_boss_spawn", {"message": "A massive Juggernaut Boss has emerged in the center of the arena!"})
+
+        if getattr(self, "_weekend_boss_spawned", False):
+            for b in balls:
+                if getattr(b, "is_weekend_boss", False):
+                    if not getattr(b, "alive", False) and not getattr(b, "reward_given", False):
+                        b.reward_given = True
+                        killer_id = getattr(b, "killer_id", None)
+                        if hasattr(world, "add_event"):
+                            world.add_event("weekend_boss_defeated", {"killer_id": killer_id, "points": 10000, "message": "The Juggernaut Boss was defeated! Massive rewards granted!"})
 
         self.match_time += delta
 

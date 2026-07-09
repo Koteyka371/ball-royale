@@ -1631,6 +1631,99 @@ class BattleRoyaleMode extends GameMode:
 					world.arena.hazards.append(vb)
 
 
+
+		# Weekend Juggernaut Boss logic
+		var weekend_boss_checked = false
+		if self.has_meta("_weekend_boss_checked"):
+			weekend_boss_checked = self.get_meta("_weekend_boss_checked")
+
+		if not weekend_boss_checked:
+			self.set_meta("_weekend_boss_checked", true)
+			var current_datetime = Time.get_datetime_dict_from_system()
+			var is_weekend = current_datetime.weekday == Time.WEEKDAY_SATURDAY or current_datetime.weekday == Time.WEEKDAY_SUNDAY
+
+			if is_weekend:
+				if rng.randf() < 0.2: # 20% chance
+					self.set_meta("_weekend_boss_spawned", true)
+
+					var arena_width = 1000.0
+					var arena_height = 1000.0
+					if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+						if world.arena.has("width"): arena_width = world.arena.width
+						if world.arena.has("height"): arena_height = world.arena.height
+					elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+						if typeof(world.arena) == TYPE_OBJECT:
+							if "width" in world.arena: arena_width = world.arena.width
+							if "height" in world.arena: arena_height = world.arena.height
+
+					var boss_x = arena_width / 2.0
+					var boss_y = arena_height / 2.0
+					var boss_id = 99000 + (rng.randi() % 9999)
+
+					var new_boss = {
+						"id": boss_id,
+						"x": boss_x,
+						"y": boss_y,
+						"vx": 0.0,
+						"vy": 0.0,
+						"radius": 40.0,
+						"hp": 2000.0,
+						"max_hp": 2000.0,
+						"alive": true,
+						"ball_type": "juggernaut",
+						"team": "Boss",
+						"speed": 100.0,
+						"base_speed": 100.0,
+						"damage": 50.0,
+						"base_damage": 50.0,
+						"perception_radius": 500.0,
+						"base_perception_radius": 500.0,
+						"is_weekend_boss": true,
+						"reward_given": false
+					}
+
+					if typeof(world) == TYPE_DICTIONARY and world.has("balls") and typeof(world.balls) == TYPE_ARRAY:
+						world.balls.append(new_boss)
+						if world.has("entities") and world.balls != world.entities:
+							world.entities.append(new_boss)
+					elif typeof(world) == TYPE_OBJECT and "balls" in world and typeof(world.balls) == TYPE_ARRAY:
+						world.balls.append(new_boss)
+						if "entities" in world and world.balls != world.entities:
+							world.entities.append(new_boss)
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("weekend_boss_spawn", {"message": "A massive Juggernaut Boss has emerged in the center of the arena!"})
+
+		var weekend_boss_spawned = false
+		if self.has_meta("_weekend_boss_spawned"):
+			weekend_boss_spawned = self.get_meta("_weekend_boss_spawned")
+
+		if weekend_boss_spawned:
+			for b in balls:
+				var is_boss = false
+				if typeof(b) == TYPE_DICTIONARY and b.has("is_weekend_boss"): is_boss = b.is_weekend_boss
+				elif typeof(b) == TYPE_OBJECT and "is_weekend_boss" in b: is_boss = b.is_weekend_boss
+
+				if is_boss:
+					var b_alive = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+					elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+
+					var b_reward = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("reward_given"): b_reward = b.reward_given
+					elif typeof(b) == TYPE_OBJECT and "reward_given" in b: b_reward = b.reward_given
+
+					if not b_alive and not b_reward:
+						if typeof(b) == TYPE_DICTIONARY: b.reward_given = true
+						else: b.reward_given = true
+
+						var killer_id = null
+						if typeof(b) == TYPE_DICTIONARY and b.has("killer_id"): killer_id = b.killer_id
+						elif typeof(b) == TYPE_OBJECT and "killer_id" in b: killer_id = b.killer_id
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("weekend_boss_defeated", {"killer_id": killer_id, "points": 10000, "message": "The Juggernaut Boss was defeated! Massive rewards granted!"})
+
 		match_time += delta
 
 		# Loot Goblin Event
