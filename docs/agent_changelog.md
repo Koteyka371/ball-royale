@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-762] Storm Conduit Hazard — *2026-07-09 20:23:44 UTC*
+
+A new static hazard that becomes active during magnetic storms...
+
+---
+
 ## [idea-790] EM-Pulse Booster — *2026-07-09 20:23:38 UTC*
 
 A new collectible booster that disables all enemy skills and removes their shields within a large radius upon collection. Temporarily turns off certain arena hazards like lasers and gravity wells.
