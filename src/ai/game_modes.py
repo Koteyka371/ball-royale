@@ -405,6 +405,7 @@ class BattleRoyaleMode(GameMode):
         self.sudden_death_black_hole_spawned = False
         self.tornado_spawn_timer = 0.0
         self.final_boss_spawned = False
+        self.obstacle_timer = 0.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -608,6 +609,84 @@ class BattleRoyaleMode(GameMode):
                     else:
                         b.hp -= damage_amount  # Apply continuous safe zone damage
 
+
+        # Moving walls / hazards logic
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            moving_walls = [h for h in world.arena.hazards if getattr(h, "kind", "") == "moving_wall"]
+
+            # Spawn moving walls
+            self.obstacle_timer += delta
+            if self.obstacle_timer >= 5.0 and len(moving_walls) < 3:
+                self.obstacle_timer = 0.0
+                try:
+                    from arena.procedural_arena import Hazard
+                    angle = self.random.uniform(0, 2 * math.pi)
+                    spawn_dist = self.zone_radius * 0.9
+                    hx = self.zone_x + math.cos(angle) * spawn_dist
+                    hy = self.zone_y + math.sin(angle) * spawn_dist
+
+                    # Velocity towards the center of the safe zone
+                    v_angle = angle + math.pi + self.random.uniform(-0.5, 0.5)
+                    speed = self.random.uniform(30.0, 80.0)
+                    vx = math.cos(v_angle) * speed
+                    vy = math.sin(v_angle) * speed
+
+                    wall_id = len(world.arena.hazards) + self.random.randint(10000, 99999)
+                    wall = Hazard(wall_id, hx, hy, 40.0, "moving_wall", 0.0)
+                    setattr(wall, "vx", vx)
+                    setattr(wall, "vy", vy)
+                    setattr(wall, "duration", 20.0)
+                    world.arena.hazards.append(wall)
+                except ImportError:
+                    pass
+
+            # Update moving walls
+            hazards_to_remove = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "moving_wall":
+                    h.x += getattr(h, "vx", 0.0) * delta
+                    h.y += getattr(h, "vy", 0.0) * delta
+
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            hazards_to_remove.append(h)
+
+                    # Collisions with balls
+                    for b in balls:
+                        if not getattr(b, "alive", True): continue
+                        if getattr(b, "ball_type", None) == "spectator": continue
+
+                        b_x = getattr(b, "x", 0.0)
+                        b_y = getattr(b, "y", 0.0)
+                        dx = b_x - h.x
+                        dy = b_y - h.y
+                        dist = math.hypot(dx, dy)
+                        b_rad = getattr(b, "radius", 20.0)
+                        if not isinstance(b_rad, (int, float)):
+                            b_rad = 20.0
+
+                        if dist < h.radius + b_rad:
+                            # Bounce
+                            if dist > 0:
+                                nx = dx / dist
+                                ny = dy / dist
+                                b.x = h.x + nx * (h.radius + b_rad)
+                                b.y = h.y + ny * (h.radius + b_rad)
+
+                                if hasattr(b, "vx") and hasattr(b, "vy"):
+                                    if isinstance(b.vx, (int, float)) and isinstance(b.vy, (int, float)):
+                                        # Relative velocity
+                                        rvx = b.vx - getattr(h, "vx", 0.0)
+                                        rvy = b.vy - getattr(h, "vy", 0.0)
+                                        dot = rvx * nx + rvy * ny
+                                        if dot < 0:
+                                            b.vx -= 2 * dot * nx
+                                            b.vy -= 2 * dot * ny
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
 
         # Handle decoy_spawners
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
