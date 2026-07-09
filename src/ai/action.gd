@@ -9143,6 +9143,21 @@ func execute(strategy: String, delta: float):
             elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                 var dmg = speed * 0.05
 
+                var is_spiked_walls = false
+                if gm != null and typeof(gm) == TYPE_OBJECT and "name" in gm and gm.name == "Spiked Walls":
+                    is_spiked_walls = true
+                elif gm != null and typeof(gm) == TYPE_DICTIONARY and gm.has("name") and gm["name"] == "Spiked Walls":
+                    is_spiked_walls = true
+
+                if is_spiked_walls:
+                    dmg *= 1.5
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("is_bleeding", true)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["is_bleeding"] = true
+                    if "is_bleeding" in self.ball:
+                        self.ball.is_bleeding = true
+
                 var was_knocked_back = false
                 if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_knockback_timer") and float(self.ball["_knockback_timer"]) > 0.0:
                     was_knocked_back = true

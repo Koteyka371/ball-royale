@@ -1,0 +1,4 @@
+{
+    "title": "Rubber Band Arena",
+    "description": "A mutator where pairs of players are tethered together by an elastic band. If they move too far apart, they are snapped back towards each other, dealing collision damage."
+}

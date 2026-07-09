@@ -5201,6 +5201,10 @@ class Action:
                 elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                     damage = speed * 0.05
 
+                    if gm and getattr(gm, "name", "") == "Spiked Walls":
+                        damage *= 1.5
+                        setattr(self.ball, "is_bleeding", True)
+
                     # Apply additional damage based on velocity if the ball was recently knocked back
                     if getattr(self.ball, "_knockback_timer", 0.0) > 0.0:
                         damage += speed * 0.1

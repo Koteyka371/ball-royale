@@ -11078,7 +11078,40 @@ class CenterBlackHoleMode(GameMode):
                     b.vy += (dy / dist) * self.pull_strength * delta
 
 
+
+class SpikedWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Spiked Walls"
+        self.description = "The arena walls are lined with spikes. Hitting a wall doesn't just do damage, but also applies a bleeding effect that drains HP slowly over time until the player stops moving."
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        for b in balls:
+            if getattr(b, "alive", True) and getattr(b, "is_bleeding", False):
+                vx = getattr(b, "vx", 0.0)
+                vy = getattr(b, "vy", 0.0)
+                speed = math.sqrt(vx*vx + vy*vy)
+
+                if speed < 10.0:
+                    setattr(b, "is_bleeding", False)
+                else:
+                    bleed_dmg = 10.0 * delta
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(bleed_dmg)
+                    elif hasattr(b, "hp"):
+                        b.hp -= bleed_dmg
+                        if b.hp <= 0:
+                            b.alive = False
+
+                    if hasattr(world, "events"):
+                        # spawn little blood particles
+                        if getattr(world, "tick", 0) % 5 == 0:
+                            world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': b.x, 'y': b.y, 'radius': 5.0, 'color': 'red'}})
+
 GAME_MODES = {
+    "spiked_walls": SpikedWallsMode(),
     "center_black_hole": CenterBlackHoleMode(),
     "extreme_weather": ExtremeWeatherMode(),
     "invisible_decoys": InvisibleDecoysMode(),
