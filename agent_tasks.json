@@ -13624,7 +13624,7 @@
     },
     {
       "id": "idea-792",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Prestige Guild Perks",
@@ -22283,6 +22283,40 @@
         "src/ai/cosmetic_synergy.py",
         "src/ai/cosmetic_synergy.gd",
         "tests/test_cosmetic_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1301",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Combination Evolutions",
+      "description": "When balls with different colored auras collide, instead of just an explosion, there's a small chance their auras combine to create a rare 'hybrid' aura color that grants both base aura effects for a short duration.",
+      "allowed_paths": [
+        "src/ai/aura_combination_evolutions.py",
+        "src/ai/aura_combination_evolutions.gd",
+        "tests/test_aura_combination_evolutions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1302",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Resonance Shields",
+      "description": "Balls with matching aura colors generate a temporary shield when they collide or stay in close proximity, encouraging players to cluster same-aura units for defense.",
+      "allowed_paths": [
+        "src/ai/aura_resonance_shields.py",
+        "src/ai/aura_resonance_shields.gd",
+        "tests/test_aura_resonance_shields.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

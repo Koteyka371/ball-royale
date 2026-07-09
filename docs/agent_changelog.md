@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-792] Prestige Guild Perks — *2026-07-09 20:48:29 UTC*
+
+Allow guilds to pool prestige tokens from their members to unlock global, guild-wide cosmetic auras and unique lobby titles for everyone in the guild.
+
+---
+
 ## [idea-786] Aura Collision Effects — *2026-07-09 20:41:53 UTC*
 
 When two balls with high-level auras collide, it causes an AoE elemental explosion based on the combined colors of their auras.
