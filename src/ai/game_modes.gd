@@ -440,6 +440,7 @@ class BattleRoyaleMode extends GameMode:
 	var sudden_death_black_hole_spawned: bool = false
 	var tornado_spawn_timer: float = 0.0
 	var final_boss_spawned: bool = false
+	var obstacle_timer: float = 0.0
 
 	func _init() -> void:
 		name = "Battle Royale"
@@ -652,6 +653,136 @@ class BattleRoyaleMode extends GameMode:
 
 
 		# Handle decoy_spawners
+		# Moving walls / hazards logic
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if "hazards" in world.arena:
+				var moving_walls = []
+				for h in world.arena.hazards:
+					var h_kind = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+					if h_kind == "moving_wall":
+						moving_walls.append(h)
+
+				# Spawn moving walls
+				self.set("obstacle_timer", self.get("obstacle_timer") + delta)
+				if self.get("obstacle_timer") >= 5.0 and moving_walls.size() < 3:
+					self.set("obstacle_timer", 0.0)
+					var angle = rng.randf_range(0.0, 2.0 * PI)
+					var spawn_dist = self.get("zone_radius") * 0.9
+					var hx = self.get("zone_x") + cos(angle) * spawn_dist
+					var hy = self.get("zone_y") + sin(angle) * spawn_dist
+
+					var v_angle = angle + PI + rng.randf_range(-0.5, 0.5)
+					var speed = rng.randf_range(30.0, 80.0)
+					var vx = cos(v_angle) * speed
+					var vy = sin(v_angle) * speed
+
+					var wall_id = world.arena.hazards.size() + rng.randi_range(10000, 99999)
+
+					var dummy_wall = {
+						"id": wall_id,
+						"x": hx,
+						"y": hy,
+						"radius": 40.0,
+						"target_radius": 40.0,
+						"kind": "moving_wall",
+						"damage": 0.0,
+						"active": true,
+						"vx": vx,
+						"vy": vy,
+						"duration": 20.0
+					}
+
+					world.arena.hazards.append(dummy_wall)
+
+				# Update moving walls
+				var hazards_to_remove = []
+				for h in world.arena.hazards:
+					var h_kind = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+					if h_kind == "moving_wall":
+						var h_x = 0.0
+						var h_y = 0.0
+						var h_vx = 0.0
+						var h_vy = 0.0
+						var h_duration = 0.0
+						var h_radius = 40.0
+
+						if typeof(h) == TYPE_DICTIONARY:
+							h_x = h.x; h_y = h.y; h_vx = h.vx; h_vy = h.vy; h_duration = h.duration; h_radius = h.radius
+							h.x += h_vx * delta
+							h.y += h_vy * delta
+							h.duration -= delta
+							if h.duration <= 0: hazards_to_remove.append(h)
+							h_x = h.x; h_y = h.y
+						else:
+							h_x = h.x if "x" in h else (h.get_meta("x") if h.has_method("get_meta") and h.has_meta("x") else 0.0)
+							h_y = h.y if "y" in h else (h.get_meta("y") if h.has_method("get_meta") and h.has_meta("y") else 0.0)
+							h_vx = h.vx if "vx" in h else (h.get_meta("vx") if h.has_method("get_meta") and h.has_meta("vx") else 0.0)
+							h_vy = h.vy if "vy" in h else (h.get_meta("vy") if h.has_method("get_meta") and h.has_meta("vy") else 0.0)
+							h_duration = h.duration if "duration" in h else (h.get_meta("duration") if h.has_method("get_meta") and h.has_meta("duration") else 0.0)
+							h_radius = h.radius if "radius" in h else (h.get_meta("radius") if h.has_method("get_meta") and h.has_meta("radius") else 40.0)
+
+							h_x += h_vx * delta
+							h_y += h_vy * delta
+							h_duration -= delta
+
+							if "x" in h: h.x = h_x
+							elif h.has_method("set_meta"): h.set_meta("x", h_x)
+							if "y" in h: h.y = h_y
+							elif h.has_method("set_meta"): h.set_meta("y", h_y)
+							if "duration" in h: h.duration = h_duration
+							elif h.has_method("set_meta"): h.set_meta("duration", h_duration)
+
+							if h_duration <= 0: hazards_to_remove.append(h)
+
+						# Collisions with balls
+						for b in balls:
+							if typeof(b) == TYPE_OBJECT and "alive" in b and b.alive:
+								if "ball_type" in b and b.ball_type == "spectator": continue
+
+								var b_x = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+								var b_y = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+								var dx = b_x - h_x
+								var dy = b_y - h_y
+								var dist = sqrt(dx*dx + dy*dy)
+								var b_rad = b.radius if "radius" in b else 20.0
+
+								if dist < h_radius + b_rad:
+									if dist > 0:
+										var nx = dx / dist
+										var ny = dy / dist
+
+										var new_b_x = h_x + nx * (h_radius + b_rad)
+										var new_b_y = h_y + ny * (h_radius + b_rad)
+
+										if "x" in b: b.x = new_b_x
+										elif b.has_method("set_meta"): b.set_meta("x", new_b_x)
+										if "y" in b: b.y = new_b_y
+										elif b.has_method("set_meta"): b.set_meta("y", new_b_y)
+
+										var b_vx = b.vx if "vx" in b else (b.get_meta("vx") if b.has_method("get_meta") and b.has_meta("vx") else 0.0)
+										var b_vy = b.vy if "vy" in b else (b.get_meta("vy") if b.has_method("get_meta") and b.has_meta("vy") else 0.0)
+
+										var rvx = b_vx - h_vx
+										var rvy = b_vy - h_vy
+										var dot = rvx * nx + rvy * ny
+										if dot < 0:
+											b_vx -= 2 * dot * nx
+											b_vy -= 2 * dot * ny
+											if "vx" in b: b.vx = b_vx
+											elif b.has_method("set_meta"): b.set_meta("vx", b_vx)
+											if "vy" in b: b.vy = b_vy
+											elif b.has_method("set_meta"): b.set_meta("vy", b_vy)
+
+				for h in hazards_to_remove:
+					world.arena.hazards.erase(h)
+
 		if "arena" in world and world.arena != null and "hazards" in world.arena:
 			for h in world.arena.hazards:
 				if "kind" in h and h.kind == "decoy_spawner":
