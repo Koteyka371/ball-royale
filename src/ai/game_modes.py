@@ -853,6 +853,42 @@ class BattleRoyaleMode(GameMode):
                 if h in world.arena.hazards:
                     world.arena.hazards.remove(h)
 
+
+        # Mutate hazards inside the shrinking safe zone
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if not getattr(h, "mutated", False):
+                    h_x = getattr(h, "x", 0.0)
+                    h_y = getattr(h, "y", 0.0)
+                    distance_to_center = math.hypot(h_x - self.zone_x, h_y - self.zone_y)
+                    if distance_to_center < self.zone_radius:
+                        setattr(h, "mutated", True)
+
+                        # Apply mutations based on kind
+                        kind = getattr(h, "kind", "")
+
+                        # Make them more lethal/chaotic
+                        if kind in ["spikes", "trap", "proximity_trap", "hidden_trap"]:
+                            h.damage = getattr(h, "damage", 10.0) * 2.0
+                            h.radius = getattr(h, "radius", 20.0) * 1.5
+                            if hasattr(h, "target_radius"): h.target_radius = h.radius
+                        elif kind in ["poison_cloud", "lava", "fire_zone", "poison_nova", "fire_ring"]:
+                            h.damage = getattr(h, "damage", 10.0) * 1.5
+                            h.radius = getattr(h, "radius", 20.0) * 2.0
+                            if hasattr(h, "target_radius"): h.target_radius = h.radius
+                        elif kind in ["spinning_laser", "laser_wall"]:
+                            h.damage = getattr(h, "damage", 10.0) * 2.0
+                        elif kind in ["tornado", "black_hole", "gravity_well", "singularity", "vortex"]:
+                            h.radius = getattr(h, "radius", 20.0) * 1.5
+                            if hasattr(h, "target_radius"): h.target_radius = h.radius
+                        elif kind in ["meteor", "lightning_strike", "crater"]:
+                            h.damage = getattr(h, "damage", 10.0) * 2.0
+                        else:
+                            # Generic mutation for other hazards
+                            h.damage = getattr(h, "damage", 10.0) * 1.5
+                            h.radius = getattr(h, "radius", 20.0) * 1.2
+                            if hasattr(h, "target_radius"): h.target_radius = h.radius
+
         # Handle decoy_spawners
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
