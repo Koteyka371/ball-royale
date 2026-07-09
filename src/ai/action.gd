@@ -2674,6 +2674,20 @@ func execute(strategy: String, delta: float):
 					arena.hazards.append(bh)
 					inv.erase("deployable_black_hole")
 					self.ball.set_meta("inventory", inv)
+		if inv.has("deployable_gravity_well"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var gw_id = arena.hazards.size() + randi() % 10000
+				var gw = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					gw = load("res://src/arena/procedural_arena.gd").Hazard.new(gw_id, self.ball.x, self.ball.y, 250.0, "gravity_well", 0.0)
+					gw.set_meta("duration", 3.0)
+					gw.set_meta("explodes", true)
+					if "id" in self.ball: gw.set_meta("owner_id", self.ball.id)
+					arena.hazards.append(gw)
+					inv.erase("deployable_gravity_well")
+					self.ball.set_meta("inventory", inv)
+
 
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")

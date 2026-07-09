@@ -1193,6 +1193,22 @@ class Action:
                     setattr(bh, 'owner_id', getattr(self.ball, 'id', None))
                     self.world.arena.hazards.append(bh)
                 self.ball.inventory.remove("deployable_black_hole")
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_gravity_well" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    pass
+                else:
+                    import random
+                    gw_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                    gw = Hazard(gw_id, self.ball.x, self.ball.y, 250.0, "gravity_well", 0.0)
+                    setattr(gw, 'duration', 3.0)
+                    setattr(gw, 'explodes', True)
+                    setattr(gw, 'owner_id', getattr(self.ball, 'id', None))
+                    self.world.arena.hazards.append(gw)
+                self.ball.inventory.remove("deployable_gravity_well")
+
 
         # Check inventory for traps to place if fleeing or defending
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "status_absorber_item" in self.ball.inventory:
@@ -7376,6 +7392,16 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_gravity_well":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_gravity_well")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "reverse_gravity_booster":
                     self.ball.reverse_gravity_booster_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

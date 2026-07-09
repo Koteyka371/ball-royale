@@ -107,6 +107,27 @@ class GameMode:
         except Exception:
             speed_cap = 300.0
 
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            for h in world.arena.hazards:
+                if getattr(h, "explodes", False) and getattr(h, "kind", "") == "gravity_well":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            # Explode
+                            hazards_to_remove.append(h)
+                            try:
+                                from arena.procedural_arena import Hazard
+                                exp_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999)
+                                # Massive explosion radius and damage
+                                exp = Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
+                                setattr(exp, "duration", 0.5)
+                                world.arena.hazards.append(exp)
+                            except ImportError:
+                                pass
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 if hasattr(b, "speed") and isinstance(b.speed, (int, float)):
@@ -11037,6 +11058,27 @@ class BlackoutEventMode(GameMode):
                 msg = "The arena went dark!" if self.is_blackout else "Vision restored!"
                 world.add_event("blackout_event", {"message": msg})
 
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            for h in world.arena.hazards:
+                if getattr(h, "explodes", False) and getattr(h, "kind", "") == "gravity_well":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            # Explode
+                            hazards_to_remove.append(h)
+                            try:
+                                from arena.procedural_arena import Hazard
+                                exp_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999)
+                                # Massive explosion radius and damage
+                                exp = Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
+                                setattr(exp, "duration", 0.5)
+                                world.arena.hazards.append(exp)
+                            except ImportError:
+                                pass
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 if self.is_blackout:
@@ -11240,6 +11282,27 @@ class ShrinkingBoundaryMode(GameMode):
 
         # Apply damage
         damage_this_tick = self.outside_damage_per_second * delta
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            for h in world.arena.hazards:
+                if getattr(h, "explodes", False) and getattr(h, "kind", "") == "gravity_well":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            # Explode
+                            hazards_to_remove.append(h)
+                            try:
+                                from arena.procedural_arena import Hazard
+                                exp_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999)
+                                # Massive explosion radius and damage
+                                exp = Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
+                                setattr(exp, "duration", 0.5)
+                                world.arena.hazards.append(exp)
+                            except ImportError:
+                                pass
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 if b.x < self.min_x or b.x > self.max_x or b.y < self.min_y or b.y > self.max_y:
