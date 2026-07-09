@@ -785,6 +785,8 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "_aura_explosion_cd", 0.0) > 0.0:
+            self.ball._aura_explosion_cd -= delta
         import math
 
 
@@ -10038,6 +10040,64 @@ class Action:
 
                 # Flag the ball as having received a knockback collision recently (timer)
                 setattr(self.ball, "_knockback_timer", 0.5)
+
+                # Aura explosion
+                if getattr(self.ball, "level", 1) >= 10 and getattr(other, "level", 1) >= 10:
+                    c1 = getattr(self.ball, "cosmetic_aura_color", None)
+                    c2 = getattr(other, "cosmetic_aura_color", None)
+                    if c1 and c2 and getattr(self.ball, "_aura_explosion_cd", 0.0) <= 0.0 and getattr(other, "_aura_explosion_cd", 0.0) <= 0.0:
+                        self.ball._aura_explosion_cd = 1.0
+                        setattr(other, "_aura_explosion_cd", 1.0)
+
+                        explosion_x = (self.ball.x + other.x) / 2
+                        explosion_y = (self.ball.y + other.y) / 2
+
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            try:
+                                from arena.procedural_arena import Hazard
+                            except ImportError:
+                                class Hazard:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id
+                                        self.x = x
+                                        self.y = y
+                                        self.radius = radius
+                                        self.kind = kind
+                                        self.damage = damage
+                                        self.active = True
+                            h = Hazard(f"aura_exp_{getattr(self.ball, 'id', 0)}_{getattr(other, 'id', 0)}", explosion_x, explosion_y, 80.0, "aura_explosion", 20.0)
+                            if isinstance(c1, (list, tuple)) and isinstance(c2, (list, tuple)) and len(c1) >= 3 and len(c2) >= 3:
+                                setattr(h, "color", ((c1[0]+c2[0])/2, (c1[1]+c2[1])/2, (c1[2]+c2[2])/2, 0.8))
+                            setattr(h, "duration", 1.0)
+                            self.world.arena.hazards.append(h)
+
+                        nearby_exp = []
+                        if hasattr(self.world, "get_nearby_entities"):
+                            class DummyPos:
+                                pass
+                            dp = DummyPos()
+                            dp.x = explosion_x
+                            dp.y = explosion_y
+                            try:
+                                data_exp = self.world.get_nearby_entities(dp, 80.0)
+                                if isinstance(data_exp, dict):
+                                    nearby_exp = data_exp.get("enemies", []) + data_exp.get("allies", [])
+                                elif isinstance(data_exp, list):
+                                    nearby_exp = data_exp
+                            except Exception:
+                                pass
+
+                        for t in nearby_exp:
+                            dx_exp = getattr(t, "x", 0) - explosion_x
+                            dy_exp = getattr(t, "y", 0) - explosion_y
+                            if dx_exp*dx_exp + dy_exp*dy_exp <= 80.0*80.0:
+                                if hasattr(t, "take_damage"):
+                                    t.take_damage(20.0)
+                                elif hasattr(t, "hp"):
+                                    t.hp -= 20.0
+                                    if t.hp <= 0:
+                                        t.alive = False
+
 
                 if getattr(other, "team", None) != getattr(self.ball, "team", None):
                     setattr(other, "_last_hit_by_id", getattr(self.ball, "id", None))

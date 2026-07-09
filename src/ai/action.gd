@@ -17905,6 +17905,126 @@ func _resolve_collisions() -> bool:
             elif "hp" in self.ball:
                 self.ball._knockback_timer = 0.5
 
+            var b1_level = 1
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("level"): b1_level = self.ball["level"]
+            elif typeof(self.ball) == TYPE_OBJECT and "level" in self.ball: b1_level = self.ball.level
+
+            var b2_level = 1
+            if typeof(other) == TYPE_DICTIONARY and other.has("level"): b2_level = other["level"]
+            elif typeof(other) == TYPE_OBJECT and "level" in other: b2_level = other.level
+
+            if b1_level >= 10 and b2_level >= 10:
+                var c1 = null
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic_aura_color"): c1 = self.ball["cosmetic_aura_color"]
+                elif typeof(self.ball) == TYPE_OBJECT and "cosmetic_aura_color" in self.ball: c1 = self.ball.cosmetic_aura_color
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cosmetic_aura_color"): c1 = self.ball.get_meta("cosmetic_aura_color")
+
+                var c2 = null
+                if typeof(other) == TYPE_DICTIONARY and other.has("cosmetic_aura_color"): c2 = other["cosmetic_aura_color"]
+                elif typeof(other) == TYPE_OBJECT and "cosmetic_aura_color" in other: c2 = other.cosmetic_aura_color
+                elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("cosmetic_aura_color"): c2 = other.get_meta("cosmetic_aura_color")
+
+                if c1 != null and c2 != null:
+                    var b1_cd = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_aura_explosion_cd"): b1_cd = self.ball["_aura_explosion_cd"]
+                    elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball and self.ball.get("_aura_explosion_cd") != null: b1_cd = self.ball.get("_aura_explosion_cd")
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("_aura_explosion_cd"): b1_cd = self.ball.get_meta("_aura_explosion_cd")
+
+                    var b2_cd = 0.0
+                    if typeof(other) == TYPE_DICTIONARY and other.has("_aura_explosion_cd"): b2_cd = other["_aura_explosion_cd"]
+                    elif typeof(other) == TYPE_OBJECT and "hp" in other and other.get("_aura_explosion_cd") != null: b2_cd = other.get("_aura_explosion_cd")
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("_aura_explosion_cd"): b2_cd = other.get_meta("_aura_explosion_cd")
+
+                    if b1_cd <= 0.0 and b2_cd <= 0.0:
+                        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["_aura_explosion_cd"] = 1.0
+                        elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.set("_aura_explosion_cd", 1.0)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("_aura_explosion_cd", 1.0)
+
+                        if typeof(other) == TYPE_DICTIONARY: other["_aura_explosion_cd"] = 1.0
+                        elif typeof(other) == TYPE_OBJECT and "hp" in other: other.set("_aura_explosion_cd", 1.0)
+                        elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("_aura_explosion_cd", 1.0)
+
+                        var b1_x = 0.0
+                        var b1_y = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            if self.ball.has("x"): b1_x = self.ball["x"]
+                            if self.ball.has("y"): b1_y = self.ball["y"]
+                        else:
+                            if "x" in self.ball: b1_x = self.ball.x
+                            if "y" in self.ball: b1_y = self.ball.y
+
+                        var b2_x = 0.0
+                        var b2_y = 0.0
+                        if typeof(other) == TYPE_DICTIONARY:
+                            if other.has("x"): b2_x = other["x"]
+                            if other.has("y"): b2_y = other["y"]
+                        else:
+                            if "x" in other: b2_x = other.x
+                            if "y" in other: b2_y = other.y
+
+                        var exp_x = (b1_x + b2_x) / 2.0
+                        var exp_y = (b1_y + b2_y) / 2.0
+
+                        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                            var b1_id = 0
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b1_id = self.ball["id"]
+                            elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b1_id = self.ball.id
+
+                            var b2_id = 0
+                            if typeof(other) == TYPE_DICTIONARY and other.has("id"): b2_id = other["id"]
+                            elif typeof(other) == TYPE_OBJECT and "id" in other: b2_id = other.id
+
+                            var h = {}
+                            h["id"] = "aura_exp_" + str(b1_id) + "_" + str(b2_id)
+                            h["x"] = exp_x
+                            h["y"] = exp_y
+                            h["radius"] = 80.0
+                            h["kind"] = "aura_explosion"
+                            h["damage"] = 20.0
+                            h["active"] = true
+                            h["duration"] = 1.0
+                            if typeof(c1) == TYPE_ARRAY and typeof(c2) == TYPE_ARRAY and c1.size() >= 3 and c2.size() >= 3:
+                                h["color"] = [(c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0, 0.8]
+                            elif typeof(c1) == TYPE_COLOR and typeof(c2) == TYPE_COLOR:
+                                h["color"] = Color((c1.r+c2.r)/2.0, (c1.g+c2.g)/2.0, (c1.b+c2.b)/2.0, 0.8)
+                            self.world.arena.hazards.append(h)
+
+                        var nearby_exp = []
+                        if self.world != null and self.world.has_method("get_nearby_entities"):
+                            var dp = {"x": exp_x, "y": exp_y}
+                            var data_exp = self.world.get_nearby_entities(dp, 80.0)
+                            if typeof(data_exp) == TYPE_DICTIONARY:
+                                if data_exp.has("enemies"): nearby_exp += data_exp["enemies"]
+                                if data_exp.has("allies"): nearby_exp += data_exp["allies"]
+                            elif typeof(data_exp) == TYPE_ARRAY:
+                                nearby_exp = data_exp
+
+                        for t in nearby_exp:
+                            var t_x = 0.0
+                            var t_y = 0.0
+                            if typeof(t) == TYPE_DICTIONARY:
+                                if t.has("x"): t_x = t["x"]
+                                if t.has("y"): t_y = t["y"]
+                            else:
+                                if "x" in t: t_x = t.x
+                                if "y" in t: t_y = t.y
+                            var dx_e = t_x - exp_x
+                            var dy_e = t_y - exp_y
+                            if dx_e*dx_e + dy_e*dy_e <= 80.0*80.0:
+                                if typeof(t) == TYPE_OBJECT and t.has_method("take_damage"):
+                                    t.take_damage(20.0)
+                                elif typeof(t) == TYPE_OBJECT and "hp" in t:
+                                    t.hp -= 20.0
+                                    if t.hp <= 0:
+                                        t.hp = 0
+                                        t.alive = false
+                                elif typeof(t) == TYPE_DICTIONARY and t.has("hp"):
+                                    t["hp"] -= 20.0
+                                    if t["hp"] <= 0:
+                                        t["hp"] = 0
+                                        t["alive"] = false
+
+
             var self_team = self.ball.team if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team") else (self.ball.team if "team" in self.ball else null)
             var other_team = other.team if typeof(other) == TYPE_DICTIONARY and other.has("team") else (other.team if "team" in other else null)
             if self_team != null and other_team != null and self_team != other_team:
