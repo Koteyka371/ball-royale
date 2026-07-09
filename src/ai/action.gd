@@ -180,6 +180,11 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+    var q_state = 0.0
+    if typeof(target) == TYPE_OBJECT and "quantum_state_timer" in target: q_state = target.quantum_state_timer
+    elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("quantum_state_timer"): q_state = target.get_meta("quantum_state_timer")
+    if q_state > 0.0:
+        return
 	var attacker_type = attacker.get("ball_type")
 	if attacker_type == null and "BALL_TYPE" in attacker: attacker_type = attacker.BALL_TYPE
 	if attacker_type != null and str(attacker_type).to_lower() == "alchemist":
@@ -1469,6 +1474,15 @@ func execute(strategy: String, delta: float):
                             if self.ball.has("speed_debuff_timer"): current_timer = self.ball["speed_debuff_timer"]
                             self.ball["speed_debuff_timer"] = max(current_timer, 0.5)
                             self.ball["speed_debuff_multiplier"] = 0.5
+
+    var q_timer = 0.0
+    if "quantum_state_timer" in self.ball: q_timer = self.ball.quantum_state_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_state_timer"): q_timer = self.ball.get_meta("quantum_state_timer")
+
+    if q_timer > 0.0:
+        var new_q_timer = q_timer - delta
+        if "quantum_state_timer" in self.ball: self.ball.quantum_state_timer = new_q_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("quantum_state_timer", new_q_timer)
 
     if "speed_debuff_timer" in self.ball and typeof(self.ball.speed_debuff_timer) in [TYPE_FLOAT, TYPE_INT] and self.ball.speed_debuff_timer > 0.0:
         self.ball.speed_debuff_timer -= delta
@@ -15488,6 +15502,26 @@ func _use_skill():
 
             if self.has_method("_spawn_skill_particles"):
                 self._spawn_skill_particles("repel_burst")
+
+        elif skill_name == "quantum_state":
+            var stamina = 0.0
+            if self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+                stamina = self.ball.get_meta("stamina")
+            elif "stamina" in self.ball:
+                stamina = self.ball.stamina
+
+            if stamina >= 50.0:
+                var new_stamina = stamina - 50.0
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("stamina", new_stamina)
+                    self.ball.set_meta("quantum_state_timer", 2.0)
+                else:
+                    self.ball.stamina = new_stamina
+                    self.ball.quantum_state_timer = 2.0
+
+                if self.has_method("_spawn_skill_particles"):
+                    self._spawn_skill_particles("quantum_state")
+
         elif skill_name == "stamina_steal":
             if self.has_method("_spawn_skill_particles"):
                 self._spawn_skill_particles("stamina_steal")

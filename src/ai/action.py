@@ -140,6 +140,8 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+        if getattr(target, "quantum_state_timer", 0.0) > 0.0:
+            return
         import random
         if getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower() == 'alchemist' and random.random() < 0.25:
             # 25% chance to apply a weak stacking poison effect
@@ -887,6 +889,11 @@ class Action:
                     self.ball.x += p.vx * delta
                     self.ball.y += p.vy * delta
 
+        if getattr(self.ball, "quantum_state_timer", 0.0) > 0:
+            self.ball.quantum_state_timer -= delta
+            # In quantum state, immune to hazards and damage (implemented in take_damage or game loop)
+            # Make sure it's untargetable by updating perception (done in scan) or just skipping damage
+
         if getattr(self.ball, "speed_debuff_timer", 0.0) > 0:
             self.ball.speed_debuff_timer -= delta
             if self.ball.speed_debuff_timer <= 0:
@@ -1010,6 +1017,8 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             hazards_to_remove = []
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
+                    continue
                 if getattr(hazard, "kind", "") == "thrown_status_absorber":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
@@ -1042,6 +1051,8 @@ class Action:
 
             # Check slime hazards
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
+                    continue
                 if getattr(hazard, "kind", "") == "slime":
                     h_owner = getattr(hazard, "owner_id", None)
                     h_team = getattr(hazard, "team", None)
@@ -1551,6 +1562,8 @@ class Action:
         # Max HP draining hazard logic
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
+                    continue
                 if getattr(hazard, "kind", "") == "shrapnel":
                     if getattr(hazard, "duration", 0.0) > 0:
                         hazard.duration -= delta
@@ -1595,6 +1608,8 @@ class Action:
         # Empowerment Matrix logic
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
+                    continue
                 if getattr(hazard, "kind", "") == "empowerment_matrix":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= getattr(hazard, "radius", 50.0) + getattr(self.ball, "radius", 10.0):
@@ -1627,6 +1642,8 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
+                    continue
                 if getattr(hazard, "kind", "") == "temporal_rift":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= hazard.radius + getattr(self.ball, "radius", 10.0):
@@ -2089,6 +2106,8 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             current_tick = getattr(self.world, "tick", 0)
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
+                    continue
                 kind = getattr(hazard, "kind", "")
                 if kind in ("gravity_well", "repulsor") and getattr(hazard, "active", True):
                     if not hasattr(hazard, "last_booster_pull_tick") or hazard.last_booster_pull_tick != current_tick:
@@ -2158,6 +2177,8 @@ class Action:
         in_anomaly_zone = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
+                    continue
                 if getattr(hazard, "kind", "") == "anomaly_zone" and getattr(hazard, "active", True):
                     dx = hazard.x - self.ball.x
                     dy = hazard.y - self.ball.y
@@ -8847,6 +8868,15 @@ class Action:
                                 other.vy += (dy / dist) * push_force
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("repel_burst")
+
+            elif skill_name == "quantum_state":
+                stamina = getattr(self.ball, "stamina", 0.0)
+                if stamina >= 50.0:
+                    self.ball.stamina -= 50.0
+                    self.ball.quantum_state_timer = 2.0
+                    if hasattr(self, "_spawn_skill_particles"):
+                        self._spawn_skill_particles("quantum_state")
+
             elif skill_name == "stamina_steal":
                 self._spawn_skill_particles("stamina_steal")
                 enemies = self._get_enemies()
@@ -10348,6 +10378,8 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
+                    continue
                 if getattr(hazard, "kind", "") == "pull_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
