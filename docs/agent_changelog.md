@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-757] Random Event: Meteor Shower — *2026-07-09 19:47:26 UTC*
+
+Periodically, shadows appear on the ground, growing in size. After a short delay, meteors strike those locations, leaving behind temporary lava puddles that deal damage over time to anyone stepping in them.
+
+---
+
 ## [idea-769] Multi-Safe Zones — *2026-07-09 19:38:00 UTC*
 
 Instead of one big safe zone, multiple tiny safe zones spawn randomly across the map, shrinking and splitting over time.
