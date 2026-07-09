@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-782] Trickster Smoke Screen — *2026-07-09 21:57:38 UTC*
+
+Trickster balls can deploy a smoke screen that obscures vision for enemies, making it harder for them to aim and attack.
+
+---
+
 ## [idea-789] Mutator Voting System — *2026-07-09 21:57:34 UTC*
 
 Players can spend earned skill points or a new currency to vote on which mutators will be active for the next match, adding a strategic meta-layer to the lobby experience.
