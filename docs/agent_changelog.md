@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-770] Ball Customization Traits — *2026-07-09 21:36:53 UTC*
+
+Allow players to pick minor starting traits (e.g. +5% speed, -5% health) to customize their playstyle.
+
+---
+
 ## [idea-795] Gambling Node — *2026-07-09 21:13:00 UTC*
 
 Similar to Black Market nodes, there is a rare, static Gambling Node. Players can deposit a varying amount of currency into it. The node rolls a random number and has a chance to either double the currency, steal it entirely, or trigger an immediate explosion dealing heavy area-of-effect damage.
