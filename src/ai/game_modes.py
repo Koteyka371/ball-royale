@@ -233,6 +233,93 @@ class GameMode:
                             b.base_damage = getattr(b, "_original_base_damage", getattr(b, "base_damage", 10.0))
                             b.damage = b.base_damage
 
+
+
+        # Aura explosion logic
+        for b in balls:
+            cooldown = getattr(b, "aura_explosion_cooldown", 0.0)
+            if isinstance(cooldown, (int, float)) and cooldown > 0:
+                b.aura_explosion_cooldown = max(0.0, cooldown - delta)
+
+        # Gather balls with high-level auras
+        aura_balls = []
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                lvl = getattr(b, "level", 1)
+                if isinstance(lvl, (int, float)) and lvl >= 3 and hasattr(b, "cosmetic_aura_color"):
+                    aura_balls.append(b)
+
+        n = len(aura_balls)
+        if n >= 2:
+            import math
+            for i in range(n):
+                for j in range(i + 1, n):
+                    b1 = aura_balls[i]
+                    b2 = aura_balls[j]
+                    cd1 = getattr(b1, "aura_explosion_cooldown", 0.0)
+                    cd2 = getattr(b2, "aura_explosion_cooldown", 0.0)
+                    if isinstance(cd1, (int, float)) and isinstance(cd2, (int, float)) and cd1 <= 0 and cd2 <= 0:
+                        b1_r = getattr(b1, "radius", 15.0)
+                        b2_r = getattr(b2, "radius", 15.0)
+                        b1_x = getattr(b1, "x", 0.0)
+                        b1_y = getattr(b1, "y", 0.0)
+                        b2_x = getattr(b2, "x", 0.0)
+                        b2_y = getattr(b2, "y", 0.0)
+                        if isinstance(b1_x, (int, float)) and isinstance(b2_x, (int, float)):
+                            dist_sq = (b1_x - b2_x) ** 2 + (b1_y - b2_y) ** 2
+                            rad_sum = b1_r + b2_r
+                            if isinstance(rad_sum, (int, float)) and dist_sq < rad_sum ** 2:
+                                # Trigger Aura Explosion
+                                c1 = b1.cosmetic_aura_color
+                                c2 = b2.cosmetic_aura_color
+                                r = (c1[0] + c2[0]) / 2.0
+                                g = (c1[1] + c2[1]) / 2.0
+                                b_c = (c1[2] + c2[2]) / 2.0
+
+                                element = "fire"
+                                if g > r and g > b_c:
+                                    element = "poison"
+                                elif b_c > r and b_c > g:
+                                    element = "ice"
+
+                                ex = (b1_x + b2_x) / 2.0
+                                ey = (b1_y + b2_y) / 2.0
+                                explosion_radius_sq = 150.0 ** 2
+
+                                for target in balls:
+                                    if getattr(target, "alive", False) and getattr(target, "ball_type", None) != "spectator":
+                                        tx = getattr(target, "x", 0.0)
+                                        ty = getattr(target, "y", 0.0)
+                                        if isinstance(tx, (int, float)) and isinstance(ty, (int, float)):
+                                            t_dist_sq = (tx - ex) ** 2 + (ty - ey) ** 2
+                                            if t_dist_sq <= explosion_radius_sq:
+                                                if hasattr(target, "take_damage"):
+                                                    target.take_damage(30.0)
+                                                else:
+                                                    thp = getattr(target, "hp", 100.0)
+                                                    if isinstance(thp, (int, float)):
+                                                        target.hp = thp - 30.0
+
+                                                if element == "fire":
+                                                    btimer = getattr(target, "burn_timer", 0.0)
+                                                    target.burn_timer = max(btimer if isinstance(btimer, (int, float)) else 0.0, 5.0)
+                                                elif element == "poison":
+                                                    ptimer = getattr(target, "poison_timer", 0.0)
+                                                    target.poison_timer = max(ptimer if isinstance(ptimer, (int, float)) else 0.0, 5.0)
+                                                elif element == "ice":
+                                                    ftimer = getattr(target, "frozen_timer", 0.0)
+                                                    target.frozen_timer = max(ftimer if isinstance(ftimer, (int, float)) else 0.0, 5.0)
+
+                                b1.aura_explosion_cooldown = 10.0
+                                b2.aura_explosion_cooldown = 10.0
+
+                                if hasattr(world, "add_event"):
+                                    world.add_event("aura_elemental_explosion", {
+                                        "x": ex, "y": ey, "element": element,
+                                        "b1_id": getattr(b1, "id", None),
+                                        "b2_id": getattr(b2, "id", None)
+                                    })
+
     def on_ball_died(self, world, ball, killer=None):
         if killer and getattr(ball, "id", None) and getattr(killer, "id", None):
             pm = getattr(world, "profile_manager", None)
