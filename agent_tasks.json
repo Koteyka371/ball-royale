@@ -13606,7 +13606,7 @@
     },
     {
       "id": "idea-791",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Weather Modifiers based on Prestige Level",
@@ -22697,6 +22697,40 @@
         "src/ai/soul_collector_trait.py",
         "src/ai/soul_collector_trait.gd",
         "tests/test_soul_collector_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1325",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Mirage Booster",
+      "description": "A new booster that, when picked up, gives the player a temporary ability to create stationary illusory copies of themselves every few seconds. These mirages deceive enemies and detonate into a small EMP when an enemy touches them or attacks them.",
+      "allowed_paths": [
+        "src/ai/quantum_mirage_booster.py",
+        "src/ai/quantum_mirage_booster.gd",
+        "tests/test_quantum_mirage_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1326",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corrosive Acid Trap",
+      "description": "A deployable hazard item that leaves a puddle of acid on the ground. Any ball moving through the puddle receives a stacking damage-over-time debuff that reduces their maximum speed and slowly eats away at their health for several seconds.",
+      "allowed_paths": [
+        "src/arena/corrosive_acid_trap.py",
+        "src/arena/corrosive_acid_trap.gd",
+        "tests/test_corrosive_acid_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

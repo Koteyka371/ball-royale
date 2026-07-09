@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-791] Dynamic Weather Modifiers based on Prestige Level — *2026-07-09 22:35:11 UTC*
+
+Introduce a game mutator that alters arena weather dynamically based on the lobby's average prestige level, adding new hazards like solar flares for high-prestige matches.
+
+---
+
 ## [idea-802] New Loadout Item: Repulsor Shield — *2026-07-09 22:33:57 UTC*
 
 A shield that charges over time. When fully charged, the first attack taken is negated and an AOE shockwave pushes all nearby enemies away.
