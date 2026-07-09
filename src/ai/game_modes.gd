@@ -14338,7 +14338,163 @@ class ShrinkingBoundaryMode extends GameMode:
 						else:
 							b.set("hp", hp)
 
+
+class EntanglementMutatorMode extends GameMode:
+	var prev_state: Dictionary = {}
+	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+
+	func _init().():
+		name = "Entanglement Mutator"
+		description = "Randomly entangles pairs of balls. Any status effect, knockback force, or damage applied to one ball is also mirrored to the other."
+
+	func _init_prev_state(b) -> void:
+		var state = {
+			"hp": b.hp if "hp" in b else 100.0,
+			"vx": b.vx if "vx" in b else 0.0,
+			"vy": b.vy if "vy" in b else 0.0
+		}
+		for eff in status_effects:
+			if eff in b:
+				state[eff] = b[eff]
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta(eff):
+				state[eff] = b.get_meta(eff)
+			else:
+				state[eff] = 0.0
+		if "id" in b:
+			prev_state[b.id] = state
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		var alive_balls = []
+		for b in balls:
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if b_type != "spectator":
+				alive_balls.append(b)
+
+		alive_balls.shuffle()
+		var i = 0
+		while i < alive_balls.size() - 1:
+			var b1 = alive_balls[i]
+			var b2 = alive_balls[i+1]
+
+			if b1 is Object and b1.has_method("set_meta"):
+				b1.set_meta("random_entangled_with", b2)
+			else:
+				b1["random_entangled_with"] = b2
+
+			if b2 is Object and b2.has_method("set_meta"):
+				b2.set_meta("random_entangled_with", b1)
+			else:
+				b2["random_entangled_with"] = b1
+			i += 2
+
+		if alive_balls.size() % 2 != 0:
+			var last_ball = alive_balls[alive_balls.size() - 1]
+			if last_ball is Object and last_ball.has_method("set_meta"):
+				last_ball.set_meta("random_entangled_with", null)
+			else:
+				last_ball["random_entangled_with"] = null
+
+		prev_state.clear()
+		for b in balls:
+			_init_prev_state(b)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			if not is_alive:
+				continue
+
+			var b_id = b.id if "id" in b else null
+			if b_id == null:
+				continue
+
+			if not prev_state.has(b_id):
+				_init_prev_state(b)
+
+			var state = prev_state[b_id]
+			var target = null
+			if b is Object and b.has_method("has_meta") and b.has_meta("random_entangled_with"):
+				target = b.get_meta("random_entangled_with")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("random_entangled_with"):
+				target = b["random_entangled_with"]
+
+			var target_alive = target.alive if (target != null and "alive" in target) else false
+
+			if target != null and target_alive:
+				var target_id = target.id if "id" in target else null
+				if target_id != null:
+					if not prev_state.has(target_id):
+						_init_prev_state(target)
+
+					var target_state = prev_state[target_id]
+
+					# Check HP
+					var curr_hp = b.hp if "hp" in b else 100.0
+					if curr_hp < state.hp:
+						var damage = state.hp - curr_hp
+						var target_curr_hp = target.hp if "hp" in target else 100.0
+						if target_curr_hp > 0:
+							if target is Object and target.has_method("take_damage"):
+								target.take_damage(damage)
+							else:
+								target.hp = target_curr_hp - damage
+								if target.hp <= 0:
+									target.hp = 0
+									target.alive = false
+									if "killer" in b: target.killer = b.killer
+
+							target_state.hp -= damage
+							if target_state.hp < 0:
+								target_state.hp = 0
+
+							if world.has_method("add_event"):
+								var bx = b.x if "x" in b else 0
+								var by = b.y if "y" in b else 0
+								var tx = target.x if "x" in target else 0
+								var ty = target.y if "y" in target else 0
+								world.add_event({"type": "visual_effect", "data": {"type": "entangle_damage", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+
+					# Check knockback
+					var curr_vx = b.vx if "vx" in b else 0.0
+					var curr_vy = b.vy if "vy" in b else 0.0
+					if abs(curr_vx - state.vx) > 5.0 or abs(curr_vy - state.vy) > 5.0:
+						var delta_vx = curr_vx - state.vx
+						var delta_vy = curr_vy - state.vy
+
+						var target_vx = target.vx if "vx" in target else 0.0
+						var target_vy = target.vy if "vy" in target else 0.0
+						target.vx = target_vx + delta_vx
+						target.vy = target_vy + delta_vy
+
+						target_state.vx += delta_vx
+						target_state.vy += delta_vy
+
+					# Check status effects
+					for eff in status_effects:
+						var curr_eff = 0.0
+						if eff in b: curr_eff = b[eff]
+						elif b is Object and b.has_method("has_meta") and b.has_meta(eff): curr_eff = b.get_meta(eff)
+
+						var state_eff = state[eff] if state.has(eff) else 0.0
+						if curr_eff > state_eff:
+							var delta_eff = curr_eff - state_eff
+
+							var target_eff = 0.0
+							if eff in target: target_eff = target[eff]
+							elif target is Object and target.has_method("has_meta") and target.has_meta(eff): target_eff = target.get_meta(eff)
+
+							if eff in target: target[eff] = target_eff + delta_eff
+							elif target is Object and target.has_method("set_meta"): target.set_meta(eff, target_eff + delta_eff)
+
+							target_state[eff] += delta_eff
+
+			_init_prev_state(b)
+
+
 var GAME_MODES = {
+	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
 	"blackout_event": BlackoutEventMode.new(),
