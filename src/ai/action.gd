@@ -309,6 +309,27 @@ func _attempt_damage(attacker, target) -> void:
 		is_nemesis_active = pm.is_nemesis(attacker_type, target_type)
 
 
+		var has_projectile_reflect = false
+		if "projectile_reflect_active" in target and target.projectile_reflect_active:
+			has_projectile_reflect = true
+		elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("projectile_reflect_active") and target.get_meta("projectile_reflect_active"):
+			has_projectile_reflect = true
+
+		if has_projectile_reflect and is_ranged_attack:
+			var base_dmg_refl = 10.0
+			if "damage" in attacker: base_dmg_refl = float(attacker.damage)
+			var refl_dmg = base_dmg_refl
+			if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("take_damage"):
+				attacker.take_damage(refl_dmg)
+			elif "hp" in attacker:
+				if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
+					attacker.set_meta("hp", attacker.hp - refl_dmg)
+				else:
+					attacker.hp -= refl_dmg
+			if world != null and "events" in world:
+				world.events.append({"type": "visual_effect", "data": {"type": "shield_block", "x": t_x2, "y": t_y2}})
+			return
+
 		var has_kinetic = false
 		if "kinetic_shield_active" in target and target.kinetic_shield_active:
 			has_kinetic = true
@@ -12721,6 +12742,23 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
 
+            elif "kind" in nearest and nearest.kind == "projectile_reflect_booster":
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("projectile_reflect_active", true)
+                    self.ball.set_meta("projectile_reflect_timer", 5.0)
+                else:
+                    self.ball.projectile_reflect_active = true
+                    self.ball.projectile_reflect_timer = 5.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "half_reflect_shield_booster":
                 self.ball.set_meta("half_reflect_shield_active", true)
                 self.ball.set_meta("half_reflect_shield_timer", 5.0)
@@ -17783,6 +17821,27 @@ func _update_skill_timer(delta: float):
             self.ball["aura_disruption_timer"] = ad_timer
 
 
+
+    var projectile_reflect_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("projectile_reflect_timer"):
+        projectile_reflect_timer = float(self.ball.get_meta("projectile_reflect_timer"))
+    elif "projectile_reflect_timer" in self.ball:
+        projectile_reflect_timer = float(self.ball.projectile_reflect_timer)
+
+    if projectile_reflect_timer > 0:
+        projectile_reflect_timer -= delta
+        if projectile_reflect_timer <= 0:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("projectile_reflect_timer", 0.0)
+                self.ball.set_meta("projectile_reflect_active", false)
+            else:
+                self.ball.projectile_reflect_timer = 0.0
+                self.ball.projectile_reflect_active = false
+        else:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("projectile_reflect_timer", projectile_reflect_timer)
+            else:
+                self.ball.projectile_reflect_timer = projectile_reflect_timer
 
     var hrs_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("half_reflect_shield_timer"):
