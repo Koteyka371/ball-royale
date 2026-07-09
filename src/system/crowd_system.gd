@@ -119,6 +119,13 @@ func process_external_command(user: String, command: String, balls: Array):
             if world != null and world.has_method("add_event"):
                 world.add_event("crowd_cheer", {"message": "Viewer " + user + " voted for " + option + "!"})
 
+    elif cmd == "!bribe" and parts.size() >= 2:
+        var action = parts[1]
+        var option = ""
+        if parts.size() >= 3:
+            option = parts[2]
+        player_bribe_vote(user, action, option)
+
 func player_bribe_vote(player_id: String, action: String, option: String = "") -> bool:
     if active_vote == null or votes.is_empty():
         return false
