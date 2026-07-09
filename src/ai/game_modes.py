@@ -6930,6 +6930,12 @@ class BouncyTerrainMode(GameMode):
         self.name = "Bouncy Terrain"
         self.description = "Collision with arena boundaries dramatically reflects velocity without dealing damage."
 
+class SuperBouncyWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Super Bouncy Walls"
+        self.description = "Arena walls become extremely bouncy. High-speed collisions ricochet with even more speed, causing chaotic encounters."
+
 class ZeroGravityMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -11473,6 +11479,7 @@ GAME_MODES = {
     "bumper_balls": BumperBallsMode(),
     "sumo_knockout": SumoKnockoutMode(),
     "bouncy_terrain": BouncyTerrainMode(),
+    "super_bouncy_walls": SuperBouncyWallsMode(),
     "pinball": PinballMode(),
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),

@@ -7971,6 +7971,11 @@ class BouncyTerrainMode extends GameMode:
 		name = "Bouncy Terrain"
 		description = "Collision with arena boundaries dramatically reflects velocity without dealing damage."
 
+class SuperBouncyWallsMode extends GameMode:
+	func _init() -> void:
+		name = "Super Bouncy Walls"
+		description = "Arena walls become extremely bouncy. High-speed collisions ricochet with even more speed, causing chaotic encounters."
+
 class ZeroGravityMode extends GameMode:
 	func _init() -> void:
 		name = "Zero Gravity"
@@ -14546,6 +14551,7 @@ var GAME_MODES = {
 	"bumper_balls": BumperBallsMode.new(),
 	"sumo_knockout": SumoKnockoutMode.new(),
 	"bouncy_terrain": BouncyTerrainMode.new(),
+	"super_bouncy_walls": SuperBouncyWallsMode.new(),
 	"pinball": PinballMode.new(),
 	"portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),

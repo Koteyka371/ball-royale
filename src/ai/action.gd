@@ -9255,7 +9255,16 @@ func execute(strategy: String, delta: float):
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bouncy Terrain":
                     is_bouncy_terrain = true
             var new_speed = 0.0
-            if wall_state == "bouncy":
+            var is_super_bouncy = false
+            if "game_mode" in self.world and self.world.game_mode != null:
+                if "name" in self.world.game_mode and self.world.game_mode.name == "Super Bouncy Walls":
+                    is_super_bouncy = true
+
+            if wall_state == "super_bouncy":
+                new_speed = min(speed * 4.0, 8000.0)
+            elif is_super_bouncy:
+                new_speed = min(speed * 4.0, 8000.0)
+            elif wall_state == "bouncy":
                 new_speed = min(speed * 3.0, 4000.0)
             elif is_bouncy_terrain:
                 new_speed = min(speed * 2.0, 3000.0)
@@ -9289,6 +9298,9 @@ func execute(strategy: String, delta: float):
                     is_mirror_walls = true
             if is_bouncy_terrain:
                 is_mirror_walls = true
+            if "game_mode" in self.world and self.world.game_mode != null:
+                if "name" in self.world.game_mode and self.world.game_mode.name == "Super Bouncy Walls":
+                    is_mirror_walls = true
 
             var b_type = ""
             if "ball_type" in self.ball: b_type = self.ball.ball_type
@@ -9296,7 +9308,7 @@ func execute(strategy: String, delta: float):
             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball["ball_type"]
             var is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-            if wall_state == "bouncy":
+            if wall_state in ["bouncy", "super_bouncy"]:
                 pass
             elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                 var dmg = speed * 0.05

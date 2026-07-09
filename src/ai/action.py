@@ -5254,8 +5254,12 @@ class Action:
                 import random
                 angle = _math.atan2(nvy, nvx) + random.uniform(-0.2, 0.2)
                 gm = getattr(self.world, "game_mode", None)
-                if wall_state == "bouncy":
+                if wall_state == "super_bouncy":
+                    new_speed = min(speed * 4.0, 8000.0)
+                elif wall_state == "bouncy":
                     new_speed = min(speed * 3.0, 4000.0)
+                elif gm and getattr(gm, "name", "") == "Super Bouncy Walls":
+                    new_speed = min(speed * 4.0, 8000.0)
                 elif gm and getattr(gm, "name", "") == "Bouncy Terrain":
                     new_speed = min(speed * 2.0, 3000.0)
                 else:
@@ -5277,11 +5281,13 @@ class Action:
                 elif gm and getattr(gm, "name", "") == "Bouncy Terrain":
                     is_bouncy_terrain = True
                     is_mirror_walls = True
+                elif gm and getattr(gm, "name", "") == "Super Bouncy Walls":
+                    is_mirror_walls = True
 
                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                 is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-                if wall_state == "bouncy":
+                if wall_state in ["bouncy", "super_bouncy"]:
                     pass # Bouncy walls don't deal damage
                 elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                     damage = speed * 0.05
