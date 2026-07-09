@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-712] Quantum Dodge Ability — *2026-07-09 19:02:05 UTC*
+
+Allows a ball to briefly enter a quantum state, dodging all incoming attacks and passing through hazards unscathed. This would cost significant stamina but could turn the tide of an engagement.
+
+---
+
 ## [idea-730] Player Bribery Mechanism — *2026-07-09 19:02:00 UTC*
 
 Players can use a currency earned during matches to 'bribe' the crowd system, either instantly ending an ongoing vote they dislike or slightly skewing the result toward a favorable outcome.
