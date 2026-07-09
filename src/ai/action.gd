@@ -4133,6 +4133,44 @@ func execute(strategy: String, delta: float):
     if self.ball.has_method("has_meta") and self.ball.has_meta("is_minion"):
         is_minion = self.ball.get_meta("is_minion")
     if is_minion:
+        var is_enraged = false
+        if typeof(self.ball) == TYPE_OBJECT and "is_enraged" in self.ball: is_enraged = self.ball.is_enraged
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_enraged"): is_enraged = self.ball["is_enraged"]
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("is_enraged"): is_enraged = self.ball.get_meta("is_enraged")
+
+        if is_enraged:
+            var enrage_timer = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "enrage_timer" in self.ball: enrage_timer = self.ball.enrage_timer
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("enrage_timer"): enrage_timer = self.ball["enrage_timer"]
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("enrage_timer"): enrage_timer = self.ball.get_meta("enrage_timer")
+
+            enrage_timer -= delta
+
+            var hp = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: hp = self.ball.hp
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): hp = self.ball["hp"]
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp = self.ball.get_meta("hp")
+
+            hp -= 20.0 * delta
+
+            if enrage_timer <= 0 or hp <= 0:
+                hp = 0
+                if typeof(self.ball) == TYPE_OBJECT:
+                    self.ball.set("hp", 0)
+                    self.ball.set("alive", false)
+                    self.ball.set("is_enraged", false)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["hp"] = 0
+                    self.ball["alive"] = false
+                    self.ball["is_enraged"] = false
+            else:
+                if typeof(self.ball) == TYPE_OBJECT:
+                    self.ball.set("hp", hp)
+                    self.ball.set("enrage_timer", enrage_timer)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["hp"] = hp
+                    self.ball["enrage_timer"] = enrage_timer
+
         # Check for elite minion evolution
         var is_elite_minion = false
         if self.ball.has_method("has_meta") and self.ball.has_meta("is_elite_minion"):

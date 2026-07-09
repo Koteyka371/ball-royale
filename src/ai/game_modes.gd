@@ -275,6 +275,58 @@ class GameMode:
 								"message": killer_id + " claimed a nemesis bounty on " + target_id + " for " + str(reward) + " tokens!"
 							})
 
+		# Necromancer death logic
+		var b_type = ""
+		if "ball_type" in ball: b_type = ball.ball_type
+		elif ball.has_method("get_meta") and ball.has_meta("ball_type"): b_type = ball.get_meta("ball_type")
+
+		if typeof(b_type) == TYPE_STRING and b_type.to_lower() == "necromancer":
+			if "balls" in world:
+				var minion_owner_id = null
+				if "id" in ball: minion_owner_id = ball.id
+				for minion in world.balls:
+					var m_type = ""
+					if typeof(minion) == TYPE_OBJECT and "ball_type" in minion: m_type = minion.ball_type
+					elif typeof(minion) == TYPE_DICTIONARY and minion.has("ball_type"): m_type = minion["ball_type"]
+
+					var m_owner = null
+					if typeof(minion) == TYPE_OBJECT and "minion_owner" in minion: m_owner = minion.minion_owner
+					elif typeof(minion) == TYPE_DICTIONARY and minion.has("minion_owner"): m_owner = minion["minion_owner"]
+
+					if m_type == "minion" and m_owner == minion_owner_id:
+						if typeof(minion) == TYPE_OBJECT:
+							minion.set("is_enraged", true)
+							minion.set("enrage_timer", 5.0)
+							var b_speed = 2.0
+							if "base_speed" in minion: b_speed = minion.base_speed
+							minion.set("base_speed", b_speed * 2.0)
+							var b_dmg = 10.0
+							if "base_damage" in minion: b_dmg = minion.base_damage
+							minion.set("base_damage", b_dmg * 1.5)
+
+							var c_speed = b_speed
+							if "speed" in minion: c_speed = minion.speed
+							minion.set("speed", c_speed * 2.0)
+							var c_dmg = b_dmg
+							if "damage" in minion: c_dmg = minion.damage
+							minion.set("damage", c_dmg * 1.5)
+						elif typeof(minion) == TYPE_DICTIONARY:
+							minion["is_enraged"] = true
+							minion["enrage_timer"] = 5.0
+							var b_speed = 2.0
+							if minion.has("base_speed"): b_speed = minion["base_speed"]
+							minion["base_speed"] = b_speed * 2.0
+							var b_dmg = 10.0
+							if minion.has("base_damage"): b_dmg = minion["base_damage"]
+							minion["base_damage"] = b_dmg * 1.5
+
+							var c_speed = b_speed
+							if minion.has("speed"): c_speed = minion["speed"]
+							minion["speed"] = c_speed * 2.0
+							var c_dmg = b_dmg
+							if minion.has("damage"): c_dmg = minion["damage"]
+							minion["damage"] = c_dmg * 1.5
+
 	func check_winner(world, balls: Array):
 		return null
 

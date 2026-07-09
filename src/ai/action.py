@@ -2351,6 +2351,13 @@ class Action:
 
 # Handle minion decay
         if getattr(self.ball, "is_minion", False):
+            if getattr(self.ball, "is_enraged", False):
+                self.ball.enrage_timer -= delta
+                self.ball.hp -= 20.0 * delta # rapid decay
+                if self.ball.enrage_timer <= 0 or self.ball.hp <= 0:
+                    self.ball.hp = 0
+                    self.ball.alive = False
+                    self.ball.is_enraged = False
             # Check for elite minion evolution
             if not getattr(self.ball, "is_elite_minion", False):
                 if not hasattr(self.ball, "survival_time"):
