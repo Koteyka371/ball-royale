@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-771] Weather dominance event — *2026-07-09 18:42:48 UTC*
+
+An arena event where two weather types are competing (e.g. fire vs ice). Players must capture points to determine which weather type takes over the arena, providing buffs to the winning team.
+
+---
+
 ## [idea-776] Dynamic Map Events — *2026-07-09 18:42:43 UTC*
 
 Random events that occur during the match to spice up the gameplay. Examples include sudden meteor showers that deal massive AoE damage, a low-gravity zone that expands in the center, or mysterious loot goblins that spawn and run away, dropping rare temporary boosters if destroyed.
