@@ -2370,10 +2370,16 @@ class Action:
                                             if decoy_type == "stun_trap":
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
                                             elif decoy_type == "explosive":
-                                                other.hp -= explosion_damage
+                                                actual_damage = explosion_damage
+                                                if getattr(b, "rearm_damage_boost", False):
+                                                    actual_damage *= 1.25
+                                                other.hp -= actual_damage
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
                                             else:
-                                                other.hp -= explosion_damage
+                                                actual_damage = explosion_damage
+                                                if getattr(b, "rearm_damage_boost", False):
+                                                    actual_damage *= 1.25
+                                                other.hp -= actual_damage
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
 
                                             import random
@@ -6770,6 +6776,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "rearm_token":
+                    self.ball.skill_timer = 0.0
+                    self.ball.rearm_damage_boost = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stealth_drone_item":
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = 15.0  # Duration of stealth effect
@@ -8207,6 +8221,10 @@ class Action:
                         else:
                             decoy.decoy_type = "explosive"
 
+                        if getattr(self.ball, "rearm_damage_boost", False):
+                            decoy.rearm_damage_boost = True
+                            self.ball.rearm_damage_boost = False
+
                         self.world.balls.append(decoy)
 
             elif skill_name == "decoy_clone":
@@ -8500,7 +8518,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -10075,7 +10093,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
