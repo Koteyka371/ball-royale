@@ -13096,7 +13096,7 @@
     },
     {
       "id": "idea-761",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Confusion Matrix",
@@ -21465,6 +21465,40 @@
         "src/ai/wall_jump_mastery_mutator.py",
         "src/ai/wall_jump_mastery_mutator.gd",
         "tests/test_wall_jump_mastery_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1253",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Low Gravity Zone Hazard",
+      "description": "A hazard that applies a low-gravity effect to balls within it, reducing their friction, altering movement speed unexpectedly, and increasing the distance they bounce off walls.",
+      "allowed_paths": [
+        "src/arena/low_gravity_zone.py",
+        "src/arena/low_gravity_zone.gd",
+        "tests/test_low_gravity_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1254",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Mirror Match Event",
+      "description": "An event that randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights.",
+      "allowed_paths": [
+        "src/ai/decoy_mirror_match.py",
+        "src/ai/decoy_mirror_match.gd",
+        "tests/test_decoy_mirror_match.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

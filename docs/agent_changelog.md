@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-761] Decoy Confusion Matrix — *2026-07-09 14:39:58 UTC*
+
+Trickster's decoys now periodically swap positions with each other, further confusing enemies trying to track the real player.
+
+---
+
 ## [idea-748] Shrinking Arena Edge Modifier — *2026-07-09 14:28:39 UTC*
 
 A new arena hazard mode where the boundary of the arena slowly shrinks over time, dealing significant damage to anyone caught outside the safe zone.
