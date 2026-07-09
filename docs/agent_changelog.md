@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-803] Shrinking Safe Zone with Modifiers — *2026-07-09 22:29:56 UTC*
+
+A battle royale mode where the shrinking safe zone periodically applies random buffs or debuffs to everyone inside, forcing players to adapt their strategies dynamically as the game progresses.
+
+---
+
 ## [idea-787] Decoy Confusion Effect — *2026-07-09 22:11:15 UTC*
 
 When a decoy explodes, it can inflict a 'confuse' status on nearby enemies, reversing their movement controls for a brief duration.

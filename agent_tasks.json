@@ -13812,7 +13812,7 @@
     },
     {
       "id": "idea-803",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zone with Modifiers",
@@ -22629,6 +22629,40 @@
         "src/ai/platform_tilt_mechanics.py",
         "src/ai/platform_tilt_mechanics.gd",
         "tests/test_platform_tilt_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1321",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Volcanic Eruption Mutator",
+      "description": "A global event that causes the center of the arena to periodically erupt, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial.",
+      "allowed_paths": [
+        "src/ai/volcanic_eruption_mutator.py",
+        "src/ai/volcanic_eruption_mutator.gd",
+        "tests/test_volcanic_eruption_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1322",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Grid Mode",
+      "description": "A battle royale variant where the arena is made up of a grid of tiles. Every few seconds, some tiles light up and then fall away, turning into bottomless pits. Players must constantly fight for position on the remaining tiles.",
+      "allowed_paths": [
+        "src/ai/shrinking_grid.py",
+        "src/ai/shrinking_grid.gd",
+        "tests/test_shrinking_grid.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
