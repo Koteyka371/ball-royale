@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Decoys",
+  "description": "A new mutator where decoys that explode trigger a chain reaction, instantly detonating any nearby allied decoys with a 1.5x larger explosion radius."
+}
