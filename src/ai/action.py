@@ -2587,8 +2587,9 @@ class Action:
                                             b_type = getattr(b, "ball_type", "")
                                             b_team = getattr(b, "team", "")
 
-                                            other.is_confused = True
-                                            other.confusion_timer = 3.0
+                                            if random.random() < 0.3:
+                                                other.is_confused = True
+                                                other.confusion_timer = 3.0
 
                                             if b_type == "trickster" or b_team == "trickster":
                                                 # Trickster decoy specific logic
@@ -2723,9 +2724,11 @@ class Action:
                                             other.is_stunned = True
                                         other.stun_timer = 2.0
 
-                                        if not getattr(other, "is_confused", False):
-                                            other.is_confused = True
-                                        other.confusion_timer = 3.0
+                                        import random
+                                        if random.random() < 0.3:
+                                            if not getattr(other, "is_confused", False):
+                                                other.is_confused = True
+                                            other.confusion_timer = 3.0
 
         if getattr(self.ball, "is_hologram", False):
             # Erratic movement

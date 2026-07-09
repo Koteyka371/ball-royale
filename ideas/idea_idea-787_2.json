@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Explosions",
+  "description": "When a decoy explodes and damages another decoy (from either an ally or an enemy), cause the secondary decoy to immediately explode as well, leading to chain reactions in dense fights."
+}
