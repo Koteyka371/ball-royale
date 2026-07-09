@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-708] Ricochet Shield — *2026-07-09 17:48:08 UTC*
+
+A temporary buff where colliding with a projectile reflects it back at the attacker.
+
+---
+
 ## [idea-727] Skill Re-roll Item — *2026-07-09 17:48:03 UTC*
 
 A rare booster item that drops occasionally which randomly re-rolls the ball's current unique skill for another one until the end of the round.
