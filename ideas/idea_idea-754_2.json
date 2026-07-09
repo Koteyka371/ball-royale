@@ -1,0 +1,6 @@
+{
+  "title": "Thawing Environment",
+  "description": "A variant where the arena has dynamic heat zones. Instead of relying purely on allies to unfreeze them, frozen players slowly thaw when pushed into a heat zone. However, if they are pushed into a frost zone, they become permanently shattered if they take any damage.",
+  "area": "innovation",
+  "risk": "medium"
+}
