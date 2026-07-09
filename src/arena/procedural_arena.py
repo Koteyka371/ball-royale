@@ -424,6 +424,15 @@ class ProceduralArena:
             setattr(teleporter, "change_timer", 5.0)
             self.hazards.append(teleporter)
 
+        # Generate magnetic pylons
+        num_pylons = random.randint(2, 5)
+        for p in range(num_pylons):
+            p_x, p_y = self.get_random_spawn_point(30.0)
+            p_id = len(self.hazards) + 12000 + p
+            pylon = Hazard(id=p_id, x=p_x, y=p_y, radius=30.0, kind="magnetic_pylon", damage=0.0)
+            setattr(pylon, "polarity", random.choice([1, -1]))
+            self.hazards.append(pylon)
+
         # Generate random teleporter pads
         num_teleporters = max(2, self.num_rooms)
 

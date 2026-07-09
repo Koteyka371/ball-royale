@@ -413,6 +413,15 @@ func generate():
             portal2.set_meta("target_x", p1_pt[0])
             portal2.set_meta("target_y", p1_pt[1])
 
+        # Generate magnetic pylons
+        var num_pylons = rng.randi_range(2, 5)
+        for p in range(num_pylons):
+            var p_pt = get_random_spawn_point(30.0)
+            var p_id = hazards.size() + 12000 + p
+            var pylon = ProceduralArena.Hazard.new(p_id, p_pt[0], p_pt[1], 30.0, "magnetic_pylon", 0.0)
+            pylon.set_meta("polarity", 1 if rng.randf() > 0.5 else -1)
+            hazards.append(pylon)
+
         var bh_hazards = []
         for h in hazards:
             if h.kind == "black_hole":
