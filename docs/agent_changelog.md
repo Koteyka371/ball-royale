@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-790] EM-Pulse Booster — *2026-07-09 20:23:38 UTC*
+
+A new collectible booster that disables all enemy skills and removes their shields within a large radius upon collection. Temporarily turns off certain arena hazards like lasers and gravity wells.
+
+---
+
 ## [idea-775] Weather Effects Expansion — *2026-07-09 20:03:04 UTC*
 
 Introduce dynamic weather patterns like rain reducing friction or heatwaves increasing stamina consumption.

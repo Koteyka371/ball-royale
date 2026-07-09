@@ -13589,7 +13589,7 @@
     },
     {
       "id": "idea-790",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EM-Pulse Booster",
@@ -22181,6 +22181,40 @@
         "src/ai/orbital_laser_strike.py",
         "src/ai/orbital_laser_strike.gd",
         "tests/test_orbital_laser_strike.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1295",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Radar Item",
+      "description": "A new booster/consumable item that reveals the next upcoming weather pattern 10 seconds before it activates, allowing players to find a safe zone or adjust their strategies (e.g., getting away from high friction zones before rain starts).",
+      "allowed_paths": [
+        "src/ai/radar_item.py",
+        "src/ai/radar_item.gd",
+        "tests/test_radar_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1296",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Season-based Weather Mutators",
+      "description": "Introduce global modifiers to matches based on ongoing seasons. For example, during 'Winter Season', snow and blizzard weather states appear much more frequently, providing a buff to certain cosmetic skins (like snow tires) globally.",
+      "allowed_paths": [
+        "src/ai/season_based_mutators.py",
+        "src/ai/season_based_mutators.gd",
+        "tests/test_season_based_mutators.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
