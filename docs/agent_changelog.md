@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-764] Friction Zones — *2026-07-09 18:42:52 UTC*
+
+Zones that increase turning capabilities.
+
+---
+
 ## [idea-771] Weather dominance event — *2026-07-09 18:42:48 UTC*
 
 An arena event where two weather types are competing (e.g. fire vs ice). Players must capture points to determine which weather type takes over the arena, providing buffs to the winning team.
