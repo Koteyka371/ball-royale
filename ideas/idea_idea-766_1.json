@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Mode",
+  "description": "Pairs of balls are randomly 'entangled'. If one ball takes damage or receives a buff, the entangled partner receives a portion of that effect, regardless of distance. Forces players to protect their partner or use them to safely buff themselves."
+}

@@ -14338,8 +14338,85 @@ class ShrinkingBoundaryMode extends GameMode:
 						else:
 							b.set("hp", hp)
 
+
+class SpatialAnomalyMode extends GameMode:
+	var anomaly_x = 500.0
+	var anomaly_y = 500.0
+	var anomaly_radius = 400.0
+
+	func _init() -> void:
+		name = "Spatial Anomaly"
+		description = "A random event that alters the physics of the arena. Projectiles curve, movement speed is affected depending on the direction of travel relative to the anomaly's center."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if "arena" in world and world.arena != null:
+			anomaly_x = world.arena.get("width") / 2.0 if world.arena.get("width") != null else 500.0
+			anomaly_y = world.arena.get("height") / 2.0 if world.arena.get("height") != null else 500.0
+
+		for b in balls:
+			if not b.alive:
+				continue
+
+			var dx = b.x - anomaly_x
+			var dy = b.y - anomaly_y
+			var s_dist = sqrt(dx * dx + dy * dy)
+
+			if s_dist < anomaly_radius and s_dist > 0:
+				var tx = -dy / s_dist
+				var ty = dx / s_dist
+
+				var dot = 0.0
+				if "vx" in b and "vy" in b and (b.vx != 0 or b.vy != 0):
+					var speed = sqrt(b.vx * b.vx + b.vy * b.vy)
+					var dir_x = b.vx / speed if speed > 0 else 0.0
+					var dir_y = b.vy / speed if speed > 0 else 0.0
+					dot = dir_x * (-dx / s_dist) + dir_y * (-dy / s_dist)
+
+				var speed_mult = 1.0 + (dot * 0.5)
+				var base_spd = b.get("base_speed") if b.get("base_speed") != null else (b.get("speed") if b.get("speed") != null else 100.0)
+				b.speed = base_spd * speed_mult
+
+				if "vx" in b and "vy" in b:
+					var speed = sqrt(b.vx * b.vx + b.vy * b.vy)
+					if speed > 0:
+						var curve_factor = 1.5 * delta
+						b.vx = b.vx + tx * speed * curve_factor
+						b.vy = b.vy + ty * speed * curve_factor
+
+						var new_speed = sqrt(b.vx * b.vx + b.vy * b.vy)
+						if new_speed > 0:
+							b.vx = (b.vx / new_speed) * speed
+							b.vy = (b.vy / new_speed) * speed
+
+		if "arena" in world and world.arena != null and "hazards" in world.arena:
+			var hazards = world.arena.get("hazards")
+			if typeof(hazards) == TYPE_ARRAY:
+				for h in hazards:
+					if "vx" in h and "vy" in h:
+						var dx = h.x - anomaly_x
+						var dy = h.y - anomaly_y
+						var s_dist = sqrt(dx * dx + dy * dy)
+
+						if s_dist < anomaly_radius and s_dist > 0:
+							var tx = -dy / s_dist
+							var ty = dx / s_dist
+
+							var speed = sqrt(h.vx * h.vx + h.vy * h.vy)
+							if speed > 0:
+								var curve_factor = 3.0 * delta # Projectiles curve faster
+								h.vx = h.vx + tx * speed * curve_factor
+								h.vy = h.vy + ty * speed * curve_factor
+
+								var new_speed = sqrt(h.vx * h.vx + h.vy * h.vy)
+								if new_speed > 0:
+									h.vx = (h.vx / new_speed) * speed
+									h.vy = (h.vy / new_speed) * speed
+
 var GAME_MODES = {
 	"freeze_tag": FreezeTagMode.new(),
+	"spatial_anomaly": SpatialAnomalyMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
 	"blackout_event": BlackoutEventMode.new(),
 	"solar_flare": SolarFlareMode.new(),

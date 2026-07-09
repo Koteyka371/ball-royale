@@ -11312,6 +11312,82 @@ class ShrinkingBoundaryMode(GameMode):
                         b.killer = "Shrinking Boundary"
                         b.hp = 0
 
+
+class SpatialAnomalyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Spatial Anomaly"
+        self.description = "A random event that alters the physics of the arena. Projectiles curve, movement speed is affected depending on the direction of travel relative to the anomaly's center."
+        self.anomaly_x = 500.0
+        self.anomaly_y = 500.0
+        self.anomaly_radius = 400.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        if hasattr(world, "arena"):
+            self.anomaly_x = getattr(world.arena, "width", 1000) / 2.0
+            self.anomaly_y = getattr(world.arena, "height", 1000) / 2.0
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            dx = b.x - self.anomaly_x
+            dy = b.y - self.anomaly_y
+            dist = math.hypot(dx, dy)
+
+            if dist < self.anomaly_radius and dist > 0:
+                tx = -dy / dist
+                ty = dx / dist
+
+                # Calculate dot product before modifying velocity
+                dot = 0
+                if hasattr(b, "vx") and hasattr(b, "vy") and (b.vx != 0 or b.vy != 0):
+                    speed = math.hypot(b.vx, b.vy)
+                    dir_x = b.vx / speed if speed > 0 else 0
+                    dir_y = b.vy / speed if speed > 0 else 0
+                    dot = dir_x * (-dx / dist) + dir_y * (-dy / dist)
+
+                # Modify speed based on travel direction relative to center
+                speed_mult = 1.0 + (dot * 0.5)
+                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * speed_mult
+
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    speed = math.hypot(b.vx, b.vy)
+                    if speed > 0:
+                        curve_factor = 1.5 * delta
+                        b.vx = b.vx + tx * speed * curve_factor
+                        b.vy = b.vy + ty * speed * curve_factor
+
+                        new_speed = math.hypot(b.vx, b.vy)
+                        if new_speed > 0:
+                            b.vx = (b.vx / new_speed) * speed
+                            b.vy = (b.vy / new_speed) * speed
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if hasattr(h, "vx") and hasattr(h, "vy"):
+                    dx = h.x - self.anomaly_x
+                    dy = h.y - self.anomaly_y
+                    dist = math.hypot(dx, dy)
+
+                    if dist < self.anomaly_radius and dist > 0:
+                        tx = -dy / dist
+                        ty = dx / dist
+
+                        speed = math.hypot(h.vx, h.vy)
+                        if speed > 0:
+                            curve_factor = 3.0 * delta # Projectiles and hazards curve faster
+                            h.vx = h.vx + tx * speed * curve_factor
+                            h.vy = h.vy + ty * speed * curve_factor
+
+                            new_speed = math.hypot(h.vx, h.vy)
+                            if new_speed > 0:
+                                h.vx = (h.vx / new_speed) * speed
+                                h.vy = (h.vy / new_speed) * speed
+
 GAME_MODES = {
     "spiked_walls": SpikedWallsMode(),
     "center_black_hole": CenterBlackHoleMode(),
@@ -12758,3 +12834,4 @@ class FreezeTagMode(GameMode):
         return None
 
 GAME_MODES['freeze_tag'] = FreezeTagMode()
+GAME_MODES['spatial_anomaly'] = SpatialAnomalyMode()
