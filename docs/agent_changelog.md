@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-625] Weather-Adaptive Cosmetics — *2026-07-09 17:14:42 UTC*
+
+Give balls visual upgrades that provide functional benefits based on the weather, such as snowshoes that negate the slippery effect on ice slicks or spiked tires that help them navigate mud pits without being slowed down as severely. These could be found as temporary power-ups.
+
+---
+
 ## [idea-745] Black Hole Generator — *2026-07-09 14:42:13 UTC*
 
 A rare collectable item that deploys a massive gravity well which pulls all entities towards the center and explodes after a short delay.
