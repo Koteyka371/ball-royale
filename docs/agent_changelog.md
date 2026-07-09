@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-606] Exploding Dummy Re-Arming — *2026-07-09 14:09:22 UTC*
+
+Players can pick up a 'Re-Arm' token to instantly reset their decoy skill cooldown and boost the explosion damage by 25% for their next deployment.
+
+---
+
 ## [idea-754] Game Mode: Freeze Tag — *2026-07-09 14:09:16 UTC*
 
 Players can freeze enemies upon collision. Frozen enemies cannot move or attack until an ally collides with them to unfreeze them. The game ends when one team is completely frozen.
