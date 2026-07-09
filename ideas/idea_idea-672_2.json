@@ -1,0 +1,4 @@
+{
+  "title": "Gravity Reversal Zone",
+  "description": "An arena event where a specific zone reverses all friction and knockback logic. Inside this zone, moving forwards pulls you backwards, and being knocked back by an attack actually pulls you towards the attacker."
+}

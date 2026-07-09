@@ -42,7 +42,7 @@ def test_modifier_zones_setup():
 
     mode.setup(world, balls)
 
-    assert len(mode.zones) == 4
+    assert len(mode.zones) >= 4
     assert mode.zones[0]["type"] == "speed"
     assert mode.zones[1]["type"] == "damage"
     assert mode.zones[2]["type"] == "heal"

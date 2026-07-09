@@ -142,6 +142,19 @@ class Action:
     def _attempt_damage(self, attacker, target) -> None:
         if getattr(target, "quantum_state_timer", 0.0) > 0.0:
             return
+
+        if getattr(target, "friendly_fire_reflect_active", False) and getattr(attacker, "team", "A") == getattr(target, "team", "B") and getattr(attacker, "id", None) != getattr(target, "id", None):
+            original_damage = getattr(attacker, "damage", 10.0)
+            if hasattr(self.world, "_deal_damage"):
+                old_dmg = getattr(target, "damage", original_damage)
+                target.damage = original_damage
+                self.world._deal_damage(target, attacker)
+                target.damage = old_dmg
+            else:
+                if hasattr(attacker, "hp"):
+                    attacker.hp -= original_damage
+            return
+
         import random
         if getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower() == 'alchemist' and random.random() < 0.25:
             # 25% chance to apply a weak stacking poison effect
@@ -10361,6 +10374,24 @@ class Action:
                                     if hasattr(item, "x"): item.x += nx * pull_strength
                                     if hasattr(item, "y"): item.y += ny * pull_strength
 
+
+        if hasattr(self.ball, "friendly_fire_reflect_timer") and self.ball.friendly_fire_reflect_timer > 0:
+            self.ball.friendly_fire_reflect_timer -= delta
+            if self.ball.friendly_fire_reflect_timer <= 0:
+                self.ball.friendly_fire_reflect_active = False
+
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            hazards_to_remove = []
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "friendly_fire_reflect_trap":
+                    dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                    if dist_sq < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 15.0))**2:
+                        self.ball.friendly_fire_reflect_active = True
+                        self.ball.friendly_fire_reflect_timer = 5.0
+                        hazards_to_remove.append(hazard)
+            for h in hazards_to_remove:
+                if h in self.world.arena.hazards:
+                    self.world.arena.hazards.remove(h)
         if hasattr(self.ball, "pull_booster_timer") and self.ball.pull_booster_timer > 0:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

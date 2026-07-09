@@ -1,0 +1,5 @@
+Task: idea-672
+- Added friendly_fire_reflect_trap hazard logic in action.py
+- Reflected damage to friendly attackers when active
+- Added test_friendly_fire_reflect.py to verify
+- Included two new feature ideas in ideas directory
