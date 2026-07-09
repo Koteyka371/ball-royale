@@ -1238,6 +1238,91 @@ func _init(ball_ref, world_ref):
 func execute(strategy: String, delta: float):
 	var b_type = self.ball.get("ball_type")
 	if b_type == null and "BALL_TYPE" in self.ball: b_type = self.ball.BALL_TYPE
+
+	if b_type != null and str(b_type).to_lower() == "trickster":
+		var decoy_swap_timer = 0.0
+		if "decoy_swap_timer" in self.ball:
+			decoy_swap_timer = self.ball.decoy_swap_timer
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("decoy_swap_timer"):
+			decoy_swap_timer = self.ball.get_meta("decoy_swap_timer")
+		else:
+			decoy_swap_timer = randf_range(2.0, 4.0)
+
+		decoy_swap_timer -= delta
+		if decoy_swap_timer <= 0:
+			decoy_swap_timer = randf_range(2.0, 4.0)
+			if "balls" in self.world:
+				var my_decoys = []
+				for b in self.world.balls:
+					var is_decoy = false
+					if "is_decoy" in b and b.is_decoy: is_decoy = true
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"): is_decoy = true
+					elif typeof(b) == TYPE_DICTIONARY and b.has("is_decoy") and b["is_decoy"]: is_decoy = true
+
+					var b_owner = null
+					if "owner_id" in b: b_owner = b.owner_id
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("owner_id"): b_owner = b.get_meta("owner_id")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("owner_id"): b_owner = b["owner_id"]
+
+					var is_alive = true
+					if "alive" in b: is_alive = b.alive
+
+					var self_id = null
+					if "id" in self.ball: self_id = self.ball.id
+
+					if is_decoy and b_owner == self_id and is_alive:
+						my_decoys.append(b)
+
+				if my_decoys.size() >= 2:
+					# pick two random
+					my_decoys.shuffle()
+					var d1 = my_decoys[0]
+					var d2 = my_decoys[1]
+
+					var tx = d1.x
+					var ty = d1.y
+					d1.x = d2.x
+					d1.y = d2.y
+					d2.x = tx
+					d2.y = ty
+
+					var get_prop = func(b, prop):
+						if prop in b: return b[prop]
+						elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta(prop): return b.get_meta(prop)
+						elif typeof(b) == TYPE_DICTIONARY and b.has(prop): return b[prop]
+						return false if prop.begins_with("is_") else 0.0
+
+					var set_prop = func(b, prop, val):
+						if prop in b: b[prop] = val
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta(prop, val)
+						elif typeof(b) == TYPE_DICTIONARY: b[prop] = val
+
+					var is_orbiting_1 = get_prop.call(d1, "is_orbiting")
+					var is_orbiting_2 = get_prop.call(d2, "is_orbiting")
+					set_prop.call(d1, "is_orbiting", is_orbiting_2)
+					set_prop.call(d2, "is_orbiting", is_orbiting_1)
+
+					var is_mirroring_1 = get_prop.call(d1, "is_mirroring")
+					var is_mirroring_2 = get_prop.call(d2, "is_mirroring")
+					set_prop.call(d1, "is_mirroring", is_mirroring_2)
+					set_prop.call(d2, "is_mirroring", is_mirroring_1)
+
+					var orbit_angle_1 = get_prop.call(d1, "orbit_angle")
+					var orbit_angle_2 = get_prop.call(d2, "orbit_angle")
+					set_prop.call(d1, "orbit_angle", orbit_angle_2)
+					set_prop.call(d2, "orbit_angle", orbit_angle_1)
+
+					if "events" in self.world:
+						self.world.events.append({"type": "teleport", "data": {"x": d1.x, "y": d1.y}})
+						self.world.events.append({"type": "teleport", "data": {"x": d2.x, "y": d2.y}})
+
+		if "decoy_swap_timer" in self.ball:
+			self.ball.decoy_swap_timer = decoy_swap_timer
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+			self.ball.set_meta("decoy_swap_timer", decoy_swap_timer)
+		elif typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["decoy_swap_timer"] = decoy_swap_timer
+
 	if b_type != null and str(b_type).to_lower() == "alchemist":
 		self.ball.speed_multiplier = 1.0
 		if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:

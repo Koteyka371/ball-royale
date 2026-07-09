@@ -774,6 +774,56 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
         import math
+
+        if getattr(self.ball, "ball_type", "") == "trickster":
+            if not hasattr(self.ball, "decoy_swap_timer"):
+                import random
+                self.ball.decoy_swap_timer = random.uniform(2.0, 4.0)
+
+            self.ball.decoy_swap_timer -= delta
+            if self.ball.decoy_swap_timer <= 0:
+                import random
+                self.ball.decoy_swap_timer = random.uniform(2.0, 4.0)
+                if hasattr(self.world, "balls"):
+                    my_decoys = [b for b in self.world.balls if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == getattr(self.ball, "id", None) and getattr(b, "alive", True)]
+                    if len(my_decoys) >= 2:
+                        d1, d2 = random.sample(my_decoys, 2)
+
+                        # Swap positions
+                        d1.x, d2.x = d2.x, d1.x
+                        d1.y, d2.y = d2.y, d1.y
+
+                        # Swap states
+                        is_orbiting_1 = getattr(d1, "is_orbiting", False)
+                        is_orbiting_2 = getattr(d2, "is_orbiting", False)
+                        d1.is_orbiting = is_orbiting_2
+                        d2.is_orbiting = is_orbiting_1
+
+                        is_mirroring_1 = getattr(d1, "is_mirroring", False)
+                        is_mirroring_2 = getattr(d2, "is_mirroring", False)
+                        d1.is_mirroring = is_mirroring_2
+                        d2.is_mirroring = is_mirroring_1
+
+                        orbit_angle_1 = getattr(d1, "orbit_angle", 0.0)
+                        orbit_angle_2 = getattr(d2, "orbit_angle", 0.0)
+                        d1.orbit_angle = orbit_angle_2
+                        d2.orbit_angle = orbit_angle_1
+
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({
+                                "type": "teleport",
+                                "data": {
+                                    "x": d1.x,
+                                    "y": d1.y
+                                }
+                            })
+                            self.world.events.append({
+                                "type": "teleport",
+                                "data": {
+                                    "x": d2.x,
+                                    "y": d2.y
+                                }
+                            })
         # Reset alchemist speed buff at the start of tick
         if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'alchemist':
             self.ball.speed_multiplier = 1.0
