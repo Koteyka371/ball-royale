@@ -1,0 +1,4 @@
+{
+    "title": "Reverse Time Zone Hazard",
+    "description": "A slow-moving hazard bubble that travels across the arena. Any ball caught inside the bubble has its velocity reversed, its cooldowns paused, and its past state continuously replayed in reverse. They must actively struggle against their own previous movements to escape the zone."
+}

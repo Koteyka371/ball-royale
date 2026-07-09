@@ -7157,14 +7157,30 @@ class Action:
                         past = history[0]
                         self.ball.x = past.get("x", self.ball.x)
                         self.ball.y = past.get("y", self.ball.y)
-                        self.ball.hp = past.get("hp", getattr(self.ball, "max_hp", 100.0))
-                        if "attack_timer" in past: self.ball.attack_timer = past["attack_timer"]
-                        if "skill_timer" in past: self.ball.skill_timer = past["skill_timer"]
+                        self.ball.vx = past.get("vx", 0.0)
+                        self.ball.vy = past.get("vy", 0.0)
+                        self.ball.hp = past.get("hp", self.ball.hp)
+                        self.ball.stamina = past.get("stamina", getattr(self.ball, "stamina", 100.0))
 
-                        if hasattr(self.world, "events"):
-                            self.world.events.append({"type": "time_rewind", "data": {"id": getattr(self.ball, "id", None)}})
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'time_rewind', 'data': {'id': getattr(self.ball, 'id', None)}})
+
 
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "time_stop_relic":
+                    enemies = self._get_enemies()
+                    if enemies:
+                        for b in enemies:
+                            b.stun_timer = max(getattr(b, "stun_timer", 0.0), 3.0)
+                            b.time_stopped = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        for h in self.world.arena.hazards:
+                            h.time_stop_timer = 3.0
+                            h.time_stopped = True
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
@@ -8500,7 +8516,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "time_stop_relic"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -10075,7 +10091,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "time_stop_relic"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

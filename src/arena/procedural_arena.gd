@@ -638,6 +638,16 @@ func update_zone(current_tick: int, delta: float) -> void:
 
         if "hazards" in self:
             for hazard in hazards:
+                var time_stop = 0.0
+                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("time_stop_timer"):
+                    time_stop = hazard.get_meta("time_stop_timer")
+                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("time_stop_timer"):
+                    time_stop = hazard.time_stop_timer
+                if time_stop > 0.0:
+                    time_stop -= delta
+                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("time_stop_timer", time_stop)
+                    elif typeof(hazard) == TYPE_DICTIONARY: hazard.time_stop_timer = time_stop
+                    continue
                 if hazard.kind == "bounce_laser":
                     var speed = 300.0
                     if hazard.has_method("has_meta") and hazard.has_meta("speed"):

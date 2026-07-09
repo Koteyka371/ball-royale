@@ -568,6 +568,9 @@ class ProceduralArena:
 
             if hasattr(self, "hazards"):
                 for hazard in self.hazards:
+                    if getattr(hazard, "time_stop_timer", 0.0) > 0.0:
+                        hazard.time_stop_timer -= delta
+                        continue
                     if hazard.kind == "bounce_laser":
                         if not hasattr(hazard, "vx"):
                             import random
