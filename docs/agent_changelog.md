@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-798] Collapsing Floor Panels Arena — *2026-07-09 22:04:30 UTC*
+
+An arena where the play area shrinks because large square panels composing the floor glow red and then fall away entirely into a void. Balls that fall into the void instantly die, pushing everyone into a tighter grid as the match progresses.
+
+---
+
 ## [idea-785] Ice Skating Weather — *2026-07-09 22:04:25 UTC*
 
 A new weather event where the ground becomes ice, vastly reducing friction for all balls and causing them to slide when changing directions or after being knocked back.
