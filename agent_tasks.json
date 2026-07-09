@@ -21504,6 +21504,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1255",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Token",
+      "description": "A rare collectable item that allows a player to instantly swap positions with a targeted enemy or ally, confusing opponents and enabling strategic repositioning.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_token.py",
+        "src/ai/quantum_swap_token.gd",
+        "tests/test_quantum_swap_token.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1256",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aegis Reflection Shield",
+      "description": "A temporary booster that not only absorbs all incoming projectile and skill damage but also reflects 50% of it back to the original attacker.",
+      "allowed_paths": [
+        "src/ai/aegis_reflection_shield.py",
+        "src/ai/aegis_reflection_shield.gd",
+        "tests/test_aegis_reflection_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

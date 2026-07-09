@@ -1,6 +1,0 @@
-{
-  "title": "Reverse Freeze Tag",
-  "description": "A mutator or variant of Freeze Tag where everyone starts frozen, and there is one 'Healer' per team. The healers must dodge hazards and quickly unfreeze their entire team before the other healer does.",
-  "area": "innovation",
-  "risk": "low"
-}

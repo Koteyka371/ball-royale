@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Entanglement Hazard",
-  "description": "A new hazard type that links the fate of two balls that enter it simultaneously. If one ball takes damage, the other takes a percentage of it. If one ball is healed, the other is as well. The effect lasts for a set duration or until one ball is eliminated."
-}
