@@ -2544,6 +2544,10 @@ class Action:
                                             b_type = getattr(b, "ball_type", "")
                                             b_team = getattr(b, "team", "")
 
+                                            if random.random() < 0.3:
+                                                other.is_confused = True
+                                                other.confusion_timer = 3.0
+
                                             if b_type == "trickster" or b_team == "trickster":
                                                 # Trickster decoy specific logic
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 1.5
@@ -2551,10 +2555,6 @@ class Action:
                                                 # Minor visual noise
                                                 if hasattr(self.world, "events"):
                                                     self.world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
-
-                                                if random.random() < 0.3:
-                                                    other.is_confused = True
-                                                    other.confusion_timer = 3.0
 
                                                 # Generate fragmentation visuals bouncing off other
                                                 if hasattr(self.world, "events"):
