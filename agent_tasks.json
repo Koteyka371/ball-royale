@@ -21215,6 +21215,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1238",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Rubber Band Arena",
+      "description": "A mutator where pairs of players are tethered together by an elastic band. If they move too far apart, they are snapped back towards each other, dealing collision damage.",
+      "allowed_paths": [
+        "src/arena/rubber_band_arena.py",
+        "src/arena/rubber_band_arena.gd",
+        "tests/test_rubber_band_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1239",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Bomb Trap",
+      "description": "A new trap type that attaches to the first ball that touches it and detonates after 3 seconds, damaging them and nearby players. Can be passed to another player by colliding with them before detonation.",
+      "allowed_paths": [
+        "src/arena/sticky_bomb_trap.py",
+        "src/arena/sticky_bomb_trap.gd",
+        "tests/test_sticky_bomb_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

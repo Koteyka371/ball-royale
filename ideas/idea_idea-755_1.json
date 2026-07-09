@@ -1,4 +1,0 @@
-{
-    "title": "Sticky Bomb Trap",
-    "description": "A new trap type that attaches to the first ball that touches it and detonates after 3 seconds, damaging them and nearby players. Can be passed to another player by colliding with them before detonation."
-}
