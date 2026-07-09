@@ -12153,6 +12153,95 @@ class MultipleSafeZonesMode(GameMode):
         self.zones = new_zones
 
 
+
+class PhysicsAnomalyEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Physics Anomaly"
+        self.description = "A random event that alters the physics of the arena. Projectiles curve, movement speed is affected depending on the direction of travel relative to the anomaly's center."
+        self.anomaly_center = {"x": 500.0, "y": 500.0}
+        self.anomaly_radius = 400.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.anomaly_center = {"x": arena_w / 2.0, "y": arena_h / 2.0}
+
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            world.arena.hazards.append({
+                "id": "physics_anomaly_core",
+                "x": self.anomaly_center["x"],
+                "y": self.anomaly_center["y"],
+                "radius": self.anomaly_radius,
+                "kind": "physics_anomaly"
+            })
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        ax = self.anomaly_center["x"]
+        ay = self.anomaly_center["y"]
+
+        entities_to_process = list(balls)
+        if hasattr(world, "projectiles"):
+            entities_to_process.extend(world.projectiles)
+        if hasattr(world, "entities"):
+            for e in world.entities:
+                if e not in entities_to_process:
+                    entities_to_process.append(e)
+
+        for b in entities_to_process:
+            if not getattr(b, "alive", True):
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            bvx = getattr(b, "vx", 0.0)
+            bvy = getattr(b, "vy", 0.0)
+
+            dx = ax - bx
+            dy = ay - by
+            dist = math.sqrt(dx**2 + dy**2)
+
+            base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+            if not hasattr(b, "base_speed"):
+                b.base_speed = base_speed
+
+            if dist > 0 and dist < self.anomaly_radius:
+                nx = dx / dist
+                ny = dy / dist
+
+                v_mag = math.sqrt(bvx**2 + bvy**2)
+
+                if v_mag > 0.1:
+                    dir_x = bvx / v_mag
+                    dir_y = bvy / v_mag
+
+                    dot = dir_x * nx + dir_y * ny
+                    speed_mult = 1.0 + (dot * 0.5)
+                    b.speed = base_speed * speed_mult
+
+                    tx = -ny
+                    ty = nx
+
+                    curve_strength = 200.0 * delta
+
+                    cross = dir_x * ty - dir_y * tx
+                    if cross > 0:
+                        b.vx += tx * curve_strength
+                        b.vy += ty * curve_strength
+                    else:
+                        b.vx -= tx * curve_strength
+                        b.vy -= ty * curve_strength
+            else:
+                b.speed = base_speed
+
+
 GAME_MODES = {
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
@@ -13722,3 +13811,4 @@ class WeatherClashMode(GameMode):
 
 GAME_MODES['freeze_tag'] = FreezeTagMode()
 GAME_MODES['weather_clash'] = WeatherClashMode()
+GAME_MODES['physics_anomaly_event'] = PhysicsAnomalyEventMode()
