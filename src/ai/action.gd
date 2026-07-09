@@ -8633,12 +8633,43 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("active", false)
                         continue
                     elif hazard.kind == "stamina_drain_zone":
+                        var current_tick = 0
+                        if "tick" in self.world:
+                            current_tick = self.world.tick
+                        elif self.world.has_method("get"):
+                            current_tick = self.world.get("tick", 0)
+
                         if "stamina" in self.ball:
                             var stam = self.ball.stamina
-                            self.ball.stamina = max(0.0, stam - 30.0 * delta)
+                            var new_stam = max(0.0, stam - 30.0 * delta)
+                            self.ball.stamina = new_stam
+
+                            if current_tick > 0 and current_tick % 120 == 0:
+                                if new_stam <= 0.0:
+                                    var st = 0.0
+                                    if "skill_timer" in self.ball:
+                                        st = self.ball.skill_timer
+                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill_timer"):
+                                        st = self.ball["skill_timer"]
+
+                                    var new_st = max(st, 1.0)
+                                    if "skill_timer" in self.ball:
+                                        self.ball.skill_timer = new_st
+                                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                                        self.ball["skill_timer"] = new_st
+
                         elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
                             var stam = self.ball.get_meta("stamina")
-                            self.ball.set_meta("stamina", max(0.0, stam - 30.0 * delta))
+                            var new_stam = max(0.0, stam - 30.0 * delta)
+                            self.ball.set_meta("stamina", new_stam)
+
+                            if current_tick > 0 and current_tick % 120 == 0:
+                                if new_stam <= 0.0:
+                                    var st = 0.0
+                                    if self.ball.has_meta("skill_timer"):
+                                        st = self.ball.get_meta("skill_timer")
+
+                                    self.ball.set_meta("skill_timer", max(st, 1.0))
                         continue
                     elif hazard.kind == "glitch_zone":
                         if typeof(self.ball) == TYPE_DICTIONARY:
