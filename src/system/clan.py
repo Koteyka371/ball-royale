@@ -161,6 +161,17 @@ class ClanManager:
                 return True
         return False
 
+
+    def unlock_buff(self, clan_name, buff_name):
+        if clan_name in self.data["clans"]:
+            if "buffs" not in self.data["clans"][clan_name]:
+                self.data["clans"][clan_name]["buffs"] = []
+            if buff_name not in self.data["clans"][clan_name]["buffs"]:
+                self.data["clans"][clan_name]["buffs"].append(buff_name)
+                self.save()
+                return True
+        return False
+
     def get_clan_leaderboard(self):
         clans = []
         for name, info in self.data["clans"].items():

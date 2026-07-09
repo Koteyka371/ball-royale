@@ -12511,6 +12511,9 @@ class ClanTournamentMode extends GameMode:
 	var max_wins_needed = 2
 	var tournament_over = false
 	var winner_clan = null
+	var survival_points = {"ClanA": 0.0, "ClanB": 0.0}
+	var elimination_points = {"ClanA": 0, "ClanB": 0}
+	var prev_alive = {}
 
 	func _init():
 		name = "clan_tournament"
@@ -12523,6 +12526,9 @@ class ClanTournamentMode extends GameMode:
 		current_round = 1
 		tournament_over = false
 		winner_clan = null
+		survival_points = {"ClanA": 0.0, "ClanB": 0.0}
+		elimination_points = {"ClanA": 0, "ClanB": 0}
+		prev_alive = {}
 
 		if balls.size() >= 2:
 			var mid = balls.size() / 2
@@ -12544,9 +12550,20 @@ class ClanTournamentMode extends GameMode:
 		for clan in clans.keys():
 			for ball in world.balls:
 				var bid = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
-				var balive = ball.get_meta("alive") if ball.has_method("get_meta") and ball.has_meta("alive") else ball.alive
-				if clans[clan].has(bid) and balive:
-					alive_counts[clan] += 1
+				if clans[clan].has(bid):
+					var is_alive = ball.get_meta("alive") if ball.has_method("get_meta") and ball.has_meta("alive") else ball.alive
+					var was_alive = true
+					if prev_alive.has(bid):
+						was_alive = prev_alive[bid]
+
+					if is_alive:
+						alive_counts[clan] += 1
+						survival_points[clan] += delta
+					elif was_alive and not is_alive:
+						var opp_clan = "ClanB" if clan == "ClanA" else "ClanA"
+						elimination_points[opp_clan] += 1
+
+					prev_alive[bid] = is_alive
 
 		var round_winner = null
 		if alive_counts["ClanA"] > 0 and alive_counts["ClanB"] == 0:
@@ -12586,10 +12603,13 @@ class ClanTournamentMode extends GameMode:
 		var ClanManagerClass = load("res://src/system/clan.gd")
 		if ClanManagerClass:
 			var cm = ClanManagerClass.new()
+			var total_points = 500 + int(survival_points[w_clan] * 0.1) + (elimination_points[w_clan] * 50)
 			if cm.has_method("add_clan_points"):
-				cm.add_clan_points(w_clan, 500)
+				cm.add_clan_points(w_clan, total_points)
 			if cm.has_method("unlock_cosmetic"):
-				cm.unlock_cosmetic(w_clan, "Tournament_Champion_Aura")
+				cm.unlock_cosmetic(w_clan, "Tournament_Champion_Banner")
+			if cm.has_method("unlock_buff"):
+				cm.unlock_buff(w_clan, "Guild_Wide_Passive_Buff")
 
 class SweepingPaddlesMode extends GameMode:
 	var sweep_timer: float = 0.0

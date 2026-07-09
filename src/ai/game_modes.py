@@ -11967,6 +11967,9 @@ class ClanTournamentMode(GameMode):
         self.max_wins_needed = 2  # Best of 3
         self.tournament_over = False
         self.winner_clan = None
+        self.survival_points = {"ClanA": 0.0, "ClanB": 0.0}
+        self.elimination_points = {"ClanA": 0, "ClanB": 0}
+        self.prev_alive = {}
 
     def setup(self, world, balls):
         super().setup(world, balls)
@@ -11976,6 +11979,9 @@ class ClanTournamentMode(GameMode):
         self.current_round = 1
         self.tournament_over = False
         self.winner_clan = None
+        self.survival_points = {"ClanA": 0.0, "ClanB": 0.0}
+        self.elimination_points = {"ClanA": 0, "ClanB": 0}
+        self.prev_alive = {}
 
         if len(balls) >= 2:
             guild1_balls = balls[:len(balls)//2]
@@ -11990,8 +11996,19 @@ class ClanTournamentMode(GameMode):
         alive_counts = {"ClanA": 0, "ClanB": 0}
         for clan, members in self.clans.items():
             for ball in self.world.balls:
-                if ball.id in members and getattr(ball, "alive", False):
-                    alive_counts[clan] += 1
+                if ball.id in members:
+                    is_alive = getattr(ball, "alive", False)
+                    was_alive = self.prev_alive.get(ball.id, True)
+
+                    if is_alive:
+                        alive_counts[clan] += 1
+                        self.survival_points[clan] += delta
+                    elif was_alive and not is_alive:
+                        # Ball died this tick
+                        opp_clan = "ClanB" if clan == "ClanA" else "ClanA"
+                        self.elimination_points[opp_clan] += 1
+
+                    self.prev_alive[ball.id] = is_alive
 
         # Check if a round has ended
         round_winner = None
@@ -12025,8 +12042,11 @@ class ClanTournamentMode(GameMode):
         try:
             from system.clan import ClanManager
             cm = ClanManager()
-            cm.add_clan_points(winner_clan, 500)
-            cm.unlock_cosmetic(winner_clan, "Tournament_Champion_Aura")
+            total_points = 500 + int(self.survival_points[winner_clan] * 0.1) + (self.elimination_points[winner_clan] * 50)
+            cm.add_clan_points(winner_clan, total_points)
+            cm.unlock_cosmetic(winner_clan, "Tournament_Champion_Banner")
+            if hasattr(cm, "unlock_buff"):
+                cm.unlock_buff(winner_clan, "Guild_Wide_Passive_Buff")
         except ImportError:
             pass
 

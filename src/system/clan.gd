@@ -178,6 +178,17 @@ func unlock_cosmetic(clan_name: String, cosmetic: String) -> bool:
             return true
     return false
 
+
+func unlock_buff(clan_name: String, buff_name: String) -> bool:
+    if data["clans"].has(clan_name):
+        if not data["clans"][clan_name].has("buffs"):
+            data["clans"][clan_name]["buffs"] = []
+        if not data["clans"][clan_name]["buffs"].has(buff_name):
+            data["clans"][clan_name]["buffs"].append(buff_name)
+            save_clans()
+            return true
+    return false
+
 func get_clan_leaderboard() -> Array:
     var clans_list = []
     for clan_name in data["clans"].keys():

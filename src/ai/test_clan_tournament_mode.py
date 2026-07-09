@@ -51,3 +51,7 @@ def test_clan_tournament_mode():
     assert mode.scores["ClanA"] == 2
     assert mode.tournament_over == True
     assert mode.winner_clan == "ClanA"
+
+    # Assert survival/elimination points
+    assert mode.survival_points["ClanA"] > 0
+    assert mode.elimination_points["ClanA"] == 2  # they get reset or only 2 happened in the tick that triggered end tournament
