@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-775] Weather Effects Expansion — *2026-07-09 20:03:04 UTC*
+
+Introduce dynamic weather patterns like rain reducing friction or heatwaves increasing stamina consumption.
+
+---
+
 ## [idea-757] Random Event: Meteor Shower — *2026-07-09 19:47:26 UTC*
 
 Periodically, shadows appear on the ground, growing in size. After a short delay, meteors strike those locations, leaving behind temporary lava puddles that deal damage over time to anyone stepping in them.

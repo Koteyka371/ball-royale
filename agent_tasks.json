@@ -13334,7 +13334,7 @@
     },
     {
       "id": "idea-775",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Effects Expansion",
@@ -22147,6 +22147,40 @@
         "src/ai/prismatic_aura_boss.py",
         "src/ai/prismatic_aura_boss.gd",
         "tests/test_prismatic_aura_boss.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1293",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Trait",
+      "description": "A rare starting trait where two players are quantum entangled. Whatever damage or healing one receives, the other receives 50% of it. However, if one player is eliminated, the other gains a massive permanent speed and damage boost (Enraged State).",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_trait.py",
+        "src/ai/quantum_entanglement_trait.gd",
+        "tests/test_quantum_entanglement_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1294",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Laser Strike Event",
+      "description": "Periodically, a massive orbital laser targets the player with the highest score. It takes 3 seconds to lock on, providing a visible warning beam. When it fires, it leaves a scorched earth trail that heavily slows and slightly damages any balls moving through it.",
+      "allowed_paths": [
+        "src/ai/orbital_laser_strike.py",
+        "src/ai/orbital_laser_strike.gd",
+        "tests/test_orbital_laser_strike.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
