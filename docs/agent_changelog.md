@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-756] Wall Bounce Combos — *2026-07-09 14:18:46 UTC*
+
+If a player manages to knock an opponent into a wall multiple times in quick succession (or hit multiple walls with one knockback), the wall damage multiplier significantly increases, and the attacking player gets a temporary speed boost.
+
+---
+
 ## [idea-743] Reverse Time Pickup — *2026-07-09 14:18:42 UTC*
 
 An item that, when picked up, rewinds the player's position and health back to where they were 3 seconds ago, offering a get-out-of-jail-free card.
