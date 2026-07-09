@@ -22753,6 +22753,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1328",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Mine Trap",
+      "description": "A throwable mine that latches onto the first ball it hits. It doesn't slow them down but ticks down an explosion timer, forcing them to run away from allies before it goes off.",
+      "allowed_paths": [
+        "src/arena/sticky_mine_trap.py",
+        "src/arena/sticky_mine_trap.gd",
+        "tests/test_sticky_mine_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1329",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Bombs",
+      "description": "Bombs that, when exploded, will trigger the immediate explosion of any other bombs in their blast radius, allowing for massive field-clearing chain reactions.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_bombs.py",
+        "src/ai/chain_reaction_bombs.gd",
+        "tests/test_chain_reaction_bombs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

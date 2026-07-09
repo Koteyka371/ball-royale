@@ -1,4 +1,0 @@
-{
-    "title": "Sticky Mine Trap",
-    "description": "A throwable mine that latches onto the first ball it hits. It doesn't slow them down but ticks down an explosion timer, forcing them to run away from allies before it goes off."
-}
