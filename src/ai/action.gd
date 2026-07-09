@@ -3294,7 +3294,7 @@ func execute(strategy: String, delta: float):
 				if "radius" in self.ball:
 					my_rad = float(self.ball.radius)
 				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
-				if dist <= hazard.get("radius", 0.0) + my_rad:
+				if s_dist <= hazard.get("radius", 0.0) + my_rad:
 					var drain_rate = hazard.get("damage", 5.0)
 					var old_max = self.ball.max_hp if "max_hp" in self.ball else 100.0
 					var new_max = max(10.0, old_max - drain_rate * delta)
@@ -3334,7 +3334,7 @@ func execute(strategy: String, delta: float):
 				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
 				var h_rad = 50.0
 				if "radius" in hazard: h_rad = float(hazard.radius)
-				if dist <= h_rad + my_rad:
+				if s_dist <= h_rad + my_rad:
 					var owner_team = hazard.get("owner_team")
 					if owner_team == null:
 						var owner_id = hazard.get("owner_id")
@@ -3381,7 +3381,7 @@ func execute(strategy: String, delta: float):
 				if "radius" in self.ball:
 					my_rad = float(self.ball.radius)
 				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
-				if dist <= hazard.radius + my_rad:
+				if s_dist <= hazard.radius + my_rad:
 					var time_scale = 0.5
 					if "time_scale" in hazard:
 						time_scale = float(hazard.time_scale)
@@ -4754,7 +4754,7 @@ func execute(strategy: String, delta: float):
             var ball_r = 10.0
             if "radius" in self.ball: ball_r = self.ball.radius
             elif self.ball.has_method("get_radius"): ball_r = self.ball.get_radius()
-            if dist >= r - ball_r - 0.01:
+            if s_dist >= r - ball_r - 0.01:
                 var is_immune = false
                 if self.ball.has_meta("zone_immunity_timer") and self.ball.get_meta("zone_immunity_timer") > 0:
                     is_immune = true
@@ -6835,7 +6835,7 @@ func execute(strategy: String, delta: float):
         if ball_type != "spectator" and "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
                 var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
-                if dist < (self.ball.radius + hazard.radius):
+                if s_dist < (self.ball.radius + hazard.radius):
                     if hazard.kind == "temporal_rift":
 			continue
                     if hazard.kind in ["explosive_barrel", "volatile_barrel"]:
