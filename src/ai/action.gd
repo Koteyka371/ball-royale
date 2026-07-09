@@ -1236,6 +1236,30 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var so_timer = 0.0
+    if "speed_overdrive_timer" in self.ball:
+        so_timer = float(self.ball.speed_overdrive_timer)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_overdrive_timer"):
+        so_timer = self.ball.get_meta("speed_overdrive_timer")
+
+    if so_timer > 0.0:
+        so_timer -= delta
+        if so_timer <= 0.0:
+            so_timer = 0.0
+
+        if "stun_timer" in self.ball: self.ball.stun_timer = 0.0
+        if "is_stunned" in self.ball: self.ball.is_stunned = false
+        if "speed_debuff_timer" in self.ball: self.ball.speed_debuff_timer = 0.0
+        if "speed_debuff_multiplier" in self.ball: self.ball.speed_debuff_multiplier = 1.0
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("stun_timer", 0.0)
+            self.ball.set_meta("is_stunned", false)
+            self.ball.set_meta("speed_debuff_timer", 0.0)
+            self.ball.set_meta("speed_overdrive_timer", so_timer)
+        if "speed_overdrive_timer" in self.ball:
+            self.ball.speed_overdrive_timer = so_timer
+
 	var b_type = self.ball.get("ball_type")
 	if b_type == null and "BALL_TYPE" in self.ball: b_type = self.ball.BALL_TYPE
 
@@ -8440,6 +8464,14 @@ func execute(strategy: String, delta: float):
                                 if "hp" in self.ball: self.ball.hp = hp
 
                             elif powerup == "speed":
+                                var existing_speed = 0.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
+                                    existing_speed = self.ball.get_meta("speed_boost_timer")
+                                elif "speed_boost_timer" in self.ball:
+                                    existing_speed = self.ball.speed_boost_timer
+                                if existing_speed > 0.0:
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_overdrive_timer", 3.0 * combo_multiplier)
+                                    if "speed_overdrive_timer" in self.ball: self.ball.speed_overdrive_timer = 3.0 * combo_multiplier
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_boost_timer", 3.0 * combo_multiplier)
                                 if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = 3.0 * combo_multiplier
 
@@ -12527,7 +12559,15 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "speed_booster_item":
-                self.ball.set_meta("speed_boost_timer", 5.0)
+                var existing_speed = 0.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
+                    existing_speed = self.ball.get_meta("speed_boost_timer")
+                elif "speed_boost_timer" in self.ball:
+                    existing_speed = self.ball.speed_boost_timer
+                if existing_speed > 0.0:
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_overdrive_timer", 5.0)
+                    if "speed_overdrive_timer" in self.ball: self.ball.speed_overdrive_timer = 5.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_boost_timer", 5.0)
                 if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = 5.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
