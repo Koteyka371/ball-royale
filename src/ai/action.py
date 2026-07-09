@@ -2414,8 +2414,18 @@ class Action:
                                 b.decoy_aura_timer = 0.5 # Refresh timer
 
             if self.ball.decoy_timer <= 0:
+                owner_id = getattr(self.ball, "owner_id", None)
+                if owner_id is not None and hasattr(self.world, "balls"):
+                    import random
+                    if random.random() < 0.5:
+                        owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
+                        if owner:
+                            ox, oy = getattr(owner, "x", self.ball.x), getattr(owner, "y", self.ball.y)
+                            owner.x, owner.y = self.ball.x, self.ball.y
+                            self.ball.x, self.ball.y = ox, oy
                 self.ball.alive = False
                 self.ball.hp = 0
+
             else:
                 owner_id = getattr(self.ball, "owner_id", None)
                 if owner_id is not None and hasattr(self.world, "balls"):

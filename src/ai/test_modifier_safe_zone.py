@@ -36,7 +36,7 @@ def test_modifier_safe_zone_tick():
     # Tick updates zones based on safe zone location
     mode.tick(world, balls, 1.0)
 
-    assert len(mode.zones) == 4
+    assert len(mode.zones) == 5
 
     # Safe zone damage test
     out_of_zone_ball = MockBall(10, 10) # outside 500 radius safe zone (center 500,500)

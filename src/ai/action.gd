@@ -4307,6 +4307,36 @@ func execute(strategy: String, delta: float):
             my_ball.set_meta("decoy_timer", dt)
 
         if dt <= 0.0:
+            var owner_id = null
+            if "owner_id" in my_ball:
+                owner_id = my_ball.owner_id
+            elif my_ball.has_method("get_meta") and my_ball.has_meta("owner_id"):
+                owner_id = my_ball.get_meta("owner_id")
+
+            if owner_id != null and world != null and "balls" in world:
+                if randf() < 0.5:
+                    var owner = null
+                    for b in world.balls:
+                        var b_id = null
+                        if "id" in b: b_id = b.id
+                        elif b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        if b_id == owner_id and b_alive:
+                            owner = b
+                            break
+
+                    if owner != null:
+                        var ox = owner.x
+                        var oy = owner.y
+                        owner.x = my_ball.x
+                        owner.y = my_ball.y
+                        my_ball.x = ox
+                        my_ball.y = oy
+
             if "alive" in my_ball:
                 my_ball.alive = false
             elif my_ball.has_method("set_meta"):
@@ -4707,6 +4737,36 @@ func execute(strategy: String, delta: float):
             my_ball.set_meta("illusion_timer", dt)
 
         if dt <= 0.0:
+            var owner_id = null
+            if "owner_id" in my_ball:
+                owner_id = my_ball.owner_id
+            elif my_ball.has_method("get_meta") and my_ball.has_meta("owner_id"):
+                owner_id = my_ball.get_meta("owner_id")
+
+            if owner_id != null and world != null and "balls" in world:
+                if randf() < 0.5:
+                    var owner = null
+                    for b in world.balls:
+                        var b_id = null
+                        if "id" in b: b_id = b.id
+                        elif b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        if b_id == owner_id and b_alive:
+                            owner = b
+                            break
+
+                    if owner != null:
+                        var ox = owner.x
+                        var oy = owner.y
+                        owner.x = my_ball.x
+                        owner.y = my_ball.y
+                        my_ball.x = ox
+                        my_ball.y = oy
+
             if "alive" in my_ball:
                 my_ball.alive = false
             elif my_ball.has_method("set_meta"):
