@@ -660,6 +660,97 @@ class BattleRoyaleMode(GameMode):
             if hasattr(world, "add_event"):
                 world.add_event("final_boss_spawn", {"message": f"A massive {boss_type.capitalize()} has emerged in the center of the safe zone!"})
 
+
+        if not hasattr(self, "meteor_strike_timer"):
+            self.meteor_strike_timer = 0.0
+            self.meteor_strike_active = False
+            self.meteor_strike_shadows = []
+
+        self.meteor_strike_timer += delta
+
+        # Trigger every 15 seconds
+        if self.meteor_strike_timer >= 15.0:
+            self.meteor_strike_timer = 0.0
+            self.meteor_strike_active = True
+
+            # Spawn some shadows
+            for _ in range(getattr(self, "random", __import__("random")).randint(3, 6)):
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                self.meteor_strike_shadows.append({
+                    "id": f"shadow_{__import__('random').randint(10000, 99999)}",
+                    "x": __import__('random').uniform(100, arena_width - 100),
+                    "y": __import__('random').uniform(100, arena_height - 100),
+                    "base_radius": 10.0,
+                    "target_radius": 40.0,
+                    "radius": 10.0,
+                    "max_delay": 2.0,
+                    "delay": 2.0  # Time before meteor strikes
+                })
+
+        if getattr(self, "meteor_strike_active", False):
+            active_shadows = []
+            for s in self.meteor_strike_shadows:
+                s["delay"] -= delta
+                # Grow the shadow
+                progress = 1.0 - (s["delay"] / s["max_delay"])
+                if progress < 0: progress = 0.0
+                if progress > 1: progress = 1.0
+                s["radius"] = s["base_radius"] + (s["target_radius"] - s["base_radius"]) * progress
+
+                # Visual Warning
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "meteor_warning", "x": s["x"], "y": s["y"], "radius": s["radius"]})
+
+                if s["delay"] <= 0:
+                    # Meteor strikes!
+
+                    # Add a temporary lava puddle
+                    if hasattr(world, "arena") and world.arena and hasattr(world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            class Hazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id
+                                    self.x = x
+                                    self.y = y
+                                    self.radius = radius
+                                    self.kind = kind
+                                    self.damage = damage
+                                    self.active = True
+                                    self.target_radius = radius
+
+                        lava = Hazard(id=len(world.arena.hazards) + __import__('random').randint(1000, 9999),
+                                      x=s["x"], y=s["y"], radius=s["target_radius"], kind="lava", damage=25.0)
+                        setattr(lava, "duration", 10.0) # Lasts for 10 seconds
+                        world.arena.hazards.append(lava)
+
+                    # Apply impact damage
+                    import math
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            if math.hypot(getattr(b, "x", 0.0) - s["x"], getattr(b, "y", 0.0) - s["y"]) <= s["target_radius"] * 1.5:
+                                if hasattr(b, "take_damage"): b.take_damage(50.0)
+                                else: b.hp = getattr(b, "hp", 100) - 50.0
+                else:
+                    active_shadows.append(s)
+            self.meteor_strike_shadows = active_shadows
+
+            if len(self.meteor_strike_shadows) == 0:
+                self.meteor_strike_active = False
+
+        # Cleanup lava
+        if hasattr(world, "arena") and world.arena and hasattr(world.arena, "hazards"):
+            active_hazards = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "lava" and hasattr(h, "duration"):
+                    h.duration -= delta
+                    if h.duration > 0:
+                        active_hazards.append(h)
+                else:
+                    active_hazards.append(h)
+            world.arena.hazards = active_hazards
         # Check boss death
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)

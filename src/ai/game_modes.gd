@@ -717,6 +717,100 @@ class BattleRoyaleMode extends GameMode:
 			if world != null and world.has_method("add_event"):
 				world.add_event("final_boss_spawn", {"message": "A massive " + boss_type.capitalize() + " has emerged in the center of the safe zone!"})
 
+
+		# --- METEOR STRIKE MECHANIC ---
+		if not self.has_meta("meteor_strike_timer"):
+			self.set_meta("meteor_strike_timer", 0.0)
+			self.set_meta("meteor_strike_active", false)
+			self.set_meta("meteor_strike_shadows", [])
+
+		var mt_timer = self.get_meta("meteor_strike_timer") + delta
+		self.set_meta("meteor_strike_timer", mt_timer)
+
+		if mt_timer >= 15.0:
+			self.set_meta("meteor_strike_timer", 0.0)
+			self.set_meta("meteor_strike_active", true)
+			var shadows = []
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				if "width" in world.arena: arena_w = float(world.arena.width)
+				if "height" in world.arena: arena_h = float(world.arena.height)
+
+			var shadow_count = (randi() % 4) + 3
+			for i in range(shadow_count):
+				var sx = randf_range(100.0, arena_w - 100.0)
+				var sy = randf_range(100.0, arena_h - 100.0)
+				shadows.append({
+					"id": "shadow_" + str(randi() % 90000 + 10000),
+					"x": sx,
+					"y": sy,
+					"base_radius": 10.0,
+					"target_radius": 40.0,
+					"radius": 10.0,
+					"max_delay": 2.0,
+					"delay": 2.0
+				})
+			self.set_meta("meteor_strike_shadows", shadows)
+
+		if self.get_meta("meteor_strike_active"):
+			var shadows = self.get_meta("meteor_strike_shadows")
+			var active_shadows = []
+			for s in shadows:
+				s["delay"] -= delta
+
+				# Grow the shadow
+				var progress = 1.0 - (s["delay"] / s["max_delay"])
+				if progress < 0.0: progress = 0.0
+				if progress > 1.0: progress = 1.0
+				s["radius"] = s["base_radius"] + (s["target_radius"] - s["base_radius"]) * progress
+
+				# Visual effect
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("visual_effect", {"type": "meteor_warning", "x": s["x"], "y": s["y"], "radius": s["radius"]})
+
+				if s["delay"] <= 0.0:
+					# Meteor strike! Add lava puddle
+					if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+						var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+						if ProceduralArenaScript != null:
+							var lava = ProceduralArenaScript.Hazard.new(world.arena.hazards.size() + (randi() % 9000) + 1000, s["x"], s["y"], s["target_radius"], "lava", 25.0)
+							lava.set_meta("duration", 10.0)
+							if typeof(world.arena.hazards) == TYPE_ARRAY:
+								world.arena.hazards.append(lava)
+
+					# Impact damage
+					for b in balls:
+						if "alive" in b and b.alive:
+							var bx = 0.0
+							var by = 0.0
+							if "x" in b: bx = b.x
+							if "y" in b: by = b.y
+							var dist = sqrt(pow(bx - s["x"], 2) + pow(by - s["y"], 2))
+							if dist <= s["target_radius"] * 1.5:
+								if b.has_method("take_damage"):
+									b.take_damage(50.0)
+								elif "hp" in b:
+									b.hp -= 50.0
+				else:
+					active_shadows.append(s)
+			self.set_meta("meteor_strike_shadows", active_shadows)
+			if active_shadows.size() == 0:
+				self.set_meta("meteor_strike_active", false)
+
+		# Cleanup lava
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+			var active_hazards = []
+			for h in world.arena.hazards:
+				if "kind" in h and h.kind == "lava" and h.has_method("has_meta") and h.has_meta("duration"):
+					var dur = h.get_meta("duration") - delta
+					h.set_meta("duration", dur)
+					if dur > 0:
+						active_hazards.append(h)
+				else:
+					active_hazards.append(h)
+			world.arena.hazards = active_hazards
+		# ------------------------------
 		# Check boss death
 		for b in balls:
 			var is_final = false
