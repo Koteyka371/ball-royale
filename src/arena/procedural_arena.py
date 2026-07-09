@@ -532,10 +532,6 @@ class ProceduralArena:
 
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:
-            if self.safe_zone_radius > 0.0:
-                self.safe_zone_radius -= 10.0 * delta
-                if self.safe_zone_radius < 0.0:
-                    self.safe_zone_radius = 0.0
 
             import random
             if current_tick % 400 == 0:

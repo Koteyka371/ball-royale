@@ -606,10 +606,6 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 
 func update_zone(current_tick: int, delta: float) -> void:
     if current_tick != last_tick:
-        if safe_zone_radius > 0.0:
-            safe_zone_radius -= 10.0 * delta
-            if safe_zone_radius < 0.0:
-                safe_zone_radius = 0.0
 
         if current_tick % 400 == 0:
             var states = ["bouncy", "bouncy", "bouncy", "bouncy"]
