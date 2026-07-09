@@ -45,7 +45,7 @@ def test_extreme_weather_mode_setup_and_tick():
     # Tick for 15s to trigger weather change
     mode.tick(world, balls, 15.0)
 
-    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower"]
+    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice"]
     assert len(world.boosters) == 2 # 2 balls, 1 booster each spawned
 
     kind = world.boosters[0].kind
@@ -55,7 +55,8 @@ def test_extreme_weather_mode_setup_and_tick():
         "acid_rain": "hazmat_booster",
         "hurricane": "heavy_anchor_booster",
         "tsunami": "life_jacket_booster",
-        "meteor_shower": "meteor_shield_booster"
+        "meteor_shower": "meteor_shield_booster",
+        "ice": "thermal_booster"
     }[mode.current_weather]
     assert kind == expected
 
@@ -157,3 +158,19 @@ def test_extreme_weather_mode_effects():
     mode.tick(world, balls, 1.0)
     assert len(world.arena.hazards) >= 1
     assert getattr(world.arena.hazards[0], "kind", "") == "meteor"
+
+def test_ice_weather_sliding():
+    from ai.game_modes import ExtremeWeatherMode
+
+    mode = ExtremeWeatherMode()
+    world = MockWorld()
+    b1 = MockBall()
+    balls = [b1]
+
+    mode.setup(world, balls)
+
+    mode.current_weather = "ice"
+    mode.tick(world, balls, 1.0)
+
+    assert getattr(b1, "is_frictionless", False) == True
+    assert getattr(b1, "is_slipping", False) == True

@@ -3847,6 +3847,14 @@ func execute(strategy: String, delta: float):
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.4
                 my_ball.y += my_ball.vy * delta * 0.4
+        if world.arena.get("is_ice") == true and not ignores_snow_ice:
+            if typeof(my_ball) == TYPE_DICTIONARY:
+                my_ball["is_frictionless"] = true
+            elif my_ball.has_method("set_meta"):
+                my_ball.set_meta("is_frictionless", true)
+            if "vx" in my_ball and "vy" in my_ball:
+                my_ball.x += my_ball.vx * delta * 0.9
+                my_ball.y += my_ball.vy * delta * 0.9
         if world.arena.get("is_heatwave") == true:
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.vx *= 0.95
@@ -6414,6 +6422,31 @@ func execute(strategy: String, delta: float):
                                     self.ball["stun_timer"] = 0.5
                                 elif "stun_timer" in self.ball:
                                     self.ball.stun_timer = 0.5
+                        elif weather == "ice":
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_frictionless", true)
+                                if "vx" in self.ball and "vy" in self.ball:
+                                    self.ball.x += self.ball.vx * delta * 0.9
+                                    self.ball.y += self.ball.vy * delta * 0.9
+                                var bs = self.ball.get("base_speed") if "base_speed" in self.ball else 100.0
+                                self.ball.speed = bs * 0.0
+                                self.ball.set_meta("is_slipping", true)
+                            elif typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["is_frictionless"] = true
+                                if self.ball.has("vx") and self.ball.has("vy"):
+                                    self.ball.x += self.ball["vx"] * delta * 0.9
+                                    self.ball.y += self.ball["vy"] * delta * 0.9
+                                var bs2 = self.ball["base_speed"] if self.ball.has("base_speed") else 100.0
+                                self.ball.speed = bs2 * 0.0
+                                self.ball["is_slipping"] = true
+                            elif "is_frictionless" in self.ball:
+                                self.ball.is_frictionless = true
+                                if "vx" in self.ball and "vy" in self.ball:
+                                    self.ball.x += self.ball.vx * delta * 0.9
+                                    self.ball.y += self.ball.vy * delta * 0.9
+                                var bs3 = self.ball.base_speed if "base_speed" in self.ball else 100.0
+                                self.ball.speed = bs3 * 0.0
+                                self.ball.is_slipping = true
                         elif weather == "blizzard" or weather == "snow":
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                                 self.ball.set_meta("is_frictionless", true)
