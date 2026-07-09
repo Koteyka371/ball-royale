@@ -11815,6 +11815,62 @@ class ExplodingDecoysMode extends GameMode:
 			elif typeof(world) == TYPE_OBJECT:
 				world.set("game_mode", self)
 
+
+class PrestigeWeatherMutatorMode extends GameMode:
+	var weather: String = "clear"
+	var weather_timer: float = 0.0
+	var lobby_prestige: int = 0
+	var weathers: Array = ["clear", "rain", "fog", "thunderstorm"]
+
+	func _init() -> void:
+		name = "Prestige Weather Mutator"
+		description = "Alters arena weather dynamically based on the lobby's average prestige level."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var prestige = 0
+		if world != null and "profile_manager" in world and world.profile_manager != null:
+			if typeof(world.profile_manager) == TYPE_OBJECT and world.profile_manager.has_method("get"):
+				var data = world.profile_manager.get("data")
+				if data != null and typeof(data) == TYPE_DICTIONARY:
+					prestige = data.get("prestige_level", 0)
+			elif typeof(world.profile_manager) == TYPE_DICTIONARY and world.profile_manager.has("data"):
+				var data = world.profile_manager["data"]
+				if data != null and typeof(data) == TYPE_DICTIONARY:
+					prestige = data.get("prestige_level", 0)
+
+		lobby_prestige = prestige
+		if lobby_prestige >= 5:
+			weathers = ["clear", "rain", "fog", "thunderstorm", "solar_flare"]
+		else:
+			weathers = ["clear", "rain", "fog", "thunderstorm"]
+		weather = "clear"
+		weather_timer = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		weather_timer += delta
+		if weather_timer > 10.0:
+			weather_timer = 0.0
+			weather = weathers[randi() % weathers.size()]
+
+		if weather == "solar_flare":
+			for b in balls:
+				if b.get("alive", false):
+					var w_timer = b.get("weather_immunity_timer", 0.0)
+					var is_immune = false
+					if typeof(w_timer) == TYPE_INT or typeof(w_timer) == TYPE_FLOAT:
+						is_immune = w_timer > 0.0
+
+					if not is_immune:
+						if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+							b.take_damage(10.0 * delta)
+						else:
+							var cur_hp = 100.0
+							if "hp" in b:
+								cur_hp = b.hp
+							b.hp = cur_hp - 10.0 * delta
+
+
 class DailyMutatorMode extends GameMode:
 	var mutators: Array = []
 	var _rewards_given: bool = false
@@ -16346,6 +16402,7 @@ var GAME_MODES = {
 	"lightning_strike_event": LightningStrikeEventMode.new(),
 	"chain_lightning_storm": ChainLightningStormMode.new(),
 	"weather_chaos": WeatherChaosMode.new(),
+	"prestige_weather_mutator": PrestigeWeatherMutatorMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
 	"domination": DominationMode.new(),
 	"black_hole": BlackHoleMode.new(),

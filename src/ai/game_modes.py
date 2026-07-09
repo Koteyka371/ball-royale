@@ -9710,6 +9710,49 @@ class ExplodingDecoysMode(GameMode):
         if not hasattr(world, "game_mode") or world.game_mode != self:
             world.game_mode = self
 
+
+class PrestigeWeatherMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Prestige Weather Mutator"
+        self.description = "Alters arena weather dynamically based on the lobby's average prestige level."
+        self.weather = "clear"
+        self.weather_timer = 0.0
+        self.lobby_prestige = 0
+        self.weathers = ["clear", "rain", "fog", "thunderstorm"]
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        prestige = 0
+        if hasattr(world, "profile_manager") and getattr(world.profile_manager, "data", None):
+            prestige = world.profile_manager.data.get("prestige_level", 0)
+        self.lobby_prestige = prestige
+        if self.lobby_prestige >= 5:
+            self.weathers = ["clear", "rain", "fog", "thunderstorm", "solar_flare"]
+        else:
+            self.weathers = ["clear", "rain", "fog", "thunderstorm"]
+        self.weather = "clear"
+        self.weather_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        self.weather_timer += delta
+        if self.weather_timer > 10.0:
+            self.weather_timer = 0.0
+            self.weather = random.choice(self.weathers)
+
+        if self.weather == "solar_flare":
+            for b in balls:
+                if getattr(b, "alive", False):
+                    w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+                    is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+                    if not is_immune:
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(10.0 * delta)
+                        else:
+                            b.hp = getattr(b, "hp", 100) - 10.0 * delta
+
+
 class DailyMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -12699,6 +12742,7 @@ GAME_MODES = {
     "meteor_crash_event": MeteorCrashEventMode(),
     "lightning_strike_event": LightningStrikeEventMode(),
     "weather_chaos": WeatherChaosMode(),
+    "prestige_weather_mutator": PrestigeWeatherMutatorMode(),
     "lunar_eclipse_event": LunarEclipseEventMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
