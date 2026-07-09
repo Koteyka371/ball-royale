@@ -15233,7 +15233,174 @@ class EntanglementMutatorMode extends GameMode:
 			_init_prev_state(b)
 
 
+
+class MultipleSafeZonesMode extends GameMode:
+	var zones = []
+	var split_timer = 0.0
+	var min_zone_radius = 50.0
+
+	func _init():
+		name = "Multiple Safe Zones"
+		description = "Instead of one big safe zone, multiple tiny safe zones spawn randomly across the map, shrinking and splitting over time."
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			elif world.arena.has_method("get"):
+				arena_width = float(world.arena.get("width"))
+				arena_height = float(world.arena.get("height"))
+
+		zones.clear()
+		var init_radius = min(arena_width, arena_height) / 2.0
+		zones.append({
+			"x": arena_width / 2.0,
+			"y": arena_height / 2.0,
+			"radius": init_radius,
+			"target_radius": init_radius,
+			"target_x": arena_width / 2.0,
+			"target_y": arena_height / 2.0
+		})
+		split_timer = randf_range(10.0, 20.0)
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		if not world.has("dead_balls"):
+			world["dead_balls"] = []
+
+		split_timer -= delta
+		if split_timer <= 0.0:
+			split_timer = randf_range(15.0, 25.0)
+			_split_zones(world)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			elif world.arena.has_method("get"):
+				arena_width = float(world.arena.get("width"))
+				arena_height = float(world.arena.get("height"))
+
+		for i in range(zones.size()):
+			var zone = zones[i]
+			zone["radius"] -= 5.0 * delta
+			if zone["radius"] < min_zone_radius:
+				zone["radius"] = min_zone_radius
+
+			var dx = zone["target_x"] - zone["x"]
+			var dy = zone["target_y"] - zone["y"]
+			var dist = sqrt(dx*dx + dy*dy)
+			var speed = 20.0 * delta
+			if dist > speed:
+				zone["x"] += (dx/dist) * speed
+				zone["y"] += (dy/dist) * speed
+			else:
+				zone["x"] = zone["target_x"]
+				zone["y"] = zone["target_y"]
+				zone["target_x"] = randf_range(200.0, arena_width - 200.0)
+				zone["target_y"] = randf_range(200.0, arena_height - 200.0)
+
+		for b in balls:
+			var w_timer = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				w_timer = b.get("weather_immunity_timer", 0.0)
+				if not b.get("alive", false): continue
+			else:
+				w_timer = b.get("weather_immunity_timer") if b.has_method("get") and b.get("weather_immunity_timer") != null else 0.0
+				if not b.get("alive"): continue
+			var is_immune = w_timer > 0.0
+			if is_immune: continue
+
+			var b_x = b["x"] if typeof(b) == TYPE_DICTIONARY else b.get("x")
+			var b_y = b["y"] if typeof(b) == TYPE_DICTIONARY else b.get("y")
+
+			var in_any_zone = false
+			for zone in zones:
+				var dx = b_x - zone["x"]
+				var dy = b_y - zone["y"]
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist <= zone["radius"]:
+					in_any_zone = true
+					break
+
+			if not in_any_zone:
+				var damage = 10.0 * delta
+				var hp = b["hp"] if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+				hp -= damage
+				if hp <= 0:
+					hp = 0
+					if typeof(b) == TYPE_DICTIONARY:
+						b["alive"] = false
+					else:
+						b.set("alive", false)
+					var b_id = b["id"] if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					var db = world["dead_balls"] if typeof(world) == TYPE_DICTIONARY else world.get("dead_balls")
+					if db.find(b_id) == -1:
+						db.append(b_id)
+						if world.has_method("add_event"):
+							world.add_event("ball_died", {"id": b_id, "reason": "multiple_safe_zones_storm", "killer_id": -1})
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = hp
+				else:
+					b.set("hp", hp)
+
+	func _split_zones(world):
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			elif world.arena.has_method("get"):
+				arena_width = float(world.arena.get("width"))
+				arena_height = float(world.arena.get("height"))
+
+		var new_zones = []
+		for zone in zones:
+			if zone["radius"] < min_zone_radius * 2:
+				new_zones.append(zone)
+				continue
+
+			var r1 = zone["radius"] * 0.7
+			var r2 = zone["radius"] * 0.7
+
+			var angle1 = randf_range(0.0, 2 * PI)
+			var angle2 = angle1 + PI
+
+			var dist = zone["radius"] * 0.5
+
+			var x1 = zone["x"] + cos(angle1) * dist
+			var y1 = zone["y"] + sin(angle1) * dist
+
+			var x2 = zone["x"] + cos(angle2) * dist
+			var y2 = zone["y"] + sin(angle2) * dist
+
+			x1 = max(r1, min(arena_width - r1, x1))
+			y1 = max(r1, min(arena_height - r1, y1))
+			x2 = max(r2, min(arena_width - r2, x2))
+			y2 = max(r2, min(arena_height - r2, y2))
+
+			new_zones.append({
+				"x": x1, "y": y1, "radius": r1, "target_radius": r1,
+				"target_x": randf_range(r1, arena_width - r1),
+				"target_y": randf_range(r1, arena_height - r1)
+			})
+			new_zones.append({
+				"x": x2, "y": y2, "radius": r2, "target_radius": r2,
+				"target_x": randf_range(r2, arena_width - r2),
+				"target_y": randf_range(r2, arena_height - r2)
+			})
+
+		zones = new_zones
+
+
 var GAME_MODES = {
+	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
