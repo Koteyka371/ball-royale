@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-754] Game Mode: Freeze Tag — *2026-07-09 14:09:16 UTC*
+
+Players can freeze enemies upon collision. Frozen enemies cannot move or attack until an ally collides with them to unfreeze them. The game ends when one team is completely frozen.
+
+---
+
 ## [idea-726] Teleporting dash — *2026-07-09 13:59:07 UTC*
 
 Instead of dashing, teleport to target.

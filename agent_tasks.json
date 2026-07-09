@@ -12977,7 +12977,7 @@
     },
     {
       "id": "idea-754",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Game Mode: Freeze Tag",
@@ -21244,6 +21244,74 @@
         "src/arena/sticky_bomb_trap.py",
         "src/arena/sticky_bomb_trap.gd",
         "tests/test_sticky_bomb_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1240",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Dash",
+      "description": "Modify the dash to briefly put the ball in a 'quantum state', making it immune to collisions and hazards during the teleport transition. After teleporting, it leaves behind a decoy that explodes if touched by enemies.",
+      "allowed_paths": [
+        "src/ai/quantum_dash.py",
+        "src/ai/quantum_dash.gd",
+        "tests/test_quantum_dash.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1241",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Teleport",
+      "description": "Instead of a single teleport dash, the ball can teleport up to 3 times in quick succession if enemies are clustered within a small radius. Each subsequent jump deals slightly less damage but refreshes a minor stamina burst.",
+      "allowed_paths": [
+        "src/ai/chain_teleport.py",
+        "src/ai/chain_teleport.gd",
+        "tests/test_chain_teleport.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1242",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunnels",
+      "description": "Portals that appear randomly and teleport balls instantly across the map. Teleporting resets velocity and can lead to strategic advantages or sudden death traps if leading into hazards.",
+      "allowed_paths": [
+        "src/ai/quantum_tunnels.py",
+        "src/ai/quantum_tunnels.gd",
+        "tests/test_quantum_tunnels.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1243",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Acid Rain Event",
+      "description": "Periodically during battle royale matches, acid rain falls globally, applying a small DOT (damage over time) to all balls. Shields mitigate the effect, encouraging players to seek out shield boosters or specific shelter zones.",
+      "allowed_paths": [
+        "src/ai/acid_rain.py",
+        "src/ai/acid_rain.gd",
+        "tests/test_acid_rain.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
