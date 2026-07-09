@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-751] Quantum Entanglement Tether — *2026-07-09 17:31:59 UTC*
+
+A new booster or mutator that randomly entangles pairs of balls. When entangled, any status effect, knockback force, or damage applied to one ball is also mirrored to the other, encouraging highly strategic cooperative (or intentionally self-destructive) plays to eliminate linked opponents.
+
+---
+
 ## [idea-625] Weather-Adaptive Cosmetics — *2026-07-09 17:14:42 UTC*
 
 Give balls visual upgrades that provide functional benefits based on the weather, such as snowshoes that negate the slippery effect on ice slicks or spiked tires that help them navigate mud pits without being slowed down as severely. These could be found as temporary power-ups.

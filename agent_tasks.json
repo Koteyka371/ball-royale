@@ -12926,7 +12926,7 @@
     },
     {
       "id": "idea-751",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Tether",
@@ -21533,6 +21533,23 @@
         "src/ai/aegis_reflection_shield.py",
         "src/ai/aegis_reflection_shield.gd",
         "tests/test_aegis_reflection_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1257",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Adaptive Power-Up Pools",
+      "description": "When boosters spawn in specific hazard zones (e.g., inside a mud pit or a flood zone), they mutate into specialized variants that not only provide their core power but also impart a temporary environmental immunity or buff, like a 'muddy' booster giving minor speed buffs on dirt but slowing down on normal terrain.",
+      "allowed_paths": [
+        "src/ai/adaptive_power_up_pools.py",
+        "src/ai/adaptive_power_up_pools.gd",
+        "tests/test_adaptive_power_up_pools.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
