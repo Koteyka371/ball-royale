@@ -5207,8 +5207,22 @@ class Action:
 
                     # Apply additional damage based on velocity if the ball was recently knocked back
                     if getattr(self.ball, "_knockback_timer", 0.0) > 0.0:
+                        # Wall combo logic
+                        combo = getattr(self.ball, "_wall_knockback_combo", 0) + 1
+                        setattr(self.ball, "_wall_knockback_combo", combo)
+                        setattr(self.ball, "_wall_knockback_combo_timer", 1.5) # Combo expires if no further wall knockback in 1.5s
+
                         damage += speed * 0.1
+                        damage *= (1.0 + combo * 0.5) # Significant damage increase
                         self.ball._knockback_timer = 0.0
+
+                        # Give attacking player a speed boost
+                        last_hitter_id = getattr(self.ball, "_last_hit_by_id", None)
+                        if last_hitter_id is not None and getattr(self.ball, "_last_hit_by_timer", 0.0) > 0:
+                            for b in self.world.balls:
+                                if getattr(b, "id", None) == last_hitter_id:
+                                    setattr(b, "speed_boost_timer", max(getattr(b, "speed_boost_timer", 0.0), 2.0))
+                                    break
 
                     if hasattr(self.ball, "take_damage"):
                         self.ball.take_damage(damage)
@@ -5232,6 +5246,17 @@ class Action:
         kt = getattr(self.ball, "_knockback_timer", 0.0)
         if kt > 0:
             self.ball._knockback_timer = max(0.0, kt - delta)
+
+        wkt = getattr(self.ball, "_wall_knockback_combo_timer", 0.0)
+        if wkt > 0:
+            self.ball._wall_knockback_combo_timer = max(0.0, wkt - delta)
+            if self.ball._wall_knockback_combo_timer == 0:
+                self.ball._wall_knockback_combo = 0
+
+        lht = getattr(self.ball, "_last_hit_by_timer", 0.0)
+        if lht > 0:
+            self.ball._last_hit_by_timer = max(0.0, lht - delta)
+
         self._update_skill_timer(delta)
 
         if delta > 0:

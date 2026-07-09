@@ -9170,7 +9170,53 @@ func execute(strategy: String, delta: float):
                     self.ball._knockback_timer = 0.0
 
                 if was_knocked_back:
+                    var combo = 0
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        combo = self.ball.get("_wall_knockback_combo", 0) + 1
+                        self.ball["_wall_knockback_combo"] = combo
+                        self.ball["_wall_knockback_combo_timer"] = 1.5
+                    elif typeof(self.ball) == TYPE_OBJECT and "_wall_knockback_combo" in self.ball:
+                        combo = self.ball.get("_wall_knockback_combo") if self.ball.get("_wall_knockback_combo") != null else 0
+                        combo += 1
+                        self.ball.set("_wall_knockback_combo", combo)
+                        self.ball.set("_wall_knockback_combo_timer", 1.5)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+                        combo = self.ball.get_meta("_wall_knockback_combo") if self.ball.has_meta("_wall_knockback_combo") else 0
+                        combo += 1
+                        self.ball.set_meta("_wall_knockback_combo", combo)
+                        self.ball.set_meta("_wall_knockback_combo_timer", 1.5)
+
                     dmg += speed * 0.1
+                    dmg *= (1.0 + float(combo) * 0.5)
+
+                    var last_hitter_id = null
+                    var has_timer = false
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        last_hitter_id = self.ball.get("_last_hit_by_id", null)
+                        has_timer = float(self.ball.get("_last_hit_by_timer", 0.0)) > 0
+                    elif typeof(self.ball) == TYPE_OBJECT and "_last_hit_by_id" in self.ball:
+                        last_hitter_id = self.ball.get("_last_hit_by_id")
+                        has_timer = "_last_hit_by_timer" in self.ball and float(self.ball.get("_last_hit_by_timer")) > 0
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+                        last_hitter_id = self.ball.get_meta("_last_hit_by_id") if self.ball.has_meta("_last_hit_by_id") else null
+                        has_timer = self.ball.has_meta("_last_hit_by_timer") and float(self.ball.get_meta("_last_hit_by_timer")) > 0
+
+                    if last_hitter_id != null and has_timer:
+                        var balls = self.world.get("balls") if typeof(self.world) == TYPE_DICTIONARY else (self.world.balls if "balls" in self.world else [])
+                        for b in balls:
+                            var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+                            if b_id == last_hitter_id:
+                                var cur_boost = 0.0
+                                if typeof(b) == TYPE_DICTIONARY:
+                                    cur_boost = float(b.get("speed_boost_timer", 0.0))
+                                    b["speed_boost_timer"] = max(cur_boost, 2.0)
+                                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta"):
+                                    cur_boost = float(b.get_meta("speed_boost_timer")) if b.has_meta("speed_boost_timer") else 0.0
+                                    b.set_meta("speed_boost_timer", max(cur_boost, 2.0))
+                                elif typeof(b) == TYPE_OBJECT and "speed_boost_timer" in b:
+                                    cur_boost = float(b.get("speed_boost_timer")) if b.get("speed_boost_timer") != null else 0.0
+                                    b.set("speed_boost_timer", max(cur_boost, 2.0))
+                                break
 
                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
                     self.ball.take_damage(dmg)
@@ -9199,18 +9245,50 @@ func execute(strategy: String, delta: float):
     _apply_friendly_aura(delta)
     _update_skill_timer(delta)
 
-    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_knockback_timer"):
-        var kt = float(self.ball["_knockback_timer"])
-        if kt > 0.0:
-            self.ball["_knockback_timer"] = max(0.0, kt - delta)
-    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("_knockback_timer"):
-        var kt = float(self.ball.get_meta("_knockback_timer"))
-        if kt > 0.0:
-            self.ball.set_meta("_knockback_timer", max(0.0, kt - delta))
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        if self.ball.has("_knockback_timer"):
+            var kt = float(self.ball["_knockback_timer"])
+            if kt > 0.0:
+                self.ball["_knockback_timer"] = max(0.0, kt - delta)
+        var wkt = float(self.ball.get("_wall_knockback_combo_timer", 0.0))
+        if wkt > 0.0:
+            self.ball["_wall_knockback_combo_timer"] = max(0.0, wkt - delta)
+            if self.ball["_wall_knockback_combo_timer"] == 0:
+                self.ball["_wall_knockback_combo"] = 0
+        var lht = float(self.ball.get("_last_hit_by_timer", 0.0))
+        if lht > 0.0:
+            self.ball["_last_hit_by_timer"] = max(0.0, lht - delta)
+
     elif typeof(self.ball) == TYPE_OBJECT and "_knockback_timer" in self.ball:
         var kt = float(self.ball._knockback_timer)
         if kt > 0.0:
             self.ball._knockback_timer = max(0.0, kt - delta)
+        if "_wall_knockback_combo_timer" in self.ball:
+            var wkt = float(self.ball.get("_wall_knockback_combo_timer")) if self.ball.get("_wall_knockback_combo_timer") != null else 0.0
+            if wkt > 0.0:
+                self.ball.set("_wall_knockback_combo_timer", max(0.0, wkt - delta))
+                if self.ball.get("_wall_knockback_combo_timer") == 0:
+                    self.ball.set("_wall_knockback_combo", 0)
+        if "_last_hit_by_timer" in self.ball:
+            var lht = float(self.ball.get("_last_hit_by_timer")) if self.ball.get("_last_hit_by_timer") != null else 0.0
+            if lht > 0.0:
+                self.ball.set("_last_hit_by_timer", max(0.0, lht - delta))
+
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+        if self.ball.has_meta("_knockback_timer"):
+            var kt = float(self.ball.get_meta("_knockback_timer"))
+            if kt > 0.0:
+                self.ball.set_meta("_knockback_timer", max(0.0, kt - delta))
+        if self.ball.has_meta("_wall_knockback_combo_timer"):
+            var wkt = float(self.ball.get_meta("_wall_knockback_combo_timer"))
+            if wkt > 0.0:
+                self.ball.set_meta("_wall_knockback_combo_timer", max(0.0, wkt - delta))
+                if self.ball.get_meta("_wall_knockback_combo_timer") == 0:
+                    self.ball.set_meta("_wall_knockback_combo", 0)
+        if self.ball.has_meta("_last_hit_by_timer"):
+            var lht = float(self.ball.get_meta("_last_hit_by_timer"))
+            if lht > 0.0:
+                self.ball.set_meta("_last_hit_by_timer", max(0.0, lht - delta))
 
     if delta > 0:
         var dx = self.ball.x - old_x
