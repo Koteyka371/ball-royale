@@ -319,7 +319,7 @@ class ProfileManager:
             self.data["badges"].append(badge_name)
             self.save()
 
-    def save_loadout(self, loadout_name, ball_type, trap_variant, preferred_bonuses=None, cosmetic=None, title=None, badge=None, perks=None):
+    def save_loadout(self, loadout_name, ball_type, trap_variant, preferred_bonuses=None, cosmetic=None, title=None, badge=None, perks=None, traits=None):
         if "loadouts" not in self.data:
             self.data["loadouts"] = {}
         if preferred_bonuses is None:
@@ -333,7 +333,8 @@ class ProfileManager:
             "cosmetic": cosmetic,
             "title": title,
             "badge": badge,
-            "perks": perks
+            "perks": perks,
+            "traits": traits or []
         }
         self.save()
 

@@ -28,6 +28,18 @@ class GameMode:
                     b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
 
             # Apply minor starting traits
+            try:
+                from system.lobby import lobby
+                bid = getattr(b, "id", None)
+                if bid is not None:
+                    traits = lobby.get_traits(bid)
+                    if hasattr(b, "traits"):
+                        b.traits.extend(traits)
+                    else:
+                        b.traits = traits
+            except ImportError:
+                pass
+
             traits = getattr(b, "traits", [])
             for trait in traits:
                 if trait == "swift":
@@ -6050,6 +6062,18 @@ class BumperBallsMode(GameMode):
                     b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
 
             # Apply minor starting traits
+            try:
+                from system.lobby import lobby
+                bid = getattr(b, "id", None)
+                if bid is not None:
+                    traits = lobby.get_traits(bid)
+                    if hasattr(b, "traits"):
+                        b.traits.extend(traits)
+                    else:
+                        b.traits = traits
+            except ImportError:
+                pass
+
             traits = getattr(b, "traits", [])
             for trait in traits:
                 if trait == "swift":

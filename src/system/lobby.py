@@ -40,6 +40,18 @@ class PreGameLobby:
         for perk in perks:
             self.select_perk(ball_id, perk)
 
+
+    def select_traits(self, ball_id, traits):
+        key = f"{ball_id}_traits"
+        self.selections[key] = []
+        for trait in traits:
+            if trait in ["swift", "slow", "sturdy", "fragile", "lethal", "weak"]:
+                self.selections[key].append(trait)
+
+    def get_traits(self, ball_id):
+        key = f"{ball_id}_traits"
+        return self.selections.get(key, [])
+
     def get_perks(self, ball_id):
         key = f"{ball_id}_perks"
         return self.selections.get(key, [])
@@ -103,6 +115,8 @@ class PreGameLobby:
                 self.selections[f"{ball_id}_badge"] = loadout["badge"]
             if "perks" in loadout:
                 self.select_perks(ball_id, loadout["perks"])
+            if "traits" in loadout:
+                self.select_traits(ball_id, loadout["traits"])
             return True
         return False
 
