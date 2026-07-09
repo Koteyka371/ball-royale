@@ -33,6 +33,12 @@ func load_guilds():
                     data["guilds"][g_name]["perks"] = []
                 if not data["guilds"][g_name].has("active_bounties"):
                     data["guilds"][g_name]["active_bounties"] = {}
+                if not data["guilds"][g_name].has("prestige_pool"):
+                    data["guilds"][g_name]["prestige_pool"] = 0
+                if not data["guilds"][g_name].has("titles"):
+                    data["guilds"][g_name]["titles"] = []
+                if not data["guilds"][g_name].has("cosmetic_auras"):
+                    data["guilds"][g_name]["cosmetic_auras"] = []
             return
 
     data = {"guilds": {}, "territories": {}}
@@ -50,6 +56,9 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
         "members": [creator_id],
         "level": 1,
         "resources": 0,
+        "prestige_pool": 0,
+        "titles": [],
+        "cosmetic_auras": [],
         "buffs": {
             "bonus_hp": 0,
             "bonus_speed": 0,
@@ -91,6 +100,60 @@ func leave_guild(guild_name: String, player_id: String) -> bool:
             save_guilds()
             return true
     return false
+
+
+func donate_prestige(guild_name: String, amount: int) -> bool:
+    if data["guilds"].has(guild_name):
+        if not data["guilds"][guild_name].has("prestige_pool"):
+            data["guilds"][guild_name]["prestige_pool"] = 0
+        data["guilds"][guild_name]["prestige_pool"] += amount
+        save_guilds()
+        return true
+    return false
+
+func unlock_global_cosmetic(guild_name: String, cosmetic_id: String, cost: int) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if not guild.has("prestige_pool"):
+            guild["prestige_pool"] = 0
+        if guild["prestige_pool"] >= cost:
+            if not guild.has("cosmetic_auras"):
+                guild["cosmetic_auras"] = []
+            if not guild["cosmetic_auras"].has(cosmetic_id):
+                guild["prestige_pool"] -= cost
+                guild["cosmetic_auras"].append(cosmetic_id)
+                save_guilds()
+                return true
+    return false
+
+func unlock_global_title(guild_name: String, title_id: String, cost: int) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if not guild.has("prestige_pool"):
+            guild["prestige_pool"] = 0
+        if guild["prestige_pool"] >= cost:
+            if not guild.has("titles"):
+                guild["titles"] = []
+            if not guild["titles"].has(title_id):
+                guild["prestige_pool"] -= cost
+                guild["titles"].append(title_id)
+                save_guilds()
+                return true
+    return false
+
+func get_unlocked_cosmetics(guild_name: String) -> Array:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("cosmetic_auras"):
+            return guild["cosmetic_auras"]
+    return []
+
+func get_unlocked_titles(guild_name: String) -> Array:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("titles"):
+            return guild["titles"]
+    return []
 
 func donate_resources(guild_name: String, amount: int) -> bool:
     if data["guilds"].has(guild_name):
