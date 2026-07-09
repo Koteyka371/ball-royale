@@ -1262,6 +1262,87 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var my_ball = self.ball
+    var is_decoy = false
+    if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get_meta") and my_ball.has_meta("is_decoy"):
+        is_decoy = my_ball.get_meta("is_decoy")
+    elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("is_decoy"):
+        is_decoy = my_ball["is_decoy"]
+
+    var my_aura = 1.0
+    if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get_meta") and my_ball.has_meta("cosmetic_aura_scale"):
+        my_aura = my_ball.get_meta("cosmetic_aura_scale")
+    elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("cosmetic_aura_scale"):
+        my_aura = my_ball["cosmetic_aura_scale"]
+
+    if not is_decoy and my_aura >= 2.0:
+        var aura_fear_radius = my_aura * 50.0
+        var my_team = ""
+        if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get_meta") and my_ball.has_meta("team"): my_team = my_ball.get_meta("team")
+        elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("team"): my_team = my_ball["team"]
+
+        var my_level = 1
+        if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get_meta") and my_ball.has_meta("level"): my_level = my_ball.get_meta("level")
+        elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("level"): my_level = my_ball["level"]
+
+        if typeof(world) == TYPE_OBJECT and "balls" in world:
+            for b in world.balls:
+                if b == my_ball: continue
+                var b_alive = true
+                if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+                if not b_alive: continue
+
+                var b_team = ""
+                if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+                if b_team == my_team: continue
+
+                var b_level = 1
+                if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("level"): b_level = b.get_meta("level")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("level"): b_level = b["level"]
+
+                if b_level < my_level:
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    if typeof(b) == TYPE_OBJECT:
+                        b_x = b.get("x")
+                        b_y = b.get("y")
+                    else:
+                        b_x = b.get("x", 0.0)
+                        b_y = b.get("y", 0.0)
+
+                    var my_x = 0.0
+                    var my_y = 0.0
+                    if typeof(my_ball) == TYPE_OBJECT:
+                        my_x = my_ball.get("x")
+                        my_y = my_ball.get("y")
+                    else:
+                        my_x = my_ball.get("x", 0.0)
+                        my_y = my_ball.get("y", 0.0)
+
+                    var dx = b_x - my_x
+                    var dy = b_y - my_y
+                    var s_dist = sqrt(dx*dx + dy*dy)
+                    if s_dist <= aura_fear_radius:
+                        if randf() < 0.1 * delta:
+                            if "emotion" in b: b.emotion = "fear"
+                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("emotion", "fear")
+
+                            var ft = 0.0
+                            if "siren_feared_timer" in b: ft = b.siren_feared_timer
+                            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("siren_feared_timer"): ft = b.get_meta("siren_feared_timer")
+
+                            if ft <= 0.0:
+                                if "siren_feared_timer" in b:
+                                    b.siren_feared_timer = 1.0
+                                    b.siren_fear_source_x = my_x
+                                    b.siren_fear_source_y = my_y
+                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                    b.set_meta("siren_feared_timer", 1.0)
+                                    b.set_meta("siren_fear_source_x", my_x)
+                                    b.set_meta("siren_fear_source_y", my_y)
+
     var so_timer = 0.0
     if "speed_overdrive_timer" in self.ball:
         so_timer = float(self.ball.speed_overdrive_timer)
