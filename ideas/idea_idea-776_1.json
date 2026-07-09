@@ -1,0 +1,4 @@
+{
+  "title": "Random Boss Invasions",
+  "description": "Periodically spawn a massive boss entity (e.g. 'The Behemoth') during Battle Royale matches that drops legendary items when defeated. If players fail to defeat it within a certain time, it explodes, wiping out a huge portion of the arena."
+}

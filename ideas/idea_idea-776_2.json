@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zones within Safe Zones",
+  "description": "To prevent camping, implement a new 'Fractured Zone' event where the main safe zone breaks into 3 smaller shrinking safe zones that move around the map independently."
+}
