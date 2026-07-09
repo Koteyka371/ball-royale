@@ -11486,6 +11486,15 @@ class BlackMarketMode extends GameMode:
 				"radius": 40.0
 			})
 
+		if not "gambling_nodes" in world:
+			world.gambling_nodes = []
+			world.gambling_nodes.append({
+				"x": randf_range(100.0, arena_width - 100.0),
+				"y": randf_range(100.0, arena_height - 100.0),
+				"radius": 30.0
+			})
+
+
 		for b in balls:
 			if typeof(b) == TYPE_DICTIONARY:
 				if b.get("ball_type", "") != "spectator":
@@ -11619,6 +11628,74 @@ class BlackMarketMode extends GameMode:
 						if world.has_method("add_event"):
 							world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
 						break
+
+			if bpcooldown <= 0.0 and bcurrency > 0 and "gambling_nodes" in world:
+				for gn in world.gambling_nodes:
+					var dx = bx - float(gn["x"])
+					var dy = by - float(gn["y"])
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= bradius + float(gn["radius"]):
+						var deposit = randi_range(1, bcurrency)
+						bcurrency -= deposit
+						bpcooldown = 5.0
+
+						var roll = randf()
+						if roll < 0.33:
+							bcurrency += deposit * 2
+							if world.has_method("add_event"):
+								world.add_event("gambling_win", {"ball": b, "amount": deposit * 2})
+						elif roll < 0.66:
+							if world.has_method("add_event"):
+								world.add_event("gambling_lose", {"ball": b, "amount": deposit})
+						else:
+							var cur_hp = float(b.get("hp", 100.0)) if typeof(b) == TYPE_DICTIONARY else float(b.get("hp"))
+							var new_hp = max(0.0, cur_hp - 50.0)
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = new_hp
+								if new_hp <= 0: b["alive"] = false
+							else:
+								b.set("hp", new_hp)
+								if new_hp <= 0: b.set("alive", false)
+
+							var blast_radius = 100.0
+							for other in balls:
+								if other != b:
+									var o_alive = false
+									var o_spec = false
+									var o_x = 0.0
+									var o_y = 0.0
+									var o_rad = 10.0
+									if typeof(other) == TYPE_DICTIONARY:
+										o_alive = other.get("alive", false)
+										o_spec = (other.get("ball_type", "") == "spectator")
+										o_x = float(other.get("x", 0.0))
+										o_y = float(other.get("y", 0.0))
+										o_rad = float(other.get("radius", 10.0))
+									else:
+										o_alive = other.get("alive")
+										o_spec = (other.get("ball_type") == "spectator")
+										o_x = float(other.get("x"))
+										o_y = float(other.get("y"))
+										o_rad = float(other.get("radius"))
+
+									if o_alive and not o_spec:
+										var odx = o_x - float(gn["x"])
+										var ody = o_y - float(gn["y"])
+										var odist = sqrt(odx*odx + ody*ody)
+										if odist <= blast_radius + o_rad:
+											var o_hp = float(other.get("hp", 100.0)) if typeof(other) == TYPE_DICTIONARY else float(other.get("hp"))
+											var o_new_hp = max(0.0, o_hp - 50.0)
+											if typeof(other) == TYPE_DICTIONARY:
+												other["hp"] = o_new_hp
+												if o_new_hp <= 0: other["alive"] = false
+											else:
+												other.set("hp", o_new_hp)
+												if o_new_hp <= 0: other.set("alive", false)
+
+							if world.has_method("add_event"):
+								world.add_event("gambling_explode", {"ball": b, "amount": deposit})
+						break
+
 
 			if typeof(b) == TYPE_DICTIONARY:
 				b["currency"] = bcurrency

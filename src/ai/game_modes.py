@@ -9429,6 +9429,15 @@ class BlackMarketMode(GameMode):
                 "radius": 40.0
             })
 
+        if not hasattr(world, "gambling_nodes"):
+            world.gambling_nodes = []
+            world.gambling_nodes.append({
+                "x": random.uniform(100, arena_width - 100),
+                "y": random.uniform(100, arena_height - 100),
+                "radius": 30.0
+            })
+
+
         for b in balls:
 
             if getattr(b, "ball_type", None) != "spectator":
@@ -9522,6 +9531,46 @@ class BlackMarketMode(GameMode):
                         if hasattr(world, "add_event"):
                             world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
                         break
+
+            # Gambling Nodes
+            if getattr(b, "purchase_cooldown", 0.0) <= 0.0 and getattr(b, "currency", 0) > 0 and hasattr(world, "gambling_nodes"):
+                for gn in world.gambling_nodes:
+                    dx = b.x - gn["x"]
+                    dy = b.y - gn["y"]
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= getattr(b, "radius", 10.0) + gn["radius"]:
+                        deposit = random.randint(1, b.currency)
+                        b.currency -= deposit
+                        b.purchase_cooldown = 5.0
+
+                        roll = random.random()
+                        if roll < 0.33:
+                            b.currency += deposit * 2
+                            if hasattr(world, "add_event"):
+                                world.add_event("gambling_win", {"ball": b, "amount": deposit * 2})
+                        elif roll < 0.66:
+                            if hasattr(world, "add_event"):
+                                world.add_event("gambling_lose", {"ball": b, "amount": deposit})
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 50.0)
+                            if b.hp <= 0:
+                                b.alive = False
+
+                            blast_radius = 100.0
+                            for other in balls:
+                                if other != b and getattr(other, "alive", False) and getattr(other, "ball_type", None) != "spectator":
+                                    odx = other.x - gn["x"]
+                                    ody = other.y - gn["y"]
+                                    odist = math.sqrt(odx*odx + ody*ody)
+                                    if odist <= blast_radius + getattr(other, "radius", 10.0):
+                                        other.hp = max(0.0, getattr(other, "hp", 100.0) - 50.0)
+                                        if other.hp <= 0:
+                                            other.alive = False
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("gambling_explode", {"ball": b, "amount": deposit})
+                        break
+
 
 class FloorIsLavaMode(GameMode):
     def __init__(self):
