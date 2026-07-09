@@ -6777,6 +6777,7 @@ class WindstormMode extends GameMode:
 	var push_dir_x = 0.0
 	var push_dir_y = 0.0
 	var push_strength = 600.0
+	var tornado_timer = 5.0
 
 	func _init() -> void:
 		name = "Windstorm"
@@ -6818,6 +6819,136 @@ class WindstormMode extends GameMode:
 				else:
 					if b.has_method("get_meta") and b.has_meta("time_since_death"):
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+
+		# Tornado logic
+		tornado_timer -= delta
+		if tornado_timer <= 0.0:
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				var tx = randf_range(100.0, 900.0)
+				var ty = randf_range(100.0, 900.0)
+				var duration = randf_range(4.0, 7.0)
+				var vx = randf_range(-100.0, 100.0)
+				var vy = randf_range(-100.0, 100.0)
+
+				# Determine hazard class
+				var HazardClass = null
+				if ResourceLoader.exists("res://src/arena/Hazard.gd"):
+					HazardClass = load("res://src/arena/Hazard.gd")
+
+				var tornado = null
+				if HazardClass != null:
+					tornado = HazardClass.new(99999, tx, ty, 60.0, "tornado", 5.0)
+					if tornado.has_method("set_meta"):
+						tornado.set_meta("duration", duration)
+						tornado.set_meta("vx", vx)
+						tornado.set_meta("vy", vy)
+					else:
+						tornado.duration = duration
+						tornado.vx = vx
+						tornado.vy = vy
+				else:
+					tornado = {
+						"id": 99999,
+						"x": tx,
+						"y": ty,
+						"radius": 60.0,
+						"kind": "tornado",
+						"damage": 5.0,
+						"duration": duration,
+						"vx": vx,
+						"vy": vy
+					}
+				world.arena.hazards.append(tornado)
+			tornado_timer = randf_range(8.0, 15.0)
+
+
+			# Tornado movement and interaction
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var h_kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						h_kind = h.get("kind", "")
+					elif typeof(h) == TYPE_OBJECT:
+						if "kind" in h:
+							h_kind = h.kind
+						elif h.has_method("get_meta") and h.has_meta("kind"):
+							h_kind = h.get_meta("kind")
+
+					if h_kind == "tornado":
+						var hx = 0.0
+						var hy = 0.0
+						var hr = 60.0
+						var hvx = 0.0
+						var hvy = 0.0
+
+						if typeof(h) == TYPE_DICTIONARY:
+							hx = h.get("x", 0.0)
+							hy = h.get("y", 0.0)
+							hr = h.get("radius", 60.0)
+							hvx = h.get("vx", 0.0)
+							hvy = h.get("vy", 0.0)
+						else:
+							hx = h.get("x") if h.get("x") != null else 0.0
+							hy = h.get("y") if h.get("y") != null else 0.0
+							hr = h.get("radius") if h.get("radius") != null else 60.0
+							if h.has_method("get_meta") and h.has_meta("vx"):
+								hvx = h.get_meta("vx")
+								hvy = h.get_meta("vy")
+							else:
+								hvx = h.get("vx") if h.get("vx") != null else 0.0
+								hvy = h.get("vy") if h.get("vy") != null else 0.0
+
+						hx += hvx * delta
+						hy += hvy * delta
+
+						var aw = world.arena.get("width") if world.arena.get("width") != null else 1000.0
+						var ah = world.arena.get("height") if world.arena.get("height") != null else 1000.0
+
+						if hx < hr or hx > aw - hr:
+							hvx *= -1
+							hx = clamp(hx, hr, aw - hr)
+						if hy < hr or hy > ah - hr:
+							hvy *= -1
+							hy = clamp(hy, hr, ah - hr)
+
+						if typeof(h) == TYPE_DICTIONARY:
+							h["x"] = hx
+							h["y"] = hy
+							h["vx"] = hvx
+							h["vy"] = hvy
+						else:
+							if "x" in h: h.x = hx
+							if "y" in h: h.y = hy
+							if h.has_method("set_meta"):
+								h.set_meta("vx", hvx)
+								h.set_meta("vy", hvy)
+							else:
+								if "vx" in h: h.vx = hvx
+								if "vy" in h: h.vy = hvy
+
+						for b in balls:
+							if b.alive and b.ball_type != "spectator":
+								var bx = b.get("x") if b.get("x") != null else 0.0
+								var by = b.get("y") if b.get("y") != null else 0.0
+								var dx = hx - bx
+								var dy = hy - by
+								var dist = sqrt(dx*dx + dy*dy)
+								if dist < hr * 3.0:
+									var md = max(0.1, dist)
+									var nx = dx / md
+									var ny = dy / md
+									var pull_strength = (hr * 2.0 / max(10.0, dist)) * 200.0 * delta
+
+									if "x" in b and "y" in b:
+										b.x += nx * pull_strength
+										b.y += ny * pull_strength
+
+									if dist < hr:
+										if "vx" in b and "vy" in b:
+											b.vx = randf_range(-300.0, 300.0)
+											b.vy = randf_range(-300.0, 300.0)
+
 
 		push_timer -= delta
 		if push_timer <= 0:

@@ -5889,6 +5889,7 @@ class WindstormMode(GameMode):
         self.push_strength = 600.0
         import random
         self.random = random
+        self.tornado_timer = 5.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -5918,6 +5919,67 @@ class WindstormMode(GameMode):
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death += delta
+
+
+        # Tornado logic
+        self.tornado_timer -= delta
+        if self.tornado_timer <= 0.0:
+            if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                from arena.procedural_arena import Hazard
+                tx = self.random.uniform(100.0, 900.0)
+                ty = self.random.uniform(100.0, 900.0)
+                tornado = Hazard(id=getattr(world, 'next_id', 99999), x=tx, y=ty, radius=60.0, kind="tornado", damage=5.0)
+                setattr(tornado, 'duration', self.random.uniform(4.0, 7.0))
+                setattr(tornado, 'vx', self.random.uniform(-100.0, 100.0))
+                setattr(tornado, 'vy', self.random.uniform(-100.0, 100.0))
+                world.arena.hazards.append(tornado)
+            self.tornado_timer = self.random.uniform(8.0, 15.0)
+
+
+        # Tornado movement and interaction
+        if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "tornado":
+                    if not hasattr(h, "vx"):
+                        h.vx = self.random.uniform(-100.0, 100.0)
+                    if not hasattr(h, "vy"):
+                        h.vy = self.random.uniform(-100.0, 100.0)
+                    h.x += getattr(h, "vx", 0.0) * delta
+                    h.y += getattr(h, "vy", 0.0) * delta
+
+                    # Bounce off walls
+                    arena_width = getattr(world.arena, "width", 1000)
+                    arena_height = getattr(world.arena, "height", 1000)
+                    if h.x < h.radius or h.x > arena_width - h.radius:
+                        h.vx *= -1
+                        h.x = max(h.radius, min(h.x, arena_width - h.radius))
+                    if h.y < h.radius or h.y > arena_height - h.radius:
+                        h.vy *= -1
+                        h.y = max(h.radius, min(h.y, arena_height - h.radius))
+
+                    # Pull and scramble balls
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                            b_x = getattr(b, "x", 0.0)
+                            b_y = getattr(b, "y", 0.0)
+                            dx = h.x - b_x
+                            dy = h.y - b_y
+                            import math
+                            dist = math.hypot(dx, dy)
+                            if dist < h.radius * 3.0:
+                                md = max(0.1, dist)
+                                nx = dx / md
+                                ny = dy / md
+                                pull_strength = (h.radius * 2.0 / max(10.0, dist)) * 200.0 * delta
+
+                                if hasattr(b, "x") and hasattr(b, "y"):
+                                    b.x += nx * pull_strength
+                                    b.y += ny * pull_strength
+
+                                if dist < h.radius:
+                                    if hasattr(b, "vx") and hasattr(b, "vy"):
+                                        b.vx = self.random.uniform(-300.0, 300.0)
+                                        b.vy = self.random.uniform(-300.0, 300.0)
 
         self.push_timer -= delta
         if self.push_timer <= 0:
@@ -6023,7 +6085,7 @@ class BlackoutMode(GameMode):
                             from arena.procedural_arena import Hazard
                         except ImportError:
                             try:
-                                from src.arena.procedural_arena import Hazard
+                                from arena.procedural_arena import Hazard
                             except ImportError:
                                 Hazard = None
 
