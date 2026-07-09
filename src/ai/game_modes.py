@@ -565,23 +565,27 @@ class BattleRoyaleMode(GameMode):
             if self.zone_radius < 50.0:
                 self.zone_radius = 50.0
 
-        # Base damage per second is 20, increasing up to 100 as the zone shrinks
+        # Calculate dynamic safe zone damage per second based on how small the zone has become
         max_arena_dim = max(getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)) if hasattr(world, "arena") and world.arena else 1000
         shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / max_arena_dim)))
         zone_damage_per_second = 20.0 + (shrink_ratio * 80.0)
 
+        # Apply continuous damage to any ball standing outside the safe zone boundary
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 b_x = getattr(b, "x", 0.0)
                 b_y = getattr(b, "y", 0.0)
-                dist = math.hypot(b_x - self.zone_x, b_y - self.zone_y)
-                if dist > self.zone_radius:
+                distance_to_center = math.hypot(b_x - self.zone_x, b_y - self.zone_y)
+
+                # Check if player is outside the shrinking circular safe zone
+                if distance_to_center > self.zone_radius:
+                    damage_amount = zone_damage_per_second * delta
                     if hasattr(b, "take_damage"):
-                        b.take_damage(zone_damage_per_second * delta)
+                        b.take_damage(damage_amount)
                     else:
-                        b.hp -= zone_damage_per_second * delta # damage per second outside safe zone
+                        b.hp -= damage_amount  # Apply continuous safe zone damage
 
 
         # Handle decoy_spawners
@@ -4636,21 +4640,22 @@ class ShrinkingDangerZoneMode(GameMode):
                         b.vx += (dx / dist) * pull_strength * delta
                         b.vy += (dy / dist) * pull_strength * delta
 
-        # Apply continuous damage outside the safe zone
+        # Apply continuous safe zone damage to balls caught outside the shrinking radius
         max_arena_dim = max(getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)) if hasattr(world, "arena") and world.arena else 1000
         shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / max_arena_dim)))
         base_dmg = self.outside_damage_per_second + (shrink_ratio * self.outside_damage_per_second * 4.0)
         damage_this_tick = base_dmg * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
+
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = b.x - self.zone_x
                 dy = b.y - self.zone_y
-                dist = math.sqrt(dx*dx + dy*dy)
+                distance_to_center = math.sqrt(dx*dx + dy*dy)
 
-                # If outside safe zone, take damage
-                if dist > self.zone_radius:
+                # If the distance to center is greater than the safe zone radius, inflict damage
+                if distance_to_center > self.zone_radius:
                     b.hp -= damage_this_tick
                     if b.hp <= 0:
                         b.alive = False
@@ -5014,21 +5019,22 @@ class SafeZoneMode(GameMode):
                         b.vx += (dx / dist) * pull_strength * delta
                         b.vy += (dy / dist) * pull_strength * delta
 
-        # Apply continuous damage outside the safe zone
+        # Apply continuous safe zone damage to balls caught outside the shrinking radius
         max_arena_dim = max(getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)) if hasattr(world, "arena") and world.arena else 1000
         shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / max_arena_dim)))
         base_dmg = self.outside_damage_per_second + (shrink_ratio * self.outside_damage_per_second * 4.0)
         damage_this_tick = base_dmg * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
+
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = b.x - self.zone_x
                 dy = b.y - self.zone_y
-                dist = math.sqrt(dx*dx + dy*dy)
+                distance_to_center = math.sqrt(dx*dx + dy*dy)
 
-                # If outside safe zone, take damage
-                if dist > self.zone_radius:
+                # If the distance to center is greater than the safe zone radius, inflict damage
+                if distance_to_center > self.zone_radius:
                     b.hp -= damage_this_tick
                     if b.hp <= 0:
                         b.alive = False

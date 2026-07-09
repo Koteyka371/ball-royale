@@ -641,12 +641,14 @@ class BattleRoyaleMode extends GameMode:
 				if "y" in b: b_y = b.y
 				elif b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
 
-				var dist = sqrt(pow(b_x - self.get("zone_x"), 2) + pow(b_y - self.get("zone_y"), 2))
-				if dist > self.get("zone_radius"):
+				var distance_to_center = sqrt(pow(b_x - self.get("zone_x"), 2) + pow(b_y - self.get("zone_y"), 2))
+				# Check if ball is outside the circular safe zone bounds
+				if distance_to_center > self.get("zone_radius"):
+					var damage_amount = zone_damage_per_second * delta
 					if b.has_method("take_damage"):
-						b.take_damage(zone_damage_per_second * delta)
+						b.take_damage(damage_amount)
 					elif "hp" in b:
-						b.hp -= zone_damage_per_second * delta
+						b.hp -= damage_amount  # Apply continuous safe zone damage
 
 
 		# Handle decoy_spawners
@@ -5702,7 +5704,7 @@ class SafeZoneMode extends GameMode:
 						b.vx += (dx / dist) * pull_strength * delta
 						b.vy += (dy / dist) * pull_strength * delta
 
-		# Apply continuous damage outside the safe zone
+		# Apply continuous safe zone damage to balls caught outside the shrinking radius
 		var arena_width_for_dmg = 1000.0
 		var arena_height_for_dmg = 1000.0
 		if "arena" in world and world.arena:
@@ -5717,10 +5719,10 @@ class SafeZoneMode extends GameMode:
 			if b.alive and b.ball_type != "spectator":
 				var dx = b.x - zone_x
 				var dy = b.y - zone_y
-				var dist = sqrt(dx*dx + dy*dy)
+				var distance_to_center = sqrt(dx*dx + dy*dy)
 
-				# If outside safe zone, take damage
-				if dist > zone_radius:
+				# If the distance to center is greater than the safe zone radius, inflict damage
+				if distance_to_center > zone_radius:
 					b.hp -= damage_this_tick
 					if b.hp <= 0:
 						b.alive = false
