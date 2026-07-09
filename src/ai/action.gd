@@ -269,12 +269,14 @@ func _attempt_damage(attacker, target) -> void:
 				var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 40.0))
 				if sqrt((t_x2 - hx)*(t_x2 - hx) + (t_y2 - hy)*(t_y2 - hy)) <= hr:
 					return
-			elif h_kind == "energy_barrier":
+			elif h_kind == "energy_barrier" or h_kind == "smokescreen":
 				var h_team = h.get_meta("team") if h.has_meta("team") else ""
 				if h_team != a_team:
 					var hx = float(h.x if "x" in h else h.get_meta("x"))
 					var hy = float(h.y if "y" in h else h.get_meta("y"))
 					var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 40.0))
+					if h_kind == "smokescreen":
+						hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 80.0))
 
 					var dx = t_x2 - a_x2
 					var dy = t_y2 - a_y2
@@ -291,7 +293,7 @@ func _attempt_damage(attacker, target) -> void:
 							disc = sqrt(disc)
 							var t1 = (-b2 - disc) / (2.0*a)
 							var t2 = (-b2 + disc) / (2.0*a)
-							if (t1 >= 0.0 and t1 <= 1.0) or (t2 >= 0.0 and t2 <= 1.0):
+							if (t1 >= 0.0 and t1 <= 1.0) or (t2 >= 0.0 and t2 <= 1.0) or (t1 < 0.0 and t2 > 1.0):
 								# Ranged attack blocked
 								return
 					else:
@@ -10434,12 +10436,14 @@ func _get_enemies_internal() -> Array:
 		if is_disabled_sf:
 			continue
                 var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
-                if h_kind == "energy_barrier":
+                if h_kind == "energy_barrier" or h_kind == "smokescreen":
                     var h_team = h.get_meta("team") if h.has_meta("team") else ""
                     if h_team != my_team_iv:
                         var hx = float(h.x if "x" in h else h.get_meta("x"))
                         var hy = float(h.y if "y" in h else h.get_meta("y"))
                         var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 40.0))
+                        if h_kind == "smokescreen":
+                            hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 80.0))
 
                         var dx = ex - bx
                         var dy = ey - by
@@ -10456,7 +10460,7 @@ func _get_enemies_internal() -> Array:
                                 disc = sqrt(disc)
                                 var t1 = (-b2 - disc) / (2.0*a)
                                 var t2 = (-b2 + disc) / (2.0*a)
-                                if (t1 >= 0.0 and t1 <= 1.0) or (t2 >= 0.0 and t2 <= 1.0):
+                                if (t1 >= 0.0 and t1 <= 1.0) or (t2 >= 0.0 and t2 <= 1.0) or (t1 < 0.0 and t2 > 1.0):
                                     is_visible = false
                                     break
                         else:
