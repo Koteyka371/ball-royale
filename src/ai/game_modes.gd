@@ -748,11 +748,26 @@ class BattleRoyaleMode extends GameMode:
 				var distance_to_center = sqrt(pow(b_x - self.get("zone_x"), 2) + pow(b_y - self.get("zone_y"), 2))
 				# Check if ball is outside the circular safe zone bounds
 				if distance_to_center > self.get("zone_radius"):
+					# In this Battle Royale, outside the safe zone is LAVA!
 					var damage_amount = zone_damage_per_second * delta
+					damage_amount *= 1.5
 					if b.has_method("take_damage"):
 						b.take_damage(damage_amount)
 					elif "hp" in b:
 						b.hp -= damage_amount  # Apply continuous safe zone damage
+
+					if typeof(b) == TYPE_OBJECT:
+						if "burn_timer" in b:
+							b.burn_timer = max(b.burn_timer, 2.0)
+						elif b.has_method("get_meta") and b.has_meta("burn_timer"):
+							b.set_meta("burn_timer", max(b.get_meta("burn_timer"), 2.0))
+						elif b.has_method("set_meta"):
+							b.set_meta("burn_timer", 2.0)
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("burn_timer"):
+							b["burn_timer"] = max(b["burn_timer"], 2.0)
+						else:
+							b["burn_timer"] = 2.0
 
 
 		# Mutate hazards inside the shrinking safe zone

@@ -544,7 +544,7 @@ class BattleRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Battle Royale"
-        self.description = "Last man standing. Everyone for themselves. Includes dynamic weather."
+        self.description = "Last man standing. The safe zone shrinks and moves. Areas outside the safe zone turn into damaging lava, punishing displacement heavily."
         self.dark_phase_timer = 0.0
         self.is_dark_phase = False
         self.shadow_monsters = []
@@ -751,6 +751,25 @@ class BattleRoyaleMode(GameMode):
             if self.zone_radius < 50.0:
                 self.zone_radius = 50.0
 
+        # Represent the outside as lava using a large inverse lava zone if supported, or spawn decorative lava puddles
+        # Since procedural_arena hazards are circles, we'll spawn decorative lava hazards occasionally outside
+        random_val = getattr(self.random, "random", lambda: 0.0)()
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards") and random_val < 0.1 * delta * 60:
+            # Spawn a visual lava puddle outside the safe zone
+            angle = self.random.uniform(0, math.pi * 2)
+            dist = self.random.uniform(self.zone_radius + 50, self.zone_radius + 400)
+            lx = self.zone_x + math.cos(angle) * dist
+            ly = self.zone_y + math.sin(angle) * dist
+
+            try:
+                from arena.procedural_arena import Hazard
+                h_id = len(world.arena.hazards) + self.random.randint(20000, 99999)
+                lava_h = Hazard(h_id, lx, ly, self.random.uniform(40.0, 80.0), "lava_puddle", 0.0) # Damage handled manually by zone
+                setattr(lava_h, "duration", 5.0) # Temporary visual
+                world.arena.hazards.append(lava_h)
+            except ImportError:
+                pass
+
         # Calculate dynamic safe zone damage per second based on how small the zone has become
         max_arena_dim = max(getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)) if hasattr(world, "arena") and world.arena else 1000
         shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / max_arena_dim)))
@@ -767,11 +786,20 @@ class BattleRoyaleMode(GameMode):
 
                 # Check if player is outside the shrinking circular safe zone
                 if distance_to_center > self.zone_radius:
+                    # In this Battle Royale, outside the safe zone is LAVA!
                     damage_amount = zone_damage_per_second * delta
+                    # Lava damage multiplier (more punishing than standard storm)
+                    damage_amount *= 1.5
                     if hasattr(b, "take_damage"):
                         b.take_damage(damage_amount)
                     else:
                         b.hp -= damage_amount  # Apply continuous safe zone damage
+
+                    # Apply burn status effect (if not already burned/lava)
+                    if not hasattr(b, "burn_timer") or b.burn_timer <= 0:
+                        b.burn_timer = 2.0
+                    else:
+                        b.burn_timer = max(b.burn_timer, 2.0)
 
 
         # Moving walls / hazards logic
