@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-743] Reverse Time Pickup — *2026-07-09 14:18:42 UTC*
+
+An item that, when picked up, rewinds the player's position and health back to where they were 3 seconds ago, offering a get-out-of-jail-free card.
+
+---
+
 ## [idea-738] Interactive Crowd Signs — *2026-07-09 14:17:01 UTC*
 
 Spectators (crowd) can hold up dynamic virtual signs (using UI text popups around the arena edges) supporting specific balls, and these signs get larger if that ball is performing well.

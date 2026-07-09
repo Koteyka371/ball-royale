@@ -12790,7 +12790,7 @@
     },
     {
       "id": "idea-743",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Time Pickup",
@@ -21380,6 +21380,40 @@
         "src/ai/reverse_freeze_tag.py",
         "src/ai/reverse_freeze_tag.gd",
         "tests/test_reverse_freeze_tag.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1248",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Twitch Hazard Controls",
+      "description": "Allow real spectators via the Twitch integration to not only trigger votes, but actively control specific neutral hazards for brief periods (e.g., directing a meteor strike or moving a poison cloud).",
+      "allowed_paths": [
+        "src/arena/interactive_twitch_controls.py",
+        "src/arena/interactive_twitch_controls.gd",
+        "tests/test_interactive_twitch_controls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1249",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Audience Favor System",
+      "description": "Balls accumulate an 'Audience Favor' score. High favor grants reduced cooldowns or passive healing, while very low favor results in being targeted more frequently by crowd-thrown hazards. Favor goes up from multi-kills or comebacks.",
+      "allowed_paths": [
+        "src/ai/audience_favor.py",
+        "src/ai/audience_favor.gd",
+        "tests/test_audience_favor.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
