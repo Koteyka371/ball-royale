@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Dash",
+    "description": "Modify the dash to briefly put the ball in a 'quantum state', making it immune to collisions and hazards during the teleport transition. After teleporting, it leaves behind a decoy that explodes if touched by enemies."
+}
