@@ -23,7 +23,7 @@ func update_feed(kill_log: Array):
                 var message = "Tick %d: %s" % [tick, msg]
                 _add_message(message)
                 _processed_events[event_hash] = true
-        elif log.has("type") and log.get("type") in ["audio_event", "weather_warning", "spawn_booster"]:
+        elif log.has("type") and log.get("type") in ["audio_event", "weather_warning", "spawn_booster", "spectator_sign"]:
             pass
         else:
             var killer_id = str(log.get("killer_id", "?"))

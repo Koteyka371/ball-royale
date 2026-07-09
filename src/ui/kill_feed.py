@@ -19,7 +19,7 @@ class KillFeed:
                     message = f"Tick {log.get('tick', 0)}: {log.get('message', '')}"
                     self.messages.append(message)
                     self._processed_ticks.add(event_hash)
-            elif log.get("type") in ["audio_event", "weather_warning", "spawn_booster"]:
+            elif log.get("type") in ["audio_event", "weather_warning", "spawn_booster", "spectator_sign"]:
                 # Ignore these in kill feed
                 pass
             else:

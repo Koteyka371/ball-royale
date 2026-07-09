@@ -193,6 +193,7 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
     _throw_buffs_if_needed(balls, current_tick)
     _throw_hazards_if_bored(balls, current_tick)
     _process_votes(balls, current_tick)
+    _process_spectator_signs(balls, current_tick)
 
 func _check_bets_and_winner(balls: Array, current_tick: int):
     if not match_started and balls.size() > 1:
@@ -650,6 +651,85 @@ func _process_votes(balls: Array, current_tick: int):
 
     if vote_timer <= 0:
         _resolve_vote(balls)
+
+func _process_spectator_signs(balls: Array, current_tick: int):
+    if excitement_level < 10.0 or randf() > 0.01:
+        return
+
+    var alive_balls = []
+    for b in balls:
+        if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") and b.get("ball_type") != "spectator":
+            alive_balls.append(b)
+        elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] and b.get("ball_type") != "spectator":
+            alive_balls.append(b)
+
+    if alive_balls.is_empty():
+        return
+
+    var target = alive_balls[randi() % alive_balls.size()]
+    var kills = 0
+    var b_type = "Player"
+    var b_id = "?"
+    var b_x = 0.0
+    var b_y = 0.0
+
+    if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+        kills = int(target.get("kills")) if target.get("kills") != null else 0
+        b_type = str(target.get("ball_type")).capitalize() if target.get("ball_type") != null else "Player"
+        b_id = str(target.get("id")) if target.get("id") != null else "?"
+        b_x = float(target.get("x")) if target.get("x") != null else 0.0
+        b_y = float(target.get("y")) if target.get("y") != null else 0.0
+    elif typeof(target) == TYPE_DICTIONARY:
+        kills = int(target.get("kills", 0))
+        b_type = str(target.get("ball_type", "Player")).capitalize()
+        b_id = str(target.get("id", "?"))
+        b_x = float(target.get("x", 0.0))
+        b_y = float(target.get("y", 0.0))
+
+    var text = ""
+    var size = 1.0
+
+    if kills >= 3:
+        text = "UNSTOPPABLE " + b_type + "-" + b_id + "!"
+        size = 1.5 + (kills * 0.1)
+    elif kills > 0:
+        text = "GO " + b_type + "-" + b_id + "!"
+        size = 1.2 + (kills * 0.1)
+    else:
+        text = "We believe in " + b_type + "-" + b_id + "!"
+        size = 1.0
+
+    if world != null and world.has_method("add_event"):
+        var angle = randf() * 2.0 * PI
+        var radius = 1000.0
+
+        if typeof(world) == TYPE_OBJECT and world.has_method("get"):
+            var arena = world.get("arena")
+            if arena != null and typeof(arena) == TYPE_OBJECT and arena.has_method("get"):
+                var sz_radius = arena.get("safe_zone_radius")
+                if sz_radius != null:
+                    radius = float(sz_radius) + 100.0
+            elif arena != null and typeof(arena) == TYPE_DICTIONARY and arena.has("safe_zone_radius"):
+                radius = float(arena.get("safe_zone_radius", 900.0)) + 100.0
+        elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+            var arena = world["arena"]
+            if typeof(arena) == TYPE_DICTIONARY:
+                radius = float(arena.get("safe_zone_radius", 900.0)) + 100.0
+            elif typeof(arena) == TYPE_OBJECT and arena.has_method("get"):
+                var sz_radius = arena.get("safe_zone_radius")
+                if sz_radius != null:
+                    radius = float(sz_radius) + 100.0
+
+        var sx = b_x + cos(angle) * radius
+        var sy = b_y + sin(angle) * radius
+
+        world.add_event("spectator_sign", {
+            "x": sx,
+            "y": sy,
+            "text": text,
+            "size": size,
+            "duration": 100
+        })
 
 func _start_vote(balls: Array):
     var vote_types = [

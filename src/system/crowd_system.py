@@ -150,6 +150,7 @@ class CrowdSystem:
         self._throw_buffs_if_needed(balls, tick)
         self._throw_hazards_if_bored(balls, tick)
         self._process_votes(balls, tick)
+        self._process_spectator_signs(balls, tick)
 
     def _check_camping(self, balls: List[Any], tick: int):
         for b in balls:
@@ -408,6 +409,52 @@ class CrowdSystem:
 
         if self.vote_timer <= 0:
             self._resolve_vote(balls)
+
+    def _process_spectator_signs(self, balls: List[Any], tick: int):
+        # Trigger dynamically: 1 in 100 chance per tick if excitement is moderate
+        if self.excitement_level < 10.0 or random.random() > 0.01:
+            return
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+        if not alive_balls:
+            return
+
+        # Pick a random alive ball, heavily weighting those with more kills or hp
+        target = random.choice(alive_balls)
+        kills = getattr(target, "kills", 0)
+
+        b_type = getattr(target, "ball_type", "Player").capitalize()
+        b_id = getattr(target, "id", "?")
+
+        # Determine sign text and size based on kills/performance
+        if kills >= 3:
+            text = f"UNSTOPPABLE {b_type}-{b_id}!"
+            size = 1.5 + (kills * 0.1)
+        elif kills > 0:
+            text = f"GO {b_type}-{b_id}!"
+            size = 1.2 + (kills * 0.1)
+        else:
+            text = f"We believe in {b_type}-{b_id}!"
+            size = 1.0
+
+        if hasattr(self.world, 'add_event'):
+            # Calculate position near the edge of the arena or safe zone
+            angle = random.uniform(0, 2 * 3.14159)
+            radius = 1000.0  # Default fallback
+            if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'safe_zone_radius'):
+                radius = self.world.arena.safe_zone_radius + 100.0
+
+            import math
+            sx = getattr(target, "x", 0) + math.cos(angle) * radius
+            sy = getattr(target, "y", 0) + math.sin(angle) * radius
+
+            self.world.add_event("spectator_sign", {
+                "x": sx,
+                "y": sy,
+                "text": text,
+                "size": size,
+                "duration": 100
+            })
 
     def _start_vote(self, balls: List[Any]):
         vote_types = [

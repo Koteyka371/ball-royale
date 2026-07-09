@@ -188,3 +188,29 @@ def test_player_bribe_vote_skew():
     assert world.profile_manager.data["prestige_tokens"] == 4
     events = [e[0] for e in world.events]
     assert "crowd_cheer" in events
+
+def test_spectator_sign_triggered():
+    world = MockWorld()
+    system = CrowdSystem(world)
+
+    # Needs moderate excitement and guaranteed random hit
+    system.excitement_level = 50.0
+
+    import random
+    old_random = random.random
+    random.random = lambda: 0.005  # Trigger spectator sign (<= 0.01)
+
+    ball = MockBall(1, "red", "tank")
+    ball.kills = 4  # Should trigger "UNSTOPPABLE" sign
+    balls = [ball]
+
+    system.tick(balls, [], 1)
+
+    random.random = old_random
+
+    events = [e[0] for e in world.events]
+    assert "spectator_sign" in events
+
+    sign_events = [e[1] for e in world.events if e[0] == "spectator_sign"]
+    assert len(sign_events) > 0
+    assert "UNSTOPPABLE" in sign_events[0]["text"]
