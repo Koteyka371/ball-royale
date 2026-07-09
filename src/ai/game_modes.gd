@@ -31,6 +31,47 @@ class GameMode:
 					b.max_hp *= 0.9
 					if "hp" in b: b.hp = min(b.hp, b.max_hp)
 
+			var traits_arr = []
+			if typeof(b) == TYPE_OBJECT and "traits" in b and typeof(b.traits) == TYPE_ARRAY:
+				traits_arr = b.traits
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("traits"):
+				var meta_tr = b.get_meta("traits")
+				if typeof(meta_tr) == TYPE_ARRAY:
+					traits_arr = meta_tr
+			elif typeof(b) == TYPE_DICTIONARY and b.has("traits") and typeof(b["traits"]) == TYPE_ARRAY:
+				traits_arr = b["traits"]
+
+			for trait_name in traits_arr:
+				if typeof(trait_name) != TYPE_STRING: continue
+				if trait_name == "swift":
+					if "speed" in b: b.speed *= 1.05
+					if "base_speed" in b: b.base_speed *= 1.05
+					elif b.has_method("set_meta") and b.has_meta("base_speed"):
+						b.set_meta("base_speed", float(b.get_meta("base_speed")) * 1.05)
+				elif trait_name == "slow":
+					if "speed" in b: b.speed *= 0.95
+					if "base_speed" in b: b.base_speed *= 0.95
+					elif b.has_method("set_meta") and b.has_meta("base_speed"):
+						b.set_meta("base_speed", float(b.get_meta("base_speed")) * 0.95)
+				elif trait_name == "sturdy":
+					if "max_hp" in b:
+						b.max_hp *= 1.05
+						if "hp" in b: b.hp = min(b.hp * 1.05, b.max_hp)
+				elif trait_name == "fragile":
+					if "max_hp" in b:
+						b.max_hp *= 0.95
+						if "hp" in b: b.hp = min(b.hp, b.max_hp)
+				elif trait_name == "lethal":
+					if "damage" in b: b.damage *= 1.05
+					if "base_damage" in b: b.base_damage *= 1.05
+					elif b.has_method("set_meta") and b.has_meta("base_damage"):
+						b.set_meta("base_damage", float(b.get_meta("base_damage")) * 1.05)
+				elif trait_name == "weak":
+					if "damage" in b: b.damage *= 0.95
+					if "base_damage" in b: b.base_damage *= 0.95
+					elif b.has_method("set_meta") and b.has_meta("base_damage"):
+						b.set_meta("base_damage", float(b.get_meta("base_damage")) * 0.95)
+
 		var season_num = 1
 		if "leaderboard_manager" in world and world.leaderboard_manager != null:
 			season_num = world.leaderboard_manager.data.get("current_season", 1)
@@ -6822,6 +6863,47 @@ class BumperBallsMode extends GameMode:
 				if "max_hp" in b:
 					b.max_hp *= 0.9
 					if "hp" in b: b.hp = min(b.hp, b.max_hp)
+
+			var traits_arr = []
+			if typeof(b) == TYPE_OBJECT and "traits" in b and typeof(b.traits) == TYPE_ARRAY:
+				traits_arr = b.traits
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("traits"):
+				var meta_tr = b.get_meta("traits")
+				if typeof(meta_tr) == TYPE_ARRAY:
+					traits_arr = meta_tr
+			elif typeof(b) == TYPE_DICTIONARY and b.has("traits") and typeof(b["traits"]) == TYPE_ARRAY:
+				traits_arr = b["traits"]
+
+			for trait_name in traits_arr:
+				if typeof(trait_name) != TYPE_STRING: continue
+				if trait_name == "swift":
+					if "speed" in b: b.speed *= 1.05
+					if "base_speed" in b: b.base_speed *= 1.05
+					elif b.has_method("set_meta") and b.has_meta("base_speed"):
+						b.set_meta("base_speed", float(b.get_meta("base_speed")) * 1.05)
+				elif trait_name == "slow":
+					if "speed" in b: b.speed *= 0.95
+					if "base_speed" in b: b.base_speed *= 0.95
+					elif b.has_method("set_meta") and b.has_meta("base_speed"):
+						b.set_meta("base_speed", float(b.get_meta("base_speed")) * 0.95)
+				elif trait_name == "sturdy":
+					if "max_hp" in b:
+						b.max_hp *= 1.05
+						if "hp" in b: b.hp = min(b.hp * 1.05, b.max_hp)
+				elif trait_name == "fragile":
+					if "max_hp" in b:
+						b.max_hp *= 0.95
+						if "hp" in b: b.hp = min(b.hp, b.max_hp)
+				elif trait_name == "lethal":
+					if "damage" in b: b.damage *= 1.05
+					if "base_damage" in b: b.base_damage *= 1.05
+					elif b.has_method("set_meta") and b.has_meta("base_damage"):
+						b.set_meta("base_damage", float(b.get_meta("base_damage")) * 1.05)
+				elif trait_name == "weak":
+					if "damage" in b: b.damage *= 0.95
+					if "base_damage" in b: b.base_damage *= 0.95
+					elif b.has_method("set_meta") and b.has_meta("base_damage"):
+						b.set_meta("base_damage", float(b.get_meta("base_damage")) * 0.95)
 		for b in balls:
 			b.damage = 0.0
 			if not b.has_meta("mutators"):

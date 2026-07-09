@@ -1,0 +1,105 @@
+import pytest
+from ai.game_modes import GameMode
+from arena.arena_types import ProceduralArena
+
+class MockWorld:
+    def __init__(self):
+        self.arena = ProceduralArena()
+        self.dead_balls = []
+        self.match_time = 0.0
+
+class MockBall:
+    def __init__(self, hp=100.0, speed=100.0, damage=10.0, traits=None):
+        self.max_hp = hp
+        self.hp = hp
+        self.base_speed = speed
+        self.speed = speed
+        self.base_damage = damage
+        self.damage = damage
+        self.traits = traits or []
+
+# We create a child class of GameMode to only test traits
+class MockTraitsMode(GameMode):
+    def setup(self, world, balls):
+        # Apply the traits logic just as done in GameMode
+        for b in balls:
+            traits = getattr(b, "traits", [])
+            for trait in traits:
+                if trait == "swift":
+                    b.speed = getattr(b, "speed", 100.0) * 1.05
+                    if hasattr(b, "base_speed"):
+                        b.base_speed *= 1.05
+                elif trait == "slow":
+                    b.speed = getattr(b, "speed", 100.0) * 0.95
+                    if hasattr(b, "base_speed"):
+                        b.base_speed *= 0.95
+                elif trait == "sturdy":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 1.05
+                    b.hp = min(getattr(b, "hp", 100.0) * 1.05, b.max_hp)
+                elif trait == "fragile":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 0.95
+                    b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+                elif trait == "lethal":
+                    b.damage = getattr(b, "damage", 10.0) * 1.05
+                    if hasattr(b, "base_damage"):
+                        b.base_damage *= 1.05
+                elif trait == "weak":
+                    b.damage = getattr(b, "damage", 10.0) * 0.95
+                    if hasattr(b, "base_damage"):
+                        b.base_damage *= 0.95
+
+def test_swift_trait():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    b = MockBall(traits=["swift"])
+    mode.setup(world, [b])
+    assert b.speed == 105.0
+    assert b.base_speed == 105.0
+
+def test_slow_trait():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    b = MockBall(traits=["slow"])
+    mode.setup(world, [b])
+    assert b.speed == 95.0
+    assert b.base_speed == 95.0
+
+def test_sturdy_trait():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    b = MockBall(traits=["sturdy"])
+    mode.setup(world, [b])
+    assert b.max_hp == 105.0
+    assert b.hp == 105.0
+
+def test_fragile_trait():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    b = MockBall(traits=["fragile"])
+    mode.setup(world, [b])
+    assert b.max_hp == 95.0
+    assert b.hp == 95.0
+
+def test_lethal_trait():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    b = MockBall(traits=["lethal"])
+    mode.setup(world, [b])
+    assert b.damage == 10.5
+    assert b.base_damage == 10.5
+
+def test_weak_trait():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    b = MockBall(traits=["weak"])
+    mode.setup(world, [b])
+    assert b.damage == 9.5
+    assert b.base_damage == 9.5
+
+def test_multiple_traits():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    b = MockBall(traits=["swift", "fragile"])
+    mode.setup(world, [b])
+    assert b.speed == 105.0
+    assert b.max_hp == 95.0

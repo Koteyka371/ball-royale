@@ -26,6 +26,33 @@ class GameMode:
                 elif b.sponsor == "vampiric":
                     b.max_hp = getattr(b, "max_hp", 100.0) * 0.9
                     b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+
+            # Apply minor starting traits
+            traits = getattr(b, "traits", [])
+            for trait in traits:
+                if trait == "swift":
+                    b.speed = getattr(b, "speed", 100.0) * 1.05
+                    if hasattr(b, "base_speed"):
+                        b.base_speed *= 1.05
+                elif trait == "slow":
+                    b.speed = getattr(b, "speed", 100.0) * 0.95
+                    if hasattr(b, "base_speed"):
+                        b.base_speed *= 0.95
+                elif trait == "sturdy":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 1.05
+                    b.hp = min(getattr(b, "hp", 100.0) * 1.05, b.max_hp)
+                elif trait == "fragile":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 0.95
+                    b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+                elif trait == "lethal":
+                    b.damage = getattr(b, "damage", 10.0) * 1.05
+                    if hasattr(b, "base_damage"):
+                        b.base_damage *= 1.05
+                elif trait == "weak":
+                    b.damage = getattr(b, "damage", 10.0) * 0.95
+                    if hasattr(b, "base_damage"):
+                        b.base_damage *= 0.95
+
         """Called at the start of the battle to initialize mode-specific rules/teams."""
 
         # Apply global season modifier
@@ -5806,6 +5833,33 @@ class BumperBallsMode(GameMode):
                 elif b.sponsor == "vampiric":
                     b.max_hp = getattr(b, "max_hp", 100.0) * 0.9
                     b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+
+            # Apply minor starting traits
+            traits = getattr(b, "traits", [])
+            for trait in traits:
+                if trait == "swift":
+                    b.speed = getattr(b, "speed", 100.0) * 1.05
+                    if hasattr(b, "base_speed"):
+                        b.base_speed *= 1.05
+                elif trait == "slow":
+                    b.speed = getattr(b, "speed", 100.0) * 0.95
+                    if hasattr(b, "base_speed"):
+                        b.base_speed *= 0.95
+                elif trait == "sturdy":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 1.05
+                    b.hp = min(getattr(b, "hp", 100.0) * 1.05, b.max_hp)
+                elif trait == "fragile":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 0.95
+                    b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+                elif trait == "lethal":
+                    b.damage = getattr(b, "damage", 10.0) * 1.05
+                    if hasattr(b, "base_damage"):
+                        b.base_damage *= 1.05
+                elif trait == "weak":
+                    b.damage = getattr(b, "damage", 10.0) * 0.95
+                    if hasattr(b, "base_damage"):
+                        b.base_damage *= 0.95
+
         for b in balls:
 
             b.damage = 0.0
