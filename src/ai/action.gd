@@ -6167,6 +6167,60 @@ func execute(strategy: String, delta: float):
                                             self.world.arena.hazards.append(trap3)
 
                             self.ball.set_meta("last_teleport_tick", current_tick)
+                elif hazard.kind == "soul_fragment":
+                    var b_type_necro = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type_necro = self.ball.ball_type
+                    elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: b_type_necro = self.ball.ball_type
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): b_type_necro = self.ball.get_meta("ball_type")
+
+                    var is_necro = false
+                    if typeof(b_type_necro) == TYPE_STRING and b_type_necro.to_lower() == "necromancer": is_necro = true
+
+                    var b_id = null
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball.id
+                    elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b_id = self.ball.id
+
+                    var m_owner = null
+                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("minion_owner"): m_owner = hazard.minion_owner
+                    elif typeof(hazard) == TYPE_OBJECT and "minion_owner" in hazard: m_owner = hazard.minion_owner
+                    elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("minion_owner"): m_owner = hazard.get_meta("minion_owner")
+
+                    if is_necro and m_owner == b_id:
+                        var b_rad = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): b_rad = self.ball.radius
+                        elif typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: b_rad = self.ball.radius
+
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var dist_sq = dx * dx + dy * dy
+                        if dist_sq < (b_rad + hazard.radius) * (b_rad + hazard.radius):
+                            # Collect soul fragment
+                            var mhp = 0.0
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"):
+                                self.ball.max_hp += 2.0
+                                mhp = self.ball.max_hp
+                            elif typeof(self.ball) == TYPE_OBJECT and "max_hp" in self.ball:
+                                self.ball.max_hp += 2.0
+                                mhp = self.ball.max_hp
+
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"):
+                                self.ball.hp = min(self.ball.hp + 2.0, mhp)
+                            elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball:
+                                self.ball.hp = min(self.ball.hp + 2.0, mhp)
+
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"):
+                                self.ball.damage += 1.0
+                            elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball:
+                                self.ball.damage += 1.0
+
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_damage"):
+                                self.ball.base_damage += 1.0
+                            elif typeof(self.ball) == TYPE_OBJECT and "base_damage" in self.ball:
+                                self.ball.base_damage += 1.0
+
+                            hazards_to_remove.append(hazard)
+                            if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                                world.add_event("soul_fragment_collected", {"ball_id": b_id})
                 elif hazard.kind == "slip_zone":
                     var active = true
                     if hazard.has_method("get_meta") and hazard.has_meta("active"):
@@ -6297,6 +6351,61 @@ func execute(strategy: String, delta: float):
                                 world.add_event("clone_spawner_trigger", {"x": hazard.x, "y": hazard.y, "ball_id": self.ball.get("id", 0)})
                             elif typeof(world) == TYPE_DICTIONARY and "events" in world:
                                 world.events.append(["clone_spawner_trigger", {"x": hazard.x, "y": hazard.y, "ball_id": self.ball.get("id", 0)}])
+
+                elif hazard.kind == "soul_fragment":
+                    var b_type_necro = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type_necro = self.ball.ball_type
+                    elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: b_type_necro = self.ball.ball_type
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): b_type_necro = self.ball.get_meta("ball_type")
+
+                    var is_necro = false
+                    if typeof(b_type_necro) == TYPE_STRING and b_type_necro.to_lower() == "necromancer": is_necro = true
+
+                    var b_id = null
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball.id
+                    elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b_id = self.ball.id
+
+                    var m_owner = null
+                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("minion_owner"): m_owner = hazard.minion_owner
+                    elif typeof(hazard) == TYPE_OBJECT and "minion_owner" in hazard: m_owner = hazard.minion_owner
+                    elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("minion_owner"): m_owner = hazard.get_meta("minion_owner")
+
+                    if is_necro and m_owner == b_id:
+                        var b_rad = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): b_rad = self.ball.radius
+                        elif typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: b_rad = self.ball.radius
+
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var dist_sq = dx * dx + dy * dy
+                        if dist_sq < (b_rad + hazard.radius) * (b_rad + hazard.radius):
+                            # Collect soul fragment
+                            var mhp = 0.0
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"):
+                                self.ball.max_hp += 2.0
+                                mhp = self.ball.max_hp
+                            elif typeof(self.ball) == TYPE_OBJECT and "max_hp" in self.ball:
+                                self.ball.max_hp += 2.0
+                                mhp = self.ball.max_hp
+
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"):
+                                self.ball.hp = min(self.ball.hp + 2.0, mhp)
+                            elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball:
+                                self.ball.hp = min(self.ball.hp + 2.0, mhp)
+
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"):
+                                self.ball.damage += 1.0
+                            elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball:
+                                self.ball.damage += 1.0
+
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_damage"):
+                                self.ball.base_damage += 1.0
+                            elif typeof(self.ball) == TYPE_OBJECT and "base_damage" in self.ball:
+                                self.ball.base_damage += 1.0
+
+                            hazards_to_remove.append(hazard)
+                            if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                                world.add_event("soul_fragment_collected", {"ball_id": b_id})
 
                 elif hazard.kind == "quicksand":
                     var dx = hazard.x - self.ball.x

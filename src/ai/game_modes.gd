@@ -284,6 +284,46 @@ class GameMode:
 								"message": killer_id + " claimed a nemesis bounty on " + target_id + " for " + str(reward) + " tokens!"
 							})
 
+		# Elite Minion death logic - drops a soul fragment for Necromancer
+		var is_elite = false
+		if typeof(ball) == TYPE_DICTIONARY and ball.has("is_elite_minion"): is_elite = ball.is_elite_minion
+		elif typeof(ball) == TYPE_OBJECT and "is_elite_minion" in ball: is_elite = ball.is_elite_minion
+		elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("is_elite_minion"): is_elite = ball.get_meta("is_elite_minion")
+
+		var b_type_minion = ""
+		if typeof(ball) == TYPE_DICTIONARY and ball.has("ball_type"): b_type_minion = ball.ball_type
+		elif typeof(ball) == TYPE_OBJECT and "ball_type" in ball: b_type_minion = ball.ball_type
+		elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("ball_type"): b_type_minion = ball.get_meta("ball_type")
+
+		if is_elite and typeof(b_type_minion) == TYPE_STRING and b_type_minion.to_lower() == "elite_minion":
+			var m_owner = null
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("minion_owner"): m_owner = ball.minion_owner
+			elif typeof(ball) == TYPE_OBJECT and "minion_owner" in ball: m_owner = ball.minion_owner
+
+			var b_x = 0.0
+			var b_y = 0.0
+			var b_id = ""
+			if typeof(ball) == TYPE_DICTIONARY:
+				if ball.has("x"): b_x = ball.x
+				if ball.has("y"): b_y = ball.y
+				if ball.has("id"): b_id = ball.id
+			elif typeof(ball) == TYPE_OBJECT:
+				if "x" in ball: b_x = ball.x
+				if "y" in ball: b_y = ball.y
+				if "id" in ball: b_id = ball.id
+
+			var soul = {
+				"id": "soul_" + str(b_id),
+				"x": b_x,
+				"y": b_y,
+				"radius": 15.0,
+				"kind": "soul_fragment",
+				"damage": 0.0,
+				"minion_owner": m_owner
+			}
+			if "arena" in world and "hazards" in world.arena:
+				world.arena.hazards.append(soul)
+
 		# Necromancer death logic
 		var b_type = ""
 		if "ball_type" in ball: b_type = ball.ball_type
