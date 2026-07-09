@@ -27,6 +27,12 @@ class GuildManager:
                         guild["perks"] = []
                     if "active_bounties" not in guild:
                         guild["active_bounties"] = {}
+                    if "prestige_pool" not in guild:
+                        guild["prestige_pool"] = 0
+                    if "titles" not in guild:
+                        guild["titles"] = []
+                    if "cosmetic_auras" not in guild:
+                        guild["cosmetic_auras"] = []
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"guilds": {}, "territories": {}}
@@ -43,6 +49,9 @@ class GuildManager:
             "members": [creator_id],
             "level": 1,
             "resources": 0,
+            "prestige_pool": 0,
+            "titles": [],
+            "cosmetic_auras": [],
             "buffs": {
                 "bonus_hp": 0,
                 "bonus_speed": 0,
@@ -84,6 +93,50 @@ class GuildManager:
                 self.save()
                 return True
         return False
+
+    def donate_prestige(self, guild_name, amount):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            guild["prestige_pool"] = guild.get("prestige_pool", 0) + amount
+            self.save()
+            return True
+        return False
+
+    def unlock_global_cosmetic(self, guild_name, cosmetic_id, cost):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild.get("prestige_pool", 0) >= cost:
+                if "cosmetic_auras" not in guild:
+                    guild["cosmetic_auras"] = []
+                if cosmetic_id not in guild["cosmetic_auras"]:
+                    guild["prestige_pool"] -= cost
+                    guild["cosmetic_auras"].append(cosmetic_id)
+                    self.save()
+                    return True
+        return False
+
+    def unlock_global_title(self, guild_name, title_id, cost):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild.get("prestige_pool", 0) >= cost:
+                if "titles" not in guild:
+                    guild["titles"] = []
+                if title_id not in guild["titles"]:
+                    guild["prestige_pool"] -= cost
+                    guild["titles"].append(title_id)
+                    self.save()
+                    return True
+        return False
+
+    def get_unlocked_cosmetics(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("cosmetic_auras", [])
+        return []
+
+    def get_unlocked_titles(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("titles", [])
+        return []
 
     def donate_resources(self, guild_name, amount):
         if guild_name in self.data["guilds"]:
