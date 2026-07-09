@@ -16,6 +16,12 @@ var last_tick: int = -1
 var danger_grid: Dictionary = {}
 var boundary_states: Dictionary = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
 var temperature: float = 20.0
+var weather: String = "clear"
+var is_raining: bool = false
+var is_snowing: bool = false
+var is_heatwave: bool = false
+var is_windy: bool = false
+var is_foggy: bool = false
 
 
 class Platform:
@@ -618,6 +624,21 @@ func update_zone(current_tick: int, delta: float) -> void:
                 "left": states[2],
                 "right": states[3]
             }
+        if current_tick % 600 == 0 and weather != "clear":
+            weather = "clear"
+            is_raining = false
+            is_snowing = false
+            is_heatwave = false
+            is_windy = false
+            is_foggy = false
+        elif current_tick % 600 == 300:
+            var weathers = ["rain", "snow", "heatwave", "wind", "fog"]
+            weather = weathers[randi() % weathers.size()]
+            is_raining = weather == "rain"
+            is_snowing = weather == "snow"
+            is_heatwave = weather == "heatwave"
+            is_windy = weather == "wind"
+            is_foggy = weather == "fog"
 
         # Update platforms
         for p in platforms:
