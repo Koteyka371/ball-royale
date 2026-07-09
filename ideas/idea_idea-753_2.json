@@ -1,0 +1,4 @@
+{
+    "title": "Pinball Flipper Traps",
+    "description": "Dynamic pinball flippers appear in the arena. If a ball hits the base of the flipper, it gets launched across the arena at maximum speed, dealing massive collision damage to any other ball it hits."
+}

@@ -5241,10 +5241,11 @@ class Action:
                 import random
                 angle = _math.atan2(nvy, nvx) + random.uniform(-0.2, 0.2)
                 gm = getattr(self.world, "game_mode", None)
+                # Bouncy walls cause high-speed ricochets to make dodging harder and create chaotic collisions
                 if wall_state == "bouncy":
-                    new_speed = min(speed * 3.0, 4000.0)
+                    new_speed = min(speed * 3.5, 4500.0)
                 elif gm and getattr(gm, "name", "") == "Bouncy Terrain":
-                    new_speed = min(speed * 2.0, 3000.0)
+                    new_speed = min(speed * 2.5, 3500.0)
                 else:
                     new_speed = min(speed * 1.5, 2000.0)
 
