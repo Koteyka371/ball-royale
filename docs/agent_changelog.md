@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-740] Invisible Walls Arena — *2026-07-09 10:46:46 UTC*
+
+The arena contains several invisible walls that only become temporarily visible when a player or attack collides with them.
+
+---
+
 ## [idea-755] Spiked Walls Game Mode — *2026-07-09 00:43:16 UTC*
 
 A new mutator/game mode where the arena walls are lined with spikes. Hitting a wall doesn't just do scaling velocity damage, but also applies a bleeding effect that drains HP slowly over time until the player stops moving.
