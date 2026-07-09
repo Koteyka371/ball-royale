@@ -787,6 +787,28 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
         import math
 
+
+        # Task: Lower-level balls have a chance to get the 'fear' emotion simply by being in the immediate proximity of a ball with a massive, high-level cosmetic aura.
+        if not getattr(self.ball, "is_decoy", False) and getattr(self.ball, "cosmetic_aura_scale", 1.0) >= 2.0:
+            import random
+            import math
+            aura_fear_radius = getattr(self.ball, "cosmetic_aura_scale", 1.0) * 50.0
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", "") != getattr(self.ball, "team", ""):
+                        if getattr(b, "level", 1) < getattr(self.ball, "level", 1):
+                            dx = b.x - self.ball.x
+                            dy = b.y - self.ball.y
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist <= aura_fear_radius:
+                                if random.random() < 0.1 * delta: # 10% chance per second to induce fear
+                                    if hasattr(b, "emotion"):
+                                        b.emotion = "fear"
+                                    if not hasattr(b, "siren_feared_timer") or getattr(b, "siren_feared_timer", 0.0) <= 0:
+                                        b.siren_feared_timer = 1.0
+                                        b.siren_fear_source_x = self.ball.x
+                                        b.siren_fear_source_y = self.ball.y
+
         if getattr(self.ball, "speed_overdrive_timer", 0.0) > 0:
             self.ball.speed_overdrive_timer -= delta
             if self.ball.speed_overdrive_timer <= 0:

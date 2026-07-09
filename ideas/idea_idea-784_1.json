@@ -1,0 +1,4 @@
+{
+  "title": "Aura Clashes",
+  "description": "When two balls with high-level cosmetic auras (scale >= 2.0) collide, they trigger an 'Aura Clash' shockwave. This shockwave deals no damage but heavily knocks back all nearby entities (including hazards and smaller balls), temporarily silencing them for 2 seconds."
+}
