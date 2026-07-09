@@ -1239,9 +1239,28 @@ class Action:
 
         self.ball.is_in_quicksand = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            hazards_to_remove = []
             for h in self.world.arena.hazards:
                 if getattr(h, 'is_disabled_by_flare', False):
                     continue
+
+                if getattr(h, "kind", "") == "soul_fragment":
+                    # Check if the ball is the owner Necromancer
+                    ball_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+                    if ball_type == "necromancer" and getattr(h, "minion_owner", None) == getattr(self.ball, "id", None):
+                        dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
+                        if dist_sq < (self.ball.radius + h.radius)**2:
+                            # Collect soul fragment
+                            self.ball.max_hp += 2.0
+                            self.ball.hp = min(self.ball.hp + 2.0, self.ball.max_hp)
+                            self.ball.damage += 1.0
+                            if hasattr(self.ball, "base_damage"):
+                                self.ball.base_damage += 1.0
+                            hazards_to_remove.append(h)
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("soul_fragment_collected", {"ball_id": self.ball.id})
+                    continue
+
                 if getattr(h, "kind", "") == "quicksand":
                     dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
                     if dist_sq < h.radius**2:
@@ -1276,6 +1295,10 @@ class Action:
                             self.world.add_event("clone_spawner_trigger", {"x": h.x, "y": h.y, "ball_id": self.ball.id})
                         elif hasattr(self.world, "events"):
                             self.world.events.append(("clone_spawner_trigger", {"x": h.x, "y": h.y, "ball_id": getattr(self.ball, "id", 0)}))
+
+            for h in hazards_to_remove:
+                if h in self.world.arena.hazards:
+                    self.world.arena.hazards.remove(h)
 
 
         # Magnet passive: pull boosters and smaller entities

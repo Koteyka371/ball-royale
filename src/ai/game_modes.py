@@ -370,6 +370,29 @@ class GameMode:
                             "message": f"{killer_id} claimed a nemesis bounty on {target_id} for {reward} tokens!"
                         })
 
+        # Elite Minion death logic - drops a soul fragment for Necromancer
+        if getattr(ball, "is_elite_minion", False) and getattr(ball, "ball_type", "").lower() == "elite_minion":
+            class _SoulHazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.is_disabled_by_flare = False
+            soul_fragment = _SoulHazard(
+                id=f"soul_{ball.id}",
+                x=ball.x,
+                y=ball.y,
+                radius=15.0,
+                kind="soul_fragment",
+                damage=0.0
+            )
+            soul_fragment.minion_owner = getattr(ball, "minion_owner", None)
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards.append(soul_fragment)
+
         # Necromancer death logic
         if getattr(ball, "ball_type", "").lower() == "necromancer":
             if hasattr(world, "balls"):
