@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Trap",
+  "description": "A new placeable trap that, when triggered by an enemy, permanently links their health to the trap's creator until either entity is destroyed. Any damage taken by the trap's creator is mitigated and partially transferred to the entangled enemy, creating a high-risk, high-reward tactical defensive option."
+}

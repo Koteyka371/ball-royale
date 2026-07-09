@@ -13664,6 +13664,29 @@ func _use_skill():
                     # Swap positions
                     var temp_x = self.ball.x
                     var temp_y = self.ball.y
+
+                    if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+                        var b_team = ""
+                        if "team" in self.ball: b_team = self.ball.team
+
+                        var trail = {
+                            "id": "electric_trail_" + str(randi()),
+                            "kind": "deployable_thin_hazard_line",
+                            "x": temp_x,
+                            "y": temp_y,
+                            "start_x": temp_x,
+                            "start_y": temp_y,
+                            "end_x": t_x,
+                            "end_y": t_y,
+                            "team": b_team,
+                            "damage": 30.0,
+                            "active": true,
+                            "hit_ids": [],
+                            "duration": 2.0,
+                            "radius": 10.0
+                        }
+                        world.arena.hazards.append(trail)
+
                     self.ball.x = t_x
                     self.ball.y = t_y
                     if "x" in target:
@@ -14665,6 +14688,29 @@ func _use_skill():
                     var b = active_decoys[0]
                     var tx = self.ball.x
                     var ty = self.ball.y
+
+                    if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+                        var b_team = ""
+                        if "team" in self.ball: b_team = self.ball.team
+
+                        var trail = {
+                            "id": "electric_trail_" + str(randi()),
+                            "kind": "deployable_thin_hazard_line",
+                            "x": tx,
+                            "y": ty,
+                            "start_x": tx,
+                            "start_y": ty,
+                            "end_x": b.x,
+                            "end_y": b.y,
+                            "team": b_team,
+                            "damage": 30.0,
+                            "active": true,
+                            "hit_ids": [],
+                            "duration": 2.0,
+                            "radius": 10.0
+                        }
+                        world.arena.hazards.append(trail)
+
                     self.ball.x = b.x
                     self.ball.y = b.y
                     b.x = tx
@@ -14865,6 +14911,28 @@ func _use_skill():
                     var clone_y = 0.0
                     if "y" in active_clone: clone_y = active_clone.y
                     elif active_clone.has_method("get_meta") and active_clone.has_meta("y"): clone_y = active_clone.get_meta("y")
+
+                    if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+                        var b_team = ""
+                        if "team" in self.ball: b_team = self.ball.team
+
+                        var trail = {
+                            "id": "electric_trail_" + str(randi()),
+                            "kind": "deployable_thin_hazard_line",
+                            "x": my_x,
+                            "y": my_y,
+                            "start_x": my_x,
+                            "start_y": my_y,
+                            "end_x": clone_x,
+                            "end_y": clone_y,
+                            "team": b_team,
+                            "damage": 30.0,
+                            "active": true,
+                            "hit_ids": [],
+                            "duration": 2.0,
+                            "radius": 10.0
+                        }
+                        world.arena.hazards.append(trail)
 
                     if "x" in self.ball: self.ball.x = clone_x
                     elif self.ball.has_method("set_meta"): self.ball.set_meta("x", clone_x)
