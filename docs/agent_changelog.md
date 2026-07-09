@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-801] Necromancer Soul Harvest — *2026-07-09 22:30:25 UTC*
+
+When a Necromancer's elite minion dies, it leaves behind a 'soul fragment'. If the Necromancer collects it, they gain a permanent +2 max HP and a slight damage boost, creating a long-term scaling strategy for keeping minions alive.
+
+---
+
 ## [idea-803] Shrinking Safe Zone with Modifiers — *2026-07-09 22:29:56 UTC*
 
 A battle royale mode where the shrinking safe zone periodically applies random buffs or debuffs to everyone inside, forcing players to adapt their strategies dynamically as the game progresses.
