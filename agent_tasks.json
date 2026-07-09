@@ -13521,7 +13521,7 @@
     },
     {
       "id": "idea-786",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Collision Effects",
@@ -22249,6 +22249,40 @@
         "src/arena/kinetic_deflector_arena.py",
         "src/arena/kinetic_deflector_arena.gd",
         "tests/test_kinetic_deflector_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1299",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Emotion Status Interactions",
+      "description": "Expand the emotion system so that emotions interact with specific hazards and mechanics. For example, 'fear' makes balls run slightly faster but lose turning radius, while 'anger' increases damage dealt but reduces defense. Balls with 'calm' are immune to sudden stat changes.",
+      "allowed_paths": [
+        "src/ai/emotion_status_interactions.py",
+        "src/ai/emotion_status_interactions.gd",
+        "tests/test_emotion_status_interactions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1300",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmetic Synergy",
+      "description": "Introduce cosmetic synergies where balls that wear matching cosmetics (e.g., all wearing 'sunglasses') gain a passive team bonus, encouraging teams to coordinate their aesthetic for a small competitive edge.",
+      "allowed_paths": [
+        "src/ai/cosmetic_synergy.py",
+        "src/ai/cosmetic_synergy.gd",
+        "tests/test_cosmetic_synergy.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

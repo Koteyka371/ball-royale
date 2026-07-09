@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-786] Aura Collision Effects — *2026-07-09 20:41:53 UTC*
+
+When two balls with high-level auras collide, it causes an AoE elemental explosion based on the combined colors of their auras.
+
+---
+
 ## [idea-784] Aura Intimidation System — *2026-07-09 20:25:48 UTC*
 
 Lower-level balls have a chance to get the 'fear' emotion simply by being in the immediate proximity of a ball with a massive, high-level cosmetic aura.
