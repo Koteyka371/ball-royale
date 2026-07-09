@@ -406,6 +406,7 @@ class BattleRoyaleMode(GameMode):
         self.tornado_spawn_timer = 0.0
         self.final_boss_spawned = False
         self.obstacle_timer = 0.0
+        self.random_event_timer = 0.0
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -618,6 +619,7 @@ class BattleRoyaleMode(GameMode):
             self.obstacle_timer += delta
             if self.obstacle_timer >= 5.0 and len(moving_walls) < 3:
                 self.obstacle_timer = 0.0
+                self.random_event_timer = 0.0
                 try:
                     from arena.procedural_arena import Hazard
                     angle = self.random.uniform(0, 2 * math.pi)
@@ -1406,6 +1408,169 @@ class BattleRoyaleMode(GameMode):
 
 
         self.match_time += delta
+
+        # Loot Goblin Event
+        self.random_event_timer += delta
+        if self.random_event_timer >= 25.0:
+            self.random_event_timer = 0.0
+            event_type = self.random.choice(["loot_goblin", "low_gravity_zone", "meteor_shower"])
+
+            if event_type == "loot_goblin":
+                class LootGoblin:
+                    def __init__(self, id, x, y):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.vx = 0.0
+                        self.vy = 0.0
+                        self.radius = 15.0
+                        self.speed = 250.0
+                        self.damage = 0.0
+                        self.hp = 50.0
+                        self.max_hp = 50.0
+                        self.alive = True
+                        self.ball_type = "loot_goblin"
+                        self.team = "Goblins"
+
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                spawn_x = self.random.uniform(100, arena_width - 100)
+                spawn_y = self.random.uniform(100, arena_height - 100)
+                goblin_id = 95000 + getattr(self, "random", __import__("random")).randint(0, 9999)
+                new_goblin = LootGoblin(goblin_id, spawn_x, spawn_y)
+
+                if hasattr(world, "balls"):
+                    world.balls.append(new_goblin)
+                    if hasattr(world, "entities") and world.balls is not world.entities:
+                        world.entities.append(new_goblin)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("loot_goblin_spawn", {"message": "A Loot Goblin has appeared! Catch it for rare boosters!"})
+
+            elif event_type == "low_gravity_zone":
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                cx = arena_width / 2.0
+                cy = arena_height / 2.0
+
+                try:
+                    from arena.procedural_arena import Hazard
+                    h_id = 96000 + getattr(self, "random", __import__("random")).randint(0, 9999)
+                    low_grav = Hazard(h_id, cx, cy, 50.0, "low_gravity_zone", 0.0)
+                    setattr(low_grav, "duration", 15.0)
+                    setattr(low_grav, "target_radius", 300.0)
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        world.arena.hazards.append(low_grav)
+                except ImportError:
+                    pass
+                if hasattr(world, "add_event"):
+                    world.add_event("low_gravity_zone", {"message": "A Low Gravity Zone is expanding in the center!"})
+
+            elif event_type == "meteor_shower":
+                self.weather = "meteor_shower"
+                self.weather_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("weather_change", {"weather": "meteor_shower", "message": "A sudden Meteor Shower has begun!"})
+
+        # Update Loot Goblin Movement
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) == "loot_goblin":
+                # Find nearest player
+                nearest_player = None
+                min_dist = float('inf')
+                for p in balls:
+                    if getattr(p, "alive", False) and getattr(p, "ball_type", None) not in ["spectator", "loot_goblin"]:
+                        dx = p.x - b.x
+                        dy = p.y - b.y
+                        dist = dx*dx + dy*dy
+                        if dist < min_dist:
+                            min_dist = dist
+                            nearest_player = p
+
+                if nearest_player:
+                    # Run away
+                    dx = b.x - nearest_player.x
+                    dy = b.y - nearest_player.y
+                    dist = (dx**2 + dy**2)**0.5
+                    if dist > 0:
+                        nx = dx/dist
+                        ny = dy/dist
+                        b.vx = nx * getattr(b, "speed", 250.0)
+                        b.vy = ny * getattr(b, "speed", 250.0)
+                    else:
+                        b.vx = getattr(b, "speed", 250.0)
+                        b.vy = 0.0
+                else:
+                    b.vx *= 0.95
+                    b.vy *= 0.95
+
+                b.x += b.vx * delta
+                b.y += b.vy * delta
+
+                # Check for death to drop loot
+                if b.hp <= 0:
+                    b.alive = False
+                    if hasattr(world, "boosters"):
+                        booster_kinds = ["damage_booster", "speed_booster", "shield_booster", "hp_booster"]
+                        for i in range(3):
+                            class DroppedBooster:
+                                def __init__(self, id, x, y, kind):
+                                    self.id = id
+                                    self.x = x
+                                    self.y = y
+                                    self.kind = kind
+                                    self.radius = 15.0
+                                    self.ball_type = "booster"
+                                    self.active = True
+                            b_id = 9100 + len(world.boosters) + getattr(self, "random", __import__("random")).randint(0, 1000)
+                            b_x = b.x + getattr(self, "random", __import__("random")).uniform(-30, 30)
+                            b_y = b.y + getattr(self, "random", __import__("random")).uniform(-30, 30)
+                            chosen_kind = getattr(self, "random", __import__("random")).choice(booster_kinds)
+                            world.boosters.append(DroppedBooster(b_id, b_x, b_y, chosen_kind))
+
+        # Update Low Gravity Zone expansion
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "low_gravity_zone":
+                    tr = getattr(h, "target_radius", h.radius)
+                    if h.radius < tr:
+                        h.radius += 20.0 * delta
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            hazards_to_remove.append(h)
+
+                    # Apply low gravity to balls inside
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            dist = ((b.x - h.x)**2 + (b.y - h.y)**2)**0.5
+                            if dist < h.radius:
+                                if not getattr(b, "_low_grav_applied", False):
+                                    b._low_grav_applied = True
+                                    b.original_mass = getattr(b, "mass", 1.0)
+                                    b.mass = b.original_mass * 0.5
+                                else:
+                                    b.mass = getattr(b, "original_mass", 1.0) * 0.5
+                                # Floating effect
+                                if hasattr(b, "vz"):
+                                    b.vz += 10.0 * delta
+                            else:
+                                if getattr(b, "_low_grav_applied", False):
+                                    if hasattr(b, "original_mass"):
+                                        b.mass = getattr(b, "original_mass", 1.0)
+                                        delattr(b, "original_mass")
+                                    b._low_grav_applied = False
+
+            for h in hazards_to_remove:
+                world.arena.hazards.remove(h)
+
+                # Reset mass for all balls
+                for b in balls:
+                    if hasattr(b, "original_mass"):
+                        b.mass = getattr(b, "original_mass", 1.0)
+                        delattr(b, "original_mass")
+
 
         # Meteor Shower final phase logic
         teams_alive = set(getattr(b, "team", None) for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator")
