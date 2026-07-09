@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-765] Teleport Trails — *2026-07-09 18:42:39 UTC*
+
+Swapping with a decoy leaves a brief electric trail between the original and new position that damages enemies who cross it.
+
+---
+
 ## [idea-759] Stamina Drain Hazard Pulse — *2026-07-09 18:42:35 UTC*
 
 Hazard zones that currently drain stamina will occasionally pulse, applying a 1-second silence effect if the entity caught within them has zero stamina.
