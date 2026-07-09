@@ -13283,7 +13283,7 @@
     },
     {
       "id": "idea-772",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Wars Tournaments",
@@ -21754,6 +21754,40 @@
         "src/ai/shattering_ice_walls.py",
         "src/ai/shattering_ice_walls.gd",
         "tests/test_shattering_ice_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1270",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Whirlpool Traps",
+      "description": "In water-themed arenas, Whirlpools can spawn that slowly suck entities towards the center, reducing movement speed. Entities that reach the center are briefly slowed down or submerge before resurfacing, dropping some HP or receiving a wet debuff.",
+      "allowed_paths": [
+        "src/arena/whirlpool_traps.py",
+        "src/arena/whirlpool_traps.gd",
+        "tests/test_whirlpool_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1271",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lightning Rod Hazard",
+      "description": "A new deployable hazard that acts as a Lightning Rod, attracting any stray lightning bolts towards it and shielding nearby allies. When fully charged, it unleashes a small localized shockwave that stuns nearby enemies.",
+      "allowed_paths": [
+        "src/arena/lightning_rod.py",
+        "src/arena/lightning_rod.gd",
+        "tests/test_lightning_rod.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

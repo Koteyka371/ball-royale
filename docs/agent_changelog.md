@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-772] Clan Wars Tournaments — *2026-07-09 18:31:07 UTC*
+
+Introduces structured weekly tournaments where clans face off against each other. Players queue in special clan-only matchmaking lobbies, earning points for their clan based on their survival time and eliminations. Winning clans receive exclusive banners and guild-wide passive buffs.
+
+---
+
 ## [idea-774] Tornado Hazard in Windstorm — *2026-07-09 18:21:29 UTC*
 
 Introduce wandering Tornado hazards specifically during the Windstorm mode. Tornados pull balls towards them and scramble their movement vectors for a brief duration.
