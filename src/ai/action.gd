@@ -4615,6 +4615,14 @@ func execute(strategy: String, delta: float):
                                         var b_type = b.ball_type if "ball_type" in b else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else "")
                                         var b_team_check = b.team if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else "")
 
+                                        if rng.randf() < 0.3:
+                                            if "is_confused" in other:
+                                                other.is_confused = true
+                                                other.confusion_timer = 3.0
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("is_confused", true)
+                                                other.set_meta("confusion_timer", 3.0)
+
                                         if b_type == "trickster" or b_team_check == "trickster":
                                             if "stutter_timer" in other:
                                                 other.stutter_timer += 1.5
@@ -4642,14 +4650,6 @@ func execute(strategy: String, delta: float):
                                                             "color": "purple"
                                                         }
                                                     })
-
-                                            if rng.randf() < 0.3:
-                                                if "is_confused" in other:
-                                                    other.is_confused = true
-                                                    other.confusion_timer = 3.0
-                                                elif other.has_method("set_meta"):
-                                                    other.set_meta("is_confused", true)
-                                                    other.set_meta("confusion_timer", 3.0)
 
                                         if other.hp <= 0:
                                             if "alive" in other:
