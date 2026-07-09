@@ -7752,6 +7752,28 @@ class Action:
                 if target:
                     # Swap positions
                     temp_x, temp_y = self.ball.x, self.ball.y
+
+                    # Create electric trail hazard before swapping
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        class ElectricTrailObj:
+                            pass
+                        trail = ElectricTrailObj()
+                        trail.id = "electric_trail_" + str(__import__('random').randint(10000, 99999))
+                        trail.kind = "deployable_thin_hazard_line"
+                        trail.x = temp_x
+                        trail.y = temp_y
+                        trail.start_x = temp_x
+                        trail.start_y = temp_y
+                        trail.end_x = target.x
+                        trail.end_y = target.y
+                        trail.team = getattr(self.ball, "team", "")
+                        trail.damage = 30.0
+                        trail.active = True
+                        trail.hit_ids = []
+                        trail.duration = 2.0
+                        trail.radius = 10.0
+                        self.world.arena.hazards.append(trail)
+
                     self.ball.x, self.ball.y = target.x, target.y
                     target.x, target.y = temp_x, temp_y
 
@@ -8329,6 +8351,28 @@ class Action:
                     if not has_swapped_any:
                         decoy = active_decoys[0]
                         tx, ty = self.ball.x, self.ball.y
+
+                        # Create electric trail hazard before swapping
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            class ElectricTrailObj:
+                                pass
+                            trail = ElectricTrailObj()
+                            trail.id = "electric_trail_" + str(__import__('random').randint(10000, 99999))
+                            trail.kind = "deployable_thin_hazard_line"
+                            trail.x = tx
+                            trail.y = ty
+                            trail.start_x = tx
+                            trail.start_y = ty
+                            trail.end_x = decoy.x
+                            trail.end_y = decoy.y
+                            trail.team = getattr(self.ball, "team", "")
+                            trail.damage = 30.0
+                            trail.active = True
+                            trail.hit_ids = []
+                            trail.duration = 2.0
+                            trail.radius = 10.0
+                            self.world.arena.hazards.append(trail)
+
                         self.ball.x, self.ball.y = decoy.x, decoy.y
                         decoy.x, decoy.y = tx, ty
                         decoy.has_swapped = True
@@ -8438,6 +8482,27 @@ class Action:
                             # Swap positions
                             my_x, my_y = getattr(self.ball, "x", 0.0), getattr(self.ball, "y", 0.0)
                             clone_x, clone_y = getattr(active_clone, "x", 0.0), getattr(active_clone, "y", 0.0)
+
+                            # Create electric trail hazard before swapping
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                class ElectricTrailObj:
+                                    pass
+                                trail = ElectricTrailObj()
+                                trail.id = "electric_trail_" + str(__import__('random').randint(10000, 99999))
+                                trail.kind = "deployable_thin_hazard_line"
+                                trail.x = my_x
+                                trail.y = my_y
+                                trail.start_x = my_x
+                                trail.start_y = my_y
+                                trail.end_x = clone_x
+                                trail.end_y = clone_y
+                                trail.team = getattr(self.ball, "team", "")
+                                trail.damage = 30.0
+                                trail.active = True
+                                trail.hit_ids = []
+                                trail.duration = 2.0
+                                trail.radius = 10.0
+                                self.world.arena.hazards.append(trail)
 
                             self.ball.x, self.ball.y = clone_x, clone_y
                             active_clone.x, active_clone.y = my_x, my_y
