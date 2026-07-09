@@ -13676,7 +13676,7 @@
     },
     {
       "id": "idea-795",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gambling Node",
@@ -22317,6 +22317,128 @@
         "src/ai/aura_resonance_shields.py",
         "src/ai/aura_resonance_shields.gd",
         "tests/test_aura_resonance_shields.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1303",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Perks system",
+      "description": "Expand the guild system to include unlockable perks using guild points. For example, members might gain +5% max HP or improved drop rates for crafting materials if the guild reaches a certain level.",
+      "allowed_paths": [
+        "src/ui/guild_perks.py",
+        "src/ui/guild_perks.gd",
+        "src/ai/guild_perks.py",
+        "tests/test_guild_perks.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1304",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild-Exclusive Weather Events",
+      "description": "Implement special weather modifiers (like 'Guild Storm') that can be triggered in Battle Royale using pooled guild resources, providing an advantage or specific status effects to participating guild members.",
+      "allowed_paths": [
+        "src/ui/guild_exclusive_events.py",
+        "src/ui/guild_exclusive_events.gd",
+        "src/ai/guild_exclusive_events.py",
+        "tests/test_guild_exclusive_events.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1305",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura of Paranoia",
+      "description": "A new hazard type that applies the 'confusion' effect to any ball that stays within it for more than 3 seconds, forcing players to navigate quickly through the zone or risk reversing their controls.",
+      "allowed_paths": [
+        "src/ai/aura_of_paranoia.py",
+        "src/ai/aura_of_paranoia.gd",
+        "tests/test_aura_of_paranoia.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1306",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Grave Traps",
+      "description": "When a Necromancer dies, they leave behind a 'Grave Trap' hazard that explodes into bone fragments, damaging and slowing nearby enemies who step on it.",
+      "allowed_paths": [
+        "src/arena/necromancer_grave_traps.py",
+        "src/arena/necromancer_grave_traps.gd",
+        "tests/test_necromancer_grave_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1307",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Headquarters Customization Interface",
+      "description": "Add an interactive visual headquarters for guilds where unlocked cosmetics, statues, and banners can be arranged. Members can visit their HQ to see top contributors featured in the hall of fame.",
+      "allowed_paths": [
+        "src/ui/guild_headquarters_customization_interface.py",
+        "src/ui/guild_headquarters_customization_interface.gd",
+        "src/ai/guild_headquarters_customization_interface.py",
+        "tests/test_guild_headquarters_customization_interface.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1308",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Minion Devour Mechanic",
+      "description": "A new skill for the Necromancer: 'Devour'. The Necromancer consumes a target allied minion to instantly restore a large amount of HP and gain temporary damage immunity.",
+      "allowed_paths": [
+        "src/ai/minion_devour_mechanic.py",
+        "src/ai/minion_devour_mechanic.gd",
+        "tests/test_minion_devour_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1309",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Altars in Standard Battle Royale",
+      "description": "Add altars from WeatherChaosMode to the standard Battle Royale game mode. Capturing an altar would temporarily grant map-wide weather effects such as a blizzard slowing enemy movement or a heatwave causing damage over time.",
+      "allowed_paths": [
+        "src/ai/altars_in_standard_battle_royale.py",
+        "src/ai/altars_in_standard_battle_royale.gd",
+        "tests/test_altars_in_standard_battle_royale.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

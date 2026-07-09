@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-795] Gambling Node — *2026-07-09 21:13:00 UTC*
+
+Similar to Black Market nodes, there is a rare, static Gambling Node. Players can deposit a varying amount of currency into it. The node rolls a random number and has a chance to either double the currency, steal it entirely, or trigger an immediate explosion dealing heavy area-of-effect damage.
+
+---
+
 ## [idea-792] Prestige Guild Perks — *2026-07-09 20:48:29 UTC*
 
 Allow guilds to pool prestige tokens from their members to unlock global, guild-wide cosmetic auras and unique lobby titles for everyone in the guild.
