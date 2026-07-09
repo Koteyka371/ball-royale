@@ -4546,6 +4546,103 @@ class WeatherChaosMode extends GameMode:
 							if "hp" in b: b.hp -= 20.0
 
 					if "attack_accuracy" in b: b.attack_accuracy = 0.5
+				elif weather == "magnetic_storm":
+					if typeof(b) == TYPE_OBJECT and not b.has_meta("polarity"):
+						b.set_meta("polarity", 1 if randf() > 0.5 else -1)
+					elif typeof(b) == TYPE_DICTIONARY and not b.has("polarity"):
+						b["polarity"] = 1 if randf() > 0.5 else -1
+
+					var b_pol = 0
+					if typeof(b) == TYPE_OBJECT and b.has_meta("polarity"): b_pol = b.get_meta("polarity")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("polarity"): b_pol = b["polarity"]
+
+					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "magnet_plus" if b_pol == 1 else "magnet_minus")
+					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "magnet_plus" if b_pol == 1 else "magnet_minus"
+
+					if "balls" in world:
+						for other in world.balls:
+							if typeof(other) == typeof(b) and other != b:
+								var o_alive = false
+								if typeof(other) == TYPE_OBJECT and "alive" in other: o_alive = other.alive
+								elif typeof(other) == TYPE_DICTIONARY and other.has("alive"): o_alive = other["alive"]
+
+								var o_pol = 0
+								var has_o_pol = false
+								if typeof(other) == TYPE_OBJECT and other.has_meta("polarity"):
+									o_pol = other.get_meta("polarity")
+									has_o_pol = true
+								elif typeof(other) == TYPE_DICTIONARY and other.has("polarity"):
+									o_pol = other["polarity"]
+									has_o_pol = true
+
+								var obx = 0.0; var oby = 0.0; var ox = 0.0; var oy = 0.0
+								var has_coords = false
+								if typeof(b) == TYPE_OBJECT and "x" in b and "y" in b and typeof(other) == TYPE_OBJECT and "x" in other and "y" in other:
+									obx = b.x; oby = b.y; ox = other.x; oy = other.y
+									has_coords = true
+								elif typeof(b) == TYPE_DICTIONARY and b.has("x") and b.has("y") and typeof(other) == TYPE_DICTIONARY and other.has("x") and other.has("y"):
+									obx = b["x"]; oby = b["y"]; ox = other["x"]; oy = other["y"]
+									has_coords = true
+
+								if o_alive and has_o_pol and has_coords:
+									var odx = ox - obx
+									var ody = oy - oby
+									var odist = sqrt(odx*odx + ody*ody)
+									if odist > 0 and odist < 300:
+										var force_mag = 500.0 / (odist + 10.0)
+										if b_pol != o_pol:
+											if typeof(b) == TYPE_OBJECT:
+												b.x += (odx/odist) * force_mag * delta
+												b.y += (ody/odist) * force_mag * delta
+											else:
+												b["x"] += (odx/odist) * force_mag * delta
+												b["y"] += (ody/odist) * force_mag * delta
+										else:
+											if typeof(b) == TYPE_OBJECT:
+												b.x -= (odx/odist) * force_mag * delta
+												b.y -= (ody/odist) * force_mag * delta
+											else:
+												b["x"] -= (odx/odist) * force_mag * delta
+												b["y"] -= (ody/odist) * force_mag * delta
+
+					if "arena" in world and "hazards" in world.arena:
+						for h in world.arena.hazards:
+							var h_kind = ""
+							if typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+							elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
+
+							if h_kind == "magnetic_pylon":
+								var h_pol = 1
+								if typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("polarity"): h_pol = h.get_meta("polarity")
+								elif typeof(h) == TYPE_DICTIONARY and h.has("polarity"): h_pol = h["polarity"]
+
+								var h_x = 0.0; var h_y = 0.0
+								if typeof(h) == TYPE_OBJECT: h_x = h.x; h_y = h.y
+								elif typeof(h) == TYPE_DICTIONARY: h_x = h["x"]; h_y = h["y"]
+
+								var bx = 0.0; var by = 0.0
+								if typeof(b) == TYPE_OBJECT: bx = b.x; by = b.y
+								elif typeof(b) == TYPE_DICTIONARY: bx = b["x"]; by = b["y"]
+
+								var dx = h_x - bx
+								var dy = h_y - by
+								var dist = sqrt(dx*dx + dy*dy)
+								if dist > 0 and dist < 400:
+									var force_mag = 1000.0 / (dist + 10.0)
+									if b_pol != h_pol:
+										if typeof(b) == TYPE_OBJECT:
+											b.x += (dx/dist) * force_mag * delta
+											b.y += (dy/dist) * force_mag * delta
+										else:
+											b["x"] += (dx/dist) * force_mag * delta
+											b["y"] += (dy/dist) * force_mag * delta
+									else:
+										if typeof(b) == TYPE_OBJECT:
+											b.x -= (dx/dist) * force_mag * delta
+											b.y -= (dy/dist) * force_mag * delta
+										else:
+											b["x"] -= (dx/dist) * force_mag * delta
+											b["y"] -= (dy/dist) * force_mag * delta
 				elif weather == "heatwave" and not is_imm:
 					if typeof(b) == TYPE_OBJECT: b.set("cosmetic", "sunglasses")
 					elif typeof(b) == TYPE_DICTIONARY: b["cosmetic"] = "sunglasses"

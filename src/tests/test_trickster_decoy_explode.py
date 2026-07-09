@@ -1,5 +1,5 @@
-from src.ai.test_action_advanced import MockWorld, MockBall
-from src.ai.action import Action
+from ai.test_action_advanced import MockWorld, MockBall
+from ai.action import Action
 import pytest
 
 def test_decoy_explosion_trickster_confuse():

@@ -3889,6 +3889,24 @@ class WeatherChaosMode(GameMode):
                                     # Repel
                                     b.x -= (dx/dist) * force_mag * delta
                                     b.y -= (dy/dist) * force_mag * delta
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        if getattr(h, "kind", "") == "magnetic_pylon":
+                            h_pol = getattr(h, "polarity", 1)
+                            h_x = getattr(h, "x", 0.0)
+                            h_y = getattr(h, "y", 0.0)
+                            import math
+                            dx = h_x - getattr(b, "x", 0.0)
+                            dy = h_y - getattr(b, "y", 0.0)
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if 0 < dist < 400:
+                                force_mag = 1000.0 / (dist + 10.0)
+                                if getattr(b, "polarity", 1) != h_pol:
+                                    b.x += (dx/dist) * force_mag * delta
+                                    b.y += (dy/dist) * force_mag * delta
+                                else:
+                                    b.x -= (dx/dist) * force_mag * delta
+                                    b.y -= (dy/dist) * force_mag * delta
             elif self.weather == "heatwave":
                 b.cosmetic = "sunglasses"
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.7
