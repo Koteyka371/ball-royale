@@ -532,6 +532,7 @@ class ProceduralArena:
 
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:
+
             import random
             if current_tick % 400 == 0:
                 states = ["bouncy", "bouncy", "bouncy", "bouncy"]

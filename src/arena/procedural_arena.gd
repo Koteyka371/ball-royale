@@ -606,6 +606,7 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 
 func update_zone(current_tick: int, delta: float) -> void:
     if current_tick != last_tick:
+
         if current_tick % 400 == 0:
             var states = ["bouncy", "bouncy", "bouncy", "bouncy"]
             states.shuffle()
