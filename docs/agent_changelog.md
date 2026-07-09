@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-730] Player Bribery Mechanism — *2026-07-09 19:02:00 UTC*
+
+Players can use a currency earned during matches to 'bribe' the crowd system, either instantly ending an ongoing vote they dislike or slightly skewing the result toward a favorable outcome.
+
+---
+
 ## [idea-764] Friction Zones — *2026-07-09 18:42:52 UTC*
 
 Zones that increase turning capabilities.

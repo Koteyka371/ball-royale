@@ -12568,7 +12568,7 @@
     },
     {
       "id": "idea-730",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Player Bribery Mechanism",
@@ -21824,6 +21824,142 @@
         "src/ui/clan_daily_quests.gd",
         "src/ai/clan_daily_quests.py",
         "tests/test_clan_daily_quests.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1274",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Boss Invasions",
+      "description": "Periodically spawn a massive boss entity (e.g. 'The Behemoth') during Battle Royale matches that drops legendary items when defeated. If players fail to defeat it within a certain time, it explodes, wiping out a huge portion of the arena.",
+      "allowed_paths": [
+        "src/ai/random_boss_invasions.py",
+        "src/ai/random_boss_invasions.gd",
+        "tests/test_random_boss_invasions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1275",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Time Altar",
+      "description": "An altar that, when captured by a team, rewinds the positions and health of all enemy balls by 5 seconds, allowing the capturing team to regain a lost advantage or punish an aggressive push.",
+      "allowed_paths": [
+        "src/ai/reverse_time_altar.py",
+        "src/ai/reverse_time_altar.gd",
+        "tests/test_reverse_time_altar.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1276",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Phantom Hazard - Poltergeist",
+      "description": "A new hazard type that is invisible most of the time but occasionally materializes to grab a nearby entity, applying a root and minor damage over time. It forces players to pay attention to small environmental cues like floating debris before it strikes.",
+      "allowed_paths": [
+        "src/arena/phantom_poltergeist.py",
+        "src/arena/phantom_poltergeist.gd",
+        "tests/test_phantom_poltergeist.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1277",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slingshot Hook Mechanic",
+      "description": "Add a new skill where the ball shoots a grappling hook to an ally or a piece of the environment, rapidly pulling itself towards it to avoid danger or reposition.",
+      "allowed_paths": [
+        "src/ai/slingshot_hook_mechanic.py",
+        "src/ai/slingshot_hook_mechanic.gd",
+        "tests/test_slingshot_hook_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1278",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Ice Weather Hazard",
+      "description": "A weather type or hazard zone that significantly drops steering capabilities (e.g. steering_mult = 0.1) and applies constant slide physics where the ball can't brake effectively, making arena navigation chaotic.",
+      "allowed_paths": [
+        "src/arena/black_ice.py",
+        "src/arena/black_ice.gd",
+        "tests/test_black_ice.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1279",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Bullet Mutator",
+      "description": "A weekly mutator where all projectiles (bullets, fireballs, snipes) bounce off walls and hazards up to 3 times before dissipating. This creates a chaotic bullet-hell environment, rewarding players with strong defensive skills and positional awareness.",
+      "allowed_paths": [
+        "src/ai/bouncy_bullet_mutator.py",
+        "src/ai/bouncy_bullet_mutator.gd",
+        "tests/test_bouncy_bullet_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1280",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Fusion Mode",
+      "description": "A game mode where capturing altars of different weather types combines their effects. For example, triggering Rain and Heatwave simultaneously creates a 'Steam' weather condition that obscures vision globally while continuously draining stamina.",
+      "allowed_paths": [
+        "src/ai/fusion.py",
+        "src/ai/fusion.gd",
+        "tests/test_fusion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1281",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravitational Slingshot Booster",
+      "description": "A consumable booster that allows the player to briefly alter their own gravitational field. When activated near a heavy hazard like a black hole or dense planetoid, the player's momentum is multiplied immensely, allowing them to rapidly flank enemies or escape dangerous shrinking safe zones at incredible speeds.",
+      "allowed_paths": [
+        "src/ai/gravitational_slingshot_booster.py",
+        "src/ai/gravitational_slingshot_booster.gd",
+        "tests/test_gravitational_slingshot_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
