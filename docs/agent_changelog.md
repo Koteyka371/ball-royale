@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-738] Interactive Crowd Signs — *2026-07-09 14:17:01 UTC*
+
+Spectators (crowd) can hold up dynamic virtual signs (using UI text popups around the arena edges) supporting specific balls, and these signs get larger if that ball is performing well.
+
+---
+
 ## [idea-606] Exploding Dummy Re-Arming — *2026-07-09 14:09:22 UTC*
 
 Players can pick up a 'Re-Arm' token to instantly reset their decoy skill cooldown and boost the explosion damage by 25% for their next deployment.

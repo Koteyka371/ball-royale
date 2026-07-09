@@ -12705,7 +12705,7 @@
     },
     {
       "id": "idea-738",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Crowd Signs",
@@ -21312,6 +21312,74 @@
         "src/ai/acid_rain.py",
         "src/ai/acid_rain.gd",
         "tests/test_acid_rain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1244",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Thawing Environment",
+      "description": "A variant where the arena has dynamic heat zones. Instead of relying purely on allies to unfreeze them, frozen players slowly thaw when pushed into a heat zone. However, if they are pushed into a frost zone, they become permanently shattered if they take any damage.",
+      "allowed_paths": [
+        "src/ai/thawing_environment.py",
+        "src/ai/thawing_environment.gd",
+        "tests/test_thawing_environment.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1245",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Borders Mode",
+      "description": "Arena walls become extremely bouncy. Colliding with a wall reflects balls at 2x speed, turning the arena into a chaotic pinball machine.",
+      "allowed_paths": [
+        "src/ai/bouncy_borders.py",
+        "src/ai/bouncy_borders.gd",
+        "tests/test_bouncy_borders.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1246",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ghost Sabotage Mode",
+      "description": "Dead players become ghosts. They cannot deal damage directly but can slightly push hazards and boosters around to help or hinder surviving players.",
+      "allowed_paths": [
+        "src/ai/ghost_sabotage.py",
+        "src/ai/ghost_sabotage.gd",
+        "tests/test_ghost_sabotage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1247",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "low",
+      "title": "Reverse Freeze Tag",
+      "description": "A mutator or variant of Freeze Tag where everyone starts frozen, and there is one 'Healer' per team. The healers must dodge hazards and quickly unfreeze their entire team before the other healer does.",
+      "allowed_paths": [
+        "src/ai/reverse_freeze_tag.py",
+        "src/ai/reverse_freeze_tag.gd",
+        "tests/test_reverse_freeze_tag.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
