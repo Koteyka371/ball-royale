@@ -1216,3 +1216,59 @@ def test_pacifist_knockout_mode():
     mode.tick(world, balls, delta=1.0)
     assert balls[1].hp < 100.0
     assert balls[1].alive is False
+
+import unittest
+
+class TestMeteorShadowEvent(unittest.TestCase):
+    def test_meteor_shadow_and_lava(self):
+        from ai.game_modes import BattleRoyaleMode
+        mode = BattleRoyaleMode()
+
+        class MockWorld:
+            pass
+
+        world = MockWorld()
+        world.dead_balls = []
+        mode.match_time = 0.0
+        world.arena = type('MockArena', (), {'width': 1000.0, 'height': 1000.0, 'hazards': []})()
+
+        b = type('MockBall', (), {
+            'x': 500.0, 'y': 500.0, 'alive': True, 'ball_type': 'player', 'hp': 100.0,
+            'weather_immunity_timer': 0.0, 'weather_control_timer': 0.0, 'team': 'team1',
+            'take_damage': classmethod(lambda cls, dmg: setattr(cls, 'hp', cls.hp - dmg))
+        })()
+
+        balls = [b]
+
+        # Fast forward time to spawn shadow
+        for _ in range(52):
+            mode.tick(world, balls, delta=0.1)
+
+        # Check shadow spawned
+        shadows = [h for h in world.arena.hazards if getattr(h, "kind", "") == "meteor_shadow"]
+        self.assertTrue(len(shadows) >= 1)
+        shadow = shadows[0]
+
+        # Move ball directly into the shadow's path
+        b.x = shadow.x
+        b.y = shadow.y
+
+        # Fast forward time to trigger meteor impact
+        for _ in range(21):
+            mode.tick(world, balls, delta=0.1)
+
+        # Check meteor impact damage
+        self.assertTrue(b.hp <= 60.0) # Took 40 damage
+
+        # Check lava spawned and shadow removed
+        shadows = [h for h in world.arena.hazards if getattr(h, "kind", "") == "meteor_shadow"]
+        self.assertEqual(len(shadows), 0)
+
+        lavas = [h for h in world.arena.hazards if getattr(h, "kind", "") == "lava_puddle"]
+        self.assertTrue(len(lavas) >= 1)
+        lava = lavas[0]
+
+        # Test DoT damage
+        prev_hp = b.hp
+        mode.tick(world, balls, delta=1.0)
+        self.assertTrue(b.hp <= prev_hp - 15.0)

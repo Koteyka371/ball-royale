@@ -1920,6 +1920,144 @@ class BattleRoyaleMode extends GameMode:
 							b.mass = orig_mass
 
 
+		# Periodically spawn shadows that turn into meteors and lava
+		var m_timer = get_meta("meteor_shadow_timer") if has_meta("meteor_shadow_timer") else 0.0
+		m_timer += delta
+		set_meta("meteor_shadow_timer", m_timer)
+		if m_timer > 5.0:
+			set_meta("meteor_shadow_timer", 0.0)
+			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				var aw = world.arena.width if "width" in world.arena else 1000.0
+				var ah = world.arena.height if "height" in world.arena else 1000.0
+				var mx = rng.randf_range(100.0, aw - 100.0)
+				var my = rng.randf_range(100.0, ah - 100.0)
+				if not "hazards" in world.arena:
+					world.arena.hazards = []
+				var shadow = {}
+				shadow["id"] = world.arena.hazards.size() + 9800
+				shadow["x"] = mx
+				shadow["y"] = my
+				shadow["radius"] = 10.0
+				shadow["kind"] = "meteor_shadow"
+				shadow["damage"] = 0.0
+				shadow["active"] = true
+				shadow["shadow_timer"] = 2.0
+				shadow["max_radius"] = 60.0
+				world.arena.hazards.append(shadow)
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+			var hazards_to_remove = []
+			var new_hazards = []
+			for h in world.arena.hazards:
+				var kind = ""
+				if typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+					kind = h.kind
+				elif typeof(h) == TYPE_OBJECT and "kind" in h:
+					kind = h.kind
+
+				if kind == "meteor_shadow":
+					var st = 0.0
+					if typeof(h) == TYPE_DICTIONARY and h.has("shadow_timer"):
+						st = h.shadow_timer - delta
+						h.shadow_timer = st
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("shadow_timer"):
+						st = h.get_meta("shadow_timer") - delta
+						h.set_meta("shadow_timer", st)
+
+					var max_rad = 60.0
+					if typeof(h) == TYPE_DICTIONARY and h.has("max_radius"):
+						max_rad = h.max_radius
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("max_radius"):
+						max_rad = h.get_meta("max_radius")
+
+					var r = h.radius if (typeof(h) == TYPE_DICTIONARY and h.has("radius")) or (typeof(h) == TYPE_OBJECT and "radius" in h) else 10.0
+					r = min(max_rad, r + (max_rad / 2.0) * delta)
+					if typeof(h) == TYPE_DICTIONARY and h.has("radius"):
+						h.radius = r
+					elif typeof(h) == TYPE_OBJECT and "radius" in h:
+						h.radius = r
+
+					if st <= 0.0:
+						hazards_to_remove.append(h)
+						var lava = {}
+						var h_id = h.id if (typeof(h) == TYPE_DICTIONARY and h.has("id")) or (typeof(h) == TYPE_OBJECT and "id" in h) else 0
+						var h_x = h.x if (typeof(h) == TYPE_DICTIONARY and h.has("x")) or (typeof(h) == TYPE_OBJECT and "x" in h) else 500.0
+						var h_y = h.y if (typeof(h) == TYPE_DICTIONARY and h.has("y")) or (typeof(h) == TYPE_OBJECT and "y" in h) else 500.0
+						lava["id"] = h_id + 100
+						lava["x"] = h_x
+						lava["y"] = h_y
+						lava["radius"] = max_rad
+						lava["kind"] = "lava_puddle"
+						lava["damage"] = 0.0
+						lava["active"] = true
+						lava["lava_duration"] = 10.0
+						new_hazards.append(lava)
+
+						for b in balls:
+							var b_alive = b.alive if typeof(b) == TYPE_OBJECT and "alive" in b else (b.alive if typeof(b) == TYPE_DICTIONARY and b.has("alive") else false)
+							var b_type = b.ball_type if typeof(b) == TYPE_OBJECT and "ball_type" in b else (b.ball_type if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else "")
+							if b_alive and b_type != "spectator":
+								var b_x = b.x if typeof(b) == TYPE_OBJECT and "x" in b else (b.x if typeof(b) == TYPE_DICTIONARY and b.has("x") else 0.0)
+								var b_y = b.y if typeof(b) == TYPE_OBJECT and "y" in b else (b.y if typeof(b) == TYPE_DICTIONARY and b.has("y") else 0.0)
+								var dx = b_x - h_x
+								var dy = b_y - h_y
+								var dist = sqrt(dx*dx + dy*dy)
+								if dist <= max_rad:
+									if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+										b.take_damage(40.0)
+									else:
+										if typeof(b) == TYPE_OBJECT and "hp" in b:
+											b.hp -= 40.0
+											if b.hp <= 0:
+												b.alive = false
+										elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+											b.hp -= 40.0
+											if b.hp <= 0:
+												b.alive = false
+
+				elif kind == "lava_puddle":
+					var ld = 0.0
+					if typeof(h) == TYPE_DICTIONARY and h.has("lava_duration"):
+						ld = h.lava_duration - delta
+						h.lava_duration = ld
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("lava_duration"):
+						ld = h.get_meta("lava_duration") - delta
+						h.set_meta("lava_duration", ld)
+
+					if ld <= 0.0:
+						hazards_to_remove.append(h)
+					else:
+						var r = h.radius if (typeof(h) == TYPE_DICTIONARY and h.has("radius")) or (typeof(h) == TYPE_OBJECT and "radius" in h) else 10.0
+						var h_x = h.x if (typeof(h) == TYPE_DICTIONARY and h.has("x")) or (typeof(h) == TYPE_OBJECT and "x" in h) else 500.0
+						var h_y = h.y if (typeof(h) == TYPE_DICTIONARY and h.has("y")) or (typeof(h) == TYPE_OBJECT and "y" in h) else 500.0
+						for b in balls:
+							var b_alive = b.alive if typeof(b) == TYPE_OBJECT and "alive" in b else (b.alive if typeof(b) == TYPE_DICTIONARY and b.has("alive") else false)
+							var b_type = b.ball_type if typeof(b) == TYPE_OBJECT and "ball_type" in b else (b.ball_type if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else "")
+							if b_alive and b_type != "spectator":
+								var b_x = b.x if typeof(b) == TYPE_OBJECT and "x" in b else (b.x if typeof(b) == TYPE_DICTIONARY and b.has("x") else 0.0)
+								var b_y = b.y if typeof(b) == TYPE_OBJECT and "y" in b else (b.y if typeof(b) == TYPE_DICTIONARY and b.has("y") else 0.0)
+								var dx = b_x - h_x
+								var dy = b_y - h_y
+								var dist = sqrt(dx*dx + dy*dy)
+								if dist <= r:
+									if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+										b.take_damage(15.0 * delta)
+									else:
+										if typeof(b) == TYPE_OBJECT and "hp" in b:
+											b.hp -= 15.0 * delta
+											if b.hp <= 0:
+												b.alive = false
+										elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+											b.hp -= 15.0 * delta
+											if b.hp <= 0:
+												b.alive = false
+
+			for h in hazards_to_remove:
+				if world.arena.hazards.has(h):
+					world.arena.hazards.erase(h)
+			for nh in new_hazards:
+				world.arena.hazards.append(nh)
+
 		# Meteor Shower final phase logic
 		var teams_alive = []
 		for b in balls:
