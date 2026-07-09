@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-785] Ice Skating Weather — *2026-07-09 22:04:25 UTC*
+
+A new weather event where the ground becomes ice, vastly reducing friction for all balls and causing them to slide when changing directions or after being knocked back.
+
+---
+
 ## [idea-797] Shrinking Zones: Hazard Mutations — *2026-07-09 21:58:54 UTC*
 
 As the main battle royale zone shrinks, random hazards inside the safe area undergo a 'mutation' and become significantly more lethal or chaotic (e.g. traps start shooting projectiles or poison clouds double in size), forcing players to not only run from the edge but also adapt to a constantly evolving inner battlefield.

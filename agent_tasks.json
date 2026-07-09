@@ -13504,7 +13504,7 @@
     },
     {
       "id": "idea-785",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ice Skating Weather",
@@ -22561,6 +22561,23 @@
         "src/ui/guild_mutator_votes.gd",
         "src/ai/guild_mutator_votes.py",
         "tests/test_guild_mutator_votes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1317",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Arenas Mechanic",
+      "description": "Different quadrants of the arena have their own shrinking mechanic, forcing players to navigate moving safe zones or jump through portals to reach safer quadrants.",
+      "allowed_paths": [
+        "src/arena/shrinking_arenas_mechanic.py",
+        "src/arena/shrinking_arenas_mechanic.gd",
+        "tests/test_shrinking_arenas_mechanic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
