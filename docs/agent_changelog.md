@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-783] Decoy Mind Swap — *2026-07-09 19:20:01 UTC*
+
+When a decoy expires naturally (timer runs out), the player has a 50% chance to permanently swap places with the decoy, creating a chaotic repositioning mechanic.
+
+---
+
 ## [idea-744] Time Stop Relic — *2026-07-09 19:08:45 UTC*
 
 An ancient relic that, when collected, completely pauses time for all enemies and hazards for 3 seconds, allowing the user to reposition or escape.
