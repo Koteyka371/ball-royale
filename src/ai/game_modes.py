@@ -389,6 +389,33 @@ class BattleRoyaleMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.target_radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+            import random
+            arena_w = getattr(world.arena, "width", 800)
+            arena_h = getattr(world.arena, "height", 600)
+            for i in range(5):
+                h_id = 97000 + len(world.arena.hazards) + i
+                x = random.uniform(200, arena_w - 200)
+                y = random.uniform(200, arena_h - 200)
+                wall = Hazard(id=h_id, x=x, y=y, radius=60.0, kind="invisible_wall", damage=0.0)
+                setattr(wall, "visible", False)
+                setattr(wall, "reveal_timer", 0.0)
+                world.arena.hazards.append(wall)
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
         for i, b in enumerate(valid_balls):
             if i >= 20:
@@ -449,6 +476,62 @@ class BattleRoyaleMode(GameMode):
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death += delta
+
+        import math
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "invisible_wall":
+                    # Update reveal timer
+                    reveal_timer = getattr(h, "reveal_timer", 0.0)
+                    if reveal_timer > 0:
+                        h.reveal_timer -= delta
+                        if h.reveal_timer <= 0:
+                            h.visible = False
+
+                    # Check collisions with balls
+                    for b in balls:
+                        if not getattr(b, "alive", True): continue
+                        dx = b.x - h.x
+                        dy = b.y - h.y
+                        dist = math.hypot(dx, dy)
+
+                        b_rad = getattr(b, "radius", 20.0)
+                        if not isinstance(b_rad, (int, float)):
+                            b_rad = 20.0
+                        if dist < h.radius + b_rad:
+
+                            # Reveal wall
+                            h.visible = True
+                            h.reveal_timer = 2.0
+                            # Simple bounce
+                            if dist > 0:
+                                nx = dx / dist
+                                ny = dy / dist
+
+                                b.x = h.x + nx * (h.radius + b_rad)
+                                b.y = h.y + ny * (h.radius + b_rad)
+
+                                if hasattr(b, "vx") and hasattr(b, "vy"):
+                                    if isinstance(b.vx, (int, float)) and isinstance(b.vy, (int, float)):
+                                        dot = b.vx * nx + b.vy * ny
+                                        if dot < 0:
+                                            b.vx -= 2 * dot * nx
+                                            b.vy -= 2 * dot * ny
+
+                    # Check collisions with attacks
+                    if hasattr(world, "attacks"):
+                        for atk in world.attacks:
+                            if getattr(atk, "active", True):
+                                ax = getattr(atk, "x", 0.0)
+                                ay = getattr(atk, "y", 0.0)
+                                ar = getattr(atk, "radius", 5.0)
+                                dx = ax - h.x
+                                dy = ay - h.y
+                                dist = math.hypot(dx, dy)
+                                if dist < h.radius + ar:
+                                    h.visible = True
+                                    h.reveal_timer = 2.0
+                                    setattr(atk, "active", False)
 
         # Safe Zone logic
         if not getattr(self, "zone_initialized", False):
@@ -7059,7 +7142,12 @@ class InvisibleWallsMode(GameMode):
                         dx = b.x - h.x
                         dy = b.y - h.y
                         dist = math.sqrt(dx*dx + dy*dy)
-                        if dist < h.radius + getattr(b, "radius", 20.0):
+
+                        b_rad = getattr(b, "radius", 20.0)
+                        if not isinstance(b_rad, (int, float)):
+                            b_rad = 20.0
+                        if dist < h.radius + b_rad:
+
                             # Reveal wall
                             h.visible = True
                             h.reveal_timer = 2.0
@@ -7068,14 +7156,17 @@ class InvisibleWallsMode(GameMode):
                             if dist > 0:
                                 nx = dx / dist
                                 ny = dy / dist
-                                b.x = h.x + nx * (h.radius + getattr(b, "radius", 20.0))
-                                b.y = h.y + ny * (h.radius + getattr(b, "radius", 20.0))
+
+                                b.x = h.x + nx * (h.radius + b_rad)
+                                b.y = h.y + ny * (h.radius + b_rad)
+
                                 # Approximate bounce
                                 if hasattr(b, "vx") and hasattr(b, "vy"):
-                                    dot = b.vx * nx + b.vy * ny
-                                    if dot < 0:
-                                        b.vx -= 2 * dot * nx
-                                        b.vy -= 2 * dot * ny
+                                    if isinstance(b.vx, (int, float)) and isinstance(b.vy, (int, float)):
+                                        dot = b.vx * nx + b.vy * ny
+                                        if dot < 0:
+                                            b.vx -= 2 * dot * nx
+                                            b.vy -= 2 * dot * ny
 
                     # Check collisions with attacks
                     if hasattr(world, "attacks"):
