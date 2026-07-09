@@ -11971,6 +11971,68 @@ func _collect_booster(delta: float):
                         self.world.arena.hazards.remove_at(idx)
 
 
+            elif "kind" in nearest and nearest.kind == "time_stop_booster":
+                var entities = []
+                if self.world != null:
+                    if "entities" in self.world: entities = self.world.entities
+                    elif "balls" in self.world: entities = self.world.balls
+                for e in entities:
+                    var e_id = e.get("id") if typeof(e) == TYPE_DICTIONARY else (e.get_meta("id") if e.has_method("has_meta") and e.has_meta("id") else (e.id if "id" in e else null))
+                    var b_id = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("id") if self.ball.has_method("has_meta") and self.ball.has_meta("id") else (self.ball.id if "id" in self.ball else null))
+                    if e_id != null and b_id != null and e_id != b_id:
+                        var is_alive = true
+                        if typeof(e) == TYPE_DICTIONARY:
+                            if e.has("alive"): is_alive = e.alive
+                        else:
+                            if "alive" in e: is_alive = e.alive
+                        if is_alive:
+                            var cur_stun = 0.0
+                            if typeof(e) == TYPE_DICTIONARY:
+                                cur_stun = float(e.get("stun_timer", 0.0))
+                                e["stun_timer"] = max(cur_stun, 3.0)
+                            elif e.has_method("set_meta"):
+                                cur_stun = float(e.get_meta("stun_timer")) if e.has_meta("stun_timer") else (float(e.stun_timer) if "stun_timer" in e else 0.0)
+                                e.set_meta("stun_timer", max(cur_stun, 3.0))
+                                if "stun_timer" in e: e.stun_timer = max(cur_stun, 3.0)
+                            elif "stun_timer" in e:
+                                cur_stun = float(e.stun_timer)
+                                e.stun_timer = max(cur_stun, 3.0)
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    for h in self.world.arena.hazards:
+                        var is_disabled = false
+                        if typeof(h) == TYPE_DICTIONARY:
+                            if h.has("is_disabled_by_flare"): is_disabled = h.is_disabled_by_flare
+                        else:
+                            if h.has_method("has_meta") and h.has_meta("is_disabled_by_flare"):
+                                is_disabled = h.get_meta("is_disabled_by_flare")
+                            elif "is_disabled_by_flare" in h:
+                                is_disabled = h.is_disabled_by_flare
+                        if not is_disabled:
+                            var cur_frozen = 0.0
+                            if typeof(h) == TYPE_DICTIONARY:
+                                cur_frozen = float(h.get("frozen_timer", 0.0))
+                                h["frozen_timer"] = max(cur_frozen, 3.0)
+                            elif h.has_method("set_meta"):
+                                cur_frozen = float(h.get_meta("frozen_timer")) if h.has_meta("frozen_timer") else (float(h.frozen_timer) if "frozen_timer" in h else 0.0)
+                                h.set_meta("frozen_timer", max(cur_frozen, 3.0))
+                                if "frozen_timer" in h: h.frozen_timer = max(cur_frozen, 3.0)
+                            elif "frozen_timer" in h:
+                                cur_frozen = float(h.frozen_timer)
+                                h.frozen_timer = max(cur_frozen, 3.0)
+
+                if self.world != null and "events" in self.world:
+                    var b_id = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("id") if self.ball.has_method("has_meta") and self.ball.has_meta("id") else (self.ball.id if "id" in self.ball else null))
+                    self.world.events.append({"type": "time_stop", "data": {"id": b_id}})
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "time_rewind_booster":
                 self.ball.set_meta("time_rewind_booster_active", true)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
@@ -12819,6 +12881,68 @@ func _collect_booster(delta: float):
             elif "kind" in nearest and nearest.kind == "half_reflect_shield_booster":
                 self.ball.set_meta("half_reflect_shield_active", true)
                 self.ball.set_meta("half_reflect_shield_timer", 5.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "time_stop_booster":
+                var entities = []
+                if self.world != null:
+                    if "entities" in self.world: entities = self.world.entities
+                    elif "balls" in self.world: entities = self.world.balls
+                for e in entities:
+                    var e_id = e.get("id") if typeof(e) == TYPE_DICTIONARY else (e.get_meta("id") if e.has_method("has_meta") and e.has_meta("id") else (e.id if "id" in e else null))
+                    var b_id = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("id") if self.ball.has_method("has_meta") and self.ball.has_meta("id") else (self.ball.id if "id" in self.ball else null))
+                    if e_id != null and b_id != null and e_id != b_id:
+                        var is_alive = true
+                        if typeof(e) == TYPE_DICTIONARY:
+                            if e.has("alive"): is_alive = e.alive
+                        else:
+                            if "alive" in e: is_alive = e.alive
+                        if is_alive:
+                            var cur_stun = 0.0
+                            if typeof(e) == TYPE_DICTIONARY:
+                                cur_stun = float(e.get("stun_timer", 0.0))
+                                e["stun_timer"] = max(cur_stun, 3.0)
+                            elif e.has_method("set_meta"):
+                                cur_stun = float(e.get_meta("stun_timer")) if e.has_meta("stun_timer") else (float(e.stun_timer) if "stun_timer" in e else 0.0)
+                                e.set_meta("stun_timer", max(cur_stun, 3.0))
+                                if "stun_timer" in e: e.stun_timer = max(cur_stun, 3.0)
+                            elif "stun_timer" in e:
+                                cur_stun = float(e.stun_timer)
+                                e.stun_timer = max(cur_stun, 3.0)
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    for h in self.world.arena.hazards:
+                        var is_disabled = false
+                        if typeof(h) == TYPE_DICTIONARY:
+                            if h.has("is_disabled_by_flare"): is_disabled = h.is_disabled_by_flare
+                        else:
+                            if h.has_method("has_meta") and h.has_meta("is_disabled_by_flare"):
+                                is_disabled = h.get_meta("is_disabled_by_flare")
+                            elif "is_disabled_by_flare" in h:
+                                is_disabled = h.is_disabled_by_flare
+                        if not is_disabled:
+                            var cur_frozen = 0.0
+                            if typeof(h) == TYPE_DICTIONARY:
+                                cur_frozen = float(h.get("frozen_timer", 0.0))
+                                h["frozen_timer"] = max(cur_frozen, 3.0)
+                            elif h.has_method("set_meta"):
+                                cur_frozen = float(h.get_meta("frozen_timer")) if h.has_meta("frozen_timer") else (float(h.frozen_timer) if "frozen_timer" in h else 0.0)
+                                h.set_meta("frozen_timer", max(cur_frozen, 3.0))
+                                if "frozen_timer" in h: h.frozen_timer = max(cur_frozen, 3.0)
+                            elif "frozen_timer" in h:
+                                cur_frozen = float(h.frozen_timer)
+                                h.frozen_timer = max(cur_frozen, 3.0)
+
+                if self.world != null and "events" in self.world:
+                    var b_id = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("id") if self.ball.has_method("has_meta") and self.ball.has_meta("id") else (self.ball.id if "id" in self.ball else null))
+                    self.world.events.append({"type": "time_stop", "data": {"id": b_id}})
+
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -16668,7 +16792,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -18130,7 +18254,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
