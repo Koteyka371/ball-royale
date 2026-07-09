@@ -1236,6 +1236,38 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	if typeof(self.ball) == TYPE_OBJECT and not self.ball.get("alive", true):
+		return
+
+	var has_overdrive = false
+	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_overdrive"):
+		has_overdrive = self.ball.get_meta("speed_overdrive")
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_overdrive"):
+		has_overdrive = self.ball["speed_overdrive"]
+	elif "speed_overdrive" in self.ball:
+		has_overdrive = self.ball.speed_overdrive
+
+	var cur_sb_timer = 0.0
+	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
+		cur_sb_timer = self.ball.get_meta("speed_boost_timer")
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"):
+		cur_sb_timer = float(self.ball["speed_boost_timer"])
+	elif "speed_boost_timer" in self.ball:
+		cur_sb_timer = float(self.ball.speed_boost_timer)
+
+	if has_overdrive and cur_sb_timer > 0:
+		if "slow_timer" in self.ball: self.ball.slow_timer = 0.0
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", 0.0)
+
+		if "stun_timer" in self.ball: self.ball.stun_timer = 0.0
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", 0.0)
+
+		if "frozen_timer" in self.ball: self.ball.frozen_timer = 0.0
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("frozen_timer", 0.0)
+
+		if "is_stunned" in self.ball: self.ball.is_stunned = false
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", false)
+
 	var b_type = self.ball.get("ball_type")
 	if b_type == null and "BALL_TYPE" in self.ball: b_type = self.ball.BALL_TYPE
 	if b_type != null and str(b_type).to_lower() == "alchemist":
@@ -12423,6 +12455,16 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "speed_booster_item":
+                var cur_sb_timer = 0.0
+                if self.ball.has_method("get_meta") and self.ball.has_meta("speed_boost_timer"):
+                    cur_sb_timer = self.ball.get_meta("speed_boost_timer")
+                elif "speed_boost_timer" in self.ball:
+                    cur_sb_timer = float(self.ball.speed_boost_timer)
+                if cur_sb_timer > 0.0:
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("speed_overdrive", true)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["speed_overdrive"] = true
                 self.ball.set_meta("speed_boost_timer", 5.0)
                 if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = 5.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
@@ -18663,6 +18705,25 @@ func _update_skill_timer(delta: float):
 
     if sb_timer > 0:
         sb_timer -= delta
+        var has_overdrive = false
+        if self.ball.has_method("get_meta") and self.ball.has_meta("speed_overdrive"):
+            has_overdrive = self.ball.get_meta("speed_overdrive")
+        elif "speed_overdrive" in self.ball:
+            has_overdrive = self.ball.speed_overdrive
+
+        if has_overdrive:
+            if "slow_timer" in self.ball: self.ball.slow_timer = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", 0.0)
+
+            if "stun_timer" in self.ball: self.ball.stun_timer = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", 0.0)
+
+            if "frozen_timer" in self.ball: self.ball.frozen_timer = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("frozen_timer", 0.0)
+
+            if "is_stunned" in self.ball: self.ball.is_stunned = false
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", false)
+
         if randf() < 0.3:
             if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                 var hazard = {}
@@ -18687,6 +18748,10 @@ func _update_skill_timer(delta: float):
             sb_timer = 0.0
             if "speed" in self.ball and "base_speed" in self.ball:
                 self.ball.speed = self.ball.base_speed
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("speed_overdrive", false)
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_overdrive"):
+                self.ball["speed_overdrive"] = false
 
         if "speed_boost_timer" in self.ball:
             self.ball.speed_boost_timer = sb_timer

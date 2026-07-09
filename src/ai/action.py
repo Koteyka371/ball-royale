@@ -774,6 +774,11 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
         import math
+        if getattr(self.ball, "speed_overdrive", False) and getattr(self.ball, "speed_boost_timer", 0.0) > 0:
+            self.ball.slow_timer = 0.0
+            self.ball.stun_timer = 0.0
+            self.ball.frozen_timer = 0.0
+            self.ball.is_stunned = False
         # Reset alchemist speed buff at the start of tick
         if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'alchemist':
             self.ball.speed_multiplier = 1.0
@@ -7392,6 +7397,8 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "speed_booster_item":
+                    if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
+                        self.ball.speed_overdrive = True
                     self.ball.speed_boost_timer = 5.0
                     self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -10471,6 +10478,11 @@ class Action:
         if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
             self.ball.speed_boost_timer -= delta
             self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
+            if getattr(self.ball, "speed_overdrive", False):
+                self.ball.slow_timer = 0.0
+                self.ball.stun_timer = 0.0
+                self.ball.frozen_timer = 0.0
+                self.ball.is_stunned = False
             # leave fire trail
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 if getattr(self.ball, "speed_boost_timer", 0.0) > 0 and __import__('random').random() < 0.3:
@@ -10489,6 +10501,8 @@ class Action:
             if self.ball.speed_boost_timer <= 0:
                 self.ball.speed_boost_timer = 0.0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+                if hasattr(self.ball, "speed_overdrive"):
+                    self.ball.speed_overdrive = False
         if hasattr(self.ball, "reflect_shield_timer") and self.ball.reflect_shield_timer > 0:
             self.ball.reflect_shield_timer -= delta
             if self.ball.reflect_shield_timer <= 0:
