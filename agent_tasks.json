@@ -13062,7 +13062,7 @@
     },
     {
       "id": "idea-759",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Drain Hazard Pulse",
@@ -21788,6 +21788,42 @@
         "src/arena/lightning_rod.py",
         "src/arena/lightning_rod.gd",
         "tests/test_lightning_rod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1272",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Headquarters Decor",
+      "description": "Unlockable cosmetics and interactive decor items that clannies can place in their clan's custom pre-game lobby/headquarters, obtained by ranking high in Clan Tournaments.",
+      "allowed_paths": [
+        "src/ui/guild_headquarters_decor.py",
+        "src/ui/guild_headquarters_decor.gd",
+        "src/ai/guild_headquarters_decor.py",
+        "tests/test_guild_headquarters_decor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1273",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Daily Quests",
+      "description": "Quests that provide shared rewards and contribute to clan goals, incentivizing playing together and increasing engagement.",
+      "allowed_paths": [
+        "src/ui/clan_daily_quests.py",
+        "src/ui/clan_daily_quests.gd",
+        "src/ai/clan_daily_quests.py",
+        "tests/test_clan_daily_quests.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
