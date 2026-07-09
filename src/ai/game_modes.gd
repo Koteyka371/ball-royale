@@ -41,6 +41,15 @@ class GameMode:
 			elif typeof(b) == TYPE_DICTIONARY and b.has("traits") and typeof(b["traits"]) == TYPE_ARRAY:
 				traits_arr = b["traits"]
 
+			var PreGameLobbyClassTraits = load("res://src/system/lobby.gd")
+			if PreGameLobbyClassTraits and PreGameLobbyClassTraits.has_method("get_instance"):
+				var lobby = PreGameLobbyClassTraits.get_instance()
+				var bid = b.get("id") if b.get("id") != null else i
+				if lobby.has_method("get_traits"):
+					var l_traits = lobby.get_traits(bid)
+					for t in l_traits:
+						traits_arr.append(t)
+
 			for trait_name in traits_arr:
 				if typeof(trait_name) != TYPE_STRING: continue
 				if trait_name == "swift":
@@ -7160,6 +7169,15 @@ class BumperBallsMode extends GameMode:
 					traits_arr = meta_tr
 			elif typeof(b) == TYPE_DICTIONARY and b.has("traits") and typeof(b["traits"]) == TYPE_ARRAY:
 				traits_arr = b["traits"]
+
+			var PreGameLobbyClassTraits = load("res://src/system/lobby.gd")
+			if PreGameLobbyClassTraits and PreGameLobbyClassTraits.has_method("get_instance"):
+				var lobby = PreGameLobbyClassTraits.get_instance()
+				var bid = b.get("id") if b.get("id") != null else i
+				if lobby.has_method("get_traits"):
+					var l_traits = lobby.get_traits(bid)
+					for t in l_traits:
+						traits_arr.append(t)
 
 			for trait_name in traits_arr:
 				if typeof(trait_name) != TYPE_STRING: continue

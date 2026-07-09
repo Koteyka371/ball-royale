@@ -48,6 +48,19 @@ func select_perks(ball_id: int, perks: Array) -> void:
     for perk in perks:
         select_perk(ball_id, perk)
 
+func select_traits(ball_id: int, traits: Array) -> void:
+    var key = str(ball_id) + "_traits"
+    selections[key] = []
+    for trait in traits:
+        if trait in ["swift", "slow", "sturdy", "fragile", "lethal", "weak"]:
+            selections[key].append(trait)
+
+func get_traits(ball_id: int) -> Array:
+    var key = str(ball_id) + "_traits"
+    if selections.has(key):
+        return selections[key]
+    return []
+
 func get_perks(ball_id: int) -> Array:
     var key = str(ball_id) + "_perks"
     if selections.has(key):
@@ -123,6 +136,8 @@ func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: 
             selections[str(ball_id) + "_badge"] = loadout["badge"]
         if loadout.has("perks"):
             select_perks(ball_id, loadout["perks"])
+        if loadout.has("traits"):
+            select_traits(ball_id, loadout["traits"])
         return true
     return false
 
