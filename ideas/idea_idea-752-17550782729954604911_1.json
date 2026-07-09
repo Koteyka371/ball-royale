@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A new hazard that spawns in pairs. When a player touches one, their movement and actions are mirrored relative to the other hazard for a short duration, forcing them to navigate symmetrically or risk environmental damage."
+}
