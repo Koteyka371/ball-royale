@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-768] Shrinking Safe Zones with Obstacles — *2026-07-09 17:52:52 UTC*
+
+The safe zone shrinks, but moving walls or hazards are added to the middle making players fight and navigate obstacles simultaneously.
+
+---
+
 ## [idea-708] Ricochet Shield — *2026-07-09 17:48:08 UTC*
 
 A temporary buff where colliding with a projectile reflects it back at the attacker.

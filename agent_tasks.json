@@ -13215,7 +13215,7 @@
     },
     {
       "id": "idea-768",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zones with Obstacles",
@@ -21635,6 +21635,40 @@
         "src/ai/zoning_tools.py",
         "src/ai/zoning_tools.gd",
         "tests/test_zoning_tools.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1263",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura of Repulsion Booster",
+      "description": "When picked up, this booster grants a temporary aura that forcefully pushes away incoming hazards and projectiles, protecting the ball but also potentially pushing hazards toward allies.",
+      "allowed_paths": [
+        "src/ai/aura_of_repulsion_booster.py",
+        "src/ai/aura_of_repulsion_booster.gd",
+        "tests/test_aura_of_repulsion_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1264",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Bullet Booster",
+      "description": "A booster that modifies standard ranged attacks so they bounce off walls multiple times, retaining their damage properties, effectively turning the arena into a pinball machine of projectiles.",
+      "allowed_paths": [
+        "src/ai/bouncy_bullet_booster.py",
+        "src/ai/bouncy_bullet_booster.gd",
+        "tests/test_bouncy_bullet_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
