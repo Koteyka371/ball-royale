@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-727] Skill Re-roll Item — *2026-07-09 17:48:03 UTC*
+
+A rare booster item that drops occasionally which randomly re-rolls the ball's current unique skill for another one until the end of the round.
+
+---
+
 ## [idea-758] Speed Booster Overdrive — *2026-07-09 17:47:10 UTC*
 
 When an entity picks up multiple speed boosters sequentially, rather than simply refreshing the timer, it gains 'Speed Overdrive' which makes it immune to all slow and freeze effects while the overdrive lasts.

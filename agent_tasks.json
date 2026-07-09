@@ -12517,7 +12517,7 @@
     },
     {
       "id": "idea-727",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Skill Re-roll Item",
@@ -21550,6 +21550,91 @@
         "src/ai/adaptive_power_up_pools.py",
         "src/ai/adaptive_power_up_pools.gd",
         "tests/test_adaptive_power_up_pools.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1258",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hyperdrive Vortex",
+      "description": "If an entity maintains Speed Overdrive for more than 10 seconds, it generates a mini vortex that temporarily pulls in nearby hazards and destroys them, creating a path for the player.",
+      "allowed_paths": [
+        "src/ai/hyperdrive_vortex.py",
+        "src/ai/hyperdrive_vortex.gd",
+        "tests/test_hyperdrive_vortex.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1259",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Doppelganger Elite Hazard",
+      "description": "A rare elite hazard that roams the map. When it spots a player, it perfectly mimics their stats, buffs, and loadout for 30 seconds. Players must either outrun their own doppelganger or fight an equally matched AI mirror.",
+      "allowed_paths": [
+        "src/arena/doppelganger_elite.py",
+        "src/arena/doppelganger_elite.gd",
+        "tests/test_doppelganger_elite.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1260",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Discharge",
+      "description": "Entities with Speed Overdrive deal bonus damage based on their current speed when colliding with enemies, converting speed into kinetic burst damage.",
+      "allowed_paths": [
+        "src/ai/kinetic_discharge.py",
+        "src/ai/kinetic_discharge.gd",
+        "tests/test_kinetic_discharge.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1261",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Danger zone ping system",
+      "description": "Add a minimap UI ping when the safe zone shrinks. A red flash could indicate a ball is currently taking damage from being outside the zone.",
+      "allowed_paths": [
+        "src/ai/danger_zone_ping.py",
+        "src/ai/danger_zone_ping.gd",
+        "tests/test_danger_zone_ping.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1262",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Zoning tools",
+      "description": "A new booster that allows players to create temporary safe zones outside the main circle, encouraging tactical setups for flanking or sniping.",
+      "allowed_paths": [
+        "src/ai/zoning_tools.py",
+        "src/ai/zoning_tools.gd",
+        "tests/test_zoning_tools.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
