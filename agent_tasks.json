@@ -12960,7 +12960,7 @@
     },
     {
       "id": "idea-753",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Walls",
@@ -21669,6 +21669,40 @@
         "src/ai/bouncy_bullet_booster.py",
         "src/ai/bouncy_bullet_booster.gd",
         "tests/test_bouncy_bullet_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1265",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Mode",
+      "description": "A game mode where pairs of connected portals spawn periodically. Shooting a portal transfers attacks to the other portal, and balls can teleport through them to escape or ambush enemies.",
+      "allowed_paths": [
+        "src/ai/portal.py",
+        "src/ai/portal.gd",
+        "tests/test_portal.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1266",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Juggernaut Buff",
+      "description": "A rare booster drop that massively increases size, health, and mass, but reduces speed. The juggernaut can push hazards into enemies easily.",
+      "allowed_paths": [
+        "src/ai/juggernaut_buff.py",
+        "src/ai/juggernaut_buff.gd",
+        "tests/test_juggernaut_buff.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

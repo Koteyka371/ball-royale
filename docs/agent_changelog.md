@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-753] Bouncy Walls — *2026-07-09 17:56:27 UTC*
+
+Add a new hazard or arena modifier where the arena walls become extremely bouncy. If a ball hits the wall at high speed, it ricochets with even more speed, making dodging harder and creating chaotic high-speed collisions.
+
+---
+
 ## [idea-768] Shrinking Safe Zones with Obstacles — *2026-07-09 17:52:52 UTC*
 
 The safe zone shrinks, but moving walls or hazards are added to the middle making players fight and navigate obstacles simultaneously.
