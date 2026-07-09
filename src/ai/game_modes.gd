@@ -755,6 +755,87 @@ class BattleRoyaleMode extends GameMode:
 						b.hp -= damage_amount  # Apply continuous safe zone damage
 
 
+		# Mutate hazards inside the shrinking safe zone
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var h_mutated = false
+					if typeof(h) == TYPE_DICTIONARY and h.has("mutated"): h_mutated = h.mutated
+					elif typeof(h) == TYPE_OBJECT and "mutated" in h: h_mutated = h.mutated
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("mutated"): h_mutated = h.get_meta("mutated")
+
+					if not h_mutated:
+						var h_x = 0.0
+						var h_y = 0.0
+						if typeof(h) == TYPE_DICTIONARY:
+							h_x = h.x if h.has("x") else 0.0
+							h_y = h.y if h.has("y") else 0.0
+						elif typeof(h) == TYPE_OBJECT:
+							if "x" in h: h_x = h.x
+							elif h.has_method("get_meta") and h.has_meta("x"): h_x = h.get_meta("x")
+							if "y" in h: h_y = h.y
+							elif h.has_method("get_meta") and h.has_meta("y"): h_y = h.get_meta("y")
+
+						var h_distance_to_center = sqrt(pow(h_x - self.get("zone_x"), 2) + pow(h_y - self.get("zone_y"), 2))
+						if h_distance_to_center < self.get("zone_radius"):
+							# Mark as mutated
+							if typeof(h) == TYPE_DICTIONARY:
+								h["mutated"] = true
+							elif typeof(h) == TYPE_OBJECT:
+								if "mutated" in h: h.mutated = true
+								elif h.has_method("set_meta"): h.set_meta("mutated", true)
+
+							# Get kind
+							var kind = ""
+							if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h.kind
+							elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+							elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+
+							# Get base stats
+							var h_damage = 10.0
+							if typeof(h) == TYPE_DICTIONARY and h.has("damage"): h_damage = h.damage
+							elif typeof(h) == TYPE_OBJECT and "damage" in h: h_damage = h.damage
+							elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("damage"): h_damage = h.get_meta("damage")
+
+							var h_rad = 20.0
+							if typeof(h) == TYPE_DICTIONARY and h.has("radius"): h_rad = h.radius
+							elif typeof(h) == TYPE_OBJECT and "radius" in h: h_rad = h.radius
+							elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("radius"): h_rad = h.get_meta("radius")
+
+							# Mutate based on kind
+							var new_damage = h_damage
+							var new_radius = h_rad
+							if kind in ["spikes", "trap", "proximity_trap", "hidden_trap"]:
+								new_damage = h_damage * 2.0
+								new_radius = h_rad * 1.5
+							elif kind in ["poison_cloud", "lava", "fire_zone", "poison_nova", "fire_ring"]:
+								new_damage = h_damage * 1.5
+								new_radius = h_rad * 2.0
+							elif kind in ["spinning_laser", "laser_wall"]:
+								new_damage = h_damage * 2.0
+							elif kind in ["tornado", "black_hole", "gravity_well", "singularity", "vortex"]:
+								new_radius = h_rad * 1.5
+							elif kind in ["meteor", "lightning_strike", "crater"]:
+								new_damage = h_damage * 2.0
+							else:
+								new_damage = h_damage * 1.5
+								new_radius = h_rad * 1.2
+
+							# Apply mutations
+							if typeof(h) == TYPE_DICTIONARY:
+								h["damage"] = new_damage
+								h["radius"] = new_radius
+								if h.has("target_radius"): h["target_radius"] = new_radius
+							elif typeof(h) == TYPE_OBJECT:
+								if "damage" in h: h.damage = new_damage
+								elif h.has_method("set_meta"): h.set_meta("damage", new_damage)
+
+								if "radius" in h: h.radius = new_radius
+								elif h.has_method("set_meta"): h.set_meta("radius", new_radius)
+
+								if "target_radius" in h: h.target_radius = new_radius
+								elif h.has_method("has_meta") and h.has_meta("target_radius"): h.set_meta("target_radius", new_radius)
+
 		# Handle decoy_spawners
 		# Moving walls / hazards logic
 		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
