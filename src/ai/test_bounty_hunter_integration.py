@@ -68,3 +68,67 @@ def test_bounty_hunter_kill_buff():
     assert target2.hp <= 0.0
     assert hunter.hp == hunter.max_hp # Full heal!
     assert getattr(hunter, "speed_boost_timer", 0.0) == 3.0 # Speed boost
+
+def test_bounty_hunter_indicator():
+    from ai.action import Action
+    from ai.ball_types_bounty_hunter import BountyHunter
+
+    class MockWorld:
+        def __init__(self):
+            self.events = []
+            self.balls = []
+
+    class MockTarget:
+        def __init__(self, id, is_bounty=False, high_threat=False, alive=True):
+            self.id = id
+            self.is_bounty = is_bounty
+            self.high_threat = high_threat
+            self.alive = alive
+            self.x = 100.0
+            self.y = 100.0
+            self.team = "Blue"
+
+    world = MockWorld()
+    hunter = BountyHunter(1)
+    hunter.team = "Red"
+    hunter.bounty_indicator_timer = 0.0
+    target = MockTarget(2, is_bounty=True)
+    world.balls = [hunter, target]
+
+    action = Action(hunter, world)
+    action.execute("idle", 0.1)
+
+    assert any(e["type"] == "bounty_compass" for e in world.events)
+    assert any(e["type"] == "visual_effect" and e["data"]["color"] == "orange" for e in world.events)
+
+def test_bounty_hunter_indicator_high_threat():
+    from ai.action import Action
+    from ai.ball_types_bounty_hunter import BountyHunter
+
+    class MockWorld:
+        def __init__(self):
+            self.events = []
+            self.balls = []
+
+    class MockTarget:
+        def __init__(self, id, is_bounty=False, high_threat=False, alive=True):
+            self.id = id
+            self.is_bounty = is_bounty
+            self.high_threat = high_threat
+            self.alive = alive
+            self.x = 100.0
+            self.y = 100.0
+            self.team = "Blue"
+
+    world = MockWorld()
+    hunter = BountyHunter(1)
+    hunter.team = "Red"
+    hunter.bounty_indicator_timer = 0.0
+    target = MockTarget(2, is_bounty=False, high_threat=True)
+    world.balls = [hunter, target]
+
+    action = Action(hunter, world)
+    action.execute("idle", 0.1)
+
+    assert any(e["type"] == "bounty_compass" for e in world.events)
+    assert any(e["type"] == "visual_effect" and e["data"]["color"] == "orange" for e in world.events)

@@ -1521,6 +1521,62 @@ func execute(strategy: String, delta: float):
         else:
             self.ball.decoy_aura_timer = d_aura_val
 
+
+        # Bounty Hunter target indicator
+        var b_type_ind = ""
+        if typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball:
+            b_type_ind = self.ball.ball_type
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"):
+            b_type_ind = self.ball["ball_type"]
+
+        if b_type_ind == "bounty_hunter":
+            var timer_val = 0.0
+            if typeof(self.ball) == TYPE_OBJECT:
+                if not "bounty_indicator_timer" in self.ball:
+                    self.ball.bounty_indicator_timer = 2.0
+                self.ball.bounty_indicator_timer -= delta
+                timer_val = self.ball.bounty_indicator_timer
+            else:
+                if not self.ball.has("bounty_indicator_timer"):
+                    self.ball["bounty_indicator_timer"] = 2.0
+                self.ball["bounty_indicator_timer"] -= delta
+                timer_val = self.ball["bounty_indicator_timer"]
+
+            if timer_val <= 0.0:
+                if typeof(self.ball) == TYPE_OBJECT:
+                    self.ball.bounty_indicator_timer = 2.0
+                else:
+                    self.ball["bounty_indicator_timer"] = 2.0
+
+                if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                    for other in self.world.balls:
+                        var other_id = other.id if typeof(other) == TYPE_OBJECT else other.get("id", -1)
+                        var self_id = self.ball.id if typeof(self.ball) == TYPE_OBJECT else self.ball.get("id", -1)
+                        var other_alive = other.alive if typeof(other) == TYPE_OBJECT else other.get("alive", true)
+
+                        if other_id != self_id and other_alive:
+                            var is_target = false
+                            if typeof(other) == TYPE_OBJECT:
+                                if "is_bounty" in other and other.is_bounty: is_target = true
+                                elif other.has_method("get_meta") and other.has_meta("is_bounty") and other.get_meta("is_bounty"): is_target = true
+                                if "high_threat" in other and other.high_threat: is_target = true
+                                elif other.has_method("get_meta") and other.has_meta("high_threat") and other.get_meta("high_threat"): is_target = true
+                                if "is_bounty_target" in other and other.is_bounty_target: is_target = true
+                                elif other.has_method("get_meta") and other.has_meta("is_bounty_target") and other.get_meta("is_bounty_target"): is_target = true
+                            else:
+                                if other.has("is_bounty") and other["is_bounty"]: is_target = true
+                                if other.has("high_threat") and other["high_threat"]: is_target = true
+                                if other.has("is_bounty_target") and other["is_bounty_target"]: is_target = true
+
+                            if is_target:
+                                if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                                    var ox = float(other.x) if typeof(other) == TYPE_OBJECT else float(other.get("x", 0.0))
+                                    var oy = float(other.y) if typeof(other) == TYPE_OBJECT else float(other.get("y", 0.0))
+                                    var bx = float(self.ball.x) if typeof(self.ball) == TYPE_OBJECT else float(self.ball.get("x", 0.0))
+                                    var by = float(self.ball.y) if typeof(self.ball) == TYPE_OBJECT else float(self.ball.get("y", 0.0))
+                                    self.world.events.append({"type": "bounty_compass", "data": {"target_x": ox, "target_y": oy, "owner_id": self_id}})
+                                    self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": bx, "y": by, "tx": ox, "ty": oy, "color": "orange"}})
+
     # Nemesis Reveal Passive
     var ks_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_shield_timer"):

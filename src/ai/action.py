@@ -923,6 +923,23 @@ class Action:
                 if hasattr(self.ball, "speed") and hasattr(self.ball, "base_speed"):
                     self.ball.speed = self.ball.base_speed
 
+
+        # REPLACED
+        # Bounty Hunter target indicator
+        if getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")) == "bounty_hunter":
+            if not hasattr(self.ball, "bounty_indicator_timer"):
+                self.ball.bounty_indicator_timer = 2.0
+            self.ball.bounty_indicator_timer -= delta
+            if self.ball.bounty_indicator_timer <= 0.0:
+                self.ball.bounty_indicator_timer = 2.0
+                if hasattr(self.world, "balls"):
+                    for other in self.world.balls:
+                        if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "alive", True):
+                            if getattr(other, "is_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False):
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({"type": "bounty_compass", "data": {"target_x": float(other.x), "target_y": float(other.y), "owner_id": getattr(self.ball, "id", None)}})
+                                    self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(self.ball.x), "y": float(self.ball.y), "tx": float(other.x), "ty": float(other.y), "color": "orange"}})
+
         # Nemesis Reveal Passive
         if not hasattr(self.ball, "nemesis_reveal_timer"):
             self.ball.nemesis_reveal_timer = 5.0
