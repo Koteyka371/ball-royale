@@ -2,6 +2,7 @@ from arena.procedural_arena import Hazard
 
 import random
 
+from arena.falling_panels_arena import FallingPanelsArena
 from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
 from arena.procedural_arena import TimeDistortionArena
 
@@ -1541,6 +1542,7 @@ class SpringArena(ProceduralArena):
 
 
 ARENAS = {
+    'falling_panels': FallingPanelsArena,
     'spring': SpringArena,
     'shrinking_hazards': ShrinkingHazardsArena,
 

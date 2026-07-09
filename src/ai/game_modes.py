@@ -12355,7 +12355,33 @@ class MultipleSafeZonesMode(GameMode):
         self.zones = new_zones
 
 
+
+class FallingPanelsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Falling Panels"
+        self.description = "The arena slowly breaks away, falling into a void."
+        self.id = "falling_panels"
+
+        self.points_for_kill = 50
+        self.points_for_survival = 100
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        from arena.falling_panels_arena import FallingPanelsArena
+        world.arena = FallingPanelsArena(arena_size=2000.0, num_rooms=1)
+        import random
+        for ball in balls:
+            ball.x = world.arena.width / 2 + random.uniform(-200, 200)
+            ball.y = world.arena.height / 2 + random.uniform(-200, 200)
+
+    def is_game_over(self, world) -> bool:
+        alive_balls = [b for b in getattr(world, 'balls', []) if getattr(b, 'alive', True)]
+        alive_teams = {getattr(b, 'team', 'Team ' + str(getattr(b, 'id', 0))) for b in alive_balls}
+        return len(alive_teams) <= 1
+
 GAME_MODES = {
+    "falling_panels": FallingPanelsMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
     "spiked_walls": SpikedWallsMode(),
