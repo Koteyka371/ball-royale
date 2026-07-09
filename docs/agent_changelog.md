@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-797] Shrinking Zones: Hazard Mutations — *2026-07-09 21:58:54 UTC*
+
+As the main battle royale zone shrinks, random hazards inside the safe area undergo a 'mutation' and become significantly more lethal or chaotic (e.g. traps start shooting projectiles or poison clouds double in size), forcing players to not only run from the edge but also adapt to a constantly evolving inner battlefield.
+
+---
+
 ## [idea-782] Trickster Smoke Screen — *2026-07-09 21:57:38 UTC*
 
 Trickster balls can deploy a smoke screen that obscures vision for enemies, making it harder for them to aim and attack.

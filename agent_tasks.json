@@ -13710,7 +13710,7 @@
     },
     {
       "id": "idea-797",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Zones: Hazard Mutations",
@@ -22491,6 +22491,76 @@
         "src/ai/custom_boss_spawns.py",
         "src/ai/custom_boss_spawns.gd",
         "tests/test_custom_boss_spawns.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1313",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mutator Token Daily Quest",
+      "description": "Add a difficult daily quest that rewards mutator tokens, creating an alternative to buying them, which makes voting more accessible for free-to-play players.",
+      "allowed_paths": [
+        "src/ui/mutator_token_daily_quest.py",
+        "src/ui/mutator_token_daily_quest.gd",
+        "src/ai/mutator_token_daily_quest.py",
+        "tests/test_mutator_token_daily_quest.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1314",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Spectral Escort",
+      "description": "A VIP protection mode where one randomly selected ball on each team becomes the Spectral VIP. The VIP cannot attack and is highly vulnerable, but emits a constant healing aura for their teammates. The objective is to keep your VIP alive while hunting down the enemy VIP.",
+      "allowed_paths": [
+        "src/ai/spectral_escort.py",
+        "src/ai/spectral_escort.gd",
+        "tests/test_spectral_escort.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1315",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Elementals",
+      "description": "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_elementals.py",
+        "src/ai/chain_reaction_elementals.gd",
+        "tests/test_chain_reaction_elementals.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1316",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Mutator Votes",
+      "description": "Allow guilds to pool their mutator tokens together to heavily influence the mutator of guild-versus-guild matches.",
+      "allowed_paths": [
+        "src/ui/guild_mutator_votes.py",
+        "src/ui/guild_mutator_votes.gd",
+        "src/ai/guild_mutator_votes.py",
+        "tests/test_guild_mutator_votes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
