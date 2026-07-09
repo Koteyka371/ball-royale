@@ -12531,3 +12531,118 @@ class UndergroundTunnelMode(GameMode):
                     break
 
 GAME_MODES["underground_tunnels"] = UndergroundTunnelMode()
+
+
+class FreezeTagMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Freeze Tag"
+        self.description = "Players can freeze enemies upon collision. Frozen enemies cannot move or attack until an ally collides with them to unfreeze them. The game ends when one team is completely frozen."
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        # Split into two teams
+        mid = len(balls) // 2
+        for i, b in enumerate(balls):
+            if getattr(b, "ball_type", None) != "spectator":
+                b.team = "Red" if i < mid else "Blue"
+                b.is_frozen = False
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+
+        n = len(alive_balls)
+        for i in range(n):
+            for j in range(i + 1, n):
+                b1 = alive_balls[i]
+                b2 = alive_balls[j]
+
+                # We need x, y, and radius to check collisions
+                b1_x = getattr(b1, "x", 0.0)
+                b1_y = getattr(b1, "y", 0.0)
+                b1_r = getattr(b1, "radius", 10.0)
+
+                b2_x = getattr(b2, "x", 0.0)
+                b2_y = getattr(b2, "y", 0.0)
+                b2_r = getattr(b2, "radius", 10.0)
+
+                dist_sq = (b1_x - b2_x) ** 2 + (b1_y - b2_y) ** 2
+                min_dist = b1_r + b2_r
+
+                if dist_sq < min_dist ** 2:
+                    # Collision occurred
+                    team1 = getattr(b1, "team", None)
+                    team2 = getattr(b2, "team", None)
+
+                    if team1 and team2 and team1 != team2:
+                        # Enemy collision
+                        import math
+                        v1 = math.sqrt(getattr(b1, "vx", 0.0) ** 2 + getattr(b1, "vy", 0.0) ** 2)
+                        v2 = math.sqrt(getattr(b2, "vx", 0.0) ** 2 + getattr(b2, "vy", 0.0) ** 2)
+
+                        b1_frozen = getattr(b1, "is_frozen", False)
+                        b2_frozen = getattr(b2, "is_frozen", False)
+
+                        # Only un-frozen ball can freeze an enemy, or if both are moving, faster freezes slower.
+                        if not b1_frozen and not b2_frozen:
+                            if v1 >= v2:
+                                self._freeze_ball(b2)
+                            else:
+                                self._freeze_ball(b1)
+                        elif not b1_frozen and b2_frozen:
+                            self._freeze_ball(b2)
+                        elif b1_frozen and not b2_frozen:
+                            self._freeze_ball(b1)
+
+                    elif team1 and team2 and team1 == team2:
+                        # Ally collision
+                        b1_frozen = getattr(b1, "is_frozen", False)
+                        b2_frozen = getattr(b2, "is_frozen", False)
+
+                        if b1_frozen and not b2_frozen:
+                            self._unfreeze_ball(b1)
+                        elif not b1_frozen and b2_frozen:
+                            self._unfreeze_ball(b2)
+
+    def _freeze_ball(self, b: Any) -> None:
+        b.is_frozen = True
+        b.stun_timer = 9999.0
+        b.frozen_timer = 9999.0
+        b.vx = 0.0
+        b.vy = 0.0
+
+    def _unfreeze_ball(self, b: Any) -> None:
+        b.is_frozen = False
+        b.stun_timer = 0.0
+        b.frozen_timer = 0.0
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        team_status = {}
+        for b in alive:
+            team = getattr(b, "team", None)
+            if team:
+                if team not in team_status:
+                    team_status[team] = {"total": 0, "frozen": 0}
+                team_status[team]["total"] += 1
+                if getattr(b, "is_frozen", False):
+                    team_status[team]["frozen"] += 1
+
+        active_teams = []
+        for team, stats in team_status.items():
+            if stats["frozen"] < stats["total"]:
+                active_teams.append(team)
+
+        if len(active_teams) == 1:
+            return active_teams[0]
+        elif len(active_teams) == 0:
+            return "Draw"
+
+        return None
+
+GAME_MODES['freeze_tag'] = FreezeTagMode()
