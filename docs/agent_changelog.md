@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-808] Bouncy Terrain — *2026-07-09 23:14:08 UTC*
+
+A hazard zone that gives everyone inside bouncy physics, increasing their knockback taking and giving dramatically.
+
+---
+
 ## [idea-721] Black Hole Bomb — *2026-07-09 22:39:38 UTC*
 
 A throwable or placeable bomb that sucks nearby balls towards it before exploding for massive damage.
