@@ -3613,7 +3613,7 @@ func execute(strategy: String, delta: float):
         if "cosmetic" in my_ball:
             cosmetic = str(my_ball.cosmetic).to_lower().replace(" ", "_")
         var ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
-        var ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires"]
+        var ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"]
         var ignores_wind = cosmetic in ["heavy_boots", "lead_boots"]
 
         # Reset flag every frame
@@ -5840,7 +5840,7 @@ func execute(strategy: String, delta: float):
                             var cos_slip = ""
                             if "cosmetic" in self.ball:
                                 cos_slip = str(self.ball.cosmetic).to_lower().replace(" ", "_")
-                            if cos_slip != "snowshoes":
+                            if not cos_slip in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"]:
                                 if "vx" in self.ball and "vy" in self.ball:
                                     self.ball.x += self.ball.vx * delta
                                     self.ball.y += self.ball.vy * delta
@@ -5997,12 +5997,15 @@ func execute(strategy: String, delta: float):
 
                             if debuff_timer > 0.0:
                                 debuff_timer -= delta
-                                var base_speed = 100.0
-                                if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
-                                    base_speed = self.ball.get_meta("base_speed")
-                                elif "base_speed" in self.ball:
-                                    base_speed = self.ball.base_speed
-                                self.ball.speed = base_speed * 0.3
+                                var cos_str = ""
+                                if "cosmetic" in self.ball: cos_str = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                                if not cos_str in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]:
+                                    var base_speed = 100.0
+                                    if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                                        base_speed = self.ball.get_meta("base_speed")
+                                    elif "base_speed" in self.ball:
+                                        base_speed = self.ball.base_speed
+                                    self.ball.speed = base_speed * 0.3
 
                             if self.ball.has_method("set_meta"):
                                 self.ball.set_meta("quicksand_debuff_timer", debuff_timer)
@@ -6164,13 +6167,15 @@ func execute(strategy: String, delta: float):
                         elif "ball_type" in self.ball:
                             bt = str(self.ball.ball_type)
 
-                        if bt == "snow_yeti":
+                        var cos_slip = ""
+                        if "cosmetic" in self.ball: cos_slip = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                        if bt == "snow_yeti" or cos_slip in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"]:
                             var base_s = 100.0
                             if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
                                 base_s = float(self.ball.get_meta("base_speed"))
                             elif "base_speed" in self.ball:
                                 base_s = float(self.ball.base_speed)
-                            self.ball.speed = base_s * 2.0
+                            self.ball.speed = base_s * (2.0 if bt == "snow_yeti" else 1.0)
                             if self.ball.has_method("set_meta"):
                                 self.ball.set_meta("is_slipping", false)
                             elif typeof(self.ball) == TYPE_DICTIONARY:

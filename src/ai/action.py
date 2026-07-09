@@ -1973,7 +1973,7 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
             ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
-            ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires"]
+            ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"]
             ignores_wind = cosmetic in ["heavy_boots", "lead_boots"]
             is_kite = cosmetic == "kite"
 
@@ -3362,7 +3362,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "snowshoes":
+                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"]:
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
                                         self.ball.y += self.ball.vy * delta
@@ -3375,7 +3375,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "snowshoes":
+                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"]:
                                     self.ball.is_frictionless = True
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
@@ -3387,7 +3387,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "snowshoes":
+                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"]:
                                     self.ball.is_frictionless = True
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
@@ -3411,7 +3411,7 @@ class Action:
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
                             # Apply slow effect
-                            if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires"]:
+                            if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]:
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
                     elif hazard.kind == "flood_zone":
                         dx = hazard.x - self.ball.x
@@ -3467,7 +3467,7 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            if getattr(self.ball, "ball_type", "") == "snow_yeti" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") == "snowshoes":
+                            if getattr(self.ball, "ball_type", "") == "snow_yeti" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"]:
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * (2.0 if getattr(self.ball, "ball_type", "") == "snow_yeti" else 1.0)
                                 if hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = False
@@ -3506,7 +3506,7 @@ class Action:
                                             self.ball.quicksand_debuff_timer = 2.0
 
                                     if getattr(self.ball, "quicksand_debuff_timer", 0.0) > 0:
-                                        if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires"]:
+                                        if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]:
                                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
                                         self.ball.quicksand_debuff_timer -= delta
 
