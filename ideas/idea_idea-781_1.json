@@ -1,0 +1,4 @@
+{
+    "title": "Decoy Ambush Nests",
+    "description": "Spawn fake sniper nests on the map. When a ball enters it expecting a buff, it instead triggers a trap that applies a heavy slow and reveals their position to all enemies."
+}

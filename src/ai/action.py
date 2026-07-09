@@ -307,6 +307,9 @@ class Action:
 
         original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
 
+        if is_ranged and getattr(attacker, "in_sniper_nest", False):
+            original_damage *= 1.25
+
         if getattr(attacker, "kinetic_shield_stored_damage", 0.0) > 0 and not is_ranged:
             stored_dmg = attacker.kinetic_shield_stored_damage
             original_damage += stored_dmg
@@ -6110,6 +6113,13 @@ class Action:
         flares = [e for e in enemies if getattr(e, "kind", "") == "flare"]
         if flares:
             return min(flares, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+        # Check for sniper nest targets (aggro priority)
+        personality = getattr(self.ball, "personality", "idle")
+        if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "drone", "swarm", "aggressive", "cunning", "curious"]:
+            nest_targets = [e for e in enemies if getattr(e, "in_sniper_nest", False)]
+            if nest_targets:
+                return min(nest_targets, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
         # Ball Relationships - Balls remember each other
         # Rivalry skill: attacked me before -> attack on sight

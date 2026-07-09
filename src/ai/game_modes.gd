@@ -16275,7 +16275,131 @@ class FallingPanelsMode extends GameMode:
 				alive_teams[team] = true
 		return alive_teams.keys().size() <= 1
 
+
+class SniperNestsMode extends GameMode:
+    var sniper_nests = []
+
+    func _init():
+        self.name = "Sniper Nests"
+        self.description = "Elevated sniper nests grant increased perception and ranged damage but mark you for aggro bots."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        var arena_width = 1000.0
+        if world != null and "arena" in world and world.arena != null and "width" in world.arena:
+            arena_width = float(world.arena.width)
+        var arena_height = 1000.0
+        if world != null and "arena" in world and world.arena != null and "height" in world.arena:
+            arena_height = float(world.arena.height)
+
+        self.sniper_nests = [
+            {"x": arena_width * 0.2, "y": arena_height * 0.2, "radius": 120.0},
+            {"x": arena_width * 0.8, "y": arena_height * 0.2, "radius": 120.0},
+            {"x": arena_width * 0.2, "y": arena_height * 0.8, "radius": 120.0},
+            {"x": arena_width * 0.8, "y": arena_height * 0.8, "radius": 120.0},
+            {"x": arena_width * 0.5, "y": arena_height * 0.5, "radius": 150.0}
+        ]
+        if typeof(world) == TYPE_DICTIONARY:
+            world["sniper_nests"] = self.sniper_nests
+        elif typeof(world) == TYPE_OBJECT and world.has_method("set_meta"):
+            world.set_meta("sniper_nests", self.sniper_nests)
+        elif typeof(world) == TYPE_OBJECT:
+            if "sniper_nests" in world:
+                world.sniper_nests = self.sniper_nests
+
+        for b in balls:
+            var b_type = b.ball_type if "ball_type" in b else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else "")
+            if b_type != "spectator":
+                if typeof(b) == TYPE_DICTIONARY:
+                    b["team"] = b.get("team", b_type)
+                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                    var t = b.get_meta("team") if b.has_meta("team") else ("team" in b and b.team)
+                    if not t: t = b_type
+                    b.set_meta("team", t)
+
+    func tick(world, balls, delta = 0.016):
+        super.tick(world, balls, delta)
+        for b in balls:
+            var is_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else false)
+            var b_type = b.ball_type if "ball_type" in b else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else "")
+            if not is_alive or b_type == "spectator":
+                continue
+
+            var has_base_perc = false
+            var base_perc = 250.0
+            if "base_perception_radius" in b:
+                has_base_perc = true
+                base_perc = b.base_perception_radius
+            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("base_perception_radius"):
+                has_base_perc = true
+                base_perc = b.get_meta("base_perception_radius")
+
+            if not has_base_perc:
+                var curr_perc = 250.0
+                if "perception_radius" in b: curr_perc = b.perception_radius
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("perception_radius"): curr_perc = b.get_meta("perception_radius")
+
+                if typeof(b) == TYPE_DICTIONARY:
+                    b["base_perception_radius"] = curr_perc
+                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                    b.set_meta("base_perception_radius", curr_perc)
+                elif typeof(b) == TYPE_OBJECT:
+                    b.base_perception_radius = curr_perc
+                base_perc = curr_perc
+
+            var in_nest = false
+            var b_x = float(b.x if "x" in b else b.get_meta("x"))
+            var b_y = float(b.y if "y" in b else b.get_meta("y"))
+
+            for nest in self.sniper_nests:
+                var dx = b_x - nest["x"]
+                var dy = b_y - nest["y"]
+                if sqrt(dx*dx + dy*dy) <= nest["radius"]:
+                    in_nest = true
+                    break
+
+            if in_nest:
+                if typeof(b) == TYPE_DICTIONARY:
+                    b["perception_radius"] = base_perc * 1.25
+                    b["cosmetic"] = "ancient_aura"
+                    b["in_sniper_nest"] = true
+                    b["zone_modifier_sniper"] = true
+                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                    b.set_meta("perception_radius", base_perc * 1.25)
+                    b.set_meta("cosmetic", "ancient_aura")
+                    b.set_meta("in_sniper_nest", true)
+                    b.set_meta("zone_modifier_sniper", true)
+                elif typeof(b) == TYPE_OBJECT:
+                    b.perception_radius = base_perc * 1.25
+                    b.cosmetic = "ancient_aura"
+                    b.in_sniper_nest = true
+                    b.set_meta("zone_modifier_sniper", true) if b.has_method("set_meta") else null
+            else:
+                var has_mod = false
+                if "zone_modifier_sniper" in b and b.zone_modifier_sniper: has_mod = true
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("zone_modifier_sniper") and b.get_meta("zone_modifier_sniper"): has_mod = true
+                elif typeof(b) == TYPE_DICTIONARY and b.has("zone_modifier_sniper") and b["zone_modifier_sniper"]: has_mod = true
+
+                if has_mod:
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["perception_radius"] = base_perc
+                        b["cosmetic"] = "none"
+                        b["in_sniper_nest"] = false
+                        b.erase("zone_modifier_sniper")
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                        b.set_meta("perception_radius", base_perc)
+                        b.set_meta("cosmetic", "none")
+                        b.set_meta("in_sniper_nest", false)
+                        b.set_meta("zone_modifier_sniper", false)
+                    elif typeof(b) == TYPE_OBJECT:
+                        b.perception_radius = base_perc
+                        b.cosmetic = "none"
+                        b.in_sniper_nest = false
+                        b.set_meta("zone_modifier_sniper", false) if b.has_method("set_meta") else null
+
+
 var GAME_MODES = {
+    "sniper_nests": SniperNestsMode.new(),
 	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),

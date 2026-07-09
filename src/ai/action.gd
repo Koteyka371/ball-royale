@@ -455,6 +455,17 @@ func _attempt_damage(attacker, target) -> void:
 	if "damage" in attacker: base_dmg = float(attacker.damage)
 	var original_damage = base_dmg * damage_reduction
 
+	var in_sniper_nest = false
+	if "in_sniper_nest" in attacker and attacker.in_sniper_nest:
+		in_sniper_nest = true
+	elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("in_sniper_nest") and attacker.get_meta("in_sniper_nest"):
+		in_sniper_nest = true
+	elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("in_sniper_nest") and attacker["in_sniper_nest"]:
+		in_sniper_nest = true
+
+	if is_ranged_attack and in_sniper_nest:
+		original_damage *= 1.25
+
 	var a_has_kinetic = false
 	var a_stored_dmg = 0.0
 	if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("kinetic_shield_stored_damage"):
@@ -10952,6 +10963,33 @@ func _get_target(enemies: Array) -> Object:
                 c_flare = f_ent
         if c_flare != null:
             return c_flare
+
+    var personality = "idle"
+    if "personality" in self.ball:
+        personality = self.ball.personality
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("personality"):
+        personality = self.ball.get_meta("personality")
+
+    if personality in ["warrior", "sniper", "assassin", "berserker", "bomber", "phantom", "rogue", "drone", "swarm", "aggressive", "cunning", "curious"]:
+        var nest_targets = []
+        for e in enemies:
+            var in_nest = false
+            if "in_sniper_nest" in e and e.in_sniper_nest: in_nest = true
+            elif typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("in_sniper_nest") and e.get_meta("in_sniper_nest"): in_nest = true
+            elif typeof(e) == TYPE_DICTIONARY and e.has("in_sniper_nest") and e["in_sniper_nest"]: in_nest = true
+            if in_nest:
+                nest_targets.append(e)
+
+        if nest_targets.size() > 0:
+            var c_nest = null
+            var min_d_sq2 = INF
+            for n_ent in nest_targets:
+                var d_sq2 = pow(n_ent.x - self.ball.x, 2) + pow(n_ent.y - self.ball.y, 2)
+                if d_sq2 < min_d_sq2:
+                    min_d_sq2 = d_sq2
+                    c_nest = n_ent
+            if c_nest != null:
+                return c_nest
 
     var ball_memory = {}
     if self.ball.has_method("get_meta") and self.ball.has_meta("memory"):

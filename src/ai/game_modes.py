@@ -12635,7 +12635,63 @@ class FallingPanelsMode(GameMode):
         alive_teams = {getattr(b, 'team', 'Team ' + str(getattr(b, 'id', 0))) for b in alive_balls}
         return len(alive_teams) <= 1
 
+
+class SniperNestsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sniper Nests"
+        self.description = "Elevated sniper nests grant increased perception and ranged damage but mark you for aggro bots."
+        self.sniper_nests = []
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.sniper_nests = [
+            {"x": arena_width * 0.2, "y": arena_height * 0.2, "radius": 120.0},
+            {"x": arena_width * 0.8, "y": arena_height * 0.2, "radius": 120.0},
+            {"x": arena_width * 0.2, "y": arena_height * 0.8, "radius": 120.0},
+            {"x": arena_width * 0.8, "y": arena_height * 0.8, "radius": 120.0},
+            {"x": arena_width * 0.5, "y": arena_height * 0.5, "radius": 150.0}
+        ]
+        world.sniper_nests = self.sniper_nests
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.team = getattr(b, "team", b.ball_type)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            if not hasattr(b, "base_perception_radius"):
+                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+
+            in_nest = False
+            for nest in self.sniper_nests:
+                dx = b.x - nest["x"]
+                dy = b.y - nest["y"]
+                if math.sqrt(dx*dx + dy*dy) <= nest["radius"]:
+                    in_nest = True
+                    break
+
+            if in_nest:
+                b.perception_radius = b.base_perception_radius * 1.25
+                b.cosmetic = "ancient_aura"
+                b.in_sniper_nest = True
+                b.zone_modifier_sniper = True
+            else:
+                if getattr(b, "zone_modifier_sniper", False):
+                    b.perception_radius = b.base_perception_radius
+                    b.cosmetic = "none"
+                    b.in_sniper_nest = False
+                    delattr(b, "zone_modifier_sniper")
+
 GAME_MODES = {
+    "sniper_nests": SniperNestsMode(),
     "falling_panels": FallingPanelsMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
