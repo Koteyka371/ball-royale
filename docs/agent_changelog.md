@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-745] Black Hole Generator — *2026-07-09 14:42:13 UTC*
+
+A rare collectable item that deploys a massive gravity well which pulls all entities towards the center and explodes after a short delay.
+
+---
+
 ## [idea-761] Decoy Confusion Matrix — *2026-07-09 14:39:58 UTC*
 
 Trickster's decoys now periodically swap positions with each other, further confusing enemies trying to track the real player.
