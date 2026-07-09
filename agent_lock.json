@@ -107,9 +107,9 @@
     "agent-13": {
       "name": "Jules Worker 13",
       "area": "tests",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-748",
+      "started_at": "2026-07-09T14:09:03.983263+00:00",
       "cycles_today": 1
     },
     "agent-14": {
@@ -171,9 +171,9 @@
     "agent-21": {
       "name": "Jules Worker 21",
       "area": "ai-core",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-760",
+      "started_at": "2026-07-09T14:09:03.983263+00:00",
       "cycles_today": 0
     },
     "agent-22": {
