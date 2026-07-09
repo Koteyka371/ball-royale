@@ -12875,7 +12875,7 @@
     },
     {
       "id": "idea-748",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Arena Edge Modifier",
@@ -21414,6 +21414,57 @@
         "src/ai/audience_favor.py",
         "src/ai/audience_favor.gd",
         "tests/test_audience_favor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1250",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Terrain Hazard",
+      "description": "A hazard zone that visually mimics a safe area or a beneficial spring but reveals its true damaging nature only when a player steps into it.",
+      "allowed_paths": [
+        "src/arena/mirage_terrain.py",
+        "src/arena/mirage_terrain.gd",
+        "tests/test_mirage_terrain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1251",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Crumbling Arena Walls",
+      "description": "Wall damage isn't just applied to the players, but also to the arena. Hard wall impacts break pieces off the boundary, expanding the hazard zone inwards and making the playable area more dangerous over time.",
+      "allowed_paths": [
+        "src/arena/crumbling_arena_walls.py",
+        "src/arena/crumbling_arena_walls.gd",
+        "tests/test_crumbling_arena_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1252",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall Jump Mastery Mutator",
+      "description": "A game mode mutator where balls are forced to move continuously but taking damage from walls is disabled. Hitting walls instead provides massive momentum boosts and recharges dash abilities, encouraging a pinball-like playstyle.",
+      "allowed_paths": [
+        "src/ai/wall_jump_mastery_mutator.py",
+        "src/ai/wall_jump_mastery_mutator.gd",
+        "tests/test_wall_jump_mastery_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

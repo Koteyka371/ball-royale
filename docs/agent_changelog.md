@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-748] Shrinking Arena Edge Modifier — *2026-07-09 14:28:39 UTC*
+
+A new arena hazard mode where the boundary of the arena slowly shrinks over time, dealing significant damage to anyone caught outside the safe zone.
+
+---
+
 ## [idea-756] Wall Bounce Combos — *2026-07-09 14:18:46 UTC*
 
 If a player manages to knock an opponent into a wall multiple times in quick succession (or hit multiple walls with one knockback), the wall damage multiplier significantly increases, and the attacking player gets a temporary speed boost.
