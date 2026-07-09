@@ -1,4 +1,0 @@
-{
-  "title": "Danger zone ping system",
-  "description": "Add a minimap UI ping when the safe zone shrinks. A red flash could indicate a ball is currently taking damage from being outside the zone."
-}

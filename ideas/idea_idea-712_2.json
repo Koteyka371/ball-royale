@@ -1,4 +1,0 @@
-{
-  "title": "Stamina Overflow State",
-  "description": "If a ball maintains max stamina for 5 continuous seconds, they enter an Overflow state, granting them 20% increased speed and slightly reduced incoming damage until stamina drops below 80%."
-}

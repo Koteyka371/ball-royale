@@ -22067,6 +22067,91 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1288",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Harmony Bonus",
+      "description": "When balls with the same cosmetic aura color stay near each other without colliding, their aura intensity scales up and provides a passive healing buff to both players. If they collide, it triggers the elemental explosion instead.",
+      "allowed_paths": [
+        "src/ai/aura_harmony_bonus.py",
+        "src/ai/aura_harmony_bonus.gd",
+        "tests/test_aura_harmony_bonus.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1289",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones With Multiple Biomes",
+      "description": "Each shrinking safe zone acts as a unique biome, granting different passive abilities, allowing for multiple tactical advantages.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones_with_multiple_biomes.py",
+        "src/ai/shrinking_safe_zones_with_multiple_biomes.gd",
+        "tests/test_shrinking_safe_zones_with_multiple_biomes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1290",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunnels Mechanics",
+      "description": "Adding random quantum tunnels that instantly teleport a ball to the opposite side of the map with inverted velocity.",
+      "allowed_paths": [
+        "src/ai/quantum_tunnels_mechanics.py",
+        "src/ai/quantum_tunnels_mechanics.gd",
+        "tests/test_quantum_tunnels_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1291",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Swap Module",
+      "description": "A new skill or booster item where activating it allows the player to instantly swap positions with their most recently deployed decoy, consuming the decoy in the process and detonating it at the player's old position.",
+      "allowed_paths": [
+        "src/ai/decoy_swap_module.py",
+        "src/ai/decoy_swap_module.gd",
+        "tests/test_decoy_swap_module.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1292",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Prismatic Aura Boss",
+      "description": "A new boss ball type that rapidly cycles through aura colors. Hitting the boss while its aura matches your own heals you instead of damaging the boss, making timing crucial for takedowns.",
+      "allowed_paths": [
+        "src/ai/prismatic_aura_boss.py",
+        "src/ai/prismatic_aura_boss.gd",
+        "tests/test_prismatic_aura_boss.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
