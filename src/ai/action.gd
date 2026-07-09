@@ -180,6 +180,17 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+	var att_intangible = false
+	if "is_intangible" in attacker: att_intangible = bool(attacker.is_intangible)
+	elif attacker.has_method("get_meta") and attacker.has_meta("is_intangible"): att_intangible = bool(attacker.get_meta("is_intangible"))
+
+	var tgt_intangible = false
+	if "is_intangible" in target: tgt_intangible = bool(target.is_intangible)
+	elif target.has_method("get_meta") and target.has_meta("is_intangible"): tgt_intangible = bool(target.get_meta("is_intangible"))
+
+	if att_intangible or tgt_intangible:
+		return
+
 	var attacker_type = attacker.get("ball_type")
 	if attacker_type == null and "BALL_TYPE" in attacker: attacker_type = attacker.BALL_TYPE
 	if attacker_type != null and str(attacker_type).to_lower() == "alchemist":
@@ -11779,6 +11790,11 @@ func _defend(delta: float):
     _idle(delta * 0.5)
 
 func _collect_booster(delta: float):
+	var is_intangible = false
+	if "is_intangible" in self.ball: is_intangible = bool(self.ball.is_intangible)
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("is_intangible"): is_intangible = bool(self.ball.get_meta("is_intangible"))
+	if is_intangible: return
+
     var boosters = _get_boosters()
     if boosters.size() > 0:
         var ball_radius = 10.0
@@ -16697,6 +16713,29 @@ func _use_skill():
             if self.has_method("_spawn_skill_particles"):
                 self._spawn_skill_particles("shield")
 
+        elif skill_name == "phantom_walk":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("skill_timer", 5.0)
+                self.ball.set_meta("is_intangible", true)
+                self.ball.set_meta("intangible_timer", 3.0)
+            else:
+                self.ball["skill_timer"] = 5.0
+                self.ball["is_intangible"] = true
+                self.ball["intangible_timer"] = 3.0
+            var events_arr = null
+            if typeof(world_ref) == TYPE_DICTIONARY and world_ref.has("events"): events_arr = world_ref["events"]
+            elif typeof(world_ref) == TYPE_OBJECT and "events" in world_ref: events_arr = world_ref.events
+
+            if typeof(events_arr) == TYPE_ARRAY:
+                var b_id = -1
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+                elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b_id = self.ball.id
+                events_arr.append({
+                    "type": "phantom_walk_start",
+                    "data": {"id": b_id}
+                })
+
+
         if "skill_cooldown" in self.ball:
             self.ball.skill_timer = self.ball.skill_cooldown
 
@@ -17111,6 +17150,11 @@ func _idle(delta: float):
     self.ball.y += ny * speed * 0.3
 
 func _clamp_position() -> bool:
+	var is_intangible = false
+	if "is_intangible" in self.ball: is_intangible = bool(self.ball.is_intangible)
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("is_intangible"): is_intangible = bool(self.ball.get_meta("is_intangible"))
+	if is_intangible: return false
+
     var bounced = false
     if self.world != null:
         var radius = 10.0
@@ -17151,6 +17195,11 @@ func _clamp_position() -> bool:
     return bounced
 
 func _resolve_collisions() -> bool:
+	var is_intangible = false
+	if "is_intangible" in self.ball: is_intangible = bool(self.ball.is_intangible)
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("is_intangible"): is_intangible = bool(self.ball.get_meta("is_intangible"))
+	if is_intangible: return false
+
     var bounced = false
     var ball_radius = 10.0
     if "radius" in self.ball: ball_radius = self.ball.radius

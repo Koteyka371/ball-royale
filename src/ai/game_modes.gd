@@ -13208,7 +13208,7 @@ class SolarFlareMode extends GameMode:
 	var flare_interval: float = 20.0
 	var flare_duration: float = 5.0
 	var is_flaring: bool = false
-	var excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
+	var excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "phantom_walk_booster", "teleporter", "quantum_teleporter"]
 
 	func _init():
 		super()

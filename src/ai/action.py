@@ -140,6 +140,9 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+        if getattr(attacker, "is_intangible", False) or getattr(target, "is_intangible", False):
+            return
+
         import random
         if getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower() == 'alchemist' and random.random() < 0.25:
             # 25% chance to apply a weak stacking poison effect
@@ -830,6 +833,8 @@ class Action:
             # Check for poison_cloud or poison_nova
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
+                    if getattr(self.ball, 'is_intangible', False):
+                        continue
                     if getattr(hazard, 'kind', '') in ['poison_cloud', 'poison_nova']:
                         dx = self.ball.x - getattr(hazard, 'x', 0.0)
                         dy = self.ball.y - getattr(hazard, 'y', 0.0)
@@ -972,6 +977,8 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             hazards_to_remove = []
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, 'is_intangible', False):
+                    continue
                 if getattr(hazard, "kind", "") == "thrown_status_absorber":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
@@ -1004,6 +1011,8 @@ class Action:
 
             # Check slime hazards
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, 'is_intangible', False):
+                    continue
                 if getattr(hazard, "kind", "") == "slime":
                     h_owner = getattr(hazard, "owner_id", None)
                     h_team = getattr(hazard, "team", None)
@@ -1513,6 +1522,8 @@ class Action:
         # Max HP draining hazard logic
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, 'is_intangible', False):
+                    continue
                 if getattr(hazard, "kind", "") == "shrapnel":
                     if getattr(hazard, "duration", 0.0) > 0:
                         hazard.duration -= delta
@@ -1557,6 +1568,8 @@ class Action:
         # Empowerment Matrix logic
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, 'is_intangible', False):
+                    continue
                 if getattr(hazard, "kind", "") == "empowerment_matrix":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= getattr(hazard, "radius", 50.0) + getattr(self.ball, "radius", 10.0):
@@ -1589,6 +1602,8 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, 'is_intangible', False):
+                    continue
                 if getattr(hazard, "kind", "") == "temporal_rift":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= hazard.radius + getattr(self.ball, "radius", 10.0):
@@ -2051,6 +2066,8 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             current_tick = getattr(self.world, "tick", 0)
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, 'is_intangible', False):
+                    continue
                 kind = getattr(hazard, "kind", "")
                 if kind in ("gravity_well", "repulsor") and getattr(hazard, "active", True):
                     if not hasattr(hazard, "last_booster_pull_tick") or hazard.last_booster_pull_tick != current_tick:
@@ -2120,6 +2137,8 @@ class Action:
         in_anomaly_zone = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, 'is_intangible', False):
+                    continue
                 if getattr(hazard, "kind", "") == "anomaly_zone" and getattr(hazard, "active", True):
                     dx = hazard.x - self.ball.x
                     dy = hazard.y - self.ball.y
@@ -2649,6 +2668,8 @@ class Action:
 
             if hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
+                    if getattr(self.ball, 'is_intangible', False):
+                        continue
                     if hazard.kind == "temporal_rift":
                         continue
                     if hazard.kind in ("explosive_barrel", "volatile_barrel"):
@@ -3912,6 +3933,8 @@ class Action:
                 self.world.arena.hazards = [h for h in self.world.arena.hazards if getattr(h, "duration", 1.0) > 0]
             if hasattr(self.world.arena, "hazards") and ball_type != "spectator":
                 for hazard in self.world.arena.hazards:
+                    if getattr(self.ball, 'is_intangible', False):
+                        continue
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist < (self.ball.radius + hazard.radius):
                         if hazard.kind == "temporal_rift":
@@ -6763,6 +6786,9 @@ class Action:
         self._idle(delta * 0.5)
 
     def _collect_booster(self, delta: float) -> None:
+        if getattr(self.ball, "is_intangible", False):
+            return
+
         import math
         import random
         boosters = self._get_boosters()
@@ -7615,6 +7641,8 @@ class Action:
 
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
+                    if getattr(self.ball, 'is_intangible', False):
+                        continue
                     if hazard.kind in ("explosive_barrel", "volatile_barrel") and not getattr(hazard, "is_exploded", False):
                         if math.hypot(hazard.x - self.ball.x, hazard.y - self.ball.y) < 200.0:
                             hazard.is_exploded = True
@@ -9376,6 +9404,8 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     hazards_to_remove = []
                     for hazard in self.world.arena.hazards:
+                        if getattr(self.ball, 'is_intangible', False):
+                            continue
                         hx = getattr(hazard, "x", 0) - getattr(self.ball, "x", 0)
                         hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
                         h_dist = math.sqrt(hx*hx + hy*hy)
@@ -9547,6 +9577,8 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     hazards_to_remove = []
                     for hazard in self.world.arena.hazards:
+                        if getattr(self.ball, 'is_intangible', False):
+                            continue
                         hx = getattr(hazard, "x", 0) - getattr(self.ball, "x", 0)
                         hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
                         h_dist = math.sqrt(hx*hx + hy*hy)
@@ -9584,6 +9616,16 @@ class Action:
                 self.ball.reflect_shield_capacity = 100.0 + getattr(self.ball, "bonus_reflect_shield_capacity", 0.0)
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("shield")
+
+            elif skill_name == "phantom_walk":
+                self.ball.skill_timer = 5.0
+                self.ball.is_intangible = True
+                self.ball.intangible_timer = 3.0
+                if hasattr(self.world, "events"):
+                    self.world.events.append({
+                        "type": "phantom_walk_start",
+                        "data": {"id": self.ball.id}
+                    })
             elif skill_name == "mirror_stance":
                 self.ball.reflect_shield_active = True
                 self.ball.reflect_shield_timer = 3.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
@@ -9591,6 +9633,15 @@ class Action:
                 self.ball.mirror_stance_timer = 3.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("shield")
+            elif skill_name == "phantom_walk":
+                self.ball.skill_timer = 5.0
+                self.ball.is_intangible = True
+                self.ball.intangible_timer = 3.0
+                if hasattr(self.world, "events"):
+                    self.world.events.append({
+                        "type": "phantom_walk_start",
+                        "data": {"id": self.ball.id}
+                    })
             elif skill_name == "orbital_shield":
                 import random
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -9682,6 +9733,10 @@ class Action:
         self.ball.y += ny * speed * 0.3
 
     def _clamp_position(self) -> bool:
+        if getattr(self.ball, "is_intangible", False):
+            # Intangible passes through walls (arena boundaries)
+            return False
+
         bounced = False
         radius = getattr(self.ball, "radius", 10.0)
 
@@ -9712,6 +9767,9 @@ class Action:
         return bounced
 
     def _resolve_collisions(self) -> bool:
+        if getattr(self.ball, "is_intangible", False):
+            return False
+
         bounced = False
         ball_radius = getattr(self.ball, "radius", 10.0)
         # Assuming we just need nearby entities to avoid checking everyone
@@ -10025,6 +10083,18 @@ class Action:
             if self.ball.aura_booster_timer < 0:
                 self.ball.aura_booster_timer = 0.0
 
+
+        if getattr(self.ball, "intangible_timer", 0.0) > 0:
+            self.ball.intangible_timer -= delta
+            if self.ball.intangible_timer <= 0:
+                self.ball.intangible_timer = 0.0
+                self.ball.is_intangible = False
+                if hasattr(self.world, "events"):
+                    self.world.events.append({
+                        "type": "phantom_walk_end",
+                        "data": {"id": self.ball.id}
+                    })
+
         if getattr(self.ball, "disruptor_aura_timer", 0.0) > 0:
             self.ball.disruptor_aura_timer -= delta
             if self.ball.disruptor_aura_timer < 0:
@@ -10196,6 +10266,8 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
+                    if getattr(self.ball, 'is_intangible', False):
+                        continue
                     if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "instant_rewind_booster", "shield_booster", "homing_missile_booster", "rearm_token"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
@@ -10209,6 +10281,8 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
+                if getattr(self.ball, 'is_intangible', False):
+                    continue
                 if getattr(hazard, "kind", "") == "pull_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
