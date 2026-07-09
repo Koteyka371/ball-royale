@@ -335,6 +335,20 @@ class GameMode:
                             "message": f"{killer_id} claimed a nemesis bounty on {target_id} for {reward} tokens!"
                         })
 
+        # Necromancer death logic
+        if getattr(ball, "ball_type", "").lower() == "necromancer":
+            if hasattr(world, "balls"):
+                for minion in world.balls:
+                    if getattr(minion, "ball_type", "") == "minion" and getattr(minion, "minion_owner", None) == getattr(ball, "id", None):
+                        minion.is_enraged = True
+                        minion.enrage_timer = 5.0
+
+                        # Apply stats
+                        minion.base_speed = getattr(minion, "base_speed", 2.0) * 2.0
+                        minion.base_damage = getattr(minion, "base_damage", 10.0) * 1.5
+                        minion.speed = getattr(minion, "speed", minion.base_speed) * 2.0
+                        minion.damage = getattr(minion, "damage", minion.base_damage) * 1.5
+
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         """Called every tick to check if there is a winner. Returns winner name or None."""
         return None
