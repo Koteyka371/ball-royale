@@ -48,3 +48,26 @@ def test_invisible_walls_attacks():
     assert wall.visible == True
     assert wall.reveal_timer > 0
     assert atk.active == False # Attack was absorbed
+
+
+def test_battle_royale_invisible_walls():
+    from ai.game_modes import BattleRoyaleMode
+    mode = BattleRoyaleMode()
+    world = MockWorld()
+    balls = []
+
+    mode.setup(world, balls)
+
+    wall = world.arena.hazards[0]
+    wall.x = 500
+    wall.y = 500
+
+    # Send attack
+    atk = MockAttack(450, 500)
+    world.attacks.append(atk)
+
+    mode.tick(world, balls, delta=0.1)
+
+    assert wall.visible == True
+    assert wall.reveal_timer > 0
+    assert atk.active == False
