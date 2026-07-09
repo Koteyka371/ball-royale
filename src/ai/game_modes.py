@@ -12355,6 +12355,58 @@ class MultipleSafeZonesMode(GameMode):
         self.zones = new_zones
 
 
+
+class SniperNestsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sniper Nests"
+        self.description = "Elevated terrain zones grant increased perception and ranged damage but mark you as a high-priority target."
+        self.nests = []
+
+    def setup(self, world, balls) -> None:
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.nests = [
+            {"id": "nest_1", "x": arena_width * 0.2, "y": arena_height * 0.2, "radius": 120.0},
+            {"id": "nest_2", "x": arena_width * 0.8, "y": arena_height * 0.8, "radius": 120.0},
+            {"id": "nest_3", "x": arena_width * 0.8, "y": arena_height * 0.2, "radius": 120.0},
+            {"id": "nest_4", "x": arena_width * 0.2, "y": arena_height * 0.8, "radius": 120.0}
+        ]
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            in_nest = False
+            for nest in self.nests:
+                dx = getattr(b, "x", 0) - nest["x"]
+                dy = getattr(b, "y", 0) - nest["y"]
+                if dx*dx + dy*dy <= nest["radius"]**2:
+                    in_nest = True
+                    break
+
+            if in_nest:
+                b.in_sniper_nest = True
+                # Increase perception_radius by 25% based on base_perception_radius
+                base_pr = getattr(b, "base_perception_radius", getattr(b, "perception_radius", 250.0))
+                if not hasattr(b, "base_perception_radius"):
+                    b.base_perception_radius = base_pr
+                b.perception_radius = base_pr * 1.25
+                b.cosmetic = "target"
+            else:
+                was_in_nest = getattr(b, "in_sniper_nest", False)
+                b.in_sniper_nest = False
+                if was_in_nest:
+                    b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+                    if getattr(b, "cosmetic", "") == "target":
+                        b.cosmetic = "none"
+
 GAME_MODES = {
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
@@ -12389,6 +12441,7 @@ GAME_MODES = {
     "blackout": BlackoutMode(),
     "windstorm": WindstormMode(),
     "modifier_zones": ModifierZonesMode(),
+    "sniper_nests": SniperNestsMode(),
     "modifier_zones_safe_zone": ModifierZonesSafeZoneMode(),
     "draft_royale": DraftRoyaleMode(),
     "dual_payload": DualPayloadMode(),

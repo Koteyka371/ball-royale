@@ -15874,6 +15874,125 @@ class MultipleSafeZonesMode extends GameMode:
 		zones = new_zones
 
 
+
+class SniperNestsMode extends GameMode:
+	var nests: Array = []
+
+	func _init():
+		name = "Sniper Nests"
+		description = "Elevated terrain zones grant increased perception and ranged damage but mark you as a high-priority target."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena") != null:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+
+		nests = [
+			{"id": "nest_1", "x": arena_width * 0.2, "y": arena_height * 0.2, "radius": 120.0},
+			{"id": "nest_2", "x": arena_width * 0.8, "y": arena_height * 0.8, "radius": 120.0},
+			{"id": "nest_3", "x": arena_width * 0.8, "y": arena_height * 0.2, "radius": 120.0},
+			{"id": "nest_4", "x": arena_width * 0.2, "y": arena_height * 0.8, "radius": 120.0}
+		]
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var is_alive = false
+			if "alive" in b: is_alive = bool(b.alive)
+			var b_type = ""
+			if "ball_type" in b: b_type = str(b.ball_type)
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var in_nest = false
+			var bx = 0.0
+			var by = 0.0
+			if "x" in b: bx = float(b.x)
+			if "y" in b: by = float(b.y)
+
+			for nest in nests:
+				var dx = bx - nest["x"]
+				var dy = by - nest["y"]
+				if dx*dx + dy*dy <= nest["radius"] * nest["radius"]:
+					in_nest = true
+					break
+
+			var was_in_nest = false
+			if "in_sniper_nest" in b:
+				was_in_nest = bool(b.in_sniper_nest)
+			elif typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("in_sniper_nest"):
+				was_in_nest = bool(b.get_meta("in_sniper_nest"))
+
+			if in_nest:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["in_sniper_nest"] = true
+				elif b.has_method("set_meta"):
+					b.set_meta("in_sniper_nest", true)
+				else:
+					b.in_sniper_nest = true
+
+				var pr = 250.0
+				if "base_perception_radius" in b:
+					pr = float(b.base_perception_radius)
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("base_perception_radius"):
+					pr = float(b.get_meta("base_perception_radius"))
+				elif "perception_radius" in b:
+					pr = float(b.perception_radius)
+
+				if not ("base_perception_radius" in b) and typeof(b) == TYPE_DICTIONARY:
+					b["base_perception_radius"] = pr
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and not b.has_meta("base_perception_radius"):
+					b.set_meta("base_perception_radius", pr)
+				elif not ("base_perception_radius" in b):
+					b.base_perception_radius = pr
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["perception_radius"] = pr * 1.25
+					b["cosmetic"] = "target"
+				elif typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+					b.set_meta("perception_radius", pr * 1.25)
+					b.set_meta("cosmetic", "target")
+				else:
+					b.perception_radius = pr * 1.25
+					b.cosmetic = "target"
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["in_sniper_nest"] = false
+				elif b.has_method("set_meta"):
+					b.set_meta("in_sniper_nest", false)
+				else:
+					b.in_sniper_nest = false
+
+				if was_in_nest:
+					var base_pr = 250.0
+					if "base_perception_radius" in b:
+						base_pr = float(b.base_perception_radius)
+					elif typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("base_perception_radius"):
+						base_pr = float(b.get_meta("base_perception_radius"))
+
+					var current_cosmetic = ""
+					if "cosmetic" in b: current_cosmetic = str(b.cosmetic)
+					elif typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("cosmetic"):
+						current_cosmetic = str(b.get_meta("cosmetic"))
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["perception_radius"] = base_pr
+						if current_cosmetic == "target":
+							b["cosmetic"] = "none"
+					elif typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+						b.set_meta("perception_radius", base_pr)
+						if current_cosmetic == "target":
+							b.set_meta("cosmetic", "none")
+					else:
+						b.perception_radius = base_pr
+						if current_cosmetic == "target":
+							b.cosmetic = "none"
+
 var GAME_MODES = {
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
@@ -15921,6 +16040,7 @@ var GAME_MODES = {
 	"escort": EscortMode.new(),
 	"windstorm": WindstormMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
+	"sniper_nests": SniperNestsMode.new(),
 	"modifier_zones_safe_zone": ModifierZonesSafeZoneMode.new(),
 	"draft_royale": DraftRoyaleMode.new(),
 	"tournament": TournamentMode.new(),

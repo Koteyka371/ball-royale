@@ -455,6 +455,14 @@ func _attempt_damage(attacker, target) -> void:
 	if "damage" in attacker: base_dmg = float(attacker.damage)
 	var original_damage = base_dmg * damage_reduction
 
+	var in_sniper_nest = false
+	if "in_sniper_nest" in attacker:
+		in_sniper_nest = bool(attacker.in_sniper_nest)
+	elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("in_sniper_nest"):
+		in_sniper_nest = bool(attacker.get_meta("in_sniper_nest"))
+	if in_sniper_nest and is_ranged_attack:
+		original_damage *= 1.2
+
 	var a_has_kinetic = false
 	var a_stored_dmg = 0.0
 	if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("kinetic_shield_stored_damage"):
@@ -10737,6 +10745,38 @@ func _get_target(enemies: Array) -> Object:
 
     if is_scrambled and enemies.size() > 0:
         return enemies[randi() % enemies.size()]
+
+    var sniper_nest_targets = []
+    for e in enemies:
+        var e_in_nest = false
+        if "in_sniper_nest" in e:
+            e_in_nest = bool(e.in_sniper_nest)
+        elif typeof(e) != TYPE_DICTIONARY and e.has_method("has_meta") and e.has_meta("in_sniper_nest"):
+            e_in_nest = bool(e.get_meta("in_sniper_nest"))
+        if e_in_nest:
+            sniper_nest_targets.append(e)
+
+    if sniper_nest_targets.size() > 0:
+        var best = null
+        var best_dist = 999999999.0
+        var bx = 0.0
+        if "x" in self.ball: bx = float(self.ball.x)
+        var by = 0.0
+        if "y" in self.ball: by = float(self.ball.y)
+        for t in sniper_nest_targets:
+            var tx = 0.0
+            if "x" in t: tx = float(t.x)
+            var ty = 0.0
+            if "y" in t: ty = float(t.y)
+            var dx = tx - bx
+            var dy = ty - by
+            var d_sq = dx*dx + dy*dy
+            if d_sq < best_dist:
+                best_dist = d_sq
+                best = t
+        if best != null:
+            return best
+
     var illusions = []
     for e in enemies:
         if "is_illusion" in e and e.is_illusion:

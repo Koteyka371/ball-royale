@@ -307,6 +307,9 @@ class Action:
 
         original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
 
+        if getattr(attacker, "in_sniper_nest", False) and is_ranged:
+            original_damage *= 1.2
+
         if getattr(attacker, "kinetic_shield_stored_damage", 0.0) > 0 and not is_ranged:
             stored_dmg = attacker.kinetic_shield_stored_damage
             original_damage += stored_dmg
@@ -6040,6 +6043,11 @@ class Action:
         if getattr(self.ball, "is_scrambled", False) and enemies:
             import random as _rnd
             return _rnd.choice(enemies)
+        # Sniper Nest high-priority targets
+        sniper_nest_targets = [e for e in enemies if getattr(e, "in_sniper_nest", False)]
+        if sniper_nest_targets:
+            return min(sniper_nest_targets, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
         # Check for illusions first (they taunt AI)
         illusions = [e for e in enemies if getattr(e, "is_illusion", False) or getattr(e, "is_decoy", False)]
         if illusions:
