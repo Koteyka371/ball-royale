@@ -7468,6 +7468,8 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "speed_booster_item":
+                    if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
+                        self.ball.speed_overdrive_timer = 5.0
                     self.ball.speed_boost_timer = 5.0
                     self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -7487,6 +7489,8 @@ class Action:
                     current_stamina = getattr(self.ball, "stamina", 0.0)
                     max_stamina = getattr(self.ball, "max_stamina", 100.0)
                     if current_stamina >= max_stamina:
+                        if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
+                            self.ball.speed_overdrive_timer = 5.0
                         self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
 
                     self.ball.stamina = max_stamina
@@ -10535,6 +10539,14 @@ class Action:
                 self.ball.time_warp_timer = 0.0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
 
+        if getattr(self.ball, "speed_overdrive_timer", 0.0) > 0:
+            self.ball.time_warp_slow_timer = 0.0
+            self.ball._chrono_slow = 1.0
+            self.ball.slow_timer = 0.0
+            self.ball.frozen_timer = 0.0
+            self.ball.is_frozen = False
+            self.ball.stun_timer = 0.0 # frozen implies stunned too in some cases? The task says "immune to all slow and freeze effects"
+
         if getattr(self.ball, "time_warp_slow_timer", 0.0) > 0:
             self.ball.time_warp_slow_timer -= delta
             self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 0.4
@@ -10543,6 +10555,11 @@ class Action:
             if self.ball.time_warp_slow_timer <= 0:
                 self.ball.time_warp_slow_timer = 0.0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+
+        if getattr(self.ball, "speed_overdrive_timer", 0.0) > 0:
+            self.ball.speed_overdrive_timer -= delta
+            if self.ball.speed_overdrive_timer <= 0:
+                self.ball.speed_overdrive_timer = 0.0
 
         if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
             self.ball.speed_boost_timer -= delta

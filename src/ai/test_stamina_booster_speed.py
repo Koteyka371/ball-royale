@@ -73,3 +73,21 @@ def test_stamina_booster_speed_boost_max():
 
     assert ball.stamina == 100.0
     assert ball.speed_boost_timer == 3.0
+
+def test_stamina_booster_speed_overdrive():
+    world = MockWorld()
+    ball = MockBall(100, 100)
+    ball.stamina = 100
+    ball.max_stamina = 100
+    ball.speed_boost_timer = 2.0
+    action = Action(ball, world)
+
+    item = MockItem("stamina_booster", 5, 5, 10)
+    world.boosters.append(item)
+
+    action._idle = lambda d: None
+    action._collect_booster(0.1)
+
+    # speed boost gets 3s added (2.0 + 3.0 = 5.0) and overdrive triggers
+    assert ball.speed_boost_timer == 5.0
+    assert getattr(ball, "speed_overdrive_timer", 0.0) == 5.0

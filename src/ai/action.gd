@@ -12527,6 +12527,12 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "speed_booster_item":
+                var current_sb_timer = 0.0
+                if "speed_boost_timer" in self.ball: current_sb_timer = self.ball.speed_boost_timer
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("speed_boost_timer"): current_sb_timer = self.ball.get_meta("speed_boost_timer")
+                if current_sb_timer > 0.0:
+                    self.ball.set_meta("speed_overdrive_timer", 5.0)
+                    if "speed_overdrive_timer" in self.ball: self.ball.speed_overdrive_timer = 5.0
                 self.ball.set_meta("speed_boost_timer", 5.0)
                 if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = 5.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
@@ -13039,6 +13045,8 @@ func _collect_booster(delta: float):
                     if current_stam >= max_stam:
                         var cur_speed = 0.0
                         if self.ball.has_meta("speed_boost_timer"): cur_speed = self.ball.get_meta("speed_boost_timer")
+                        if cur_speed > 0.0:
+                            self.ball.set_meta("speed_overdrive_timer", 5.0)
                         self.ball.set_meta("speed_boost_timer", cur_speed + 3.0)
                     self.ball.set_meta("stamina", max_stam)
                     self.ball.set_meta("infinite_stamina_timer", 5.0)
@@ -13046,6 +13054,8 @@ func _collect_booster(delta: float):
                     if current_stam >= max_stam:
                         var cur_speed = 0.0
                         if "speed_boost_timer" in self.ball: cur_speed = self.ball.speed_boost_timer
+                        if cur_speed > 0.0:
+                            self.ball.speed_overdrive_timer = 5.0
                         self.ball.speed_boost_timer = cur_speed + 3.0
                     self.ball.stamina = max_stam
                     self.ball.infinite_stamina_timer = 5.0
@@ -18758,6 +18768,34 @@ func _update_skill_timer(delta: float):
             self.ball.homing_missile_tick = hmb_tick
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("homing_missile_tick", hmb_tick)
+
+    var so_timer = 0.0
+    if "speed_overdrive_timer" in self.ball:
+        so_timer = float(self.ball.speed_overdrive_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("speed_overdrive_timer"):
+        so_timer = float(self.ball.get_meta("speed_overdrive_timer"))
+
+    if so_timer > 0.0:
+        so_timer -= delta
+        if so_timer <= 0: so_timer = 0.0
+        if "speed_overdrive_timer" in self.ball: self.ball.speed_overdrive_timer = so_timer
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_overdrive_timer", so_timer)
+
+        # Immunity to slow and freeze
+        if "slow_timer" in self.ball: self.ball.slow_timer = 0.0
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", 0.0)
+
+        if "_chrono_slow" in self.ball: self.ball["_chrono_slow"] = 1.0
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("_chrono_slow", 1.0)
+
+        if "frozen_timer" in self.ball: self.ball.frozen_timer = 0.0
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("frozen_timer", 0.0)
+
+        if "is_frozen" in self.ball: self.ball.is_frozen = false
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("is_frozen", false)
+
+        if "time_warp_slow_timer" in self.ball: self.ball.time_warp_slow_timer = 0.0
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("time_warp_slow_timer", 0.0)
 
     var sb_timer = 0.0
     if "speed_boost_timer" in self.ball:
