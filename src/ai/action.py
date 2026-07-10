@@ -820,6 +820,14 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Dynamic weather effects from arenas
+        if hasattr(self.world, "arena"):
+            arena_weather = getattr(self.world.arena, "weather", "")
+            if arena_weather == "blizzard":
+                pass
+            elif arena_weather == "heatwave":
+                if hasattr(self.ball, "stamina"):
+                    self.ball.stamina = max(0.0, float(self.ball.stamina) - (10.0 * delta))
         if hasattr(self.ball, "suspended_projectiles"):
             for sp in list(self.ball.suspended_projectiles):
                 sp["timer"] -= delta

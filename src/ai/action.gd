@@ -1308,6 +1308,14 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT:
+		var arena = world.arena
+		if "weather" in arena:
+			var arena_weather = arena.weather
+			if arena_weather == "heatwave":
+				if _has_prop(ball, "stamina"):
+					var st = _get_prop(ball, "stamina")
+					_set_prop(ball, "stamina", max(0.0, st - (10.0 * delta)))
     var sus_proj = []
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("suspended_projectiles"):
         sus_proj = self.ball["suspended_projectiles"]

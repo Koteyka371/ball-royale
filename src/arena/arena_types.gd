@@ -779,9 +779,30 @@ class ThickFogArena extends ProceduralArena:
 
 class SummerArena extends ProceduralArena:
 	var is_heatwave = true
+	var weather_timer: float = 0.0
+	var extreme_heatwave_active: bool = false
+	var heatwave_timer: float = 0.0
 
 	func _init(size: float = 2000.0, seed_val = null):
 		super(size, 5, seed_val)
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		weather_timer += delta
+
+		# Occasionally start a heatwave
+		if weather_timer >= 20.0:
+			weather_timer = 0.0
+			if randf() < 0.4 and not extreme_heatwave_active:
+				extreme_heatwave_active = true
+				heatwave_timer = 8.0
+				weather = "heatwave"
+
+		if extreme_heatwave_active:
+			heatwave_timer -= delta
+			if heatwave_timer <= 0:
+				extreme_heatwave_active = false
+				weather = "clear"
 
 	func generate() -> void:
 		super.generate()
@@ -842,9 +863,31 @@ class AutumnArena extends ProceduralArena:
 
 class WinterArena extends ProceduralArena:
 	var is_snowing = true
+	var weather_timer: float = 0.0
+	var blizzard_active: bool = false
+	var blizzard_timer: float = 0.0
 
 	func _init(size: float = 2000.0, seed_val = null):
 		super(size, 5, seed_val)
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		weather_timer += delta
+
+		# Occasionally start a blizzard
+		if weather_timer >= 15.0:
+			weather_timer = 0.0
+			if randf() < 0.3 and not blizzard_active:
+				blizzard_active = true
+				blizzard_timer = 10.0
+				is_snowing = true
+				weather = "blizzard"
+
+		if blizzard_active:
+			blizzard_timer -= delta
+			if blizzard_timer <= 0:
+				blizzard_active = false
+				weather = "clear"
 
 	func generate() -> void:
 		super.generate()

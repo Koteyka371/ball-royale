@@ -1605,6 +1605,28 @@ class SummerArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
         self.is_heatwave = True
+        self.weather_timer = 0.0
+        self.extreme_heatwave_active = False
+        self.heatwave_timer = 0.0
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.weather_timer += delta
+        import random
+
+        # Occasionally start a heatwave
+        if self.weather_timer >= 20.0:
+            self.weather_timer = 0.0
+            if random.random() < 0.4 and not self.extreme_heatwave_active:
+                self.extreme_heatwave_active = True
+                self.heatwave_timer = 8.0
+                self.weather = "heatwave"
+
+        if self.extreme_heatwave_active:
+            self.heatwave_timer -= delta
+            if self.heatwave_timer <= 0:
+                self.extreme_heatwave_active = False
+                self.weather = "clear"
 
     def generate(self):
         super().generate()
@@ -1714,6 +1736,29 @@ class WinterArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
         self.is_snowing = True
+        self.weather_timer = 0.0
+        self.blizzard_active = False
+        self.blizzard_timer = 0.0
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.weather_timer += delta
+        import random
+
+        # Occasionally start a blizzard
+        if self.weather_timer >= 15.0:
+            self.weather_timer = 0.0
+            if random.random() < 0.3 and not self.blizzard_active:
+                self.blizzard_active = True
+                self.blizzard_timer = 10.0
+                self.is_snowing = True
+                self.weather = "blizzard"
+
+        if self.blizzard_active:
+            self.blizzard_timer -= delta
+            if self.blizzard_timer <= 0:
+                self.blizzard_active = False
+                self.weather = "clear"
 
     def generate(self):
         super().generate()
