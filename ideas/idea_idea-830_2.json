@@ -1,0 +1,4 @@
+{
+    "title": "Vampiric Aura Hazard",
+    "description": "A new stationary hazard that slowly drains the HP of any player within its radius, but instead of just disappearing, it heals the closest player on the opposite team proportional to the damage dealt."
+}

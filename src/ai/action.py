@@ -4616,6 +4616,34 @@ class Action:
                                     # Handled in chain lightning logic; but when stepped on normally, just slow slightly or do nothing until charged
                                     self.ball.x = old_x
                                     self.ball.y = old_y
+                                elif trap_variant == "nullifier":
+                                    # Nullifier Trap: disables all shields and buffs of all players in a huge radius
+                                    if hasattr(self.world, "balls"):
+                                        for b in self.world.balls:
+                                            if getattr(b, "alive", True):
+                                                dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                                                if dist_sq <= 4000000.0:  # 2000 radius squared (huge radius)
+                                                    # Remove shields
+                                                    if hasattr(b, "reflect_shield_active"): b.reflect_shield_active = False
+                                                    if hasattr(b, "half_reflect_shield_active"): b.half_reflect_shield_active = False
+                                                    if hasattr(b, "energy_shield_active"): b.energy_shield_active = False
+                                                    if hasattr(b, "orbital_shield_active"): b.orbital_shield_active = False
+                                                    if hasattr(b, "kinetic_shield_active"): b.kinetic_shield_active = False
+                                                    if hasattr(b, "charging_shockwave_shield_active"): b.charging_shockwave_shield_active = False
+                                                    if hasattr(b, "shield_booster_active"): b.shield_booster_active = False
+
+                                                    # Remove buffs
+                                                    if hasattr(b, "speed_buff_timer"): b.speed_buff_timer = 0.0
+                                                    if hasattr(b, "damage_buff_timer"): b.damage_buff_timer = 0.0
+                                                    if hasattr(b, "attack_speed_buff_timer"): b.attack_speed_buff_timer = 0.0
+                                                    if hasattr(b, "emp_immunity_timer"): b.emp_immunity_timer = 0.0
+                                                    if hasattr(b, "hazard_immunity_timer"): b.hazard_immunity_timer = 0.0
+                                                    if hasattr(b, "speed_booster_timer"): b.speed_booster_timer = 0.0
+                                                    if hasattr(b, "damage_booster_timer"): b.damage_booster_timer = 0.0
+                                                    if hasattr(b, "hp_booster_timer"): b.hp_booster_timer = 0.0
+                                                    if hasattr(b, "stamina_booster_timer"): b.stamina_booster_timer = 0.0
+
+                                    hazard.duration = 0.0
                                 elif trap_variant == "mine":
                                     # Mine: large damage
                                     if hasattr(self.ball, "take_damage"):

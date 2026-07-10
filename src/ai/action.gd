@@ -8173,6 +8173,52 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "nullifier":
+                                if self.world != null and "balls" in self.world:
+                                    for b in self.world.balls:
+                                        var b_alive = true
+                                        if "alive" in b: b_alive = b.alive
+                                        elif typeof(b) == TYPE_OBJECT and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                                        if b_alive:
+                                            var bx = b.x if "x" in b else b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else 0.0
+                                            var by = b.y if "y" in b else b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else 0.0
+                                            var dist_sq = pow(bx - hazard.x, 2) + pow(by - hazard.y, 2)
+                                            if dist_sq <= 4000000.0:
+                                                if "reflect_shield_active" in b: b.reflect_shield_active = false
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("reflect_shield_active", false)
+                                                if "half_reflect_shield_active" in b: b.half_reflect_shield_active = false
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("half_reflect_shield_active", false)
+                                                if "energy_shield_active" in b: b.energy_shield_active = false
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("energy_shield_active", false)
+                                                if "orbital_shield_active" in b: b.orbital_shield_active = false
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("orbital_shield_active", false)
+                                                if "kinetic_shield_active" in b: b.kinetic_shield_active = false
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("kinetic_shield_active", false)
+                                                if "charging_shockwave_shield_active" in b: b.charging_shockwave_shield_active = false
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("charging_shockwave_shield_active", false)
+                                                if "shield_booster_active" in b: b.shield_booster_active = false
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("shield_booster_active", false)
+
+                                                if "speed_buff_timer" in b: b.speed_buff_timer = 0.0
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("speed_buff_timer", 0.0)
+                                                if "damage_buff_timer" in b: b.damage_buff_timer = 0.0
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("damage_buff_timer", 0.0)
+                                                if "attack_speed_buff_timer" in b: b.attack_speed_buff_timer = 0.0
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("attack_speed_buff_timer", 0.0)
+                                                if "emp_immunity_timer" in b: b.emp_immunity_timer = 0.0
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("emp_immunity_timer", 0.0)
+                                                if "hazard_immunity_timer" in b: b.hazard_immunity_timer = 0.0
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("hazard_immunity_timer", 0.0)
+                                                if "speed_booster_timer" in b: b.speed_booster_timer = 0.0
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("speed_booster_timer", 0.0)
+                                                if "damage_booster_timer" in b: b.damage_booster_timer = 0.0
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("damage_booster_timer", 0.0)
+                                                if "hp_booster_timer" in b: b.hp_booster_timer = 0.0
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("hp_booster_timer", 0.0)
+                                                if "stamina_booster_timer" in b: b.stamina_booster_timer = 0.0
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("stamina_booster_timer", 0.0)
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard: hazard.duration = 0.0
                             elif trap_variant == "emp":
                                 var is_emped = false
                                 if "is_emped" in self.ball:
