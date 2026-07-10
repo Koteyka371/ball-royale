@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-799] Summoner Support Ball — *2026-07-10 21:49:55 UTC*
+
+A new ball type that focuses entirely on spawning tiny helper minions that collect resources and heal allies, but the ball itself has virtually no offensive capabilities.
+
+---
+
 ## [idea-830] EMP Trap — *2026-07-10 21:49:51 UTC*
 
 A trap that when stepped on disables all shields and buffs of all players in a huge radius.
