@@ -83,3 +83,51 @@ def test_decoy_trap_spawns_decoy():
     assert decoy.speed == 0.0
     assert decoy.id != owner.id
     assert decoy.hp == 100.0
+
+def test_mine_bounce():
+    import math
+    world = MockWorld()
+    b1 = MockBall(id=1, x=0.0, y=0.0) # Will trigger the mine
+    b2 = MockBall(id=2, x=50.0, y=0.0) # Will get caught in blast radius
+    b3 = MockBall(id=3, x=1000.0, y=0.0) # Won't get caught
+    owner = MockBall(id=99, x=-100.0, y=0.0) # Owner won't trigger it
+
+    world.balls.extend([b1, b2, b3, owner])
+
+    mine = MockHazard(owner_id=owner.id)
+    mine.kind = "mine_bounce"
+    mine.x = 20.0
+    mine.y = 0.0
+    mine.radius = 40.0
+    mine.knockback = 5000.0
+    mine.damage = 5.0
+
+    world.arena.hazards.append(mine)
+
+    def _deal_damage(attacker, target, dmg=None):
+        if dmg is None:
+            dmg = attacker.damage
+        target.hp -= dmg
+
+    world._deal_damage = _deal_damage
+
+    action = Action(b1.id, world)
+    action.ball = b1
+
+    # Tick simulation
+    action.execute("idle", 0.1)
+
+    # Validate b1 knockback and hp
+    assert b1.hp < 100.0
+    assert abs(b1.vx) > 1.0 # pushed away from mine
+
+    # Validate b2 knockback and hp
+    assert b2.hp < 100.0
+    assert abs(b2.vx) > 1.0 # pushed away from mine
+
+    # Validate b3 no effect
+    assert b3.hp == 100.0
+    assert b3.vx == 0
+
+    # Validate hazard destruction
+    assert mine.duration == 0.0
