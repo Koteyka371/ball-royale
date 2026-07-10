@@ -59,6 +59,7 @@ class ProceduralArena:
         self.is_heatwave = False
         self.is_windy = False
         self.is_foggy = False
+        self.is_sandstorming = False
 
         # Shrinking zone
         self.safe_zone_radius = arena_size * 0.7
@@ -565,9 +566,10 @@ class ProceduralArena:
                 self.is_heatwave = False
                 self.is_windy = False
                 self.is_foggy = False
+                self.is_sandstorming = False
             elif current_tick % 600 == 300:
                 # Randomly change weather
-                weathers = ["rain", "snow", "heatwave", "wind", "fog"]
+                weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm"]
                 import random as rnd
                 self.weather = rnd.choice(weathers)
                 self.is_raining = self.weather == "rain"
@@ -575,6 +577,7 @@ class ProceduralArena:
                 self.is_heatwave = self.weather == "heatwave"
                 self.is_windy = self.weather == "wind"
                 self.is_foggy = self.weather == "fog"
+                self.is_sandstorming = self.weather == "sandstorm"
 
             import math
             # Process hazard-to-hazard combos
@@ -825,6 +828,21 @@ class ProceduralArena:
 
                 if current_tick % 120 == 0:
                     import random
+
+                    if getattr(self, "weather", "") == "wind":
+                        tornado_id = 8000 + len(self.hazards) + random.randint(0, 1000)
+                        tornado = Hazard(id=tornado_id, x=random.uniform(50, self.width - 50), y=random.uniform(50, self.height - 50), radius=random.uniform(30.0, 60.0), kind="tornado", damage=15.0)
+                        setattr(tornado, 'duration', 15.0)
+                        setattr(tornado, 'vx', random.uniform(-100.0, 100.0))
+                        setattr(tornado, 'vy', random.uniform(-100.0, 100.0))
+                        self.hazards.append(tornado)
+
+                    if getattr(self, "weather", "") == "sandstorm":
+                        qs_id = 8100 + len(self.hazards) + random.randint(0, 1000)
+                        qs = Hazard(id=qs_id, x=random.uniform(50, self.width - 50), y=random.uniform(50, self.height - 50), radius=random.uniform(40.0, 80.0), kind="quicksand", damage=5.0)
+                        setattr(qs, 'duration', 15.0)
+                        self.hazards.append(qs)
+
                     if hasattr(self, "_trigger_event"):
                         self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]), current_tick)
                     else:
@@ -993,6 +1011,11 @@ class ProceduralArena:
                         if h.duration <= 0:
                             h.active = False
                 elif getattr(h, "kind", "") == "fire_zone":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            h.active = False
+                elif getattr(h, "kind", "") == "quicksand":
                     if hasattr(h, "duration"):
                         h.duration -= delta
                         if h.duration <= 0:

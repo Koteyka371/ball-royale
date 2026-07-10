@@ -22,6 +22,7 @@ var is_snowing: bool = false
 var is_heatwave: bool = false
 var is_windy: bool = false
 var is_foggy: bool = false
+var is_sandstorming: bool = false
 
 
 class Platform:
@@ -640,14 +641,16 @@ func update_zone(current_tick: int, delta: float) -> void:
             is_heatwave = false
             is_windy = false
             is_foggy = false
+            is_sandstorming = false
         elif current_tick % 600 == 300:
-            var weathers = ["rain", "snow", "heatwave", "wind", "fog"]
+            var weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm"]
             weather = weathers[randi() % weathers.size()]
             is_raining = weather == "rain"
             is_snowing = weather == "snow"
             is_heatwave = weather == "heatwave"
             is_windy = weather == "wind"
             is_foggy = weather == "fog"
+            is_sandstorming = weather == "sandstorm"
 
         # Update platforms
         for p in platforms:
@@ -1003,6 +1006,20 @@ func update_zone(current_tick: int, delta: float) -> void:
                 hazards.append(drop)
 
             if current_tick % 120 == 0:
+                if weather == "wind":
+                    var tornado_id = 8000 + hazards.size() + (randi() % 1000)
+                    var tornado = Hazard.new(tornado_id, randf_range(50, width - 50), randf_range(50, height - 50), randf_range(30.0, 60.0), "tornado", 15.0)
+                    tornado.set_meta("duration", 15.0)
+                    tornado.set_meta("vx", randf_range(-100.0, 100.0))
+                    tornado.set_meta("vy", randf_range(-100.0, 100.0))
+                    hazards.append(tornado)
+
+                if weather == "sandstorm":
+                    var qs_id = 8100 + hazards.size() + (randi() % 1000)
+                    var qs = Hazard.new(qs_id, randf_range(50, width - 50), randf_range(50, height - 50), randf_range(40.0, 80.0), "quicksand", 5.0)
+                    qs.set_meta("duration", 15.0)
+                    hazards.append(qs)
+
                 if has_method("_trigger_event"):
                     var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]
                     call("_trigger_event", event_types[randi() % event_types.size()], current_tick)
@@ -1225,6 +1242,15 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.set_meta("duration", dur)
                     if dur <= 0:
                         h.set_meta("active", false)
+                        if "active" in h:
+                            h.active = false
+            elif "kind" in h and h.kind == "quicksand":
+                if h.has_meta("duration"):
+                    var dur = h.get_meta("duration") - delta
+                    h.set_meta("duration", dur)
+                    if dur <= 0:
+                        if h.has_method("set_meta"):
+                            h.set_meta("active", false)
                         if "active" in h:
                             h.active = false
             elif "kind" in h and h.kind == "meteor":

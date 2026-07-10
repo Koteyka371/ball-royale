@@ -1,0 +1,4 @@
+{
+  "title": "Blizzard Visibility Reduction",
+  "description": "During 'Blizzard' weather events, the camera zoom increases and fog of war is added, significantly reducing visibility. Additionally, entities leave temporary footprints in the snow."
+}
