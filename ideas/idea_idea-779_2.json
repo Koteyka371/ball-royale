@@ -1,0 +1,4 @@
+{
+  "title": "Mirage Decoy Mode",
+  "description": "A new hazard/item that when collected spawns 3 fragile, AI-controlled holograms of the player that scatter in random directions. The holograms deal no damage but will detonate into a flashbang effect when destroyed, blinding nearby enemies and masking the real player's escape."
+}
