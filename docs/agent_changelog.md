@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-826] Acid Rain Weather Event — *2026-07-10 21:01:19 UTC*
+
+A random weather event that periodically drops damaging acid puddles across the arena, restricting movement options over time.
+
+---
+
 ## [idea-833] Seasonal Cosmetics for Nemesis Screen — *2026-07-10 20:54:47 UTC*
 
 Apply the seasonal background themes and specific seasonal UI flourishes to the Nemesis Screen to make the UI feel consistently themed. For example, during the 'Abyssal' season, the Nemesis screen could have a deep-sea ambient particle effect.

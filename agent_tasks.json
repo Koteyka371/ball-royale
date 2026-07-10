@@ -14203,7 +14203,7 @@
     },
     {
       "id": "idea-826",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Acid Rain Weather Event",
@@ -23565,6 +23565,40 @@
         "src/arena/trail_of_fire_trap.py",
         "src/arena/trail_of_fire_trap.gd",
         "tests/test_trail_of_fire_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1376",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Faction Alliances",
+      "description": "Players can pledge loyalty to their Nemesis, becoming an 'Enforcer' for them. As an Enforcer, the player gets a buff when fighting their Nemesis's enemies but receives a massive debuff if they accidentally damage the Nemesis themselves.",
+      "allowed_paths": [
+        "src/ai/nemesis_faction_alliances.py",
+        "src/ai/nemesis_faction_alliances.gd",
+        "tests/test_nemesis_faction_alliances.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1377",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Weather Hazards",
+      "description": "Each season could introduce a specific weather hazard dynamically into the arena. For example, 'Abyssal' could spawn whirlpools that pull balls in, and 'Inferno' could occasionally drop meteors that deal AoE damage.",
+      "allowed_paths": [
+        "src/arena/seasonal_hazards.py",
+        "src/arena/seasonal_hazards.gd",
+        "tests/test_seasonal_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
