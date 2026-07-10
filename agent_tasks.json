@@ -14118,7 +14118,7 @@
     },
     {
       "id": "idea-821",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty System",
@@ -23191,6 +23191,40 @@
         "src/ui/guild_territories.gd",
         "src/ai/guild_territories.py",
         "tests/test_guild_territories.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1354",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Mirror Match Event",
+      "description": "An arena event where all players are turned into Tricksters for 30 seconds.",
+      "allowed_paths": [
+        "src/ai/trickster_mirror_match.py",
+        "src/ai/trickster_mirror_match.gd",
+        "tests/test_trickster_mirror_match.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1355",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Confetti Bomb Trap",
+      "description": "A deployable hazard that deals zero damage but heavily obscures vision by spawning massive amounts of confetti particles when triggered.",
+      "allowed_paths": [
+        "src/arena/confetti_bomb_trap.py",
+        "src/arena/confetti_bomb_trap.gd",
+        "tests/test_confetti_bomb_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

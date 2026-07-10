@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-821] Bounty System — *2026-07-10 18:41:43 UTC*
+
+Balls that score eliminations acquire a bounty. Killing a ball with a bounty provides temporary stat boosts or currency.
+
+---
+
 ## [idea-815] Trickster Mirror Image Skill — *2026-07-10 18:30:34 UTC*
 
 Add a new skill for Trickster that creates a visually identical clone of itself which mimics the Trickster's movements but deals no damage and explodes into confetti upon death, confusing enemies.
