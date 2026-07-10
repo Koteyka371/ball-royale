@@ -14543,7 +14543,7 @@
     },
     {
       "id": "idea-846",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Emblem Customization",
@@ -23803,6 +23803,23 @@
         "src/arena/vampiric_aura.py",
         "src/arena/vampiric_aura.gd",
         "tests/test_vampiric_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1390",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supernova Mine",
+      "description": "A high-risk mine variant that takes 5 seconds to detonate. It projects an expanding aura showing the blast radius. If it detonates, it deals massive damage in a huge area and pushes all balls across the map, applying a blind effect to those looking towards it. Enemies can defuse it by staying within its core for 2 seconds before it blows.",
+      "allowed_paths": [
+        "src/ai/supernova_mine.py",
+        "src/ai/supernova_mine.gd",
+        "tests/test_supernova_mine.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

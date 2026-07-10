@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-846] Guild Emblem Customization — *2026-07-10 22:30:25 UTC*
+
+Allows players to unlock and combine different shapes, colors, and symbols to create a unique emblem for their guild.
+
+---
+
 ## [idea-835] Black Hole Mine — *2026-07-10 22:07:41 UTC*
 
 A variant of the clone mine that, instead of exploding instantly, creates a miniature black hole for 3 seconds. The black hole pulls nearby enemy balls towards its center, drastically slowing their movement. After the 3 seconds, it collapses, dealing moderate damage to all trapped enemies.
