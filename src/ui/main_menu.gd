@@ -29,7 +29,7 @@ func _ready():
     add_child(prestige_shop_ui)
     prestige_shop_ui.visible = false
 
-    nemesis_screen_ui = NemesisScreen.new(profile_manager)
+    nemesis_screen_ui = NemesisScreen.new(profile_manager, background_theme)
     add_child(nemesis_screen_ui)
     nemesis_screen_ui.visible = false
 
