@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Trap with AoE Taunt",
+  "description": "A new trap variant that, when triggered, deploys a durable decoy that periodically taunts nearby enemies within a large radius. Taunted enemies are forced to target the decoy and deal reduced damage to players for a short duration."
+}

@@ -8112,59 +8112,72 @@ func execute(strategy: String, delta: float):
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
                             elif trap_variant == "emp":
-                                var is_emped = false
-                                if "is_emped" in self.ball:
-                                    is_emped = self.ball.is_emped
-                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_emped"):
-                                    is_emped = self.ball.get_meta("is_emped")
+                                var emp_radius_sq = 800.0 * 800.0
+                                if self.world != null and "balls" in self.world:
+                                    for b in self.world.balls:
+                                        var b_alive = false
+                                        if "alive" in b: b_alive = b.alive
+                                        elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
 
-                                var b_emp_imm = 0.0
-                                if "emp_immunity_timer" in self.ball: b_emp_imm = self.ball.emp_immunity_timer
-                                elif self.ball.has_method("get_meta") and self.ball.has_meta("emp_immunity_timer"): b_emp_imm = self.ball.get_meta("emp_immunity_timer")
+                                        if b_alive:
+                                            var bx = b.x if "x" in b else b["x"]
+                                            var by = b.y if "y" in b else b["y"]
+                                            var hx = hazard.x if "x" in hazard else (hazard.get_meta("x") if typeof(hazard) == TYPE_OBJECT and hazard.has_meta("x") else 0.0)
+                                            var hy = hazard.y if "y" in hazard else (hazard.get_meta("y") if typeof(hazard) == TYPE_OBJECT and hazard.has_meta("y") else 0.0)
 
-                                if not is_emped and b_emp_imm <= 0:
-                                    if "is_emped" in self.ball:
-                                        self.ball.is_emped = true
-                                        self.ball.emp_timer = 2.0
-                                    elif self.ball.has_method("set_meta"):
-                                        self.ball.set_meta("is_emped", true)
-                                        self.ball.set_meta("emp_timer", 2.0)
+                                            var dist_sq = pow(hx - bx, 2) + pow(hy - by, 2)
+                                            if dist_sq <= emp_radius_sq:
+                                                var b_emp_imm = 0.0
+                                                if "emp_immunity_timer" in b: b_emp_imm = b.emp_immunity_timer
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("emp_immunity_timer"): b_emp_imm = b.get_meta("emp_immunity_timer")
 
-                                    if "skill_timer" in self.ball:
-                                        self.ball.skill_timer = max(self.ball.skill_timer, 2.0)
-                                    elif self.ball.has_method("set_meta"):
-                                        var cur_skill_timer = self.ball.get_meta("skill_timer") if self.ball.has_meta("skill_timer") else 0.0
-                                        self.ball.set_meta("skill_timer", max(cur_skill_timer, 2.0))
+                                                if b_emp_imm <= 0:
+                                                    if "is_emped" in b:
+                                                        b.is_emped = true
+                                                        b.emp_timer = 2.0
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                                        b.set_meta("is_emped", true)
+                                                        b.set_meta("emp_timer", 2.0)
 
-                                    var base_speed = 100.0
-                                    if "base_speed" in self.ball:
-                                        base_speed = self.ball.base_speed
-                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
-                                        base_speed = self.ball.get_meta("base_speed")
+                                                    if "shield" in b:
+                                                        b.shield = 0.0
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                                        b.set_meta("shield", 0.0)
 
-                                    var current_speed = base_speed
-                                    if "speed" in self.ball:
-                                        current_speed = self.ball.speed
-                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("speed"):
-                                        current_speed = self.ball.get_meta("speed")
+                                                    if "skill_timer" in b:
+                                                        b.skill_timer = max(b.skill_timer, 2.0)
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                                        var cur_skill_timer = b.get_meta("skill_timer") if b.has_meta("skill_timer") else 0.0
+                                                        b.set_meta("skill_timer", max(cur_skill_timer, 2.0))
 
-                                    if current_speed > base_speed:
-                                        if "speed" in self.ball:
-                                            self.ball.speed = base_speed
-                                        elif self.ball.has_method("set_meta"):
-                                            self.ball.set_meta("speed", base_speed)
+                                                    var base_speed = 100.0
+                                                    if "base_speed" in b: base_speed = b.base_speed
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("base_speed"): base_speed = b.get_meta("base_speed")
 
-                                    var dmg_mult = 1.0
-                                    if "damage_multiplier" in self.ball:
-                                        dmg_mult = self.ball.damage_multiplier
-                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("damage_multiplier"):
-                                        dmg_mult = self.ball.get_meta("damage_multiplier")
+                                                    var current_speed = base_speed
+                                                    if "speed" in b: current_speed = b.speed
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("speed"): current_speed = b.get_meta("speed")
 
-                                    if dmg_mult > 1.0:
-                                        if "damage_multiplier" in self.ball:
-                                            self.ball.damage_multiplier = 1.0
-                                        elif self.ball.has_method("set_meta"):
-                                            self.ball.set_meta("damage_multiplier", 1.0)
+                                                    if current_speed > base_speed:
+                                                        if "speed" in b: b.speed = base_speed
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("speed", base_speed)
+
+                                                    var dmg_mult = 1.0
+                                                    if "damage_multiplier" in b: dmg_mult = b.damage_multiplier
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("damage_multiplier"): dmg_mult = b.get_meta("damage_multiplier")
+
+                                                    if dmg_mult > 1.0:
+                                                        if "damage_multiplier" in b: b.damage_multiplier = 1.0
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("damage_multiplier", 1.0)
+
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
+                                    hazard["active"] = false
+                                elif typeof(hazard) == TYPE_OBJECT:
+                                    if "duration" in hazard: hazard.duration = 0.0
+                                    elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                    if "active" in hazard: hazard.active = false
+                                    elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
                             elif trap_variant == "mine":
                                 if self.ball.has_method("take_damage"):
                                     self.ball.take_damage(50.0)

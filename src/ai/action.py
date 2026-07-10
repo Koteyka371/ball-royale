@@ -4576,19 +4576,30 @@ class Action:
                                         self.ball.blindness_timer = max(getattr(self.ball, "blindness_timer", 0.0), 3.0)
                                     hazard.duration = 0.0
                                 elif trap_variant == "emp":
-                                    if getattr(self.ball, "emp_immunity_timer", 0.0) <= 0 and not getattr(self.ball, "is_emped", False):
-                                        self.ball.is_emped = True
-                                        self.ball.emp_timer = 2.0
-                                        # Reset positive buffs and disable abilities by increasing skill_timer
-                                        if hasattr(self.ball, "skill_timer"):
-                                            self.ball.skill_timer = max(getattr(self.ball, "skill_timer", 0.0), 2.0)
+                                    # EMP trap affects a huge radius (800.0)
+                                    emp_radius = 800.0
 
-                                        base_speed = getattr(self.ball, "base_speed", 100.0)
-                                        if getattr(self.ball, "speed", 0.0) > base_speed:
-                                            self.ball.speed = base_speed
+                                    if hasattr(self.world, "balls"):
+                                        for b in self.world.balls:
+                                            if getattr(b, "alive", True):
+                                                dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                                if dist_sq <= emp_radius**2:
+                                                    if getattr(b, "emp_immunity_timer", 0.0) <= 0:
+                                                        b.is_emped = True
+                                                        b.emp_timer = 2.0
+                                                        b.shield = 0.0
 
-                                        if hasattr(self.ball, "damage_multiplier") and self.ball.damage_multiplier > 1.0:
-                                            self.ball.damage_multiplier = 1.0
+                                                        if hasattr(b, "skill_timer"):
+                                                            b.skill_timer = max(getattr(b, "skill_timer", 0.0), 2.0)
+
+                                                        base_speed = getattr(b, "base_speed", 100.0)
+                                                        if getattr(b, "speed", 0.0) > base_speed:
+                                                            b.speed = base_speed
+
+                                                        if hasattr(b, "damage_multiplier") and b.damage_multiplier > 1.0:
+                                                            b.damage_multiplier = 1.0
+
+                                    hazard.duration = 0.0
                                 elif trap_variant == "emp_trap":
                                     # Absorbs electrical damage, then explodes
                                     # Handled in chain lightning logic; but when stepped on normally, just slow slightly or do nothing until charged

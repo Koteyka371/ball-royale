@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Traps",
+  "description": "A new hazard type or booster that allows traps placed within a certain proximity to link. When one trap in the network is triggered, all linked traps detonate in a synchronized sequence, causing massive overlapping AoE damage."
+}
