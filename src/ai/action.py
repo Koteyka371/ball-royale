@@ -1998,6 +1998,36 @@ class Action:
                             setattr(bh, 'owner_id', getattr(hazard, 'owner_id', None))
                             self.world.arena.hazards.append(bh)
 
+                if getattr(hazard, "kind", "") == "clone_black_hole":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            # Explode
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+
+                            # Deal damage
+                            explosion_radius = getattr(hazard, "radius", 80.0)
+                            explosion_damage = getattr(hazard, "damage", 30.0)
+                            owner_id = getattr(hazard, "owner_id", None)
+
+                            if hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True) and getattr(b, "id", None) != owner_id:
+                                        dx = hazard.x - b.x
+                                        dy = hazard.y - b.y
+                                        if dx*dx + dy*dy <= explosion_radius**2:
+                                            if hasattr(b, "take_damage"):
+                                                b.take_damage(explosion_damage)
+                                            elif hasattr(b, "hp"):
+                                                b.hp -= explosion_damage
+                                                if b.hp <= 0:
+                                                    b.alive = False
+
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': explosion_radius}})
+
                 if getattr(hazard, "kind", "") == "thrown_bomb":
                     if getattr(hazard, "duration", 0.0) > 0:
                         hazard.duration -= delta
@@ -2400,19 +2430,32 @@ class Action:
                             break
 
             if triggered:
+                # Black hole logic instead of instant damage
+                # We spawn a miniature black hole that lasts for 3 seconds
+                # It pulls enemies and then damages them upon collapse.
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+
+                    bh_id = len(self.world.arena.hazards) + 60000
+                    bh = Hazard(bh_id, self.ball.x, self.ball.y, aoe_radius, "clone_black_hole", aoe_damage)
+                    setattr(bh, 'duration', 3.0)
+                    setattr(bh, 'owner_id', getattr(self.ball, 'id', None))
+                    setattr(bh, 'team', getattr(self.ball, 'team', getattr(self.ball, 'ball_type', '')))
+                    setattr(bh, 'pull_strength', 250.0) # Used by action.py black_hole handling logic
+                    self.world.arena.hazards.append(bh)
+
+                # Still trigger cascade for nearby clones
                 if hasattr(self.world, "balls"):
                     for b in self.world.balls:
                         if getattr(b, "alive", True):
-                            is_enemy = getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
                             d_sq = (self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2
-
                             if d_sq <= aoe_radius**2:
-                                if is_enemy:
-                                    original_damage = getattr(self.ball, "damage", 0)
-                                    self.ball.damage = aoe_damage
-                                    self._attempt_damage(self.ball, b)
-                                    self.ball.damage = original_damage
-                                elif getattr(b, "is_clone", False) and b is not self.ball:
+                                if getattr(b, "is_clone", False) and b is not self.ball:
                                     if getattr(b, "clone_cascade_timer", -1.0) < 0:
                                         b.clone_cascade_timer = 0.25
 
@@ -4360,7 +4403,7 @@ class Action:
                                 pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                    elif hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole", "tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"):
+                    elif hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"):
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
@@ -4381,7 +4424,7 @@ class Action:
                                     hazard.vy *= -1
 
                             h_lifetime = getattr(hazard, "lifetime", 0.0)
-                            if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") and h_lifetime >= 10.0:
+                            if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and h_lifetime >= 10.0:
                                 hazard.duration = 0.0
                                 if hasattr(self.world, "events"):
                                     self.world.events.append({"type": "explosion", "x": hazard.x, "y": hazard.y})
@@ -4413,13 +4456,13 @@ class Action:
                                                 b.y -= bny * push_strength * delta
 
                             # Pull balls once per frame
-                            if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                            if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                 for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", False):
                                         bdx = hazard.x - b.x
                                         bdy = hazard.y - b.y
                                         bdist_sq = bdx * bdx + bdy * bdy
-                                        lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") else 1.0
+                                        lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") else 1.0
                                         if bdist_sq < hazard.radius * hazard.radius * 4 * lifetime_mult: # Effective pull range
                                             if bdist_sq > 0.0001:
                                                 bdist = math.sqrt(bdist_sq)
@@ -4431,7 +4474,7 @@ class Action:
                                                 if getattr(b, "anchor_booster_timer", 0.0) <= 0:
                                                     b.x += bnx * pull_strength
                                                     b.y += bny * pull_strength
-                                                if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") and hasattr(b, "vx") and hasattr(b, "vy"):
+                                                if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and hasattr(b, "vx") and hasattr(b, "vy"):
                                                     # Slingshot velocity addition
                                                     import math as _math
                                                     speed = _math.hypot(b.vx, b.vy)
@@ -4467,13 +4510,13 @@ class Action:
 
 
                             # Pull boosters once per frame
-                            if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado") and hasattr(self.world, "boosters"):
+                            if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado") and hasattr(self.world, "boosters"):
                                 for b in self.world.boosters:
                                     bdx = hazard.x - b.x
                                     bdy = hazard.y - b.y
                                     bdist_sq = bdx * bdx + bdy * bdy
                                     if bdist_sq > 0.0001:
-                                        lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") else 1.0
+                                        lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") else 1.0
                                         bdist = math.sqrt(bdist_sq)
                                         bnx, bny = bdx / bdist, bdy / bdist
                                         is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
@@ -4490,12 +4533,12 @@ class Action:
                                             b.y += ty * orbital_strength
 
                         # Ball specific logic
-                        if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                        if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq > 0.0001:
-                                lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") else 1.0
+                                lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") else 1.0
                                 dist = math.sqrt(dist_sq)
                                 nx, ny = dx / dist, dy / dist
                                 is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
@@ -4505,7 +4548,7 @@ class Action:
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     self.ball.x += nx * pull_strength
                                     self.ball.y += ny * pull_strength
-                                if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                     # Slingshot velocity addition
                                     import math as _math
                                     speed = _math.hypot(self.ball.vx, self.ball.vy)

@@ -3460,15 +3460,45 @@ func execute(strategy: String, delta: float):
 						break
 
 			if triggered:
+				if world != null and "arena" in world and "hazards" in world.arena:
+					var bh_id = world.arena.hazards.size() + 60000
+					var bh = null
+
+					var p_arena = load("res://src/arena/procedural_arena.gd")
+					if p_arena != null:
+						# Try to load Hazard class from procedural_arena
+						var hazard_class = null
+						for k in p_arena.get_script_constant_map().keys():
+							if k == "Hazard":
+								hazard_class = p_arena.Hazard
+								break
+						if hazard_class != null:
+							bh = hazard_class.new(bh_id, self.ball.x, self.ball.y, aoe_radius, "clone_black_hole", aoe_damage)
+
+					if bh == null:
+						bh = {"id": bh_id, "x": self.ball.x, "y": self.ball.y, "radius": aoe_radius, "kind": "clone_black_hole", "damage": aoe_damage, "active": true}
+
+					if typeof(bh) == TYPE_DICTIONARY:
+						bh["duration"] = 3.0
+						bh["pull_strength"] = 250.0
+						if "id" in self.ball: bh["owner_id"] = self.ball.id
+						elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): bh["owner_id"] = self.ball.get_meta("id")
+						bh["team"] = my_team
+					else:
+						bh.set_meta("duration", 3.0)
+						bh.set_meta("pull_strength", 250.0)
+						bh.set_meta("team", my_team)
+						if "id" in self.ball: bh.set_meta("owner_id", self.ball.id)
+						elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): bh.set_meta("owner_id", self.ball.get_meta("id"))
+
+					world.arena.hazards.append(bh)
+
+				# Still trigger cascade for nearby clones
 				for b in world.balls:
 					var b_alive = true
 					if "alive" in b: b_alive = b.alive
-					var b_team = ""
-					if "team" in b: b_team = b.team
-					elif "ball_type" in b: b_team = b.ball_type
 
 					if b_alive:
-						var is_enemy = b_team != my_team
 						var bx = 0.0
 						var by = 0.0
 						if "x" in b: bx = b.x
@@ -3478,25 +3508,18 @@ func execute(strategy: String, delta: float):
 
 						var d_sq = pow(self.ball.x - bx, 2) + pow(self.ball.y - by, 2)
 						if d_sq <= aoe_radius * aoe_radius:
-							if is_enemy:
-								var original_damage = 0.0
-								if "damage" in self.ball: original_damage = self.ball.damage
-								if "damage" in self.ball: self.ball.damage = aoe_damage
-								self._attempt_damage(self.ball, b)
-								if "damage" in self.ball: self.ball.damage = original_damage
-							else:
-								var is_b_clone = false
-								if b.has_method("get_meta") and b.get_meta("is_clone"): is_b_clone = true
-								elif "is_clone" in b and b.is_clone: is_b_clone = true
+							var is_b_clone = false
+							if b.has_method("get_meta") and b.get_meta("is_clone"): is_b_clone = true
+							elif "is_clone" in b and b.is_clone: is_b_clone = true
 
-								if is_b_clone and (typeof(b) != typeof(self.ball) or (typeof(b) == typeof(self.ball) and b != self.ball)):
-									var b_cascade = -1.0
-									if "clone_cascade_timer" in b: b_cascade = b.clone_cascade_timer
-									elif b.has_method("get_meta") and b.has_meta("clone_cascade_timer"): b_cascade = b.get_meta("clone_cascade_timer")
+							if is_b_clone and (typeof(b) != typeof(self.ball) or (typeof(b) == typeof(self.ball) and b != self.ball)):
+								var b_cascade = -1.0
+								if "clone_cascade_timer" in b: b_cascade = b.clone_cascade_timer
+								elif b.has_method("get_meta") and b.has_meta("clone_cascade_timer"): b_cascade = b.get_meta("clone_cascade_timer")
 
-									if b_cascade < 0.0:
-										if "clone_cascade_timer" in b: b.clone_cascade_timer = 0.25
-										elif b.has_method("set_meta"): b.set_meta("clone_cascade_timer", 0.25)
+								if b_cascade < 0.0:
+									if "clone_cascade_timer" in b: b.clone_cascade_timer = 0.25
+									elif b.has_method("set_meta"): b.set_meta("clone_cascade_timer", 0.25)
 
 				if "alive" in self.ball: self.ball.alive = false
 				if "hp" in self.ball: self.ball.hp = 0
@@ -7749,7 +7772,7 @@ func execute(strategy: String, delta: float):
                             if anchor_timer <= 0:
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                elif hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
+                elif hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
@@ -7778,7 +7801,7 @@ func execute(strategy: String, delta: float):
                         if hazard.has_meta("lifetime"):
                             h_lifetime = hazard.get_meta("lifetime")
 
-                        if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"] and h_lifetime >= 10.0:
+                        if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and h_lifetime >= 10.0:
                             hazard.set_meta("duration", 0.0)
 
                             if "events" in self.world:
@@ -7838,7 +7861,7 @@ func execute(strategy: String, delta: float):
                         var h_dur = 1.0
                         if hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
 
-                        if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"] and "boosters" in self.world:
+                        if h_dur > 0 and hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"] and "boosters" in self.world:
                             for b in self.world.boosters:
                                 var bdx = hazard.x - b.x
                                 var bdy = hazard.y - b.y
@@ -7851,7 +7874,7 @@ func execute(strategy: String, delta: float):
                                     if bdist > bmin_dist:
                                         bmin_dist = bdist
                                     var lifetime_mult = 1.0
-                                    if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"] and hazard.has_meta("lifetime"):
+                                    if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and hazard.has_meta("lifetime"):
                                         lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
                                     var is_ts = false
                                     if "arena" in self.world and self.world.arena != null and "weather" in self.world.arena and self.world.arena.weather == "thunderstorm": is_ts = true
@@ -7865,7 +7888,7 @@ func execute(strategy: String, delta: float):
                                     if b_anchor_timer <= 0:
                                         b.x += bnx * bpull_strength
                                         b.y += bny * bpull_strength
-                                    if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"]:
+                                    if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"]:
                                         var has_vx = false
                                         if "vx" in b: has_vx = true
                                         elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): has_vx = true
@@ -7905,13 +7928,13 @@ func execute(strategy: String, delta: float):
                     var h_dur = 1.0
                     if hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
 
-                    if h_dur > 0 and hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
+                    if h_dur > 0 and hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
                         var dist_sq = dx * dx + dy * dy
                         if dist_sq > 0.0001:
                             var lifetime_mult = 1.0
-                            if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"] and hazard.has_meta("lifetime"):
+                            if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and hazard.has_meta("lifetime"):
                                 lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
                             var dist = sqrt(dist_sq)
                             var nx = dx / dist
@@ -7931,7 +7954,7 @@ func execute(strategy: String, delta: float):
                             if anchor_timer <= 0:
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                            if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"]:
+                            if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"]:
                                 var has_vx = false
                                 if "vx" in self.ball: has_vx = true
                                 elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vx"): has_vx = true
