@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-796] Weather-Triggered Arena Hazards — *2026-07-10 14:37:53 UTC*
+
+Arena hazards that spawn dynamically depending on the active weather. For example, 'Tornadoes' that spawn only during Windstorms, or 'Quicksand' pits that only appear during Sandstorms.
+
+---
+
 ## [idea-804] Minion Sacrifice Ability — *2026-07-10 14:37:49 UTC*
 
 Give the Necromancer an active ability to detonate their own minions on command. Elite minions would deal significantly more explosion damage and leave a larger poison cloud compared to standard minions.
