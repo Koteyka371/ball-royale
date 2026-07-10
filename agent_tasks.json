@@ -12176,7 +12176,7 @@
     },
     {
       "id": "idea-707",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sabotage the Springs Mode",
@@ -23310,6 +23310,40 @@
         "src/ai/chrono_stasis_field.py",
         "src/ai/chrono_stasis_field.gd",
         "tests/test_chrono_stasis_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1361",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Arena Mod",
+      "description": "Every 30 seconds the arena size is reduced by 10%, forcing players into closer combat.",
+      "allowed_paths": [
+        "src/arena/shrinking_arena_mod.py",
+        "src/arena/shrinking_arena_mod.gd",
+        "tests/test_shrinking_arena_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1362",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Wall Hazard",
+      "description": "Players that run into this wall get their speed reduced by 50% for 3 seconds.",
+      "allowed_paths": [
+        "src/arena/sticky_wall.py",
+        "src/arena/sticky_wall.gd",
+        "tests/test_sticky_wall.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

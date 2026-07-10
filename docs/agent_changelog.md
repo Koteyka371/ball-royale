@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-707] Sabotage the Springs Mode — *2026-07-10 19:15:43 UTC*
+
+In Siege mode, attackers can choose to capture and permanently destroy defender healing springs instead of using them, shifting the balance of resources as the game progresses and creating new strategic choices.
+
+---
+
 ## [idea-822] Decoy Dummy Items — *2026-07-10 18:58:20 UTC*
 
 Players can place down items that look exactly like boosters or weapons. If an enemy touches it, the dummy item explodes and deals moderate damage or applies a short stun.
