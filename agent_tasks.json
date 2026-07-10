@@ -22787,6 +22787,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1330",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar Wind Hazard",
+      "description": "A hazard that blows continuously in one direction across the arena, randomly shifting angles every 30 seconds. Balls pushed off the edge of the arena by this wind take massive radiation damage.",
+      "allowed_paths": [
+        "src/arena/solar_wind.py",
+        "src/arena/solar_wind.gd",
+        "tests/test_solar_wind.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
