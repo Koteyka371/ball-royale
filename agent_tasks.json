@@ -13948,7 +13948,7 @@
     },
     {
       "id": "idea-811",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Reversal Trap",
@@ -23054,6 +23054,40 @@
         "src/ai/minion_explosive_demise.py",
         "src/ai/minion_explosive_demise.gd",
         "tests/test_minion_explosive_demise.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1346",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Illusionist Skill",
+      "description": "A new skill or ball type that specializes in spawning multiple low-HP decoys that mirror its movements. These decoys explode when hit by an enemy, dealing minor damage, making the true ball harder to track in chaotic fights.",
+      "allowed_paths": [
+        "src/ai/decoy_illusionist_skill.py",
+        "src/ai/decoy_illusionist_skill.gd",
+        "tests/test_decoy_illusionist_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1347",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Inverted Controls Status Effect",
+      "description": "Add a new status effect called 'confusion' that randomly reverses the directional inputs or movement outputs of a ball for a few seconds. This can be inflicted by a new trap variant or a specific booster to add chaos to the battlefield.",
+      "allowed_paths": [
+        "src/ai/inverted_controls_status_effect.py",
+        "src/ai/inverted_controls_status_effect.gd",
+        "tests/test_inverted_controls_status_effect.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

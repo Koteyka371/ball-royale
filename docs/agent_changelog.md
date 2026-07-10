@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-811] Aura Reversal Trap — *2026-07-10 18:05:19 UTC*
+
+A placeable trap that, when triggered, temporarily reverses the effects of stacking auras for enemies caught in its blast radius. Instead of providing buffs (e.g., speed and damage increases), the stacking auras inflict proportional debuffs, punishing teams that clump together too tightly.
+
+---
+
 ## [idea-817] Gravity Mine — *2026-07-10 17:48:05 UTC*
 
 A trap variant that pulls all nearby entities towards its center for a few seconds when triggered.
