@@ -1,4 +1,0 @@
-{
-  "title": "Necromancer Phylactery Mechanism",
-  "description": "Introduce a rare 'Phylactery' drop for the Necromancer. When destroyed, instead of dying, the Necromancer's soul is bound to the Phylactery (which remains stationary for 5 seconds). If the Phylactery is not destroyed within that window, the Necromancer respawns with 50% HP."
-}

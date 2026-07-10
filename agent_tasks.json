@@ -23008,6 +23008,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1343",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grapple Hook Momentum Swing",
+      "description": "Enhance the grapple hook logic to allow players to use it to swing around hazards or corners, conserving momentum for a speed boost upon release, instead of just pulling them straight towards the target.",
+      "allowed_paths": [
+        "src/ai/grapple_hook_momentum_swing.py",
+        "src/ai/grapple_hook_momentum_swing.gd",
+        "tests/test_grapple_hook_momentum_swing.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
