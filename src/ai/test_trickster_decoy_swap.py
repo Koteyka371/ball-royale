@@ -31,6 +31,8 @@ def test_trickster_decoys_swap():
     owner.id = 1
     owner.team = "teamA"
     owner.ball_type = "trickster"
+    owner.skill = "trickster_swap"
+    owner.SKILL = "trickster_swap"
     owner.decoy_swap_timer = 0.0  # trigger immediately
 
     decoy1 = MockBall(98, 150, 150)
