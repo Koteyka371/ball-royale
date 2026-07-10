@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-809] Time Distortion Zones — *2026-07-10 20:10:24 UTC*
+
+Hazards that speed up or slow down time for entities within them. Fast zones increase movement and attack speed but drain stamina rapidly, while slow zones do the opposite.
+
+---
+
 ## [idea-829] Grappling Hook Mechanics — *2026-07-10 20:01:51 UTC*
 
 Introduce a grappling hook item that allows balls to tether to walls or other players to swing across the arena or pull themselves out of danger.

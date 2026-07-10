@@ -13914,7 +13914,7 @@
     },
     {
       "id": "idea-809",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Distortion Zones",
@@ -23446,6 +23446,40 @@
         "src/ai/black_hole_slingshot_mutator.py",
         "src/ai/black_hole_slingshot_mutator.gd",
         "tests/test_black_hole_slingshot_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1369",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Tether Hook",
+      "description": "A new booster that when activated, instead of pulling you to the target, it pulls the target to you.",
+      "allowed_paths": [
+        "src/ai/reverse_tether_hook.py",
+        "src/ai/reverse_tether_hook.gd",
+        "tests/test_reverse_tether_hook.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1370",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Grapple",
+      "description": "Grappling hook now chains to a second target automatically if one is in range when the first target is hit.",
+      "allowed_paths": [
+        "src/ai/chain_grapple.py",
+        "src/ai/chain_grapple.gd",
+        "tests/test_chain_grapple.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
