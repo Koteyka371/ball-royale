@@ -15221,7 +15221,7 @@ func _use_skill():
                 var minions = []
                 for b in self.world.balls:
                     var is_minion = false
-                    if "ball_type" in b and b.ball_type == "minion":
+                    if "ball_type" in b and (b.ball_type == "minion" or b.ball_type == "elite_minion"):
                         is_minion = true
                     if is_minion and "team" in b and "team" in self.ball and b.team == self.ball.team:
                         minions.append(b)
@@ -15235,8 +15235,16 @@ func _use_skill():
                         target_minion.hp = 0
                         target_minion.alive = false
 
-                    var explosion_radius = 80.0
-                    var explosion_damage = 45.0
+                    var is_elite = false
+                    if "ball_type" in target_minion and target_minion.ball_type == "elite_minion":
+                        is_elite = true
+                    elif typeof(target_minion) == TYPE_OBJECT and target_minion.has_method("has_meta") and target_minion.has_meta("is_elite_minion") and target_minion.get_meta("is_elite_minion"):
+                        is_elite = true
+                    elif "is_elite_minion" in target_minion and target_minion.is_elite_minion:
+                        is_elite = true
+
+                    var explosion_radius = 120.0 if is_elite else 80.0
+                    var explosion_damage = 90.0 if is_elite else 45.0
 
                     var enemies = _get_enemies()
                     for e in enemies:
@@ -15244,19 +15252,35 @@ func _use_skill():
                         var dy = e.y - target_minion.y
                         var dist = sqrt(dx*dx + dy*dy)
                         if dist <= explosion_radius:
-                            if e.has_method("take_damage"):
+                            if typeof(e) == TYPE_OBJECT and e.has_method("take_damage"):
                                 e.take_damage(explosion_damage)
                             var current_slow = 0.0
                             if "slow_timer" in e: current_slow = e.slow_timer
-                            elif e.has_meta("slow_timer"): current_slow = e.get_meta("slow_timer")
+                            elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("slow_timer"): current_slow = e.get_meta("slow_timer")
 
                             var new_slow = max(current_slow, 2.0)
                             if typeof(e) == TYPE_DICTIONARY:
                                 e["slow_timer"] = new_slow
-                            elif e.has_method("set_meta"):
+                            elif typeof(e) == TYPE_OBJECT and e.has_method("set_meta"):
                                 e.set_meta("slow_timer", new_slow)
                             else:
                                 e.slow_timer = new_slow
+
+                    if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                        var cloud_radius = 150.0 if is_elite else 100.0
+                        var cloud_damage = 20.0 if is_elite else 10.0
+                        var h_id = 9000 + self.world.arena.hazards.size() + int(target_minion.x) + int(target_minion.y)
+                        var cloud = {
+                            "id": h_id,
+                            "x": target_minion.x,
+                            "y": target_minion.y,
+                            "radius": cloud_radius,
+                            "kind": "poison_cloud",
+                            "damage": cloud_damage,
+                            "duration": 5.0,
+                            "active": true
+                        }
+                        self.world.arena.hazards.append(cloud)
 
         elif skill_name == "raise_dead":
             if "dead_balls" in self.world:

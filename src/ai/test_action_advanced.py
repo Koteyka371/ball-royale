@@ -309,7 +309,11 @@ def test_raise_dead_corpse_explosion():
     minion.alive = True
     minion.hp = 20.0
 
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
 
+    world.arena = MockArena()
     world.balls = [ball, minion]
 
     # Create an alive enemy near the minion
@@ -349,6 +353,13 @@ def test_raise_dead_corpse_explosion():
 
     # The far enemy should take no damage
     assert far_enemy.hp == 150.0
+
+    # Verify a poison cloud hazard was spawned
+    assert len(world.arena.hazards) == 1
+    cloud = world.arena.hazards[0]
+    assert getattr(cloud, "kind", "") == "poison_cloud"
+    assert getattr(cloud, "radius", 0) == 100.0
+    assert getattr(cloud, "damage", 0) == 10.0
 
 def test_reflect_shield_capacity():
     ball = MockBall(x=100, y=100)
@@ -899,3 +910,71 @@ def test_reflect_bounce_chain():
         assert (3, 2) in damage_dealt or (2, 3) in damage_dealt
     finally:
         random.random = original_random
+
+def test_raise_dead_corpse_explosion_elite():
+    ball = MockBall(x=100, y=100)
+    ball.id = 1
+    ball.ball_type = "necromancer"
+    ball.skill = "corpse_explosion"
+    ball.team = "undead"
+
+    world = MockWorld()
+
+    # Create an active elite minion belonging to the necromancer
+    minion = MockEntity(x=120, y=120, ball_type="elite_minion")
+    minion.id = 2
+    minion.team = "undead"
+    minion.alive = True
+    minion.hp = 50.0
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+
+    world.arena = MockArena()
+    world.balls = [ball, minion]
+
+    # Create an alive enemy near the minion (within elite radius 120, but > 80 to test increased radius)
+    alive_enemy = MockEntity(x=200, y=120, ball_type="enemy")
+    alive_enemy.hp = 150.0
+    alive_enemy.slow_timer = 0.0
+
+    def take_damage_mock(amount):
+        alive_enemy.hp -= amount
+
+    alive_enemy.take_damage = take_damage_mock
+
+    # Create an alive enemy far from the explosions
+    far_enemy = MockEntity(x=300, y=300, ball_type="enemy")
+    far_enemy.hp = 150.0
+
+    def take_damage_mock_far(amount):
+        far_enemy.hp -= amount
+
+    far_enemy.take_damage = take_damage_mock_far
+
+    world.entities = [alive_enemy, far_enemy]
+
+    action = Action(ball, world)
+    action.execute("use_skill", 0.1)
+
+    # The minion should have been sacrificed
+    assert minion.hp == 0
+    assert not minion.alive
+
+    # The alive enemy near the explosion should take damage from elite minion explosion: 90
+    # Initial HP: 150 -> Expected HP: 60
+    assert alive_enemy.hp == 60.0
+
+    # The alive enemy should also have been slowed
+    assert alive_enemy.slow_timer == 2.0
+
+    # The far enemy should take no damage
+    assert far_enemy.hp == 150.0
+
+    # Verify a larger poison cloud hazard was spawned
+    assert len(world.arena.hazards) == 1
+    cloud = world.arena.hazards[0]
+    assert getattr(cloud, "kind", "") == "poison_cloud"
+    assert getattr(cloud, "radius", 0) == 150.0
+    assert getattr(cloud, "damage", 0) == 20.0
