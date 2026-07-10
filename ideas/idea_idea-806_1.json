@@ -1,0 +1,4 @@
+{
+  "title": "Slippery Mud Puddles",
+  "description": "Add dynamic mud puddles as hazards that appear after rain events. Balls traversing mud puddles suffer a severe reduction in acceleration and turning speed, making them easier targets for a short duration."
+}
