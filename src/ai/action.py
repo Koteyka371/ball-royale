@@ -984,6 +984,7 @@ class Action:
                     self.ball.breach_charge_active = False # Consume on use
 
         self.ball.slow_motion_zone_active = False
+        self.ball.fast_motion_zone_active = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "kind", "") == "slow_motion_zone":
@@ -995,6 +996,21 @@ class Action:
                             self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.5
                             if hasattr(self.ball, "speed_multiplier"):
                                 self.ball.speed_multiplier *= 0.5
+                        # Restore stamina rapidly
+                        if hasattr(self.ball, "stamina"):
+                            self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + 60.0 * delta)
+                elif getattr(hazard, "kind", "") == "fast_motion_zone":
+                    hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
+                        self.ball.fast_motion_zone_active = True
+                        if hasattr(self.ball, "speed"):
+                            self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 1.5
+                            if hasattr(self.ball, "speed_multiplier"):
+                                self.ball.speed_multiplier *= 1.5
+                        # Drain stamina rapidly
+                        if hasattr(self.ball, "stamina") and getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0.0:
+                            self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 100.0) - 60.0 * delta)
 
         # Void panel instant death
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -6011,7 +6027,8 @@ class Action:
                 if getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0:
                     self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (15.0 * drain_mult) * delta)
             elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
-                self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + (30.0 * regen_mult) * delta)
+                if not getattr(self.ball, "fast_motion_zone_active", False) and not getattr(self.ball, "slow_motion_zone_active", False):
+                    self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + (30.0 * regen_mult) * delta)
 
             if is_snowing and getattr(self.ball, "ball_type", "") != "snow_yeti" and (getattr(self.ball, 'vx', 0) != 0 or getattr(self.ball, 'vy', 0) != 0):
                 self.ball.x += getattr(self.ball, 'vx', 0) * delta * 0.5
@@ -11451,6 +11468,8 @@ class Action:
         cooldown_mult = 1.0
         if getattr(self.ball, "slow_motion_zone_active", False):
             cooldown_mult *= 0.5
+        elif getattr(self.ball, "fast_motion_zone_active", False):
+            cooldown_mult *= 1.5
         if is_snowing:
             cooldown_mult *= 0.5  # Snow slows down cooldowns (longer wait)
         elif is_heatwave:
@@ -11964,7 +11983,8 @@ class Action:
             self.ball.bumper_combo = 0
             self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - (15.0 * drain_mult) * delta)
         elif dist / max(0.0001, delta * 60) < getattr(self.ball, "base_speed", 2.0) * 0.5:
-            self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + (30.0 * regen_mult) * delta)
+            if not getattr(self.ball, "fast_motion_zone_active", False) and not getattr(self.ball, "slow_motion_zone_active", False):
+                self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 0.0) + (30.0 * regen_mult) * delta)
 
         if is_snowing and (getattr(self.ball, 'vx', 0) != 0 or getattr(self.ball, 'vy', 0) != 0):
             self.ball.x += getattr(self.ball, 'vx', 0) * delta * 0.5

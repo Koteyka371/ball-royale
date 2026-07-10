@@ -37,6 +37,8 @@ class DummyBall:
         self.speed = 100.0
         self.speed_multiplier = 1.0
         self.skill_timer = 5.0
+        self.max_stamina = 100.0
+        self.stamina = 10.0
 
 def test_slow_motion_zone_speed_cooldown():
     world = DummyWorld()
@@ -59,6 +61,9 @@ def test_slow_motion_zone_speed_cooldown():
     # skill_timer was 5.0, normally decreases by 1.0, but with zone decreases by 0.5
     # Wait, 5.0 - 0.5 = 4.5
     assert math.isclose(ball.skill_timer, 4.5)
+
+    # 10.0 + 60.0 * 1.0 = 70.0
+    assert math.isclose(ball.stamina, 70.0)
 
 def test_slow_motion_zone_projectile_suspension():
     world = DummyWorld()

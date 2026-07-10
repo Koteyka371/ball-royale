@@ -1536,11 +1536,14 @@ func execute(strategy: String, delta: float):
 	var c_timer = 0.0
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		self.ball["slow_motion_zone_active"] = false
+		self.ball["fast_motion_zone_active"] = false
 	else:
 		if self.ball.has_method("set_meta"):
 			self.ball.set_meta("slow_motion_zone_active", false)
+			self.ball.set_meta("fast_motion_zone_active", false)
 		else:
 			self.ball.slow_motion_zone_active = false
+			self.ball.fast_motion_zone_active = false
 
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		c_active = self.ball.get("charging_shockwave_shield_active", false)
