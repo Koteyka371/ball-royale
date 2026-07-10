@@ -3,9 +3,9 @@
     "agent-1": {
       "name": "Jules Core",
       "area": "ai-core",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-813",
+      "status": "assigned",
+      "started_at": "2026-07-10T14:22:51.599266+00:00",
       "cycles_today": 1
     },
     "agent-2": {
