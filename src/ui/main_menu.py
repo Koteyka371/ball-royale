@@ -8,12 +8,13 @@ class MainMenu:
         self.profile_manager = ProfileManager("profile.json")
         self.leaderboard_manager = LeaderboardManager("leaderboard.json", profile_manager=self.profile_manager)
         self.prestige_shop = PrestigeShop(self.profile_manager)
-        self.nemesis_screen = NemesisScreen(self.profile_manager)
         self.active_screen = "main"
 
         season = self.leaderboard_manager.data.get("current_season", 1)
         self.background_theme = self.leaderboard_manager.get_theme(season)
         self.background_color = self._get_theme_color(self.background_theme)
+
+        self.nemesis_screen = NemesisScreen(self.profile_manager, self.background_theme)
 
     def _get_theme_color(self, theme):
         colors = {
