@@ -107,6 +107,7 @@ def test_low_gravity_event():
     if hasattr(b1, "original_mass"):
         delattr(b1, "original_mass")
     b1.mass = 2.0
+    low_gravs[0].radius = 100.0
     low_gravs[0].x = b1.x
     low_gravs[0].y = b1.y
     # Inside zone

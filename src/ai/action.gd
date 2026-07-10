@@ -19378,8 +19378,29 @@ func _apply_friendly_aura(delta: float):
     elif "base_damage" in self.ball:
         base_d = self.ball.base_damage
 
+    var is_cursed_aura = false
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        if self.ball.has("cursed_aura_event_active"):
+            is_cursed_aura = self.ball.cursed_aura_event_active
+    else:
+        if "cursed_aura_event_active" in self.ball:
+            is_cursed_aura = self.ball.cursed_aura_event_active
+
     # Apply buffs based on stack count
-    if stack_count >= 1:
+    if is_cursed_aura and stack_count >= 1:
+        var damage = (2.0 * stack_count) * delta
+        var curr_hp = 100.0
+        if "hp" in self.ball:
+            curr_hp = self.ball.hp
+        if self.ball.has_method("take_damage"):
+            self.ball.take_damage(damage)
+        else:
+            if "hp" in self.ball:
+                self.ball.hp = curr_hp - damage
+                if self.ball.hp <= 0:
+                    self.ball.hp = 0
+                    self.ball.alive = false
+    elif stack_count >= 1:
         # 1 extra type: HP regen
         var max_hp = 100.0
         if "max_hp" in self.ball:
@@ -19407,52 +19428,81 @@ func _apply_friendly_aura(delta: float):
         is_night = world.arena.is_night
 
     if not is_dashing and stutter <= 0.0:
-        if stack_count >= 2:
+        if is_cursed_aura and stack_count >= 1:
+            var speed_penalty = 1.0 - (0.1 * stack_count)
+            if speed_penalty < 0.2:
+                speed_penalty = 0.2
             if "speed" in self.ball:
-                self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier)
+                self.ball.speed = base_s * speed_penalty
         else:
-            if "speed" in self.ball:
-                self.ball.speed = base_s
+            if stack_count >= 2:
+                if "speed" in self.ball:
+                    self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier)
+            else:
+                if "speed" in self.ball:
+                    self.ball.speed = base_s
 
-        if stack_count >= 3:
-            if "damage" in self.ball:
-                self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier)
-        else:
+        if is_cursed_aura and stack_count >= 1:
             if "damage" in self.ball:
                 self.ball.damage = base_d
+        else:
+            if stack_count >= 3:
+                if "damage" in self.ball:
+                    self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier)
+            else:
+                if "damage" in self.ball:
+                    self.ball.damage = base_d
 
         var is_lunar = false
         if world != null and "arena" in world and "is_lunar_eclipse" in world.arena:
             is_lunar = world.arena.is_lunar_eclipse
 
         if is_lunar:
-            if stack_count >= 2:
-                if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier)
-            else:
-                if "speed" in self.ball: self.ball.speed = base_s * 1.5
-            if stack_count >= 3:
-                if "damage" in self.ball: self.ball.damage = base_d * 2.0 * (1.0 + 0.2 * aura_multiplier)
-            else:
+            if is_cursed_aura and stack_count >= 1:
+                var speed_penalty = 1.0 - (0.1 * stack_count)
+                if speed_penalty < 0.2: speed_penalty = 0.2
+                if "speed" in self.ball: self.ball.speed = base_s * 1.5 * speed_penalty
                 if "damage" in self.ball: self.ball.damage = base_d * 2.0
-        elif is_night:
-            if ball_type == "vampire":
+            else:
                 if stack_count >= 2:
                     if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier)
                 else:
                     if "speed" in self.ball: self.ball.speed = base_s * 1.5
                 if stack_count >= 3:
-                    if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier)
+                    if "damage" in self.ball: self.ball.damage = base_d * 2.0 * (1.0 + 0.2 * aura_multiplier)
                 else:
+                    if "damage" in self.ball: self.ball.damage = base_d * 2.0
+        elif is_night:
+            if ball_type == "vampire":
+                if is_cursed_aura and stack_count >= 1:
+                    var speed_penalty = 1.0 - (0.1 * stack_count)
+                    if speed_penalty < 0.2: speed_penalty = 0.2
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.5 * speed_penalty
                     if "damage" in self.ball: self.ball.damage = base_d * 1.5
+                else:
+                    if stack_count >= 2:
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier)
+                    else:
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.5
+                    if stack_count >= 3:
+                        if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier)
+                    else:
+                        if "damage" in self.ball: self.ball.damage = base_d * 1.5
             elif ball_type == "assassin" or ball_type == "phantom":
-                if stack_count >= 2:
-                    if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier)
-                else:
-                    if "speed" in self.ball: self.ball.speed = base_s * 1.2
-                if stack_count >= 3:
-                    if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier)
-                else:
+                if is_cursed_aura and stack_count >= 1:
+                    var speed_penalty = 1.0 - (0.1 * stack_count)
+                    if speed_penalty < 0.2: speed_penalty = 0.2
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.2 * speed_penalty
                     if "damage" in self.ball: self.ball.damage = base_d * 1.5
+                else:
+                    if stack_count >= 2:
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier)
+                    else:
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.2
+                    if stack_count >= 3:
+                        if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier)
+                    else:
+                        if "damage" in self.ball: self.ball.damage = base_d * 1.5
             else:
                 if stack_count < 3:
                     if "damage" in self.ball: self.ball.damage = base_d
@@ -19467,15 +19517,23 @@ func _apply_friendly_aura(delta: float):
             if world != null and "arena" in world and "is_night" in world.arena and not world.arena.is_night:
                 if ball_type == "paladin" or ball_type == "guardian":
                     day_mult = 1.5
-                    if stack_count >= 2:
-                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier)
+                    if is_cursed_aura and stack_count >= 1:
+                        var speed_penalty = 1.0 - (0.1 * stack_count)
+                        if speed_penalty < 0.2: speed_penalty = 0.2
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * speed_penalty
                     else:
-                        if "speed" in self.ball: self.ball.speed = base_s * 1.2
+                        if stack_count >= 2:
+                            if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier)
+                        else:
+                            if "speed" in self.ball: self.ball.speed = base_s * 1.2
 
-            if stack_count >= 3:
-                if "damage" in self.ball: self.ball.damage = base_d * day_mult * (1.0 + 0.2 * aura_multiplier)
-            else:
+            if is_cursed_aura and stack_count >= 1:
                 if "damage" in self.ball: self.ball.damage = base_d * day_mult
+            else:
+                if stack_count >= 3:
+                    if "damage" in self.ball: self.ball.damage = base_d * day_mult * (1.0 + 0.2 * aura_multiplier)
+                else:
+                    if "damage" in self.ball: self.ball.damage = base_d * day_mult
 
         var is_exh = false
         if self.ball.has_method("has_meta") and self.ball.has_meta("is_exhausted"):
