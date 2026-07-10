@@ -1457,6 +1457,10 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    if self.ball.has_method("set_meta"):
+        self.ball.set_meta("is_in_mud", false)
+    elif "is_in_mud" in self.ball:
+        self.ball.is_in_mud = false
     var timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: timer = self.ball.intangible_timer
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
@@ -6643,6 +6647,19 @@ func execute(strategy: String, delta: float):
                             hazards_to_remove.append(hazard)
                             if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
                                 world.add_event("soul_fragment_collected", {"ball_id": b_id})
+                elif hazard.kind == "mud_puddle":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var base_s = 100.0
+                        if "base_speed" in self.ball:
+                            base_s = self.ball.base_speed
+                        self.ball.speed = base_s * 0.5
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("is_in_mud", true)
+                        elif "is_in_mud" in self.ball:
+                            self.ball.is_in_mud = true
                 elif hazard.kind == "slip_zone":
                     var active = true
                     if hazard.has_method("get_meta") and hazard.has_meta("active"):
@@ -10435,6 +10452,35 @@ func execute(strategy: String, delta: float):
     if delta > 0:
         var dx = self.ball.x - old_x
         var dy = self.ball.y - old_y
+
+        var is_in_mud = false
+        if self.ball.has_method("has_meta") and self.ball.has_meta("is_in_mud"):
+            is_in_mud = self.ball.get_meta("is_in_mud")
+        elif "is_in_mud" in self.ball:
+            is_in_mud = self.ball.is_in_mud
+
+        if is_in_mud:
+            var old_dx = 0.0
+            var old_dy = 0.0
+            if self.ball.has_method("has_meta") and self.ball.has_meta("_last_dx"):
+                old_dx = self.ball.get_meta("_last_dx")
+                old_dy = self.ball.get_meta("_last_dy")
+            elif "_last_dx" in self.ball:
+                old_dx = self.ball._last_dx
+                old_dy = self.ball._last_dy
+
+            dx = (dx * 0.3) + (old_dx * 0.7)
+            dy = (dy * 0.3) + (old_dy * 0.7)
+
+            self.ball.x = old_x + dx
+            self.ball.y = old_y + dy
+
+        if self.ball.has_method("set_meta"):
+            self.ball.set_meta("_last_dx", dx)
+            self.ball.set_meta("_last_dy", dy)
+        elif "_last_dx" in self.ball:
+            self.ball._last_dx = dx
+            self.ball._last_dy = dy
 
         var n_timer = 0.0
         if "invert_timer" in self.ball:

@@ -895,6 +895,7 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        self.ball.is_in_mud = False
         if getattr(self.ball, "intangible_timer", 0.0) > 0.0:
             self.ball.intangible_timer -= delta
             if self.ball.intangible_timer <= 0.0:
@@ -3881,6 +3882,13 @@ class Action:
                                         # Important: After a teleport, we must prevent the rest of the tick from adding `speed * delta` based on random boid rules
                                         return
                                 self.ball.last_teleport_tick = current_tick
+                    elif hazard.kind == "mud_puddle":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.5
+                            self.ball.is_in_mud = True
                     elif hazard.kind == "slip_zone":
                         if getattr(hazard, "active", True):
                             dx = hazard.x - self.ball.x
@@ -5914,6 +5922,19 @@ class Action:
         if delta > 0:
             dx = self.ball.x - old_x
             dy = self.ball.y - old_y
+
+            if getattr(self.ball, "is_in_mud", False):
+                old_dx = getattr(self.ball, "_last_dx", 0.0)
+                old_dy = getattr(self.ball, "_last_dy", 0.0)
+
+                dx = (dx * 0.3) + (old_dx * 0.7)
+                dy = (dy * 0.3) + (old_dy * 0.7)
+
+                self.ball.x = old_x + dx
+                self.ball.y = old_y + dy
+
+            self.ball._last_dx = dx
+            self.ball._last_dy = dy
 
             import math as _nemesis_math
             if hasattr(self.ball, "nemesis_booster_timer") and self.ball.nemesis_booster_timer > 0:
