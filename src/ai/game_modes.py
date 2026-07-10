@@ -377,13 +377,21 @@ class GameMode:
 
             # If the target had a bounty, reward the killer
             target_bounty = getattr(ball, "kill_bounty", 0)
-            if target_bounty > 0 and pm and hasattr(pm, "add_skill_points"):
-                reward = 15 * target_bounty
-                pm.add_skill_points(reward)
-                if hasattr(world, "add_event"):
-                    world.add_event("bounty_claimed", {
-                        "message": f"{killer.id} claimed a kill streak bounty on {ball.id} for {reward} skill points!"
-                    })
+            if target_bounty > 0:
+                # Reward the killer with a speed boost
+                killer.speed_boost_timer = getattr(killer, "speed_boost_timer", 0.0) + 5.0
+                if pm and hasattr(pm, "add_skill_points"):
+                    reward = 15 * target_bounty
+                    pm.add_skill_points(reward)
+                    if hasattr(world, "add_event"):
+                        world.add_event("bounty_claimed", {
+                            "message": f"{killer.id} claimed a kill streak bounty on {ball.id} for {reward} skill points and a speed boost!"
+                        })
+                else:
+                    if hasattr(world, "add_event"):
+                        world.add_event("bounty_claimed", {
+                            "message": f"{killer.id} claimed a kill streak bounty on {ball.id} for a speed boost!"
+                        })
 
         # Elite Minion death logic - drops a soul fragment for Necromancer
         if getattr(ball, "is_elite_minion", False) and getattr(ball, "ball_type", "").lower() == "elite_minion":

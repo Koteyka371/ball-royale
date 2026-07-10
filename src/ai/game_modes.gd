@@ -306,15 +306,37 @@ class GameMode:
 			elif typeof(ball) == TYPE_OBJECT and "kill_bounty" in ball: target_kb = ball.kill_bounty
 			elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("kill_bounty"): target_kb = ball.get_meta("kill_bounty")
 
-			if target_kb > 0 and pm != null and pm.has_method("add_skill_points"):
-				var reward = 15 * target_kb
-				pm.add_skill_points(reward)
-				if world.has_method("add_event"):
-					var killer_id = str(killer.id)
-					var target_id = str(ball.id)
-					world.add_event("bounty_claimed", {
-						"message": killer_id + " claimed a kill streak bounty on " + target_id + " for " + str(reward) + " skill points!"
-					})
+			if target_kb > 0:
+				var current_sbt = 0.0
+				if typeof(killer) == TYPE_DICTIONARY and killer.has("speed_boost_timer"): current_sbt = killer.speed_boost_timer
+				elif typeof(killer) == TYPE_OBJECT and "speed_boost_timer" in killer: current_sbt = killer.speed_boost_timer
+				elif typeof(killer) == TYPE_OBJECT and killer.has_method("get_meta") and killer.has_meta("speed_boost_timer"): current_sbt = killer.get_meta("speed_boost_timer")
+
+				var new_sbt = current_sbt + 5.0
+
+				if typeof(killer) == TYPE_DICTIONARY:
+					killer["speed_boost_timer"] = new_sbt
+				elif typeof(killer) == TYPE_OBJECT:
+					if "speed_boost_timer" in killer: killer.speed_boost_timer = new_sbt
+					if killer.has_method("set_meta"):
+						killer.set_meta("speed_boost_timer", new_sbt)
+
+				if pm != null and pm.has_method("add_skill_points"):
+					var reward = 15 * target_kb
+					pm.add_skill_points(reward)
+					if world.has_method("add_event"):
+						var killer_id = str(killer.id)
+						var target_id = str(ball.id)
+						world.add_event("bounty_claimed", {
+							"message": killer_id + " claimed a kill streak bounty on " + target_id + " for " + str(reward) + " skill points and a speed boost!"
+						})
+				else:
+					if world.has_method("add_event"):
+						var killer_id = str(killer.id)
+						var target_id = str(ball.id)
+						world.add_event("bounty_claimed", {
+							"message": killer_id + " claimed a kill streak bounty on " + target_id + " for a speed boost!"
+						})
 
 		# Elite Minion death logic - drops a soul fragment for Necromancer
 		var is_elite = false

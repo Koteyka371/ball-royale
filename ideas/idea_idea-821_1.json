@@ -1,4 +1,4 @@
 {
-  "title": "Bounty Hunter Contracts",
-  "description": "Players can spend prestige tokens or skill points at the start of a match to place a high-value contract on a specific enemy player. If they successfully eliminate that target, they receive triple the investment back. If another player claims the kill, they get a portion of the reward."
+  "title": "Nemesis Revival Contract",
+  "description": "When a player claims a massive bounty (e.g. killing a player with 10+ kill streak), they can occasionally receive a special 'Revival Contract' item. This item grants the killer a one-time free respawn immediately upon their next death in the match, essentially rewarding high-risk bounty hunting with extra survivability."
 }

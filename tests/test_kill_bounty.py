@@ -25,6 +25,7 @@ class MockBall:
         self.id = id
         self.kill_bounty = kill_bounty
         self.is_bounty = False
+        self.speed_boost_timer = 0.0
 
 def test_kill_streak_bounty():
     mode = GameMode()
@@ -45,8 +46,11 @@ def test_kill_streak_bounty():
     # Killer should be rewarded 15 * 3 = 45 skill points
     assert world.profile_manager.skill_points_added == 45
 
+    # Killer should gain a speed boost of 5.0 for killing a bounty target
+    assert killer.speed_boost_timer == 5.0
+
     # Check that event was fired
-    assert any(e[0] == "bounty_claimed" and "player1" in e[1]["message"] and "45" in e[1]["message"] for e in world.events)
+    assert any(e[0] == "bounty_claimed" and "player1" in e[1]["message"] and "45" in e[1]["message"] and "speed boost" in e[1]["message"] for e in world.events)
 
     # Killer gets killed by a new player
     new_killer = MockBall(id="player3")
@@ -57,3 +61,6 @@ def test_kill_streak_bounty():
 
     # New killer should be rewarded 15 * 1 = 15 skill points
     assert world.profile_manager.skill_points_added == 45 + 15
+
+    # New killer should gain a speed boost of 5.0
+    assert new_killer.speed_boost_timer == 5.0
