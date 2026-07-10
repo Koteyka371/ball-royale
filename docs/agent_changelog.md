@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-824] Aura Deflector Shield — *2026-07-10 19:34:49 UTC*
+
+A booster that places a temporary reflection barrier on the ball, deflecting projectiles back at their origin rather than just absorbing them.
+
+---
+
 ## [idea-819] Earthquake Mode — *2026-07-10 19:16:57 UTC*
 
 Periodically shakes the screen and applies random momentum impulses to all balls in unpredictable directions.

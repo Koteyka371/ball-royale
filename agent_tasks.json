@@ -14169,7 +14169,7 @@
     },
     {
       "id": "idea-824",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Deflector Shield",
@@ -23344,6 +23344,40 @@
         "src/arena/sticky_wall.py",
         "src/arena/sticky_wall.gd",
         "tests/test_sticky_wall.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1363",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy payloads",
+      "description": "In Escort mode, Defenders can deploy a decoy payload that travels along an alternate path. The decoy distracts Attackers and draws automated hazards, but it does not count towards winning.",
+      "allowed_paths": [
+        "src/ai/decoy_payloads.py",
+        "src/ai/decoy_payloads.gd",
+        "tests/test_decoy_payloads.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1364",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sabotage the payload",
+      "description": "In Escort mode, Attackers can now attack the payload directly to slow it down or temporarily disable its movement if enough damage is dealt within a short time window.",
+      "allowed_paths": [
+        "src/ai/sabotage_the_payload.py",
+        "src/ai/sabotage_the_payload.gd",
+        "tests/test_sabotage_the_payload.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
