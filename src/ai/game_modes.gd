@@ -8446,7 +8446,12 @@ class EarthquakeMode extends GameMode:
 						hp = b.get("hp", 0)
 					else:
 						hp = b.hp if "hp" in b else 0
-					if hp > 0:
+					var anchor = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						anchor = b.get("anchor_booster_timer", 0.0)
+					else:
+						anchor = b.anchor_booster_timer if "anchor_booster_timer" in b else 0.0
+					if hp > 0 and anchor <= 0.0:
 						if typeof(b) == TYPE_DICTIONARY:
 							b["x"] = b.get("x", 0.0) + randf_range(-50.0, 50.0) * delta
 							b["y"] = b.get("y", 0.0) + randf_range(-50.0, 50.0) * delta
