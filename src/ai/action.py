@@ -3759,10 +3759,13 @@ class Action:
                             if dist > 0.1:
                                 nx = dx / dist
                                 ny = dy / dist
+                                px = -ny
+                                py = nx
                                 pull_strength = 50.0 * delta
+                                orbit_strength = 150.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    self.ball.x += nx * pull_strength
-                                    self.ball.y += ny * pull_strength
+                                    self.ball.x += nx * pull_strength + px * orbit_strength
+                                    self.ball.y += ny * pull_strength + py * orbit_strength
 
                             dmg = getattr(hazard, "damage", 10.0) * delta
                             if hasattr(self.ball, "hp"):
