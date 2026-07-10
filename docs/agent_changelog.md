@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-807] Tether Hook — *2026-07-10 18:55:39 UTC*
+
+An item that hooks onto enemies and pulls them together over time, dealing minor damage for the duration of the tether.
+
+---
+
 ## [idea-821] Bounty System — *2026-07-10 18:41:43 UTC*
 
 Balls that score eliminations acquire a bounty. Killing a ball with a bounty provides temporary stat boosts or currency.
