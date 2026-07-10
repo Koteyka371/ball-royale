@@ -16149,11 +16149,10 @@ class ShrinkingBoundaryMode extends GameMode:
 	var min_y: float = 0.0
 	var max_y: float = 1000.0
 	var shrink_rate: float = 10.0
-	var outside_damage_per_second: float = 30.0
 
 	func _init() -> void:
 		name = "Shrinking Boundary"
-		description = "The boundaries of the arena slowly shrink over time, dealing significant damage to anyone caught outside the safe area."
+		description = "The boundaries of the arena slowly shrink over time, instantly eliminating anyone caught outside the safe area."
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -16179,7 +16178,6 @@ class ShrinkingBoundaryMode extends GameMode:
 			min_y += shrink_rate * delta
 			max_y -= shrink_rate * delta
 
-		var damage_this_tick = outside_damage_per_second * delta
 		for b in balls:
 			var b_dict = b
 			var is_dict = typeof(b) == TYPE_DICTIONARY
@@ -16192,23 +16190,14 @@ class ShrinkingBoundaryMode extends GameMode:
 				var by = b_dict.get("y", 0.0) if is_dict else b.get("y")
 
 				if bx < min_x or bx > max_x or by < min_y or by > max_y:
-					var hp = b_dict.get("hp", 0.0) if is_dict else b.get("hp")
-					hp -= damage_this_tick
-					if hp <= 0:
-						hp = 0
-						if is_dict:
-							b["alive"] = false
-							b["killer"] = "Shrinking Boundary"
-							b["hp"] = 0
-						else:
-							b.set("alive", false)
-							b.set("killer", "Shrinking Boundary")
-							b.set("hp", 0)
+					if is_dict:
+						b["hp"] = 0.0
+						b["alive"] = false
+						b["killer"] = "Shrinking Boundary"
 					else:
-						if is_dict:
-							b["hp"] = hp
-						else:
-							b.set("hp", hp)
+						b.set("hp", 0.0)
+						b.set("alive", false)
+						b.set("killer", "Shrinking Boundary")
 
 
 class EntanglementMutatorMode extends GameMode:

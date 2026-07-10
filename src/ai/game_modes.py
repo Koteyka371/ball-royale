@@ -12536,13 +12536,12 @@ class ShrinkingBoundaryMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Shrinking Boundary"
-        self.description = "The boundaries of the arena slowly shrink over time, dealing significant damage to anyone caught outside the safe area."
+        self.description = "The boundaries of the arena slowly shrink over time, instantly eliminating anyone caught outside the safe area."
         self.min_x = 0.0
         self.max_x = 1000.0
         self.min_y = 0.0
         self.max_y = 1000.0
         self.shrink_rate = 10.0
-        self.outside_damage_per_second = 30.0
 
     def setup(self, world, balls):
         super().setup(world, balls)
@@ -12563,8 +12562,6 @@ class ShrinkingBoundaryMode(GameMode):
             self.min_y += self.shrink_rate * delta
             self.max_y -= self.shrink_rate * delta
 
-        # Apply damage
-        damage_this_tick = self.outside_damage_per_second * delta
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             hazards_to_remove = []
             for h in world.arena.hazards:
@@ -12589,11 +12586,10 @@ class ShrinkingBoundaryMode(GameMode):
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 if b.x < self.min_x or b.x > self.max_x or b.y < self.min_y or b.y > self.max_y:
-                    b.hp -= damage_this_tick
-                    if b.hp <= 0:
-                        b.alive = False
-                        b.killer = "Shrinking Boundary"
-                        b.hp = 0
+                    b.hp = 0
+                    b.alive = False
+                    b.killer = "Shrinking Boundary"
+
 
 
 class EntanglementMutatorMode(GameMode):
