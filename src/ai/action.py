@@ -140,6 +140,10 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+        if getattr(target, "intangible", False) or getattr(target, "intangible_timer", 0.0) > 0.0:
+            return
+        if getattr(attacker, "intangible", False) or getattr(attacker, "intangible_timer", 0.0) > 0.0:
+            return
         if getattr(target, "quantum_state_timer", 0.0) > 0.0:
             return
         import random
@@ -820,6 +824,11 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "intangible_timer", 0.0) > 0.0:
+            self.ball.intangible_timer -= delta
+            if self.ball.intangible_timer <= 0.0:
+                self.ball.intangible_timer = 0.0
+                self.ball.intangible = False
         if hasattr(self.ball, "suspended_projectiles"):
             for sp in list(self.ball.suspended_projectiles):
                 sp["timer"] -= delta
@@ -7197,6 +7206,9 @@ class Action:
         self._idle(delta * 0.5)
 
     def _collect_booster(self, delta: float) -> None:
+        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0:
+            self._idle(delta)
+            return
         import math
         import random
         boosters = self._get_boosters()
@@ -10270,6 +10282,9 @@ class Action:
                     setattr(dome, 'duration', 10.0)
                     self.world.arena.hazards.append(dome)
 
+            elif skill_name == "phase_through":
+                self.ball.intangible_timer = 3.0
+                self.ball.intangible = True
             elif skill_name == "target_strong":
                 import math
                 enemies = self._get_enemies()
@@ -10345,6 +10360,8 @@ class Action:
         self.ball.y += ny * speed * 0.3
 
     def _clamp_position(self) -> bool:
+        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0:
+            return False
         bounced = False
         radius = getattr(self.ball, "radius", 10.0)
 
@@ -10375,6 +10392,8 @@ class Action:
         return bounced
 
     def _resolve_collisions(self) -> bool:
+        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0:
+            return False
         bounced = False
         ball_radius = getattr(self.ball, "radius", 10.0)
         # Assuming we just need nearby entities to avoid checking everyone

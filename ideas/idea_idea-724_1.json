@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A new hazard type that, when collided with, swaps the positions of the two furthest balls in the arena, creating unpredictable shifts in the late game."
+}
