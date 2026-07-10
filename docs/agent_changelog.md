@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-812] Evolution Boss Events — *2026-07-10 18:24:36 UTC*
+
+Upon a player reaching their maximum evolution tier, occasionally spawn a powerful corrupted clone of their base class as a world boss to challenge them.
+
+---
+
 ## [idea-766] Gravitational Anomaly — *2026-07-10 18:07:38 UTC*
 
 A random event that alters the physics of the arena. Projectiles curve, movement speed is affected depending on the direction of travel relative to the anomaly's center.

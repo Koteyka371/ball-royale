@@ -13965,7 +13965,7 @@
     },
     {
       "id": "idea-812",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Evolution Boss Events",
@@ -23139,6 +23139,23 @@
         "src/ai/chameleon_ball.py",
         "src/ai/chameleon_ball.gd",
         "tests/test_chameleon_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1351",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chrono Shift Ability",
+      "description": "A new ability that allows a ball to 'rewind' its position and health to its state 3 seconds prior. Can be used tactically to dodge incoming anomalous projectiles or recover from a bad positioning.",
+      "allowed_paths": [
+        "src/ai/chrono_shift_ability.py",
+        "src/ai/chrono_shift_ability.gd",
+        "tests/test_chrono_shift_ability.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
