@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-800] Game Mode: The Floor is Lava (Dynamic) — *2026-07-10 20:11:43 UTC*
+
+A battle royale mode where the safe zone shrinks constantly, and any area outside the safe zone turns into damaging lava rather than just applying storm damage, punishing displacement heavily.
+
+---
+
 ## [idea-809] Time Distortion Zones — *2026-07-10 20:10:24 UTC*
 
 Hazards that speed up or slow down time for entities within them. Fast zones increase movement and attack speed but drain stamina rapidly, while slow zones do the opposite.
