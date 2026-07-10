@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-841] Shrinking Safe Zone mutator — *2026-07-10 21:29:10 UTC*
+
+A mutator where the arena borders shrink constantly, eliminating any balls caught outside.
+
+---
+
 ## [idea-842] Community Voted Rotating Game Modes — *2026-07-10 21:29:05 UTC*
 
 Every weekend, present three unique experimental game mode mutations (e.g., '10x Speed', 'Invisible Enemies', 'Lava Floor') on the main menu. Players vote using their prestige tokens, and the winning mode becomes the active weekend event.
