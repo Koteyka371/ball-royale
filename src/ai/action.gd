@@ -269,6 +269,50 @@ func _attempt_damage(attacker, target) -> void:
 				var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 40.0))
 				if sqrt((t_x2 - hx)*(t_x2 - hx) + (t_y2 - hy)*(t_y2 - hy)) <= hr:
 					return
+			elif h_kind == "slow_motion_zone":
+				var hx = float(h.x if "x" in h else h.get_meta("x"))
+				var hy = float(h.y if "y" in h else h.get_meta("y"))
+				var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 50.0))
+
+				var dx = t_x2 - a_x2
+				var dy = t_y2 - a_y2
+				var fx = a_x2 - hx
+				var fy = a_y2 - hy
+
+				var a_val = dx*dx + dy*dy
+				var b2 = 2.0 * (fx*dx + fy*dy)
+				var c = (fx*fx + fy*fy) - hr*hr
+
+				if a_val != 0.0:
+					var disc = b2*b2 - 4.0*a_val*c
+					if disc >= 0.0:
+						disc = sqrt(disc)
+						var t1 = (-b2 - disc) / (2.0*a_val)
+						var t2 = (-b2 + disc) / (2.0*a_val)
+						if (t1 >= 0.0 and t1 <= 1.0) or (t2 >= 0.0 and t2 <= 1.0) or (t1 < 0.0 and t2 > 1.0):
+							var is_resuming = false
+							if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("_is_resuming_projectile"):
+								is_resuming = attacker.get_meta("_is_resuming_projectile")
+							elif "_is_resuming_projectile" in attacker:
+								is_resuming = attacker._is_resuming_projectile
+
+							if not is_resuming:
+								var sus_proj = []
+								if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("suspended_projectiles"):
+									sus_proj = attacker.get_meta("suspended_projectiles")
+								elif "suspended_projectiles" in attacker:
+									sus_proj = attacker.suspended_projectiles
+
+								sus_proj.append({
+									"target": target,
+									"timer": 2.0
+								})
+
+								if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
+									attacker.set_meta("suspended_projectiles", sus_proj)
+								else:
+									attacker["suspended_projectiles"] = sus_proj
+								return
 			elif h_kind == "energy_barrier" or h_kind == "smokescreen":
 				var h_team = h.get_meta("team") if h.has_meta("team") else ""
 				if h_team != a_team:
@@ -1264,8 +1308,60 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var sus_proj = []
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("suspended_projectiles"):
+        sus_proj = self.ball["suspended_projectiles"]
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("suspended_projectiles"):
+        sus_proj = self.ball.get_meta("suspended_projectiles")
+    elif typeof(self.ball) == TYPE_OBJECT and "suspended_projectiles" in self.ball:
+        sus_proj = self.ball.suspended_projectiles
+
+    if sus_proj.size() > 0:
+        var updated_proj = []
+        for sp in sus_proj:
+            sp["timer"] -= delta
+            if sp["timer"] <= 0.0:
+                var t = sp["target"]
+                var t_alive = true
+                if typeof(t) != TYPE_DICTIONARY and t.has_method("has_meta") and t.has_meta("alive"):
+                    t_alive = t.get_meta("alive")
+                elif "alive" in t:
+                    t_alive = t.alive
+                var t_hp = 100.0
+                if typeof(t) != TYPE_DICTIONARY and t.has_method("has_meta") and t.has_meta("hp"):
+                    t_hp = t.get_meta("hp")
+                elif "hp" in t:
+                    t_hp = t.hp
+
+                if t_alive or t_hp > 0:
+                    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("_is_resuming_projectile", true)
+                    else:
+                        self.ball["_is_resuming_projectile"] = true
+
+                    _attempt_damage(self.ball, t)
+
+                    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("_is_resuming_projectile", false)
+                    else:
+                        self.ball["_is_resuming_projectile"] = false
+            else:
+                updated_proj.append(sp)
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+            self.ball.set_meta("suspended_projectiles", updated_proj)
+        else:
+            self.ball["suspended_projectiles"] = updated_proj
+
 	var c_active = false
 	var c_timer = 0.0
+	if typeof(self.ball) == TYPE_DICTIONARY:
+		self.ball["slow_motion_zone_active"] = false
+	else:
+		if self.ball.has_method("set_meta"):
+			self.ball.set_meta("slow_motion_zone_active", false)
+		else:
+			self.ball.slow_motion_zone_active = false
+
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		c_active = self.ball.get("charging_shockwave_shield_active", false)
 		c_timer = self.ball.get("charging_shockwave_shield_timer", 0.0)
@@ -1288,6 +1384,59 @@ func execute(strategy: String, delta: float):
 				var kind = ""
 				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): kind = hazard["kind"]
 				elif typeof(hazard) == TYPE_OBJECT and "kind" in hazard: kind = hazard.kind
+
+				if kind == "slow_motion_zone":
+					var hx = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]
+					elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: hx = hazard.x
+					var hy = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): hy = hazard["y"]
+					elif typeof(hazard) == TYPE_OBJECT and "y" in hazard: hy = hazard.y
+					var rad = 50.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): rad = hazard["radius"]
+					elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: rad = hazard.radius
+
+					var bx = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bx = self.ball["x"]
+					elif typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: bx = self.ball.x
+					var by = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): by = self.ball["y"]
+					elif typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: by = self.ball.y
+
+					var dx = hx - bx
+					var dy = hy - by
+					if sqrt(dx*dx + dy*dy) <= rad:
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["slow_motion_zone_active"] = true
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("slow_motion_zone_active", true)
+							else:
+								self.ball.slow_motion_zone_active = true
+
+						var cur_base_speed = 100.0
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): cur_base_speed = self.ball["base_speed"]
+						elif typeof(self.ball) == TYPE_OBJECT and "base_speed" in self.ball: cur_base_speed = self.ball.base_speed
+
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["speed"] = cur_base_speed * 0.5
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("speed", cur_base_speed * 0.5)
+							else:
+								self.ball.speed = cur_base_speed * 0.5
+
+						var cur_speed_mult = 1.0
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_multiplier"): cur_speed_mult = self.ball["speed_multiplier"]
+						elif typeof(self.ball) == TYPE_OBJECT and "speed_multiplier" in self.ball: cur_speed_mult = self.ball.speed_multiplier
+
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["speed_multiplier"] = cur_speed_mult * 0.5
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("speed_multiplier", cur_speed_mult * 0.5)
+							else:
+								self.ball.speed_multiplier = cur_speed_mult * 0.5
 
 				if kind == "void_panel":
 					var hx = 0.0
@@ -19637,12 +19786,23 @@ func _update_skill_timer(delta: float):
     var is_windy = arena_obj.get("is_windy") if arena_obj != null and "is_windy" in arena_obj else false
 
     var cooldown_mult = 1.0
+    var smz_active = false
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("slow_motion_zone_active"):
+        smz_active = self.ball.get("slow_motion_zone_active", false)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("slow_motion_zone_active"):
+        smz_active = self.ball.get_meta("slow_motion_zone_active")
+    elif typeof(self.ball) == TYPE_OBJECT and "slow_motion_zone_active" in self.ball:
+        smz_active = self.ball.slow_motion_zone_active
+
+    if smz_active:
+        cooldown_mult *= 0.5
+
     if is_snowing:
-        cooldown_mult = 0.5
+        cooldown_mult *= 0.5
     elif is_heatwave:
-        cooldown_mult = 1.5
+        cooldown_mult *= 1.5
     elif is_windy:
-        cooldown_mult = 1.2
+        cooldown_mult *= 1.2
 
     var em_timer = 0.0
     if "extended_mag_timer" in self.ball: em_timer = self.ball.extended_mag_timer
