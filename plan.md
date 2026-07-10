@@ -1,46 +1,37 @@
-1. **Create the `PhysicsAnomalyEventMode` class in `src/ai/game_modes.py` and `src/ai/game_modes.gd`.**
-   - The class inherits from `GameMode`.
-   - Setup `name = "Physics Anomaly Event"`.
-   - Setup `description = "A random event that alters the physics of the arena. Projectiles curve, movement speed is affected depending on the direction of travel relative to the anomaly's center."`
-   - Logic: similar to Reverse Gravity, it has an `event_timer` and `event_active` state.
-   - Every tick, if the event is active, it affects all balls in `tick`:
-     - Calculate vector to the anomaly center (cx, cy).
-     - Calculate ball movement vector (vx, vy).
-     - Calculate dot product. If positive (moving towards), increase speed. If negative (moving away), decrease speed.
-     - Since we just need to set a speed multiplier, we can set `b.speed_multiplier` or adjust `vx`, `vy` directly. Or simply set a custom meta property `b.anomaly_speed_mod`.
-     - Actually, the easiest way to affect movement speed is to calculate the dot product and directly modify the ball's velocity in the `tick` loop of the GameMode. But wait, `action.py` overwrites `vx`, `vy` based on `speed` every frame. So it's better to modify a `speed` multiplier.
-     - Wait, memory says: "When implementing custom physics in game_modes.py or game_modes.gd that apply both velocity-based speed multipliers and trajectory curvature in the same tick(), calculate the directional dot product before modifying the velocity (vx, vy) to ensure the speed multiplier is based on the original trajectory."
-     - Let's do that in `PhysicsAnomalyEventMode.tick()`.
+1. **Add `gravity_storm` to the list of weathers in procedural arena generation:**
+   - In `src/arena/procedural_arena.py`, add `"gravity_storm"` to the `weathers` list in `update_zone` around line 577.
+   - Initialize `self.is_gravity_storm = False` in `update_zone` (and also whenever weather flags are initialized around line 580 and line 570, or when resetting the weather to `"clear"`).
+   - In `src/arena/procedural_arena.gd`, add `"gravity_storm"` to the `weathers` list in `update_zone` around line 653.
+   - Initialize `is_gravity_storm = false` similarly.
 
-2. **Add the Game Mode to the `GAME_MODES` dictionary.**
-   - In `src/ai/game_modes.py` and `.gd`.
+2. **Implement `gravity_storm` periodic effect:**
+   - In `src/arena/procedural_arena.py`, within the `if current_tick % 120 == 0:` block in `update_zone`, add logic for `gravity_storm`. If `getattr(self, "weather", "") == "gravity_storm"`, randomly spawn 1 to 3 miniature gravity wells.
+     ```python
+     if getattr(self, "weather", "") == "gravity_storm":
+         for _ in range(random.randint(1, 3)):
+             gw_id = 8300 + len(self.hazards) + random.randint(0, 1000)
+             gw = Hazard(id=gw_id, x=random.uniform(50, self.width - 50), y=random.uniform(50, self.height - 50), radius=random.uniform(80.0, 150.0), kind="gravity_well", damage=2.0)
+             setattr(gw, 'duration', 10.0)
+             self.hazards.append(gw)
+     ```
+   - Do the same in `src/arena/procedural_arena.gd`:
+     ```gdscript
+     if weather == "gravity_storm":
+         var num_gws = (randi() % 3) + 1
+         for i in range(num_gws):
+             var gw_id = 8300 + hazards.size() + (randi() % 1000)
+             var gw = Hazard.new(gw_id, randf_range(50, width - 50), randf_range(50, height - 50), randf_range(80.0, 150.0), "gravity_well", 2.0)
+             gw.set_meta("duration", 10.0)
+             hazards.append(gw)
+     ```
 
-3. **Modify `_attempt_damage` in `src/ai/action.py` and `.gd` to make projectiles curve.**
-   - If `is_ranged` is true and `PhysicsAnomalyEventMode` is active:
-     - Instead of instantaneous damage, append to `suspended_projectiles`.
-     - Wait, in memory: "To delay instantaneous combat calculations (such as ranged attacks in _attempt_damage), append the event data and a timer to a list (e.g., suspended_projectiles) on the attacker entity, and decrement the timer in the main execute() loop before re-triggering the calculation."
-     - So we add it to `suspended_projectiles`. But the task says "Projectiles curve".
-     - To make them curve, we can actually modify the projectile's trajectory over time... but since `suspended_projectiles` only store a target and a timer, how do we curve it?
-     - What if we add `x`, `y`, `vx`, `vy` to the suspended projectile? And in `execute()`, update `x`, `y` and curve `vx`, `vy`. When it reaches the target or timer expires, deal damage.
-     - Wait, `_attempt_damage` doesn't know about `x` and `y` when it resumes. We can just say: if `world.game_mode` is `PhysicsAnomalyEventMode`, `_attempt_damage` has a chance to miss, or we actually implement the curving projectile logic.
-     - Let's check `_attempt_damage`.
+3. **Run tests & Complete Pre-commit step:**
+   - Run tests. Ensure no regressions are introduced.
+   - Run python scripts for CI checks and any pre-commit requirements (following rule 11 / specific PR format).
+   - Call `pre_commit_instructions` and follow its instructions to complete pre commit steps.
 
-4. **Implement projectile curving in `suspended_projectiles` logic in `action.py` and `action.gd`.**
-   - When appending to `suspended_projectiles` for this event, add `x`, `y`, `vx`, `vy`.
-   - In `execute`, when iterating `suspended_projectiles`:
-     - If it has `x`, `y`, `vx`, `vy`:
-       - Update `x`, `y` with `vx`, `vy` * delta.
-       - Apply a perpendicular force to `vx`, `vy` (curving).
-       - Check distance to target. If close, hit target (deal damage).
-       - If timer <= 0, remove (missed).
+4. **IDEAS INBOX:**
+   - Create 2 JSON files in `ideas/` based on instructions (e.g. `ideas/idea_idea-845_1.json`, `ideas/idea_idea-845_2.json`).
 
-5. **Wait, what if we just add a chance to miss and a visual effect of a curved projectile?**
-   - The task says "Projectiles curve". The best way is to actually simulate them in `suspended_projectiles`.
-
-6. **Add tests.**
-   - `test_physics_anomaly_event.py` in `src/ai/` to verify speed multiplier and projectile curving.
-
-7. **Complete pre commit steps.**
-   - Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
-
-8. **Submit the PR.**
+5. **Submit PR:**
+   - Push branch and create a PR.

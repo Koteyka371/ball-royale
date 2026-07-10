@@ -24,6 +24,7 @@ var is_windy: bool = false
 var is_foggy: bool = false
 var is_sandstorming: bool = false
 var is_acid_raining: bool = false
+var is_gravity_storm: bool = false
 
 
 class Platform:
@@ -649,8 +650,9 @@ func update_zone(current_tick: int, delta: float) -> void:
             is_foggy = false
             is_sandstorming = false
             is_acid_raining = false
+            is_gravity_storm = false
         elif current_tick % 600 == 300:
-            var weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm", "acid_rain"]
+            var weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm", "acid_rain", "gravity_storm"]
             weather = weathers[randi() % weathers.size()]
             is_raining = weather == "rain"
             is_snowing = weather == "snow"
@@ -659,6 +661,7 @@ func update_zone(current_tick: int, delta: float) -> void:
             is_foggy = weather == "fog"
             is_sandstorming = weather == "sandstorm"
             is_acid_raining = weather == "acid_rain"
+            is_gravity_storm = weather == "gravity_storm"
 
         # Update platforms
         for p in platforms:
@@ -1032,6 +1035,14 @@ func update_zone(current_tick: int, delta: float) -> void:
                     var acid = Hazard.new(acid_id, randf_range(50, width - 50), randf_range(50, height - 50), randf_range(30.0, 60.0), "acid_puddle", 10.0)
                     acid.set_meta("duration", 15.0)
                     hazards.append(acid)
+
+                if weather == "gravity_storm":
+                    var num_gws = (randi() % 3) + 1
+                    for i in range(num_gws):
+                        var gw_id = 8300 + hazards.size() + (randi() % 1000)
+                        var gw = Hazard.new(gw_id, randf_range(50, width - 50), randf_range(50, height - 50), randf_range(80.0, 150.0), "gravity_well", 2.0)
+                        gw.set_meta("duration", 10.0)
+                        hazards.append(gw)
 
                 if has_method("_trigger_event"):
                     var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]
