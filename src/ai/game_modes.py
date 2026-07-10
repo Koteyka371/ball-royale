@@ -12649,11 +12649,11 @@ class SniperNestsMode(GameMode):
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
 
         self.sniper_nests = [
-            {"x": arena_width * 0.2, "y": arena_height * 0.2, "radius": 120.0},
-            {"x": arena_width * 0.8, "y": arena_height * 0.2, "radius": 120.0},
-            {"x": arena_width * 0.2, "y": arena_height * 0.8, "radius": 120.0},
-            {"x": arena_width * 0.8, "y": arena_height * 0.8, "radius": 120.0},
-            {"x": arena_width * 0.5, "y": arena_height * 0.5, "radius": 150.0}
+            {"x": arena_width * 0.2, "y": arena_height * 0.2, "radius": 120.0, "is_decoy": False},
+            {"x": arena_width * 0.8, "y": arena_height * 0.2, "radius": 120.0, "is_decoy": True},
+            {"x": arena_width * 0.2, "y": arena_height * 0.8, "radius": 120.0, "is_decoy": True},
+            {"x": arena_width * 0.8, "y": arena_height * 0.8, "radius": 120.0, "is_decoy": False},
+            {"x": arena_width * 0.5, "y": arena_height * 0.5, "radius": 150.0, "is_decoy": False}
         ]
         world.sniper_nests = self.sniper_nests
         for b in balls:
@@ -12670,24 +12670,40 @@ class SniperNestsMode(GameMode):
             if not hasattr(b, "base_perception_radius"):
                 b.base_perception_radius = getattr(b, "perception_radius", 250.0)
 
+            if not hasattr(b, "base_speed_multiplier"):
+                b.base_speed_multiplier = getattr(b, "speed_multiplier", 1.0)
+
             in_nest = False
+            in_decoy = False
             for nest in self.sniper_nests:
                 dx = b.x - nest["x"]
                 dy = b.y - nest["y"]
                 if math.sqrt(dx*dx + dy*dy) <= nest["radius"]:
                     in_nest = True
+                    if nest.get("is_decoy", False):
+                        in_decoy = True
                     break
 
             if in_nest:
-                b.perception_radius = b.base_perception_radius * 1.25
-                b.cosmetic = "ancient_aura"
-                b.in_sniper_nest = True
+                if in_decoy:
+                    b.speed_multiplier = b.base_speed_multiplier * 0.5
+                    b.revealed = True
+                    b.cosmetic = "cursed_aura"
+                    b.in_sniper_nest = False
+                else:
+                    b.perception_radius = b.base_perception_radius * 1.25
+                    b.cosmetic = "ancient_aura"
+                    b.in_sniper_nest = True
+                    b.revealed = False
                 b.zone_modifier_sniper = True
             else:
                 if getattr(b, "zone_modifier_sniper", False):
                     b.perception_radius = b.base_perception_radius
-                    b.cosmetic = "none"
+                    b.speed_multiplier = getattr(b, "base_speed_multiplier", 1.0)
+                    if getattr(b, "cosmetic", "") in ["ancient_aura", "cursed_aura"]:
+                        b.cosmetic = "none"
                     b.in_sniper_nest = False
+                    b.revealed = False
                     delattr(b, "zone_modifier_sniper")
 
 GAME_MODES = {

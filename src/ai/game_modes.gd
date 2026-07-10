@@ -16293,11 +16293,11 @@ class SniperNestsMode extends GameMode:
             arena_height = float(world.arena.height)
 
         self.sniper_nests = [
-            {"x": arena_width * 0.2, "y": arena_height * 0.2, "radius": 120.0},
-            {"x": arena_width * 0.8, "y": arena_height * 0.2, "radius": 120.0},
-            {"x": arena_width * 0.2, "y": arena_height * 0.8, "radius": 120.0},
-            {"x": arena_width * 0.8, "y": arena_height * 0.8, "radius": 120.0},
-            {"x": arena_width * 0.5, "y": arena_height * 0.5, "radius": 150.0}
+            {"x": arena_width * 0.2, "y": arena_height * 0.2, "radius": 120.0, "is_decoy": false},
+            {"x": arena_width * 0.8, "y": arena_height * 0.2, "radius": 120.0, "is_decoy": true},
+            {"x": arena_width * 0.2, "y": arena_height * 0.8, "radius": 120.0, "is_decoy": true},
+            {"x": arena_width * 0.8, "y": arena_height * 0.8, "radius": 120.0, "is_decoy": false},
+            {"x": arena_width * 0.5, "y": arena_height * 0.5, "radius": 150.0, "is_decoy": false}
         ]
         if typeof(world) == TYPE_DICTIONARY:
             world["sniper_nests"] = self.sniper_nests
@@ -16347,7 +16347,30 @@ class SniperNestsMode extends GameMode:
                     b.base_perception_radius = curr_perc
                 base_perc = curr_perc
 
+            var has_base_sm = false
+            var base_sm = 1.0
+            if "base_speed_multiplier" in b:
+                has_base_sm = true
+                base_sm = b.base_speed_multiplier
+            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("base_speed_multiplier"):
+                has_base_sm = true
+                base_sm = b.get_meta("base_speed_multiplier")
+
+            if not has_base_sm:
+                var curr_sm = 1.0
+                if "speed_multiplier" in b: curr_sm = b.speed_multiplier
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("speed_multiplier"): curr_sm = b.get_meta("speed_multiplier")
+
+                if typeof(b) == TYPE_DICTIONARY:
+                    b["base_speed_multiplier"] = curr_sm
+                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                    b.set_meta("base_speed_multiplier", curr_sm)
+                elif typeof(b) == TYPE_OBJECT:
+                    b.base_speed_multiplier = curr_sm
+                base_sm = curr_sm
+
             var in_nest = false
+            var in_decoy = false
             var b_x = float(b.x if "x" in b else b.get_meta("x"))
             var b_y = float(b.y if "y" in b else b.get_meta("y"))
 
@@ -16356,24 +16379,49 @@ class SniperNestsMode extends GameMode:
                 var dy = b_y - nest["y"]
                 if sqrt(dx*dx + dy*dy) <= nest["radius"]:
                     in_nest = true
+                    if nest.has("is_decoy") and nest["is_decoy"]:
+                        in_decoy = true
                     break
 
             if in_nest:
-                if typeof(b) == TYPE_DICTIONARY:
-                    b["perception_radius"] = base_perc * 1.25
-                    b["cosmetic"] = "ancient_aura"
-                    b["in_sniper_nest"] = true
-                    b["zone_modifier_sniper"] = true
-                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
-                    b.set_meta("perception_radius", base_perc * 1.25)
-                    b.set_meta("cosmetic", "ancient_aura")
-                    b.set_meta("in_sniper_nest", true)
-                    b.set_meta("zone_modifier_sniper", true)
-                elif typeof(b) == TYPE_OBJECT:
-                    b.perception_radius = base_perc * 1.25
-                    b.cosmetic = "ancient_aura"
-                    b.in_sniper_nest = true
-                    b.set_meta("zone_modifier_sniper", true) if b.has_method("set_meta") else null
+                if in_decoy:
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["speed_multiplier"] = base_sm * 0.5
+                        b["revealed"] = true
+                        b["cosmetic"] = "cursed_aura"
+                        b["in_sniper_nest"] = false
+                        b["zone_modifier_sniper"] = true
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                        b.set_meta("speed_multiplier", base_sm * 0.5)
+                        b.set_meta("revealed", true)
+                        b.set_meta("cosmetic", "cursed_aura")
+                        b.set_meta("in_sniper_nest", false)
+                        b.set_meta("zone_modifier_sniper", true)
+                    elif typeof(b) == TYPE_OBJECT:
+                        b.speed_multiplier = base_sm * 0.5
+                        b.revealed = true
+                        b.cosmetic = "cursed_aura"
+                        b.in_sniper_nest = false
+                        b.set_meta("zone_modifier_sniper", true) if b.has_method("set_meta") else null
+                else:
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["perception_radius"] = base_perc * 1.25
+                        b["cosmetic"] = "ancient_aura"
+                        b["in_sniper_nest"] = true
+                        b["zone_modifier_sniper"] = true
+                        b["revealed"] = false
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                        b.set_meta("perception_radius", base_perc * 1.25)
+                        b.set_meta("cosmetic", "ancient_aura")
+                        b.set_meta("in_sniper_nest", true)
+                        b.set_meta("zone_modifier_sniper", true)
+                        b.set_meta("revealed", false)
+                    elif typeof(b) == TYPE_OBJECT:
+                        b.perception_radius = base_perc * 1.25
+                        b.cosmetic = "ancient_aura"
+                        b.in_sniper_nest = true
+                        b.revealed = false
+                        b.set_meta("zone_modifier_sniper", true) if b.has_method("set_meta") else null
             else:
                 var has_mod = false
                 if "zone_modifier_sniper" in b and b.zone_modifier_sniper: has_mod = true
@@ -16383,18 +16431,30 @@ class SniperNestsMode extends GameMode:
                 if has_mod:
                     if typeof(b) == TYPE_DICTIONARY:
                         b["perception_radius"] = base_perc
-                        b["cosmetic"] = "none"
+                        b["speed_multiplier"] = base_sm
+                        var cur_cos = b.get("cosmetic", "")
+                        if cur_cos in ["ancient_aura", "cursed_aura"]:
+                            b["cosmetic"] = "none"
                         b["in_sniper_nest"] = false
+                        b["revealed"] = false
                         b.erase("zone_modifier_sniper")
                     elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
                         b.set_meta("perception_radius", base_perc)
-                        b.set_meta("cosmetic", "none")
+                        b.set_meta("speed_multiplier", base_sm)
+                        var cur_cos = b.get_meta("cosmetic") if b.has_meta("cosmetic") else ""
+                        if cur_cos in ["ancient_aura", "cursed_aura"]:
+                            b.set_meta("cosmetic", "none")
                         b.set_meta("in_sniper_nest", false)
+                        b.set_meta("revealed", false)
                         b.set_meta("zone_modifier_sniper", false)
                     elif typeof(b) == TYPE_OBJECT:
                         b.perception_radius = base_perc
-                        b.cosmetic = "none"
+                        b.speed_multiplier = base_sm
+                        var cur_cos = b.cosmetic if "cosmetic" in b else ""
+                        if cur_cos in ["ancient_aura", "cursed_aura"]:
+                            b.cosmetic = "none"
                         b.in_sniper_nest = false
+                        b.revealed = false
                         b.set_meta("zone_modifier_sniper", false) if b.has_method("set_meta") else null
 
 
