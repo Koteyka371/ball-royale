@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-833] Seasonal Cosmetics for Nemesis Screen — *2026-07-10 20:54:47 UTC*
+
+Apply the seasonal background themes and specific seasonal UI flourishes to the Nemesis Screen to make the UI feel consistently themed. For example, during the 'Abyssal' season, the Nemesis screen could have a deep-sea ambient particle effect.
+
+---
+
 ## [idea-825] Shrinking Aura Booster — *2026-07-10 20:33:32 UTC*
 
 An active item that gives the ball an aura that gradually pulls enemies towards the center, functioning like a moving weak gravity well, useful for combining with AoE attacks.
