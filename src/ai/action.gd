@@ -180,6 +180,23 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+    var t_intangible = false
+    if typeof(target) == TYPE_OBJECT and "intangible" in target: t_intangible = target.intangible
+    elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible"): t_intangible = target.get_meta("intangible")
+    var t_timer = 0.0
+    if typeof(target) == TYPE_OBJECT and "intangible_timer" in target: t_timer = target.intangible_timer
+    elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible_timer"): t_timer = target.get_meta("intangible_timer")
+    if t_intangible or t_timer > 0.0:
+        return
+
+    var a_intangible = false
+    if typeof(attacker) == TYPE_OBJECT and "intangible" in attacker: a_intangible = attacker.intangible
+    elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("intangible"): a_intangible = attacker.get_meta("intangible")
+    var a_timer = 0.0
+    if typeof(attacker) == TYPE_OBJECT and "intangible_timer" in attacker: a_timer = attacker.intangible_timer
+    elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("intangible_timer"): a_timer = attacker.get_meta("intangible_timer")
+    if a_intangible or a_timer > 0.0:
+        return
     var q_state = 0.0
     if typeof(target) == TYPE_OBJECT and "quantum_state_timer" in target: q_state = target.quantum_state_timer
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("quantum_state_timer"): q_state = target.get_meta("quantum_state_timer")
@@ -1308,6 +1325,17 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: timer = self.ball.intangible_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
+    if timer > 0.0:
+        timer -= delta
+        if timer <= 0.0:
+            timer = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "intangible" in self.ball: self.ball.intangible = false
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("intangible", false)
+        if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: self.ball.intangible_timer = timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", timer)
     var sus_proj = []
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("suspended_projectiles"):
         sus_proj = self.ball["suspended_projectiles"]
@@ -12568,6 +12596,15 @@ func _defend(delta: float):
     _idle(delta * 0.5)
 
 func _collect_booster(delta: float):
+    var intangible = false
+    if typeof(self.ball) == TYPE_OBJECT and "intangible" in self.ball: intangible = self.ball.intangible
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible"): intangible = self.ball.get_meta("intangible")
+    var timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: timer = self.ball.intangible_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
+    if intangible or timer > 0.0:
+        _idle(delta)
+        return
     var boosters = _get_boosters()
     if boosters.size() > 0:
         var ball_radius = 10.0
@@ -17847,6 +17884,16 @@ func _use_skill():
             dome.set_meta("duration", 10.0)
             arena.hazards.append(dome)
 
+        elif skill_name == "phase_through":
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("intangible_timer", 3.0)
+                self.ball.set_meta("intangible", true)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["intangible_timer"] = 3.0
+                self.ball["intangible"] = true
+            elif typeof(self.ball) == TYPE_OBJECT:
+                self.ball.intangible_timer = 3.0
+                self.ball.intangible = true
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
             if enemies.size() > 0:
@@ -18333,6 +18380,14 @@ func _idle(delta: float):
     self.ball.y += ny * speed * 0.3
 
 func _clamp_position() -> bool:
+    var intangible = false
+    if typeof(self.ball) == TYPE_OBJECT and "intangible" in self.ball: intangible = self.ball.intangible
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible"): intangible = self.ball.get_meta("intangible")
+    var timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: timer = self.ball.intangible_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
+    if intangible or timer > 0.0:
+        return false
     var bounced = false
     if self.world != null:
         var radius = 10.0
@@ -18373,6 +18428,14 @@ func _clamp_position() -> bool:
     return bounced
 
 func _resolve_collisions() -> bool:
+    var intangible = false
+    if typeof(self.ball) == TYPE_OBJECT and "intangible" in self.ball: intangible = self.ball.intangible
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible"): intangible = self.ball.get_meta("intangible")
+    var timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: timer = self.ball.intangible_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
+    if intangible or timer > 0.0:
+        return false
     var bounced = false
     var ball_radius = 10.0
     if "radius" in self.ball: ball_radius = self.ball.radius
