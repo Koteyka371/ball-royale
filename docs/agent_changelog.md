@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-813] Skill Tree Specializations — *2026-07-10 15:09:03 UTC*
+
+Add a skill tree where balls can choose different passive upgrades at specific levels, independently of class evolution.
+
+---
+
 ## [idea-796] Weather-Triggered Arena Hazards — *2026-07-10 14:37:53 UTC*
 
 Arena hazards that spawn dynamically depending on the active weather. For example, 'Tornadoes' that spawn only during Windstorms, or 'Quicksand' pits that only appear during Sandstorms.

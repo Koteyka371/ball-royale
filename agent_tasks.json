@@ -13982,7 +13982,7 @@
     },
     {
       "id": "idea-813",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Skill Tree Specializations",
@@ -22833,6 +22833,74 @@
         "src/ai/magnetic_grapple_loadout.py",
         "src/ai/magnetic_grapple_loadout.gd",
         "tests/test_magnetic_grapple_loadout.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1333",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Volcanic Eruption Event",
+      "description": "During a 'Heatwave' weather event, volcanoes randomly erupt, launching fireballs across the arena. Fireballs leave temporary magma puddles on impact that deal high damage over time.",
+      "allowed_paths": [
+        "src/ai/volcanic_eruption.py",
+        "src/ai/volcanic_eruption.gd",
+        "tests/test_volcanic_eruption.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1334",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Phylactery Mechanism",
+      "description": "Introduce a rare 'Phylactery' drop for the Necromancer. When destroyed, instead of dying, the Necromancer's soul is bound to the Phylactery (which remains stationary for 5 seconds). If the Phylactery is not destroyed within that window, the Necromancer respawns with 50% HP.",
+      "allowed_paths": [
+        "src/ai/necromancer_phylactery_mechanism.py",
+        "src/ai/necromancer_phylactery_mechanism.gd",
+        "tests/test_necromancer_phylactery_mechanism.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1335",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blizzard Visibility Reduction",
+      "description": "During 'Blizzard' weather events, the camera zoom increases and fog of war is added, significantly reducing visibility. Additionally, entities leave temporary footprints in the snow.",
+      "allowed_paths": [
+        "src/ai/blizzard_visibility_reduction.py",
+        "src/ai/blizzard_visibility_reduction.gd",
+        "tests/test_blizzard_visibility_reduction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1336",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skeletal Archers Minions",
+      "description": "Add a new subtype of minion for the Necromancer: Skeletal Archers. Unlike standard melee minions, these are fragile but can attack enemies from a distance using weak homing projectiles.",
+      "allowed_paths": [
+        "src/ai/skeletal_archers_minions.py",
+        "src/ai/skeletal_archers_minions.gd",
+        "tests/test_skeletal_archers_minions.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
