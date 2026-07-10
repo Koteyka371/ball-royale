@@ -14475,7 +14475,7 @@
     },
     {
       "id": "idea-842",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Community Voted Rotating Game Modes",
@@ -23650,6 +23650,23 @@
         "src/ai/aura_bomb.py",
         "src/ai/aura_bomb.gd",
         "tests/test_aura_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1381",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Danger Zones Mode",
+      "description": "A game mode where safe zones periodically spawn and shrink. Players outside the safe zone take increasing damage over time.",
+      "allowed_paths": [
+        "src/ai/shrinking_danger_zones.py",
+        "src/ai/shrinking_danger_zones.gd",
+        "tests/test_shrinking_danger_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

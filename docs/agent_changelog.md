@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-842] Community Voted Rotating Game Modes — *2026-07-10 21:29:05 UTC*
+
+Every weekend, present three unique experimental game mode mutations (e.g., '10x Speed', 'Invisible Enemies', 'Lava Floor') on the main menu. Players vote using their prestige tokens, and the winning mode becomes the active weekend event.
+
+---
+
 ## [idea-823] Mimic Traps — *2026-07-10 21:18:04 UTC*
 
 Hazardous traps that disguise themselves as dropped loot or exit portals. Upon approach, they spring a net or apply a snare debuff, trapping the player for a few seconds.
