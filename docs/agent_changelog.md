@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-830] EMP Trap — *2026-07-10 21:49:51 UTC*
+
+A trap that when stepped on disables all shields and buffs of all players in a huge radius.
+
+---
+
 ## [idea-841] Shrinking Safe Zone mutator — *2026-07-10 21:29:10 UTC*
 
 A mutator where the arena borders shrink constantly, eliminating any balls caught outside.

@@ -14271,7 +14271,7 @@
     },
     {
       "id": "idea-830",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Trap",
@@ -23667,6 +23667,74 @@
         "src/ai/shrinking_danger_zones.py",
         "src/ai/shrinking_danger_zones.gd",
         "tests/test_shrinking_danger_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1382",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Path",
+      "description": "A game mode where the safe zone isn't a circle, but rather a winding path (like a snake) that continuously moves and shrinks, forcing players to navigate narrow corridors.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_path.py",
+        "src/ai/shrinking_safe_path.gd",
+        "tests/test_shrinking_safe_path.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1383",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mutator Synergy Combinations",
+      "description": "If players vote for two specific mutators that complement each other (e.g., '10x Speed' and 'Bouncy Walls'), the game combines them into a secret third mutator (e.g., 'Pinball Nightmare').",
+      "allowed_paths": [
+        "src/ai/mutator_synergy_combinations.py",
+        "src/ai/mutator_synergy_combinations.gd",
+        "tests/test_mutator_synergy_combinations.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1384",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Gravity Zone",
+      "description": "A game mutator where randomly a zone appears in the arena that pushes balls away from its center instead of pulling them, acting like a reverse black hole.",
+      "allowed_paths": [
+        "src/ai/reverse_gravity_zone.py",
+        "src/ai/reverse_gravity_zone.gd",
+        "tests/test_reverse_gravity_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1385",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weekend Boss Invasions",
+      "description": "On weekends, there is a chance for a massive world boss to invade the standard battle royale map, forcing all remaining balls to temporarily ally against it before resuming their fight.",
+      "allowed_paths": [
+        "src/ai/weekend_boss_invasions.py",
+        "src/ai/weekend_boss_invasions.gd",
+        "tests/test_weekend_boss_invasions.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
