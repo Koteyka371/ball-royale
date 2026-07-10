@@ -23536,6 +23536,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1374",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Booster",
+      "description": "A booster that swaps the positions of the ball and the furthest enemy currently alive when picked up, instantly turning the tables or changing combat positioning.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_booster.py",
+        "src/ai/quantum_swap_booster.gd",
+        "tests/test_quantum_swap_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1375",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trail of Fire Trap",
+      "description": "A trap item that leaves a burning trail on the ground where the ball moves for the next 10 seconds. Enemies walking into the trail take continuous burn damage.",
+      "allowed_paths": [
+        "src/arena/trail_of_fire_trap.py",
+        "src/arena/trail_of_fire_trap.gd",
+        "tests/test_trail_of_fire_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
