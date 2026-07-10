@@ -1,0 +1,4 @@
+{
+  "title": "Terrain Terraformers",
+  "description": "Introduce a new 'Terraformer' class that leaves trails of specialized terrain (like mud or ice) as they move, triggering trait effects for followers or enemies."
+}

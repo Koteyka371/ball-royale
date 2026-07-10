@@ -1473,6 +1473,122 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+    # --- TRAIT WEATHER / TERRAIN BUFFS ---
+    var b_traits = []
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits"): b_traits = self.ball.traits
+    elif typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball: b_traits = self.ball.traits
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("traits"): b_traits = self.ball.get_meta("traits")
+
+    if b_traits.size() > 0:
+        var t_weather = ""
+        var t_terrain = ""
+
+        if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+            if "weather" in self.world.game_mode:
+                t_weather = str(self.world.game_mode.weather).to_lower()
+            elif self.world.game_mode.has_method("get") and self.world.game_mode.get("weather") != null:
+                t_weather = str(self.world.game_mode.get("weather")).to_lower()
+
+            if "name" in self.world.game_mode:
+                t_terrain = str(self.world.game_mode.name).to_lower()
+            elif self.world.game_mode.has_method("get") and self.world.game_mode.get("name") != null:
+                t_terrain = str(self.world.game_mode.get("name")).to_lower()
+
+            if "terrain" in self.world.game_mode:
+                t_terrain = str(self.world.game_mode.terrain).to_lower()
+            elif self.world.game_mode.has_method("get") and self.world.game_mode.get("terrain") != null:
+                t_terrain = str(self.world.game_mode.get("terrain")).to_lower()
+
+        if t_weather == "" and self.world != null and "arena" in self.world and self.world.arena != null:
+            if "weather" in self.world.arena:
+                t_weather = str(self.world.arena.weather).to_lower()
+            elif typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("weather"):
+                t_weather = str(self.world.arena.weather).to_lower()
+
+        if t_terrain == "" and self.world != null and "arena" in self.world and self.world.arena != null:
+            if "terrain" in self.world.arena:
+                t_terrain = str(self.world.arena.terrain).to_lower()
+            elif typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("terrain"):
+                t_terrain = str(self.world.arena.terrain).to_lower()
+
+        var b_traits_lower = []
+        for t in b_traits:
+            b_traits_lower.append(str(t).to_lower())
+
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            if not self.ball.has("_trait_base_speed_mult"): self.ball["_trait_base_speed_mult"] = self.ball.get("speed_multiplier", 1.0)
+            if not self.ball.has("_trait_base_damage_mult"): self.ball["_trait_base_damage_mult"] = self.ball.get("damage_multiplier", 1.0)
+            if not self.ball.has("_trait_base_def_mult"): self.ball["_trait_base_def_mult"] = self.ball.get("defense_multiplier", 1.0)
+            self.ball["speed_multiplier"] = self.ball["_trait_base_speed_mult"]
+            self.ball["damage_multiplier"] = self.ball["_trait_base_damage_mult"]
+            self.ball["defense_multiplier"] = self.ball["_trait_base_def_mult"]
+        elif typeof(self.ball) == TYPE_OBJECT:
+            if not self.ball.has_meta("_trait_base_speed_mult"):
+                var base_sm = 1.0
+                if "speed_multiplier" in self.ball: base_sm = self.ball.speed_multiplier
+                elif self.ball.has_meta("speed_multiplier"): base_sm = self.ball.get_meta("speed_multiplier")
+                if self.ball.has_method("set_meta"): self.ball.set_meta("_trait_base_speed_mult", base_sm)
+
+            if not self.ball.has_meta("_trait_base_damage_mult"):
+                var base_dm = 1.0
+                if "damage_multiplier" in self.ball: base_dm = self.ball.damage_multiplier
+                elif self.ball.has_meta("damage_multiplier"): base_dm = self.ball.get_meta("damage_multiplier")
+                if self.ball.has_method("set_meta"): self.ball.set_meta("_trait_base_damage_mult", base_dm)
+
+            if not self.ball.has_meta("_trait_base_def_mult"):
+                var base_defm = 1.0
+                if "defense_multiplier" in self.ball: base_defm = self.ball.defense_multiplier
+                elif self.ball.has_meta("defense_multiplier"): base_defm = self.ball.get_meta("defense_multiplier")
+                if self.ball.has_method("set_meta"): self.ball.set_meta("_trait_base_def_mult", base_defm)
+
+            var t_sm = self.ball.get_meta("_trait_base_speed_mult") if self.ball.has_method("has_meta") and self.ball.has_meta("_trait_base_speed_mult") else 1.0
+            var t_dm = self.ball.get_meta("_trait_base_damage_mult") if self.ball.has_method("has_meta") and self.ball.has_meta("_trait_base_damage_mult") else 1.0
+            var t_defm = self.ball.get_meta("_trait_base_def_mult") if self.ball.has_method("has_meta") and self.ball.has_meta("_trait_base_def_mult") else 1.0
+
+            if "speed_multiplier" in self.ball: self.ball.speed_multiplier = t_sm
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier", t_sm)
+
+            if "damage_multiplier" in self.ball: self.ball.damage_multiplier = t_dm
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("damage_multiplier", t_dm)
+
+            if "defense_multiplier" in self.ball: self.ball.defense_multiplier = t_defm
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("defense_multiplier", t_defm)
+
+        if "fire" in b_traits_lower:
+            if t_weather == "heatwave" or t_terrain.find("lava") != -1:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["speed_multiplier"] = self.ball.get("_trait_base_speed_mult", 1.0) * 1.5
+                    self.ball["damage_multiplier"] = self.ball.get("_trait_base_damage_mult", 1.0) * 1.5
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "speed_multiplier" in self.ball: self.ball.speed_multiplier *= 1.5
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier", self.ball.get_meta("speed_multiplier", 1.0) * 1.5)
+                    if "damage_multiplier" in self.ball: self.ball.damage_multiplier *= 1.5
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("damage_multiplier", self.ball.get_meta("damage_multiplier", 1.0) * 1.5)
+            elif t_weather == "rain" or t_weather == "blizzard":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["speed_multiplier"] = self.ball.get("_trait_base_speed_mult", 1.0) * 0.5
+                    self.ball["damage_multiplier"] = self.ball.get("_trait_base_damage_mult", 1.0) * 0.5
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "speed_multiplier" in self.ball: self.ball.speed_multiplier *= 0.5
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier", self.ball.get_meta("speed_multiplier", 1.0) * 0.5)
+                    if "damage_multiplier" in self.ball: self.ball.damage_multiplier *= 0.5
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("damage_multiplier", self.ball.get_meta("damage_multiplier", 1.0) * 0.5)
+
+        if "earth" in b_traits_lower or "rock" in b_traits_lower:
+            if t_terrain.find("dirt") != -1:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["defense_multiplier"] = self.ball.get("_trait_base_def_mult", 1.0) * 1.5
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "defense_multiplier" in self.ball: self.ball.defense_multiplier *= 1.5
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("defense_multiplier", self.ball.get_meta("defense_multiplier", 1.0) * 1.5)
+            if t_weather == "sandstorm":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["immune_to_sandstorm"] = true
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "immune_to_sandstorm" in self.ball: self.ball.immune_to_sandstorm = true
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("immune_to_sandstorm", true)
+    # -------------------------------------
     var b_type = ""
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball.ball_type
     elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: b_type = self.ball.ball_type

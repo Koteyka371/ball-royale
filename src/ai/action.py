@@ -901,6 +901,55 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        # --- TRAIT WEATHER / TERRAIN BUFFS ---
+        b_traits = getattr(self.ball, "traits", [])
+        if b_traits:
+            t_weather = ""
+            gm = getattr(self.world, "game_mode", None)
+            if gm and getattr(gm, "weather", ""):
+                t_weather = str(gm.weather).lower()
+            else:
+                ar = getattr(self.world, "arena", None)
+                if ar and getattr(ar, "weather", ""):
+                    t_weather = str(ar.weather).lower()
+
+            t_terrain = ""
+            if gm and getattr(gm, "name", ""):
+                t_terrain = str(gm.name).lower()
+            if gm and getattr(gm, "terrain", ""):
+                t_terrain = str(gm.terrain).lower()
+            else:
+                ar = getattr(self.world, "arena", None)
+                if ar and getattr(ar, "terrain", ""):
+                    t_terrain = str(ar.terrain).lower()
+
+            b_traits_lower = [str(t).lower() for t in b_traits]
+
+            # Prevent exponential growth by tracking a base multiplier for traits if not set
+            if not hasattr(self.ball, "_trait_base_speed_mult"): self.ball._trait_base_speed_mult = getattr(self.ball, "speed_multiplier", 1.0)
+            if not hasattr(self.ball, "_trait_base_damage_mult"): self.ball._trait_base_damage_mult = getattr(self.ball, "damage_multiplier", 1.0)
+            if not hasattr(self.ball, "_trait_base_def_mult"): self.ball._trait_base_def_mult = getattr(self.ball, "defense_multiplier", 1.0)
+
+            # Reset to base before applying
+            self.ball.speed_multiplier = self.ball._trait_base_speed_mult
+            self.ball.damage_multiplier = self.ball._trait_base_damage_mult
+            self.ball.defense_multiplier = self.ball._trait_base_def_mult
+
+            if "fire" in b_traits_lower:
+                if t_weather == "heatwave" or "lava" in t_terrain:
+                    self.ball.speed_multiplier = self.ball._trait_base_speed_mult * 1.5
+                    self.ball.damage_multiplier = self.ball._trait_base_damage_mult * 1.5
+                elif t_weather in ["rain", "blizzard"]:
+                    self.ball.speed_multiplier = self.ball._trait_base_speed_mult * 0.5
+                    self.ball.damage_multiplier = self.ball._trait_base_damage_mult * 0.5
+
+            if "earth" in b_traits_lower or "rock" in b_traits_lower:
+                if "dirt" in t_terrain:
+                    self.ball.defense_multiplier = self.ball._trait_base_def_mult * 1.5
+                if t_weather == "sandstorm":
+                    self.ball.immune_to_sandstorm = True
+        # -------------------------------------
         if getattr(self.ball, "ball_type", "") == "broodling":
             import math
             self._update_skill_timer(delta)
