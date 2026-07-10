@@ -13181,7 +13181,7 @@
     },
     {
       "id": "idea-766",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravitational Anomaly",
@@ -23088,6 +23088,57 @@
         "src/ai/inverted_controls_status_effect.py",
         "src/ai/inverted_controls_status_effect.gd",
         "tests/test_inverted_controls_status_effect.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1348",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Resonance Event",
+      "description": "A random game event where stacking auras pulse outward globally every 15 seconds. During a pulse, all players with active aura buffs grant those buffs to random friendly players anywhere on the map for 5 seconds. If a player with a reversed aura (via the Aura Inverter Trap) pulses, it debuffs enemies map-wide instead.",
+      "allowed_paths": [
+        "src/ai/aura_resonance.py",
+        "src/ai/aura_resonance.gd",
+        "tests/test_aura_resonance.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1349",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Amplify Trap",
+      "description": "A placeable trap that temporarily supercharges any active friendly stacking auras in its blast radius, doubling their effects and range for a short duration while dealing minor damage to enemies. This encourages teams to strategically defend the trap to maximize their buffs during engagements.",
+      "allowed_paths": [
+        "src/arena/aura_amplify_trap.py",
+        "src/arena/aura_amplify_trap.gd",
+        "tests/test_aura_amplify_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1350",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chameleon Ball Type",
+      "description": "A new ball type that automatically adopts the primary trait of the last enemy it damaged, switching playstyles dynamically during combat.",
+      "allowed_paths": [
+        "src/ai/chameleon_ball.py",
+        "src/ai/chameleon_ball.gd",
+        "tests/test_chameleon_ball.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

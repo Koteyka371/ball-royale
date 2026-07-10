@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-766] Gravitational Anomaly — *2026-07-10 18:07:38 UTC*
+
+A random event that alters the physics of the arena. Projectiles curve, movement speed is affected depending on the direction of travel relative to the anomaly's center.
+
+---
+
 ## [idea-724] Phase Shift Skill — *2026-07-10 18:05:25 UTC*
 
 A temporary ability that allows a ball to become intangible for 3 seconds. While intangible, they take no damage and can pass through walls and hazards, but they also cannot attack or collect items.
