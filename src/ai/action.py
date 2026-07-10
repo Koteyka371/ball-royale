@@ -194,6 +194,39 @@ class Action:
                         hr = getattr(h, "radius", 40.0)
                         if math.hypot(t_x - hx, t_y - hy) <= hr:
                             return
+                    elif getattr(h, "kind", "") == "slow_motion_zone":
+                        hx = h.x
+                        hy = h.y
+                        hr = getattr(h, "radius", 50.0)
+
+                        dx = t_x - a_x
+                        dy = t_y - a_y
+                        fx = a_x - hx
+                        fy = a_y - hy
+
+                        a = dx*dx + dy*dy
+                        b2 = 2 * (fx*dx + fy*dy)
+                        c = (fx*fx + fy*fy) - hr*hr
+
+                        if a != 0:
+                            disc = b2*b2 - 4*a*c
+                            if disc >= 0:
+                                disc = math.sqrt(disc)
+                                t1 = (-b2 - disc) / (2*a)
+                                t2 = (-b2 + disc) / (2*a)
+                                if (0 <= t1 <= 1) or (0 <= t2 <= 1) or (t1 < 0 and t2 > 1):
+                                    if not hasattr(attacker, "suspended_projectiles"):
+                                        attacker.suspended_projectiles = []
+                                    # To prevent infinite suspension recursion, we check if this projectile is already resuming.
+                                    # But we don't pass a flag easily, so we just check if it's already in the list for this target...
+                                    # Actually, a simple way is just:
+                                    is_resuming = getattr(attacker, "_is_resuming_projectile", False)
+                                    if not is_resuming:
+                                        attacker.suspended_projectiles.append({
+                                            "target": target,
+                                            "timer": 2.0
+                                        })
+                                        return
                     elif getattr(h, "kind", "") in ["energy_barrier", "smokescreen"]:
                         h_team = getattr(h, "team", "")
                         if h_team != a_team:
@@ -787,6 +820,17 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if hasattr(self.ball, "suspended_projectiles"):
+            for sp in list(self.ball.suspended_projectiles):
+                sp["timer"] -= delta
+                if sp["timer"] <= 0:
+                    self.ball.suspended_projectiles.remove(sp)
+                    # Resumed projectile hits target if target is alive
+                    if getattr(sp["target"], "alive", True) or getattr(sp["target"], "hp", 0) > 0:
+                        self.ball._is_resuming_projectile = True
+                        self._attempt_damage(self.ball, sp["target"])
+                        self.ball._is_resuming_projectile = False
+
         if getattr(self.ball, "_aura_explosion_cd", 0.0) > 0.0:
             self.ball._aura_explosion_cd -= delta
 
@@ -797,6 +841,19 @@ class Action:
                     self.ball.charging_shockwave_shield_timer = 5.0
 
         import math
+
+        self.ball.slow_motion_zone_active = False
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "slow_motion_zone":
+                    hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
+                        self.ball.slow_motion_zone_active = True
+                        if hasattr(self.ball, "speed"):
+                            self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.5
+                            if hasattr(self.ball, "speed_multiplier"):
+                                self.ball.speed_multiplier *= 0.5
 
         # Void panel instant death
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -10897,12 +10954,14 @@ class Action:
         is_windy = getattr(arena, 'is_windy', False) if arena else False
 
         cooldown_mult = 1.0
+        if getattr(self.ball, "slow_motion_zone_active", False):
+            cooldown_mult *= 0.5
         if is_snowing:
-            cooldown_mult = 0.5  # Snow slows down cooldowns (longer wait)
+            cooldown_mult *= 0.5  # Snow slows down cooldowns (longer wait)
         elif is_heatwave:
-            cooldown_mult = 1.5  # Heatwave speeds up cooldowns (faster recovery)
+            cooldown_mult *= 1.5  # Heatwave speeds up cooldowns (faster recovery)
         elif is_windy:
-            cooldown_mult = 1.2  # Windy speeds up cooldowns slightly
+            cooldown_mult *= 1.2  # Windy speeds up cooldowns slightly
 
         if getattr(self.ball, "extended_mag_timer", 0.0) > 0:
             cooldown_mult *= 2.0

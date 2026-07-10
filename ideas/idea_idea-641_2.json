@@ -1,0 +1,4 @@
+{
+    "title": "Chain Lightning Tether",
+    "description": "A new hazard node that connects to the nearest two players within 200 units with a visible lightning tether. While tethered, both players share movement physics (pulling each other) and any damage taken by one is partially chained to the other, encouraging players to work together to snap the tether by moving far apart."
+}
