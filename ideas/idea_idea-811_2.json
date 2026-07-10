@@ -1,0 +1,4 @@
+{
+  "title": "Aura Resonance Event",
+  "description": "A random game event where stacking auras pulse outward globally every 15 seconds. During a pulse, all players with active aura buffs grant those buffs to random friendly players anywhere on the map for 5 seconds. If a player with a reversed aura (via the Aura Inverter Trap) pulses, it debuffs enemies map-wide instead."
+}

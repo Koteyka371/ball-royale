@@ -3307,6 +3307,29 @@ func execute(strategy: String, delta: float):
 					inv.erase("placeable_trap_booster")
 					self.ball.set_meta("inventory", inv)
 
+	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("aura_inverter_trap_booster"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var trap_id = arena.hazards.size() + randi() % 10000
+
+				var trap = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					trap = load("res://src/arena/procedural_arena.gd").Hazard.new()
+					trap.id = trap_id
+					trap.x = self.ball.x
+					trap.y = self.ball.y
+					trap.radius = 40.0
+					trap.kind = "aura_inverter_trap"
+					trap.damage = 10.0
+					trap.set_meta("duration", 10.0)
+					trap.set_meta("owner_id", self.ball.id)
+
+					arena.hazards.append(trap)
+					inv.erase("aura_inverter_trap_booster")
+					self.ball.set_meta("inventory", inv)
+
 	if strategy == "flee" and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("exit_portal"):
@@ -14045,6 +14068,21 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "aura_inverter_trap_booster":
+                var inv = []
+                if "inventory" in self.ball: inv = self.ball.inventory
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                inv.append("aura_inverter_trap_booster")
+                if "inventory" in self.ball: self.ball.inventory = inv
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "deployable_black_hole":
                 var inv = []
                 if "inventory" in self.ball: inv = self.ball.inventory
@@ -17741,7 +17779,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -18771,6 +18809,25 @@ func _apply_friendly_aura(delta: float):
         aura_radius = 500.0
         aura_multiplier = 2.0
 
+
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_inversion_timer"):
+        var ait = float(self.ball.get_meta("aura_inversion_timer"))
+        if ait > 0:
+            ait -= delta
+            if ait < 0: ait = 0.0
+            self.ball.set_meta("aura_inversion_timer", ait)
+    elif "aura_inversion_timer" in self.ball:
+        if float(self.ball.aura_inversion_timer) > 0:
+            self.ball.aura_inversion_timer -= delta
+            if float(self.ball.aura_inversion_timer) < 0:
+                self.ball.aura_inversion_timer = 0.0
+    var ai_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_inversion_timer"):
+        ai_timer = float(self.ball.get_meta("aura_inversion_timer"))
+    elif "aura_inversion_timer" in self.ball:
+        ai_timer = float(self.ball.aura_inversion_timer)
+    if ai_timer > 0.0:
+        aura_multiplier = -1.0 # Reverse auras!
     var ad_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_disruption_timer"):
         ad_timer = float(self.ball.get_meta("aura_disruption_timer"))
@@ -19065,6 +19122,25 @@ func _update_skill_timer(delta: float):
                             else:
                                 other["aura_disruption_timer"] = 0.5
 
+
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_inversion_timer"):
+        var ait = float(self.ball.get_meta("aura_inversion_timer"))
+        if ait > 0:
+            ait -= delta
+            if ait < 0: ait = 0.0
+            self.ball.set_meta("aura_inversion_timer", ait)
+    elif "aura_inversion_timer" in self.ball:
+        if float(self.ball.aura_inversion_timer) > 0:
+            self.ball.aura_inversion_timer -= delta
+            if float(self.ball.aura_inversion_timer) < 0:
+                self.ball.aura_inversion_timer = 0.0
+    var ai_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_inversion_timer"):
+        ai_timer = float(self.ball.get_meta("aura_inversion_timer"))
+    elif "aura_inversion_timer" in self.ball:
+        ai_timer = float(self.ball.aura_inversion_timer)
+    if ai_timer > 0.0:
+        aura_multiplier = -1.0 # Reverse auras!
     var ad_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_disruption_timer"):
         ad_timer = float(self.ball.get_meta("aura_disruption_timer"))
@@ -19332,7 +19408,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -19427,6 +19503,92 @@ func _update_skill_timer(delta: float):
                             if "duration" in hazard: hazard.duration = 0.0
                             elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                             elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+                            elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+                if h_kind == "aura_inverter_trap":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                    if owner_id != null and owner_id != b_id:
+                        var h_x = 0.0
+                        if "x" in hazard: h_x = hazard.x
+                        elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                        var h_y = 0.0
+                        if "y" in hazard: h_y = hazard.y
+                        elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+                        var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                        if dist_sq < 10000:
+                            var dist = sqrt(dist_sq)
+                            if dist > 0.0001:
+                                if world != null and "balls" in world:
+                                    var trap_owner = null
+                                    for ob in world.balls:
+                                        var ob_id = null
+                                        if "id" in ob: ob_id = ob.id
+                                        elif ob.has_method("get_meta") and ob.has_meta("id"): ob_id = ob.get_meta("id")
+                                        if ob_id == owner_id:
+                                            trap_owner = ob
+                                            break
+
+                                    for b in world.balls:
+                                        var b_alive = true
+                                        if "alive" in b: b_alive = b.alive
+                                        elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                                        var b_id_curr = null
+                                        if "id" in b: b_id_curr = b.id
+                                        elif b.has_method("get_meta") and b.has_meta("id"): b_id_curr = b.get_meta("id")
+
+                                        if b_alive and b_id_curr != owner_id:
+                                            var bx = 0.0
+                                            if "x" in b: bx = b.x
+                                            elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                                            var by = 0.0
+                                            if "y" in b: by = b.y
+                                            elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                                            var b_dist_sq = (h_x - bx)*(h_x - bx) + (h_y - by)*(h_y - by)
+                                            if b_dist_sq < (80.0 * 80.0):
+                                                # Apply aura inversion timer
+                                                if "aura_inversion_timer" in b: b.aura_inversion_timer = 10.0
+                                                elif b.has_method("set_meta"): b.set_meta("aura_inversion_timer", 10.0)
+
+                                                if trap_owner != null and world.has_method("_deal_damage"):
+                                                    var old_trap_dmg = 10.0
+                                                    if "damage" in trap_owner: old_trap_dmg = trap_owner.damage
+                                                    elif trap_owner.has_method("get_meta") and trap_owner.has_meta("damage"): old_trap_dmg = trap_owner.get_meta("damage")
+
+                                                    if "damage" in trap_owner: trap_owner.damage = 10.0
+                                                    elif trap_owner.has_method("set_meta") and trap_owner.has_meta("damage"): trap_owner.set_meta("damage", 10.0)
+                                                    elif typeof(trap_owner) == TYPE_OBJECT and trap_owner.has_method("set"): trap_owner.set("damage", 10.0)
+
+                                                    world._deal_damage(trap_owner, b)
+
+                                                    if typeof(trap_owner) == TYPE_OBJECT and trap_owner.has_method("set"): trap_owner.set("damage", old_trap_dmg)
+                                                    elif "damage" in trap_owner: trap_owner.damage = old_trap_dmg
+                                                    elif trap_owner.has_method("set_meta") and trap_owner.has_meta("damage"): trap_owner.set_meta("damage", old_trap_dmg)
+                                                else:
+                                                    var b_hp = 100.0
+                                                    if "hp" in b:
+                                                        b.hp -= 10.0
+                                                        b_hp = b.hp
+                                                    elif b.has_method("get_meta") and b.has_meta("hp"):
+                                                        b_hp = b.get_meta("hp") - 10.0
+                                                        b.set_meta("hp", b_hp)
+
+                                                    if b_hp <= 0:
+                                                        if "alive" in b: b.alive = false
+                                                        elif b.has_method("set_meta"): b.set_meta("alive", false)
+
+                                                        if "killer" in b: b.killer = "aura_inverter_trap"
+                                                        elif b.has_method("set_meta"): b.set_meta("killer", "aura_inverter_trap")
+
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
                             elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
                 if h_kind == "pull_trap":
                     var owner_id = null

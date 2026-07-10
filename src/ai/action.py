@@ -1596,6 +1596,18 @@ class Action:
                 self.world.arena.hazards.append(trap)
                 self.ball.inventory.remove("placeable_trap_booster")
 
+        # Deploy aura inverter trap
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "aura_inverter_trap_booster" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                import random
+                trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                trap = Hazard(trap_id, self.ball.x, self.ball.y, 40.0, "aura_inverter_trap", 10.0)
+                setattr(trap, 'duration', 10.0)
+                setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
+                self.world.arena.hazards.append(trap)
+                self.ball.inventory.remove("aura_inverter_trap_booster")
+
         # Check inventory for exit_portal to use as an escape hatch
         if strategy == "flee" and hasattr(self.ball, "inventory") and "exit_portal" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -7931,6 +7943,15 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "aura_inverter_trap_booster":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("aura_inverter_trap_booster")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "deployable_black_hole":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -9245,7 +9266,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -10582,6 +10603,13 @@ class Action:
             aura_radius = 500.0
             aura_multiplier = 2.0
 
+        if getattr(self.ball, "aura_inversion_timer", 0.0) > 0:
+            aura_multiplier = -1.0 # Reverse auras!
+        if getattr(self.ball, "aura_inversion_timer", 0.0) > 0:
+            self.ball.aura_inversion_timer -= delta
+            if self.ball.aura_inversion_timer < 0:
+                self.ball.aura_inversion_timer = 0.0
+
         if getattr(self.ball, "aura_disruption_timer", 0.0) > 0:
             aura_radius = 0.0
 
@@ -10734,6 +10762,8 @@ class Action:
                             if (dx*dx + dy*dy) <= 22500.0:  # 150^2
                                 other.aura_disruption_timer = 0.5
 
+        if getattr(self.ball, "aura_inversion_timer", 0.0) > 0:
+            aura_multiplier = -1.0 # Reverse auras!
         if getattr(self.ball, "aura_disruption_timer", 0.0) > 0:
             self.ball.aura_disruption_timer -= delta
             if self.ball.aura_disruption_timer < 0:
@@ -10899,7 +10929,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -10952,6 +10982,37 @@ class Action:
                                                     old_dmg = getattr(b, "damage", 0)
                                                     self.world._deal_damage(att, b, dmg=att.damage)
                             hazard.duration = 0.0
+                if getattr(hazard, "kind", "") == "aura_inverter_trap":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq < 10000: # 100 range to trigger the trap
+                            import math
+                            dist = math.sqrt(dist_sq)
+
+                            # Explode and hit all nearby enemies (radius 80)
+                            if getattr(hazard, "owner_id", None) is not None and hasattr(self.world, "balls"):
+                                owner = next((b for b in self.world.balls if getattr(b, "id", None) == hazard.owner_id), None)
+
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True) and getattr(b, "id", None) != hazard.owner_id:
+                                        b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                        if b_dist_sq < (80.0 * 80.0): # Blast radius
+                                            # Apply aura inversion timer (10 seconds)
+                                            setattr(b, "aura_inversion_timer", 10.0)
+
+                                            # Deal a small explosion damage
+                                            if owner and hasattr(self.world, "_deal_damage"):
+                                                old_dmg = getattr(owner, "damage", 10.0)
+                                                owner.damage = 10.0 # Explosion damage
+                                                self.world._deal_damage(owner, b)
+                                                owner.damage = old_dmg
+                                            elif hasattr(b, "hp"):
+                                                b.hp -= 10.0
+                                                if b.hp <= 0:
+                                                    b.alive = False
+                                                    b.killer = "aura_inverter_trap"
+
+                            hazard.duration = 0.0 # Destroy trap
                 if getattr(hazard, "kind", "") == "pull_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
