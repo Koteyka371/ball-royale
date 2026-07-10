@@ -5380,6 +5380,15 @@ class Action:
 
                             continue
                         elif hazard.kind == "healing_spring":
+                            # In Siege mode, attackers can capture and destroy healing springs
+                            if getattr(self.world.arena, "__class__", None).__name__ == "SiegeArena" and getattr(self.ball, "team", "") == "Attackers":
+                                capture_progress = getattr(hazard, "capture_progress", 0.0)
+                                capture_progress += 20.0 * delta # 5 seconds to capture
+                                setattr(hazard, "capture_progress", capture_progress)
+                                if capture_progress >= 100.0:
+                                    hazard.active = False
+                                continue
+
                             # Regenerate HP over time
                             heal_amount = abs(hazard.damage) * delta
                             if hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
