@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-825] Shrinking Aura Booster — *2026-07-10 20:33:32 UTC*
+
+An active item that gives the ball an aura that gradually pulls enemies towards the center, functioning like a moving weak gravity well, useful for combining with AoE attacks.
+
+---
+
 ## [idea-828] New 'Quantum Tunneling' trap variant — *2026-07-10 20:27:31 UTC*
 
 A trap that teleports the triggering ball instantly to the other side of the map along the vector of their current movement, maintaining momentum. Good for disruption and repositioning, creating chaotic high-speed maneuvers.

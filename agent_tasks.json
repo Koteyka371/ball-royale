@@ -14186,7 +14186,7 @@
     },
     {
       "id": "idea-825",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Aura Booster",
@@ -23514,6 +23514,23 @@
         "src/ai/reverse_lava.py",
         "src/ai/reverse_lava.gd",
         "tests/test_reverse_lava.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1373",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time dilation trap",
+      "description": "A trap that dramatically slows down the time for the ball that triggered it, causing them to move and attack in slow motion for a few seconds.",
+      "allowed_paths": [
+        "src/arena/time_dilation_trap.py",
+        "src/arena/time_dilation_trap.gd",
+        "tests/test_time_dilation_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
