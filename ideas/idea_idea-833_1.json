@@ -1,0 +1,4 @@
+{
+  "title": "Season-Themed Arena Hazards",
+  "description": "Arena hazards that dynamically shift based on the current season (e.g., Abyssal creates whirlpool traps that suck players in, Frost spawns slippery ice patches, Inferno randomly drops lava meteors)."
+}

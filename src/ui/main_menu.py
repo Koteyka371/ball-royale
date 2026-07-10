@@ -8,7 +8,7 @@ class MainMenu:
         self.profile_manager = ProfileManager("profile.json")
         self.leaderboard_manager = LeaderboardManager("leaderboard.json", profile_manager=self.profile_manager)
         self.prestige_shop = PrestigeShop(self.profile_manager)
-        self.nemesis_screen = NemesisScreen(self.profile_manager)
+        self.nemesis_screen = NemesisScreen(self.profile_manager, self.leaderboard_manager)
         self.active_screen = "main"
 
         season = self.leaderboard_manager.data.get("current_season", 1)
