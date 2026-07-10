@@ -7993,6 +7993,24 @@ func execute(strategy: String, delta: float):
                                         self.ball.set_meta("stun_timer", 1.0)
                                 self.ball.x = old_x
                                 self.ball.y = old_y
+                            elif trap_variant == "pull":
+                                if world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
+                                    var gw = null
+                                    if load("res://src/arena/procedural_arena.gd") != null:
+                                        gw = load("res://src/arena/procedural_arena.gd").Hazard.new()
+                                    if gw != null:
+                                        gw.id = world.get_arena().hazards.size() + 8500
+                                        gw.x = hazard.x
+                                        gw.y = hazard.y
+                                        gw.radius = 200.0
+                                        gw.kind = "gravity_well"
+                                        gw.damage = 0.0
+                                        gw.set_meta("duration", 4.0)
+                                        world.get_arena().hazards.append(gw)
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "black_hole" or trap_variant == "mini_black_hole":
                                 if world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
                                     var bh = null

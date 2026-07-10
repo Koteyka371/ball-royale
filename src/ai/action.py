@@ -4468,6 +4468,15 @@ class Action:
                                     # Apply stun effect
                                     self.ball.x = old_x
                                     self.ball.y = old_y
+                                elif trap_variant == "pull":
+                                    # Create a gravity well hazard where the trap is
+                                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                        from arena.procedural_arena import Hazard
+                                        gw_id = len(self.world.arena.hazards) + 8500
+                                        gw = Hazard(gw_id, hazard.x, hazard.y, 200.0, "gravity_well", 0.0)
+                                        gw.duration = 4.0
+                                        self.world.arena.hazards.append(gw)
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "black_hole" or trap_variant == "mini_black_hole":
                                     # Create a black hole hazard where the trap is
                                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
