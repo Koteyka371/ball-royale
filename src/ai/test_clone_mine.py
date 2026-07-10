@@ -2,12 +2,17 @@ import unittest
 from ai.action import Action
 from ai.test_action_advanced import MockBall
 
+class MockArena:
+    def __init__(self):
+        self.hazards = []
+
 class MockWorld:
     def __init__(self):
         self.balls = []
         self._deal_damage_calls = []
         self.width = 1000
         self.height = 1000
+        self.arena = MockArena()
 
     def _deal_damage(self, target, attacker):
         self._deal_damage_calls.append((target, attacker))
@@ -44,7 +49,11 @@ class TestCloneMine(unittest.TestCase):
         action.execute("idle", 0.016)
 
         self.assertTrue(not getattr(clone, "alive", True))
-        self.assertTrue(getattr(enemy, "hp", 100) < 100)
+
+        # Check that black hole hazard is spawned
+        black_holes = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "clone_black_hole"]
+        self.assertTrue(len(black_holes) > 0)
+        self.assertEqual(black_holes[0].duration, 3.0)
 
 
     def test_clone_mine_cascade(self):
@@ -80,7 +89,7 @@ class TestCloneMine(unittest.TestCase):
         action1.execute("idle", 0.016)
 
         self.assertFalse(getattr(clone1, "alive", True))
-        self.assertTrue(getattr(enemy, "hp", 100) < 100)
+        pass # Enemy hp will be drained over time by black hole now
         self.assertTrue(getattr(clone2, "clone_cascade_timer", -1.0) > 0)
 
         action2 = Action(clone2, world)
