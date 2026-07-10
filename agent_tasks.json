@@ -14050,7 +14050,7 @@
     },
     {
       "id": "idea-817",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Mine",
@@ -23020,6 +23020,40 @@
         "src/ai/grapple_hook_momentum_swing.py",
         "src/ai/grapple_hook_momentum_swing.gd",
         "tests/test_grapple_hook_momentum_swing.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1344",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Lich Evolution",
+      "description": "If a Necromancer survives for 60 seconds without taking any damage, it evolves into a Lich. A Lich's minions are permanently enraged and it can summon 2 skeletal dragons that have a ranged breath attack.",
+      "allowed_paths": [
+        "src/ai/necromancer_lich_evolution.py",
+        "src/ai/necromancer_lich_evolution.gd",
+        "tests/test_necromancer_lich_evolution.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1345",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Minion Explosive Demise",
+      "description": "When an enraged minion's HP drops to 0 due to rapid decay, it explodes in a small area of effect, dealing damage based on its maximum health to any enemies nearby.",
+      "allowed_paths": [
+        "src/ai/minion_explosive_demise.py",
+        "src/ai/minion_explosive_demise.gd",
+        "tests/test_minion_explosive_demise.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

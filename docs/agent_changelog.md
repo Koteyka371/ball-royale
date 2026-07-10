@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-817] Gravity Mine — *2026-07-10 17:48:05 UTC*
+
+A trap variant that pulls all nearby entities towards its center for a few seconds when triggered.
+
+---
+
 ## [idea-793] Vengeful Minions — *2026-07-10 17:06:48 UTC*
 
 When a Necromancer dies, all of its active minions become enraged for 5 seconds. They gain 200% movement speed, 150% attack damage, but rapidly decay HP until they die.
