@@ -65,6 +65,50 @@ class Action:
                     if hasattr(world, "add_event"):
                         world.add_event("evolution", {"ball": getattr(ball, "id", None), "old_type": current_type, "new_type": new_type, "level": ball.level})
 
+                    if ball.level == 10 and random.random() < 0.3:
+                        import copy
+                        boss = copy.copy(ball)
+                        boss.id = getattr(world, "next_id", random.randint(10000, 99999))
+                        if hasattr(world, "next_id"):
+                            world.next_id += 1
+
+                        base_class_map = {
+                            "paladin": "warrior", "berserker": "warrior", "templar": "warrior", "brawler": "warrior",
+                            "warlock": "mage", "necromancer": "mage", "chaos": "mage", "vampire": "mage",
+                            "ninja": "rogue", "assassin": "rogue", "phantom": "rogue",
+                            "guardian": "tank", "juggernaut": "tank",
+                            "sniper": "ranger", "bounty_hunter": "ranger", "scout": "ranger",
+                            "monk": "healer", "druid": "healer"
+                        }
+                        boss_type = base_class_map.get(new_type, new_type)
+
+                        boss.ball_type = boss_type
+                        boss.is_world_boss = True
+                        boss.team = "corrupted_bosses"
+
+                        boss.max_hp = getattr(ball, "max_hp", 100) * 10
+                        boss.hp = boss.max_hp
+                        boss.damage = getattr(ball, "damage", 10) * 3
+                        if hasattr(boss, "base_damage"):
+                            boss.base_damage = getattr(ball, "base_damage", 10) * 3
+
+                        boss.radius = getattr(ball, "radius", 15) * 2.0
+
+                        boss.speed = getattr(ball, "speed", 100) * 1.5
+                        if hasattr(boss, "base_speed"):
+                            boss.base_speed = getattr(ball, "base_speed", 100) * 1.5
+
+                        boss.x = getattr(boss, "x", 0) + random.choice([-200, 200])
+                        boss.y = getattr(boss, "y", 0) + random.choice([-200, 200])
+
+                        boss.cosmetic_aura_color = (0.0, 0.0, 0.0, 1.0)
+                        boss.cosmetic_aura_scale = 3.0
+
+                        if hasattr(world, "balls"):
+                            world.balls.append(boss)
+                        if hasattr(world, "add_event"):
+                            world.add_event("world_boss_spawned", {"boss_id": boss.id, "boss_type": boss_type})
+
             # Apply dynamic cosmetic aura scaling
             if not hasattr(ball, "cosmetic_aura_scale"):
                 ball.cosmetic_aura_scale = 1.0
