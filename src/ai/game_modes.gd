@@ -16950,6 +16950,7 @@ var GAME_MODES = {
 	"rubber_band": RubberBandMode.new(),
 	"rift_roulette": RiftRouletteMode.new(),
 	"item_morph": ItemMorphMode.new(),
+	"disguised_traps": DisguisedTrapsMode.new(),
 	"illusion_wall": IllusionWallMode.new(),
 
 	"crossfire": CrossfireMode.new(),
@@ -17621,6 +17622,42 @@ class ItemMorphMode extends GameMode:
 				if morphed and world.has_method("add_event"):
 					world.add_event("items_morphed", {"message": "All items have morphed!"})
 
+
+
+class DisguisedTrapsMode extends GameMode:
+	var trap_timer: float = 0.0
+	var trap_interval: float = 5.0
+	var rng = RandomNumberGenerator.new()
+
+	func _init().():
+		name = "Disguised Traps"
+		description = "Hazardous traps disguise themselves as dropped loot or exit portals. Upon approach, they spring a net or apply a snare debuff, trapping the player."
+		rng.randomize()
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		trap_timer += delta
+		if trap_timer >= trap_interval:
+			trap_timer -= trap_interval
+			if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+				var trap_id = world.arena.hazards.size() + rng.randi_range(10000, 99999)
+				var arena_w = 800.0
+				if "width" in world.arena: arena_w = world.arena.width
+				var arena_h = 600.0
+				if "height" in world.arena: arena_h = world.arena.height
+
+				var tx = rng.randf_range(100, arena_w - 100)
+				var ty = rng.randf_range(100, arena_h - 100)
+
+				var trap = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					trap = load("res://src/arena/procedural_arena.gd").Hazard.new(trap_id, tx, ty, "disguised_trap", 20.0)
+					if "damage" in trap: trap.damage = 0.0
+					if trap.has_method("set_meta"):
+						trap.set_meta("duration", 15.0)
+						var disguises = ["fake_booster", "exit_portal_item", "hp_booster", "speed_booster"]
+						trap.set_meta("disguised_as", disguises[rng.randi() % disguises.size()])
+					world.arena.hazards.append(trap)
 
 class IllusionWallMode extends GameMode:
 	var decoy_id_counter = 800000

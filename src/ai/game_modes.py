@@ -14665,3 +14665,36 @@ class WeatherClashMode(GameMode):
 GAME_MODES['freeze_tag'] = FreezeTagMode()
 GAME_MODES['vortex_orbit'] = VortexOrbitMode()
 GAME_MODES['weather_clash'] = WeatherClashMode()
+
+
+class DisguisedTrapsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Disguised Traps"
+        self.description = "Hazardous traps disguise themselves as dropped loot or exit portals. Upon approach, they spring a net or apply a snare debuff, trapping the player."
+        self.trap_timer = 0.0
+        self.trap_interval = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        from arena.procedural_arena import Hazard
+
+        self.trap_timer += delta
+        if self.trap_timer >= self.trap_interval:
+            self.trap_timer -= self.trap_interval
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                trap_id = len(world.arena.hazards) + random.randint(10000, 99999)
+                arena_w = getattr(world.arena, "width", 800)
+                arena_h = getattr(world.arena, "height", 600)
+                x = random.uniform(100, arena_w - 100)
+                y = random.uniform(100, arena_h - 100)
+                trap = Hazard(trap_id, x, y, 20.0, "disguised_trap", 0.0)
+                setattr(trap, "duration", 15.0)
+
+                # Disguise as either fake booster or exit portal
+                disguise = random.choice(["fake_booster", "exit_portal_item", "hp_booster", "speed_booster"])
+                setattr(trap, "disguised_as", disguise)
+                world.arena.hazards.append(trap)
+
+GAME_MODES["disguised_traps"] = DisguisedTrapsMode()
