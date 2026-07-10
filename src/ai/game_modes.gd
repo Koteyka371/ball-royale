@@ -16316,6 +16316,22 @@ class EntanglementMutatorMode extends GameMode:
 								var tx = target.x if "x" in target else 0
 								var ty = target.y if "y" in target else 0
 								world.add_event({"type": "visual_effect", "data": {"type": "entangle_damage", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+					elif curr_hp > state.hp:
+						var healing = curr_hp - state.hp
+						var target_curr_hp = target.hp if "hp" in target else 100.0
+						var target_max_hp = target.max_hp if "max_hp" in target else 100.0
+						if target_curr_hp > 0:
+							target.hp = min(target_curr_hp + healing, target_max_hp)
+							target_state.hp += healing
+							if target_state.hp > target_max_hp:
+								target_state.hp = target_max_hp
+
+							if world.has_method("add_event"):
+								var bx = b.x if "x" in b else 0
+								var by = b.y if "y" in b else 0
+								var tx = target.x if "x" in target else 0
+								var ty = target.y if "y" in target else 0
+								world.add_event({"type": "visual_effect", "data": {"type": "entangle_heal", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
 
 					# Check knockback
 					var curr_vx = b.vx if "vx" in b else 0.0

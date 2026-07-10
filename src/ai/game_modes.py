@@ -12680,6 +12680,27 @@ class EntanglementMutatorMode(GameMode):
                                     'y2': getattr(target, "y", 0)
                                 }
                             })
+                elif curr_hp > state.hp:
+                    healing = curr_hp - state.hp
+                    target_curr_hp = getattr(target, "hp", 100.0)
+                    target_max_hp = getattr(target, "max_hp", 100.0)
+                    if target_curr_hp > 0:
+                        target.hp = min(target_curr_hp + healing, target_max_hp)
+                        target_state.hp += healing
+                        if target_state.hp > target_max_hp:
+                            target_state.hp = target_max_hp
+
+                        if hasattr(world, "events"):
+                            world.events.append({
+                                'type': 'visual_effect',
+                                'data': {
+                                    'type': 'entangle_heal',
+                                    'x1': getattr(b, "x", 0),
+                                    'y1': getattr(b, "y", 0),
+                                    'x2': getattr(target, "x", 0),
+                                    'y2': getattr(target, "y", 0)
+                                }
+                            })
 
                 # Check knockback
                 curr_vx = getattr(b, "vx", 0.0)
