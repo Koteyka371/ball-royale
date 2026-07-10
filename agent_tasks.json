@@ -14254,7 +14254,7 @@
     },
     {
       "id": "idea-829",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grappling Hook Mechanics",
@@ -23412,6 +23412,40 @@
         "src/ai/quantum_tunneling_booster.py",
         "src/ai/quantum_tunneling_booster.gd",
         "tests/test_quantum_tunneling_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1367",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Pinball Bumpers Mode",
+      "description": "Arena is filled with multiple massive pinball bumpers. Touching a bumper reflects the ball with high speed. Boosters spawn near the bumpers.",
+      "allowed_paths": [
+        "src/ai/pinball_bumpers.py",
+        "src/ai/pinball_bumpers.gd",
+        "tests/test_pinball_bumpers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1368",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Slingshot Mutator",
+      "description": "Black holes periodically appear and pull players in, but if a player uses a dash skill when near the event horizon, they gain a massive speed boost in the direction of their dash.",
+      "allowed_paths": [
+        "src/ai/black_hole_slingshot_mutator.py",
+        "src/ai/black_hole_slingshot_mutator.gd",
+        "tests/test_black_hole_slingshot_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

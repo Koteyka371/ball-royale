@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-829] Grappling Hook Mechanics — *2026-07-10 20:01:51 UTC*
+
+Introduce a grappling hook item that allows balls to tether to walls or other players to swing across the arena or pull themselves out of danger.
+
+---
+
 ## [idea-832] Orbital Boosters — *2026-07-10 19:58:04 UTC*
 
 Introduce a new game mode or hazard where boosters naturally orbit around a central massive entity (like a black hole or giant gravity well) at high speeds, requiring players to time their movements perfectly to catch them without getting sucked in.
