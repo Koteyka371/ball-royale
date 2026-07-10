@@ -5,7 +5,12 @@ var profile_manager: ProfileManager
 var leaderboard_manager: LeaderboardManager
 var prestige_shop_ui: PrestigeShop
 var nemesis_screen_ui: NemesisScreen
+
 var active_screen: String = "main"
+var weekend_options: Array = ["10x_speed", "invisible_enemies", "lava_floor"]
+var weekend_votes: Dictionary = {"10x_speed": 0, "invisible_enemies": 0, "lava_floor": 0}
+var active_weekend_event: String = ""
+
 
 var background_theme: String = ""
 var background_color: Color = Color(0, 0, 0)
@@ -38,10 +43,17 @@ func _ready():
     open_shop_btn.pressed.connect(self._on_open_shop_pressed)
     add_child(open_shop_btn)
 
+
     var open_nemesis_btn = Button.new()
     open_nemesis_btn.text = "Open Nemesis Screen"
     open_nemesis_btn.pressed.connect(self._on_open_nemesis_pressed)
     add_child(open_nemesis_btn)
+
+    var open_vote_btn = Button.new()
+    open_vote_btn.text = "Weekend Event Vote"
+    open_vote_btn.pressed.connect(self._on_open_vote_pressed)
+    add_child(open_vote_btn)
+
 
 func _get_theme_color(theme: String) -> Color:
     match theme:
@@ -68,11 +80,40 @@ func _get_theme_color(theme: String) -> Color:
         _:
             return Color(0, 0, 0)
 
+
 func _on_open_nemesis_pressed():
     active_screen = "nemesis"
     prestige_shop_ui.visible = false
     nemesis_screen_ui.visible = true
     nemesis_screen_ui._refresh_ui()
+
+func _on_open_vote_pressed():
+    active_screen = "weekend_vote"
+    prestige_shop_ui.visible = false
+    if nemesis_screen_ui != null:
+        nemesis_screen_ui.visible = false
+
+func cast_weekend_vote(mode: String) -> bool:
+    if weekend_options.has(mode):
+        var tokens = profile_manager.data.get("prestige_tokens", 0)
+        if tokens > 0:
+            profile_manager.data["prestige_tokens"] = tokens - 1
+            profile_manager.save()
+            var current_votes = 0
+            if weekend_votes.has(mode):
+                current_votes = weekend_votes[mode]
+            weekend_votes[mode] = current_votes + 1
+
+            var max_v = -1
+            var best = ""
+            for m in weekend_votes.keys():
+                if weekend_votes[m] > max_v:
+                    max_v = weekend_votes[m]
+                    best = m
+            active_weekend_event = best
+            return true
+    return false
+
 
 func _on_open_shop_pressed():
     active_screen = "prestige_shop"
