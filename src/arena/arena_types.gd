@@ -778,10 +778,26 @@ class ThickFogArena extends ProceduralArena:
 			is_foggy = not is_foggy
 
 class SummerArena extends ProceduralArena:
-	var is_heatwave = true
+	var is_heatwave = false
+	var heatwave_timer = 0.0
+	var heatwave_duration = 10.0
+	var heatwave_interval = 30.0
 
 	func _init(size: float = 2000.0, seed_val = null):
 		super(size, 5, seed_val)
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		heatwave_timer += delta
+		if is_heatwave:
+			if heatwave_timer >= heatwave_duration:
+				is_heatwave = false
+				heatwave_timer = 0.0
+		else:
+			if heatwave_timer >= heatwave_interval:
+				is_heatwave = true
+				heatwave_timer = 0.0
+				_trigger_event("heatwave", current_tick)
 
 	func generate() -> void:
 		super.generate()
@@ -841,10 +857,26 @@ class AutumnArena extends ProceduralArena:
 			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(50.0, 100.0), "tornado", 5.0))
 
 class WinterArena extends ProceduralArena:
-	var is_snowing = true
+	var is_snowing = false
+	var blizzard_timer = 0.0
+	var blizzard_duration = 10.0
+	var blizzard_interval = 30.0
 
 	func _init(size: float = 2000.0, seed_val = null):
 		super(size, 5, seed_val)
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		blizzard_timer += delta
+		if is_snowing:
+			if blizzard_timer >= blizzard_duration:
+				is_snowing = false
+				blizzard_timer = 0.0
+		else:
+			if blizzard_timer >= blizzard_interval:
+				is_snowing = true
+				blizzard_timer = 0.0
+				_trigger_event("blizzard", current_tick)
 
 	func generate() -> void:
 		super.generate()

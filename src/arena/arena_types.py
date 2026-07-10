@@ -1604,7 +1604,23 @@ ARENAS = {
 class SummerArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
-        self.is_heatwave = True
+        self.is_heatwave = False
+        self.heatwave_timer = 0.0
+        self.heatwave_duration = 10.0
+        self.heatwave_interval = 30.0
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.heatwave_timer += delta
+        if self.is_heatwave:
+            if self.heatwave_timer >= self.heatwave_duration:
+                self.is_heatwave = False
+                self.heatwave_timer = 0.0
+        else:
+            if self.heatwave_timer >= self.heatwave_interval:
+                self.is_heatwave = True
+                self.heatwave_timer = 0.0
+                self._trigger_event("heatwave", current_tick)
 
     def generate(self):
         super().generate()
@@ -1713,7 +1729,23 @@ class AutumnArena(ProceduralArena):
 class WinterArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
-        self.is_snowing = True
+        self.is_snowing = False
+        self.blizzard_timer = 0.0
+        self.blizzard_duration = 10.0
+        self.blizzard_interval = 30.0
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.blizzard_timer += delta
+        if self.is_snowing:
+            if self.blizzard_timer >= self.blizzard_duration:
+                self.is_snowing = False
+                self.blizzard_timer = 0.0
+        else:
+            if self.blizzard_timer >= self.blizzard_interval:
+                self.is_snowing = True
+                self.blizzard_timer = 0.0
+                self._trigger_event("blizzard", current_tick)
 
     def generate(self):
         super().generate()

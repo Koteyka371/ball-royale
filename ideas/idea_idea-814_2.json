@@ -1,0 +1,4 @@
+{
+    "title": "Arena-Specific Weather Hazards",
+    "description": "Expand weather events to spawn specialized hazards like sandstorms in desert-like arenas that deal continuous chip damage unless the player finds shelter, or thunderstorms that target players with the highest metallic equippables."
+}

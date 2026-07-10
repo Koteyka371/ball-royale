@@ -1,0 +1,4 @@
+{
+    "title": "Seasonal Arena Weather Transitions",
+    "description": "Introduce dynamic weather transitions during a match based on the arena type (e.g., transition from clear weather to a blizzard or heatwave incrementally), affecting visibility and physical hazards continuously."
+}
