@@ -13419,7 +13419,7 @@
     },
     {
       "id": "idea-780",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Blackhole Granade Item",
@@ -22901,6 +22901,108 @@
         "src/ai/skeletal_archers_minions.py",
         "src/ai/skeletal_archers_minions.gd",
         "tests/test_skeletal_archers_minions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1337",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Decoy Mode",
+      "description": "A new hazard/item that when collected spawns 3 fragile, AI-controlled holograms of the player that scatter in random directions. The holograms deal no damage but will detonate into a flashbang effect when destroyed, blinding nearby enemies and masking the real player's escape.",
+      "allowed_paths": [
+        "src/ai/mirage_decoy.py",
+        "src/ai/mirage_decoy.gd",
+        "tests/test_mirage_decoy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1338",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Lava Spread",
+      "description": "After the lava fully expands, it slowly recedes back to the center, creating safe zones that can emerge unexpectedly.",
+      "allowed_paths": [
+        "src/ai/reverse_lava_spread.py",
+        "src/ai/reverse_lava_spread.gd",
+        "tests/test_reverse_lava_spread.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1339",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tethers",
+      "description": "Players can deploy a quantum tether that attaches to an enemy ball. For the next 5 seconds, any knockback or damage taken by the player is partially shared with the tethered enemy. If the enemy moves too far away, the tether violently snaps, causing significant damage and stunning both balls briefly.",
+      "allowed_paths": [
+        "src/ai/quantum_tethers.py",
+        "src/ai/quantum_tethers.gd",
+        "tests/test_quantum_tethers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1340",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Artifact Combination System",
+      "description": "Allow players to collect artifact fragments during battle. Gathering three matching fragments combines them into a single powerful artifact (like Aegis Shield or Hermes Boots) that gives unique passives and an active ability, independent of the ball's base skill.",
+      "allowed_paths": [
+        "src/ai/artifact_combination.py",
+        "src/ai/artifact_combination.gd",
+        "tests/test_artifact_combination.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1341",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Evolving Boss Encounters",
+      "description": "Introduce AI bosses in the arena that evolve if left undefeated. Each time the safe zone shrinks, the boss gains a new random mutator (e.g., explosive aura, increased speed, or pulling gravity), turning it into a high-risk, high-reward target that drops multiple prestige tokens and rare artifacts when defeated.",
+      "allowed_paths": [
+        "src/ai/evolving_boss_encounters.py",
+        "src/ai/evolving_boss_encounters.gd",
+        "tests/test_evolving_boss_encounters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1342",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lava Eruption Warning",
+      "description": "Small pools of lava randomly bubble up on the safe platforms, forcing players to constantly adjust their positioning even when on seemingly safe ground.",
+      "allowed_paths": [
+        "src/ai/lava_eruption_warning.py",
+        "src/ai/lava_eruption_warning.gd",
+        "tests/test_lava_eruption_warning.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-780] Blackhole Granade Item — *2026-07-10 15:14:29 UTC*
+
+A new booster that allows balls to throw a blackhole grenade that creates a small temporary black hole hazard upon explosion, pulling in enemies and dealing damage.
+
+---
+
 ## [idea-779] Bouncing Hazard Mines — *2026-07-10 15:09:12 UTC*
 
 Add new hazards called mine_bounce. When a player gets close to them, they detonate and apply a massive knockback force to all nearby entities without doing much HP damage.
