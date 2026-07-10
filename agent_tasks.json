@@ -23861,6 +23861,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1393",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Time Field Trap",
+      "description": "A deployable hazard or trap that creates a localized field. When a ball enters the field, their movements, health changes, and stamina depletion are continuously reverted by a few seconds, confusing their targeting logic and undoing their progress or damage taken.",
+      "allowed_paths": [
+        "src/arena/reverse_time_field_trap.py",
+        "src/arena/reverse_time_field_trap.gd",
+        "tests/test_reverse_time_field_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

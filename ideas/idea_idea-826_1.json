@@ -1,4 +1,0 @@
-{
-    "title": "Chain Lightning Trap",
-    "description": "A new trap variant that, when triggered, releases a chain lightning effect that jumps to up to 3 nearby entities, dealing damage and briefly stunning them. It uses a new `chain_lightning` active skill mechanic but applied via hazard interaction."
-}
