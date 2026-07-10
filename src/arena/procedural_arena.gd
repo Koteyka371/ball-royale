@@ -23,6 +23,7 @@ var is_heatwave: bool = false
 var is_windy: bool = false
 var is_foggy: bool = false
 var is_sandstorming: bool = false
+var is_acid_raining: bool = false
 
 
 class Platform:
@@ -647,8 +648,9 @@ func update_zone(current_tick: int, delta: float) -> void:
             is_windy = false
             is_foggy = false
             is_sandstorming = false
+            is_acid_raining = false
         elif current_tick % 600 == 300:
-            var weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm"]
+            var weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm", "acid_rain"]
             weather = weathers[randi() % weathers.size()]
             is_raining = weather == "rain"
             is_snowing = weather == "snow"
@@ -656,6 +658,7 @@ func update_zone(current_tick: int, delta: float) -> void:
             is_windy = weather == "wind"
             is_foggy = weather == "fog"
             is_sandstorming = weather == "sandstorm"
+            is_acid_raining = weather == "acid_rain"
 
         # Update platforms
         for p in platforms:
@@ -1024,6 +1027,11 @@ func update_zone(current_tick: int, delta: float) -> void:
                     var qs = Hazard.new(qs_id, randf_range(50, width - 50), randf_range(50, height - 50), randf_range(40.0, 80.0), "quicksand", 5.0)
                     qs.set_meta("duration", 15.0)
                     hazards.append(qs)
+                if weather == "acid_rain":
+                    var acid_id = 8200 + hazards.size() + (randi() % 1000)
+                    var acid = Hazard.new(acid_id, randf_range(50, width - 50), randf_range(50, height - 50), randf_range(30.0, 60.0), "acid_puddle", 10.0)
+                    acid.set_meta("duration", 15.0)
+                    hazards.append(acid)
 
                 if has_method("_trigger_event"):
                     var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]

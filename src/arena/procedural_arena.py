@@ -60,6 +60,7 @@ class ProceduralArena:
         self.is_windy = False
         self.is_foggy = False
         self.is_sandstorming = False
+        self.is_acid_raining = False
 
         # Shrinking zone
         self.safe_zone_radius = arena_size * 0.7
@@ -570,9 +571,10 @@ class ProceduralArena:
                 self.is_windy = False
                 self.is_foggy = False
                 self.is_sandstorming = False
+                self.is_acid_raining = False
             elif current_tick % 600 == 300:
                 # Randomly change weather
-                weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm"]
+                weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm", "acid_rain"]
                 import random as rnd
                 self.weather = rnd.choice(weathers)
                 self.is_raining = self.weather == "rain"
@@ -581,6 +583,7 @@ class ProceduralArena:
                 self.is_windy = self.weather == "wind"
                 self.is_foggy = self.weather == "fog"
                 self.is_sandstorming = self.weather == "sandstorm"
+                self.is_acid_raining = self.weather == "acid_rain"
 
             import math
             # Process hazard-to-hazard combos
@@ -845,6 +848,11 @@ class ProceduralArena:
                         qs = Hazard(id=qs_id, x=random.uniform(50, self.width - 50), y=random.uniform(50, self.height - 50), radius=random.uniform(40.0, 80.0), kind="quicksand", damage=5.0)
                         setattr(qs, 'duration', 15.0)
                         self.hazards.append(qs)
+                    if getattr(self, "weather", "") == "acid_rain":
+                        acid_id = 8200 + len(self.hazards) + random.randint(0, 1000)
+                        acid = Hazard(id=acid_id, x=random.uniform(50, self.width - 50), y=random.uniform(50, self.height - 50), radius=random.uniform(30.0, 60.0), kind="acid_puddle", damage=10.0)
+                        setattr(acid, 'duration', 15.0)
+                        self.hazards.append(acid)
 
                     if hasattr(self, "_trigger_event"):
                         self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]), current_tick)

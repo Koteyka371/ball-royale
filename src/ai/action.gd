@@ -9608,6 +9608,15 @@ func execute(strategy: String, delta: float):
                             elif "glitch_timer" in self.ball:
                                 self.ball.glitch_timer = 2.0
                         continue
+                    elif hazard.kind == "acid_puddle":
+                        var acid_damage = hazard.damage * delta
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(acid_damage)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= acid_damage
+                            if self.ball.hp <= 0 and "alive" in self.ball:
+                                self.ball.alive = false
+                        continue
                     elif hazard.kind == "tall_grass":
                         if self.ball.has_method("take_damage"):
                             self.ball.take_damage(hazard.damage * delta)

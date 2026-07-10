@@ -5501,6 +5501,15 @@ class Action:
                         elif hazard.kind == "glitch_zone":
                             self.ball.glitch_timer = 2.0
                             continue
+                        elif hazard.kind == "acid_puddle":
+                            hazard_damage = hazard.damage * delta
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+                            continue
                         elif hazard.kind == "tall_grass":
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard.damage * delta)
