@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-779] Bouncing Hazard Mines — *2026-07-10 15:09:12 UTC*
+
+Add new hazards called mine_bounce. When a player gets close to them, they detonate and apply a massive knockback force to all nearby entities without doing much HP damage.
+
+---
+
 ## [idea-805] Game Mode: Reverse Floor is Lava — *2026-07-10 15:09:08 UTC*
 
 Instead of the floor turning into lava starting from the edges, the center of the map becomes lava first and expands outwards, forcing players to eventually fight on the very edges of the arena.
