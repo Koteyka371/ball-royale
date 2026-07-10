@@ -1,6 +1,12 @@
+import sys
+import os
+
+# Add src to the sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
 import pytest
-from game_modes import GAME_MODES
-from action import Action
+from ai.game_modes import GAME_MODES
+from ai.action import Action
 import math
 
 class MockBall:
@@ -75,8 +81,10 @@ def test_sniper_nest_mechanics():
 
 def test_sniper_nest_damage_bonus():
     class WorldWithDamage(MockWorld):
-        def _deal_damage(self, att, tar):
-            tar.hp -= att.damage
+        def _deal_damage(self, att, tar, dmg=None):
+            if dmg is None:
+                dmg = att.damage
+            tar.hp -= dmg
 
     world = WorldWithDamage()
     act = Action(1, world)
