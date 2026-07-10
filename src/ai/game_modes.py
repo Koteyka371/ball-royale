@@ -10686,6 +10686,46 @@ class TimeRewindMode(GameMode):
 
 
 
+class CursedAuraEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Cursed Aura Event"
+        self.description = "A rare map event that temporarily flips the effect of friendly auras. If a ball attempts to stand near allies and stack team auras during this event, they instead receive scaling damage over time and slowed movement speed, penalizing grouping behavior and forcing teams to scatter."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 30.0:
+            self.event_timer = 0.0 # Always reset timer when checking
+            import random
+            if random.random() < 0.2:  # 20% chance every 30s
+                self.event_active = True
+                self.event_duration = 10.0
+                if hasattr(world, "add_event"):
+                    world.add_event("cursed_aura", {"active": True})
+
+        if self.event_active:
+            self.event_duration -= delta
+            if self.event_duration <= 0:
+                self.event_active = False
+                self.event_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("cursed_aura", {"active": False})
+            else:
+                # The event modifies balls to take damage if they are too close to allies
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+                    setattr(b, "cursed_aura_event_active", True)
+        else:
+            for b in balls:
+                if getattr(b, "cursed_aura_event_active", False):
+                    setattr(b, "cursed_aura_event_active", False)
+
 class PolarityShiftMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -13066,6 +13106,7 @@ GAME_MODES = {
     "stamina_regen": StaminaRegenMode(),
     "zero_gravity": ZeroGravityMode(),
     "magnetic_collisions": MagneticCollisionsMode(),
+    "cursed_aura_event": CursedAuraEventMode(),
     "polarity_shift": PolarityShiftMode(),
     "day_night_mode": DayNightMode(),
     "shifting_maze": ShiftingMazeMode(),

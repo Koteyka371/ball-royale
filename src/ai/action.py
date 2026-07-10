@@ -10941,8 +10941,21 @@ class Action:
         base_s = getattr(self.ball, "base_speed", 2.0)
         base_d = getattr(self.ball, "base_damage", 10.0)
 
+        is_cursed_aura = getattr(self.ball, "cursed_aura_event_active", False)
+
         # Apply buffs based on stack count
-        if stack_count >= 1:
+        if is_cursed_aura and stack_count >= 1:
+            # Under cursed aura event, stacking penalizes with scaling damage
+            damage = (2.0 * stack_count) * delta
+            curr_hp = getattr(self.ball, "hp", 100.0)
+            if hasattr(self.ball, "take_damage"):
+                self.ball.take_damage(damage)
+            else:
+                self.ball.hp = curr_hp - damage
+                if self.ball.hp <= 0:
+                    self.ball.hp = 0
+                    self.ball.alive = False
+        elif stack_count >= 1:
             # 1 extra type: HP regen
             self.ball.hp = min(getattr(self.ball, "hp", 100.0) + (2.0 * aura_multiplier) * delta, getattr(self.ball, "max_hp", 100.0))
 
@@ -10953,18 +10966,29 @@ class Action:
 
         # If we are not dashing or stuttering or night vampire, we can control the speed
         if not is_dashing and stutter <= 0.0:
-            if stack_count >= 2:
-                # 2 extra types: Speed boost
-                self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier)
+            if is_cursed_aura and stack_count >= 1:
+                # Slowed movement speed based on stacks
+                speed_penalty = 1.0 - (0.1 * stack_count)
+                if speed_penalty < 0.2:
+                    speed_penalty = 0.2
+                self.ball.speed = base_s * speed_penalty
             else:
-                if getattr(self.ball, "stamina_speed_burst_timer", 0.0) <= 0.0:
-                    self.ball.speed = base_s
+                if stack_count >= 2:
+                    # 2 extra types: Speed boost
+                    self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier)
+                else:
+                    if getattr(self.ball, "stamina_speed_burst_timer", 0.0) <= 0.0:
+                        self.ball.speed = base_s
 
-            if stack_count >= 3:
-                # 3 extra types: Damage boost
-                self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier)
-            else:
+            if is_cursed_aura and stack_count >= 1:
+                # Normal damage, no buff
                 self.ball.damage = base_d
+            else:
+                if stack_count >= 3:
+                    # 3 extra types: Damage boost
+                    self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier)
+                else:
+                    self.ball.damage = base_d
 
             # Re-apply night mode base buffs if needed (just for vampire/normal)
             is_lunar = hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False)
@@ -10980,15 +11004,25 @@ class Action:
                 else: self.ball.damage = base_d * 2.0
             elif is_night:
                 if ball_type == "vampire":
-                    if stack_count >= 2: self.ball.speed = base_s * 1.5 * 1.1
-                    else: self.ball.speed = base_s * 1.5
-                    if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
-                    else: self.ball.damage = base_d * 1.5
+                    if is_cursed_aura and stack_count >= 1:
+                        speed_penalty = max(0.2, 1.0 - (0.1 * stack_count))
+                        self.ball.speed = base_s * 1.5 * speed_penalty
+                        self.ball.damage = base_d * 1.5
+                    else:
+                        if stack_count >= 2: self.ball.speed = base_s * 1.5 * 1.1
+                        else: self.ball.speed = base_s * 1.5
+                        if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
+                        else: self.ball.damage = base_d * 1.5
                 elif ball_type in ["assassin", "phantom"]:
-                    if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
-                    else: self.ball.speed = base_s * 1.2
-                    if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
-                    else: self.ball.damage = base_d * 1.5
+                    if is_cursed_aura and stack_count >= 1:
+                        speed_penalty = max(0.2, 1.0 - (0.1 * stack_count))
+                        self.ball.speed = base_s * 1.2 * speed_penalty
+                        self.ball.damage = base_d * 1.5
+                    else:
+                        if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
+                        else: self.ball.speed = base_s * 1.2
+                        if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
+                        else: self.ball.damage = base_d * 1.5
                 else:
                     if stack_count < 3: self.ball.damage = base_d
             else:
@@ -11000,13 +11034,20 @@ class Action:
 
                 if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", None) is not None and ball_type in ["paladin", "guardian"]:
                     day_multiplier = 1.5
-                    if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
-                    else: self.ball.speed = base_s * 1.2
+                    if is_cursed_aura and stack_count >= 1:
+                        speed_penalty = max(0.2, 1.0 - (0.1 * stack_count))
+                        self.ball.speed = base_s * 1.2 * speed_penalty
+                    else:
+                        if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
+                        else: self.ball.speed = base_s * 1.2
 
-                if stack_count >= 3:
-                    self.ball.damage = base_d * day_multiplier * 1.2
-                else:
+                if is_cursed_aura and stack_count >= 1:
                     self.ball.damage = base_d * day_multiplier
+                else:
+                    if stack_count >= 3:
+                        self.ball.damage = base_d * day_multiplier * 1.2
+                    else:
+                        self.ball.damage = base_d * day_multiplier
             # Check for global eclipse inside the not is_dashing block so it isn't overwritten later
             if hasattr(self.world, "arena") and getattr(self.world.arena, "is_eclipse", False):
                 self.ball.damage = getattr(self.ball, "damage", base_d) * 2.0
