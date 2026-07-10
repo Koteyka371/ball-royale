@@ -78,7 +78,6 @@ def test_weather_shield_collect_and_use():
     assert booster not in world.boosters
 
     # 2. Use item (should cleanse effects since brawler has wet_timer and stun_timer)
-    # The action logic triggers when strategy is flee, defend, or attack.
     action.execute("flee", 1.0)
 
     assert "weather_shield_item" not in brawler.inventory
@@ -89,8 +88,4 @@ def test_weather_shield_collect_and_use():
 
     # Regeneration buff should be active
     assert getattr(brawler, "weather_shield_regen_timer", 0.0) > 0.0
-
-    # hp should increase from 50 (after running tick in execute)
-    # 5 seconds of regen at 10 hp/sec means we should get +10 in 1 second.
-    # However, since execute ran for 1.0 seconds, it would consume 1.0 sec of regen.
     assert brawler.hp > 50.0
