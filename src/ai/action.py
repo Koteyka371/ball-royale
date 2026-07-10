@@ -2162,6 +2162,11 @@ class Action:
                         delta *= time_scale
                         break
         # Chain lightning timer
+        if getattr(self.ball, "_cl_collision_cd", 0.0) > 0:
+            self.ball._cl_collision_cd -= delta
+            if self.ball._cl_collision_cd <= 0:
+                self.ball._cl_collision_cd = 0.0
+
         if getattr(self.ball, "chain_lightning_timer", 0.0) > 0:
             self.ball.chain_lightning_timer -= delta
             if self.ball.chain_lightning_timer <= 0:
@@ -10898,6 +10903,47 @@ class Action:
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
+
+                # Chain lightning power-up logic on collision
+                # If we have the power-up, and we hit an enemy, trigger it
+                if getattr(self.ball, "chain_lightning_timer", 0.0) > 0 and getattr(other, "team", None) != getattr(self.ball, "team", None):
+                    # Only trigger once per collision to avoid infinite loops, check cooldown or just trigger once
+                    if getattr(self.ball, "_cl_collision_cd", 0.0) <= 0.0:
+                        setattr(self.ball, "_cl_collision_cd", 0.5) # 0.5s cooldown per ball to prevent spam
+                        # Deal half damage (default base is 10, so half is 5, but let's just say 5 for chain)
+                        chain_damage = getattr(self.ball, "damage", 10.0) * 0.5
+                        if hasattr(other, "hp"):
+                            other.hp -= chain_damage
+                        elif hasattr(other, "take_damage"):
+                            other.take_damage(chain_damage)
+
+                        if hasattr(self, "_spawn_directed_particles"):
+                            self._spawn_directed_particles(self.ball, other, "chain_lightning")
+
+                        bounced_enemies = {other}
+                        current_pos = other
+                        # Chain up to 3 times (meaning 3 additional jumps)
+                        for _ in range(3):
+                            # find next nearest enemy within medium radius (e.g., 200)
+                            best_dist = float("inf")
+                            next_target = None
+                            for e in nearby: # 'nearby' already contains allies and enemies, we filter enemies
+                                if e not in bounced_enemies and getattr(e, "team", None) != getattr(self.ball, "team", None) and getattr(e, "alive", True):
+                                    d = (e.x - current_pos.x)**2 + (e.y - current_pos.y)**2
+                                    if d < best_dist and d <= 40000.0: # 200^2
+                                        best_dist = d
+                                        next_target = e
+                            if next_target:
+                                if hasattr(next_target, "hp"):
+                                    next_target.hp -= chain_damage
+                                elif hasattr(next_target, "take_damage"):
+                                    next_target.take_damage(chain_damage)
+                                if hasattr(self, "_spawn_directed_particles"):
+                                    self._spawn_directed_particles(current_pos, next_target, "chain_lightning")
+                                bounced_enemies.add(next_target)
+                                current_pos = next_target
+                            else:
+                                break
 
                 # Flag the ball as having received a knockback collision recently (timer)
                 setattr(self.ball, "_knockback_timer", 0.5)
