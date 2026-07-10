@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-805] Game Mode: Reverse Floor is Lava — *2026-07-10 15:09:08 UTC*
+
+Instead of the floor turning into lava starting from the edges, the center of the map becomes lava first and expands outwards, forcing players to eventually fight on the very edges of the arena.
+
+---
+
 ## [idea-813] Skill Tree Specializations — *2026-07-10 15:09:03 UTC*
 
 Add a skill tree where balls can choose different passive upgrades at specific levels, independently of class evolution.
