@@ -842,6 +842,21 @@ class Action:
 
         import math
 
+        # Breach Charge logic
+        if getattr(self.ball, "breach_charge_active", False):
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                disabled_any = False
+                for hazard in self.world.arena.hazards:
+                    if getattr(hazard, "kind", "") in ["bumper", "breakable_wall"]:
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist = math.hypot(dx, dy)
+                        if dist < getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 10.0) + 10.0:
+                            hazard.emp_disabled_timer = 15.0 # Temporarily disable
+                            disabled_any = True
+                if disabled_any:
+                    self.ball.breach_charge_active = False # Consume on use
+
         self.ball.slow_motion_zone_active = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
@@ -7735,6 +7750,13 @@ class Action:
                             shrapnel.duration = 5.0
                             shrapnel.damage = 10.0
                             self.world.arena.hazards.append(shrapnel)
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "breach_charge_booster":
+                    self.ball.breach_charge_active = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
