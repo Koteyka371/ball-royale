@@ -1,0 +1,4 @@
+{
+  "title": "Sonic Boom Hazard",
+  "description": "A hazard that triggers based on speed rather than distance. If a ball moves through its area of effect faster than a certain threshold, it releases a shockwave that knocks back all nearby entities."
+}
