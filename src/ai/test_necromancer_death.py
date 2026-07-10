@@ -50,3 +50,23 @@ def test_minion_decay_when_enraged():
     assert minion.hp == 0
     assert getattr(minion, "alive", True) == False
     assert getattr(minion, "is_enraged", True) == False
+
+def test_enraged_minion_large_delta():
+    world = MockWorld()
+    minion = MockBall()
+    minion.ball_type = "minion"
+    minion.is_minion = True
+    minion.is_enraged = True
+    minion.enrage_timer = 5.0
+    minion.hp = 10.0
+
+    world.balls = [minion]
+
+    action = Action(minion, world)
+    # Applying a large delta to see if hp is properly bounded to 0
+    action.execute(strategy={}, delta=10.0)
+
+    assert minion.enrage_timer == -5.0
+    assert minion.hp == 0
+    assert getattr(minion, "alive", True) == False
+    assert getattr(minion, "is_enraged", True) == False

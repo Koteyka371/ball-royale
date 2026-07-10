@@ -79,6 +79,7 @@ def test_loot_goblin_event():
 def test_low_gravity_event():
     world = MockWorld()
     b1 = MockBall(1, 500, 500)
+    b1.alive = True
     world.balls.append(b1)
 
     mode = BattleRoyaleMode()
