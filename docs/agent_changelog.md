@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-820] Corrupted Aura Modifier — *2026-07-10 21:10:20 UTC*
+
+A rare map event that temporarily flips the effect of friendly auras. If a ball attempts to stand near allies and stack team auras during this event, they instead receive scaling damage over time and slowed movement speed, penalizing grouping behavior and forcing teams to scatter.
+
+---
+
 ## [idea-826] Acid Rain Weather Event — *2026-07-10 21:01:19 UTC*
 
 A random weather event that periodically drops damaging acid puddles across the arena, restricting movement options over time.

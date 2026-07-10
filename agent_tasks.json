@@ -14101,7 +14101,7 @@
     },
     {
       "id": "idea-820",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Corrupted Aura Modifier",
@@ -23599,6 +23599,23 @@
         "src/arena/seasonal_hazards.py",
         "src/arena/seasonal_hazards.gd",
         "tests/test_seasonal_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1378",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Teleportation Relay",
+      "description": "A deployable structure (similar to a hazard) that allows balls to instantly teleport between two paired relays on the map. This introduces new strategic positioning and ambush opportunities, especially in larger or compartmentalized arenas.",
+      "allowed_paths": [
+        "src/ai/quantum_teleportation_relay.py",
+        "src/ai/quantum_teleportation_relay.gd",
+        "tests/test_quantum_teleportation_relay.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
