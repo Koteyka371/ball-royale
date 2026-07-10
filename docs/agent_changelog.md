@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-793] Vengeful Minions — *2026-07-10 17:06:48 UTC*
+
+When a Necromancer dies, all of its active minions become enraged for 5 seconds. They gain 200% movement speed, 150% attack damage, but rapidly decay HP until they die.
+
+---
+
 ## [idea-780] Blackhole Granade Item — *2026-07-10 15:14:29 UTC*
 
 A new booster that allows balls to throw a blackhole grenade that creates a small temporary black hole hazard upon explosion, pulling in enemies and dealing damage.
