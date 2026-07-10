@@ -7053,7 +7053,7 @@ class EarthquakeMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Earthquake"
-        self.description = "Periodically shakes the screen and applies random impulses to all entities."
+        self.description = "Periodically shakes the screen and applies random momentum impulses to all balls in unpredictable directions."
         self.timer = 0.0
         self.is_shaking = False
         self.shake_timer = 0.0
@@ -7081,27 +7081,37 @@ class EarthquakeMode(GameMode):
             if self.shake_timer <= 0.0:
                 self.is_shaking = False
             else:
-                # Apply random impulses
+                import math
+                # Apply random momentum impulses
                 for b in balls:
                     if getattr(b, "hp", 0) > 0 and getattr(b, "anchor_booster_timer", 0.0) <= 0:
-                        b.x += random.uniform(-50.0, 50.0) * delta
-                        b.y += random.uniform(-50.0, 50.0) * delta
+                        mass = getattr(b, "mass", 1.0)
+                        angle = random.uniform(0, 2 * math.pi)
+                        magnitude = random.uniform(50.0, 150.0)
+                        impulse = magnitude / mass
+
+                        b.x += math.cos(angle) * magnitude * delta
+                        b.y += math.sin(angle) * magnitude * delta
                         if hasattr(b, "vx"):
-                            b.vx += random.uniform(-50.0, 50.0)
+                            b.vx += math.cos(angle) * impulse
                         if hasattr(b, "vy"):
-                            b.vy += random.uniform(-50.0, 50.0)
+                            b.vy += math.sin(angle) * impulse
 
                 if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                     for hazard in world.arena.hazards:
                         if hasattr(hazard, "x") and hasattr(hazard, "y"):
-                            hazard.x += random.uniform(-20.0, 20.0) * delta
-                            hazard.y += random.uniform(-20.0, 20.0) * delta
+                            angle = random.uniform(0, 2 * math.pi)
+                            mag = random.uniform(20.0, 60.0)
+                            hazard.x += math.cos(angle) * mag * delta
+                            hazard.y += math.sin(angle) * mag * delta
 
                 if hasattr(world, "arena") and hasattr(world.arena, "items"):
                     for item in world.arena.items:
                         if hasattr(item, "x") and hasattr(item, "y"):
-                            item.x += random.uniform(-20.0, 20.0) * delta
-                            item.y += random.uniform(-20.0, 20.0) * delta
+                            angle = random.uniform(0, 2 * math.pi)
+                            mag = random.uniform(20.0, 60.0)
+                            item.x += math.cos(angle) * mag * delta
+                            item.y += math.sin(angle) * mag * delta
 
         else:
             self.timer += delta

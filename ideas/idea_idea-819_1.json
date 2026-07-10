@@ -1,0 +1,4 @@
+{
+  "title": "Tornado Event Mode",
+  "description": "Periodically spawn a roaming tornado hazard that sucks nearby entities in and flings them in random directions."
+}

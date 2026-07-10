@@ -8441,7 +8441,7 @@ class EarthquakeMode extends GameMode:
 
 	func _init():
 		name = "Earthquake"
-		description = "Periodically shakes the screen and applies random impulses to all entities."
+		description = "Periodically shakes the screen and applies random momentum impulses to all balls in unpredictable directions."
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not "dead_balls" in world:
@@ -8479,36 +8479,50 @@ class EarthquakeMode extends GameMode:
 					else:
 						hp = b.hp if "hp" in b else 0
 					if hp > 0:
+						var mass = 1.0
 						if typeof(b) == TYPE_DICTIONARY:
-							b["x"] = b.get("x", 0.0) + randf_range(-50.0, 50.0) * delta
-							b["y"] = b.get("y", 0.0) + randf_range(-50.0, 50.0) * delta
-							if b.has("vx"):
-								b["vx"] += randf_range(-50.0, 50.0)
-							if b.has("vy"):
-								b["vy"] += randf_range(-50.0, 50.0)
+							mass = b.get("mass", 1.0)
 						else:
-							if "x" in b: b.x += randf_range(-50.0, 50.0) * delta
-							if "y" in b: b.y += randf_range(-50.0, 50.0) * delta
-							if "vx" in b: b.vx += randf_range(-50.0, 50.0)
-							if "vy" in b: b.vy += randf_range(-50.0, 50.0)
+							mass = b.mass if "mass" in b else 1.0
+
+						var angle = randf_range(0.0, 2.0 * PI)
+						var magnitude = randf_range(50.0, 150.0)
+						var impulse = magnitude / mass
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = b.get("x", 0.0) + cos(angle) * magnitude * delta
+							b["y"] = b.get("y", 0.0) + sin(angle) * magnitude * delta
+							if b.has("vx"):
+								b["vx"] += cos(angle) * impulse
+							if b.has("vy"):
+								b["vy"] += sin(angle) * impulse
+						else:
+							if "x" in b: b.x += cos(angle) * magnitude * delta
+							if "y" in b: b.y += sin(angle) * magnitude * delta
+							if "vx" in b: b.vx += cos(angle) * impulse
+							if "vy" in b: b.vy += sin(angle) * impulse
 
 				if world != null and "arena" in world and world.arena != null:
 					if "hazards" in world.arena:
 						for hazard in world.arena.hazards:
+							var angle = randf_range(0.0, 2.0 * PI)
+							var mag = randf_range(20.0, 60.0)
 							if typeof(hazard) == TYPE_DICTIONARY:
-								hazard["x"] = hazard.get("x", 0.0) + randf_range(-20.0, 20.0) * delta
-								hazard["y"] = hazard.get("y", 0.0) + randf_range(-20.0, 20.0) * delta
+								hazard["x"] = hazard.get("x", 0.0) + cos(angle) * mag * delta
+								hazard["y"] = hazard.get("y", 0.0) + sin(angle) * mag * delta
 							else:
-								if "x" in hazard: hazard.x += randf_range(-20.0, 20.0) * delta
-								if "y" in hazard: hazard.y += randf_range(-20.0, 20.0) * delta
+								if "x" in hazard: hazard.x += cos(angle) * mag * delta
+								if "y" in hazard: hazard.y += sin(angle) * mag * delta
 					if "items" in world.arena:
 						for item in world.arena.items:
+							var angle = randf_range(0.0, 2.0 * PI)
+							var mag = randf_range(20.0, 60.0)
 							if typeof(item) == TYPE_DICTIONARY:
-								item["x"] = item.get("x", 0.0) + randf_range(-20.0, 20.0) * delta
-								item["y"] = item.get("y", 0.0) + randf_range(-20.0, 20.0) * delta
+								item["x"] = item.get("x", 0.0) + cos(angle) * mag * delta
+								item["y"] = item.get("y", 0.0) + sin(angle) * mag * delta
 							else:
-								if "x" in item: item.x += randf_range(-20.0, 20.0) * delta
-								if "y" in item: item.y += randf_range(-20.0, 20.0) * delta
+								if "x" in item: item.x += cos(angle) * mag * delta
+								if "y" in item: item.y += sin(angle) * mag * delta
 		else:
 			timer += delta
 			if timer > 10.0 and randf() < 0.2 * delta:
