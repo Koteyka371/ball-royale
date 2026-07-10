@@ -1493,6 +1493,20 @@ class Action:
 
                         self.ball.inventory.remove("black_hole_grenade")
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "weather_shield_item" in self.ball.inventory:
+            # Check for negative status effects
+            status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "wet_timer", "cold_timer", "sandblind_timer"]
+            has_effects = False
+            for eff in status_effects:
+                if getattr(self.ball, eff, 0.0) > 0:
+                    has_effects = True
+                    setattr(self.ball, eff, 0.0) # Cleanse self
+
+            if has_effects:
+                # Provide a temporary health regeneration boost by adding a buff
+                self.ball.weather_shield_regen_timer = 5.0
+                self.ball.inventory.remove("weather_shield_item")
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "status_absorber_item" in self.ball.inventory:
             enemies = self._get_enemies()
             if enemies:
@@ -7470,6 +7484,15 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "weather_shield_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("weather_shield_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "status_absorber_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -11310,6 +11333,10 @@ class Action:
             if self.ball.speed_boost_timer <= 0:
                 self.ball.speed_boost_timer = 0.0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+        if getattr(self.ball, "weather_shield_regen_timer", 0.0) > 0:
+            self.ball.weather_shield_regen_timer -= delta
+            self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 0.0) + (10.0 * delta))
+
         if hasattr(self.ball, "reflect_shield_timer") and self.ball.reflect_shield_timer > 0:
             self.ball.reflect_shield_timer -= delta
             if self.ball.reflect_shield_timer <= 0:
