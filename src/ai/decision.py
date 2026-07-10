@@ -36,6 +36,8 @@ class Decision:
         "monk": "chase",
         "brawler": "attack",
         "necromancer": "defend",
+        "broodmother": "defend",
+        "broodling": "collect_booster",
         "conjurer": "defend",
         "trickster": "chase",
         "elementalist": "attack",

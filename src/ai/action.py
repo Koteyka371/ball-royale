@@ -901,6 +901,61 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "ball_type", "") == "broodling":
+            import math
+            self._update_skill_timer(delta)
+
+            nearby_entities = self.world.get_nearby_entities(self.ball, getattr(self.ball, "perception_radius", 300.0))
+            boosters = nearby_entities.get("boosters", [])
+            hazards = nearby_entities.get("hazards", [])
+            items = [h for h in hazards if getattr(h, "kind", "").endswith("_booster") or getattr(h, "kind", "") in ["cleanser", "health_pack", "rearm_token"]] + boosters
+
+            target_item = None
+            if items:
+                target_item = min(items, key=lambda i: (i.x - self.ball.x)**2 + (i.y - self.ball.y)**2)
+
+            if target_item:
+                dx = target_item.x - self.ball.x
+                dy = target_item.y - self.ball.y
+                dist = math.hypot(dx, dy)
+                if dist > 0.001:
+                    spd = getattr(self.ball, "speed", 6.0)
+                    self.ball.x += (dx / dist) * spd * delta * 60
+                    self.ball.y += (dy / dist) * spd * delta * 60
+
+                dist_sq = dx*dx + dy*dy
+                radius_sum = getattr(self.ball, "radius", 5) + getattr(target_item, "radius", 10)
+                if dist_sq <= radius_sum**2:
+                    if hasattr(self.world, "_collect_booster"):
+                        self.world._collect_booster(self.ball, target_item)
+                    if target_item in boosters and target_item in self.world.boosters:
+                        self.world.boosters.remove(target_item)
+                    elif target_item in hazards and target_item in getattr(getattr(self.world, "arena", None), "hazards", []):
+                        self.world.arena.hazards.remove(target_item)
+            else:
+                allies = [b for b in getattr(self.world, "balls", []) if getattr(b, "team", "") == getattr(self.ball, "team", "") and b.id != self.ball.id and getattr(b, "ball_type", "") != "broodling" and getattr(b, "hp", 0) < getattr(b, "max_hp", 100) and getattr(b, "alive", True)]
+                if allies:
+                    target_ally = min(allies, key=lambda a: a.hp / a.max_hp if a.max_hp > 0 else 1.0)
+                    dx = target_ally.x - self.ball.x
+                    dy = target_ally.y - self.ball.y
+                    dist = math.hypot(dx, dy)
+                    if dist > 0.001:
+                        spd = getattr(self.ball, "speed", 6.0)
+                        self.ball.x += (dx / dist) * spd * delta * 60
+                        self.ball.y += (dy / dist) * spd * delta * 60
+                    if dist < getattr(self.ball, "radius", 5) + getattr(target_ally, "radius", 10) + 5:
+                        print("HEALING ALLY", target_ally)
+                        print("HEALING", target_ally)
+                        target_ally.hp = min(target_ally.max_hp, target_ally.hp + 20.0)
+                        self.ball.hp = 0
+                        self.ball.alive = False
+                else:
+                    self._idle(delta)
+
+            self._resolve_collisions()
+            self._clamp_position()
+            return
+
         self.ball.is_in_mud = False
         if getattr(self.ball, "intangible_timer", 0.0) > 0.0:
             self.ball.intangible_timer -= delta
@@ -8899,6 +8954,24 @@ class Action:
 
                 # Add to own skill timer
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+            elif skill_name == "summon_broodlings":
+                import random
+                num_minions = random.randint(3, 5)
+                for _ in range(num_minions):
+                    try:
+                        from ai.ball_types_broodling import Broodling
+                        b_id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+                        broodling = Broodling(b_id, self.ball.x + random.uniform(-15, 15), self.ball.y + random.uniform(-15, 15))
+                        broodling.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                        broodling.minion_owner = self.ball.id
+                        broodling.ball_type = "broodling"
+                        if hasattr(self.world, "balls"):
+                            self.world.balls.append(broodling)
+                    except Exception:
+                        pass
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 10.0)
             elif skill_name == "summon_minions":
                 import random
                 num_minions = random.randint(2, 4)

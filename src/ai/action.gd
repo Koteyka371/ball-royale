@@ -1473,6 +1473,218 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var b_type = ""
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball.ball_type
+    elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: b_type = self.ball.ball_type
+
+    if b_type == "broodling":
+        _update_skill_timer(delta)
+
+        var perception = 300.0
+        if typeof(self.ball) == TYPE_DICTIONARY: perception = self.ball.get("perception_radius", 300.0)
+        elif "perception_radius" in self.ball: perception = self.ball.perception_radius
+
+        var nearby = self.world.get_nearby_entities(self.ball, perception)
+        var boosters = []
+        var hazards = []
+        if typeof(nearby) == TYPE_DICTIONARY:
+            if nearby.has("boosters"): boosters = nearby.boosters
+            if nearby.has("hazards"): hazards = nearby.hazards
+
+        var items = []
+        for h in hazards:
+            var k = ""
+            if typeof(h) == TYPE_DICTIONARY and h.has("kind"): k = h.kind
+            elif typeof(h) == TYPE_OBJECT and "kind" in h: k = h.kind
+
+            if k.ends_with("_booster") or k == "cleanser" or k == "health_pack" or k == "rearm_token":
+                items.append(h)
+        for b in boosters:
+            items.append(b)
+
+        var target_item = null
+        var min_dist = 9999999.0
+
+        var my_x = 0.0
+        if typeof(self.ball) == TYPE_DICTIONARY: my_x = self.ball.get("x", 0.0)
+        elif "x" in self.ball: my_x = self.ball.x
+
+        var my_y = 0.0
+        if typeof(self.ball) == TYPE_DICTIONARY: my_y = self.ball.get("y", 0.0)
+        elif "y" in self.ball: my_y = self.ball.y
+
+        for i in items:
+            var ix = 0.0
+            if typeof(i) == TYPE_DICTIONARY: ix = i.get("x", 0.0)
+            elif "x" in i: ix = i.x
+
+            var iy = 0.0
+            if typeof(i) == TYPE_DICTIONARY: iy = i.get("y", 0.0)
+            elif "y" in i: iy = i.y
+
+            var dsq = (ix - my_x)*(ix - my_x) + (iy - my_y)*(iy - my_y)
+            if dsq < min_dist:
+                min_dist = dsq
+                target_item = i
+
+        if target_item != null:
+            var ix = 0.0
+            if typeof(target_item) == TYPE_DICTIONARY: ix = target_item.get("x", 0.0)
+            elif "x" in target_item: ix = target_item.x
+
+            var iy = 0.0
+            if typeof(target_item) == TYPE_DICTIONARY: iy = target_item.get("y", 0.0)
+            elif "y" in target_item: iy = target_item.y
+
+            var dx = ix - my_x
+            var dy = iy - my_y
+            var dist = sqrt(dx*dx + dy*dy)
+
+            if dist > 0.001:
+                var spd = 6.0
+                if typeof(self.ball) == TYPE_DICTIONARY: spd = self.ball.get("speed", 6.0)
+                elif "speed" in self.ball: spd = self.ball.speed
+
+                var move_x = (dx / dist) * spd * delta * 60.0
+                var move_y = (dy / dist) * spd * delta * 60.0
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["x"] = my_x + move_x
+                    self.ball["y"] = my_y + move_y
+                else:
+                    self.ball.x += move_x
+                    self.ball.y += move_y
+
+            var my_rad = 5.0
+            if typeof(self.ball) == TYPE_DICTIONARY: my_rad = self.ball.get("radius", 5.0)
+            elif "radius" in self.ball: my_rad = self.ball.radius
+
+            var i_rad = 10.0
+            if typeof(target_item) == TYPE_DICTIONARY: i_rad = target_item.get("radius", 10.0)
+            elif "radius" in target_item: i_rad = target_item.radius
+
+            if dist * dist <= (my_rad + i_rad) * (my_rad + i_rad):
+                if self.world != null and self.world.has_method("_collect_booster"):
+                    self.world._collect_booster(self.ball, target_item)
+
+                if boosters.has(target_item) and "boosters" in self.world:
+                    var idx = self.world.boosters.find(target_item)
+                    if idx >= 0: self.world.boosters.remove_at(idx)
+                elif hazards.has(target_item) and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(target_item)
+                    if idx >= 0: self.world.arena.hazards.remove_at(idx)
+        else:
+            var my_team = ""
+            if typeof(self.ball) == TYPE_DICTIONARY: my_team = self.ball.get("team", "")
+            elif "team" in self.ball: my_team = self.ball.team
+
+            var my_id = -1
+            if typeof(self.ball) == TYPE_DICTIONARY: my_id = self.ball.get("id", -1)
+            elif "id" in self.ball: my_id = self.ball.id
+
+            var target_ally = null
+            var min_hp_ratio = 1.0
+
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    var b_t = ""
+                    if typeof(b) == TYPE_DICTIONARY: b_t = b.get("team", "")
+                    elif "team" in b: b_t = b.team
+
+                    var b_id = -1
+                    if typeof(b) == TYPE_DICTIONARY: b_id = b.get("id", -1)
+                    elif "id" in b: b_id = b.id
+
+                    var b_bt = ""
+                    if typeof(b) == TYPE_DICTIONARY: b_bt = b.get("ball_type", "")
+                    elif "ball_type" in b: b_bt = b.ball_type
+
+                    var b_alive = true
+                    if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", true)
+                    elif "alive" in b: b_alive = b.alive
+
+                    var b_hp = 0.0
+                    var b_max = 100.0
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b_hp = b.get("hp", 0.0)
+                        b_max = b.get("max_hp", 100.0)
+                    else:
+                        if "hp" in b: b_hp = b.hp
+                        if "max_hp" in b: b_max = b.max_hp
+
+                    if b_t == my_team and b_id != my_id and b_bt != "broodling" and b_alive and b_hp < b_max:
+                        var ratio = b_hp / b_max if b_max > 0 else 1.0
+                        if ratio < min_hp_ratio:
+                            min_hp_ratio = ratio
+                            target_ally = b
+
+            if target_ally != null:
+                var ax = 0.0
+                if typeof(target_ally) == TYPE_DICTIONARY: ax = target_ally.get("x", 0.0)
+                elif "x" in target_ally: ax = target_ally.x
+
+                var ay = 0.0
+                if typeof(target_ally) == TYPE_DICTIONARY: ay = target_ally.get("y", 0.0)
+                elif "y" in target_ally: ay = target_ally.y
+
+                var dx = ax - my_x
+                var dy = ay - my_y
+                var dist = sqrt(dx*dx + dy*dy)
+
+                if dist > 0.001:
+                    var spd = 6.0
+                    if typeof(self.ball) == TYPE_DICTIONARY: spd = self.ball.get("speed", 6.0)
+                    elif "speed" in self.ball: spd = self.ball.speed
+
+                    var move_x = (dx / dist) * spd * delta * 60.0
+                    var move_y = (dy / dist) * spd * delta * 60.0
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["x"] = my_x + move_x
+                        self.ball["y"] = my_y + move_y
+                    else:
+                        self.ball.x += move_x
+                        self.ball.y += move_y
+
+                var my_rad = 5.0
+                if typeof(self.ball) == TYPE_DICTIONARY: my_rad = self.ball.get("radius", 5.0)
+                elif "radius" in self.ball: my_rad = self.ball.radius
+
+                var a_rad = 10.0
+                if typeof(target_ally) == TYPE_DICTIONARY: a_rad = target_ally.get("radius", 10.0)
+                elif "radius" in target_ally: a_rad = target_ally.radius
+
+                if dist < my_rad + a_rad + 5.0:
+                    var a_hp = 0.0
+                    var a_max = 100.0
+                    if typeof(target_ally) == TYPE_DICTIONARY:
+                        a_hp = target_ally.get("hp", 0.0)
+                        a_max = target_ally.get("max_hp", 100.0)
+                    else:
+                        if "hp" in target_ally: a_hp = target_ally.hp
+                        if "max_hp" in target_ally: a_max = target_ally.max_hp
+
+                    var new_hp = a_hp + 20.0
+                    if new_hp > a_max: new_hp = a_max
+
+                    if typeof(target_ally) == TYPE_DICTIONARY:
+                        target_ally["hp"] = new_hp
+                    else:
+                        target_ally.hp = new_hp
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["hp"] = 0.0
+                        self.ball["alive"] = false
+                    else:
+                        self.ball.hp = 0.0
+                        self.ball.alive = false
+            else:
+                _idle(delta)
+
+        _resolve_collisions()
+        _clamp_position()
+        return
+
     if self.ball.has_method("set_meta"):
         self.ball.set_meta("is_in_mud", false)
     elif "is_in_mud" in self.ball:
@@ -15656,6 +15868,43 @@ func _use_skill():
                 self.ball.skill_timer = self.ball.skill_cooldown
             else:
                 self.ball.skill_timer = 5.0
+        elif skill_name == "summon_broodlings":
+            var num_minions = randi() % 3 + 3
+            for i in range(num_minions):
+                var next_id = randi() % 90000 + 10000
+                if "next_id" in self.world:
+                    next_id = self.world.next_id
+                    self.world.next_id += 1
+
+                var BroodlingClass = load("res://src/ai/ball_types_broodling.gd")
+                if BroodlingClass:
+                    var my_x = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY: my_x = self.ball.get("x", 0.0)
+                    elif "x" in self.ball: my_x = self.ball.x
+
+                    var my_y = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY: my_y = self.ball.get("y", 0.0)
+                    elif "y" in self.ball: my_y = self.ball.y
+
+                    var broodling = BroodlingClass.new(next_id, my_x + randf_range(-15.0, 15.0), my_y + randf_range(-15.0, 15.0))
+                    if "team" in self.ball:
+                        broodling.team = self.ball.team
+                    elif "ball_type" in self.ball:
+                        broodling.team = self.ball.ball_type
+
+                    if "id" in self.ball:
+                        broodling.minion_owner = self.ball.id
+                    broodling.ball_type = "broodling"
+
+                    if "balls" in self.world:
+                        self.world.balls.append(broodling)
+
+            var cooldown = 10.0
+            if typeof(self.ball) == TYPE_DICTIONARY: cooldown = self.ball.get("skill_cooldown", 10.0)
+            elif "skill_cooldown" in self.ball: cooldown = self.ball.skill_cooldown
+
+            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cooldown
+            elif "skill_timer" in self.ball: self.ball.skill_timer = cooldown
         elif skill_name == "summon_minions":
             var num_minions = randi() % 3 + 2 # 2 to 4 minions
             for i in range(num_minions):
