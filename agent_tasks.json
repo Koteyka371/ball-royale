@@ -14016,7 +14016,7 @@
     },
     {
       "id": "idea-815",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster Mirror Image Skill",
@@ -23156,6 +23156,41 @@
         "src/ai/chrono_shift_ability.py",
         "src/ai/chrono_shift_ability.gd",
         "tests/test_chrono_shift_ability.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1352",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Pet System",
+      "description": "Allow players to find, tame, and equip mini-balls as pets that follow them around, providing minor stat boosts or utility skills like auto-looting.",
+      "allowed_paths": [
+        "src/ai/pet.py",
+        "src/ai/pet.gd",
+        "tests/test_pet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1353",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Territories",
+      "description": "Introduce a persistent world map where clans and guilds can battle for control over different zones, gaining passive resource buffs based on controlled territories.",
+      "allowed_paths": [
+        "src/ui/guild_territories.py",
+        "src/ui/guild_territories.gd",
+        "src/ai/guild_territories.py",
+        "tests/test_guild_territories.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

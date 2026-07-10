@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-815] Trickster Mirror Image Skill — *2026-07-10 18:30:34 UTC*
+
+Add a new skill for Trickster that creates a visually identical clone of itself which mimics the Trickster's movements but deals no damage and explodes into confetti upon death, confusing enemies.
+
+---
+
 ## [idea-812] Evolution Boss Events — *2026-07-10 18:24:36 UTC*
 
 Upon a player reaching their maximum evolution tier, occasionally spawn a powerful corrupted clone of their base class as a world boss to challenge them.
