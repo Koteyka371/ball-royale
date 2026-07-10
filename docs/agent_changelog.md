@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-828] New 'Quantum Tunneling' trap variant — *2026-07-10 20:27:31 UTC*
+
+A trap that teleports the triggering ball instantly to the other side of the map along the vector of their current movement, maintaining momentum. Good for disruption and repositioning, creating chaotic high-speed maneuvers.
+
+---
+
 ## [idea-800] Game Mode: The Floor is Lava (Dynamic) — *2026-07-10 20:11:43 UTC*
 
 A battle royale mode where the safe zone shrinks constantly, and any area outside the safe zone turns into damaging lava rather than just applying storm damage, punishing displacement heavily.

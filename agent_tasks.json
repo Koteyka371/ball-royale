@@ -14237,7 +14237,7 @@
     },
     {
       "id": "idea-828",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New 'Quantum Tunneling' trap variant",
@@ -23480,6 +23480,40 @@
         "src/ai/chain_grapple.py",
         "src/ai/chain_grapple.gd",
         "tests/test_chain_grapple.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1371",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lava Eruption Event",
+      "description": "A random event that periodically erupts lava fountains from the ground, leaving damaging puddles that players must navigate around during combat.",
+      "allowed_paths": [
+        "src/ai/lava_eruption.py",
+        "src/ai/lava_eruption.gd",
+        "tests/test_lava_eruption.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1372",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Lava Mode",
+      "description": "A battle royale variation where the center is lava and expands outwards, forcing players to eventually fight on the very edges of the map while dodging environmental hazards.",
+      "allowed_paths": [
+        "src/ai/reverse_lava.py",
+        "src/ai/reverse_lava.gd",
+        "tests/test_reverse_lava.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
