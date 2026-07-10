@@ -12159,7 +12159,7 @@
     },
     {
       "id": "idea-706",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Breach Charges",
@@ -22799,6 +22799,23 @@
         "src/arena/solar_wind.py",
         "src/arena/solar_wind.gd",
         "tests/test_solar_wind.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1331",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Leap Padding",
+      "description": "A new booster that grants the ball a temporary 'Quantum Leap' state. When falling below 20% HP, the ball automatically teleports to the location of the nearest decoy or friendly drone instead of taking fatal damage, consuming the decoy in the process.",
+      "allowed_paths": [
+        "src/ai/quantum_leap_padding.py",
+        "src/ai/quantum_leap_padding.gd",
+        "tests/test_quantum_leap_padding.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

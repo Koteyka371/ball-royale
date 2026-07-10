@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-706] Breach Charges — *2026-07-10 14:33:47 UTC*
+
+Attackers can pick up 'Breach Charges' that temporarily destroy bumpers or walls in choke points, allowing for alternative entry vectors against entrenched defenders.
+
+---
+
 ## [idea-641] Time Dilation Zone — *2026-07-10 13:58:02 UTC*
 
 An arena hazard or skill effect that creates a permanent slow-motion zone. Any entities entering the zone have their speed and cooldown reduction halved, while projectiles passing through it stay suspended for a set duration before resuming travel.
