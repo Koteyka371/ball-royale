@@ -8536,14 +8536,16 @@ class Action:
                         self.world.balls.append(minion)
             elif skill_name == "corpse_explosion":
                 if hasattr(self.world, "balls"):
-                    minions = [b for b in self.world.balls if getattr(b, "ball_type", "") == "minion" and getattr(b, "team", "") == getattr(self.ball, "team", "")]
+                    minions = [b for b in self.world.balls if getattr(b, "ball_type", "") in ["minion", "elite_minion"] and getattr(b, "team", "") == getattr(self.ball, "team", "")]
                     if minions:
                         target_minion = minions[0]
                         target_minion.hp = 0
                         target_minion.alive = False
 
-                        explosion_radius = 80.0
-                        explosion_damage = 45.0
+                        is_elite = getattr(target_minion, "ball_type", "") == "elite_minion" or getattr(target_minion, "is_elite_minion", False)
+
+                        explosion_radius = 120.0 if is_elite else 80.0
+                        explosion_damage = 90.0 if is_elite else 45.0
 
                         enemies = self._get_enemies()
                         if enemies:
@@ -8555,6 +8557,18 @@ class Action:
                                     if hasattr(enemy, "take_damage"):
                                         enemy.take_damage(explosion_damage)
                                     enemy.slow_timer = max(getattr(enemy, "slow_timer", 0), 2.0)
+
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            try:
+                                from arena.procedural_arena import Hazard
+                                h_id = 9000 + len(self.world.arena.hazards) + int(target_minion.x) + int(target_minion.y)
+                                cloud_radius = 150.0 if is_elite else 100.0
+                                cloud_damage = 20.0 if is_elite else 10.0
+                                cloud = Hazard(id=h_id, x=target_minion.x, y=target_minion.y, radius=cloud_radius, kind="poison_cloud", damage=cloud_damage)
+                                setattr(cloud, "duration", 5.0)
+                                self.world.arena.hazards.append(cloud)
+                            except Exception:
+                                pass
 
             elif skill_name == "raise_dead":
 
