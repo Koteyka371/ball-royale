@@ -16682,6 +16682,149 @@ class PhysicsAnomalyEventMode extends GameMode:
 					b.remove_meta("physics_anomaly_speed_mod")
 
 
+class LavaRoyaleMode extends GameMode:
+	var zone_initialized: bool = false
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 1000.0
+	var shrink_rate: float = 15.0
+	var zone_target_x: float = 500.0
+	var zone_target_y: float = 500.0
+	var zone_move_speed: float = 30.0
+	var rng = RandomNumberGenerator.new()
+
+	func _init() -> void:
+		name = "Lava Royale"
+		description = "A battle royale mode where the safe zone shrinks constantly, and any area outside the safe zone turns into damaging lava rather than just applying storm damage, punishing displacement heavily."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+
+		var valid_balls = []
+		for b in balls:
+			if b.ball_type != "spectator":
+				valid_balls.append(b)
+
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i >= 20:
+				b.ball_type = "spectator"
+				b.alive = false
+			else:
+				if not "team" in b:
+					b.team = b.ball_type
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not zone_initialized:
+			zone_initialized = true
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if "arena" in world and world.arena:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+			zone_x = arena_width / 2.0
+			zone_y = arena_height / 2.0
+			zone_target_x = zone_x
+			zone_target_y = zone_y
+			zone_radius = max(arena_width, arena_height)
+
+		var arena_width_for_move = 1000.0
+		var arena_height_for_move = 1000.0
+		if "arena" in world and world.arena:
+			if "width" in world.arena: arena_width_for_move = float(world.arena.width)
+			if "height" in world.arena: arena_height_for_move = float(world.arena.height)
+
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 5.0:
+			zone_x += (dx / dist) * zone_move_speed * delta
+			zone_y += (dy / dist) * zone_move_speed * delta
+		else:
+			var buffer = max(100.0, zone_radius * 0.5)
+			zone_target_x = rng.randf_range(buffer, arena_width_for_move - buffer)
+			zone_target_y = rng.randf_range(buffer, arena_height_for_move - buffer)
+
+		if zone_radius > 50.0:
+			zone_radius -= shrink_rate * delta
+			if zone_radius < 50.0:
+				zone_radius = 50.0
+
+		if "arena" in world and world.arena and "hazards" in world.arena and rng.randf() < 0.1 * delta * 60:
+			var angle = rng.randf_range(0, PI * 2)
+			var dist_val = rng.randf_range(zone_radius + 50.0, zone_radius + 400.0)
+			var lx = zone_x + cos(angle) * dist_val
+			var ly = zone_y + sin(angle) * dist_val
+
+			var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+			if HazardClass != null:
+				var h_id = world.arena.hazards.size() + rng.randi_range(20000, 99999)
+				var lava_h = HazardClass.new(h_id, lx, ly, rng.randf_range(40.0, 80.0), "lava_puddle", 0.0)
+				lava_h.set_meta("duration", 5.0)
+				world.arena.hazards.append(lava_h)
+
+		var zone_damage_per_second = 100.0
+
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var b_x = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+				var b_y = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+				var distance_to_center = sqrt(pow(b_x - zone_x, 2) + pow(b_y - zone_y, 2))
+
+				if distance_to_center > zone_radius:
+					var damage_amount = zone_damage_per_second * delta
+					if b.has_method("take_damage"):
+						b.take_damage(damage_amount)
+					elif "hp" in b:
+						b.hp -= damage_amount
+
+					if "burn_timer" in b:
+						b.burn_timer = max(b.burn_timer, 2.0)
+					elif b.has_method("get_meta") and b.has_meta("burn_timer"):
+						b.set_meta("burn_timer", max(b.get_meta("burn_timer"), 2.0))
+					elif b.has_method("set_meta"):
+						b.set_meta("burn_timer", 2.0)
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			_award_skill_points()
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			if b.has_method("get") or "team" in b:
+				teams_alive[b.team] = true
+			else:
+				teams_alive[b.ball_type] = true
+
+		if teams_alive.size() == 1:
+			_award_skill_points()
+			return teams_alive.keys()[0]
+
+		if alive.size() == 1:
+			_award_skill_points()
+			return alive[0].ball_type
+
+		return null
+
+	func _award_skill_points() -> void:
+		var pm = ProfileManager.new()
+		var current_datetime = Time.get_datetime_dict_from_system()
+		var is_weekend = current_datetime.weekday == Time.WEEKDAY_SATURDAY or current_datetime.weekday == Time.WEEKDAY_SUNDAY
+		var points = 20 if is_weekend else 10
+		pm.add_skill_points(points)
+
+
 var GAME_MODES = {
 	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
@@ -16703,6 +16846,7 @@ var GAME_MODES = {
 	"blizzard_mode": BlizzardMode.new(),
 
 	"black_market": BlackMarketMode.new(),
+	"lava_royale": LavaRoyaleMode.new(),
 	"floor_is_lava": FloorIsLavaMode.new(),
 
 

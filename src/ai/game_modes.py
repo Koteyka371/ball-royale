@@ -12906,6 +12906,139 @@ class PhysicsAnomalyEventMode(GameMode):
                 if hasattr(b, "physics_anomaly_speed_mod"):
                     delattr(b, "physics_anomaly_speed_mod")
 
+class LavaRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Lava Royale"
+        self.description = "A battle royale mode where the safe zone shrinks constantly, and any area outside the safe zone turns into damaging lava rather than just applying storm damage, punishing displacement heavily."
+        self.zone_initialized = False
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 1000.0
+        self.shrink_rate = 15.0
+        self.zone_target_x = 500.0
+        self.zone_target_y = 500.0
+        self.zone_move_speed = 30.0
+        import random
+        self.random = random
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = getattr(b, "team", b.ball_type)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if not getattr(self, "zone_initialized", False):
+            self.zone_initialized = True
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            self.zone_x = arena_width / 2.0
+            self.zone_y = arena_height / 2.0
+            self.zone_target_x = self.zone_x
+            self.zone_target_y = self.zone_y
+            self.zone_radius = max(arena_width, arena_height)
+
+        arena_width_for_move = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height_for_move = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        dx = self.zone_target_x - self.zone_x
+        dy = self.zone_target_y - self.zone_y
+        dist = math.hypot(dx, dy)
+        if dist > 5.0:
+            self.zone_x += (dx / dist) * self.zone_move_speed * delta
+            self.zone_y += (dy / dist) * self.zone_move_speed * delta
+        else:
+            buffer = max(100.0, self.zone_radius * 0.5)
+            self.zone_target_x = self.random.uniform(buffer, arena_width_for_move - buffer)
+            self.zone_target_y = self.random.uniform(buffer, arena_height_for_move - buffer)
+
+        if self.zone_radius > 50.0:
+            self.zone_radius -= self.shrink_rate * delta
+            if self.zone_radius < 50.0:
+                self.zone_radius = 50.0
+
+        random_val = getattr(self.random, "random", lambda: 0.0)()
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards") and random_val < 0.1 * delta * 60:
+            angle = self.random.uniform(0, math.pi * 2)
+            dist_val = self.random.uniform(self.zone_radius + 50, self.zone_radius + 400)
+            lx = self.zone_x + math.cos(angle) * dist_val
+            ly = self.zone_y + math.sin(angle) * dist_val
+
+            try:
+                from arena.procedural_arena import Hazard
+                h_id = len(world.arena.hazards) + self.random.randint(20000, 99999)
+                lava_h = Hazard(id=h_id, x=lx, y=ly, radius=self.random.uniform(40.0, 80.0), kind="lava_puddle", damage=0.0)
+                setattr(lava_h, "duration", 5.0)
+                world.arena.hazards.append(lava_h)
+            except ImportError:
+                pass
+
+        zone_damage_per_second = 100.0
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                b_x = getattr(b, "x", 0.0)
+                b_y = getattr(b, "y", 0.0)
+                distance_to_center = math.hypot(b_x - self.zone_x, b_y - self.zone_y)
+
+                if distance_to_center > self.zone_radius:
+                    damage_amount = zone_damage_per_second * delta
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(damage_amount)
+                    else:
+                        b.hp -= damage_amount
+
+                    if not hasattr(b, "burn_timer") or b.burn_timer <= 0:
+                        b.burn_timer = 2.0
+                    else:
+                        b.burn_timer = max(b.burn_timer, 2.0)
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            self._award_skill_points()
+            return "Draw"
+
+        teams_alive = set(b.team for b in alive if hasattr(b, "team"))
+        if not teams_alive:
+             types_alive = set(b.ball_type for b in alive)
+             if len(types_alive) == 1:
+                 self._award_skill_points()
+                 return list(types_alive)[0]
+        elif len(teams_alive) == 1:
+            self._award_skill_points()
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            self._award_skill_points()
+            return alive[0].ball_type
+
+        return None
+
+    def _award_skill_points(self):
+        try:
+            from system.profile import ProfileManager  # type: ignore
+            import datetime
+            pm = ProfileManager("profile.json")
+            points = 20 if datetime.date.today().weekday() >= 5 else 10
+            pm.add_skill_points(points)
+        except Exception:
+            pass
+
+
 GAME_MODES = {
     "falling_panels": FallingPanelsMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
@@ -12921,6 +13054,7 @@ GAME_MODES = {
 
     "black_market": BlackMarketMode(),
     "floor_is_lava": FloorIsLavaMode(),
+    "lava_royale": LavaRoyaleMode(),
 
 
     "geometric_zone": GeometricZoneMode(),
