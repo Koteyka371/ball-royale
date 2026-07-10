@@ -14379,6 +14379,56 @@ class FreezeTagMode(GameMode):
         return None
 
 
+
+class VortexOrbitMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vortex Orbit"
+        self.description = "Boosters orbit around a central massive black hole at high speeds."
+        self.id = "vortex_orbit"
+        self.vortex_radius = 200.0
+        self.pull_strength = 80.0
+
+    def apply(self, world, delta):
+        # Ensure a central vortex exists
+        has_vortex = any(getattr(h, "kind", "") == "vortex" for h in world.arena.hazards)
+        if not has_vortex:
+            from arena.procedural_arena import Hazard
+            vortex = Hazard(
+                id=9999,
+                x=world.width / 2,
+                y=world.height / 2,
+                kind="vortex",
+                radius=self.vortex_radius,
+                damage=50.0
+            )
+            world.arena.hazards.append(vortex)
+
+        # Orbit logic for boosters
+        if hasattr(world, "boosters"):
+            import math
+            cx = world.width / 2
+            cy = world.height / 2
+            for booster in world.boosters:
+                dx = cx - booster.x
+                dy = cy - booster.y
+                dist = math.sqrt(dx * dx + dy * dy)
+                if dist > 0.1:
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    # Pull slightly towards center
+                    if dist > self.vortex_radius:
+                        booster.x += nx * 20.0 * delta
+                        booster.y += ny * 20.0 * delta
+
+                    # Fast orbit
+                    px = -ny
+                    py = nx
+                    orbit_speed = 300.0
+                    booster.x += px * orbit_speed * delta
+                    booster.y += py * orbit_speed * delta
+
 class WeatherClashMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -14479,4 +14529,5 @@ class WeatherClashMode(GameMode):
 
 
 GAME_MODES['freeze_tag'] = FreezeTagMode()
+GAME_MODES['vortex_orbit'] = VortexOrbitMode()
 GAME_MODES['weather_clash'] = WeatherClashMode()
