@@ -2950,22 +2950,40 @@ class Action:
 
                                                 # Generate fragmentation visuals bouncing off other
                                                 if hasattr(self.world, "events"):
-                                                    for i in range(4):
-                                                        angle = random.uniform(0, 2 * math.pi)
-                                                        tx = other.x + math.cos(angle) * 150
-                                                        ty = other.y + math.sin(angle) * 150
-                                                        self.world.events.append({
-                                                            "type": "visual_effect",
-                                                            "data": {
-                                                                "type": "fragmentation_projectile",
-                                                                "x": b.x,
-                                                                "y": b.y,
-                                                                "tx": tx,
-                                                                "ty": ty,
-                                                                "bounce": True,
-                                                                "color": "purple"
-                                                            }
-                                                        })
+                                                    if not getattr(b, "is_confetti_clone", False):
+                                                        for i in range(4):
+                                                            angle = random.uniform(0, 2 * math.pi)
+                                                            tx = other.x + math.cos(angle) * 150
+                                                            ty = other.y + math.sin(angle) * 150
+                                                            self.world.events.append({
+                                                                "type": "visual_effect",
+                                                                "data": {
+                                                                    "type": "fragmentation_projectile",
+                                                                    "x": b.x,
+                                                                    "y": b.y,
+                                                                    "tx": tx,
+                                                                    "ty": ty,
+                                                                    "bounce": True,
+                                                                    "color": "purple"
+                                                                }
+                                                            })
+                                                    else:
+                                                        for i in range(20):
+                                                            angle = random.uniform(0, 2 * math.pi)
+                                                            tx = b.x + math.cos(angle) * 100
+                                                            ty = b.y + math.sin(angle) * 100
+                                                            self.world.events.append({
+                                                                "type": "visual_effect",
+                                                                "data": {
+                                                                    "type": "confetti",
+                                                                    "x": b.x,
+                                                                    "y": b.y,
+                                                                    "tx": tx,
+                                                                    "ty": ty,
+                                                                    "bounce": True,
+                                                                    "color": random.choice(["pink", "purple", "yellow", "cyan"])
+                                                                }
+                                                            })
 
                                         if hasattr(other, 'hp') and other.hp <= 0:
                                             other.alive = False
@@ -7431,7 +7449,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'wall_jump', 'wave_attack', 'yeti_roar']
+                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -9050,6 +9068,35 @@ class Action:
                             self.ball.rearm_damage_boost = False
 
                         self.world.balls.append(decoy)
+
+            elif skill_name == "trickster_clone":
+                import copy
+                if hasattr(self.world, "balls"):
+                    clone = copy.copy(self.ball)
+                    clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    clone.hp = getattr(self.ball, "max_hp", 100) * 0.5
+                    clone.max_hp = clone.hp
+                    clone.damage = 0.0
+                    clone.is_decoy_clone = True
+                    clone.is_illusion = True
+                    clone.mimic_owner = getattr(self.ball, "id", None)
+                    clone.mimic_timer = 15.0
+
+                    clone.skill = None
+                    clone.SKILL = None
+                    if hasattr(clone, "active_skill"):
+                        clone.active_skill = None
+                    clone.skill_timer = 9999.0
+
+                    clone.is_decoy = True
+                    clone.decoy_type = "explosive"
+                    clone.decoy_timer = 15.0
+                    clone.is_confetti_clone = True
+
+                    self.world.balls.append(clone)
 
             elif skill_name == "decoy_clone":
                 import copy

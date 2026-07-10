@@ -31,6 +31,8 @@ class MockBall:
 
 def test_trickster_swap():
     trickster = MockBall(1, 100.0, 100.0, team="A")
+    trickster.skill = "trickster_swap"
+    trickster.SKILL = "trickster_swap"
     trickster.burn_timer = 5.0
     trickster.poison_timer = 3.0
 
@@ -60,6 +62,8 @@ def test_trickster_swap():
 
 def test_trickster_swap_with_decoy():
     trickster = MockBall(1, 100.0, 100.0, team="A")
+    trickster.skill = "trickster_swap"
+    trickster.SKILL = "trickster_swap"
     trickster.burn_timer = 5.0
 
     # Close enemy

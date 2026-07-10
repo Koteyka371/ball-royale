@@ -5180,22 +5180,45 @@ func execute(strategy: String, delta: float):
                                             if world != null and "events" in world:
                                                 world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
 
-                                                for i in range(4):
-                                                    var angle = rng.randf_range(0.0, 2.0 * PI)
-                                                    var tx = other.x + cos(angle) * 150.0
-                                                    var ty = other.y + sin(angle) * 150.0
-                                                    world.events.append({
-                                                        "type": "visual_effect",
-                                                        "data": {
-                                                            "type": "fragmentation_projectile",
-                                                            "x": b.x,
-                                                            "y": b.y,
-                                                            "tx": tx,
-                                                            "ty": ty,
-                                                            "bounce": true,
-                                                            "color": "purple"
-                                                        }
-                                                    })
+                                                var is_confetti = false
+                                                if "is_confetti_clone" in b: is_confetti = b.is_confetti_clone
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_confetti_clone"): is_confetti = b.get_meta("is_confetti_clone")
+
+                                                if is_confetti:
+                                                    var colors = ["pink", "purple", "yellow", "cyan"]
+                                                    for i in range(20):
+                                                        var angle = rng.randf_range(0.0, 2.0 * PI)
+                                                        var tx = b.x + cos(angle) * 100.0
+                                                        var ty = b.y + sin(angle) * 100.0
+                                                        world.events.append({
+                                                            "type": "visual_effect",
+                                                            "data": {
+                                                                "type": "confetti",
+                                                                "x": b.x,
+                                                                "y": b.y,
+                                                                "tx": tx,
+                                                                "ty": ty,
+                                                                "bounce": true,
+                                                                "color": colors[rng.randi() % colors.size()]
+                                                            }
+                                                        })
+                                                else:
+                                                    for i in range(4):
+                                                        var angle = rng.randf_range(0.0, 2.0 * PI)
+                                                        var tx = other.x + cos(angle) * 150.0
+                                                        var ty = other.y + sin(angle) * 150.0
+                                                        world.events.append({
+                                                            "type": "visual_effect",
+                                                            "data": {
+                                                                "type": "fragmentation_projectile",
+                                                                "x": b.x,
+                                                                "y": b.y,
+                                                                "tx": tx,
+                                                                "ty": ty,
+                                                                "bounce": true,
+                                                                "color": "purple"
+                                                            }
+                                                        })
 
                                         if other.hp <= 0:
                                             if "alive" in other:
@@ -13096,7 +13119,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'wall_jump', 'wave_attack', 'yeti_roar']
+                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -15959,6 +15982,60 @@ func _use_skill():
                                 self.ball.skill_timer = 0.5
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("skill_timer", 0.5)
+        elif skill_name == "trickster_clone":
+            if "balls" in self.world:
+                var clone = null
+                if self.ball.has_method("duplicate"):
+                    clone = self.ball.duplicate()
+                elif self.ball is Dictionary:
+                    clone = self.ball.duplicate()
+
+                if clone != null:
+                    var next_id = randi() % 90000 + 10000
+                    if "next_id" in self.world:
+                        next_id = self.world.next_id
+                        self.world.next_id += 1
+
+                    if "id" in clone: clone.id = next_id
+
+                    var owner_max_hp = 100.0
+                    if "max_hp" in self.ball: owner_max_hp = float(self.ball.max_hp)
+
+                    if "hp" in clone and "max_hp" in clone:
+                        clone.max_hp = owner_max_hp * 0.5
+                        clone.hp = clone.max_hp
+                    if "damage" in clone: clone.damage = 0.0
+
+                    if "skill" in clone: clone.skill = ""
+                    if "SKILL" in clone: clone.SKILL = ""
+                    if "active_skill" in clone: clone.active_skill = ""
+                    if "skill_timer" in clone: clone.skill_timer = 9999.0
+
+                    var owner_id = -1
+                    if "id" in self.ball: owner_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): owner_id = self.ball.get_meta("id")
+
+                    if typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
+                        clone.set_meta("is_decoy_clone", true)
+                        clone.set_meta("is_illusion", true)
+                        clone.set_meta("mimic_owner", owner_id)
+                        clone.set_meta("mimic_timer", 15.0)
+                        clone.set_meta("is_decoy", true)
+                        clone.set_meta("decoy_type", "explosive")
+                        clone.set_meta("decoy_timer", 15.0)
+                        clone.set_meta("is_confetti_clone", true)
+                    elif typeof(clone) == TYPE_DICTIONARY:
+                        clone["is_decoy_clone"] = true
+                        clone["is_illusion"] = true
+                        clone["mimic_owner"] = owner_id
+                        clone["mimic_timer"] = 15.0
+                        clone["is_decoy"] = true
+                        clone["decoy_type"] = "explosive"
+                        clone["decoy_timer"] = 15.0
+                        clone["is_confetti_clone"] = true
+
+                    self.world.balls.append(clone)
+
         elif skill_name == "decoy_clone":
             if "balls" in self.world:
                 var clone = null
