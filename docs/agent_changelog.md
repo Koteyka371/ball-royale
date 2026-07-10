@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-641] Time Dilation Zone — *2026-07-10 13:58:02 UTC*
+
+An arena hazard or skill effect that creates a permanent slow-motion zone. Any entities entering the zone have their speed and cooldown reduction halved, while projectiles passing through it stay suspended for a set duration before resuming travel.
+
+---
+
 ## [idea-777] Orbital Gravity Zones — *2026-07-10 12:41:02 UTC*
 
 A hazard that exerts a perpendicular force instead of just pushing/pulling, causing players to orbit its center rather than simply falling in or out.
