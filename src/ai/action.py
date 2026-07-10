@@ -2639,6 +2639,15 @@ class Action:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
                     continue
+
+                if getattr(hazard, "kind", "") in ("slow_rift", "fast_rift") and getattr(hazard, "active", True):
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist <= getattr(hazard, "radius", 150.0):
+                        if hazard.kind == "slow_rift":
+                            self.ball.speed_multiplier = min(self.ball.speed_multiplier, 0.2)
+                        elif hazard.kind == "fast_rift":
+                            self.ball.speed_multiplier = max(self.ball.speed_multiplier, 2.5)
+
                 kind = getattr(hazard, "kind", "")
                 if kind in ("gravity_well", "repulsor") and getattr(hazard, "active", True):
                     if not hasattr(hazard, "last_booster_pull_tick") or hazard.last_booster_pull_tick != current_tick:

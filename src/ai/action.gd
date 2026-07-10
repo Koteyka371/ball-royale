@@ -4023,6 +4023,24 @@ func execute(strategy: String, delta: float):
 		for hazard in world.arena.hazards:
 			var kind = hazard.get("kind", "")
 			var is_active = hazard.get("active", true)
+
+			if kind in ["slow_rift", "fast_rift"] and is_active:
+				var dist = sqrt(pow(self.ball.x - hazard.x, 2) + pow(self.ball.y - hazard.y, 2))
+				var r = 150.0
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): r = float(hazard.radius)
+				elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: r = float(hazard.radius)
+
+				if dist <= r:
+					# Apply per-tick linear velocity modifications instead of exponential, or just
+					# clamp the speed multiplier so it doesn't compound exponentially.
+					# Actually, best approach: Use a status effect that resets at the start of tick,
+					# or just apply a temporary clamp to speed multiplier for this tick.
+					# Let's just scale vx, vy by a delta factor, or set speed_multiplier for this tick.
+					if kind == "slow_rift":
+						if "speed_multiplier" in self.ball: self.ball.speed_multiplier = min(self.ball.speed_multiplier, 0.2)
+					elif kind == "fast_rift":
+						if "speed_multiplier" in self.ball: self.ball.speed_multiplier = max(self.ball.speed_multiplier, 2.5)
+
 			if (kind == "gravity_well" or kind == "repulsor") and is_active:
 				var hx = float(hazard.x)
 				var hy = float(hazard.y)

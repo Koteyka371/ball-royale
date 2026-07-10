@@ -16814,7 +16814,79 @@ class LavaRoyaleMode extends GameMode:
 		pm.add_skill_points(points)
 
 
+
+class TemporalRiftMode extends GameMode:
+	var rift_spawn_timer: float = 0.0
+
+	func _init() -> void:
+		super._init()
+		self.name = "Temporal Rift"
+		self.description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_DICTIONARY:
+			if not world.arena.has("hazards"):
+				world.arena.hazards = []
+		else:
+			if not "hazards" in world.arena:
+				if world.arena.has_method("set_meta"):
+					world.arena.set_meta("hazards", [])
+		self.rift_spawn_timer = 5.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		self.rift_spawn_timer -= delta
+		if self.rift_spawn_timer <= 0:
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			self.rift_spawn_timer = rng.randf_range(8.0, 15.0)
+
+			var aw = 1000.0
+			var ah = 1000.0
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.arena.has("arena_width"): aw = world.arena.arena_width
+				if world.arena.has("arena_height"): ah = world.arena.arena_height
+			else:
+				if "arena_width" in world.arena: aw = world.arena.arena_width
+				if "arena_height" in world.arena: ah = world.arena.arena_height
+
+			var x = rng.randf_range(200.0, aw - 200.0)
+			var y = rng.randf_range(200.0, ah - 200.0)
+
+			var rift_type = "slow_rift"
+			if rng.randf() > 0.5:
+				rift_type = "fast_rift"
+
+			var radius = rng.randf_range(150.0, 250.0)
+			var duration = rng.randf_range(10.0, 20.0)
+
+			var rift_id = "temporal_rift_" + str(rng.randi_range(1000, 9999)) + "_" + rift_type
+
+			var h_dict = {
+				"id": rift_id,
+				"x": x,
+				"y": y,
+				"radius": radius,
+				"kind": rift_type,
+				"damage": 0.0,
+				"duration": duration,
+				"active": true
+			}
+
+			if typeof(world) == TYPE_DICTIONARY:
+				world.arena.hazards.append(h_dict)
+			else:
+				if "hazards" in world.arena:
+					world.arena.hazards.append(h_dict)
+				elif world.arena.has_method("get_meta"):
+					var hazards = world.arena.get_meta("hazards")
+					hazards.append(h_dict)
+					world.arena.set_meta("hazards", hazards)
+
+
 var GAME_MODES = {
+	"temporal_rift": TemporalRiftMode.new(),
 	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),

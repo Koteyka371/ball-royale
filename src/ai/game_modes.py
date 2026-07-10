@@ -14735,3 +14735,52 @@ class DisguisedTrapsMode(GameMode):
                 world.arena.hazards.append(trap)
 
 GAME_MODES["disguised_traps"] = DisguisedTrapsMode()
+
+class TemporalRiftMode(GameMode):
+    """
+    Random areas on the map become temporal rifts. Any ball passing through a rift has its
+    movement speed drastically slowed down (bullet time effect) or dramatically sped up,
+    making traversing the map more strategic.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Temporal Rift"
+        self.description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
+        self.rift_spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.rift_spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        self.rift_spawn_timer -= delta
+        if self.rift_spawn_timer <= 0:
+            self.rift_spawn_timer = random.uniform(8.0, 15.0)
+
+            # Spawn a temporal rift hazard
+            x = random.uniform(200, world.arena.arena_width - 200)
+            y = random.uniform(200, world.arena.arena_height - 200)
+            rift_type = random.choice(["slow_rift", "fast_rift"])
+            radius = random.uniform(150.0, 250.0)
+            duration = random.uniform(10.0, 20.0)
+
+            rift_id = f"temporal_rift_{random.randint(1000, 9999)}_{rift_type}"
+
+            class GenericHazard:
+                pass
+            h = GenericHazard()
+            h.id = rift_id
+            h.x = x
+            h.y = y
+            h.radius = radius
+            h.kind = rift_type
+            h.damage = 0.0
+            h.duration = duration
+            world.arena.hazards.append(h)
+
+GAME_MODES["temporal_rift"] = TemporalRiftMode()
