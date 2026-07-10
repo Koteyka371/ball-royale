@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-845] Cosmic Storm Weather Event — *2026-07-10 22:37:58 UTC*
+
+A random weather event that spawns miniature gravity wells across the arena, temporarily altering movement dynamics and adding chaos.
+
+---
+
 ## [idea-846] Guild Emblem Customization — *2026-07-10 22:30:25 UTC*
 
 Allows players to unlock and combine different shapes, colors, and symbols to create a unique emblem for their guild.

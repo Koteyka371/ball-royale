@@ -14526,7 +14526,7 @@
     },
     {
       "id": "idea-845",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cosmic Storm Weather Event",
@@ -23820,6 +23820,42 @@
         "src/ai/supernova_mine.py",
         "src/ai/supernova_mine.gd",
         "tests/test_supernova_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1391",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Emblem In-game Display",
+      "description": "Display the guild emblem near the player's ball or health bar during gameplay.",
+      "allowed_paths": [
+        "src/ui/guild_emblem_in_game_display.py",
+        "src/ui/guild_emblem_in_game_display.gd",
+        "src/ai/guild_emblem_in_game_display.py",
+        "tests/test_guild_emblem_in_game_display.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1392",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Emblem Editor UI",
+      "description": "Add a user interface in the main menu for players to easily edit their guild emblem visually.",
+      "allowed_paths": [
+        "src/ui/guild_emblem_editor_ui.py",
+        "src/ui/guild_emblem_editor_ui.gd",
+        "src/ai/guild_emblem_editor_ui.py",
+        "tests/test_guild_emblem_editor_ui.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
