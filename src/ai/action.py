@@ -1750,6 +1750,17 @@ class Action:
                 self.ball.x, self.ball.y = temp_x, temp_y
                 self.ball.inventory.remove("position_swap")
 
+
+        # Check inventory for tether hook
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "tether_hook" in self.ball.inventory:
+            enemies = self._get_enemies()
+            if enemies:
+                # Find closest enemy
+                closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                self.ball.tether_hook_target = closest_enemy
+                self.ball.tether_hook_timer = 5.0  # Duration of the tether hook
+                self.ball.inventory.remove("tether_hook")
+
         # Check inventory for grapple hook
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "grapple_hook" in self.ball.inventory:
             # We want to pull towards another ball or wall
@@ -7865,6 +7876,16 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "tether_hook_booster":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("tether_hook")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "grapple_booster":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -11292,6 +11313,43 @@ class Action:
             self.ball.weather_control_timer -= delta
 
         # Magnet Tether Movement Logic
+
+        # Tether Hook logic
+        tether_hook_timer = getattr(self.ball, "tether_hook_timer", 0.0)
+        if tether_hook_timer > 0:
+            target = getattr(self.ball, "tether_hook_target", None)
+            if target and getattr(target, "alive", False):
+                import math
+                # Pull them together over time
+                pull_strength = 300.0 * delta
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                dist = math.sqrt(dx**2 + dy**2)
+
+                if dist > 0.1:
+                    # Pull self towards target slightly
+                    self.ball.x += (dx / dist) * pull_strength * 0.5
+                    self.ball.y += (dy / dist) * pull_strength * 0.5
+
+                    # Pull target towards self slightly
+                    target.x -= (dx / dist) * pull_strength * 0.5
+                    target.y -= (dy / dist) * pull_strength * 0.5
+
+                # Deal minor damage
+                damage_per_tick = 5.0 * delta
+                if hasattr(self.world, "_deal_damage"):
+                    temp_dmg = getattr(self.ball, "damage", 10.0)
+                    self.ball.damage = damage_per_tick
+                    try:
+                        self.world._deal_damage(self.ball, target)
+                    except Exception:
+                        pass
+                    self.ball.damage = temp_dmg
+                else:
+                    target.hp -= damage_per_tick
+
+            self.ball.tether_hook_timer -= delta
+
         magnet_tether_timer = getattr(self.ball, "magnet_tether_timer", 0.0)
         if magnet_tether_timer > 0:
             target = getattr(self.ball, "magnet_tether_target", None)

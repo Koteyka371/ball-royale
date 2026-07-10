@@ -3547,6 +3547,25 @@ func execute(strategy: String, delta: float):
 				inv.erase("position_swap")
 				self.ball.set_meta("inventory", inv)
 
+
+	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("tether_hook"):
+			var enemies = self._get_enemies()
+			if enemies.size() > 0:
+				var closest_enemy = null
+				var min_dist_sq = INF
+				for e in enemies:
+					var dist_sq = (e.x - self.ball.x) * (e.x - self.ball.x) + (e.y - self.ball.y) * (e.y - self.ball.y)
+					if dist_sq < min_dist_sq:
+						min_dist_sq = dist_sq
+						closest_enemy = e
+				if closest_enemy != null:
+					self.ball.set_meta("tether_hook_target", closest_enemy)
+					self.ball.set_meta("tether_hook_timer", 5.0)
+					inv.erase("tether_hook")
+					self.ball.set_meta("inventory", inv)
+
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("grapple_hook"):
@@ -13858,6 +13877,16 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "tether_hook_booster":
+                if not self.ball.has_meta("inventory"):
+                    self.ball.set_meta("inventory", [])
+                var inv = self.ball.get_meta("inventory")
+                inv.append("tether_hook")
+                self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "grapple_booster":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
@@ -19511,6 +19540,67 @@ func _update_skill_timer(delta: float):
                 self.ball.energy_shield_timer = es_timer
 
     var m_tether_timer = 0.0
+
+    var tether_hook_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("tether_hook_timer"):
+        tether_hook_timer = self.ball.get_meta("tether_hook_timer")
+    elif "tether_hook_timer" in self.ball:
+        tether_hook_timer = self.ball.tether_hook_timer
+
+    if tether_hook_timer > 0.0:
+        var target = null
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("tether_hook_target"):
+            target = self.ball.get_meta("tether_hook_target")
+        elif "tether_hook_target" in self.ball:
+            target = self.ball.tether_hook_target
+
+        if target != null and (typeof(target) == TYPE_OBJECT and target.get("alive") != null and target.get("alive") == true or typeof(target) == TYPE_DICTIONARY and target.has("alive") and target.alive == true):
+            var pull_strength = 300.0 * delta
+            var dx = target.x - self.ball.x
+            var dy = target.y - self.ball.y
+            var dist = sqrt(dx*dx + dy*dy)
+
+            if dist > 0.1:
+                self.ball.x += (dx / dist) * pull_strength * 0.5
+                self.ball.y += (dy / dist) * pull_strength * 0.5
+
+                if typeof(target) == TYPE_OBJECT:
+                    target.x -= (dx / dist) * pull_strength * 0.5
+                    target.y -= (dy / dist) * pull_strength * 0.5
+                elif typeof(target) == TYPE_DICTIONARY:
+                    target.x -= (dx / dist) * pull_strength * 0.5
+                    target.y -= (dy / dist) * pull_strength * 0.5
+
+            var damage_per_tick = 5.0 * delta
+            if self.world.has_method("_deal_damage"):
+                var temp_dmg = 10.0
+                if self.ball.has("damage"): temp_dmg = self.ball.damage
+                elif self.ball.has_method("get") and self.ball.get("damage") != null: temp_dmg = self.ball.damage
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball.damage = damage_per_tick
+                else:
+                    self.ball.set("damage", damage_per_tick)
+
+                self.world._deal_damage(self.ball, target)
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball.damage = temp_dmg
+                else:
+                    self.ball.set("damage", temp_dmg)
+            else:
+                if typeof(target) == TYPE_OBJECT:
+                    if "hp" in target:
+                        target.hp -= damage_per_tick
+                elif typeof(target) == TYPE_DICTIONARY:
+                    if target.has("hp"):
+                        target.hp -= damage_per_tick
+
+        tether_hook_timer -= delta
+        if "tether_hook_timer" in self.ball: self.ball.tether_hook_timer = tether_hook_timer
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("tether_hook_timer", tether_hook_timer)
+
+
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("magnet_tether_timer"):
         m_tether_timer = self.ball.get_meta("magnet_tether_timer")
     elif "magnet_tether_timer" in self.ball:
