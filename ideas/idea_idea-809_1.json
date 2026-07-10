@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Tunnels Hazard",
+  "description": "Hazards that teleport entities entering them to a random location in the arena, randomizing their speed and direction, adding unpredictability to the battlefield."
+}
