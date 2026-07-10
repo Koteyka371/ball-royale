@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-835] Black Hole Mine — *2026-07-10 22:07:41 UTC*
+
+A variant of the clone mine that, instead of exploding instantly, creates a miniature black hole for 3 seconds. The black hole pulls nearby enemy balls towards its center, drastically slowing their movement. After the 3 seconds, it collapses, dealing moderate damage to all trapped enemies.
+
+---
+
 ## [idea-799] Summoner Support Ball — *2026-07-10 21:49:55 UTC*
 
 A new ball type that focuses entirely on spawning tiny helper minions that collect resources and heal allies, but the ball itself has virtually no offensive capabilities.

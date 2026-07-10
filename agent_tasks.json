@@ -14356,7 +14356,7 @@
     },
     {
       "id": "idea-835",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Mine",
@@ -23735,6 +23735,74 @@
         "src/ai/weekend_boss_invasions.py",
         "src/ai/weekend_boss_invasions.gd",
         "tests/test_weekend_boss_invasions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1386",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hive Mind Game Mode",
+      "description": "A new team-based game mode where each team has a central 'Hive' structure that must be protected. Teams must gather resources scattered across the map to upgrade their hive's defenses and spawn automated minions to assault the enemy hive.",
+      "allowed_paths": [
+        "src/ai/hive_mind_game.py",
+        "src/ai/hive_mind_game.gd",
+        "tests/test_hive_mind_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1387",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corruption Hazard Zones",
+      "description": "Periodically, zones of corruption appear in the arena. Balls that stay in the corruption zone have their health drained, but they gain a temporary massive boost to attack damage and movement speed while inside, offering a high-risk, high-reward tactical element.",
+      "allowed_paths": [
+        "src/arena/corruption_zones.py",
+        "src/arena/corruption_zones.gd",
+        "tests/test_corruption_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1388",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Leap Boots",
+      "description": "A new booster that allows players to instantly teleport a short distance forward, bypassing hazards, walls, and other players, but with a high stamina cost per use.",
+      "allowed_paths": [
+        "src/ai/quantum_leap_boots.py",
+        "src/ai/quantum_leap_boots.gd",
+        "tests/test_quantum_leap_boots.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1389",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Aura Hazard",
+      "description": "A new stationary hazard that slowly drains the HP of any player within its radius, but instead of just disappearing, it heals the closest player on the opposite team proportional to the damage dealt.",
+      "allowed_paths": [
+        "src/arena/vampiric_aura.py",
+        "src/arena/vampiric_aura.gd",
+        "tests/test_vampiric_aura.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
