@@ -39,6 +39,10 @@ func load_guilds():
                     data["guilds"][g_name]["titles"] = []
                 if not data["guilds"][g_name].has("cosmetic_auras"):
                     data["guilds"][g_name]["cosmetic_auras"] = []
+                if not data["guilds"][g_name].has("emblem"):
+                    data["guilds"][g_name]["emblem"] = {"shape": "circle", "color": "white", "symbol": "none"}
+                if not data["guilds"][g_name].has("unlocked_emblem_parts"):
+                    data["guilds"][g_name]["unlocked_emblem_parts"] = {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]}
             return
 
     data = {"guilds": {}, "territories": {}}
@@ -76,7 +80,9 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
             "banners": [],
             "cosmetics": [],
             "training_arena_unlocked": false
-        }
+        },
+        "emblem": {"shape": "circle", "color": "white", "symbol": "none"},
+        "unlocked_emblem_parts": {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]}
     }
     save_guilds()
     return true
@@ -215,6 +221,47 @@ func get_bounties_on_guild(guild_name: String) -> Dictionary:
         if guild.has("active_bounties"):
             return guild["active_bounties"]
     return {}
+
+func unlock_emblem_part(guild_name: String, part_type: String, part_id: String, cost: int) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        var resources = 0
+        if guild.has("resources"):
+            resources = guild["resources"]
+
+        if resources >= cost:
+            var unlocked_parts = {"shapes": [], "colors": [], "symbols": []}
+            if guild.has("unlocked_emblem_parts"):
+                unlocked_parts = guild["unlocked_emblem_parts"]
+
+            if unlocked_parts.has(part_type):
+                if not unlocked_parts[part_type].has(part_id):
+                    guild["resources"] -= cost
+                    unlocked_parts[part_type].append(part_id)
+                    guild["unlocked_emblem_parts"] = unlocked_parts
+                    save_guilds()
+                    return true
+    return false
+
+func update_emblem(guild_name: String, shape: String, color: String, symbol: String) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        var unlocked = {"shapes": [], "colors": [], "symbols": []}
+        if guild.has("unlocked_emblem_parts"):
+            unlocked = guild["unlocked_emblem_parts"]
+
+        var shapes = []
+        if unlocked.has("shapes"): shapes = unlocked["shapes"]
+        var colors = []
+        if unlocked.has("colors"): colors = unlocked["colors"]
+        var symbols = []
+        if unlocked.has("symbols"): symbols = unlocked["symbols"]
+
+        if shapes.has(shape) and colors.has(color) and symbols.has(symbol):
+            guild["emblem"] = {"shape": shape, "color": color, "symbol": symbol}
+            save_guilds()
+            return true
+    return false
 
 func claim_bounty(target_guild_name: String, claiming_guild_name: String) -> int:
     if data["guilds"].has(target_guild_name) and data["guilds"].has(claiming_guild_name):
