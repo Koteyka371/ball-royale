@@ -3192,6 +3192,146 @@ class VampireRoyaleMode(GameMode):
         return None
 
 
+class MassiveGravityWellMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Massive Gravity Well"
+        self.description = "An extremely large, slow-moving hazard that acts similarly to the gravity well but actively sucks in surrounding small hazards (like traps or spikes) and grows larger. It tests players' abilities to use boosts or specific game modes to escape its ever-increasing event horizon."
+        self.mgw_x = 0.0
+        self.mgw_y = 0.0
+        self.mgw_vx = 0.0
+        self.mgw_vy = 0.0
+        self.mgw_radius = 150.0
+        self.spawned = False
+        import random
+        self.random = random
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.spawned = False
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        import math
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        if not self.spawned:
+            self.spawned = True
+            # Spawn in a random location but not too close to the edges
+            self.mgw_x = self.random.uniform(200, arena_width - 200)
+            self.mgw_y = self.random.uniform(200, arena_height - 200)
+
+            # Give it a very slow initial velocity
+            angle = self.random.uniform(0, math.pi * 2)
+            speed = self.random.uniform(10, 30)
+            self.mgw_vx = math.cos(angle) * speed
+            self.mgw_vy = math.sin(angle) * speed
+
+            if hasattr(world, "add_event"):
+                world.add_event("massive_gravity_well_spawn", {"message": "A massive gravity well has appeared!"})
+
+        # Move the gravity well
+        self.mgw_x += self.mgw_vx * delta
+        self.mgw_y += self.mgw_vy * delta
+
+        # Bounce off walls gently
+        if self.mgw_x < self.mgw_radius:
+            self.mgw_x = self.mgw_radius
+            self.mgw_vx *= -1
+        elif self.mgw_x > arena_width - self.mgw_radius:
+            self.mgw_x = arena_width - self.mgw_radius
+            self.mgw_vx *= -1
+
+        if self.mgw_y < self.mgw_radius:
+            self.mgw_y = self.mgw_radius
+            self.mgw_vy *= -1
+        elif self.mgw_y > arena_height - self.mgw_radius:
+            self.mgw_y = arena_height - self.mgw_radius
+            self.mgw_vy *= -1
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        # Pull players
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+                continue
+
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dx = self.mgw_x - b.x
+            dy = self.mgw_y - b.y
+            dist = math.hypot(dx, dy)
+
+            if dist < self.mgw_radius:
+                # Inside the event horizon, take heavy damage
+                b.hp -= 50.0 * delta
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+            elif dist > 0:
+                # Pull strength is stronger the closer you are to the event horizon
+                # And scales with the radius of the massive gravity well
+                pull_strength = 20000.0 * (self.mgw_radius / 150.0) / (dist * dist)
+                pull_strength = min(pull_strength, 200.0 * (self.mgw_radius / 150.0))
+
+                b.x += (dx / dist) * pull_strength * delta
+                b.y += (dy / dist) * pull_strength * delta
+
+        # Suck in hazards and grow
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            for h in world.arena.hazards:
+                h_kind = getattr(h, "kind", "")
+                if h_kind in ["trap", "spike", "mine", "bomb"]:
+                    dx = self.mgw_x - h.x
+                    dy = self.mgw_y - h.y
+                    dist = math.hypot(dx, dy)
+
+                    if dist < self.mgw_radius:
+                        # Consume the hazard
+                        hazards_to_remove.append(h)
+                        # Grow the gravity well slightly
+                        self.mgw_radius += 2.0
+
+                        # Apply a little momentum from the hazard being sucked in
+                        if hasattr(h, "vx") and hasattr(h, "vy"):
+                            self.mgw_vx += h.vx * 0.01
+                            self.mgw_vy += h.vy * 0.01
+
+                    elif dist > 0:
+                        # Pull hazards in
+                        pull_strength = 30000.0 * (self.mgw_radius / 150.0) / (dist * dist)
+                        pull_strength = min(pull_strength, 300.0)
+
+                        h.x += (dx / dist) * pull_strength * delta
+                        h.y += (dy / dist) * pull_strength * delta
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
+
 class KingOfTheHillMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -12837,6 +12977,7 @@ GAME_MODES = {
     "black_hole": BlackHoleMode(),
     "sweeping_black_hole": SweepingBlackHoleMode(),
     "gravity_well": GravityWellMode(),
+    "massive_gravity_well": MassiveGravityWellMode(),
     "king_of_the_hill": KingOfTheHillMode(),
     "moving_zone": MovingZoneMode(),
     "vampire_royale": VampireRoyaleMode(),

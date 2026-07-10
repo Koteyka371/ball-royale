@@ -3937,6 +3937,212 @@ class VampireRoyaleMode extends GameMode:
 		return null
 
 
+class MassiveGravityWellMode extends GameMode:
+	var mgw_x: float = 0.0
+	var mgw_y: float = 0.0
+	var mgw_vx: float = 0.0
+	var mgw_vy: float = 0.0
+	var mgw_radius: float = 150.0
+	var spawned: bool = false
+
+	func _init() -> void:
+		name = "Massive Gravity Well"
+		description = "An extremely large, slow-moving hazard that acts similarly to the gravity well but actively sucks in surrounding small hazards (like traps or spikes) and grows larger. It tests players' abilities to use boosts or specific game modes to escape its ever-increasing event horizon."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		spawned = false
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+
+		if not spawned:
+			spawned = true
+			mgw_x = randf_range(200.0, arena_width - 200.0)
+			mgw_y = randf_range(200.0, arena_height - 200.0)
+
+			var angle = randf_range(0.0, PI * 2.0)
+			var speed = randf_range(10.0, 30.0)
+			mgw_vx = cos(angle) * speed
+			mgw_vy = sin(angle) * speed
+
+			if world.has_method("add_event"):
+				world.add_event("massive_gravity_well_spawn", {"message": "A massive gravity well has appeared!"})
+
+		mgw_x += mgw_vx * delta
+		mgw_y += mgw_vy * delta
+
+		if mgw_x < mgw_radius:
+			mgw_x = mgw_radius
+			mgw_vx *= -1
+		elif mgw_x > arena_width - mgw_radius:
+			mgw_x = arena_width - mgw_radius
+			mgw_vx *= -1
+
+		if mgw_y < mgw_radius:
+			mgw_y = mgw_radius
+			mgw_vy *= -1
+		elif mgw_y > arena_height - mgw_radius:
+			mgw_y = arena_height - mgw_radius
+			mgw_vy *= -1
+
+		var dead_balls = world.get_meta("dead_balls") if world.has_method("get_meta") and world.has_meta("dead_balls") else []
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_OBJECT:
+				is_alive = b.alive if "alive" in b else true
+			elif typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+
+			if not is_alive:
+				if not b in dead_balls:
+					if typeof(b) == TYPE_OBJECT and "time_since_death" in b:
+						b.time_since_death = 0.0
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["time_since_death"] = 0.0
+					dead_balls.append(b)
+				else:
+					if typeof(b) == TYPE_OBJECT and "time_since_death" in b:
+						b.time_since_death += delta
+					elif typeof(b) == TYPE_DICTIONARY and b.has("time_since_death"):
+						b["time_since_death"] += delta
+				continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_OBJECT:
+				b_type = b.ball_type if "ball_type" in b else ""
+			elif typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+
+			if b_type == "spectator":
+				continue
+
+			var bx = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+			var by = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+
+			var dx = mgw_x - bx
+			var dy = mgw_y - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist < mgw_radius:
+				if typeof(b) == TYPE_OBJECT:
+					if "hp" in b:
+						b.hp -= 50.0 * delta
+						if b.hp <= 0:
+							b.hp = 0
+							b.alive = false
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.has("hp"):
+						b["hp"] -= 50.0 * delta
+						if b["hp"] <= 0:
+							b["hp"] = 0
+							b["alive"] = false
+			elif dist > 0:
+				var pull_strength = 20000.0 * (mgw_radius / 150.0) / (dist * dist)
+				if pull_strength > 200.0 * (mgw_radius / 150.0):
+					pull_strength = 200.0 * (mgw_radius / 150.0)
+
+				if typeof(b) == TYPE_OBJECT:
+					b.x += (dx / dist) * pull_strength * delta
+					b.y += (dy / dist) * pull_strength * delta
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["x"] += (dx / dist) * pull_strength * delta
+					b["y"] += (dy / dist) * pull_strength * delta
+
+		if world.has_method("set_meta"):
+			world.set_meta("dead_balls", dead_balls)
+
+		if "arena" in world and world.arena != null and "hazards" in world.arena:
+			var hazards_to_remove = []
+			for h in world.arena.hazards:
+				var h_kind = ""
+				if typeof(h) == TYPE_OBJECT and "kind" in h:
+					h_kind = h.kind
+				elif typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+					h_kind = h.get("kind", "")
+
+				if h_kind in ["trap", "spike", "mine", "bomb"]:
+					var hx = h.x if typeof(h) == TYPE_OBJECT else h.get("x", 0.0)
+					var hy = h.y if typeof(h) == TYPE_OBJECT else h.get("y", 0.0)
+
+					var dx = mgw_x - hx
+					var dy = mgw_y - hy
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist < mgw_radius:
+						hazards_to_remove.append(h)
+						mgw_radius += 2.0
+
+						var hvx = 0.0
+						var hvy = 0.0
+						if typeof(h) == TYPE_OBJECT:
+							if "vx" in h: hvx = h.vx
+							if "vy" in h: hvy = h.vy
+						elif typeof(h) == TYPE_DICTIONARY:
+							if h.has("vx"): hvx = h.get("vx")
+							if h.has("vy"): hvy = h.get("vy")
+
+						mgw_vx += hvx * 0.01
+						mgw_vy += hvy * 0.01
+
+					elif dist > 0:
+						var pull_strength = 30000.0 * (mgw_radius / 150.0) / (dist * dist)
+						if pull_strength > 300.0:
+							pull_strength = 300.0
+
+						if typeof(h) == TYPE_OBJECT:
+							h.x += (dx / dist) * pull_strength * delta
+							h.y += (dy / dist) * pull_strength * delta
+						elif typeof(h) == TYPE_DICTIONARY:
+							h["x"] += (dx / dist) * pull_strength * delta
+							h["y"] += (dy / dist) * pull_strength * delta
+
+			for h in hazards_to_remove:
+				world.arena.hazards.erase(h)
+
+	func check_winner(world, balls: Array) -> String:
+		var alive = []
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_OBJECT:
+				is_alive = b.alive if "alive" in b else false
+				b_type = b.ball_type if "ball_type" in b else ""
+			elif typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", "")
+			if is_alive and b_type != "spectator" and b_type != "shadow_monster":
+				alive.append(b)
+
+		if alive.size() == 0:
+			return "Draw"
+
+		var teams_alive = []
+		for b in alive:
+			var t = ""
+			if typeof(b) == TYPE_OBJECT:
+				t = b.team if "team" in b else (b.ball_type if "ball_type" in b else "")
+			elif typeof(b) == TYPE_DICTIONARY:
+				t = b.get("team", b.get("ball_type", ""))
+			if not t in teams_alive:
+				teams_alive.append(t)
+
+		if teams_alive.size() == 1:
+			return teams_alive[0]
+
+		if alive.size() == 1:
+			if typeof(alive[0]) == TYPE_OBJECT:
+				return alive[0].ball_type if "ball_type" in alive[0] else ""
+			elif typeof(alive[0]) == TYPE_DICTIONARY:
+				return alive[0].get("ball_type", "")
+
+		return ""
+
 class KingOfTheHillMode extends GameMode:
 	var tick_timer = 0.0
 	var game_time = 0.0
@@ -16549,6 +16755,7 @@ var GAME_MODES = {
 	"black_hole": BlackHoleMode.new(),
 	"sweeping_black_hole": SweepingBlackHoleMode.new(),
 	"gravity_well": GravityWellMode.new(),
+	"massive_gravity_well": MassiveGravityWellMode.new(),
 	"king_of_the_hill": KingOfTheHillMode.new(),
 	"moving_zone": MovingZoneMode.new(),
 	"vampire_royale": VampireRoyaleMode.new(),
