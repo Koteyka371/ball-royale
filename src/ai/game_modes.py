@@ -10006,9 +10006,9 @@ class FloorIsLavaMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Floor Is Lava"
-        self.description = "The entire arena floor slowly turns into lava starting from the edges. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement."
-        self.lava_radius = 2000.0
-        self.min_lava_radius = 0.0
+        self.description = "The center of the map becomes lava first and expands outwards, forcing players to eventually fight on the very edges of the arena. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement."
+        self.lava_radius = 0.0
+        self.max_lava_radius = 2000.0
         self.shrink_rate = 15.0
         self.platforms = []
         self.platform_timer = 0.0
@@ -10019,7 +10019,8 @@ class FloorIsLavaMode(GameMode):
         self.world = world
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
-        self.lava_radius = max(arena_width, arena_height)
+        self.lava_radius = 0.0
+        self.max_lava_radius = max(arena_width, arena_height)
         self.platforms = []
         self.bounce_pads = []
         self.platform_timer = 0.0
@@ -10067,7 +10068,7 @@ class FloorIsLavaMode(GameMode):
         center_x = arena_width / 2.0
         center_y = arena_height / 2.0
 
-        self.lava_radius = max(self.min_lava_radius, self.lava_radius - self.shrink_rate * delta)
+        self.lava_radius = min(getattr(self, 'max_lava_radius', 2000.0), self.lava_radius + self.shrink_rate * delta)
 
         # Platform logic
         self.platform_timer -= delta
@@ -10110,7 +10111,7 @@ class FloorIsLavaMode(GameMode):
                 continue
 
             dist_to_center = math.hypot(b.x - center_x, b.y - center_y)
-            in_lava = dist_to_center > self.lava_radius
+            in_lava = dist_to_center < self.lava_radius
 
             # Check if on a platform
             on_platform = False

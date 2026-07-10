@@ -12229,8 +12229,8 @@ class BlackMarketMode extends GameMode:
 				b.set_meta("purchase_cooldown", bpcooldown)
 
 class FloorIsLavaMode extends GameMode:
-	var lava_radius: float = 2000.0
-	var min_lava_radius: float = 0.0
+	var lava_radius: float = 0.0
+	var max_lava_radius: float = 2000.0
 	var shrink_rate: float = 15.0
 	var platforms: Array = []
 	var platform_timer: float = 0.0
@@ -12239,7 +12239,7 @@ class FloorIsLavaMode extends GameMode:
 	func _init():
 		super._init()
 		name = "Floor Is Lava"
-		description = "The entire arena floor slowly turns into lava starting from the edges. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement."
+		description = "The center of the map becomes lava first and expands outwards, forcing players to eventually fight on the very edges of the arena. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement."
 
 	func setup(world, balls):
 		super.setup(world, balls)
@@ -12254,7 +12254,8 @@ class FloorIsLavaMode extends GameMode:
 				arena_width = world.arena.width
 				arena_height = world.arena.height
 
-		lava_radius = max(arena_width, arena_height)
+		lava_radius = 0.0
+		max_lava_radius = max(arena_width, arena_height)
 		platforms.clear()
 		bounce_pads.clear()
 		platform_timer = 0.0
@@ -12311,7 +12312,7 @@ class FloorIsLavaMode extends GameMode:
 		var center_x = arena_width / 2.0
 		var center_y = arena_height / 2.0
 
-		lava_radius = max(min_lava_radius, lava_radius - shrink_rate * delta)
+		lava_radius = min(max_lava_radius, lava_radius + shrink_rate * delta)
 
 		platform_timer -= delta
 		if platform_timer <= 0:
@@ -12388,7 +12389,7 @@ class FloorIsLavaMode extends GameMode:
 			var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
 
 			var dist_to_center = sqrt((b_x - center_x) * (b_x - center_x) + (b_y - center_y) * (b_y - center_y))
-			var in_lava = dist_to_center > lava_radius
+			var in_lava = dist_to_center < lava_radius
 
 			var on_platform = false
 			for p in platforms:
