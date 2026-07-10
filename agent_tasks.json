@@ -14135,7 +14135,7 @@
     },
     {
       "id": "idea-822",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Dummy Items",
@@ -23259,6 +23259,57 @@
         "src/ai/bounty_hunter_contracts.py",
         "src/ai/bounty_hunter_contracts.gd",
         "tests/test_bounty_hunter_contracts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1358",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather System: Monsoons",
+      "description": "Introduce a monsoon weather event that occasionally triggers during matches. When active, it reduces visibility similar to fog but also dynamically spawns temporary mud puddles and expands existing water bodies across the map. This forces players to adapt their movement paths continuously throughout the match.",
+      "allowed_paths": [
+        "src/ai/monsoons.py",
+        "src/ai/monsoons.gd",
+        "tests/test_monsoons.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1359",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Tar Traps",
+      "description": "A new deployable hazard that acts similarly to mud puddles but is triggered by proximity. Once a player steps on it, their speed is drastically reduced and they take a small amount of continuous damage. This makes map control highly dynamic as players can strategically place these traps to counter fast-moving builds.",
+      "allowed_paths": [
+        "src/arena/sticky_tar_traps.py",
+        "src/arena/sticky_tar_traps.gd",
+        "tests/test_sticky_tar_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1360",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chrono-Stasis Field",
+      "description": "An area-of-effect skill or deployable device that creates a large temporal bubble. Entities inside the bubble have their movement speed, projectile speed, and attack speed reduced to 10% of normal, but they also take 50% less damage from all sources while inside the zone.",
+      "allowed_paths": [
+        "src/ai/chrono_stasis_field.py",
+        "src/ai/chrono_stasis_field.gd",
+        "tests/test_chrono_stasis_field.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

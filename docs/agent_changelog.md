@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-822] Decoy Dummy Items — *2026-07-10 18:58:20 UTC*
+
+Players can place down items that look exactly like boosters or weapons. If an enemy touches it, the dummy item explodes and deals moderate damage or applies a short stun.
+
+---
+
 ## [idea-778] Mud Puddles Hazard — *2026-07-10 18:56:53 UTC*
 
 Introduce mud puddles as a new procedural hazard. Balls moving through a mud puddle will have their movement speed significantly reduced by 50% and their turn rate hindered, making them easy targets. Unlike tall grass, they remain fully visible, adding a different kind of positioning tradeoff to the arena.
