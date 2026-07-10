@@ -241,3 +241,37 @@ def test_guild_level_up(temp_guild_file):
 
     hq_status = gm.get_hq_status("LevelGuild")
     assert "gold_trim" in hq_status["cosmetics"]
+
+def test_guild_emblem(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("EmblemGuild", "player1")
+
+    guild = gm.get_guild("EmblemGuild")
+    # Verify initial emblem and parts
+    assert guild["emblem"] == {"shape": "circle", "color": "white", "symbol": "none"}
+    assert guild["unlocked_emblem_parts"] == {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]}
+
+    # Give resources
+    gm.donate_resources("EmblemGuild", 1000)
+
+    # Unlock some parts
+    assert gm.unlock_emblem_part("EmblemGuild", "shapes", "shield", 100) == True
+    assert gm.unlock_emblem_part("EmblemGuild", "colors", "red", 50) == True
+    assert gm.unlock_emblem_part("EmblemGuild", "symbols", "sword", 150) == True
+
+    # Try unlocking the same part
+    assert gm.unlock_emblem_part("EmblemGuild", "shapes", "shield", 100) == False
+
+    # Try unlocking with insufficient resources
+    gm.get_guild("EmblemGuild")["resources"] = 0
+    assert gm.unlock_emblem_part("EmblemGuild", "colors", "blue", 50) == False
+
+    # Try updating with unowned parts
+    assert gm.update_emblem("EmblemGuild", "shield", "blue", "sword") == False
+
+    # Try updating with owned parts
+    assert gm.update_emblem("EmblemGuild", "shield", "red", "sword") == True
+
+    # Verify updated emblem
+    guild = gm.get_guild("EmblemGuild")
+    assert guild["emblem"] == {"shape": "shield", "color": "red", "symbol": "sword"}

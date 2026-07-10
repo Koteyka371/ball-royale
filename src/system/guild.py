@@ -33,6 +33,10 @@ class GuildManager:
                         guild["titles"] = []
                     if "cosmetic_auras" not in guild:
                         guild["cosmetic_auras"] = []
+                    if "emblem" not in guild:
+                        guild["emblem"] = {"shape": "circle", "color": "white", "symbol": "none"}
+                    if "unlocked_emblem_parts" not in guild:
+                        guild["unlocked_emblem_parts"] = {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]}
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"guilds": {}, "territories": {}}
@@ -69,7 +73,9 @@ class GuildManager:
                 "banners": [],
                 "cosmetics": [],
                 "training_arena_unlocked": False
-            }
+            },
+            "emblem": {"shape": "circle", "color": "white", "symbol": "none"},
+            "unlocked_emblem_parts": {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]}
         }
         self.save()
         return True
@@ -366,3 +372,27 @@ class GuildManager:
                 "training_arena_unlocked": hq.get("training_arena_unlocked", False)
             }
         return None
+
+    def unlock_emblem_part(self, guild_name, part_type, part_id, cost):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild.get("resources", 0) >= cost:
+                unlocked_parts = guild.get("unlocked_emblem_parts", {"shapes": [], "colors": [], "symbols": []})
+                if part_type in unlocked_parts:
+                    if part_id not in unlocked_parts[part_type]:
+                        guild["resources"] -= cost
+                        unlocked_parts[part_type].append(part_id)
+                        guild["unlocked_emblem_parts"] = unlocked_parts
+                        self.save()
+                        return True
+        return False
+
+    def update_emblem(self, guild_name, shape, color, symbol):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            unlocked = guild.get("unlocked_emblem_parts", {"shapes": [], "colors": [], "symbols": []})
+            if shape in unlocked.get("shapes", []) and color in unlocked.get("colors", []) and symbol in unlocked.get("symbols", []):
+                guild["emblem"] = {"shape": shape, "color": color, "symbol": symbol}
+                self.save()
+                return True
+        return False
