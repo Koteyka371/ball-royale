@@ -9423,6 +9423,38 @@ func execute(strategy: String, delta: float):
                                 if "stamina" in self.ball: self.ball.stamina = stam
                         continue
                     elif hazard.kind == "healing_spring":
+                        var is_siege = false
+                        if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT:
+                            if self.world.arena.has_method("get_class") and self.world.arena.get_class() == "SiegeArena":
+                                is_siege = true
+                            elif "SiegeArena" in str(self.world.arena):
+                                is_siege = true
+
+                        var b_team = ""
+                        if "team" in self.ball: b_team = self.ball.team
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"): b_team = self.ball.get_meta("team")
+
+                        if is_siege and b_team == "Attackers":
+                            var capture_progress = 0.0
+                            if "capture_progress" in hazard:
+                                capture_progress = hazard.capture_progress
+                            elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("capture_progress"):
+                                capture_progress = hazard.get_meta("capture_progress")
+
+                            capture_progress += 20.0 * delta
+
+                            if "capture_progress" in hazard:
+                                hazard.capture_progress = capture_progress
+                            elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                hazard.set_meta("capture_progress", capture_progress)
+
+                            if capture_progress >= 100.0:
+                                if "active" in hazard:
+                                    hazard.active = false
+                                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    hazard.set_meta("active", false)
+                            continue
+
                         var heal_amount = abs(hazard.damage) * delta
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp += heal_amount
