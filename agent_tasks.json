@@ -13829,7 +13829,7 @@
     },
     {
       "id": "idea-804",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Minion Sacrifice Ability",
@@ -22816,6 +22816,23 @@
         "src/ai/quantum_leap_padding.py",
         "src/ai/quantum_leap_padding.gd",
         "tests/test_quantum_leap_padding.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1332",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Grapple Loadout",
+      "description": "A new loadout trait that allows players to aim at walls or bumpers and rapidly pull themselves toward the object, providing extreme mobility and new angles of attack, at the cost of being vulnerable to intercepting projectiles.",
+      "allowed_paths": [
+        "src/ai/magnetic_grapple_loadout.py",
+        "src/ai/magnetic_grapple_loadout.gd",
+        "tests/test_magnetic_grapple_loadout.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

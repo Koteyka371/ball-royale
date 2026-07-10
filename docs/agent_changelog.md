@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-804] Minion Sacrifice Ability — *2026-07-10 14:37:49 UTC*
+
+Give the Necromancer an active ability to detonate their own minions on command. Elite minions would deal significantly more explosion damage and leave a larger poison cloud compared to standard minions.
+
+---
+
 ## [idea-706] Breach Charges — *2026-07-10 14:33:47 UTC*
 
 Attackers can pick up 'Breach Charges' that temporarily destroy bumpers or walls in choke points, allowing for alternative entry vectors against entrenched defenders.
