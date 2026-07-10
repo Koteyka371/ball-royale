@@ -1,0 +1,4 @@
+{
+    "title": "Decoy Trail Trap",
+    "description": "An inventory item that leaves a fake trail of particles resembling a player moving while invisible, confusing AI enemies and forcing them to path away or towards the trap, exploding on contact."
+}

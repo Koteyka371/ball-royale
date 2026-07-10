@@ -1,4 +1,4 @@
-new_test = """import pytest
+import pytest
 from ai.action import Action
 import math
 
@@ -137,7 +137,3 @@ def test_booster_trap_owner_collide():
     has_freeze = getattr(owner, "frozen_timer", 0) > 0
     has_stun = getattr(owner, "stun_timer", 0) > 0
     assert not (has_poison or has_freeze or has_stun)
-"""
-
-with open("tests/test_booster_trap.py", "w") as f:
-    f.write(new_test)

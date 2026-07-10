@@ -1,0 +1,5 @@
+I need to add a new inventory item called 'Booster Trap'.
+
+When a ball picks up the 'placeable_trap_booster' item, it will drop a fake booster. (Wait, let me look at existing code for placing traps.)
+
+Let's check how 'placeable_trap' or 'placeable_trap_booster' is handled.
