@@ -284,6 +284,38 @@ class GameMode:
 								"message": killer_id + " claimed a nemesis bounty on " + target_id + " for " + str(reward) + " tokens!"
 							})
 
+			# Kill bounty logic (Task idea-821)
+			var current_kb = 0
+			if typeof(killer) == TYPE_DICTIONARY and killer.has("kill_bounty"): current_kb = killer.kill_bounty
+			elif typeof(killer) == TYPE_OBJECT and "kill_bounty" in killer: current_kb = killer.kill_bounty
+			elif typeof(killer) == TYPE_OBJECT and killer.has_method("get_meta") and killer.has_meta("kill_bounty"): current_kb = killer.get_meta("kill_bounty")
+
+			var new_kb = current_kb + 1
+			if typeof(killer) == TYPE_DICTIONARY:
+				killer["kill_bounty"] = new_kb
+				killer["is_bounty"] = true
+			elif typeof(killer) == TYPE_OBJECT:
+				if "kill_bounty" in killer: killer.kill_bounty = new_kb
+				if "is_bounty" in killer: killer.is_bounty = true
+				if killer.has_method("set_meta"):
+					killer.set_meta("kill_bounty", new_kb)
+					killer.set_meta("is_bounty", true)
+
+			var target_kb = 0
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("kill_bounty"): target_kb = ball.kill_bounty
+			elif typeof(ball) == TYPE_OBJECT and "kill_bounty" in ball: target_kb = ball.kill_bounty
+			elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("kill_bounty"): target_kb = ball.get_meta("kill_bounty")
+
+			if target_kb > 0 and pm != null and pm.has_method("add_skill_points"):
+				var reward = 15 * target_kb
+				pm.add_skill_points(reward)
+				if world.has_method("add_event"):
+					var killer_id = str(killer.id)
+					var target_id = str(ball.id)
+					world.add_event("bounty_claimed", {
+						"message": killer_id + " claimed a kill streak bounty on " + target_id + " for " + str(reward) + " skill points!"
+					})
+
 		# Elite Minion death logic - drops a soul fragment for Necromancer
 		var is_elite = false
 		if typeof(ball) == TYPE_DICTIONARY and ball.has("is_elite_minion"): is_elite = ball.is_elite_minion

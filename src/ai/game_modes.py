@@ -370,6 +370,21 @@ class GameMode:
                             "message": f"{killer_id} claimed a nemesis bounty on {target_id} for {reward} tokens!"
                         })
 
+            # Kill bounty logic (Task idea-821)
+            # Give the killer a bounty for this kill
+            killer.kill_bounty = getattr(killer, "kill_bounty", 0) + 1
+            killer.is_bounty = True
+
+            # If the target had a bounty, reward the killer
+            target_bounty = getattr(ball, "kill_bounty", 0)
+            if target_bounty > 0 and pm and hasattr(pm, "add_skill_points"):
+                reward = 15 * target_bounty
+                pm.add_skill_points(reward)
+                if hasattr(world, "add_event"):
+                    world.add_event("bounty_claimed", {
+                        "message": f"{killer.id} claimed a kill streak bounty on {ball.id} for {reward} skill points!"
+                    })
+
         # Elite Minion death logic - drops a soul fragment for Necromancer
         if getattr(ball, "is_elite_minion", False) and getattr(ball, "ball_type", "").lower() == "elite_minion":
             class _SoulHazard:
