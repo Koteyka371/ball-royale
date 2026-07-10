@@ -1,3 +1,5 @@
+import random
+from ai.skill_tree import SkillTree
 from typing import Dict, List, Any
 
 class DevelopmentPhase:
@@ -8,6 +10,7 @@ class DevelopmentPhase:
     """
 
     def __init__(self, xp_for_upgrade: int = 100):
+        self.skill_tree = SkillTree()
         self.xp_for_upgrade = xp_for_upgrade
         # Track unspent XP across generations
         # Format: { "dna_hash": {"xp": int, "level": int} }
@@ -70,9 +73,9 @@ class DevelopmentPhase:
             while self.xp_bank[dna_hash]["xp"] >= self.xp_for_upgrade:
                 self.xp_bank[dna_hash]["xp"] -= self.xp_for_upgrade
                 self.xp_bank[dna_hash]["level"] += 1
-                self._apply_upgrade(ball)
+                self._apply_upgrade(ball, dna_hash)
 
-    def _apply_upgrade(self, ball: Any):
+    def _apply_upgrade(self, ball: Any, dna_hash: str):
         """Applies stat upgrades to a ball and marks it as developed."""
         # Increase stats
         ball.max_hp = getattr(ball, "max_hp", 100.0) * 1.1  # +10% hp
@@ -82,6 +85,17 @@ class DevelopmentPhase:
         # Heal up the max hp increase if alive
         if getattr(ball, "alive", False):
             ball.hp = getattr(ball, "hp", ball.max_hp) + (ball.max_hp - ball.max_hp / 1.1)
+
+        # Check skill tree upgrades
+        current_level = self.xp_bank[dna_hash]["level"]
+        upgrades = self.skill_tree.get_available_upgrades(current_level)
+        if upgrades:
+            chosen_upgrade = random.choice(upgrades)
+            self.skill_tree.apply_upgrade(ball, chosen_upgrade)
+            # Store chosen upgrade in the xp bank for future persistence if needed
+            if "passives" not in self.xp_bank[dna_hash]:
+                self.xp_bank[dna_hash]["passives"] = []
+            self.xp_bank[dna_hash]["passives"].append(chosen_upgrade.name)
 
         ball_type = getattr(ball, "ball_type", "unknown")
         if not ball_type.endswith("_developed"):
