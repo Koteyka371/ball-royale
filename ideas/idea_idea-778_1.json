@@ -1,0 +1,4 @@
+{
+  "title": "Sticky Tar Traps",
+  "description": "A new deployable hazard that acts similarly to mud puddles but is triggered by proximity. Once a player steps on it, their speed is drastically reduced and they take a small amount of continuous damage. This makes map control highly dynamic as players can strategically place these traps to counter fast-moving builds."
+}

@@ -240,6 +240,8 @@ func generate():
             kind = "singularity"
         elif r < 0.9999:
             kind = "tall_grass"
+        elif r < 0.99992:
+            kind = "mud_puddle"
         elif r < 0.99995:
             kind = "shuffle_booster"
         elif r < 0.99996:
@@ -379,6 +381,9 @@ func generate():
         elif kind == "tall_grass":
             radius = rng.randf_range(30.0, 60.0)
             damage = 5.0
+        elif kind == "mud_puddle":
+            radius = rng.randf_range(30.0, 60.0)
+            damage = 0.0
         elif kind == "vortex":
             radius = 80.0
             damage = 20.0
