@@ -19353,6 +19353,81 @@ func _update_skill_timer(delta: float):
                 var h_kind = ""
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+                if h_kind == "mine_bounce":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                    if owner_id != b_id:
+                        var h_x = 0.0
+                        if "x" in hazard: h_x = hazard.x
+                        elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                        var h_y = 0.0
+                        if "y" in hazard: h_y = hazard.y
+                        elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+                        var h_rad = 40.0
+                        if "radius" in hazard: h_rad = hazard.radius
+                        elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+
+                        var b_rad = 10.0
+                        if "radius" in self.ball: b_rad = self.ball.radius
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_rad = self.ball.get_meta("radius")
+
+                        var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                        var det_rad = h_rad * 1.5
+
+                        if dist_sq < (b_rad + det_rad)*(b_rad + det_rad):
+                            var exp_rad = h_rad * 3.0
+                            if self.world != null and "balls" in self.world:
+                                for b in self.world.balls:
+                                    var b_alive = true
+                                    if "alive" in b: b_alive = b.alive
+                                    elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                                    if b_alive:
+                                        var bx = 0.0
+                                        if "x" in b: bx = b.x
+                                        elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+
+                                        var by = 0.0
+                                        if "y" in b: by = b.y
+                                        elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                                        var b_dist_sq = (h_x - bx)*(h_x - bx) + (h_y - by)*(h_y - by)
+                                        if b_dist_sq < exp_rad * exp_rad:
+                                            var b_dist = sqrt(b_dist_sq)
+                                            if b_dist > 0.0001:
+                                                var nx = (bx - h_x) / b_dist
+                                                var ny = (by - h_y) / b_dist
+                                                var kb_force = 5000.0
+                                                if "knockback" in hazard: kb_force = hazard.knockback
+                                                elif hazard.has_method("get_meta") and hazard.has_meta("knockback"): kb_force = hazard.get_meta("knockback")
+
+                                                var mass = 1.0
+                                                if "mass" in b: mass = b.mass
+                                                elif b.has_method("get_meta") and b.has_meta("mass"): mass = b.get_meta("mass")
+
+                                                if "vx" in b: b.vx += nx * (kb_force / mass)
+                                                elif b.has_method("set_meta") and b.has_meta("vx"): b.set_meta("vx", b.get_meta("vx") + nx * (kb_force / mass))
+                                                if "vy" in b: b.vy += ny * (kb_force / mass)
+                                                elif b.has_method("set_meta") and b.has_meta("vy"): b.set_meta("vy", b.get_meta("vy") + ny * (kb_force / mass))
+
+                                                var b_dmg = 5.0
+                                                if "damage" in hazard: b_dmg = hazard.damage
+                                                elif hazard.has_method("get_meta") and hazard.has_meta("damage"): b_dmg = hazard.get_meta("damage")
+
+                                                if self.world.has_method("_deal_damage"):
+                                                    var dummy_att = {"damage": b_dmg, "id": owner_id}
+                                                    self.world._deal_damage(dummy_att, b, b_dmg)
+                            if "duration" in hazard: hazard.duration = 0.0
+                            elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+                            elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
                 if h_kind == "pull_trap":
                     var owner_id = null
                     if "owner_id" in hazard: owner_id = hazard.owner_id

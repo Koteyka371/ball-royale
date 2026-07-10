@@ -10844,6 +10844,42 @@ class Action:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
                     continue
+                if getattr(hazard, "kind", "") == "mine_bounce":
+                    # Check distance from ball to mine
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        detonation_radius = getattr(hazard, "radius", 40.0) * 1.5
+                        if dist_sq < (getattr(self.ball, "radius", 10.0) + detonation_radius)**2:
+                            # Detonate! Apply massive knockback to all nearby entities
+                            explosion_radius = getattr(hazard, "radius", 40.0) * 3.0
+                            import math
+                            if hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True):
+                                        b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                        if b_dist_sq < explosion_radius**2:
+                                            b_dist = math.sqrt(b_dist_sq)
+                                            if b_dist > 0.0001:
+                                                nx = (b.x - hazard.x) / b_dist
+                                                ny = (b.y - hazard.y) / b_dist
+                                                kb_force = getattr(hazard, "knockback", 5000.0)
+                                                mass = getattr(b, "mass", 1.0)
+
+                                                b.vx += nx * (kb_force / mass)
+                                                b.vy += ny * (kb_force / mass)
+
+                                                if hasattr(self.world, "_deal_damage"):
+                                                    # Apply minor HP damage
+                                                    class DummyAttacker:
+                                                        pass
+                                                    att = DummyAttacker()
+                                                    att.damage = getattr(hazard, "damage", 5.0)
+                                                    att.id = getattr(hazard, "owner_id", None)
+
+                                                    # Need to ensure b is the target and the dummy has damage
+                                                    old_dmg = getattr(b, "damage", 0)
+                                                    self.world._deal_damage(att, b, dmg=att.damage)
+                            hazard.duration = 0.0
                 if getattr(hazard, "kind", "") == "pull_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
