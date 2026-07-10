@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-819] Earthquake Mode — *2026-07-10 19:16:57 UTC*
+
+Periodically shakes the screen and applies random momentum impulses to all balls in unpredictable directions.
+
+---
+
 ## [idea-707] Sabotage the Springs Mode — *2026-07-10 19:15:43 UTC*
 
 In Siege mode, attackers can choose to capture and permanently destroy defender healing springs instead of using them, shifting the balance of resources as the game progresses and creating new strategic choices.
