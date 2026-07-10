@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-566] Elemental Shield Powerup — *2026-07-10 02:24:20 UTC*
+
+A new booster that grants temporary immunity to all environmental hazard damage (lava, spikes) but does not protect from ball attacks.
+
+---
+
 ## [idea-808] Bouncy Terrain — *2026-07-09 23:14:08 UTC*
 
 A hazard zone that gives everyone inside bouncy physics, increasing their knockback taking and giving dramatically.
