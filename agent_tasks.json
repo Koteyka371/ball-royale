@@ -14305,7 +14305,7 @@
     },
     {
       "id": "idea-832",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Boosters",
@@ -23378,6 +23378,40 @@
         "src/ai/sabotage_the_payload.py",
         "src/ai/sabotage_the_payload.gd",
         "tests/test_sabotage_the_payload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1365",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar Flare Event",
+      "description": "A random arena-wide event that temporarily disables all deployable items and boosts, forcing players to rely entirely on core movement and positioning.",
+      "allowed_paths": [
+        "src/ai/solar_flare.py",
+        "src/ai/solar_flare.gd",
+        "tests/test_solar_flare.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1366",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunneling Booster",
+      "description": "A booster that allows the ball to phase through solid hazards like walls or rocks for a brief duration, enabling surprise attacks or escapes.",
+      "allowed_paths": [
+        "src/ai/quantum_tunneling_booster.py",
+        "src/ai/quantum_tunneling_booster.gd",
+        "tests/test_quantum_tunneling_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

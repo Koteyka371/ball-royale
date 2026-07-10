@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-832] Orbital Boosters — *2026-07-10 19:58:04 UTC*
+
+Introduce a new game mode or hazard where boosters naturally orbit around a central massive entity (like a black hole or giant gravity well) at high speeds, requiring players to time their movements perfectly to catch them without getting sucked in.
+
+---
+
 ## [idea-750] Black Hole Arena Hazard — *2026-07-10 19:34:55 UTC*
 
 An extremely large, slow-moving hazard that acts similarly to the gravity well but actively sucks in surrounding small hazards (like traps or spikes) and grows larger. It tests players' abilities to use boosts or specific game modes to escape its ever-increasing event horizon.
