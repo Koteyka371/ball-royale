@@ -65,6 +65,42 @@ class Action:
                     if hasattr(world, "add_event"):
                         world.add_event("evolution", {"ball": getattr(ball, "id", None), "old_type": current_type, "new_type": new_type, "level": ball.level})
 
+                # World Boss Corrupted Clone Spawn at Level 10
+                if ball.level == 10 and random.random() < 0.25:
+                    if world is not None and hasattr(world, "balls"):
+                        tier2_to_base = {
+                            "paladin": "warrior", "berserker": "warrior",
+                            "warlock": "mage", "necromancer": "mage",
+                            "ninja": "rogue", "assassin": "rogue",
+                            "guardian": "tank", "juggernaut": "tank",
+                            "sniper": "ranger", "bounty_hunter": "ranger",
+                            "monk": "healer", "druid": "healer"
+                        }
+                        base_c = tier2_to_base.get(current_type, "warrior")
+
+                        import copy
+                        import uuid
+                        corrupted = copy.copy(ball)
+                        corrupted.id = str(uuid.uuid4())
+                        corrupted.ball_type = base_c
+                        corrupted.team = "world_boss"
+                        corrupted.is_boss = True
+                        corrupted.max_hp = getattr(ball, "max_hp", 100.0) * 5.0
+                        corrupted.hp = corrupted.max_hp
+                        corrupted.damage = getattr(ball, "damage", 10.0) * 2.0
+                        corrupted.speed = getattr(ball, "speed", 100.0) * 1.2
+                        corrupted.radius = getattr(ball, "radius", 15.0) * 2.0
+                        corrupted.cosmetic = "corrupted_aura"
+                        corrupted.cosmetic_aura_color = (0.3, 0.0, 0.3, 1.0)
+
+                        # Position slightly away from player
+                        corrupted.x = getattr(ball, "x", 0.0) + random.uniform(-100, 100)
+                        corrupted.y = getattr(ball, "y", 0.0) + random.uniform(-100, 100)
+
+                        world.balls.append(corrupted)
+                        if hasattr(world, "add_event"):
+                            world.add_event("world_boss_spawned", {"boss_id": corrupted.id, "type": base_c})
+
             # Apply dynamic cosmetic aura scaling
             if not hasattr(ball, "cosmetic_aura_scale"):
                 ball.cosmetic_aura_scale = 1.0

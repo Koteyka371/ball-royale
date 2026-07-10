@@ -57,6 +57,74 @@ func _award_xp(ball, amount: float, world=null) -> void:
 				if world != null and world.has_method("add_event"):
 					world.add_event("evolution", {"ball": ball.get("id"), "old_type": current_type, "new_type": new_type, "level": ball.level})
 
+				# World Boss Corrupted Clone Spawn at Level 10
+				if ball.level == 10 and randf() < 0.25:
+					if world != null and "balls" in world:
+						var tier2_to_base = {
+							"paladin": "warrior", "berserker": "warrior",
+							"warlock": "mage", "necromancer": "mage",
+							"ninja": "rogue", "assassin": "rogue",
+							"guardian": "tank", "juggernaut": "tank",
+							"sniper": "ranger", "bounty_hunter": "ranger",
+							"monk": "healer", "druid": "healer"
+						}
+						var base_c = "warrior"
+						if tier2_to_base.has(current_type):
+							base_c = tier2_to_base[current_type]
+
+						var corrupted
+						if typeof(ball) == TYPE_OBJECT and ball.has_method("duplicate"):
+							corrupted = ball.duplicate()
+						else:
+							corrupted = ball.duplicate(true)
+
+						var max_hp_val = 100.0
+						if "max_hp" in ball: max_hp_val = ball.max_hp
+						var damage_val = 10.0
+						if "damage" in ball: damage_val = ball.damage
+						var speed_val = 100.0
+						if "speed" in ball: speed_val = ball.speed
+						var radius_val = 15.0
+						if "radius" in ball: radius_val = ball.radius
+
+						var bx = 0.0
+						if "x" in ball: bx = ball.x
+						var by = 0.0
+						if "y" in ball: by = ball.y
+
+						if typeof(corrupted) == TYPE_OBJECT:
+							if "id" in corrupted: corrupted.id = str(randi())
+							if "ball_type" in corrupted: corrupted.ball_type = base_c
+							if "team" in corrupted: corrupted.team = "world_boss"
+							if "is_boss" in corrupted: corrupted.is_boss = true
+							if "max_hp" in corrupted: corrupted.max_hp = max_hp_val * 5.0
+							if "hp" in corrupted: corrupted.hp = max_hp_val * 5.0
+							if "damage" in corrupted: corrupted.damage = damage_val * 2.0
+							if "speed" in corrupted: corrupted.speed = speed_val * 1.2
+							if "radius" in corrupted: corrupted.radius = radius_val * 2.0
+							if "cosmetic" in corrupted: corrupted.cosmetic = "corrupted_aura"
+							if "cosmetic_aura_color" in corrupted: corrupted.cosmetic_aura_color = [0.3, 0.0, 0.3, 1.0]
+							if "x" in corrupted: corrupted.x = bx + randf_range(-100.0, 100.0)
+							if "y" in corrupted: corrupted.y = by + randf_range(-100.0, 100.0)
+						elif typeof(corrupted) == TYPE_DICTIONARY:
+							corrupted.id = str(randi())
+							corrupted.ball_type = base_c
+							corrupted.team = "world_boss"
+							corrupted.is_boss = true
+							corrupted.max_hp = max_hp_val * 5.0
+							corrupted.hp = max_hp_val * 5.0
+							corrupted.damage = damage_val * 2.0
+							corrupted.speed = speed_val * 1.2
+							corrupted.radius = radius_val * 2.0
+							corrupted.cosmetic = "corrupted_aura"
+							corrupted.cosmetic_aura_color = [0.3, 0.0, 0.3, 1.0]
+							corrupted.x = bx + randf_range(-100.0, 100.0)
+							corrupted.y = by + randf_range(-100.0, 100.0)
+
+						world.balls.append(corrupted)
+						if world.has_method("add_event"):
+							world.add_event("world_boss_spawned", {"boss_id": corrupted.get("id") if typeof(corrupted) == TYPE_DICTIONARY or "id" in corrupted else corrupted.get_meta("id"), "type": base_c})
+
 		# Apply dynamic cosmetic aura scaling
 		if not ("cosmetic_aura_scale" in ball) and typeof(ball) == TYPE_OBJECT and not ball.has_meta("cosmetic_aura_scale"):
 			if typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"):
