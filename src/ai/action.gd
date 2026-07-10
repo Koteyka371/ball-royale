@@ -4284,6 +4284,26 @@ func execute(strategy: String, delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("chain_lightning_timer", cl_timer)
 
+    var cl_col_cd = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "_cl_collision_cd" in self.ball:
+        cl_col_cd = self.ball._cl_collision_cd
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("_cl_collision_cd"):
+        cl_col_cd = self.ball.get_meta("_cl_collision_cd")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_cl_collision_cd"):
+        cl_col_cd = self.ball["_cl_collision_cd"]
+
+    if cl_col_cd > 0.0:
+        cl_col_cd -= delta
+        if cl_col_cd <= 0.0:
+            cl_col_cd = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and "_cl_collision_cd" in self.ball:
+            self.ball._cl_collision_cd = cl_col_cd
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("_cl_collision_cd", cl_col_cd)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["_cl_collision_cd"] = cl_col_cd
+
+
         if self.world != null and self.world.has_method("add_event"):
             var enemies = self._get_enemies()
             var hazards = []
@@ -19340,6 +19360,92 @@ func _resolve_collisions() -> bool:
 
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
+
+            var has_cl = false
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("chain_lightning_timer") and float(self.ball["chain_lightning_timer"]) > 0:
+                has_cl = true
+            elif typeof(self.ball) == TYPE_OBJECT and "chain_lightning_timer" in self.ball and float(self.ball.chain_lightning_timer) > 0:
+                has_cl = true
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("chain_lightning_timer") and float(self.ball.get_meta("chain_lightning_timer")) > 0:
+                has_cl = true
+
+            var b_team = null
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): b_team = self.ball["team"]
+            elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: b_team = self.ball.team
+
+            var o_team = null
+            if typeof(other) == TYPE_DICTIONARY and other.has("team"): o_team = other["team"]
+            elif typeof(other) == TYPE_OBJECT and "team" in other: o_team = other.team
+
+            if has_cl and b_team != null and o_team != null and b_team != o_team:
+                var cl_cd = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_cl_collision_cd"):
+                    cl_cd = float(self.ball["_cl_collision_cd"])
+                elif typeof(self.ball) == TYPE_OBJECT and "_cl_collision_cd" in self.ball:
+                    cl_cd = float(self.ball._cl_collision_cd)
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("_cl_collision_cd"):
+                    cl_cd = float(self.ball.get_meta("_cl_collision_cd"))
+
+                if cl_cd <= 0.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["_cl_collision_cd"] = 0.5
+                    elif typeof(self.ball) == TYPE_OBJECT and "_cl_collision_cd" in self.ball:
+                        self.ball._cl_collision_cd = 0.5
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("_cl_collision_cd", 0.5)
+
+                    var chain_damage = 5.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"): chain_damage = float(self.ball["damage"]) * 0.5
+                    elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball: chain_damage = float(self.ball.damage) * 0.5
+
+                    if typeof(other) == TYPE_DICTIONARY and other.has("hp"):
+                        other["hp"] -= chain_damage
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("take_damage"):
+                        other.take_damage(chain_damage)
+                    elif typeof(other) == TYPE_OBJECT and "hp" in other:
+                        other.hp -= chain_damage
+
+                    if self.has_method("_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, other, "chain_lightning")
+
+                    var bounced_enemies = [other]
+                    var current_pos = other
+                    for _i in range(3):
+                        var best_dist = 40000.0 # 200 squared
+                        var next_target = null
+                        for e in nearby:
+                            var e_team = null
+                            if typeof(e) == TYPE_DICTIONARY and e.has("team"): e_team = e["team"]
+                            elif typeof(e) == TYPE_OBJECT and "team" in e: e_team = e.team
+
+                            var e_alive = true
+                            if typeof(e) == TYPE_DICTIONARY and e.has("alive"): e_alive = e["alive"]
+                            elif typeof(e) == TYPE_OBJECT and "alive" in e: e_alive = e.alive
+
+                            if not bounced_enemies.has(e) and e_team != null and e_team != b_team and e_alive:
+                                var e_x = e.x if typeof(e) == TYPE_OBJECT else e["x"]
+                                var e_y = e.y if typeof(e) == TYPE_OBJECT else e["y"]
+                                var c_x = current_pos.x if typeof(current_pos) == TYPE_OBJECT else current_pos["x"]
+                                var c_y = current_pos.y if typeof(current_pos) == TYPE_OBJECT else current_pos["y"]
+                                var d = (e_x - c_x) * (e_x - c_x) + (e_y - c_y) * (e_y - c_y)
+                                if d < best_dist:
+                                    best_dist = d
+                                    next_target = e
+                        if next_target != null:
+                            if typeof(next_target) == TYPE_DICTIONARY and next_target.has("hp"):
+                                next_target["hp"] -= chain_damage
+                            elif typeof(next_target) == TYPE_OBJECT and next_target.has_method("take_damage"):
+                                next_target.take_damage(chain_damage)
+                            elif typeof(next_target) == TYPE_OBJECT and "hp" in next_target:
+                                next_target.hp -= chain_damage
+
+                            if self.has_method("_spawn_directed_particles"):
+                                self._spawn_directed_particles(current_pos, next_target, "chain_lightning")
+                            bounced_enemies.append(next_target)
+                            current_pos = next_target
+                        else:
+                            break
+
             if typeof(self.ball) == TYPE_DICTIONARY:
                 self.ball["_knockback_timer"] = 0.5
             elif self.ball.has_method("set_meta"):
