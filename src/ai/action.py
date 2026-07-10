@@ -2591,7 +2591,9 @@ class Action:
         if getattr(self.ball, "is_minion", False):
             if getattr(self.ball, "is_enraged", False):
                 self.ball.enrage_timer -= delta
-                self.ball.hp -= 20.0 * delta # rapid decay
+                max_hp = getattr(self.ball, "max_hp", 100.0)
+                # Rapidly decay HP until they die in 5 seconds (decay 20% max HP per second)
+                self.ball.hp -= (max_hp * 0.2) * delta
                 if self.ball.enrage_timer <= 0 or self.ball.hp <= 0:
                     self.ball.hp = 0
                     self.ball.alive = False

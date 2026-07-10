@@ -1,4 +1,4 @@
 {
-  "title": "Necromancer Lich Evolution",
-  "description": "If a Necromancer survives for 60 seconds without taking any damage, it evolves into a Lich. A Lich's minions are permanently enraged and it can summon 2 skeletal dragons that have a ranged breath attack."
+  "title": "Necromancer Blood Sacrifice",
+  "description": "Allow the Necromancer to manually sacrifice a minion to instantly heal themselves and cast an AoE fear effect around the sacrificed minion, temporarily slowing enemy balls."
 }

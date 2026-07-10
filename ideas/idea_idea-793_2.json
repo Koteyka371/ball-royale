@@ -1,4 +1,4 @@
 {
-  "title": "Minion Explosive Demise",
-  "description": "When an enraged minion's HP drops to 0 due to rapid decay, it explodes in a small area of effect, dealing damage based on its maximum health to any enemies nearby."
+  "title": "Minion Evolution Path",
+  "description": "Add a feature where minions can evolve based on the number of enemies they assist in killing, gaining unique modifiers like venom attacks or exploding on death."
 }

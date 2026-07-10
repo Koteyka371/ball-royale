@@ -402,10 +402,12 @@ class GameMode:
                         minion.enrage_timer = 5.0
 
                         # Apply stats
-                        minion.base_speed = getattr(minion, "base_speed", 2.0) * 3.0
-                        minion.base_damage = getattr(minion, "base_damage", 10.0) * 2.5
-                        minion.speed = getattr(minion, "speed", minion.base_speed) * 3.0
-                        minion.damage = getattr(minion, "damage", minion.base_damage) * 2.5
+                        b_speed = getattr(minion, "base_speed", 2.0)
+                        b_dmg = getattr(minion, "base_damage", 10.0)
+                        minion.base_speed = b_speed * 3.0
+                        minion.base_damage = b_dmg * 2.5
+                        minion.speed = getattr(minion, "speed", b_speed) * 3.0
+                        minion.damage = getattr(minion, "damage", b_dmg) * 2.5
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         """Called every tick to check if there is a winner. Returns winner name or None."""

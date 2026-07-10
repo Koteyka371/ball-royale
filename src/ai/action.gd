@@ -4395,7 +4395,13 @@ func execute(strategy: String, delta: float):
             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): hp = self.ball["hp"]
             elif self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp = self.ball.get_meta("hp")
 
-            hp -= 20.0 * delta
+            var max_hp = 100.0
+            if typeof(self.ball) == TYPE_OBJECT and "max_hp" in self.ball: max_hp = self.ball.max_hp
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"): max_hp = self.ball["max_hp"]
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+
+            # Rapidly decay HP until they die in 5 seconds (decay 20% max HP per second)
+            hp -= (max_hp * 0.2) * delta
 
             if enrage_timer <= 0 or hp <= 0:
                 hp = 0
