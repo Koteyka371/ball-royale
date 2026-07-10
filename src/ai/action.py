@@ -182,6 +182,33 @@ class Action:
         is_ranged = dist > (a_rad + t_rad + 20.0)
 
         if is_ranged:
+            gm = getattr(self.world, "game_mode", None)
+            if gm and getattr(gm, "name", "") == "Physics Anomaly Event" and getattr(gm, "event_active", False):
+                if not hasattr(attacker, "suspended_projectiles"):
+                    attacker.suspended_projectiles = []
+                is_resuming = getattr(attacker, "_is_resuming_projectile", False)
+                if not is_resuming:
+                    import math
+                    dx = getattr(target, 'x', 0.0) - getattr(attacker, 'x', 0.0)
+                    dy = getattr(target, 'y', 0.0) - getattr(attacker, 'y', 0.0)
+                    dist = math.hypot(dx, dy)
+                    vx = 0.0
+                    vy = 0.0
+                    if dist > 0.01:
+                        vx = (dx / dist) * 800.0
+                        vy = (dy / dist) * 800.0
+
+                    attacker.suspended_projectiles.append({
+                        "target": target,
+                        "timer": 3.0,
+                        "x": getattr(attacker, 'x', 0.0),
+                        "y": getattr(attacker, 'y', 0.0),
+                        "vx": vx,
+                        "vy": vy,
+                        "is_anomaly": True
+                    })
+                    return
+
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
                 for h in self.world.arena.hazards:
@@ -821,15 +848,54 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
         if hasattr(self.ball, "suspended_projectiles"):
+            gm = getattr(self.world, "game_mode", None)
+            cx = 500.0
+            cy = 500.0
+            if gm and getattr(gm, "name", "") == "Physics Anomaly Event":
+                cx = getattr(gm, "cx", 500.0)
+                cy = getattr(gm, "cy", 500.0)
+
             for sp in list(self.ball.suspended_projectiles):
                 sp["timer"] -= delta
+                if sp.get("is_anomaly", False):
+                    import math
+                    sp["x"] += sp.get("vx", 0.0) * delta
+                    sp["y"] += sp.get("vy", 0.0) * delta
+
+                    dx = cx - sp["x"]
+                    dy = cy - sp["y"]
+                    dist = math.hypot(dx, dy)
+                    if dist > 0.01:
+                        ndx = dx / dist
+                        ndy = dy / dist
+                        tx = -ndy
+                        ty = ndx
+                        force_mag = 400.0 * delta
+                        sp["vx"] += tx * force_mag
+                        sp["vy"] += ty * force_mag
+
+                        target = sp["target"]
+                        tdx = getattr(target, 'x', 0.0) - sp["x"]
+                        tdy = getattr(target, 'y', 0.0) - sp["y"]
+                        tdist = math.hypot(tdx, tdy)
+                        t_rad = getattr(target, 'radius', 10.0)
+
+                        if tdist <= (t_rad + 20.0):
+                            self.ball.suspended_projectiles.remove(sp)
+                            if getattr(target, "alive", True) or getattr(target, "hp", 0) > 0:
+                                self.ball._is_resuming_projectile = True
+                                self._attempt_damage(self.ball, target)
+                                self.ball._is_resuming_projectile = False
+                            continue
+
                 if sp["timer"] <= 0:
-                    self.ball.suspended_projectiles.remove(sp)
-                    # Resumed projectile hits target if target is alive
-                    if getattr(sp["target"], "alive", True) or getattr(sp["target"], "hp", 0) > 0:
-                        self.ball._is_resuming_projectile = True
-                        self._attempt_damage(self.ball, sp["target"])
-                        self.ball._is_resuming_projectile = False
+                    if sp in self.ball.suspended_projectiles:
+                        self.ball.suspended_projectiles.remove(sp)
+                    if not sp.get("is_anomaly", False):
+                        if getattr(sp["target"], "alive", True) or getattr(sp["target"], "hp", 0) > 0:
+                            self.ball._is_resuming_projectile = True
+                            self._attempt_damage(self.ball, sp["target"])
+                            self.ball._is_resuming_projectile = False
 
         if getattr(self.ball, "_aura_explosion_cd", 0.0) > 0.0:
             self.ball._aura_explosion_cd -= delta
@@ -5774,7 +5840,13 @@ class Action:
             self.ball.vx = dx / delta
             self.ball.vy = dy / delta
 
+
+            if hasattr(self.ball, "physics_anomaly_speed_mod"):
+                self.ball.vx *= self.ball.physics_anomaly_speed_mod
+                self.ball.vy *= self.ball.physics_anomaly_speed_mod
+
             if hasattr(self.ball, "_reflection_vx"):
+
                 self.ball.vx = self.ball._reflection_vx
                 delattr(self.ball, "_reflection_vx")
             if hasattr(self.ball, "_reflection_vy"):
