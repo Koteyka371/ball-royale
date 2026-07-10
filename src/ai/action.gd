@@ -13991,6 +13991,10 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var b_idx = self.world.boosters.find(nearest)
+                    if b_idx != -1:
+                        self.world.boosters.remove_at(b_idx)
 
             elif "kind" in nearest and nearest.kind == "projectile_reflect_booster":
                 if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
