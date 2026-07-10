@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-836] Chain Reaction Power-up — *2026-07-10 23:53:01 UTC*
+
+A rare power-up that makes regular ball collisions trigger a chain lightning effect. When a player with this power-up hits an enemy, a bolt of energy jumps to the next nearest enemy within a medium radius, dealing half damage, and can chain up to 3 times.
+
+---
+
 ## [idea-845] Cosmic Storm Weather Event — *2026-07-10 22:37:58 UTC*
 
 A random weather event that spawns miniature gravity wells across the arena, temporarily altering movement dynamics and adding chaos.
