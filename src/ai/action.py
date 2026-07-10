@@ -3279,6 +3279,37 @@ class Action:
                                 })
 
                         hazard.duration = 0.0 # Destroy the trap after use
+                    elif hazard.kind == "vector_teleport_trap":
+                        import math
+                        speed = math.hypot(self.ball.vx, self.ball.vy)
+                        if speed > 0.1:
+                            nx = self.ball.vx / speed
+                            ny = self.ball.vy / speed
+                            # Teleport backwards along the vector across the map
+                            # The maximum distance across the map is approx width+height, just use a large enough number
+                            large_dist = max(getattr(self.world.arena, "width", 2000), getattr(self.world.arena, "height", 2000)) * 2
+                            target_x = self.ball.x - nx * large_dist
+                            target_y = self.ball.y - ny * large_dist
+                            if hasattr(self.world.arena, "clamp_position"):
+                                target_x, target_y, _ = self.world.arena.clamp_position(target_x, target_y, getattr(self.ball, "radius", 10.0))
+
+                            # Add a small offset to prevent getting stuck exactly on the wall
+                            target_x += nx * 5.0
+                            target_y += ny * 5.0
+
+                            self.ball.x, self.ball.y = target_x, target_y
+
+                            current_tick = getattr(self.world, "tick", 0)
+                            self.ball.last_teleport_tick = current_tick
+
+                            if hasattr(self.world, 'events'):
+                                self.world.events.append({
+                                    "type": "teleport",
+                                    "source": getattr(self.ball, 'id', None),
+                                    "x": target_x,
+                                    "y": target_y
+                                })
+                        hazard.duration = 0.0
                     elif hazard.kind == "swap_trap":
                         import random
                         my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))

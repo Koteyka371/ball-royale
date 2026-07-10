@@ -5712,6 +5712,68 @@ func execute(strategy: String, delta: float):
                                 elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("active_skill", my_skill)
 
                         hazard.duration = 0.0
+                    elif hazard.kind == "vector_teleport_trap":
+                        var vx = 0.0
+                        if "vx" in self.ball: vx = self.ball.vx
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("vx"): vx = self.ball.get_meta("vx")
+
+                        var vy = 0.0
+                        if "vy" in self.ball: vy = self.ball.vy
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"): vy = self.ball.get_meta("vy")
+
+                        var speed = sqrt(vx*vx + vy*vy)
+                        if speed > 0.1:
+                            var nx = vx / speed
+                            var ny = vy / speed
+
+                            var w = 2000.0
+                            var h = 2000.0
+                            if "arena" in self.world:
+                                if "width" in self.world.arena: w = self.world.arena.width
+                                if "height" in self.world.arena: h = self.world.arena.height
+
+                            var large_dist = max(w, h) * 2.0
+
+                            var ball_x = self.ball.x if "x" in self.ball else 0.0
+                            var ball_y = self.ball.y if "y" in self.ball else 0.0
+                            var ball_r = 10.0
+                            if "radius" in self.ball: ball_r = self.ball.radius
+
+                            var target_x = ball_x - nx * large_dist
+                            var target_y = ball_y - ny * large_dist
+
+                            if "arena" in self.world and self.world.arena.has_method("clamp_position"):
+                                var clamped = self.world.arena.clamp_position(target_x, target_y, ball_r)
+                                target_x = clamped[0]
+                                target_y = clamped[1]
+
+                            target_x += nx * 5.0
+                            target_y += ny * 5.0
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["x"] = target_x
+                                self.ball["y"] = target_y
+                            else:
+                                if "x" in self.ball: self.ball.x = target_x
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("x", target_x)
+                                if "y" in self.ball: self.ball.y = target_y
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("y", target_y)
+
+                            var current_tick = 0
+                            if "tick" in self.world: current_tick = self.world.tick
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["last_teleport_tick"] = current_tick
+                            else:
+                                if "last_teleport_tick" in self.ball: self.ball.last_teleport_tick = current_tick
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("last_teleport_tick", current_tick)
+
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["duration"] = 0.0
+                        else:
+                            if "duration" in hazard: hazard.duration = 0.0
+                            elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
                     elif hazard.kind == "swap_trap":
                         var valid_targets = []
                         if "balls" in self.world:

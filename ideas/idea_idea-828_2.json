@@ -1,0 +1,4 @@
+{
+  "title": "Time Loop Trap",
+  "description": "When a ball triggers this trap, their current position, health, and inventory are recorded. After 5 seconds, they are forcefully reverted back to that exact state, reversing any progress or damage they experienced."
+}
