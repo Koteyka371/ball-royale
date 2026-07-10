@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-777] Orbital Gravity Zones — *2026-07-10 12:41:02 UTC*
+
+A hazard that exerts a perpendicular force instead of just pushing/pulling, causing players to orbit its center rather than simply falling in or out.
+
+---
+
 ## [idea-566] Elemental Shield Powerup — *2026-07-10 02:24:20 UTC*
 
 A new booster that grants temporary immunity to all environmental hazard damage (lava, spikes) but does not protect from ball attacks.
