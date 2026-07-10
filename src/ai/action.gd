@@ -57,6 +57,138 @@ func _award_xp(ball, amount: float, world=null) -> void:
 				if world != null and world.has_method("add_event"):
 					world.add_event("evolution", {"ball": ball.get("id"), "old_type": current_type, "new_type": new_type, "level": ball.level})
 
+					if ball.level == 10 and randf() < 0.3:
+						var boss = null
+						if typeof(ball) == TYPE_OBJECT and ball.has_method("duplicate"):
+							boss = ball.duplicate()
+						elif typeof(ball) == TYPE_DICTIONARY:
+							boss = ball.duplicate()
+
+						if boss != null:
+							var b_id = randi() % 90000 + 10000
+							if "next_id" in world:
+								b_id = world.next_id
+								world.next_id += 1
+
+							if "id" in boss:
+								boss.id = b_id
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("set_meta"):
+								boss.set_meta("id", b_id)
+							elif typeof(boss) == TYPE_DICTIONARY:
+								boss["id"] = b_id
+
+							var base_class_map = {
+								"paladin": "warrior", "berserker": "warrior", "templar": "warrior", "brawler": "warrior",
+								"warlock": "mage", "necromancer": "mage", "chaos": "mage", "vampire": "mage",
+								"ninja": "rogue", "assassin": "rogue", "phantom": "rogue",
+								"guardian": "tank", "juggernaut": "tank",
+								"sniper": "ranger", "bounty_hunter": "ranger", "scout": "ranger",
+								"monk": "healer", "druid": "healer"
+							}
+							var boss_type = new_type
+							if base_class_map.has(new_type):
+								boss_type = base_class_map[new_type]
+
+							if "ball_type" in boss:
+								boss.ball_type = boss_type
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("set_meta"):
+								boss.set_meta("ball_type", boss_type)
+							elif typeof(boss) == TYPE_DICTIONARY:
+								boss["ball_type"] = boss_type
+
+							if "is_world_boss" in boss:
+								boss.is_world_boss = true
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("set_meta"):
+								boss.set_meta("is_world_boss", true)
+							elif typeof(boss) == TYPE_DICTIONARY:
+								boss["is_world_boss"] = true
+
+							if "team" in boss:
+								boss.team = "corrupted_bosses"
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("set_meta"):
+								boss.set_meta("team", "corrupted_bosses")
+							elif typeof(boss) == TYPE_DICTIONARY:
+								boss["team"] = "corrupted_bosses"
+
+							var hp_mult = 10.0
+							var dmg_mult = 3.0
+							var speed_mult = 1.5
+
+							if "max_hp" in boss:
+								boss.max_hp *= hp_mult
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("max_hp"):
+								boss.set_meta("max_hp", boss.get_meta("max_hp") * hp_mult)
+							elif typeof(boss) == TYPE_DICTIONARY and boss.has("max_hp"):
+								boss["max_hp"] *= hp_mult
+
+							if "hp" in boss:
+								boss.hp = boss.max_hp if "max_hp" in boss else 1000.0
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("max_hp"):
+								boss.set_meta("hp", boss.get_meta("max_hp"))
+							elif typeof(boss) == TYPE_DICTIONARY and boss.has("max_hp"):
+								boss["hp"] = boss["max_hp"]
+
+							if "damage" in boss:
+								boss.damage *= dmg_mult
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("damage"):
+								boss.set_meta("damage", boss.get_meta("damage") * dmg_mult)
+							elif typeof(boss) == TYPE_DICTIONARY and boss.has("damage"):
+								boss["damage"] *= dmg_mult
+
+							if "base_damage" in boss:
+								boss.base_damage *= dmg_mult
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("base_damage"):
+								boss.set_meta("base_damage", boss.get_meta("base_damage") * dmg_mult)
+							elif typeof(boss) == TYPE_DICTIONARY and boss.has("base_damage"):
+								boss["base_damage"] *= dmg_mult
+
+							if "radius" in boss:
+								boss.radius *= 2.0
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("radius"):
+								boss.set_meta("radius", boss.get_meta("radius") * 2.0)
+							elif typeof(boss) == TYPE_DICTIONARY and boss.has("radius"):
+								boss["radius"] *= 2.0
+
+							if "speed" in boss:
+								boss.speed *= speed_mult
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("speed"):
+								boss.set_meta("speed", boss.get_meta("speed") * speed_mult)
+							elif typeof(boss) == TYPE_DICTIONARY and boss.has("speed"):
+								boss["speed"] *= speed_mult
+
+							if "base_speed" in boss:
+								boss.base_speed *= speed_mult
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("base_speed"):
+								boss.set_meta("base_speed", boss.get_meta("base_speed") * speed_mult)
+							elif typeof(boss) == TYPE_DICTIONARY and boss.has("base_speed"):
+								boss["base_speed"] *= speed_mult
+
+							var offsets = [-200.0, 200.0]
+							var ox = offsets[randi() % offsets.size()]
+							var oy = offsets[randi() % offsets.size()]
+
+							if "x" in boss: boss.x += ox
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("x"): boss.set_meta("x", boss.get_meta("x") + ox)
+							elif typeof(boss) == TYPE_DICTIONARY and boss.has("x"): boss["x"] += ox
+
+							if "y" in boss: boss.y += oy
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("y"): boss.set_meta("y", boss.get_meta("y") + oy)
+							elif typeof(boss) == TYPE_DICTIONARY and boss.has("y"): boss["y"] += oy
+
+							if "cosmetic_aura_color" in boss: boss.cosmetic_aura_color = Color(0, 0, 0, 1)
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("set_meta"): boss.set_meta("cosmetic_aura_color", Color(0, 0, 0, 1))
+							elif typeof(boss) == TYPE_DICTIONARY: boss["cosmetic_aura_color"] = Color(0, 0, 0, 1)
+
+							if "cosmetic_aura_scale" in boss: boss.cosmetic_aura_scale = 3.0
+							elif typeof(boss) == TYPE_OBJECT and boss.has_method("set_meta"): boss.set_meta("cosmetic_aura_scale", 3.0)
+							elif typeof(boss) == TYPE_DICTIONARY: boss["cosmetic_aura_scale"] = 3.0
+
+							if "balls" in world:
+								world.balls.append(boss)
+
+							if world != null and world.has_method("add_event"):
+								world.add_event("world_boss_spawned", {"boss_id": b_id, "boss_type": boss_type})
+
 		# Apply dynamic cosmetic aura scaling
 		if not ("cosmetic_aura_scale" in ball) and typeof(ball) == TYPE_OBJECT and not ball.has_meta("cosmetic_aura_scale"):
 			if typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"):
