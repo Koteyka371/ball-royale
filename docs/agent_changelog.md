@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-724] Phase Shift Skill — *2026-07-10 18:05:25 UTC*
+
+A temporary ability that allows a ball to become intangible for 3 seconds. While intangible, they take no damage and can pass through walls and hazards, but they also cannot attack or collect items.
+
+---
+
 ## [idea-811] Aura Reversal Trap — *2026-07-10 18:05:19 UTC*
 
 A placeable trap that, when triggered, temporarily reverses the effects of stacking auras for enemies caught in its blast radius. Instead of providing buffs (e.g., speed and damage increases), the stacking auras inflict proportional debuffs, punishing teams that clump together too tightly.
