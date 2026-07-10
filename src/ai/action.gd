@@ -518,14 +518,30 @@ func _attempt_damage(attacker, target) -> void:
 		if has_projectile_reflect and is_ranged_attack:
 			var base_dmg_refl = 10.0
 			if "damage" in attacker: base_dmg_refl = float(attacker.damage)
-			var refl_dmg = base_dmg_refl
-			if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("take_damage"):
-				attacker.take_damage(refl_dmg)
-			elif "hp" in attacker:
-				if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
-					attacker.set_meta("hp", attacker.hp - refl_dmg)
-				else:
-					attacker.hp -= refl_dmg
+
+			var sus_proj = []
+			if typeof(target) == TYPE_DICTIONARY and target.has("suspended_projectiles"):
+				sus_proj = target["suspended_projectiles"]
+			elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("suspended_projectiles"):
+				sus_proj = target.get_meta("suspended_projectiles")
+			elif typeof(target) == TYPE_OBJECT and "suspended_projectiles" in target:
+				sus_proj = target.suspended_projectiles
+
+			sus_proj.append({
+				"x": t_x2,
+				"y": t_y2,
+				"target": attacker,
+				"damage": base_dmg_refl,
+				"speed": 600.0,
+				"type": "reflected_projectile"
+			})
+
+			if typeof(target) == TYPE_DICTIONARY:
+				target["suspended_projectiles"] = sus_proj
+			elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+				target.set_meta("suspended_projectiles", sus_proj)
+			elif typeof(target) == TYPE_OBJECT and "suspended_projectiles" in target:
+				target.suspended_projectiles = sus_proj
 			if world != null and "events" in world:
 				world.events.append({"type": "visual_effect", "data": {"type": "shield_block", "x": t_x2, "y": t_y2}})
 			return

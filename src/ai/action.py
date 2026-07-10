@@ -351,11 +351,17 @@ class Action:
 
 
         if getattr(target, "projectile_reflect_active", False) and is_ranged:
-            original_damage = getattr(attacker, "damage", 10.0)
-            if hasattr(attacker, "take_damage"):
-                attacker.take_damage(original_damage)
-            elif hasattr(attacker, "hp"):
-                attacker.hp -= original_damage
+            if not hasattr(target, "suspended_projectiles"):
+                target.suspended_projectiles = []
+
+            target.suspended_projectiles.append({
+                "x": target.x,
+                "y": target.y,
+                "target": attacker,
+                "damage": getattr(attacker, "damage", 10.0),
+                "speed": 600.0,
+                "type": "reflected_projectile"
+            })
             if hasattr(self.world, "events"):
                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
             return
