@@ -1638,6 +1638,32 @@ class SummerArena(ProceduralArena):
             sand_trap.active = True
             self.hazards.append(sand_trap)
 
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        import random
+        # Handle localized heatwaves (stamina_drain_zone) duration
+        for h in self.hazards:
+            if getattr(h, "kind", "") == "stamina_drain_zone" and hasattr(h, "duration"):
+                h.duration -= delta
+                if h.duration <= 0:
+                    h.active = False
+
+        # Spawn occasional localized heatwaves
+        if current_tick % 600 == 100:
+            if random.random() < 0.5:
+                for _ in range(3):
+                    x = random.uniform(100, self.width - 100)
+                    y = random.uniform(100, self.height - 100)
+                    h_id = 90000 + len(self.hazards)
+                    from arena.procedural_arena import Hazard
+                    heatwave = Hazard(id=h_id, x=x, y=y, radius=random.uniform(100.0, 200.0), kind="stamina_drain_zone", damage=0.0)
+                    heatwave.active = True
+
+                    heatwave.drain_rate = 30.0
+                    heatwave.duration = 15.0
+                    self.hazards.append(heatwave)
+
+
 class LavaArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
@@ -1747,6 +1773,31 @@ class WinterArena(ProceduralArena):
             snowman.damage = 0.0
             snowman.active = True
             self.hazards.append(snowman)
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        import random
+        # Handle occasional blizzards (slow_motion_zone) duration
+        for h in self.hazards:
+            if getattr(h, "kind", "") == "slow_motion_zone" and hasattr(h, "duration"):
+                h.duration -= delta
+                if h.duration <= 0:
+                    h.active = False
+
+        # Spawn occasional blizzards
+        if current_tick % 600 == 100:
+            if random.random() < 0.5:
+                for _ in range(3):
+                    x = random.uniform(100, self.width - 100)
+                    y = random.uniform(100, self.height - 100)
+                    h_id = 91000 + len(self.hazards)
+                    from arena.procedural_arena import Hazard
+                    blizzard = Hazard(id=h_id, x=x, y=y, radius=random.uniform(150.0, 300.0), kind="slow_motion_zone", damage=0.0)
+                    blizzard.active = True
+
+                    blizzard.duration = 15.0
+                    self.hazards.append(blizzard)
+
 
 ARENAS["summer"] = SummerArena
 ARENAS["autumn"] = AutumnArena

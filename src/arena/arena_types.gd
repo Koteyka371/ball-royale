@@ -798,6 +798,32 @@ class SummerArena extends ProceduralArena:
 			var h_id = 5100 + hazards.size()
 			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(50.0, 100.0), "sand_trap", 0.0))
 
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		# Handle localized heatwaves (stamina_drain_zone) duration
+		for h in hazards:
+			if h.has_method("get_meta") and h.has_meta("duration") and h.get("kind") == "stamina_drain_zone":
+				var d = h.get_meta("duration") - delta
+				h.set_meta("duration", d)
+				if d <= 0:
+					h.active = false
+			elif typeof(h) == TYPE_DICTIONARY and "duration" in h and h.get("kind") == "stamina_drain_zone":
+				h["duration"] -= delta
+				if h["duration"] <= 0:
+					h["active"] = false
+
+		# Spawn occasional localized heatwaves
+		if current_tick % 600 == 100:
+			if randf() < 0.5:
+				for i in range(3):
+					var x = randf_range(100, width - 100)
+					var y = randf_range(100, height - 100)
+					var h_id = 90000 + hazards.size()
+					var heatwave = ProceduralArena.Hazard.new(h_id, x, y, randf_range(100.0, 200.0), "stamina_drain_zone", 0.0)
+					heatwave.set_meta("drain_rate", 30.0)
+					heatwave.set_meta("duration", 15.0)
+					hazards.append(heatwave)
+
 class LavaArena extends ProceduralArena:
 	var is_lava_theme = true
 
@@ -860,6 +886,31 @@ class WinterArena extends ProceduralArena:
 			var y = randf_range(100, height - 100)
 			var h_id = 4100 + hazards.size()
 			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, 20.0, "snowman_decoy", 0.0))
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		# Handle occasional blizzards (slow_motion_zone) duration
+		for h in hazards:
+			if h.has_method("get_meta") and h.has_meta("duration") and h.get("kind") == "slow_motion_zone":
+				var d = h.get_meta("duration") - delta
+				h.set_meta("duration", d)
+				if d <= 0:
+					h.active = false
+			elif typeof(h) == TYPE_DICTIONARY and "duration" in h and h.get("kind") == "slow_motion_zone":
+				h["duration"] -= delta
+				if h["duration"] <= 0:
+					h["active"] = false
+
+		# Spawn occasional blizzards
+		if current_tick % 600 == 100:
+			if randf() < 0.5:
+				for i in range(3):
+					var x = randf_range(100, width - 100)
+					var y = randf_range(100, height - 100)
+					var h_id = 91000 + hazards.size()
+					var blizzard = ProceduralArena.Hazard.new(h_id, x, y, randf_range(150.0, 300.0), "slow_motion_zone", 0.0)
+					blizzard.set_meta("duration", 15.0)
+					hazards.append(blizzard)
 
 
 class TimeDistortionArena extends ProceduralArena:
