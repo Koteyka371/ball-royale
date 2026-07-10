@@ -49,7 +49,7 @@ class MockBall(MockEntity):
             self.alive = False
 
 def test_hazard_immunity_booster_collection():
-    from action import Action
+    from ai.action import Action
     ball = MockBall()
     booster = MockEntity(2, 100.1, 100.1, kind="hazard_immunity_booster")
     arena = MockArena(hazards=[booster])
@@ -69,7 +69,7 @@ def test_hazard_immunity_booster_collection():
     assert getattr(ball, "hazard_immunity_timer", 0.0) == 14.9
 
 def test_hazard_immunity_prevents_damage():
-    from action import Action
+    from ai.action import Action
     ball = MockBall(x=100, y=100, hp=100)
     ball.hazard_immunity_timer = 10.0
 
