@@ -14,7 +14,17 @@ class MainMenu:
         self.background_theme = self.leaderboard_manager.get_theme(season)
         self.background_color = self._get_theme_color(self.background_theme)
 
+
         self.nemesis_screen = NemesisScreen(self.profile_manager, self.background_theme)
+
+        self.weekend_options = ["10x_speed", "invisible_enemies", "lava_floor"]
+        self.weekend_votes = {opt: 0 for opt in self.weekend_options}
+        self.active_weekend_event = None
+
+    def open_weekend_vote(self):
+        self.active_screen = "weekend_vote"
+        return True
+
 
     def _get_theme_color(self, theme):
         colors = {
@@ -40,7 +50,24 @@ class MainMenu:
         return self.prestige_shop.render_ui()
 
     def process_input(self, action, *args):
+
+        if self.active_screen == "weekend_vote":
+            if action == "vote" and args:
+                mode = args[0]
+                if mode in self.weekend_options:
+                    tokens = self.profile_manager.data.get("prestige_tokens", 0)
+                    if tokens > 0:
+                        self.profile_manager.data["prestige_tokens"] = tokens - 1
+                        self.profile_manager.save()
+                        self.weekend_votes[mode] += 1
+                        self.active_weekend_event = max(self.weekend_votes.items(), key=lambda x: x[1])[0]
+                        return True
+                return False
+            elif action == "back":
+                self.active_screen = "main"
+                return True
         if self.active_screen == "nemesis":
+
             if action == "back":
                 self.active_screen = "main"
                 return True
