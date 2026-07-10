@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-778] Mud Puddles Hazard — *2026-07-10 18:56:53 UTC*
+
+Introduce mud puddles as a new procedural hazard. Balls moving through a mud puddle will have their movement speed significantly reduced by 50% and their turn rate hindered, making them easy targets. Unlike tall grass, they remain fully visible, adding a different kind of positioning tradeoff to the arena.
+
+---
+
 ## [idea-807] Tether Hook — *2026-07-10 18:55:39 UTC*
 
 An item that hooks onto enemies and pulls them together over time, dealing minor damage for the duration of the tether.
