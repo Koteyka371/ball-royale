@@ -184,6 +184,20 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+        # Ghost mode logic
+        if getattr(target, "ghost_mode_timer", 0.0) > 0.0:
+            is_energy = getattr(attacker, "is_energy_projectile", False) or getattr(attacker, "damage_type", "") == "energy"
+            # If not an energy projectile, ghost mode ignores damage
+            if not is_energy:
+                return
+
+        if getattr(attacker, "ghost_mode_timer", 0.0) > 0.0:
+            # Attacking breaks ghost mode early
+            attacker.ghost_mode_timer = 0.0
+            attacker.intangible = False
+            if hasattr(self.world, "add_event"):
+                self.world.add_event("status_effect", {"message": f"{getattr(attacker, 'name', 'A player')} lost Ghost Mode!"})
+
         if getattr(target, "intangible", False) or getattr(target, "intangible_timer", 0.0) > 0.0:
             return
         if getattr(attacker, "intangible", False) or getattr(attacker, "intangible_timer", 0.0) > 0.0:
@@ -900,6 +914,12 @@ class Action:
             if self.ball.intangible_timer <= 0.0:
                 self.ball.intangible_timer = 0.0
                 self.ball.intangible = False
+        if getattr(self.ball, "ghost_mode_timer", 0.0) > 0.0:
+            self.ball.ghost_mode_timer -= delta
+            if self.ball.ghost_mode_timer <= 0.0:
+                self.ball.ghost_mode_timer = 0.0
+                self.ball.intangible = False
+
         if hasattr(self.ball, "suspended_projectiles"):
             gm = getattr(self.world, "game_mode", None)
             cx = 500.0
@@ -8058,6 +8078,16 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "ghost_mode_booster":
+                    self.ball.ghost_mode_timer = 5.0
+                    self.ball.intangible = True
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("status_effect", {"message": f"{getattr(self.ball, 'name', 'A player')} picked up Ghost Mode!"})
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "storm_booster":
                     self.ball.storm_booster_timer = 10.0
                     self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 1.5
@@ -10523,6 +10553,8 @@ class Action:
         self.ball.y += ny * speed * 0.3
 
     def _clamp_position(self) -> bool:
+        if getattr(self.ball, "ghost_mode_timer", 0.0) > 0.0:
+            return False
         if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0:
             return False
         bounced = False
@@ -10555,6 +10587,8 @@ class Action:
         return bounced
 
     def _resolve_collisions(self) -> bool:
+        if getattr(self.ball, "ghost_mode_timer", 0.0) > 0.0:
+            return False
         if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0:
             return False
         bounced = False
@@ -11120,7 +11154,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "ghost_mode_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

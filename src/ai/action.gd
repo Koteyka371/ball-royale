@@ -312,6 +312,41 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+	var target_ghost = 0.0
+	if typeof(target) == TYPE_OBJECT and "ghost_mode_timer" in target: target_ghost = target.ghost_mode_timer
+	elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("ghost_mode_timer"): target_ghost = target.get_meta("ghost_mode_timer")
+	elif typeof(target) == TYPE_DICTIONARY and target.has("ghost_mode_timer"): target_ghost = target["ghost_mode_timer"]
+
+	if target_ghost > 0.0:
+		var is_energy = false
+		if typeof(attacker) == TYPE_OBJECT and "is_energy_projectile" in attacker and attacker.is_energy_projectile: is_energy = true
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("is_energy_projectile") and attacker["is_energy_projectile"]: is_energy = true
+		if typeof(attacker) == TYPE_OBJECT and "damage_type" in attacker and attacker.damage_type == "energy": is_energy = true
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage_type") and attacker["damage_type"] == "energy": is_energy = true
+
+		if not is_energy:
+			return
+
+	var attacker_ghost = 0.0
+	if typeof(attacker) == TYPE_OBJECT and "ghost_mode_timer" in attacker: attacker_ghost = attacker.ghost_mode_timer
+	elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("ghost_mode_timer"): attacker_ghost = attacker.get_meta("ghost_mode_timer")
+	elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("ghost_mode_timer"): attacker_ghost = attacker["ghost_mode_timer"]
+
+	if attacker_ghost > 0.0:
+		if typeof(attacker) == TYPE_OBJECT and "ghost_mode_timer" in attacker: attacker.ghost_mode_timer = 0.0
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"): attacker.set_meta("ghost_mode_timer", 0.0)
+		elif typeof(attacker) == TYPE_DICTIONARY: attacker["ghost_mode_timer"] = 0.0
+
+		if typeof(attacker) == TYPE_OBJECT and "intangible" in attacker: attacker.intangible = false
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"): attacker.set_meta("intangible", false)
+		elif typeof(attacker) == TYPE_DICTIONARY: attacker["intangible"] = false
+
+		if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+			var n = "A player"
+			if typeof(attacker) == TYPE_OBJECT and "name" in attacker: n = attacker.name
+			elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("name"): n = attacker["name"]
+			self.world.add_event("status_effect", {"message": n + " lost Ghost Mode!"})
+
     var t_intangible = false
     if typeof(target) == TYPE_OBJECT and "intangible" in target: t_intangible = target.intangible
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible"): t_intangible = target.get_meta("intangible")
@@ -19698,7 +19733,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "ghost_mode_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
