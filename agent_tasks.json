@@ -14152,7 +14152,7 @@
     },
     {
       "id": "idea-823",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mimic Traps",
@@ -23616,6 +23616,40 @@
         "src/ai/quantum_teleportation_relay.py",
         "src/ai/quantum_teleportation_relay.gd",
         "tests/test_quantum_teleportation_relay.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1379",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Vacuum Mode",
+      "description": "A gamemode where friendly auras no longer passively apply to teammates. Instead, nearby enemies 'siphon' your team's auras, stealing the speed and damage buffs for themselves.",
+      "allowed_paths": [
+        "src/ai/aura_vacuum.py",
+        "src/ai/aura_vacuum.gd",
+        "tests/test_aura_vacuum.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1380",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Bomb Event",
+      "description": "An event where random players are given a ticking 'Aura Bomb'. They must rush away from their teammates to avoid wiping them out in an aura explosion, but rushing towards enemies will damage them.",
+      "allowed_paths": [
+        "src/ai/aura_bomb.py",
+        "src/ai/aura_bomb.gd",
+        "tests/test_aura_bomb.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

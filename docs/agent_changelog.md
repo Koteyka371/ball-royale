@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-823] Mimic Traps — *2026-07-10 21:18:04 UTC*
+
+Hazardous traps that disguise themselves as dropped loot or exit portals. Upon approach, they spring a net or apply a snare debuff, trapping the player for a few seconds.
+
+---
+
 ## [idea-820] Corrupted Aura Modifier — *2026-07-10 21:10:20 UTC*
 
 A rare map event that temporarily flips the effect of friendly auras. If a ball attempts to stand near allies and stack team auras during this event, they instead receive scaling damage over time and slowed movement speed, penalizing grouping behavior and forcing teams to scatter.
