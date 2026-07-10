@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-750] Black Hole Arena Hazard — *2026-07-10 19:34:55 UTC*
+
+An extremely large, slow-moving hazard that acts similarly to the gravity well but actively sucks in surrounding small hazards (like traps or spikes) and grows larger. It tests players' abilities to use boosts or specific game modes to escape its ever-increasing event horizon.
+
+---
+
 ## [idea-824] Aura Deflector Shield — *2026-07-10 19:34:49 UTC*
 
 A booster that places a temporary reflection barrier on the ball, deflecting projectiles back at their origin rather than just absorbing them.
