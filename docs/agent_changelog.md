@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-854] Overcharge Booster — *2026-07-11 21:25:37 UTC*
+
+A temporary power-up that makes your skills cost health instead of having a cooldown, while also giving your normal attacks a chance to inflict a short micro-stun.
+
+---
+
 ## [idea-839] Weather-Adaptive Traits System — *2026-07-11 21:16:05 UTC*
 
 Introduce a dynamic trait system where units gain temporary buffs or debuffs depending on the current weather and arena terrain. For instance, 'fire' units gain speed and damage in 'Lava' or 'Heatwave' conditions but suffer heavy penalties during 'Rain' or 'Blizzard'. 'Earth' or 'Rock' traits could gain defense in 'Dirt' arenas and remain unaffected by 'Sandstorm' damage.

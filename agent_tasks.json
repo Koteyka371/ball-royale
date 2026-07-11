@@ -14680,7 +14680,7 @@
     },
     {
       "id": "idea-854",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Overcharge Booster",
@@ -24623,6 +24623,40 @@
         "src/ai/tornado_alley.py",
         "src/ai/tornado_alley.gd",
         "tests/test_tornado_alley.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1438",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Day/Night Cycle Effect on Traits",
+      "description": "Introduce a day/night cycle that dynamically affects traits. Nighttime could boost 'vampire' or 'stealth' traits, while daytime enhances 'solar' or 'radiant' units.",
+      "allowed_paths": [
+        "src/ai/daynight_cycle_effect_on_traits.py",
+        "src/ai/daynight_cycle_effect_on_traits.gd",
+        "tests/test_daynight_cycle_effect_on_traits.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1439",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Synergistic Trait Combos",
+      "description": "Create synergies when different traits are combined on the same team. For instance, pairing a 'water' trait unit with a 'lightning' trait unit triggers an 'electrified water' area of effect buff.",
+      "allowed_paths": [
+        "src/ai/synergistic_trait_combos.py",
+        "src/ai/synergistic_trait_combos.gd",
+        "tests/test_synergistic_trait_combos.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
