@@ -695,6 +695,32 @@ func _attempt_damage(attacker, target) -> void:
 	if randf() > attack_accuracy:
 		return
 
+	if is_ranged_attack:
+		var recoil_force = original_damage * 10.0
+		var rdx = t_x2 - a_x2
+		var rdy = t_y2 - a_y2
+		var rdist_sq = rdx*rdx + rdy*rdy
+		if rdist_sq > 0.0:
+			var rdist = sqrt(rdist_sq)
+			var rnx = rdx / rdist
+			var rny = rdy / rdist
+			var a_vx = 0.0
+			if "vx" in attacker: a_vx = float(attacker.vx)
+			var a_vy = 0.0
+			if "vy" in attacker: a_vy = float(attacker.vy)
+			if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
+				if attacker.has_meta("vx"):
+					attacker.set_meta("vx", a_vx - rnx * recoil_force)
+				else:
+					if "vx" in attacker: attacker.vx = a_vx - rnx * recoil_force
+				if attacker.has_meta("vy"):
+					attacker.set_meta("vy", a_vy - rny * recoil_force)
+				else:
+					if "vy" in attacker: attacker.vy = a_vy - rny * recoil_force
+			elif "vx" in attacker:
+				attacker.vx = a_vx - rnx * recoil_force
+				attacker.vy = a_vy - rny * recoil_force
+
 	var executed_by_necromancer = false
 	if attacker_type.to_lower() == "necromancer":
 		var target_max_hp = 100.0
