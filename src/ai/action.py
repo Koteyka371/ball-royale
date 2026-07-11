@@ -6279,10 +6279,20 @@ class Action:
 
                 # Reverse velocity properly, add random slight angle variation for trick shots, and multiply speed
                 import random
-                angle = _math.atan2(nvy, nvx) + random.uniform(-0.2, 0.2)
                 gm = getattr(self.world, "game_mode", None)
+
+                is_jump_pad = gm and getattr(gm, "name", "") == "Jump Pad Boundaries"
+                if is_jump_pad:
+                    w = getattr(self.world, "width", 1000)
+                    h = getattr(self.world, "height", 1000)
+                    angle = _math.atan2(h/2 - self.ball.y, w/2 - self.ball.x)
+                else:
+                    angle = _math.atan2(nvy, nvx) + random.uniform(-0.2, 0.2)
+
                 # Bouncy walls cause high-speed ricochets to make dodging harder and create chaotic collisions
-                if wall_state == "bouncy":
+                if is_jump_pad:
+                    new_speed = min(max(speed, 500) * 4.0, 6000.0)
+                elif wall_state == "bouncy":
                     new_speed = min(speed * 3.5, 4500.0)
                 elif gm and getattr(gm, "name", "") == "Bouncy Terrain":
                     new_speed = min(speed * 2.5, 3500.0)
@@ -6309,8 +6319,8 @@ class Action:
                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                 is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-                if wall_state == "bouncy":
-                    pass # Bouncy walls don't deal damage
+                if wall_state == "bouncy" or is_jump_pad:
+                    pass # Bouncy/jump pad walls don't deal damage
                 elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                     damage = speed * 0.05
 

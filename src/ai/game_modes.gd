@@ -25272,8 +25272,14 @@ class AerialArenaMode extends GameMode:
 			if idx != -1:
 				world.arena.hazards.remove_at(idx)
 
+class JumpPadBoundariesMode extends GameMode:
+	func _init():
+		name = "Jump Pad Boundaries"
+		description = "The arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
+
 var GAME_MODES = {
 	"aerial_arena": AerialArenaMode.new(),
+	"jump_pad_boundaries": JumpPadBoundariesMode.new(),
 
 	"elemental_auras": ElementalAurasMode.new(),
 

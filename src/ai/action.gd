@@ -11307,12 +11307,18 @@ func execute(strategy: String, delta: float):
                 nvy = -vy
 
             var is_bouncy_terrain = false
+            var is_jump_pad = false
             if "game_mode" in self.world and self.world.game_mode != null:
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bouncy Terrain":
                     is_bouncy_terrain = true
+                elif "name" in self.world.game_mode and self.world.game_mode.name == "Jump Pad Boundaries":
+                    is_jump_pad = true
+
             var new_speed = 0.0
             # Bouncy walls cause high-speed ricochets to make dodging harder and create chaotic collisions
-            if wall_state == "bouncy":
+            if is_jump_pad:
+                new_speed = min(max(speed, 500.0) * 4.0, 6000.0)
+            elif wall_state == "bouncy":
                 new_speed = min(speed * 3.5, 4500.0)
             elif is_bouncy_terrain:
                 new_speed = min(speed * 2.5, 3500.0)
@@ -11328,7 +11334,17 @@ func execute(strategy: String, delta: float):
             if is_frictionless:
                 new_speed = min(speed * 2.0, 4000.0)
 
-            var angle = atan2(nvy, nvx) + randf_range(-0.2, 0.2)
+            var angle = 0.0
+            if is_jump_pad:
+                var ball_x = 0.0
+                if "x" in self.ball: ball_x = self.ball.x
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): ball_x = self.ball.get_meta("x")
+                var ball_y = 0.0
+                if "y" in self.ball: ball_y = self.ball.y
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): ball_y = self.ball.get_meta("y")
+                angle = atan2(h/2.0 - ball_y, w/2.0 - ball_x)
+            else:
+                angle = atan2(nvy, nvx) + randf_range(-0.2, 0.2)
 
             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                 self.ball.set_meta("_reflection_vx", cos(angle) * new_speed)
@@ -11353,7 +11369,7 @@ func execute(strategy: String, delta: float):
             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball["ball_type"]
             var is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-            if wall_state == "bouncy":
+            if wall_state == "bouncy" or is_jump_pad:
                 pass
             elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                 var dmg = speed * 0.05

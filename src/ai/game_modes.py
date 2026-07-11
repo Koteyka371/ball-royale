@@ -17485,4 +17485,11 @@ class AerialArenaMode(GameMode):
                 world.arena.hazards.remove(hz)
 
 
+class JumpPadBoundariesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Jump Pad Boundaries"
+        self.description = "The arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
+
 GAME_MODES['aerial_arena'] = AerialArenaMode()
+GAME_MODES['jump_pad_boundaries'] = JumpPadBoundariesMode()
