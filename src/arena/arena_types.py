@@ -1638,6 +1638,14 @@ class SummerArena(ProceduralArena):
             sand_trap.active = True
             self.hazards.append(sand_trap)
 
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        import random
+        if current_tick % 180 == 0 and random.random() < 0.3:
+            if hasattr(self, "_trigger_event"):
+                self._trigger_event("heatwave", current_tick)
+
+
 class LavaArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
@@ -1747,6 +1755,14 @@ class WinterArena(ProceduralArena):
             snowman.damage = 0.0
             snowman.active = True
             self.hazards.append(snowman)
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        import random
+        if current_tick % 180 == 0 and random.random() < 0.3:
+            if hasattr(self, "_trigger_event"):
+                self._trigger_event("blizzard", current_tick)
+
 
 ARENAS["summer"] = SummerArena
 ARENAS["autumn"] = AutumnArena
