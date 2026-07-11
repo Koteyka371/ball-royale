@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-733] Bounty Hunter Tracking UI — *2026-07-11 15:00:02 UTC*
+
+Add a special UI indicator that points the Bounty Hunter towards their marked target, even if they are out of normal vision range.
+
+---
+
 ## [idea-847] Season Recap Video Generation — *2026-07-11 14:59:58 UTC*
 
 Automatically compiles a short highlight reel or stats summary video at the end of each season for the top players.
