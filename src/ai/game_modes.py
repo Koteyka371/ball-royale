@@ -10252,6 +10252,8 @@ class UnstablePortalsEventMode(GameMode):
                             if hasattr(b, "visible"):
                                 b.visible = True
 
+                            import random
+                            import math
                             angle = random.uniform(0, 2 * math.pi)
                             blast_speed = 1000.0
                             b.x += math.cos(angle) * blast_speed * delta
@@ -13395,7 +13397,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse"]
         import random
         self.random = random
 
@@ -13451,6 +13453,9 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "tsunami": booster_kind = "life_jacket_booster"
             elif self.current_weather == "meteor_shower": booster_kind = "meteor_shield_booster"
             elif self.current_weather == "ice": booster_kind = "thermal_booster"
+            elif self.current_weather == "earthquake": booster_kind = "seismic_booster"
+            elif self.current_weather == "giant_flood": booster_kind = "life_jacket_booster"
+            elif self.current_weather == "solar_eclipse": booster_kind = "vision_booster"
 
             # Spawn a Boss / Mega-Minion for the current weather
             if hasattr(world, "balls"):
@@ -13461,7 +13466,10 @@ class ExtremeWeatherMode(GameMode):
                     "hurricane": "Storm Caller",
                     "tsunami": "Leviathan",
                     "meteor_shower": "Astral Destroyer",
-                    "ice": "Frost Titan"
+                    "ice": "Frost Titan",
+                    "earthquake": "Tremor Behemoth",
+                    "giant_flood": "Ocean Overlord",
+                    "solar_eclipse": "Umbra Lord"
                 }
 
                 boss_name = boss_map.get(self.current_weather)
@@ -13601,6 +13609,26 @@ class ExtremeWeatherMode(GameMode):
                     b.is_frictionless = True
                     if not hasattr(b, "is_slipping") or not b.is_slipping:
                         b.is_slipping = True
+
+            elif self.current_weather == "earthquake":
+                if not getattr(b, "seismic_booster_timer", 0.0) > 0 and not getattr(b, "mega_seismic_booster_timer", 0.0) > 0:
+                    import math
+                    angle = self.random.uniform(0, 2 * math.pi)
+                    if hasattr(b, "x"): b.x += math.cos(angle) * 150.0 * delta
+                    if hasattr(b, "y"): b.y += math.sin(angle) * 150.0 * delta
+            elif self.current_weather == "giant_flood":
+                if not has_life_jacket:
+                    b.speed = b.base_speed * 0.3
+                    b.steering_mult = getattr(b, "steering_mult", 1.0) * 0.5
+            elif self.current_weather == "solar_eclipse":
+                if not getattr(b, "vision_booster_timer", 0.0) > 0 and not getattr(b, "mega_vision_booster_timer", 0.0) > 0:
+                    b.perception_radius = 50.0
+
+        if self.current_weather == "earthquake" and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") in ["wall", "breakable_wall"]:
+                    if hasattr(h, "x"): h.x += self.random.uniform(-100.0 * delta, 100.0 * delta)
+                    if hasattr(h, "y"): h.y += self.random.uniform(-100.0 * delta, 100.0 * delta)
 
         if self.current_weather == "meteor_shower":
             if not hasattr(self, "meteor_spawn_timer"):
@@ -15799,6 +15827,8 @@ class RollingBouldersMode(GameMode):
                         rock = Hazard(id=rock_id, x=h.x, y=h.y, radius=15.0, kind="rock", damage=30.0)
                         setattr(rock, "duration", 5.0)
 
+                        import random
+                        import math
                         angle = random.uniform(0, 2 * math.pi)
                         rock_speed = random.uniform(50.0, 150.0)
                         setattr(rock, "vx", math.cos(angle) * rock_speed)

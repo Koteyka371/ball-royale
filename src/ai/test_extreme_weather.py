@@ -45,7 +45,7 @@ def test_extreme_weather_mode_setup_and_tick():
     # Tick for 15s to trigger weather change
     mode.tick(world, balls, 15.0)
 
-    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice"]
+    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse"]
     assert len(world.boosters) == 2 # 2 balls, 1 booster each spawned
 
     kind = world.boosters[0].kind
@@ -174,3 +174,83 @@ def test_ice_weather_sliding():
 
     assert getattr(b1, "is_frictionless", False) == True
     assert getattr(b1, "is_slipping", False) == True
+
+def test_earthquake_effects():
+    from ai.game_modes import ExtremeWeatherMode
+
+    mode = ExtremeWeatherMode()
+    world = MockWorld()
+
+    # Mocking arena hazards for wall shifting
+    class MockHazard:
+        def __init__(self, kind, x, y):
+            self.kind = kind
+            self.x = x
+            self.y = y
+
+    wall = MockHazard("wall", 500.0, 500.0)
+    world.arena.hazards = [wall]
+
+    b1 = MockBall()
+    b2 = MockBall()
+    b2.seismic_booster_timer = 10.0
+    balls = [b1, b2]
+
+    mode.setup(world, balls)
+    mode.current_weather = "earthquake"
+
+    mode.tick(world, balls, 1.0)
+
+    # b1 gets pushed around, b2 stays exactly the same
+    assert (b1.x != 500.0 or b1.y != 500.0)
+    assert b2.x == 500.0
+    assert b2.y == 500.0
+
+    # Wall hazard shifts position
+    assert (wall.x != 500.0 or wall.y != 500.0)
+
+def test_giant_flood_effects():
+    from ai.game_modes import ExtremeWeatherMode
+
+    mode = ExtremeWeatherMode()
+    world = MockWorld()
+    b1 = MockBall()
+    b2 = MockBall()
+    b2.life_jacket_booster_timer = 10.0
+    balls = [b1, b2]
+
+    b1.steering_mult = 1.0
+    b2.steering_mult = 1.0
+
+    mode.setup(world, balls)
+    mode.current_weather = "giant_flood"
+
+    mode.tick(world, balls, 1.0)
+
+    assert b1.speed == b1.base_speed * 0.3
+    assert getattr(b1, "steering_mult", 1.0) == 0.5
+
+    assert b2.speed == b2.base_speed
+    assert b2.steering_mult == 1.0
+
+def test_solar_eclipse_effects():
+    from ai.game_modes import ExtremeWeatherMode
+
+    mode = ExtremeWeatherMode()
+    world = MockWorld()
+    b1 = MockBall()
+    b2 = MockBall()
+    b2.vision_booster_timer = 10.0
+    balls = [b1, b2]
+
+    b1.perception_radius = 250.0
+    b2.perception_radius = 250.0
+
+    mode.setup(world, balls)
+    mode.current_weather = "solar_eclipse"
+
+    mode.tick(world, balls, 1.0)
+
+    # b1 loses vision, b2 doesn't
+    assert b1.perception_radius == 50.0
+    assert getattr(b2, "perception_radius", 250.0) == 250.0
