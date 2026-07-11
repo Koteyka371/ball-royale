@@ -1,0 +1,4 @@
+{
+  "title": "Worm Hazard",
+  "description": "A giant underground worm hazard that periodically surfaces near a thumper. It instantly swallows any entities in its spawn radius (small radius), instantly eliminating them. If no thumper is present, it randomly surfaces in the sand arena."
+}

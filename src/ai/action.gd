@@ -5950,6 +5950,39 @@ func execute(strategy: String, delta: float):
                                                 b.hp -= hazard.damage * 2.0
                                                 if b.hp <= 0:
                                                     b.alive = false
+                    elif hazard.kind == "thumper":
+                        var current_tick = 0
+                        if "tick" in self.world:
+                            current_tick = self.world.tick
+                        if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
+                            hazard.set_meta("last_updated_tick", current_tick)
+                            if not hazard.has_meta("pulse_timer"):
+                                hazard.set_meta("pulse_timer", 0.0)
+                            var pt = hazard.get_meta("pulse_timer")
+                            pt -= delta
+                            if pt <= 0:
+                                pt = 3.0 # Pulse every 3 seconds
+                                var pulse_radius = 400.0
+                                var hazard_team = hazard.get_meta("team") if hazard.has_meta("team") else ""
+                                if "balls" in self.world:
+                                    for b in self.world.balls:
+                                        if ("alive" in b and b.alive) or (typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive")):
+                                            var b_team = ""
+                                            if "team" in b: b_team = b.team
+                                            elif "ball_type" in b: b_team = b.ball_type
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                                                b_team = b.get("team")
+                                                if b_team == null: b_team = b.get("ball_type")
+
+                                            if b_team != hazard_team and hazard_team != "":
+                                                var dist = sqrt(pow(b.x - hazard.x, 2) + pow(b.y - hazard.y, 2))
+                                                if dist <= pulse_radius:
+                                                    if "skill_timer" in b:
+                                                        b.skill_timer = max(b.skill_timer, 5.0)
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                                        var cur_st = b.get_meta("skill_timer") if b.has_meta("skill_timer") else 0.0
+                                                        b.set_meta("skill_timer", max(cur_st, 5.0))
+                            hazard.set_meta("pulse_timer", pt)
                     elif hazard.kind == "shuffle_trap":
                         var radius = 300.0
                         var nearby_players = []
@@ -7859,6 +7892,23 @@ func execute(strategy: String, delta: float):
                             else:
                                 hazard.set_meta("vx", 10.0)
                                 hazard.set_meta("vy", 10.0)
+                        if hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
+                            var thumper = null
+                            if "hazards" in self.world.arena:
+                                for th in self.world.arena.hazards:
+                                    if th.kind == "thumper":
+                                        thumper = th
+                                        break
+                            if thumper != null:
+                                var dx = thumper.x - hazard.x
+                                var dy = thumper.y - hazard.y
+                                var dist = sqrt(dx*dx + dy*dy)
+                                if dist > 0.0001:
+                                    var spd = sqrt(hazard.get_meta("vx")*hazard.get_meta("vx") + hazard.get_meta("vy")*hazard.get_meta("vy"))
+                                    if spd < 10.0: spd = 100.0
+                                    hazard.set_meta("vx", (dx / dist) * spd)
+                                    hazard.set_meta("vy", (dy / dist) * spd)
+
                         if not hazard.has_meta("lifetime"):
                             hazard.set_meta("lifetime", 0.0)
                         hazard.set_meta("lifetime", hazard.get_meta("lifetime") + delta)

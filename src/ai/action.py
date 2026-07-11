@@ -3309,6 +3309,52 @@ class Action:
         old_x = getattr(self.ball, "x", 0.0)
         old_y = getattr(self.ball, "y", 0.0)
 
+        # Thumper Global Logic
+        if getattr(self.ball, "ball_type", "") != "spectator" and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Update Thumper
+            # To ensure it only updates once per tick, we use last_updated_tick
+            current_tick = getattr(self.world, "tick", 0)
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "thumper":
+                    if getattr(hazard, "last_updated_tick", -1) != current_tick:
+                        hazard.last_updated_tick = current_tick
+                        if not hasattr(hazard, "pulse_timer"):
+                            hazard.pulse_timer = 0.0
+                        hazard.pulse_timer -= delta
+                        if hazard.pulse_timer <= 0:
+                            hazard.pulse_timer = 3.0 # Pulse every 3 seconds
+                            pulse_radius = 400.0
+                            hazard_team = getattr(hazard, "team", "")
+                            if hasattr(self.world, "balls"):
+                                import math as _math
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                                        b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                        if b_team != hazard_team and hazard_team != "":
+                                            dist = _math.hypot(b.x - hazard.x, b.y - hazard.y)
+                                            if dist <= pulse_radius:
+                                                b.skill_timer = max(getattr(b, "skill_timer", 0.0), 5.0)
+
+                # Tornado attraction to Thumper
+                if getattr(hazard, "kind", "") in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                    if getattr(hazard, "last_attracted_tick", -1) != current_tick:
+                        hazard.last_attracted_tick = current_tick
+                        import math as _math
+                        thumper = None
+                        for th in self.world.arena.hazards:
+                            if getattr(th, "kind", "") == "thumper":
+                                thumper = th
+                                break
+                        if thumper:
+                            dx = thumper.x - hazard.x
+                            dy = thumper.y - hazard.y
+                            dist = _math.hypot(dx, dy)
+                            if dist > 0.0001:
+                                speed = _math.hypot(getattr(hazard, "vx", 0.0), getattr(hazard, "vy", 0.0))
+                                if speed < 10.0: speed = 100.0
+                                hazard.vx = (dx / dist) * speed
+                                hazard.vy = (dy / dist) * speed
+
         # Update shrinking zone and apply damage
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "update_zone"):
             current_tick = getattr(self.world, "tick", 0)
@@ -3420,6 +3466,27 @@ class Action:
                                             b.hp -= hazard.damage * 2.0
                                             if b.hp <= 0:
                                                 b.alive = False
+                    elif hazard.kind == "thumper":
+                        print("THUMPER HIT")
+                        current_tick = getattr(self.world, "tick", 0)
+                        if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            if not hasattr(hazard, "pulse_timer"):
+                                hazard.pulse_timer = 0.0
+                            hazard.pulse_timer -= delta
+                            if hazard.pulse_timer <= 0:
+                                hazard.pulse_timer = 3.0 # Pulse every 3 seconds
+                                pulse_radius = 400.0
+                                hazard_team = getattr(hazard, "team", "")
+                                if hasattr(self.world, "balls"):
+                                    import math as _math
+                                    for b in self.world.balls:
+                                        if getattr(b, "alive", False):
+                                            b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                            if b_team != hazard_team and hazard_team != "":
+                                                dist = _math.hypot(b.x - hazard.x, b.y - hazard.y)
+                                                if dist <= pulse_radius:
+                                                    b.skill_timer = max(getattr(b, "skill_timer", 0.0), 5.0)
                     elif hazard.kind == "shuffle_trap":
                         import random
                         import math
@@ -4468,6 +4535,23 @@ class Action:
 
                                 import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm") else random.uniform(-10.0, 10.0)
                                 hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm") else random.uniform(-10.0, 10.0)
+                            if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                                import math as _math
+                                thumper = None
+                                for th in getattr(self.world.arena, "hazards", []):
+                                    if getattr(th, "kind", "") == "thumper":
+                                        thumper = th
+                                        break
+                                if thumper:
+                                    dx = thumper.x - hazard.x
+                                    dy = thumper.y - hazard.y
+                                    dist = _math.hypot(dx, dy)
+                                    if dist > 0.0001:
+                                        speed = _math.hypot(hazard.vx, hazard.vy)
+                                        if speed < 10.0: speed = 100.0
+                                        hazard.vx = (dx / dist) * speed
+                                        hazard.vy = (dy / dist) * speed
+
                             if not hasattr(hazard, "lifetime"):
                                 hazard.lifetime = 0.0
                             hazard.lifetime += delta
