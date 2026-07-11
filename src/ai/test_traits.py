@@ -103,3 +103,47 @@ def test_multiple_traits():
     mode.setup(world, [b])
     assert b.speed == 105.0
     assert b.max_hp == 95.0
+
+def test_fire_trait_in_heatwave():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    world.arena.weather = "heatwave"
+    b = MockBall(traits=["fire"])
+    b.alive = True
+    b.ball_type = "mock"
+    mode.apply_dynamic_traits(world, [b], 0.1)
+    assert b.speed == 120.0
+    assert b.damage == 12.0
+
+def test_fire_trait_in_rain():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    world.arena.weather = "rain"
+    b = MockBall(traits=["fire"])
+    b.alive = True
+    b.ball_type = "mock"
+    mode.apply_dynamic_traits(world, [b], 0.1)
+    assert b.speed == 80.0
+    assert b.damage == 8.0
+
+def test_earth_trait_in_sandstorm():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    world.arena.weather = "sandstorm"
+    b = MockBall(traits=["earth"])
+    b.alive = True
+    b.ball_type = "mock"
+    b.weather_immunity_timer = 0.0
+    mode.apply_dynamic_traits(world, [b], 0.1)
+    assert b.weather_immunity_timer > 0.0
+
+def test_earth_trait_in_dirt():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    world.arena.name = "Dirt Arena"
+    b = MockBall(traits=["earth"])
+    b.alive = True
+    b.ball_type = "mock"
+    b.defense_multiplier = 1.0
+    mode.apply_dynamic_traits(world, [b], 0.1)
+    assert b.defense_multiplier == 0.8

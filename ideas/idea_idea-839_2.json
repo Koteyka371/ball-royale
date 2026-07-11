@@ -1,0 +1,4 @@
+{
+  "title": "Weather Transitions",
+  "description": "Introduce transitional weather states. Rather than instantly changing from rain to heatwave, there could be a short 'steam' transition phase that creates a fog effect, providing temporary stealth or reducing accuracy."
+}
