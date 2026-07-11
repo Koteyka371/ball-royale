@@ -70,3 +70,41 @@ def test_enraged_minion_large_delta():
     assert minion.hp == 0
     assert getattr(minion, "alive", True) == False
     assert getattr(minion, "is_enraged", True) == False
+
+def test_necromancer_redirects_fatal_damage():
+    import math
+    from ai.ball_types_necromancer import Necromancer
+    from ai.test_action_advanced import MockWorld, MockBall
+
+    world = MockWorld()
+
+    necro = Necromancer(1, 0.0, 0.0)
+    necro._cached_world = world
+
+    minion1 = MockBall()
+    minion1.id = 2
+    minion1.x = 10.0
+    minion1.y = 0.0
+    minion1.minion_owner = 1
+    minion1.alive = True
+    minion1.hp = 10.0
+    minion1.ball_type = "minion"
+
+    minion2 = MockBall()
+    minion2.id = 3
+    minion2.x = 500.0
+    minion2.y = 0.0
+    minion2.minion_owner = 1
+    minion2.alive = True
+    minion2.hp = 10.0
+    minion2.ball_type = "minion"
+
+    world.balls = [necro, minion1, minion2]
+
+    necro.hp = 10.0
+    necro.take_damage(20.0)
+
+    assert necro.hp > 0
+    assert necro.alive == True
+    assert minion1.alive == False
+    assert minion2.alive == True

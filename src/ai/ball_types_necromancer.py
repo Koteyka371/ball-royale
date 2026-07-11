@@ -90,6 +90,39 @@ class Necromancer:
             amount -= reduction
             self.bone_armor_stacks -= 1
 
+        if amount > 0 and self.hp - amount <= 0:
+            # Fatal damage, check for minions
+            world = getattr(self, "world", None)
+            if not world and hasattr(self, "_cached_world"):
+                world = self._cached_world
+
+            if world and hasattr(world, "balls"):
+                import math
+                minions = [b for b in world.balls if getattr(b, "minion_owner", None) == self.id and getattr(b, "alive", True)]
+
+                # Filter minions by range
+                minions_in_range = []
+                for m in minions:
+                    m_x = getattr(m, "x", 0.0)
+                    m_y = getattr(m, "y", 0.0)
+                    dist = math.hypot(m_x - self.x, m_y - self.y)
+                    if dist <= getattr(self, "PERCEPTION_RADIUS", 320):
+                        minions_in_range.append(m)
+
+                if minions_in_range:
+                    # Find nearest
+                    nearest = min(minions_in_range, key=lambda m: math.hypot(getattr(m, "x", 0.0) - self.x, getattr(m, "y", 0.0) - self.y))
+
+                    # Redirect to nearest minion
+                    if hasattr(nearest, "take_damage"):
+                        nearest.take_damage(9999.0)
+                    elif hasattr(nearest, "hp"):
+                        nearest.hp = 0
+                        nearest.alive = False
+
+                    self.hp = 1.0 # leave necro at 1 hp instead of dying
+                    return
+
         self.hp -= amount
         if self.hp <= 0:
             self.alive = False
