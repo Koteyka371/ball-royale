@@ -14997,6 +14997,117 @@ class LavaRoyaleMode(GameMode):
             pass
 
 
+class WeatherStationMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Weather Station"
+        self.description = "A neutral capture point occasionally spawns. Capturing it grants control over the weather to attack enemies."
+        self.station = None
+        self.spawn_timer = 10.0
+        self.active_weather = None
+        self.weather_timer = 0.0
+        self.controlling_team = None
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.station = None
+        self.spawn_timer = 10.0
+        self.active_weather = None
+        self.weather_timer = 0.0
+        self.controlling_team = None
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        # logic to spawn station
+        if self.station is None:
+            self.spawn_timer -= delta
+            if self.spawn_timer <= 0:
+                arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                import random
+                self.station = {
+                    "x": random.uniform(200, arena_w - 200),
+                    "y": random.uniform(200, arena_h - 200),
+                    "radius": 150.0,
+                    "capture_progress": 0.0,
+                    "owner": None
+                }
+        else:
+            # handle capture
+            teams_present = {}
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    dist_sq = (bx - self.station["x"])**2 + (by - self.station["y"])**2
+                    if dist_sq <= self.station["radius"]**2:
+                        team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                        teams_present[team] = teams_present.get(team, 0) + 1
+
+            if teams_present:
+                max_team = max(teams_present, key=teams_present.get)
+                is_tie = sum(1 for t, v in teams_present.items() if v == teams_present[max_team]) > 1
+                if not is_tie:
+                    if self.station["owner"] == max_team:
+                        self.station["capture_progress"] = min(100.0, self.station["capture_progress"] + 20.0 * delta)
+                    else:
+                        if self.station["owner"] is None:
+                            self.station["owner"] = max_team
+                            self.station["capture_progress"] = min(100.0, 20.0 * delta)
+                        else:
+                            self.station["capture_progress"] -= 20.0 * delta
+                            if self.station["capture_progress"] <= 0:
+                                self.station["owner"] = max_team
+                                self.station["capture_progress"] = 0.0
+
+            if self.station["capture_progress"] >= 100.0:
+                # Fully captured
+                self.controlling_team = self.station["owner"]
+                import random
+                self.active_weather = random.choice(["lightning", "wind"])
+                self.weather_timer = 15.0
+                self.station = None # Despawn station
+                self.spawn_timer = 20.0 # Next spawn
+
+        # Apply weather effects
+        if self.active_weather and self.controlling_team:
+            self.weather_timer -= delta
+            import random
+            if self.active_weather == "lightning" and random.random() < 0.1: # 10% chance per tick to strike an enemy
+                enemies = [b for b in balls if getattr(b, "alive", False) and getattr(b, "team", getattr(b, "ball_type", "")) != self.controlling_team and getattr(b, "ball_type", None) != "spectator"]
+                if enemies:
+                    target = random.choice(enemies)
+                    if hasattr(target, "take_damage"):
+                        target.take_damage(20.0)
+                    else:
+                        target.hp = getattr(target, "hp", 100) - 20.0
+            elif self.active_weather == "wind":
+                enemies = [b for b in balls if getattr(b, "alive", False) and getattr(b, "team", getattr(b, "ball_type", "")) != self.controlling_team and getattr(b, "ball_type", None) != "spectator"]
+                for enemy in enemies:
+                    if hasattr(enemy, "x") and hasattr(enemy, "y"):
+                        # Push them towards edges
+                        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                        cx, cy = arena_w / 2, arena_h / 2
+                        dx, dy = enemy.x - cx, enemy.y - cy
+                        mag = (dx**2 + dy**2)**0.5
+                        if mag == 0:
+                            dx, dy = 1, 0
+                            mag = 1
+                        force = 100.0 * delta
+                        mass = getattr(enemy, "mass", 1.0)
+                        if hasattr(enemy, "vx") and hasattr(enemy, "vy"):
+                            enemy.vx += (dx / mag) * force / mass
+                            enemy.vy += (dy / mag) * force / mass
+                        else:
+                            enemy.x += (dx / mag) * force
+                            enemy.y += (dy / mag) * force
+
+            if self.weather_timer <= 0:
+                self.active_weather = None
+                self.controlling_team = None
+
 GAME_MODES = {
     "falling_panels": FallingPanelsMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
@@ -15004,6 +15115,7 @@ GAME_MODES = {
     "spiked_walls": SpikedWallsMode(),
     "center_black_hole": CenterBlackHoleMode(),
     "extreme_weather": ExtremeWeatherMode(),
+    "weather_station": WeatherStationMode(),
     "invisible_decoys": InvisibleDecoysMode(),
     "sweeping_paddles": SweepingPaddlesMode(),
     "artifact_upgrader": ArtifactUpgraderMode(),

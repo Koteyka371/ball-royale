@@ -24139,6 +24139,216 @@ class LavaRoyaleMode extends GameMode:
 		pm.add_skill_points(points)
 
 
+class WeatherStationMode extends GameMode:
+	var station = null
+	var spawn_timer = 10.0
+	var active_weather = null
+	var weather_timer = 0.0
+	var controlling_team = null
+
+	func _init():
+		super._init()
+		self.name = "Weather Station"
+		self.description = "A neutral capture point occasionally spawns. Capturing it grants control over the weather to attack enemies."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		self.station = null
+		self.spawn_timer = 10.0
+		self.active_weather = null
+		self.weather_timer = 0.0
+		self.controlling_team = null
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		var arena_w = 1000
+		var arena_h = 1000
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_w = world.arena.get("width", 1000)
+				arena_h = world.arena.get("height", 1000)
+			else:
+				arena_w = world.arena.width if "width" in world.arena else 1000
+				arena_h = world.arena.height if "height" in world.arena else 1000
+
+		if self.station == null:
+			self.spawn_timer -= delta
+			if self.spawn_timer <= 0:
+				self.station = {
+					"x": randf_range(200, arena_w - 200),
+					"y": randf_range(200, arena_h - 200),
+					"radius": 150.0,
+					"capture_progress": 0.0,
+					"owner": null
+				}
+		else:
+			var teams_present = {}
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.alive if "alive" in b else false
+
+				var b_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					b_type = b.get("ball_type", "")
+				else:
+					b_type = b.ball_type if "ball_type" in b else ""
+
+				if is_alive and b_type != "spectator":
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					else:
+						bx = b.x if "x" in b else 0.0
+						by = b.y if "y" in b else 0.0
+
+					var dist_sq = pow(bx - self.station["x"], 2) + pow(by - self.station["y"], 2)
+					if dist_sq <= pow(self.station["radius"], 2):
+						var team = b_type
+						if typeof(b) == TYPE_DICTIONARY:
+							team = b.get("team", b_type)
+						else:
+							team = b.team if "team" in b else b_type
+						teams_present[team] = teams_present.get(team, 0) + 1
+
+			if teams_present.size() > 0:
+				var max_team = null
+				var max_count = -1
+				for t in teams_present.keys():
+					if teams_present[t] > max_count:
+						max_count = teams_present[t]
+						max_team = t
+
+				var tie_count = 0
+				for t in teams_present.keys():
+					if teams_present[t] == max_count:
+						tie_count += 1
+
+				if tie_count == 1:
+					if self.station["owner"] == max_team:
+						self.station["capture_progress"] = min(100.0, self.station["capture_progress"] + 20.0 * delta)
+					else:
+						if self.station["owner"] == null:
+							self.station["owner"] = max_team
+							self.station["capture_progress"] = min(100.0, 20.0 * delta)
+						else:
+							self.station["capture_progress"] -= 20.0 * delta
+							if self.station["capture_progress"] <= 0:
+								self.station["owner"] = max_team
+								self.station["capture_progress"] = 0.0
+
+			if self.station["capture_progress"] >= 100.0:
+				self.controlling_team = self.station["owner"]
+				var weathers = ["lightning", "wind"]
+				self.active_weather = weathers[randi() % weathers.size()]
+				self.weather_timer = 15.0
+				self.station = null
+				self.spawn_timer = 20.0
+
+		if self.active_weather != null and self.controlling_team != null:
+			self.weather_timer -= delta
+			if self.active_weather == "lightning" and randf() < 0.1:
+				var enemies = []
+				for b in balls:
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+					else:
+						is_alive = b.alive if "alive" in b else false
+
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						b_type = b.get("ball_type", "")
+					else:
+						b_type = b.ball_type if "ball_type" in b else ""
+
+					var team = b_type
+					if typeof(b) == TYPE_DICTIONARY:
+						team = b.get("team", b_type)
+					else:
+						team = b.team if "team" in b else b_type
+
+					if is_alive and team != self.controlling_team and b_type != "spectator":
+						enemies.append(b)
+
+				if enemies.size() > 0:
+					var target = enemies[randi() % enemies.size()]
+					if typeof(target) != TYPE_DICTIONARY and target.has_method("take_damage"):
+						target.take_damage(20.0)
+					else:
+						if typeof(target) == TYPE_DICTIONARY:
+							target["hp"] = target.get("hp", 100.0) - 20.0
+						else:
+							target.hp -= 20.0
+
+			elif self.active_weather == "wind":
+				var cx = arena_w / 2.0
+				var cy = arena_h / 2.0
+				for b in balls:
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+					else:
+						is_alive = b.alive if "alive" in b else false
+
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						b_type = b.get("ball_type", "")
+					else:
+						b_type = b.ball_type if "ball_type" in b else ""
+
+					var team = b_type
+					if typeof(b) == TYPE_DICTIONARY:
+						team = b.get("team", b_type)
+					else:
+						team = b.team if "team" in b else b_type
+
+					if is_alive and team != self.controlling_team and b_type != "spectator":
+						var bx = 0.0
+						var by = 0.0
+						var bmass = 1.0
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+							bmass = b.get("mass", 1.0)
+						else:
+							bx = b.x if "x" in b else 0.0
+							by = b.y if "y" in b else 0.0
+							bmass = b.mass if "mass" in b else 1.0
+
+						var dx = bx - cx
+						var dy = by - cy
+						var mag = sqrt(dx*dx + dy*dy)
+						if mag == 0:
+							dx = 1.0
+							dy = 0.0
+							mag = 1.0
+
+						var force = 100.0 * delta
+						if typeof(b) == TYPE_DICTIONARY:
+							if "vx" in b and "vy" in b:
+								b["vx"] = b.get("vx", 0.0) + (dx / mag) * force / bmass
+								b["vy"] = b.get("vy", 0.0) + (dy / mag) * force / bmass
+							else:
+								b["x"] = b.get("x", 0.0) + (dx / mag) * force
+								b["y"] = b.get("y", 0.0) + (dy / mag) * force
+						else:
+							if "vx" in b and "vy" in b:
+								b.vx += (dx / mag) * force / bmass
+								b.vy += (dy / mag) * force / bmass
+							else:
+								b.x += (dx / mag) * force
+								b.y += (dy / mag) * force
+
+			if self.weather_timer <= 0:
+				self.active_weather = null
+				self.controlling_team = null
+
 var GAME_MODES = {
 	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
@@ -24149,6 +24359,7 @@ var GAME_MODES = {
 	"solar_flare": SolarFlareMode.new(),
 	"center_black_hole": CenterBlackHoleMode.new(),
 	"extreme_weather": ExtremeWeatherMode.new(),
+	"weather_station": WeatherStationMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
 	"sweeping_paddles": SweepingPaddlesMode.new(),
