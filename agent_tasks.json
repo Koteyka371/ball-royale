@@ -15142,7 +15142,7 @@
     },
     {
       "id": "idea-881",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Chain Reaction",
@@ -24793,6 +24793,40 @@
         "src/ai/adaptive_balls.py",
         "src/ai/adaptive_balls.gd",
         "tests/test_adaptive_balls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1448",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bungee Cord Item",
+      "description": "An item that attaches a player to a specific point on the map. They can move freely within a certain radius, but if they go too far or get knocked back, they are snapped back to the anchor point with high velocity.",
+      "allowed_paths": [
+        "src/ai/bungee_cord_item.py",
+        "src/ai/bungee_cord_item.gd",
+        "tests/test_bungee_cord_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1449",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Wall Pads",
+      "description": "Boots or a passive item that allows a ball to stick to a wall for a few seconds when they hit it, preventing them from falling out of bounds and giving them a chance to aim a powerful jump off the wall.",
+      "allowed_paths": [
+        "src/ai/sticky_wall_pads.py",
+        "src/ai/sticky_wall_pads.gd",
+        "tests/test_sticky_wall_pads.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

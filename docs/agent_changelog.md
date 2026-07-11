@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-881] Decoy Chain Reaction — *2026-07-11 23:32:37 UTC*
+
+If an explosive decoy is detonated by the explosion of another decoy, its explosion radius and damage are amplified by 50%, encouraging players to chain decoy placements.
+
+---
+
 ## [idea-806] New Item: Hookshot — *2026-07-11 22:55:56 UTC*
 
 Players can find and equip a Hookshot that allows them to grapple to walls or platforms quickly. This would add a ton of mobility and allow for clutch saves from falling into the lava or out of bounds.
