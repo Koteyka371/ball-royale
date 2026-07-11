@@ -17517,6 +17517,94 @@ class AerialArenaMode(GameMode):
 
 GAME_MODES['aerial_arena'] = AerialArenaMode()
 
+
+class ColorTrailMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Color Trail"
+        self.description = "Leave a trail of your team's color. Stepping on your own color gives a speed and regen buff, while stepping on enemy colors causes slowdown and damage. Teams win by controlling the most territory."
+        self.territory = {} # (gx, gy) -> Hazard
+        self.tile_size = 40.0
+        self.game_duration = 180.0
+        self.timer = 0.0
+
+    class TrailHazard:
+        def __init__(self, x, y, team):
+            self.id = "trail_" + str(x) + "_" + str(y)
+            self.x = x
+            self.y = y
+            self.radius = 25.0
+            self.kind = "color_trail"
+            self.active = True
+            self.duration = 9999.0
+            self.team = team
+            self.color_team = team
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.timer += delta
+
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        # 1. Update territory
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            gx = round(b.x / self.tile_size)
+            gy = round(b.y / self.tile_size)
+            team = getattr(b, "team", getattr(b, "ball_type", ""))
+
+            if (gx, gy) not in self.territory:
+                haz = self.TrailHazard(gx * self.tile_size, gy * self.tile_size, team)
+                world.arena.hazards.append(haz)
+                self.territory[(gx, gy)] = haz
+            else:
+                haz = self.territory[(gx, gy)]
+                haz.team = team
+                haz.color_team = team
+
+        # 2. Apply effects based on territory
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            gx = round(b.x / self.tile_size)
+            gy = round(b.y / self.tile_size)
+            team = getattr(b, "team", getattr(b, "ball_type", ""))
+
+            if (gx, gy) in self.territory:
+                haz = self.territory[(gx, gy)]
+                if haz.team == team:
+                    b.speed = getattr(b, "base_speed", 100.0) * 1.5
+                    b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 5.0 * delta)
+                else:
+                    b.speed = getattr(b, "base_speed", 100.0) * 0.5
+                    b.hp -= 10.0 * delta
+            else:
+                b.speed = getattr(b, "base_speed", 100.0)
+
+    def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if self.timer >= self.game_duration:
+            scores = {}
+            for haz in self.territory.values():
+                scores[haz.team] = scores.get(haz.team, 0) + 1
+            if scores:
+                return max(scores, key=scores.get)
+
+        return None
+
 class BermudaTriangleMode(GameMode):
     def __init__(self):
         super().__init__()

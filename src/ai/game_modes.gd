@@ -25329,6 +25329,7 @@ class AerialArenaMode extends GameMode:
 
 var GAME_MODES = {
 	"bermuda_triangle": BermudaTriangleMode.new(),
+	"color_trail": ColorTrailMode.new(),
 	"aerial_arena": AerialArenaMode.new(),
 
 	"elemental_auras": ElementalAurasMode.new(),
@@ -27032,6 +27033,163 @@ class UndergroundTunnelMode extends GameMode:
 					if "vy" in b: b.vy = 0.0
 					elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
 					break
+
+class ColorTrailMode extends GameMode:
+	var territory = {}
+	var tile_size = 40.0
+	var game_duration = 180.0
+	var timer = 0.0
+
+	func _init():
+		super._init()
+		self.name = "Color Trail"
+		self.description = "Leave a trail of your team's color. Stepping on your own color gives a speed and regen buff, while stepping on enemy colors causes slowdown and damage. Teams win by controlling the most territory."
+
+	class TrailHazard:
+		var id = ""
+		var x = 0.0
+		var y = 0.0
+		var radius = 25.0
+		var kind = "color_trail"
+		var active = true
+		var duration = 9999.0
+		var team = ""
+		var color_team = ""
+
+		func _init(px, py, pteam):
+			id = "trail_" + str(px) + "_" + str(py)
+			x = px
+			y = py
+			team = pteam
+			color_team = pteam
+
+	func tick(world, balls, delta: float = 0.016):
+		super.tick(world, balls, delta)
+		timer += delta
+
+		if typeof(world) != TYPE_DICTIONARY and not world.has("arena"):
+			if typeof(world) == TYPE_OBJECT and not world.has_method("get_arena") and not ("arena" in world):
+				return
+
+		var arena = world.arena if typeof(world) == TYPE_DICTIONARY else world.get("arena")
+		if arena == null:
+			return
+
+		if typeof(arena) == TYPE_DICTIONARY:
+			if not arena.has("hazards"):
+				arena["hazards"] = []
+		else:
+			if not ("hazards" in arena):
+				arena.hazards = []
+
+		var hazards = arena["hazards"] if typeof(arena) == TYPE_DICTIONARY else arena.hazards
+
+		# 1. Update territory
+		for b in balls:
+			var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+			if not alive:
+				continue
+
+			var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+			var gx = round(bx / tile_size)
+			var gy = round(by / tile_size)
+			var bteam = b.get("team", b.get("ball_type", "")) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else (b.ball_type if "ball_type" in b else ""))
+
+			var key = str(gx) + "_" + str(gy)
+			if not territory.has(key):
+				var haz = TrailHazard.new(gx * tile_size, gy * tile_size, bteam)
+				hazards.append(haz)
+				territory[key] = haz
+			else:
+				var haz = territory[key]
+				haz.team = bteam
+				haz.color_team = bteam
+
+		# 2. Apply effects based on territory
+		for b in balls:
+			var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+			if not alive:
+				continue
+
+			var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+			var gx = round(bx / tile_size)
+			var gy = round(by / tile_size)
+			var bteam = b.get("team", b.get("ball_type", "")) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else (b.ball_type if "ball_type" in b else ""))
+
+			var key = str(gx) + "_" + str(gy)
+			var base_speed = b.get("base_speed", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.base_speed if "base_speed" in b else 100.0)
+
+			if territory.has(key):
+				var haz = territory[key]
+				if haz.team == bteam:
+					var new_speed = base_speed * 1.5
+					if typeof(b) == TYPE_DICTIONARY:
+						b["speed"] = new_speed
+						var cur_hp = b.get("hp", 100.0)
+						var max_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(max_hp, cur_hp + 5.0 * delta)
+					else:
+						b.speed = new_speed
+						var cur_hp = b.hp if "hp" in b else 100.0
+						var max_hp = b.max_hp if "max_hp" in b else 100.0
+						b.hp = min(max_hp, cur_hp + 5.0 * delta)
+				else:
+					var new_speed = base_speed * 0.5
+					if typeof(b) == TYPE_DICTIONARY:
+						b["speed"] = new_speed
+						var cur_hp = b.get("hp", 100.0)
+						b["hp"] = cur_hp - 10.0 * delta
+					else:
+						b.speed = new_speed
+						var cur_hp = b.hp if "hp" in b else 100.0
+						b.hp = cur_hp - 10.0 * delta
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = base_speed
+				else:
+					b.speed = base_speed
+
+	func check_winner(world, balls):
+		var alive_teams = {}
+		var alive_count = 0
+
+		for b in balls:
+			var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+			var btype = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+
+			if alive and btype != "spectator" and btype != "shadow_monster":
+				alive_count += 1
+				var team = b.get("team", btype) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else btype)
+				alive_teams[team] = true
+
+		if alive_count == 0:
+			return "Draw"
+
+		if alive_teams.size() == 1:
+			return alive_teams.keys()[0]
+
+		if timer >= game_duration:
+			var scores = {}
+			for key in territory:
+				var team = territory[key].team
+				if not scores.has(team):
+					scores[team] = 0
+				scores[team] += 1
+
+			var max_score = -1
+			var winner = null
+			for team in scores:
+				if scores[team] > max_score:
+					max_score = scores[team]
+					winner = team
+
+			if winner != null:
+				return winner
+
+		return null
+
 class BermudaTriangleMode extends GameMode:
 	var pylons = []
 
