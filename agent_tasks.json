@@ -14578,7 +14578,7 @@
     },
     {
       "id": "idea-848",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Modifier",
@@ -23924,6 +23924,40 @@
         "src/ai/dynamic_daynight_cycle_influencing_traits.py",
         "src/ai/dynamic_daynight_cycle_influencing_traits.gd",
         "tests/test_dynamic_daynight_cycle_influencing_traits.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1397",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Emote Combinations Synergy",
+      "description": "When multiple spectators drop the same emote (e.g. 'cheer:firework') near each other simultaneously, the effects combine to form a massive graphical event on the arena to hype up the remaining players, granting small visual aura buffs to nearby survivors.",
+      "allowed_paths": [
+        "src/ai/emote_combinations_synergy.py",
+        "src/ai/emote_combinations_synergy.gd",
+        "tests/test_emote_combinations_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1398",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive VIP Spectator Drops",
+      "description": "Spectators with enough cheer points can vote on placing specific global hazard zones (e.g. low gravity) in the arena during downtime or specific phases of the battle, making them active participants in the game pacing.",
+      "allowed_paths": [
+        "src/ai/interactive_vip_spectator_drops.py",
+        "src/ai/interactive_vip_spectator_drops.gd",
+        "tests/test_interactive_vip_spectator_drops.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

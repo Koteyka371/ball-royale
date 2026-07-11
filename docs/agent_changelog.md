@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-848] Quantum Entanglement Modifier — *2026-07-11 14:59:53 UTC*
+
+Pairs of random balls become 'entangled'. Damage taken or healed by one is instantly mirrored to the other, creating unpredictable dynamics and forcing players to protect unlikely allies.
+
+---
+
 ## [idea-843] Interactive Match Spectating — *2026-07-11 12:55:45 UTC*
 
 Allow players waiting in queue to spectate high-ranked live matches. Spectators can drop small, harmless, but visually fun elements into the arena (like confetti or emotes) using a limited pool of 'cheer points' to engage with the players.
