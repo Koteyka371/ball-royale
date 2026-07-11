@@ -6436,7 +6436,7 @@ class WeatherChaosMode extends GameMode:
 
 			if weather_timer > 10.0:
 				weather_timer = 0.0
-				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
+				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower", "earthquake", "flood", "solar_eclipse"]
 				var old_weather = weather
 				if not has_meta("next_weather"):
 					set_meta("next_weather", weathers[randi() % weathers.size()])
@@ -21191,7 +21191,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "earthquake", "flood", "solar_eclipse"]
 
 	func _init():
 		name = "Extreme Weather"
@@ -21272,6 +21272,9 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "acid_rain": booster_kind = "hazmat_booster"
 			elif current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
 			elif current_weather == "tsunami": booster_kind = "life_jacket_booster"
+			elif current_weather == "earthquake": booster_kind = "shock_absorber_booster"
+			elif current_weather == "flood": booster_kind = "life_jacket_booster"
+			elif current_weather == "solar_eclipse": booster_kind = "night_vision_booster"
 
 			var boss_map = {
 				"blizzard": "Frost Titan",
@@ -21279,7 +21282,10 @@ class ExtremeWeatherMode extends GameMode:
 				"acid_rain": "Toxic Behemoth",
 				"hurricane": "Storm Caller",
 				"tsunami": "Leviathan",
-				"meteor_shower": "Astral Destroyer"
+				"meteor_shower": "Astral Destroyer",
+				"earthquake": "World Breaker",
+				"flood": "Tidal Serpent",
+				"solar_eclipse": "Void Weaver"
 			}
 
 			if current_weather in boss_map and world != null and "balls" in world:

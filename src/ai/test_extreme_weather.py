@@ -45,7 +45,7 @@ def test_extreme_weather_mode_setup_and_tick():
     # Tick for 15s to trigger weather change
     mode.tick(world, balls, 15.0)
 
-    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice"]
+    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "flood", "solar_eclipse"]
     assert len(world.boosters) == 2 # 2 balls, 1 booster each spawned
 
     kind = world.boosters[0].kind
@@ -56,7 +56,10 @@ def test_extreme_weather_mode_setup_and_tick():
         "hurricane": "heavy_anchor_booster",
         "tsunami": "life_jacket_booster",
         "meteor_shower": "meteor_shield_booster",
-        "ice": "thermal_booster"
+        "ice": "thermal_booster",
+        "earthquake": "shock_absorber_booster",
+        "flood": "life_jacket_booster",
+        "solar_eclipse": "night_vision_booster"
     }[mode.current_weather]
     assert kind == expected
 

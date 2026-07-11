@@ -1358,8 +1358,8 @@ class BattleRoyaleMode(GameMode):
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
-            world.arena.is_lunar_eclipse = (self.weather == "lunar_eclipse")
-            world.arena.is_eclipse = (self.weather == "lunar_eclipse")
+            world.arena.is_lunar_eclipse = (self.weather in ["lunar_eclipse", "solar_eclipse"])
+            world.arena.is_eclipse = (self.weather in ["lunar_eclipse", "solar_eclipse"])
 
 
             if self.weather == "heatwave":
@@ -1518,6 +1518,28 @@ class BattleRoyaleMode(GameMode):
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
                     world.arena.hazards.append(ice)
+            if self.weather == "earthquake":
+                if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn falling debris as earthquake hazard
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    debris = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="falling_rock", damage=30.0)
+                    setattr(debris, 'duration', 2.0)
+                    world.arena.hazards.append(debris)
+
+            if self.weather == "flood":
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        if not hasattr(b, "base_speed"):
+                            b.base_speed = getattr(b, "speed", 100.0)
+                        b.speed = b.base_speed * 0.5  # movement slowed heavily by water
+            else:
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        if hasattr(b, "base_speed"):
+                            b.speed = b.base_speed
+
             if self.weather in ["snow", "blizzard"]:
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
@@ -4428,7 +4450,7 @@ class WeatherChaosMode(GameMode):
 
             if self.weather_timer > 10.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower", "earthquake", "flood", "solar_eclipse"]
                 import random
                 rnd = getattr(self, "random", random)
                 old_weather = self.weather
@@ -4462,8 +4484,8 @@ class WeatherChaosMode(GameMode):
             world.arena.is_sandstorming = (self.weather == "sandstorm")
             world.arena.is_snowing = (self.weather in ["snow", "blizzard"])
             world.arena.is_heatwave = (self.weather == "heatwave")
-            world.arena.is_lunar_eclipse = (self.weather == "lunar_eclipse")
-            world.arena.is_eclipse = (self.weather == "lunar_eclipse")
+            world.arena.is_lunar_eclipse = (self.weather in ["lunar_eclipse", "solar_eclipse"])
+            world.arena.is_eclipse = (self.weather in ["lunar_eclipse", "solar_eclipse"])
             world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
             world.arena.wind_dy = getattr(self, "wind_dy", 0.0) if self.weather == "wind" else 0.0
 
@@ -4621,6 +4643,28 @@ class WeatherChaosMode(GameMode):
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
                     world.arena.hazards.append(ice)
+            if self.weather == "earthquake":
+                if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
+                    from arena.procedural_arena import Hazard
+                    # Spawn falling debris as earthquake hazard
+                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+                    debris = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="falling_rock", damage=30.0)
+                    setattr(debris, 'duration', 2.0)
+                    world.arena.hazards.append(debris)
+
+            if self.weather == "flood":
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        if not hasattr(b, "base_speed"):
+                            b.base_speed = getattr(b, "speed", 100.0)
+                        b.speed = b.base_speed * 0.5  # movement slowed heavily by water
+            else:
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        if hasattr(b, "base_speed"):
+                            b.speed = b.base_speed
+
             if self.weather in ["snow", "blizzard"]:
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     from arena.procedural_arena import Hazard
@@ -13335,7 +13379,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "flood", "solar_eclipse"]
         import random
         self.random = random
 
@@ -13391,6 +13435,9 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "tsunami": booster_kind = "life_jacket_booster"
             elif self.current_weather == "meteor_shower": booster_kind = "meteor_shield_booster"
             elif self.current_weather == "ice": booster_kind = "thermal_booster"
+            elif self.current_weather == "earthquake": booster_kind = "shock_absorber_booster"
+            elif self.current_weather == "flood": booster_kind = "life_jacket_booster"
+            elif self.current_weather == "solar_eclipse": booster_kind = "night_vision_booster"
 
             # Spawn a Boss / Mega-Minion for the current weather
             if hasattr(world, "balls"):
@@ -13401,7 +13448,10 @@ class ExtremeWeatherMode(GameMode):
                     "hurricane": "Storm Caller",
                     "tsunami": "Leviathan",
                     "meteor_shower": "Astral Destroyer",
-                    "ice": "Frost Titan"
+                    "ice": "Frost Titan",
+                    "earthquake": "World Breaker",
+                    "flood": "Tidal Serpent",
+                    "solar_eclipse": "Void Weaver"
                 }
 
                 boss_name = boss_map.get(self.current_weather)
