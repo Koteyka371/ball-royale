@@ -277,6 +277,137 @@ class GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+			var pm = world.profile_manager if "profile_manager" in world else null
+			var nemesis_drones = []
+			for h in world.arena.hazards:
+				var kind = ""
+				if "kind" in h: kind = h.kind
+				elif h.has_method("get_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+				if kind == "nemesis_drone": nemesis_drones.append(h)
+
+			for d in nemesis_drones:
+				var owner_type = null
+				if "owner_ball_type" in d: owner_type = d.owner_ball_type
+				elif d.has_method("get_meta") and d.has_meta("owner_ball_type"): owner_type = d.get_meta("owner_ball_type")
+
+				var owner_id = null
+				if "owner_id" in d: owner_id = d.owner_id
+				elif d.has_method("get_meta") and d.has_meta("owner_id"): owner_id = d.get_meta("owner_id")
+
+				var owner_team = null
+				if "owner_team" in d: owner_team = d.owner_team
+				elif d.has_method("get_meta") and d.has_meta("owner_team"): owner_team = d.get_meta("owner_team")
+
+				var target = null
+				var min_dist = 9999999.0
+				if owner_type != null and pm != null and pm.has_method("is_nemesis"):
+					for b in balls:
+						var alive = false
+						if "alive" in b: alive = b.alive
+						elif b.has_method("get_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+						if not alive: continue
+
+						var b_id = null
+						if "id" in b: b_id = b.id
+						elif b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+						if b_id == owner_id: continue
+
+						var b_type = null
+						if "ball_type" in b: b_type = b.ball_type
+						elif b.has_method("get_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b.ball_type
+
+						if pm.is_nemesis(owner_type, b_type):
+							var bx = 0.0
+							var by = 0.0
+							if "x" in b: bx = b.x
+							elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b.x
+							if "y" in b: by = b.y
+							elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b.y
+
+							var dx = bx - (d.x if "x" in d else 0.0)
+							var dy = by - (d.y if "y" in d else 0.0)
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist < min_dist:
+								min_dist = dist
+								target = b
+
+				if target != null:
+					var bx = 0.0
+					var by = 0.0
+					if "x" in target: bx = target.x
+					elif typeof(target) == TYPE_DICTIONARY and target.has("x"): bx = target.x
+					if "y" in target: by = target.y
+					elif typeof(target) == TYPE_DICTIONARY and target.has("y"): by = target.y
+
+					var dx = bx - (d.x if "x" in d else 0.0)
+					var dy = by - (d.y if "y" in d else 0.0)
+					if min_dist > 0.0001:
+						var speed = 100.0 * delta
+						if "x" in d: d.x += (dx/min_dist) * speed
+						if "y" in d: d.y += (dy/min_dist) * speed
+				else:
+					var target_x = world.arena.safe_zone_x if "safe_zone_x" in world.arena else (world.arena.width / 2.0 if "width" in world.arena else 500.0)
+					var target_y = world.arena.safe_zone_y if "safe_zone_y" in world.arena else (world.arena.height / 2.0 if "height" in world.arena else 500.0)
+					var dx = target_x - (d.x if "x" in d else 0.0)
+					var dy = target_y - (d.y if "y" in d else 0.0)
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0.0001:
+						var speed = 50.0 * delta
+						if "x" in d: d.x += (dx/dist) * speed
+						if "y" in d: d.y += (dy/dist) * speed
+
+				for b in balls:
+					var alive = false
+					if "alive" in b: alive = b.alive
+					elif b.has_method("get_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+					if not alive: continue
+
+					var b_id = null
+					if "id" in b: b_id = b.id
+					elif b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+					if b_id == owner_id: continue
+
+					var b_team = null
+					if "team" in b: b_team = b.team
+					elif b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b.team
+					if owner_team != null and b_team == owner_team: continue
+
+					var bx = 0.0
+					var by = 0.0
+					if "x" in b: bx = b.x
+					elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b.x
+					if "y" in b: by = b.y
+					elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b.y
+					var br = 15.0
+					if "radius" in b: br = b.radius
+					elif b.has_method("get_meta") and b.has_meta("radius"): br = b.get_meta("radius")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): br = b.radius
+
+					var dx = bx - (d.x if "x" in d else 0.0)
+					var dy = by - (d.y if "y" in d else 0.0)
+					var dr = 5.0
+					if "radius" in d: dr = d.radius
+					elif d.has_method("get_meta") and d.has_meta("radius"): dr = d.get_meta("radius")
+					var b_dist = sqrt(dx*dx + dy*dy)
+					if b_dist < dr + br:
+						var dmg_val = 10.0
+						if "damage" in d: dmg_val = d.damage
+						elif d.has_method("get_meta") and d.has_meta("damage"): dmg_val = d.get_meta("damage")
+						var dmg = dmg_val * delta
+
+						if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+							b.take_damage(dmg)
+						elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+							b.hp -= dmg
+						elif typeof(b) == TYPE_OBJECT and "hp" in b:
+							b.hp -= dmg
 
 		# Seasonal Hazards
 		var seasonal_timer = 0.0

@@ -1161,6 +1161,9 @@ class ProceduralArena:
                     kind = "drone_item"
                     damage = 0.0
                 elif random.random() < 0.1:
+                    kind = "nemesis_drone_item"
+                    damage = 0.0
+                elif random.random() < 0.1:
                     kind = "breakable_wall"
                     damage = 0.0
                 elif random.random() < 0.05:

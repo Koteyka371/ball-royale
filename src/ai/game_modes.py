@@ -256,6 +256,60 @@ class GameMode:
 
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            nemesis_drones = [h for h in world.arena.hazards if getattr(h, "kind", "") == "nemesis_drone"]
+            pm = getattr(world, "profile_manager", None)
+            for d in nemesis_drones:
+                owner_type = getattr(d, "owner_ball_type", None)
+                target = None
+                min_dist = float("inf")
+                # find closest nemesis
+                if owner_type and pm and hasattr(pm, "is_nemesis"):
+                    for b in balls:
+                        if not getattr(b, "alive", False): continue
+                        if getattr(b, "id", None) == getattr(d, "owner_id", None): continue
+                        if pm.is_nemesis(owner_type, getattr(b, "ball_type", None)):
+                            bx = getattr(b, "x", 0)
+                            by = getattr(b, "y", 0)
+                            dist = ((bx - getattr(d, "x", 0))**2 + (by - getattr(d, "y", 0))**2)**0.5
+                            if dist < min_dist:
+                                min_dist = dist
+                                target = b
+
+                # move towards target slowly
+                if target:
+                    dx = getattr(target, "x", 0) - getattr(d, "x", 0)
+                    dy = getattr(target, "y", 0) - getattr(d, "y", 0)
+                    if min_dist > 0:
+                        speed = 100.0 * delta
+                        d.x += (dx/min_dist) * speed
+                        d.y += (dy/min_dist) * speed
+                else:
+                    target_x = getattr(world.arena, "safe_zone_x", getattr(world.arena, "width", 1000) / 2)
+                    target_y = getattr(world.arena, "safe_zone_y", getattr(world.arena, "height", 1000) / 2)
+                    dx = target_x - getattr(d, "x", 0)
+                    dy = target_y - getattr(d, "y", 0)
+                    dist = (dx**2 + dy**2)**0.5
+                    if dist > 0:
+                        speed = 50.0 * delta
+                        d.x += (dx/dist) * speed
+                        d.y += (dy/dist) * speed
+
+                # damage enemies
+                for b in balls:
+                    if not getattr(b, "alive", False): continue
+                    if getattr(b, "id", None) == getattr(d, "owner_id", None): continue
+                    if getattr(b, "team", "") == getattr(d, "owner_team", ""): continue
+                    bx = getattr(b, "x", 0)
+                    by = getattr(b, "y", 0)
+                    b_dist = ((bx - getattr(d, "x", 0))**2 + (by - getattr(d, "y", 0))**2)**0.5
+                    if b_dist < getattr(d, "radius", 5.0) + getattr(b, "radius", 15.0):
+                        dmg = getattr(d, "damage", 10.0) * delta
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(dmg)
+                        else:
+                            b.hp = getattr(b, "hp", 100) - dmg
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             missiles = [h for h in world.arena.hazards if getattr(h, "kind", "") == "homing_missile"]
             for m in missiles:
                 # Find target center
