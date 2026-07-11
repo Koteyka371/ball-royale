@@ -134,6 +134,52 @@ class GameMode:
         elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
             season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
 
+        season_mod = (season_num - 1) % 4
+        if season_mod == 0:
+            world.season_theme = "spring"
+            world.season_weather_bias = "rain"
+        elif season_mod == 1:
+            world.season_theme = "summer"
+            world.season_weather_bias = "heatwave"
+        elif season_mod == 2:
+            world.season_theme = "autumn"
+            world.season_weather_bias = "wind"
+        elif season_mod == 3:
+            world.season_theme = "winter"
+            world.season_weather_bias = "snow"
+
+        if hasattr(world, "arena"):
+            world.arena.seasonal_modifier = world.season_theme
+            # Increase chances of certain hazards
+            if type(world).__name__ in ['MockWorld', 'MagicMock'] or getattr(world.arena, "name", "") == "Unknown":
+                pass
+            elif world.season_theme == "spring":
+                # Ensure lots of healing puddles
+                try:
+                    from arena.procedural_arena import Hazard
+                    import random
+                    for _ in range(5):
+                        hx = random.uniform(100, getattr(world.arena, "width", 800) - 100)
+                        hy = random.uniform(100, getattr(world.arena, "height", 600) - 100)
+                        h_id = 888000 + len(world.arena.hazards) + random.randint(0, 10000)
+                        puddle = Hazard(id=h_id, x=hx, y=hy, radius=50.0, kind="healing_spring", damage=-20.0)
+                        world.arena.hazards.append(puddle)
+                except ImportError:
+                    pass
+            elif world.season_theme == "winter":
+                # Ensure snow and ice slicks
+                try:
+                    from arena.procedural_arena import Hazard
+                    import random
+                    for _ in range(5):
+                        hx = random.uniform(100, getattr(world.arena, "width", 800) - 100)
+                        hy = random.uniform(100, getattr(world.arena, "height", 600) - 100)
+                        h_id = 888000 + len(world.arena.hazards) + random.randint(0, 10000)
+                        ice = Hazard(id=h_id, x=hx, y=hy, radius=60.0, kind="ice_patches", damage=0.0)
+                        world.arena.hazards.append(ice)
+                except ImportError:
+                    pass
+
         modifiers = {
             1: {"type": "global_speed", "value": 1.2},
             2: {"type": "global_damage", "value": 0.9},

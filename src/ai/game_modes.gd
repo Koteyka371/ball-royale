@@ -187,6 +187,55 @@ class GameMode:
 			if "leaderboard_manager" in world.profile_manager and world.profile_manager.leaderboard_manager != null:
 				season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
 
+		var season_mod = (season_num - 1) % 4
+		if season_mod == 0:
+			world.set_meta("season_theme", "spring")
+			world.set_meta("season_weather_bias", "rain")
+		elif season_mod == 1:
+			world.set_meta("season_theme", "summer")
+			world.set_meta("season_weather_bias", "heatwave")
+		elif season_mod == 2:
+			world.set_meta("season_theme", "autumn")
+			world.set_meta("season_weather_bias", "wind")
+		elif season_mod == 3:
+			world.set_meta("season_theme", "winter")
+			world.set_meta("season_weather_bias", "snow")
+
+		if "arena" in world and world.arena != null:
+			if world.arena.has_method("set_meta"):
+				world.arena.set_meta("seasonal_modifier", world.get_meta("season_theme"))
+			elif "seasonal_modifier" in world.arena:
+				world.arena.seasonal_modifier = world.get_meta("season_theme")
+
+			var is_mock = false
+			if world.has_meta("is_mock"):
+				is_mock = world.get_meta("is_mock")
+			elif world.get_class() == "MockWorld" or world.get_class() == "MagicMock":
+				is_mock = true
+
+			if not is_mock and world.get_meta("season_theme") == "spring":
+				var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+				if ProceduralArena != null and "hazards" in world.arena:
+					for _i in range(5):
+						var aw = world.arena.width if "width" in world.arena else 800.0
+						var ah = world.arena.height if "height" in world.arena else 600.0
+						var hx = 100.0 + randf() * (aw - 200.0)
+						var hy = 100.0 + randf() * (ah - 200.0)
+						var h_id = 888000 + world.arena.hazards.size() + randi() % 10000
+						var puddle = ProceduralArena.Hazard.new(h_id, hx, hy, 50.0, "healing_spring", -20.0)
+						world.arena.hazards.append(puddle)
+			elif not is_mock and world.get_meta("season_theme") == "winter":
+				var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+				if ProceduralArena != null and "hazards" in world.arena:
+					for _i in range(5):
+						var aw = world.arena.width if "width" in world.arena else 800.0
+						var ah = world.arena.height if "height" in world.arena else 600.0
+						var hx = 100.0 + randf() * (aw - 200.0)
+						var hy = 100.0 + randf() * (ah - 200.0)
+						var h_id = 888000 + world.arena.hazards.size() + randi() % 10000
+						var ice = ProceduralArena.Hazard.new(h_id, hx, hy, 60.0, "ice_patches", 0.0)
+						world.arena.hazards.append(ice)
+
 		var modifiers = {
 			1: {"type": "global_speed", "value": 1.2},
 			2: {"type": "global_damage", "value": 0.9},

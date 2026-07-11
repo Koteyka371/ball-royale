@@ -653,6 +653,34 @@ func update_zone(current_tick: int, delta: float) -> void:
             is_gravity_storm = false
         elif current_tick % 600 == 300:
             var weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm", "acid_rain", "gravity_storm"]
+
+            var seasonal_modifier = get("seasonal_modifier")
+            if seasonal_modifier == null:
+                if has_meta("seasonal_modifier"):
+                    seasonal_modifier = get_meta("seasonal_modifier")
+                else:
+                    seasonal_modifier = "none"
+
+            if seasonal_modifier == "spring":
+                weathers.append("rain")
+                weathers.append("rain")
+                weathers.append("rain")
+            elif seasonal_modifier == "summer":
+                weathers.append("heatwave")
+                weathers.append("heatwave")
+                weathers.append("heatwave")
+            elif seasonal_modifier == "autumn":
+                weathers.append("wind")
+                weathers.append("wind")
+                weathers.append("wind")
+                weathers.append("fog")
+                weathers.append("fog")
+            elif seasonal_modifier == "winter":
+                weathers.append("snow")
+                weathers.append("snow")
+                weathers.append("snow")
+                weathers.append("snow")
+
             weather = weathers[randi() % weathers.size()]
             is_raining = weather == "rain"
             is_snowing = weather == "snow"
@@ -1370,9 +1398,12 @@ func update_zone(current_tick: int, delta: float) -> void:
                     new_hazards.append(h)
             hazards = new_hazards
 
-            var seasonal_modifier = "none"
-            if "seasonal_modifier" in self:
-                seasonal_modifier = self.seasonal_modifier
+            var seasonal_modifier = get("seasonal_modifier")
+            if seasonal_modifier == null:
+                if has_meta("seasonal_modifier"):
+                    seasonal_modifier = get_meta("seasonal_modifier")
+                else:
+                    seasonal_modifier = "none"
             for h in hazards:
                 if seasonal_modifier == "winter" and h.kind == "puddle":
                     h.kind = "ice_patch"

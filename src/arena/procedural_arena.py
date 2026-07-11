@@ -577,6 +577,18 @@ class ProceduralArena:
             elif current_tick % 600 == 300:
                 # Randomly change weather
                 weathers = ["rain", "snow", "heatwave", "wind", "fog", "sandstorm", "acid_rain", "gravity_storm"]
+
+                # Apply season weather bias
+                seasonal_modifier = getattr(self, "seasonal_modifier", "none")
+                if seasonal_modifier == "spring":
+                    weathers.extend(["rain", "rain", "rain"])
+                elif seasonal_modifier == "summer":
+                    weathers.extend(["heatwave", "heatwave", "heatwave"])
+                elif seasonal_modifier == "autumn":
+                    weathers.extend(["wind", "wind", "wind", "fog", "fog"])
+                elif seasonal_modifier == "winter":
+                    weathers.extend(["snow", "snow", "snow", "snow"])
+
                 import random as rnd
                 self.weather = rnd.choice(weathers)
                 self.is_raining = self.weather == "rain"
