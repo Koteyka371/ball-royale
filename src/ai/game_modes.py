@@ -30,6 +30,43 @@ class GameMode:
         self.name = "Unknown"
         self.description = "Base game mode"
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -155,6 +192,12 @@ class GameMode:
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
 
         if not hasattr(world, "match_time") or not isinstance(getattr(world, "match_time"), (int, float)):
             world.match_time = 0.0
@@ -451,6 +494,43 @@ class DraftRoyaleMode(GameMode):
         import random
         self.random = random
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.teams = ["Team A", "Team B"]
@@ -609,6 +689,43 @@ class BattleRoyaleMode(GameMode):
         self.obstacle_timer = 0.0
         self.random_event_timer = 0.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -692,6 +809,12 @@ class BattleRoyaleMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -2274,6 +2397,43 @@ class TeamDeathmatchMode(GameMode):
         self.name = "Team Deathmatch"
         self.description = "Two teams fight until one is eliminated."
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -2300,6 +2460,43 @@ class ZombieInfectionMode(GameMode):
         self.name = "Zombie Infection"
         self.description = "One zombie infects others. Survivors win if time runs out."
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -2320,6 +2517,12 @@ class ZombieInfectionMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -2370,6 +2573,43 @@ class GuildBossFightMode(GameMode):
         self.guild_name = guild_name
         self.guild_manager = guild_manager
         self.week_id = week_id
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -2458,6 +2698,43 @@ class BossFightMode(GameMode):
         self.name = "Boss Fight"
         self.description = "One giant boss ball faces off against a team of weaker hunters."
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -2538,6 +2815,43 @@ class DualPayloadMode(GameMode):
         self.description = "Two payloads move towards the center, the team that destroys the enemy payload first wins."
         self.payload_red = None
         self.payload_blue = None
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -2714,6 +3028,43 @@ class EscortMode(GameMode):
         self.chosen_path = 0
         self.current_waypoint_index = 0
         self.hazard_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -2923,6 +3274,43 @@ class VIPDefenseMode(GameMode):
         self.name = "VIP Defense"
         self.description = "Protect the VIP. If the VIP dies, the attackers win."
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -2959,6 +3347,43 @@ class SurvivalMode(GameMode):
         super().__init__()
         self.name = "Survival"
         self.description = "Players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -3067,6 +3492,43 @@ class CaptureTheFlagMode(GameMode):
         self.name = "Capture The Flag"
         self.description = "Teams try to steal the enemy's flag (a special booster) and return it to their base."
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -3120,6 +3582,43 @@ class EvolutionarySimulationMode(GameMode):
         self.name = "Evolutionary Simulation"
         self.description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -3152,6 +3651,12 @@ class VampireRoyaleMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -3205,6 +3710,43 @@ class MassiveGravityWellMode(GameMode):
         self.spawned = False
         import random
         self.random = random
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -3340,6 +3882,43 @@ class KingOfTheHillMode(GameMode):
         self.tick_timer = 0.0
         self.game_time = 0.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -3354,6 +3933,12 @@ class KingOfTheHillMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -3427,6 +4012,43 @@ class SweepingBlackHoleMode(GameMode):
         self.is_sweeping = False
         import random
         self.random = random
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -3529,6 +4151,12 @@ class BlackHoleMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -3609,6 +4237,43 @@ class WeatherChaosMode(GameMode):
         import random
         self.random = random
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -3630,6 +4295,12 @@ class WeatherChaosMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -4356,6 +5027,43 @@ class DominationMode(GameMode):
             pt.capture_progress = 0.0
             pt.owner = None
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -4579,6 +5287,43 @@ class MemoryTrapsMode(GameMode):
         self.description = "The arena is littered with invisible traps. Memorize their locations!"
         self.traps = []
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -4598,6 +5343,12 @@ class MemoryTrapsMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -4651,6 +5402,43 @@ class CustomMatchMode(GameMode):
         self.mutators = []
         self._rewards_given = False
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -4670,6 +5458,12 @@ class CustomMatchMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -4831,6 +5625,43 @@ class EcholocationMode(GameMode):
         self.flash_duration = 0.5
         self.current_flash_time = 0.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.world = world
@@ -4912,6 +5743,43 @@ class PitchBlackMode(GameMode):
         self.name = "Pitch Black"
         self.description = "The screen is completely dark. AI relies entirely on a narrow cone of light matching its perception radius."
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if hasattr(world, "arena"):
@@ -4931,6 +5799,12 @@ class PitchBlackMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -4972,6 +5846,43 @@ class VisionReducedMode(GameMode):
         self.description = "Visibility is severely reduced. AI relies on narrow cones of light or sonar-like pulses."
         self.pulse_timer = 0.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -4990,6 +5901,12 @@ class VisionReducedMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -5042,6 +5959,43 @@ class EMPBurstMode(GameMode):
         self.description = "Periodic EMP bursts scramble AI targeting!"
         self.spawn_timer = 0.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -5087,6 +6041,43 @@ class DynamicHazardsMode(GameMode):
         self.name = "Dynamic Hazards"
         self.description = "Dynamic map hazards like spikes, fire, and ice traps spawn, move, or change severity."
         self.spawn_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -6194,6 +7185,43 @@ class MirrorMatchMode(GameMode):
         self.description = "Every player spawns with an exact AI clone of themselves on the opposite side of the map. Clones mimic their creator's stats and skills."
         self.world = None
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.world = world
@@ -6234,6 +7262,43 @@ class VolatileClonesMode(GameMode):
         self.name = "Volatile Clones"
         self.description = "Similar to Clone Chaos, but when a clone's HP drops to 0, it explodes dealing small area-of-effect damage."
         self.clone_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -6386,6 +7451,43 @@ class CloneChaosMode(GameMode):
         self.name = "Clone Chaos"
         self.description = "Every ball starts with the 'clone' skill with very low cooldown. The arena is quickly filled with static copies, causing mass confusion."
         self.clone_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -6558,6 +7660,43 @@ class BumperBallsMode(GameMode):
         super().__init__()
         self.name = "Bumper Balls"
         self.description = "Balls deal zero damage but bounce each other with much higher knockback. Try to push opponents off the arena!"
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         if not hasattr(world, "dead_balls"):
@@ -6762,6 +7901,43 @@ class ModifierZonesMode(GameMode):
         self.description = "Fight over zones that provide different temporary buffs."
         self.zones = []
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -6893,6 +8069,43 @@ class WindstormMode(GameMode):
         self.random = random
         self.tornado_timer = 5.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -6909,6 +8122,12 @@ class WindstormMode(GameMode):
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -7119,6 +8338,43 @@ class BountyHuntMode(GameMode):
         super().__init__()
         self.name = "Bounty Hunt"
         self.description = "One ball on each team is the Bounty. Destroying the enemy Bounty grants a massive buff and extra skill points."
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -7364,6 +8620,43 @@ class GravityWellMode(GameMode):
         self.name = "Gravity Well"
         self.description = "Random gravity wells spawn in the arena, pulling nearby balls towards their center and slightly damaging them over time."
         self.spawn_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -7828,6 +9121,43 @@ class MagneticCollisionsMode(GameMode):
         self.description = "Invisible magnetic fields pull or push balls depending on their assigned polarities. Every 10 seconds, polarities randomly flip, causing sudden tactical shifts and chaotic collisions."
         self.polarity_flip_timer = 0.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.swap_timer = 0.0
@@ -8084,6 +9414,43 @@ class PinballMode(GameMode):
         super().__init__()
         self.name = "Pinball Mode"
         self.description = "Lots of bouncy bumpers and physics-based knockback logic to push balls around the arena."
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -9267,6 +10634,43 @@ class StaminaSpeedMode(GameMode):
         self.name = "Stamina Speed"
         self.description = "Max stamina dictates base speed. Everyone starts with 200 max stamina but taking damage permanently reduces maximum stamina for the rest of the round."
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         for b in balls:
@@ -9343,6 +10747,43 @@ class HazardBilliardsMode(GameMode):
         super().__init__()
         self.name = "Hazard Billiards"
         self.description = "Every ball starts with a reflect shield and no standard attacks work. Players must push map hazards into each other to deal damage!"
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -9916,6 +11357,43 @@ class DailyMutatorMode(GameMode):
         self.mutators = []
         self._rewards_given = False
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -9984,6 +11462,43 @@ class BlackMarketMode(GameMode):
         self.name = "Black Market"
         self.description = "Collect currency to buy upgrades from wandering Black Markets."
         self.currency_spawn_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -10291,6 +11806,43 @@ class BlizzardMode(GameMode):
         self.blizzard_duration = 0.0
         self.spawn_timer = 0.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -10390,6 +11942,43 @@ class MeteorShowerMode(GameMode):
         self.spawn_timer = 0.0
         self.active_meteors = []
         self.craters = []
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -10493,6 +12082,43 @@ class CursedBuffZoneMode(GameMode):
         self.description = "Zones grant massive speed (+200%) and damage (+150%) buffs, but rapidly drain HP or invert steering. High risk, high reward."
         self.zone_radius = 150.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -10575,6 +12201,43 @@ class RhythmPanelsMode(GameMode):
         self.description = "Floor panels light up to the beat. Stay on lit panels for buffs; unlit panels will debuff and damage you."
         self.rhythm_timer = 0.0
         self.beat_interval = 2.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -10956,6 +12619,43 @@ class ArtifactUpgraderMode(GameMode):
         self.name = "Artifact Upgrader"
         self.description = "Protect the wandering crafter NPC from hazards for 30 seconds to upgrade your artifacts!"
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -11103,6 +12803,43 @@ class SweepingPaddlesMode(GameMode):
         self.name = "Sweeping Paddles"
         self.description = "Indestructible paddles sweep across the arena, bouncing all players at high speeds."
         self.sweep_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -11512,6 +13249,43 @@ class InvisibleDecoysMode(GameMode):
         self.name = "Invisible Decoys"
         self.description = "The arena is seeded with invisible explosive decoys. Be careful not to trigger a chain reaction!"
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         import random
@@ -11864,6 +13638,43 @@ class JuggernautMode(GameMode):
         self.name = "Juggernaut"
         self.description = "Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut."
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -12191,6 +14002,43 @@ class TickingPayloadMode(GameMode):
         self.explosion_radius = 200.0
         self.winner = None
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -12377,6 +14225,43 @@ class WeaponCollectionMode(GameMode):
         self.description = "Players start with no attacks. Weapons randomly drop around the map, and players must collect them to deal damage."
         self.weapon_spawn_timer = 0.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -12444,6 +14329,43 @@ class CenterBlackHoleMode(GameMode):
         self.growth_rate = 5.0  # radius per second
         self.pull_strength = 200.0
         self.damage = 10.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -13203,6 +15125,43 @@ class RollingBouldersMode(GameMode):
         self.description = "Periodically spawn massive boulders that roll linearly across the arena, crushing balls and shattering into rocks upon hitting boundaries."
         self.spawn_timer = 0.0
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -13400,6 +15359,43 @@ class SoulLinkMode(GameMode):
         for eff in self.status_effects:
             setattr(state, eff, getattr(b, eff, 0.0))
         self.prev_state[b.id] = state
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -13613,6 +15609,43 @@ class TagTeamMode(GameMode):
         self.swap_interval = 10.0
         self.team_counter = 1
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.swap_timer = 0.0
@@ -13702,6 +15735,43 @@ class CrossfireMode(GameMode):
         self.name = "Crossfire"
         self.description = "Balls are divided into two teams on opposite sides of a center line. Players cannot cross the line but can throw hazards and boosters."
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         import random
@@ -13764,6 +15834,43 @@ class TeleporterHubMode(GameMode):
         self.shift_interval = 5.0
         self.portals = []
         self.peripheral_zones = []
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -14442,6 +16549,43 @@ class FreezeTagMode(GameMode):
         super().__init__()
         self.name = "Freeze Tag"
         self.description = "Players can freeze enemies upon collision. Frozen enemies cannot move or attack until an ally collides with them to unfreeze them. The game ends when one team is completely frozen."
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)

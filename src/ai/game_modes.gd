@@ -7,6 +7,105 @@ class GameMode:
 	func _init() -> void:
 		pass
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		if not "dead_balls" in world:
 			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
@@ -179,6 +278,104 @@ class GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		var match_time = 0.0
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 		if typeof(world) == TYPE_DICTIONARY:
 			match_time = world.get("match_time", 0.0) + delta
 			world["match_time"] = match_time
@@ -434,6 +631,105 @@ class DraftRoyaleMode extends GameMode:
 		name = "Draft Royale"
 		description = "Before the match, teams take turns picking and banning ball types to create synergies and counter opponents."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		phase = "drafting"
@@ -622,6 +918,105 @@ class BattleRoyaleMode extends GameMode:
 		description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
 		if not has_meta("shadow_monsters"):
 			set_meta("shadow_monsters", [])
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -2672,6 +3067,105 @@ class TeamDeathmatchMode extends GameMode:
 		name = "Team Deathmatch"
 		description = "Two teams fight until one is eliminated."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -2711,6 +3205,105 @@ class ZombieInfectionMode extends GameMode:
 	func _init() -> void:
 		name = "Zombie Infection"
 		description = "One zombie infects others. Survivors win if time runs out."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -2808,6 +3401,105 @@ class GuildBossFightMode extends GameMode:
 		guild_name = p_guild_name
 		guild_manager = p_guild_manager
 		week_id = p_week_id
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -2934,6 +3626,105 @@ class BossFightMode extends GameMode:
 		name = "Boss Fight"
 		description = "One giant boss ball faces off against a team of weaker hunters."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -3025,6 +3816,105 @@ class VIPDefenseMode extends GameMode:
 		name = "VIP Defense"
 		description = "Protect the VIP. If the VIP dies, the attackers win."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -3075,6 +3965,105 @@ class SurvivalMode extends GameMode:
 	func _init() -> void:
 		name = "Survival"
 		description = "Players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -3222,6 +4211,105 @@ class DualPayloadMode extends GameMode:
 	func _init() -> void:
 		name = "Dual Payload"
 		description = "Two payloads move towards the center, the team that destroys the enemy payload first wins."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -3480,6 +4568,105 @@ class EscortMode extends GameMode:
 			{"waypoints": [Vector2(300.0, 200.0), Vector2(700.0, 200.0), Vector2(900.0, 500.0)], "risk": "low"},
 			{"waypoints": [Vector2(300.0, 800.0), Vector2(700.0, 800.0), Vector2(900.0, 500.0)], "risk": "low"}
 		]
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -3786,6 +4973,105 @@ class CaptureTheFlagMode extends GameMode:
 		name = "Capture The Flag"
 		description = "Teams try to steal the enemy's flag and return it to their base."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -3841,6 +5127,105 @@ class EvolutionarySimulationMode extends GameMode:
 	func _init() -> void:
 		name = "Evolutionary Simulation"
 		description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -3948,6 +5333,105 @@ class MassiveGravityWellMode extends GameMode:
 	func _init() -> void:
 		name = "Massive Gravity Well"
 		description = "An extremely large, slow-moving hazard that acts similarly to the gravity well but actively sucks in surrounding small hazards (like traps or spikes) and grows larger. It tests players' abilities to use boosts or specific game modes to escape its ever-increasing event horizon."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -4151,6 +5635,105 @@ class KingOfTheHillMode extends GameMode:
 		name = "King of the Hill"
 		description = "Control a central shrinking zone. First to 100 points wins."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -4249,6 +5832,105 @@ class SweepingBlackHoleMode extends GameMode:
 	func _init() -> void:
 		name = "Sweeping Black Hole"
 		description = "A massive black hole sweeps across the arena, sucking in everything in its path."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
@@ -4461,6 +6143,105 @@ class WeatherChaosMode extends GameMode:
 		set_meta("weather_warning_issued", false)
 		name = "Weather Chaos"
 		description = "Weather conditions change throughout the match, affecting stats."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -5224,6 +7005,105 @@ class DominationMode extends GameMode:
 			pt.capture_progress = 0.0
 			pt.owner = null
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -5352,6 +7232,105 @@ class MovingZoneMode extends GameMode:
 	func _init() -> void:
 		name = "Moving Zone"
 		description = "Maintain position in the moving zone to score points for your team."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -5490,6 +7469,105 @@ class MemoryTrapsMode extends GameMode:
 		name = "Memory Traps"
 		description = "The arena is littered with invisible traps. Memorize their locations!"
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -5576,6 +7654,105 @@ class CustomMatchMode extends GameMode:
 	func _init() -> void:
 		name = "Custom Match"
 		description = "Custom match with mutator options if Prestige Level >= 5."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -5767,6 +7944,105 @@ class EcholocationMode extends GameMode:
 		name = "Echolocation"
 		description = "The arena is completely dark except for a small ring of light around each ball. Echolocation cues and occasional lightning flashes reveal the map."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		flash_timer = 0.0
@@ -5863,6 +8139,105 @@ class PitchBlackMode extends GameMode:
 		name = "Pitch Black"
 		description = "The screen is completely dark. AI relies entirely on a narrow cone of light matching its perception radius."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if world != null and "arena" in world and world.arena != null:
@@ -5932,6 +8307,105 @@ class VisionReducedMode extends GameMode:
 	func _init() -> void:
 		name = "Vision Reduced"
 		description = "Visibility is severely reduced. AI relies on narrow cones of light or sonar-like pulses."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -6136,6 +8610,105 @@ class PortalNodeMode extends GameMode:
 		name = "Portal Node"
 		description = "Capture and hold the moving portal node."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		team_scores.clear()
@@ -6218,6 +8791,105 @@ class MovingSafeZoneMode extends GameMode:
 	func _init() -> void:
 		name = "Moving Safe Zone"
 		description = "A dynamic battle royale where the safe zone not only shrinks but also moves around the map, forcing intense combat."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -6455,6 +9127,105 @@ class ShrinkingDangerZoneMode extends GameMode:
 		name = "Shrinking Danger Zone"
 		description = "A shrinking danger zone mode where the safe area slowly decreases, forcing players into close-quarters combat."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		collapse_triggered = false
@@ -6630,6 +9401,105 @@ class ModifierSafeZoneMode extends GameMode:
 	func _init() -> void:
 		name = "Modifier Safe Zone"
 		description = "The safe zone shrinks and periodically applies random buffs or debuffs to everyone inside, forcing players to adapt dynamically."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -6848,6 +9718,105 @@ class ModifierZonesSafeZoneMode extends GameMode:
 	func _init() -> void:
 		name = "Modifier Zones Safe Zone"
 		description = "The safe zone shrinks, and modifier zones spawn near its center, forcing players to fight for buffs."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -7111,6 +10080,105 @@ class SafeZoneMode extends GameMode:
 		name = "Safe Zone"
 		description = "A battle royale mode where the safe zone gradually shrinks, and balls take continuous damage outside of it."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		collapse_triggered = false
@@ -7282,6 +10350,105 @@ class InverseMirrorArenaMode extends GameMode:
 		name = "Inverse Mirror Arena"
 		description = "Players spawn with permanent mirror clones that track their movement inversely on the opposite side of the map."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 
@@ -7366,6 +10533,105 @@ class MirrorMatchMode extends GameMode:
 		name = "Mirror Match"
 		description = "Every player spawns with an exact AI clone of themselves on the opposite side of the map. Clones mimic their creator's stats and skills."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 
@@ -7408,6 +10674,105 @@ class VolatileClonesMode extends GameMode:
 	func _init() -> void:
 		name = "Volatile Clones"
 		description = "Similar to Clone Chaos, but when a clone's HP drops to 0, it explodes dealing small area-of-effect damage."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -7625,6 +10990,105 @@ class CloneChaosMode extends GameMode:
 		name = "Clone Chaos"
 		description = "Every ball starts with the 'clone' skill with very low cooldown. The arena is quickly filled with static copies, causing mass confusion."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		for b in balls:
@@ -7687,6 +11151,105 @@ class SumoKnockoutMode extends GameMode:
 	func _init() -> void:
 		name = "Sumo Knockout"
 		description = "A physics-based mutator where collisions between balls deal minimal damage but apply massive knockback. The arena gradually shrinks towards a central spike pit."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -7770,6 +11333,105 @@ class PacifistKnockoutMode extends GameMode:
 		name = "Pacifist Knockout"
 		description = "Balls deal zero direct damage. Instead, balls bounce off each other with massively increased knockback, and the only way to eliminate opponents is to push them into outer hazard zones."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		for b in balls:
 			b.damage = 0.0
@@ -7823,6 +11485,105 @@ class BumperBallsMode extends GameMode:
 	func _init() -> void:
 		name = "Bumper Balls"
 		description = "Balls deal zero damage but bounce each other with much higher knockback. Try to push opponents off the arena!"
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		if not "dead_balls" in world:
@@ -7976,6 +11737,105 @@ class ToxicEnvironmentMode extends GameMode:
 		name = "Toxic Environment"
 		description = "Balls take constant damage over time. Collect temporary immune boosters to survive."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "boosters" in world:
@@ -8106,6 +11966,105 @@ class ModifierZonesMode extends GameMode:
 		name = "Modifier Zones"
 		description = "Fight over zones that provide different temporary buffs."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 
@@ -8233,6 +12192,105 @@ class WindstormMode extends GameMode:
 	func _init() -> void:
 		name = "Windstorm"
 		description = "Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -8471,6 +12529,105 @@ class BlackoutMode extends GameMode:
 		name = "Blackout"
 		description = "Periodically, the arena goes completely dark, reducing vision drastically for all balls."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		timer = 0.0
@@ -8549,6 +12706,105 @@ class BountyHuntMode extends GameMode:
 	func _init() -> void:
 		name = "Bounty Hunt"
 		description = "One ball on each team is the Bounty. Destroying the enemy Bounty grants a massive buff and extra skill points."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -8740,6 +12996,105 @@ class ShiftingMazeMode extends GameMode:
 		super._init()
 		name = "Shifting Maze"
 		description = "The arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -9047,6 +13402,105 @@ class DayNightMode extends GameMode:
 		name = "Day/Night Cycle"
 		description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if world != null and "arena" in world:
@@ -9352,6 +13806,105 @@ class MagneticCollisionsMode extends GameMode:
 	func _init() -> void:
 		name = "Magnetic Collisions"
 		description = "Invisible magnetic fields pull or push balls depending on their assigned polarities. Every 10 seconds, polarities randomly flip, causing sudden tactical shifts and chaotic collisions."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -9700,6 +14253,105 @@ class PinballMode extends GameMode:
 		name = "Pinball Mode"
 		description = "Lots of bouncy bumpers and physics-based knockback logic to push balls around the arena."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if "arena" in world and world.arena != null:
@@ -10007,6 +14659,105 @@ class InvisibleWallsMode extends GameMode:
 		name = "Invisible Walls"
 		description = "The arena contains several invisible walls that only become temporarily visible when a player or attack collides with them."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
@@ -10312,6 +15063,105 @@ class BodySwapMode extends GameMode:
 		name = "Body Swap"
 		description = "Periodically swaps player controls/positions to add confusion."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		if not "dead_balls" in world:
 			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
@@ -10386,6 +15236,105 @@ class TugOfWarMode extends GameMode:
 	func _init() -> void:
 		name = "Tug of War"
 		description = "A single payload is centered. Both teams fight to push/pull the payload to the opposing team's goal."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -11252,6 +16201,105 @@ class StaminaSpeedMode extends GameMode:
 		name = "Stamina Speed"
 		description = "Max stamina dictates base speed. Everyone starts with 200 max stamina but taking damage permanently reduces maximum stamina for the rest of the round."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		for b in balls:
@@ -11356,6 +16404,105 @@ class HazardBilliardsMode extends GameMode:
 	func _init() -> void:
 		name = "Hazard Billiards"
 		description = "Every ball starts with a reflect shield and no standard attacks work. Players must push map hazards into each other to deal damage!"
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -11720,6 +16867,105 @@ class InverseSafeZoneMode extends GameMode:
 		name = "Inverse Safe Zone"
 		description = "A battle royale mode where the center expands and becomes dangerous, forcing players to the edges."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		var arena_width = 1000.0
@@ -11885,6 +17131,105 @@ class DynamicSafeZoneMode extends GameMode:
 	func _init() -> void:
 		name = "Dynamic Safe Zone"
 		description = "Dynamic safe zones that not only protect from environmental damage but also apply randomized buffs for a short duration, encouraging players to fight for the optimal spot inside the zone."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -12069,6 +17414,105 @@ class PrestigeWeatherMutatorMode extends GameMode:
 		name = "Prestige Weather Mutator"
 		description = "Alters arena weather dynamically based on the lobby's average prestige level."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		var prestige = 0
@@ -12121,6 +17565,105 @@ class DailyMutatorMode extends GameMode:
 	func _init():
 		name = "Daily Mutator"
 		description = "Randomly applies extreme global mutators daily. Surviving grants exclusive rewards."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -12223,6 +17766,105 @@ class BlackMarketMode extends GameMode:
 		super._init()
 		self.name = "Black Market"
 		self.description = "Collect currency to buy upgrades from wandering Black Markets."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -12869,6 +18511,105 @@ class SoulLinkMode extends GameMode:
 		if "id" in b:
 			prev_state[b.id] = state
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
 
@@ -13014,6 +18755,105 @@ class CursedBuffZoneMode extends GameMode:
 		name = "Cursed Buff Zones"
 		description = "Zones grant massive speed (+200%) and damage (+150%) buffs, but rapidly drain HP or invert steering. High risk, high reward."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "hazards" in world.arena or world.arena.hazards == null:
@@ -13140,6 +18980,105 @@ class RhythmPanelsMode extends GameMode:
 		super._init()
 		name = "Rhythm Panels"
 		description = "Floor panels light up to the beat. Stay on lit panels for buffs; unlit panels will debuff and damage you."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -13343,6 +19282,105 @@ class PolarityShiftMode extends GameMode:
 	func _init() -> void:
 		name = "Polarity Shift"
 		description = "The arena periodically reverses the polarity of the center, pushing balls out and pulling hazards in, then reversing."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -13904,6 +19942,105 @@ class ArtifactUpgraderMode extends GameMode:
 		name = "Artifact Upgrader"
 		description = "Protect the wandering crafter NPC from hazards for 30 seconds to upgrade your artifacts!"
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -14208,6 +20345,105 @@ class SweepingPaddlesMode extends GameMode:
 		name = "Sweeping Paddles"
 		description = "Indestructible paddles sweep across the arena, bouncing all players at high speeds."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if "arena" in world and world.arena != null:
@@ -14410,6 +20646,105 @@ class MazeSafeZoneMode extends GameMode:
 		super._init()
 		name = "Maze Safe Zone"
 		description = "Navigate a shifting maze while the safe area gets smaller."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -14700,6 +21035,105 @@ class InvisibleDecoysMode extends GameMode:
 		name = "Invisible Decoys"
 		description = "The arena is seeded with invisible explosive decoys. Be careful not to trigger a chain reaction!"
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 
@@ -14978,6 +21412,105 @@ class JuggernautMode extends GameMode:
 		name = "Juggernaut"
 		description = "Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -15148,6 +21681,105 @@ class ReverseTugOfWarMode extends GameMode:
 	func _init() -> void:
 		name = "Reverse Tug of War"
 		description = "Like Tug of War, but the payload moves AWAY from the enemy goal if you get too close. Teams must zone out enemies and avoid getting too close to push it."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -15331,6 +21963,105 @@ class HexGridRoyaleMode extends GameMode:
 		name = "Hex Grid Royale"
 		description = "The arena is made of hexagonal tiles that independently glow red and fall away, reducing the safe map area into fragmented islands."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		tiles = []
@@ -15463,6 +22194,105 @@ class TickingPayloadMode extends GameMode:
 	func _init() -> void:
 		name = "Ticking Payload"
 		description = "A single payload starts in the center with a ticking timer. If it reaches an enemy goal before time runs out, it explodes and deals massive damage to the enemy team's core. If the timer runs out while it's in the middle, it explodes and kills players nearby."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -15634,6 +22464,105 @@ class BlackoutEventMode extends GameMode:
 		name = "Blackout Event"
 		description = "A sudden blackout event where the arena goes pitch black, and balls must rely purely on short-range vision."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		timer = 0.0
@@ -15688,6 +22617,105 @@ class WeaponCollectionMode extends GameMode:
 	func _init():
 		name = "Weapon Collection"
 		description = "Players start with no attacks. Weapons randomly drop around the map, and players must collect them to deal damage."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -16154,6 +23182,105 @@ class ShrinkingBoundaryMode extends GameMode:
 		name = "Shrinking Boundary"
 		description = "The boundaries of the arena slowly shrink over time, instantly eliminating anyone caught outside the safe area."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		var arena_width = 1000.0
@@ -16223,6 +23350,105 @@ class EntanglementMutatorMode extends GameMode:
 				state[eff] = 0.0
 		if "id" in b:
 			prev_state[b.id] = state
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
@@ -16686,6 +23912,105 @@ class LavaRoyaleMode extends GameMode:
 		name = "Lava Royale"
 		description = "A battle royale mode where the safe zone shrinks constantly, and any area outside the safe zone turns into damaging lava rather than just applying storm damage, punishing displacement heavily."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -16953,6 +24278,105 @@ class CrossfireMode extends GameMode:
 		name = "Crossfire"
 		description = "Balls are divided into two teams on opposite sides of a center line. Players cannot cross the line but can throw hazards and boosters."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
 		var arena_width = 1000.0
@@ -17058,6 +24482,105 @@ class TagTeamMode extends GameMode:
 	func _init().():
 		name = "Tag Team"
 		description = "Players queue as a team of two balls but only one is active at a time. The active ball swaps with their teammate on a cooldown."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
@@ -17232,6 +24755,105 @@ class TeleporterHubMode extends GameMode:
 	func _init().():
 		name = "Teleporter Hub"
 		description = "A central teleporter hub that randomly connects to various peripheral zones, shifting its destinations every few seconds."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
@@ -17655,6 +25277,105 @@ class IllusionWallMode extends GameMode:
 		name = "Illusion Wall"
 		description = "Hazard objects that look like solid walls but are actually reflective illusions. Passing through them creates a temporary fake decoy of the ball that moves in the opposite direction."
 
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if world == null or not ("arena" in world) or world.arena == null:
@@ -17892,6 +25613,105 @@ class UndergroundTunnelMode extends GameMode:
 	func _init():
 		name = "Underground Tunnels"
 		description = "Procedural arenas can spawn underground tunnels, allowing balls to temporarily travel underneath obstacles. While underground, balls are invisible and cannot be targeted, but can only emerge at specific tunnel exits."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
