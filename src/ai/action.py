@@ -3257,6 +3257,11 @@ class Action:
                             radius = 150.0 if has_volatile else 100.0
                             explosion_damage = 80.0 if has_volatile else 30.0
 
+                            # If detonated by another decoy, amplify explosion
+                            if getattr(b, "amplified_explosion", False) and getattr(b, "decoy_type", "") == "explosive":
+                                radius *= 1.5
+                                explosion_damage *= 1.5
+
                             if simultaneous:
                                 radius *= 2.0
                                 explosion_damage *= 2.0
@@ -3277,6 +3282,7 @@ class Action:
                                                 other.traits = []
                                             if "volatile_decoy" not in other.traits:
                                                 other.traits.append("volatile_decoy")
+                                            other.amplified_explosion = True
 
                                         decoy_type = getattr(b, "decoy_type", "")
                                         if decoy_type == "swap_trap":
