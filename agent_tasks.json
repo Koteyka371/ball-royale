@@ -24713,6 +24713,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1443",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Weather",
+      "description": "Weather event that slowly pulls everyone towards center.",
+      "allowed_paths": [
+        "src/ai/black_hole.py",
+        "src/ai/black_hole.gd",
+        "tests/test_black_hole.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
