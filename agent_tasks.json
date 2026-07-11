@@ -14509,7 +14509,7 @@
     },
     {
       "id": "idea-844",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Anti-Gravity Boots Item",
@@ -24555,6 +24555,40 @@
         "src/ai/corrosive_chain_reaction.py",
         "src/ai/corrosive_chain_reaction.gd",
         "tests/test_corrosive_chain_reaction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1434",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tesla Chain Trap",
+      "description": "A player-deployable trap that connects to nearby traps to form a continuous electric beam that deals low damage but rapidly drains stamina.",
+      "allowed_paths": [
+        "src/arena/tesla_chain_trap.py",
+        "src/arena/tesla_chain_trap.gd",
+        "tests/test_tesla_chain_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1435",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Overload",
+      "description": "A new hazard that detonates and strips all buffs (like supercharge and overcharge) from enemies in the blast radius, but gives them a small speed burst for fleeing.",
+      "allowed_paths": [
+        "src/ai/emp_overload.py",
+        "src/ai/emp_overload.gd",
+        "tests/test_emp_overload.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

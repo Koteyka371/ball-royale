@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-844] Anti-Gravity Boots Item — *2026-07-11 20:56:20 UTC*
+
+A new equippable item that significantly reduces the pull force of gravity-based hazards, allowing players to safely traverse dangerous zones.
+
+---
+
 ## [idea-853] Overcharge Mechanic for Lightning Balls — *2026-07-11 20:55:27 UTC*
 
 If a ball type like Lightning Rod absorbs too many strikes in a short period of time, it gains an 'Overcharged' state where it moves 30% faster and periodically zaps nearby enemies but slowly loses health due to excess energy.
