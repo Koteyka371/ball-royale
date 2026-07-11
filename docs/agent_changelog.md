@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-870] Arcane Prism Hazard — *2026-07-11 21:25:41 UTC*
+
+A new hazard that absorbs nearby chain lightning strikes and immediately amplifies and splits them into 3 distinct bolts that seek out the furthest entities on the map, drastically altering standard engagement ranges during thunderstorms.
+
+---
+
 ## [idea-854] Overcharge Booster — *2026-07-11 21:25:37 UTC*
 
 A temporary power-up that makes your skills cost health instead of having a cooldown, while also giving your normal attacks a chance to inflict a short micro-stun.
