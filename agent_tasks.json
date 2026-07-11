@@ -24151,6 +24151,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1410",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shock Collar Traps",
+      "description": "A new trap variant that latches onto the first ball that steps on it. Instead of exploding immediately, it periodically triggers a minor chain lightning effect to nearby teammates, turning the infected ball into a mobile hazard. It can be removed by picking up a cleansing item or if the infected ball takes enough damage.",
+      "allowed_paths": [
+        "src/arena/shock_collar_traps.py",
+        "src/arena/shock_collar_traps.gd",
+        "tests/test_shock_collar_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1411",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Syphoning Skill",
+      "description": "A new active skill that allows a ball to latch onto an enemy's positive buffs (like insulator, kinetic shield, or speed boost) and drain their remaining duration, converting it into health or applying the buff to themselves. If the target has no positive buffs, it deals direct damage instead.",
+      "allowed_paths": [
+        "src/ai/aura_syphoning_skill.py",
+        "src/ai/aura_syphoning_skill.gd",
+        "tests/test_aura_syphoning_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

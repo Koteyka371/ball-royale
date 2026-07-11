@@ -1,4 +1,0 @@
-{
-  "title": "Aura Syphoning Skill",
-  "description": "A new active skill that allows a ball to latch onto an enemy's positive buffs (like insulator, kinetic shield, or speed boost) and drain their remaining duration, converting it into health or applying the buff to themselves. If the target has no positive buffs, it deals direct damage instead."
-}
