@@ -448,6 +448,20 @@ class Action:
         if random.random() > attack_accuracy:
             return
 
+        if is_ranged:
+            # Apply slight knockback/recoil to the attacker for evasive movement
+            recoil_force = original_damage * 10.0
+            import math
+            dx = getattr(target, 'x', 0.0) - getattr(attacker, 'x', 0.0)
+            dy = getattr(target, 'y', 0.0) - getattr(attacker, 'y', 0.0)
+            dist_sq = dx*dx + dy*dy
+            if dist_sq > 0:
+                dist = math.sqrt(dist_sq)
+                nx = dx / dist
+                ny = dy / dist
+                attacker.vx = getattr(attacker, 'vx', 0.0) - nx * recoil_force
+                attacker.vy = getattr(attacker, 'vy', 0.0) - ny * recoil_force
+
         executed_by_necromancer = False
         b_type_attacker = getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower()
         if b_type_attacker == 'necromancer':
