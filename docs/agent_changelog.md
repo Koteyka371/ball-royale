@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-781] Sniper Nests — *2026-07-11 17:47:15 UTC*
+
+Add elevated 'sniper nest' terrain zones. Balls inside a sniper nest gain a 25% increase to their perception radius and a minor damage bonus to ranged attacks. However, being in the nest marks them with a visual indicator, making them a high-priority target for aggro AI bots.
+
+---
+
 ## [idea-763] Grounding Boots Booster — *2026-07-11 16:02:13 UTC*
 
 An item that protects entities from chain damage...
