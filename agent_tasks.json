@@ -15004,7 +15004,7 @@
     },
     {
       "id": "idea-873",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Daily Roulette",
@@ -24435,6 +24435,40 @@
         "src/arena/magnetic_anchor_trap.py",
         "src/arena/magnetic_anchor_trap.gd",
         "tests/test_magnetic_anchor_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1427",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stormcaller Ball Type",
+      "description": "A new ball type that specializes in manipulating environmental hazards. Its primary skill allows it to spawn miniature tornados, and its passive ability grants it immunity to gravity wells and push/pull effects from hazards.",
+      "allowed_paths": [
+        "src/ai/stormcaller_ball.py",
+        "src/ai/stormcaller_ball.gd",
+        "tests/test_stormcaller_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1428",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Arena Event: Quake",
+      "description": "A periodic random event where the entire arena shakes. Balls without the 'grounded' status take minor continuous damage and suffer a severe speed penalty, forcing players to find safe zones or use specific defensive skills.",
+      "allowed_paths": [
+        "src/arena/arena_quake.py",
+        "src/arena/arena_quake.gd",
+        "tests/test_arena_quake.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

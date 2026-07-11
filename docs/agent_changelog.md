@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-873] Daily Roulette — *2026-07-11 20:08:13 UTC*
+
+A spinning wheel minigame where players can spend prestige tokens for random rewards.
+
+---
+
 ## [idea-680] Seismic Shockwave Modulator — *2026-07-11 19:52:46 UTC*
 
 A deployable hazard that acts like a thumper from Dune. It periodically sends out a seismic pulse that temporarily disables enemy skills in a wide radius and draws aggro from neutral environmental entities like tornados.
