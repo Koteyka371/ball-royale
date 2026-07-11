@@ -1079,6 +1079,42 @@ class Action:
 
         self.ball.slow_motion_zone_active = False
         self.ball.fast_motion_zone_active = False
+
+        # Sniper Nest
+        self.ball.in_sniper_nest = False
+        if not hasattr(self.ball, "base_damage_multiplier"):
+            self.ball.base_damage_multiplier = getattr(self.ball, "damage_multiplier", 1.0)
+        self.ball.damage_multiplier = self.ball.base_damage_multiplier
+        if not hasattr(self.ball, "base_perception_radius"):
+            self.ball.base_perception_radius = getattr(self.ball, "perception_radius", 250.0)
+        self.ball.perception_radius = self.ball.base_perception_radius
+
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "sniper_nest":
+                    hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
+                        self.ball.in_sniper_nest = True
+                        self.ball.perception_radius = self.ball.base_perception_radius * 1.25
+                        self.ball.damage_multiplier = self.ball.base_damage_multiplier * 1.15
+                        # Adding a visual indicator flag
+                        self.ball.show_sniper_nest_indicator = True
+
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({
+                                "type": "sniper_nest_indicator",
+                                "data": {
+                                    "target_x": getattr(self.ball, "x", 0.0),
+                                    "target_y": getattr(self.ball, "y", 0.0)
+                                }
+                            })
+
+
+                    else:
+                        self.ball.show_sniper_nest_indicator = False
+
+
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "kind", "") == "slow_motion_zone":
@@ -6796,6 +6832,13 @@ class Action:
         flares = [e for e in enemies if getattr(e, "kind", "") == "flare"]
         if flares:
             return min(flares, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+        # Priority targeting for enemies marked in sniper nests
+        nest_targets = [e for e in enemies if getattr(e, "in_sniper_nest", False)]
+        if nest_targets:
+            return min(nest_targets, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
+
 
         # Ball Relationships - Balls remember each other
         # Rivalry skill: attacked me before -> attack on sight
