@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-816] Booster Trap Item — *2026-07-11 15:32:04 UTC*
+
+Introduce a new inventory item called 'Booster Trap' that any ball can place on the ground. When picked up by an enemy, it applies a random negative status effect (like poison, freeze, or stun) instead of giving a buff.
+
+---
+
 ## [idea-852] Weather Control Tower — *2026-07-11 15:12:01 UTC*
 
 A new neutral building or capture point that occasionally spawns. Whichever team holds the zone gains control over the weather (e.g. directing lightning strikes at enemies, or causing wind to push enemies away).

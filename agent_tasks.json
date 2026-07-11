@@ -14033,7 +14033,7 @@
     },
     {
       "id": "idea-816",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Booster Trap Item",
@@ -24061,6 +24061,23 @@
         "src/ai/ai_highlight_commentary.py",
         "src/ai/ai_highlight_commentary.gd",
         "tests/test_ai_highlight_commentary.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1405",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Altar Traps",
+      "description": "Traps disguised as capture altars that, when fully captured, trigger an opposite detrimental weather effect solely on the capturing team.",
+      "allowed_paths": [
+        "src/arena/altar_traps.py",
+        "src/arena/altar_traps.gd",
+        "tests/test_altar_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
