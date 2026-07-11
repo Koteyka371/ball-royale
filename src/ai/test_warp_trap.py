@@ -62,12 +62,9 @@ def test_warp_trap():
     # execute, shouldn't move much except warp
     action.execute("none", 0.0)
 
-    # The ball is moving right (vx=100, vy=0)
-    # Project backward -> target_x = 500 - (1 * 2000) = -1500
-    # Clamped to 10 (radius)
-    # Plus offset dx * 5.0 -> 15.0
-    assert abs(my_ball.x - 15.0) < 1.0
-    assert abs(my_ball.y - 500.0) < 1.0
+    # Teleportation now random
+    assert my_ball.x >= 10.0 and my_ball.x <= 990.0
+    assert my_ball.y >= 10.0 and my_ball.y <= 990.0
     assert trap.duration == 0.0
     assert len(world.events) > 0
     assert world.events[-1]['type'] == 'teleport'

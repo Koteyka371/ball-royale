@@ -8568,27 +8568,20 @@ func execute(strategy: String, delta: float):
                                     hazard.duration = 0.0
 
                             elif trap_variant == "warp":
-                                var vx = 0.0
-                                var vy = 0.0
-                                if "vx" in self.ball: vx = self.ball.vx
-                                if "vy" in self.ball: vy = self.ball.vy
-
-                                var dx = 0.0
-                                var dy = 0.0
-                                if abs(vx) < 0.1 and abs(vy) < 0.1:
-                                    dx = -1.0
-                                    dy = 0.0
-                                else:
-                                    var v_dist = sqrt(vx*vx + vy*vy)
-                                    dx = vx / v_dist
-                                    dy = vy / v_dist
-
-                                var target_x = old_x - dx * 2000.0
-                                var target_y = old_y - dy * 2000.0
-
                                 var my_radius = 10.0
                                 if "radius" in self.ball:
                                     my_radius = self.ball.radius
+
+                                var arena_w = 1000.0
+                                var arena_h = 1000.0
+                                if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT:
+                                    if "width" in self.world.arena:
+                                        arena_w = self.world.arena.width
+                                    if "height" in self.world.arena:
+                                        arena_h = self.world.arena.height
+
+                                var target_x = randf_range(my_radius, arena_w - my_radius)
+                                var target_y = randf_range(my_radius, arena_h - my_radius)
 
                                 var clamped_x = target_x
                                 var clamped_y = target_y
@@ -8599,8 +8592,8 @@ func execute(strategy: String, delta: float):
                                         clamped_x = result[0]
                                         clamped_y = result[1]
 
-                                self.ball.x = clamped_x + dx * 5.0
-                                self.ball.y = clamped_y + dy * 5.0
+                                self.ball.x = clamped_x
+                                self.ball.y = clamped_y
 
                                 if "events" in self.world:
                                     self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
