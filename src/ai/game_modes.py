@@ -15188,7 +15188,76 @@ class DynamicWeatherTransitionsMode(GameMode):
                 # Keep it at the final weather
                 self.weather_timer = 9999.0
 
+
+class StickyArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sticky Arena"
+        self.description = "An arena with glue patches and sticky walls that slow down players and heavily dampen bouncing physics, forcing close-quarters combat."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "arena") or not world.arena:
+            return
+
+        import random
+        from arena.procedural_arena import Hazard
+
+        arena_w = getattr(world.arena, "width", 800)
+        arena_h = getattr(world.arena, "height", 600)
+
+        num_patches = random.randint(5, 8)
+        for i in range(num_patches):
+            x = random.uniform(100, arena_w - 100)
+            y = random.uniform(100, arena_h - 100)
+            radius = random.uniform(30.0, 60.0)
+
+            patch = Hazard(id=30000 + i, x=x, y=y, radius=radius, kind="glue_patch", damage=0.0)
+            setattr(patch, "duration", 9999.0)
+            world.arena.hazards.append(patch)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+        arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+
+        hazards = getattr(world.arena, "hazards", []) if hasattr(world, "arena") else []
+        glue_patches = [h for h in hazards if getattr(h, "kind", "") == "glue_patch"]
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            # Check if in glue patch
+            in_glue = False
+            bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+            br = getattr(b, "radius", 10.0)
+
+            for patch in glue_patches:
+                px, py = getattr(patch, "x", 0.0), getattr(patch, "y", 0.0)
+                pr = getattr(patch, "radius", 0.0)
+                dist_sq = (bx - px)**2 + (by - py)**2
+                if dist_sq <= (pr + br)**2:
+                    in_glue = True
+                    break
+
+            if in_glue:
+                b.speed = getattr(b, "base_speed", 100.0) * 0.5
+                b.vx = getattr(b, "vx", 0.0) * 0.95
+                b.vy = getattr(b, "vy", 0.0) * 0.95
+            else:
+                b.speed = getattr(b, "base_speed", 100.0)
+
+            # Wall dampening
+            margin = br + 5.0
+            if bx <= margin or bx >= arena_w - margin or by <= margin or by >= arena_h - margin:
+                b.vx = getattr(b, "vx", 0.0) * 0.8
+                b.vy = getattr(b, "vy", 0.0) * 0.8
+
+
 GAME_MODES = {
+    'sticky_arena': StickyArenaMode(),
     "falling_panels": FallingPanelsMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
