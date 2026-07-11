@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-827] New 'Vampiric Drain' trap variant — *2026-07-11 19:24:24 UTC*
+
+A trap that latches onto the triggering ball, continuously siphoning a small amount of health and transferring it back to the trap's owner over 5 seconds. If the victim is destroyed by the drain, the trap spawns a healing aura for the owner's team.
+
+---
+
 ## [idea-866] Decoy Switcharoo Traps — *2026-07-11 19:22:14 UTC*
 
 Instead of exploding, some decoys can be configured to instantly swap the positions of all players caught in the blast radius.

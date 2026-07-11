@@ -14220,7 +14220,7 @@
     },
     {
       "id": "idea-827",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New 'Vampiric Drain' trap variant",
@@ -24333,6 +24333,40 @@
         "src/ai/aura_crafting_station.py",
         "src/ai/aura_crafting_station.gd",
         "tests/test_aura_crafting_station.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1421",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Mimic Mastery",
+      "description": "A new passive skill where decoys deployed by the player not only copy their appearance, but occasionally mimic casting harmless visual versions of their current active skill.",
+      "allowed_paths": [
+        "src/ai/decoy_mimic_mastery.py",
+        "src/ai/decoy_mimic_mastery.gd",
+        "tests/test_decoy_mimic_mastery.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1422",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Mutator",
+      "description": "A game mode mutator where all energy weapons and traps have a chance to chain to nearby secondary targets, causing chaotic team fights.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_mutator.py",
+        "src/ai/chain_lightning_mutator.gd",
+        "tests/test_chain_lightning_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
