@@ -20244,6 +20244,54 @@ func _resolve_collisions() -> bool:
 
             if cosmetic_val == "magnetic_boots":
                 knockback_multiplier *= 0.5
+            elif cosmetic_val == "kinetic_absorber":
+                var o_team = null
+                if typeof(other) == TYPE_DICTIONARY and other.has("team"):
+                    o_team = other["team"]
+                elif typeof(other) == TYPE_OBJECT and "team" in other:
+                    o_team = other.team
+                elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("team"):
+                    o_team = other.get_meta("team")
+
+                var b_team = null
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+                    b_team = self.ball["team"]
+                elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball:
+                    b_team = self.ball.team
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("team"):
+                    b_team = self.ball.get_meta("team")
+
+                if o_team != b_team:
+                    knockback_multiplier = 0.0
+                    var current_ka = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("kinetic_absorbed_energy"):
+                        current_ka = float(self.ball["kinetic_absorbed_energy"])
+                    elif typeof(self.ball) == TYPE_OBJECT and "kinetic_absorbed_energy" in self.ball:
+                        current_ka = float(self.ball.kinetic_absorbed_energy)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_absorbed_energy"):
+                        current_ka = float(self.ball.get_meta("kinetic_absorbed_energy"))
+
+                    var new_ka = current_ka + overlap
+
+                    var current_sbt = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"):
+                        current_sbt = float(self.ball["speed_boost_timer"])
+                    elif typeof(self.ball) == TYPE_OBJECT and "speed_boost_timer" in self.ball:
+                        current_sbt = float(self.ball.speed_boost_timer)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
+                        current_sbt = float(self.ball.get_meta("speed_boost_timer"))
+
+                    var new_sbt = min(3.0, current_sbt + (overlap * 0.1))
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["kinetic_absorbed_energy"] = new_ka
+                        self.ball["speed_boost_timer"] = new_sbt
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("kinetic_absorbed_energy", new_ka)
+                        self.ball.set_meta("speed_boost_timer", new_sbt)
+                    else:
+                        self.ball.kinetic_absorbed_energy = new_ka
+                        self.ball.speed_boost_timer = new_sbt
 
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
