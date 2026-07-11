@@ -14339,7 +14339,7 @@
     },
     {
       "id": "idea-834",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Map Hazards Based on Season",
@@ -24469,6 +24469,41 @@
         "src/arena/arena_quake.py",
         "src/arena/arena_quake.gd",
         "tests/test_arena_quake.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1429",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Prestige Roulette Minigame",
+      "description": "A higher-stakes version of the spin wheel where players bet an amount of prestige tokens on colors or sections for a chance to win massive multipliers or exclusive 'Roulette Master' cosmetics.",
+      "allowed_paths": [
+        "src/ui/prestige_roulette_minigame.py",
+        "src/ui/prestige_roulette_minigame.gd",
+        "src/ai/prestige_roulette_minigame.py",
+        "tests/test_prestige_roulette_minigame.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1430",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Daily Token Scratchcards",
+      "description": "Players receive one free scratchcard per day that guarantees a small reward, with a rare chance to unveil prestige tokens, encouraging daily logins beyond standard streaks.",
+      "allowed_paths": [
+        "src/ai/daily_token_scratchcards.py",
+        "src/ai/daily_token_scratchcards.gd",
+        "tests/test_daily_token_scratchcards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

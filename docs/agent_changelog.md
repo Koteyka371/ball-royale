@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-834] Dynamic Map Hazards Based on Season — *2026-07-11 20:14:42 UTC*
+
+Extend the seasonal theme logic so that it not only affects the main menu background, but also alters map hazards during gameplay. For example, during the Frost season, random ice patches can appear causing players to slide, while during Inferno season, occasional lava pools deal small damage over time.
+
+---
+
 ## [idea-873] Daily Roulette — *2026-07-11 20:08:13 UTC*
 
 A spinning wheel minigame where players can spend prestige tokens for random rewards.
