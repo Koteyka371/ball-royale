@@ -14799,7 +14799,7 @@
     },
     {
       "id": "idea-861",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Wall Arena",
@@ -24214,6 +24214,40 @@
         "src/ai/camouflage_net.py",
         "src/ai/camouflage_net.gd",
         "tests/test_camouflage_net.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1414",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Reversal Mode",
+      "description": "A game mode where dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle.",
+      "allowed_paths": [
+        "src/ai/nemesis_reversal.py",
+        "src/ai/nemesis_reversal.gd",
+        "tests/test_nemesis_reversal.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1415",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Tracking Drone",
+      "description": "A consumable item that spawns a drone that automatically flies towards your nemesis and periodically pings their location on the map with a sonar-like effect for 30 seconds.",
+      "allowed_paths": [
+        "src/ai/nemesis_tracking_drone.py",
+        "src/ai/nemesis_tracking_drone.gd",
+        "tests/test_nemesis_tracking_drone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

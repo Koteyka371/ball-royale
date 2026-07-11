@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-861] Sticky Wall Arena — *2026-07-11 18:29:43 UTC*
+
+An arena with glue patches and sticky walls that slow down players and heavily dampen bouncing physics, forcing close-quarters combat.
+
+---
+
 ## [idea-864] Nemesis Tracker UI — *2026-07-11 18:17:31 UTC*
 
 Add an overlay on the edge of the screen pointing towards the nearest Nemesis when the compass is active.
