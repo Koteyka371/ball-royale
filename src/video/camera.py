@@ -1,5 +1,7 @@
 from typing import List, Dict, Any, Optional
 
+from ui.bounty_indicator.bounty_indicator import BountyIndicatorUI
+
 class CameraSystem:
     def __init__(self, width: int = 800, height: int = 600):
         self.width = width
@@ -11,6 +13,8 @@ class CameraSystem:
         self.activity_scores: Dict[int, float] = {}
         self.smoothing = 0.1
         self.shake_intensity = 0.0
+        self.bounty_indicator = BountyIndicatorUI(width, height)
+        self.render_data = {}
 
     def update(self, balls: List[Dict[str, Any]], events: List[Dict[str, Any]]):
         # Calculate activity score for each ball
@@ -69,6 +73,8 @@ class CameraSystem:
         # Decay shake intensity
         self.shake_intensity = max(0.0, self.shake_intensity - 2.0)
 
+        self.bounty_indicator.update(events, self.target_id)
+
         # Find most active ball
         best_score = -1.0
         best_id = None
@@ -108,9 +114,11 @@ class CameraSystem:
         import random
         ox = random.uniform(-self.shake_intensity, self.shake_intensity) if self.shake_intensity > 0 else 0.0
         oy = random.uniform(-self.shake_intensity, self.shake_intensity) if self.shake_intensity > 0 else 0.0
-        return {
+        state = {
             "x": self.x + ox,
             "y": self.y + oy,
             "zoom": self.zoom,
-            "target_id": self.target_id
+            "target_id": self.target_id,
+            "ui_elements": self.bounty_indicator.get_render_data(self.x + ox, self.y + oy, self.zoom)
         }
+        return state

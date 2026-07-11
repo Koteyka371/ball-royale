@@ -76,6 +76,8 @@ func update(balls: Array, events: Array) -> void:
 
     shake_intensity = max(0.0, shake_intensity - 2.0)
 
+    bounty_indicator.update(events, target_id)
+
     var best_score = -1.0
     var best_id = null
     for ball in balls:
@@ -136,5 +138,6 @@ func get_state() -> Dictionary:
         "x": x + ox,
         "y": y + oy,
         "zoom": zoom,
-        "target_id": target_id
+        "target_id": target_id,
+        "ui_elements": bounty_indicator.get_render_data(x + ox, y + oy, zoom)
     }
