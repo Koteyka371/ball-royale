@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-877] Bouncy Castles Mode — *2026-07-11 21:10:53 UTC*
+
+An arena heavily populated with large bouncy platforms that propel balls high into the air. Hazards are primarily aerial (e.g. flying drones, lightning clouds). Players must manage their air time and bounces to survive.
+
+---
+
 ## [idea-844] Anti-Gravity Boots Item — *2026-07-11 20:56:20 UTC*
 
 A new equippable item that significantly reduces the pull force of gravity-based hazards, allowing players to safely traverse dangerous zones.

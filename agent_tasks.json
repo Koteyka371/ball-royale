@@ -15073,7 +15073,7 @@
     },
     {
       "id": "idea-877",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Castles Mode",
@@ -24589,6 +24589,23 @@
         "src/ai/emp_overload.py",
         "src/ai/emp_overload.gd",
         "tests/test_emp_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1436",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Rebound Shield",
+      "description": "A temporary shield that converts a portion of absorbed projectile damage into raw movement speed for a short duration.",
+      "allowed_paths": [
+        "src/ai/kinetic_rebound_shield.py",
+        "src/ai/kinetic_rebound_shield.gd",
+        "tests/test_kinetic_rebound_shield.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
