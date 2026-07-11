@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 from ui.kill_feed import KillFeed
+from ui.bounty_indicator.bounty_indicator import BountyIndicatorUI
 
 class BattleCommentator:
     """
