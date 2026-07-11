@@ -14571,7 +14571,7 @@ class EntanglementMutatorMode(GameMode):
                     self._init_prev_state(target)
                 target_state = self.prev_state[target.id]
 
-                # Check HP loss
+                # Check HP loss or heal
                 curr_hp = getattr(b, "hp", 100.0)
                 if curr_hp < state.hp:
                     damage = state.hp - curr_hp
@@ -14596,6 +14596,32 @@ class EntanglementMutatorMode(GameMode):
                                 'type': 'visual_effect',
                                 'data': {
                                     'type': 'entangle_damage',
+                                    'x1': getattr(b, "x", 0),
+                                    'y1': getattr(b, "y", 0),
+                                    'x2': getattr(target, "x", 0),
+                                    'y2': getattr(target, "y", 0)
+                                }
+                            })
+
+                elif curr_hp > state.hp:
+                    healing = curr_hp - state.hp
+                    target_curr_hp = getattr(target, "hp", 100.0)
+                    target_max_hp = getattr(target, "max_hp", 100.0)
+                    if target_curr_hp > 0 and target_curr_hp < target_max_hp:
+                        if hasattr(target, "heal"):
+                            target.heal(healing)
+                        else:
+                            target.hp = min(target_curr_hp + healing, target_max_hp)
+
+                        target_state.hp += healing
+                        if target_state.hp > target_max_hp:
+                            target_state.hp = target_max_hp
+
+                        if hasattr(world, "events"):
+                            world.events.append({
+                                'type': 'visual_effect',
+                                'data': {
+                                    'type': 'entangle_heal',
                                     'x1': getattr(b, "x", 0),
                                     'y1': getattr(b, "y", 0),
                                     'x2': getattr(target, "x", 0),
