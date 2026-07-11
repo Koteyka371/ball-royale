@@ -4723,7 +4723,7 @@ func execute(strategy: String, delta: float):
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.x += my_ball.vx * delta * 0.9
                 my_ball.y += my_ball.vy * delta * 0.9
-        if world.arena.get("is_heatwave") == true:
+        if world.arena.get("is_heatwave") == true or world.arena.get("weather") == "heatwave":
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.vx *= 0.95
                 my_ball.vy *= 0.95
@@ -4835,7 +4835,7 @@ func execute(strategy: String, delta: float):
 
         var arena_ref_sp = self.world.get("arena") if "arena" in self.world else null
         var is_snowing_sp = arena_ref_sp.get("is_snowing") if arena_ref_sp != null and "is_snowing" in arena_ref_sp else false
-        var is_heatwave_sp = arena_ref_sp.get("is_heatwave") if arena_ref_sp != null and "is_heatwave" in arena_ref_sp else false
+        var is_heatwave_sp = (arena_ref_sp.get("is_heatwave") if arena_ref_sp != null and "is_heatwave" in arena_ref_sp else false) or (arena_ref_sp.get("weather") == "heatwave" if arena_ref_sp != null and "weather" in arena_ref_sp else false)
         var is_windy_sp = arena_ref_sp.get("is_windy") if arena_ref_sp != null and "is_windy" in arena_ref_sp else false
 
         if is_snowing_sp:
@@ -11211,10 +11211,10 @@ func execute(strategy: String, delta: float):
         var is_snowing = false
         if arena != null:
             if typeof(arena) == TYPE_OBJECT and arena.has_method('get'):
-                is_heatwave = arena.get("is_heatwave") == true
+                is_heatwave = arena.get("is_heatwave") == true or arena.get("weather") == "heatwave"
                 is_snowing = arena.get("is_snowing") == true
             elif "is_heatwave" in arena:
-                is_heatwave = arena.is_heatwave == true
+                is_heatwave = arena.is_heatwave == true or (arena.get("weather") == "heatwave" if "weather" in arena else false)
                 if "is_snowing" in arena:
                     is_snowing = arena.is_snowing == true
 
@@ -21500,8 +21500,8 @@ func _update_skill_timer(delta: float):
             self.ball.set_meta("health_link_target", target)
 
     var arena_obj = self.world.get("arena") if "arena" in self.world else null
-    var is_snowing = arena_obj.get("is_snowing") if arena_obj != null and "is_snowing" in arena_obj else false
-    var is_heatwave = arena_obj.get("is_heatwave") if arena_obj != null and "is_heatwave" in arena_obj else false
+    var is_snowing = (arena_obj.get("is_snowing") if arena_obj != null and "is_snowing" in arena_obj else false) or (arena_obj.get("weather") in ["snow", "blizzard"] if arena_obj != null and "weather" in arena_obj else false)
+    var is_heatwave = (arena_obj.get("is_heatwave") if arena_obj != null and "is_heatwave" in arena_obj else false) or (arena_obj.get("weather") == "heatwave" if arena_obj != null and "weather" in arena_obj else false)
     var is_windy = arena_obj.get("is_windy") if arena_obj != null and "is_windy" in arena_obj else false
 
     var cooldown_mult = 1.0
@@ -21628,8 +21628,8 @@ func _update_skill_timer(delta: float):
 
     if attack_timer > 0:
         var arena_obj2 = self.world.get("arena") if "arena" in self.world else null
-        var is_snowing2 = arena_obj2.get("is_snowing") if arena_obj2 != null and "is_snowing" in arena_obj2 else false
-        var is_heatwave2 = arena_obj2.get("is_heatwave") if arena_obj2 != null and "is_heatwave" in arena_obj2 else false
+        var is_snowing2 = (arena_obj2.get("is_snowing") if arena_obj2 != null and "is_snowing" in arena_obj2 else false) or (arena_obj2.get("weather") in ["snow", "blizzard"] if arena_obj2 != null and "weather" in arena_obj2 else false)
+        var is_heatwave2 = (arena_obj2.get("is_heatwave") if arena_obj2 != null and "is_heatwave" in arena_obj2 else false) or (arena_obj2.get("weather") == "heatwave" if arena_obj2 != null and "weather" in arena_obj2 else false)
         var is_windy2 = arena_obj2.get("is_windy") if arena_obj2 != null and "is_windy" in arena_obj2 else false
         var cd_mult2 = 1.0
         if is_snowing2:

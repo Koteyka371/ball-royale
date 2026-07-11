@@ -782,6 +782,8 @@ class SummerArena extends ProceduralArena:
 
 	func _init(size: float = 2000.0, seed_val = null):
 		super(size, 5, seed_val)
+		seasonal_modifier = "summer"
+
 
 	func generate() -> void:
 		super.generate()
@@ -845,6 +847,8 @@ class WinterArena extends ProceduralArena:
 
 	func _init(size: float = 2000.0, seed_val = null):
 		super(size, 5, seed_val)
+		seasonal_modifier = "winter"
+
 
 	func generate() -> void:
 		super.generate()

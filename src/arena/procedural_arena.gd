@@ -14,9 +14,13 @@ var safe_zone_radius: float
 var safe_zone_center: Array
 var last_tick: int = -1
 var danger_grid: Dictionary = {}
+var seasonal_modifier: String = "none"
+var weather: String = "clear"
+var weather_timer: float = 0.0
+
+
 var boundary_states: Dictionary = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
 var temperature: float = 20.0
-var weather: String = "clear"
 var is_raining: bool = false
 var is_snowing: bool = false
 var is_heatwave: bool = false
@@ -630,7 +634,43 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 
 
 func update_zone(current_tick: int, delta: float) -> void:
+    if weather_timer > 0:
+        weather_timer -= delta
+        if weather_timer <= 0:
+            weather = "clear"
+
     if current_tick != last_tick:
+        if current_tick % 600 == 0:
+            var surviving_hazards = []
+            for h in hazards:
+                if h.get_meta("id", h.id if "id" in h else 0) < 40000:
+                    surviving_hazards.append(h)
+            hazards = surviving_hazards
+
+            for h in hazards:
+                if seasonal_modifier == "winter" and h.kind == "puddle":
+                    h.kind = "ice_patch"
+                    h.target_radius = h.radius * 1.5
+                    h.damage = h.damage + 5.0
+                elif seasonal_modifier == "summer" and h.kind == "ice_patch":
+                    h.kind = "puddle"
+                    h.target_radius = h.radius * 0.8
+                elif seasonal_modifier == "halloween" and (h.kind == "trap" or h.kind == "explosive_barrel"):
+                    h.kind = "cursed_trap"
+                    h.damage = h.damage * 1.5
+                    h.target_radius = h.radius * 1.2
+
+            var events = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
+            if seasonal_modifier == "winter":
+                events.append("blizzard")
+            elif seasonal_modifier == "summer":
+                events.append("heatwave")
+
+            var event_type = events[randi() % events.size()]
+            if event_type != "none":
+                _trigger_event(event_type, current_tick)
+
+
 
         if current_tick % 400 == 0:
             var states = ["bouncy", "bouncy", "bouncy", "bouncy"]
@@ -1851,6 +1891,8 @@ class AmbushArena extends ProceduralArena:
 
 func _trigger_event(event_type: String, current_tick: int) -> void:
     if event_type == "blizzard":
+        weather = "blizzard"
+        weather_timer = 20.0
         for h in hazards:
             if h.kind == "puddle":
                 h.kind = "ice_patch"
@@ -1865,6 +1907,8 @@ func _trigger_event(event_type: String, current_tick: int) -> void:
             ice.set_meta("duration", 20.0)
             hazards.append(ice)
     elif event_type == "heatwave":
+        weather = "heatwave"
+        weather_timer = 15.0
         for h in hazards:
             if h.kind == "ice_patch":
                 h.kind = "puddle"

@@ -1605,6 +1605,8 @@ class SummerArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
         self.is_heatwave = True
+        self.seasonal_modifier = "summer"
+
 
     def generate(self):
         super().generate()
@@ -1714,6 +1716,8 @@ class WinterArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
         self.is_snowing = True
+        self.seasonal_modifier = "winter"
+
 
     def generate(self):
         super().generate()

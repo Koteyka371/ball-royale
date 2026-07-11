@@ -20,6 +20,7 @@ def test_battle_royale_sudden_death_black_hole():
     b1.hp = 100.0
     b1.weather_control_timer = 0.0
     b1.vision_booster_timer = 0.0
+    b1.burn_timer = 0.0
 
     mode.setup(world, [b1])
 

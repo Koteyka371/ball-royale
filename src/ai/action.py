@@ -2681,7 +2681,7 @@ class Action:
                 self.ball.x += getattr(self.ball, "vx") * delta * 0.9
                 self.ball.y += getattr(self.ball, "vy") * delta * 0.9
 
-            if getattr(self.world.arena, "is_heatwave", False):
+            if getattr(self.world.arena, "is_heatwave", False) or getattr(self.world.arena, "weather", "") == "heatwave":
                 # Heatwave: higher friction, momentum stops faster (counteract vx/vy if any is present, or just decrease speed dynamically)
                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                     self.ball.vx *= 0.95
@@ -2855,8 +2855,8 @@ class Action:
 
             # Weather effects on base speed
             arena = getattr(self.world, 'arena', None)
-            is_snowing = getattr(arena, 'is_snowing', False) if arena else False
-            is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
+            is_snowing = getattr(arena, 'is_snowing', False) or getattr(arena, 'weather', '') in ['snow', 'blizzard'] if arena else False
+            is_heatwave = getattr(arena, 'is_heatwave', False) or getattr(arena, 'weather', '') == 'heatwave' if arena else False
             is_windy = getattr(arena, 'is_windy', False) if arena else False
 
             if is_snowing:
@@ -6281,8 +6281,8 @@ class Action:
             # Stamina regen/drain
             dist = math.sqrt(dx*dx + dy*dy)
             arena = getattr(self.world, 'arena', None)
-            is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
-            is_snowing = getattr(arena, 'is_snowing', False) if arena else False
+            is_heatwave = getattr(arena, 'is_heatwave', False) or getattr(arena, 'weather', '') == 'heatwave' if arena else False
+            is_snowing = getattr(arena, 'is_snowing', False) or getattr(arena, 'weather', '') in ['snow', 'blizzard'] if arena else False
 
             drain_mult = 2.0 if is_heatwave else 1.0
             regen_mult = 0.5 if is_heatwave else 1.0
@@ -11904,8 +11904,8 @@ class Action:
                 self.ball.link_booster_target = None
 
         arena = getattr(self.world, 'arena', None)
-        is_snowing = getattr(arena, 'is_snowing', False) if arena else False
-        is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
+        is_snowing = getattr(arena, 'is_snowing', False) or getattr(arena, 'weather', '') in ['snow', 'blizzard'] if arena else False
+        is_heatwave = getattr(arena, 'is_heatwave', False) or getattr(arena, 'weather', '') == 'heatwave' if arena else False
         is_windy = getattr(arena, 'is_windy', False) if arena else False
 
         cooldown_mult = 1.0
@@ -12410,8 +12410,8 @@ class Action:
         # Regen/Drain Stamina at end of execution
         dist = math.sqrt((getattr(self.ball, "x", 0) - old_x)**2 + (getattr(self.ball, "y", 0) - old_y)**2)
         arena = getattr(self.world, 'arena', None)
-        is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
-        is_snowing = getattr(arena, 'is_snowing', False) if arena else False
+        is_heatwave = getattr(arena, 'is_heatwave', False) or getattr(arena, 'weather', '') == 'heatwave' if arena else False
+        is_snowing = getattr(arena, 'is_snowing', False) or getattr(arena, 'weather', '') in ['snow', 'blizzard'] if arena else False
 
         drain_mult = 2.0 if is_heatwave else 1.0
         regen_mult = 0.5 if is_heatwave else 1.0

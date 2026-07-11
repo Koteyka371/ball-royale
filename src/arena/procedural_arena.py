@@ -552,7 +552,46 @@ class ProceduralArena:
 
 
     def update_zone(self, current_tick: int, delta: float):
+        if not hasattr(self, 'weather'):
+            self.weather = "clear"
+        if not hasattr(self, 'weather_timer'):
+            self.weather_timer = 0.0
+
+        if self.weather_timer > 0:
+            self.weather_timer -= delta
+            if self.weather_timer <= 0:
+                self.weather = "clear"
+
         if current_tick != self.last_tick:
+            import random
+            if current_tick % 600 == 0:
+                # Remove temporary weather hazards (ids >= 40000)
+                self.hazards = [h for h in self.hazards if getattr(h, 'id', 0) < 40000]
+
+                seasonal_modifier = getattr(self, "seasonal_modifier", "none")
+                for h in self.hazards:
+                    if seasonal_modifier == "winter" and h.kind == "puddle":
+                        h.kind = "ice_patch"
+                        h.target_radius = h.radius * 1.5
+                        h.damage = getattr(h, "damage", 0) + 5.0
+                    elif seasonal_modifier == "summer" and h.kind == "ice_patch":
+                        h.kind = "puddle"
+                        h.target_radius = h.radius * 0.8
+                    elif seasonal_modifier == "halloween" and h.kind in ["trap", "explosive_barrel"]:
+                        h.kind = "cursed_trap"
+                        h.damage = getattr(h, "damage", 10.0) * 1.5
+                        h.target_radius = h.radius * 1.2
+
+                events = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
+                if seasonal_modifier == "winter":
+                    events.append("blizzard")
+                elif seasonal_modifier == "summer":
+                    events.append("heatwave")
+
+                event_type = random.choice(events)
+                if event_type != "none":
+                    self._trigger_event(event_type, current_tick)
+
 
             import random
             if current_tick % 400 == 0:
@@ -1254,8 +1293,15 @@ class ProceduralArena:
 
 
     def _trigger_event(self, event_type: str, current_tick: int):
+        if not hasattr(self, 'weather'):
+            self.weather = "clear"
+        if not hasattr(self, 'weather_timer'):
+            self.weather_timer = 0.0
+
         import random
         if event_type == "blizzard":
+            self.weather = "blizzard"
+            self.weather_timer = 20.0
             for h in self.hazards:
                 if h.kind == "puddle":
                     h.kind = "ice_patch"
@@ -1269,6 +1315,8 @@ class ProceduralArena:
                 setattr(ice, "duration", 20.0)
                 self.hazards.append(ice)
         elif event_type == "heatwave":
+            self.weather = "heatwave"
+            self.weather_timer = 15.0
             for h in self.hazards:
                 if h.kind == "ice_patch":
                     h.kind = "puddle"
