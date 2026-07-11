@@ -154,4 +154,16 @@ class PreGameLobby:
             return self.apply_loadout_to_ball(ball_id, profile, default_loadout)
         return False
 
+
+    def join_spectator_queue(self, player_id, target_match_id=None):
+        if "spectator_queue" not in self.selections:
+            self.selections["spectator_queue"] = []
+        self.selections["spectator_queue"].append({"player_id": player_id, "match_id": target_match_id})
+        return True
+
+    def get_spectators_for_match(self, match_id):
+        if "spectator_queue" not in self.selections:
+            return []
+        return [s["player_id"] for s in self.selections["spectator_queue"] if s["match_id"] == match_id or s["match_id"] is None]
+
 lobby = PreGameLobby()

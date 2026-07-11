@@ -16,6 +16,7 @@ class Spectator:
     COLOR = "white"
     SKILL = "observe"
     SKILL_COOLDOWN = 1.0
+    CHEER_POINTS = 100
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
         self.id = ball_id
@@ -28,6 +29,7 @@ class Spectator:
         self.current_action = "idle"
         self.skill_timer = 0.0
         self.personality = "spectator"
+        self.cheer_points = self.CHEER_POINTS
         try:
             from ui.heatmap.danger_grid_overlay import DangerGridOverlay  # type: ignore
             self.danger_overlay = DangerGridOverlay()
