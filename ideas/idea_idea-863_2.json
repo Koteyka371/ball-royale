@@ -1,0 +1,4 @@
+{
+    "title": "Drone Swarm Mutator",
+    "description": "A weather mutator where hundreds of tiny neutral drones fly across the arena. Hitting them knocks them away, and if they collide with an enemy, they explode for minor damage."
+}

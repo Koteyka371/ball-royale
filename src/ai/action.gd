@@ -14348,6 +14348,19 @@ func _collect_booster(delta: float):
                     self.ball.stealth_drone_timer = 15.0
                 elif "stealth_drone_timer" in self.ball:
                     self.ball.stealth_drone_timer = 15.0
+            elif "kind" in nearest and nearest.kind == "nemesis_drone_item":
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("has_nemesis_drone", true)
+                else:
+                    self.ball["has_nemesis_drone"] = true
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "disruptor_booster":
                 if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
                     self.ball.set_meta("disruptor_aura_timer", 5.0)
@@ -19463,7 +19476,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "nemesis_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -21567,6 +21580,102 @@ func _update_skill_timer(delta: float):
                                 if "x" in b: b.x += nx * pull_strength
                                 if "y" in b: b.y += ny * pull_strength
 
+    var has_nemesis_drone = false
+    if "has_nemesis_drone" in self.ball: has_nemesis_drone = self.ball.has_nemesis_drone
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_nemesis_drone"): has_nemesis_drone = self.ball["has_nemesis_drone"]
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("has_nemesis_drone"): has_nemesis_drone = self.ball.get_meta("has_nemesis_drone")
+
+    if has_nemesis_drone:
+        if self.world != null and "profile_manager" in self.world and self.world.profile_manager != null and self.world.profile_manager.has_method("is_nemesis") and "balls" in self.world:
+            var nemesis = null
+            var my_type = ""
+            if "ball_type" in self.ball: my_type = self.ball.ball_type
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_type = self.ball["ball_type"]
+            var my_team = -1
+            if "team" in self.ball: my_team = self.ball.team
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball["team"]
+
+            for other in self.world.balls:
+                var o_team = -1
+                if "team" in other: o_team = other.team
+                elif typeof(other) == TYPE_DICTIONARY and other.has("team"): o_team = other["team"]
+
+                var o_alive = true
+                if "alive" in other: o_alive = other.alive
+                elif typeof(other) == TYPE_DICTIONARY and other.has("alive"): o_alive = other["alive"]
+
+                if o_team != my_team and o_alive:
+                    var o_type = ""
+                    if "ball_type" in other: o_type = other.ball_type
+                    elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+                    if my_type != "" and o_type != "" and self.world.profile_manager.is_nemesis(my_type, o_type):
+                        nemesis = other
+                        break
+
+            if nemesis != null:
+                var nd_x = 0.0
+                if "x" in self.ball: nd_x = float(self.ball.x)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): nd_x = float(self.ball["x"])
+                var nd_y = 0.0
+                if "y" in self.ball: nd_y = float(self.ball.y)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): nd_y = float(self.ball["y"])
+
+                if "nemesis_drone_x" in self.ball: nd_x = float(self.ball.nemesis_drone_x)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_drone_x"): nd_x = float(self.ball["nemesis_drone_x"])
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("nemesis_drone_x"): nd_x = float(self.ball.get_meta("nemesis_drone_x"))
+
+                if "nemesis_drone_y" in self.ball: nd_y = float(self.ball.nemesis_drone_y)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_drone_y"): nd_y = float(self.ball["nemesis_drone_y"])
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("nemesis_drone_y"): nd_y = float(self.ball.get_meta("nemesis_drone_y"))
+
+                var nx = 0.0
+                if "x" in nemesis: nx = float(nemesis.x)
+                elif typeof(nemesis) == TYPE_DICTIONARY and nemesis.has("x"): nx = float(nemesis["x"])
+                var ny = 0.0
+                if "y" in nemesis: ny = float(nemesis.y)
+                elif typeof(nemesis) == TYPE_DICTIONARY and nemesis.has("y"): ny = float(nemesis["y"])
+
+                var dx = nx - nd_x
+                var dy = ny - nd_y
+                var dist = sqrt(dx*dx + dy*dy)
+
+                if dist > 0.0001:
+                    var drone_speed = 120.0
+                    nd_x += (dx / dist) * drone_speed * delta
+                    nd_y += (dy / dist) * drone_speed * delta
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["nemesis_drone_x"] = nd_x
+                        self.ball["nemesis_drone_y"] = nd_y
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("nemesis_drone_x", nd_x)
+                        self.ball.set_meta("nemesis_drone_y", nd_y)
+                    else:
+                        self.ball.nemesis_drone_x = nd_x
+                        self.ball.nemesis_drone_y = nd_y
+
+                    if "events" in self.world:
+                        var b_id = null
+                        if "id" in self.ball: b_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+                        self.world.events.append({
+                            "type": "nemesis_drone_position",
+                            "data": {
+                                "x": float(nd_x),
+                                "y": float(nd_y),
+                                "owner_id": b_id
+                            }
+                        })
+
+                    var nem_radius = 10.0
+                    if "radius" in nemesis: nem_radius = float(nemesis.radius)
+                    elif typeof(nemesis) == TYPE_DICTIONARY and nemesis.has("radius"): nem_radius = float(nemesis["radius"])
+
+                    if dist < nem_radius + 5.0:
+                        var damage = 25.0 * delta
+                        if self.world.has_method("_deal_damage"):
+                            self.world._deal_damage(self.ball, nemesis, damage)
+
     var pull_timer = 0.0
     if "pull_booster_timer" in self.ball:
         pull_timer = float(self.ball.pull_booster_timer)
@@ -21589,7 +21698,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "nemesis_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
