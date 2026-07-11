@@ -18557,9 +18557,22 @@ class MeteorShowerMode extends GameMode:
 		active_meteors = still_active
 
 		var still_craters = []
+		var weather = ""
+		if world != null and "arena" in world and "weather" in world.arena:
+			weather = world.arena.weather
+
 		for c in craters:
 			c["duration"] -= delta
 			if c["duration"] > 0:
+				var kind = "meteor_crater"
+				if weather == "rain":
+					kind = "mud_pit"
+				elif weather == "blizzard" or weather == "snow":
+					kind = "ice_patch"
+				elif weather == "heatwave":
+					kind = "lava_pit"
+				c["kind"] = kind
+
 				still_craters.append(c)
 				for b in balls:
 					if b.alive:
@@ -18567,9 +18580,22 @@ class MeteorShowerMode extends GameMode:
 						var dy = b.y - c["y"]
 						if sqrt(dx*dx + dy*dy) <= c["radius"]:
 							var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
-							b.speed = base_speed * 0.5
-							if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
-							else: b.hp -= 10.0 * delta
+							if c["kind"] == "mud_pit":
+								b.speed = base_speed * 0.2
+							elif c["kind"] == "ice_patch":
+								b.speed = base_speed * 1.5
+								if typeof(b) == TYPE_DICTIONARY:
+									b["friction_multiplier"] = 0.2
+								else:
+									b.set_meta("friction_multiplier", 0.2)
+							elif c["kind"] == "lava_pit":
+								b.speed = base_speed * 0.5
+								if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(20.0 * delta)
+								else: b.hp -= 20.0 * delta
+							else:
+								b.speed = base_speed * 0.5
+								if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
+								else: b.hp -= 10.0 * delta
 
 		craters = still_craters
 

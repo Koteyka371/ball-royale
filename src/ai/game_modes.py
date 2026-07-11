@@ -1501,7 +1501,7 @@ class BattleRoyaleMode(GameMode):
                 self.craters = still_craters
 
                 if hasattr(world, "arena"):
-                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                     try:
                         from arena.procedural_arena import Hazard
@@ -4595,7 +4595,7 @@ class WeatherChaosMode(GameMode):
                 self.craters = still_craters
 
                 if hasattr(world, "arena"):
-                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                     try:
                         from arena.procedural_arena import Hazard
@@ -9293,7 +9293,7 @@ class MagneticCollisionsMode(GameMode):
                 self.craters = still_craters
 
                 if hasattr(world, "arena"):
-                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                     try:
                         from arena.procedural_arena import Hazard
@@ -9583,7 +9583,7 @@ class PinballMode(GameMode):
                 self.craters = still_craters
 
                 if hasattr(world, "arena"):
-                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                     try:
                         from arena.procedural_arena import Hazard
@@ -12095,22 +12095,49 @@ class MeteorShowerMode(GameMode):
 
         still_craters = []
         import math
+        weather = getattr(world.arena, "weather", "") if hasattr(world, "arena") else ""
         for c in self.craters:
             c["duration"] -= delta
             if c["duration"] > 0:
+                # Interact with weather
+                kind = "meteor_crater"
+                if weather == "rain":
+                    kind = "mud_pit"
+                elif weather in ["blizzard", "snow"]:
+                    kind = "ice_patch"
+                elif weather == "heatwave":
+                    kind = "lava_pit"
+                c["kind"] = kind
+
                 still_craters.append(c)
-                # Crater slows down and damages balls
+
+                # Apply terrain effects based on kind
                 for b in balls:
                     if getattr(b, "alive", False):
                         if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
-                            b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
-                            if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
-                            else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
+                            base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                            if c["kind"] == "mud_pit":
+                                # Slow down massively
+                                b.speed = base_speed * 0.2
+                            elif c["kind"] == "ice_patch":
+                                # Increase speed, low friction
+                                b.speed = base_speed * 1.5
+                                setattr(b, "friction_multiplier", 0.2)
+                            elif c["kind"] == "lava_pit":
+                                # Normal crater slow but extra damage
+                                b.speed = base_speed * 0.5
+                                if hasattr(b, "take_damage"): b.take_damage(20.0 * delta)
+                                else: b.hp = getattr(b, "hp", 100) - 20.0 * delta
+                            else:
+                                # Normal crater
+                                b.speed = base_speed * 0.5
+                                if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                                else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
         self.craters = still_craters
 
         # update hazards for visual/external systems
         if hasattr(world, "arena"):
-            world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+            world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
             try:
                 from arena.procedural_arena import Hazard
@@ -12131,7 +12158,7 @@ class MeteorShowerMode(GameMode):
                 setattr(h, "duration", m["delay"])
                 world.arena.hazards.append(h)
             for c in self.craters:
-                h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                h = Hazard(c["id"], c["x"], c["y"], c["radius"], c.get("kind", "meteor_crater"), 10)
                 setattr(h, "duration", c["duration"])
                 world.arena.hazards.append(h)
 
@@ -12974,7 +13001,7 @@ class SweepingPaddlesMode(GameMode):
                 self.craters = still_craters
 
                 if hasattr(world, "arena"):
-                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+                    world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                     try:
                         from arena.procedural_arena import Hazard
@@ -13694,7 +13721,7 @@ class ExtremeWeatherMode(GameMode):
             self.craters = still_craters
 
             if hasattr(world, "arena"):
-                world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater"]]
+                world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                 try:
                     from arena.procedural_arena import Hazard
