@@ -3136,6 +3136,7 @@ class Action:
                                 radius *= 2.0
                                 explosion_damage *= 2.0
 
+                            swap_targets = []
                             for other in self.world.balls:
                                 if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(b, "id", None):
                                     is_enemy = getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "")
@@ -3153,7 +3154,9 @@ class Action:
                                                 other.traits.append("volatile_decoy")
 
                                         decoy_type = getattr(b, "decoy_type", "")
-                                        if decoy_type == "healing" and is_ally:
+                                        if decoy_type == "swap_trap":
+                                            swap_targets.append(other)
+                                        elif decoy_type == "healing" and is_ally:
                                             heal_amount = 30.0
                                             other.hp = min(getattr(other, "max_hp", 100.0), other.hp + heal_amount)
                                         elif is_enemy and decoy_type != "healing":
@@ -3237,6 +3240,15 @@ class Action:
                                                 if not hasattr(owner, "score"):
                                                     owner.score = 0
                                                 owner.score += 5  # Give points for a successful decoy trap
+
+                            if getattr(b, "decoy_type", "") == "swap_trap" and len(swap_targets) > 1:
+                                import random
+                                random.shuffle(swap_targets)
+                                first_pos = (swap_targets[0].x, swap_targets[0].y)
+                                for i in range(len(swap_targets) - 1):
+                                    swap_targets[i].x = swap_targets[i+1].x
+                                    swap_targets[i].y = swap_targets[i+1].y
+                                swap_targets[-1].x, swap_targets[-1].y = first_pos
 
                             # Pull enemies in before spawning poison cloud
                             pull_radius = 150.0
