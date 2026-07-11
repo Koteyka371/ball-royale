@@ -15090,7 +15090,7 @@
     },
     {
       "id": "idea-878",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Paint the Floor Mode",
@@ -24725,6 +24725,23 @@
         "src/ai/black_hole.py",
         "src/ai/black_hole.gd",
         "tests/test_black_hole.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1444",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Hazard that pulls balls in",
+      "description": "Add a moving tornado hazard that pulls nearby balls towards its center, causing them to group up and take collision damage.",
+      "allowed_paths": [
+        "src/arena/tornado_that_pulls_balls_in.py",
+        "src/arena/tornado_that_pulls_balls_in.gd",
+        "tests/test_tornado_that_pulls_balls_in.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

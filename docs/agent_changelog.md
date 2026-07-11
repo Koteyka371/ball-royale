@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-878] Paint the Floor Mode — *2026-07-11 22:35:13 UTC*
+
+Every entity leaves a trail of their team's color. Stepping on your own color gives a speed and regen buff, while stepping on enemy colors causes slowdown and damage. Teams win by controlling the most territory.
+
+---
+
 ## [idea-840] Dynamic Terraforming Hazards — *2026-07-11 22:23:22 UTC*
 
 Implement hazards that permanently alter the arena terrain. For example, a 'Meteor' hazard could leave behind a 'Crater' that slows movement, or an 'Ice Storm' could create permanent 'Ice Patches' that cause sliding mechanics. These terrain alterations would interact with weather, e.g., a crater filling up with water during 'Rain' to create a new 'Mud Pit'.
