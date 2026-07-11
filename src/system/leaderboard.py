@@ -113,6 +113,27 @@ class LeaderboardManager:
 
         return [{"rivalry": k, "defeats": v} for k, v in sorted_rivalries[:limit]]
 
+
+    def generate_season_summary_video(self, top_players: list, season_num: int):
+        video_data = {
+            "title": f"Season {season_num} Highlight Reel",
+            "season": season_num,
+            "theme": self.get_theme(season_num),
+            "top_players": top_players,
+            "type": "video_mp4_mock",
+            "duration": 120,
+            "resolution": "1080p",
+            "events": []
+        }
+        if top_players:
+            video_data["events"].append({"timestamp": 10, "description": f"{top_players[0]} gets a multi-kill!"})
+        video_data["events"].append({"timestamp": 50, "description": "Epic final circle showdown."})
+
+        filename = f"season_{season_num}_summary.json"
+        import json
+        with open(filename, 'w') as f:
+            json.dump(video_data, f, indent=4)
+
     def end_season(self):
         season_num = self.data.get("current_season", 1)
         players = self.data.get("players", {})
@@ -120,6 +141,9 @@ class LeaderboardManager:
         if players:
             sorted_players = sorted(players.items(), key=lambda x: x[1], reverse=True)
             top_100 = [pid for pid, prestige in sorted_players[:100]]
+
+            # Generate season summary video
+            self.generate_season_summary_video(top_100, season_num)
 
             # If the local player is in the top 100, grant rewards
             if "local_player" in top_100 and self.profile_manager:

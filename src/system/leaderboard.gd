@@ -108,6 +108,26 @@ func get_theme(season_num: int) -> String:
     var index = (season_num - 1) % SEASON_THEMES.size()
     return SEASON_THEMES[index]
 
+func generate_season_summary_video(top_players: Array, season_num: int):
+    var video_data = {
+        "title": "Season " + str(season_num) + " Highlight Reel",
+        "season": season_num,
+        "theme": get_theme(season_num),
+        "top_players": top_players,
+        "type": "video_mp4_mock",
+        "duration": 120,
+        "resolution": "1080p",
+        "events": []
+    }
+    if top_players.size() > 0:
+        video_data["events"].append({"timestamp": 10, "description": str(top_players[0]) + " gets a multi-kill!"})
+    video_data["events"].append({"timestamp": 50, "description": "Epic final circle showdown."})
+
+    var filename = "user://season_" + str(season_num) + "_summary.json"
+    var file = FileAccess.open(filename, FileAccess.WRITE)
+    if file:
+        file.store_string(JSON.stringify(video_data, "  "))
+
 func end_season():
     var season_num = data.get("current_season", 1)
     var players = data.get("players", {})
@@ -122,6 +142,8 @@ func end_season():
         var top_100 = []
         for i in range(min(100, sorted_players.size())):
             top_100.append(sorted_players[i]["id"])
+
+        generate_season_summary_video(top_100, season_num)
 
         if top_100.has("local_player") and profile_manager != null:
             var theme = get_theme(season_num)
