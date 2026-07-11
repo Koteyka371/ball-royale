@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-866] Decoy Switcharoo Traps — *2026-07-11 19:22:14 UTC*
+
+Instead of exploding, some decoys can be configured to instantly swap the positions of all players caught in the blast radius.
+
+---
+
 ## [idea-857] Aura Stacking Mode — *2026-07-11 19:06:07 UTC*
 
 Players start with no base abilities but can collect elemental auras that drop globally. Collecting auras stacks their intensity or combines elements to unlock unique hybrid effects.

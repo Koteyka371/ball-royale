@@ -14885,7 +14885,7 @@
     },
     {
       "id": "idea-866",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Switcharoo Traps",
@@ -24299,6 +24299,40 @@
         "src/ai/quantum_echo_trait.py",
         "src/ai/quantum_echo_trait.gd",
         "tests/test_quantum_echo_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1419",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Disruption Mode",
+      "description": "A mode where collecting an aura pickup grants you an aura, but randomly disrupts (removes/disables) one of the enemies' auras, causing chaotic shifting of elemental advantages.",
+      "allowed_paths": [
+        "src/ai/aura_disruption.py",
+        "src/ai/aura_disruption.gd",
+        "tests/test_aura_disruption.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1420",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Crafting Station",
+      "description": "Instead of global random drops, specific hazard zones occasionally act as 'Crafting Stations' where you can deposit collected auras to purposefully trigger hybrid effects on demand.",
+      "allowed_paths": [
+        "src/ai/aura_crafting_station.py",
+        "src/ai/aura_crafting_station.gd",
+        "tests/test_aura_crafting_station.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
