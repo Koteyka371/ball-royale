@@ -4595,6 +4595,83 @@ class Action:
                                 pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
+                    elif hazard.kind == "lightning_conductor":
+                        current_tick = getattr(self.world, "tick", 0)
+                        if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
+                            hazard.last_updated_tick = current_tick
+
+                            is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
+                            if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
+
+                            if is_ts:
+                                absorbed = False
+                                for other_hazard in getattr(getattr(self.world, "arena", None), "hazards", []):
+                                    if getattr(other_hazard, "kind", "") in ("chain_lightning_active", "lightning_strike"):
+                                        dx = getattr(other_hazard, "x", 0) - hazard.x
+                                        dy = getattr(other_hazard, "y", 0) - hazard.y
+                                        dist_sq = dx*dx + dy*dy
+                                        if dist_sq < 22500: # 150 radius
+                                            other_hazard.kind = "absorbed_lightning"
+                                            other_hazard.damage = 0.0
+                                            absorbed = True
+
+                                if absorbed:
+                                    entities = []
+                                    if hasattr(self.world, "balls"):
+                                        for b in self.world.balls:
+                                            if getattr(b, "alive", True):
+                                                dx = b.x - hazard.x
+                                                dy = b.y - hazard.y
+                                                d_sq = dx*dx + dy*dy
+                                                if d_sq > 0.01:
+                                                    entities.append((d_sq, b))
+
+                                    entities.sort(key=lambda x: x[0], reverse=True)
+                                    targets = [e[1] for e in entities[:3]]
+
+                                    import random
+                                    for t in targets:
+                                        m_id = f"cb_{random.randint(0,999999)}"
+                                        from arena.procedural_arena import Hazard
+                                        m = Hazard(id=m_id, x=hazard.x, y=hazard.y, radius=10.0, kind="conductor_bolt", damage=40.0)
+                                        setattr(m, "target_id", getattr(t, "id", None))
+                                        setattr(m, "duration", 5.0)
+                                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                            self.world.arena.hazards.append(m)
+
+                                        self._spawn_directed_particles(hazard, t, "chain_lightning")
+
+                    elif hazard.kind == "conductor_bolt":
+                        current_tick = getattr(self.world, "tick", 0)
+                        if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            target_id = getattr(hazard, "target_id", None)
+                            target = None
+                            if hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "id", None) == target_id and getattr(b, "alive", True):
+                                        target = b
+                                        break
+                            if target:
+                                dx = target.x - hazard.x
+                                dy = target.y - hazard.y
+                                dist = (dx*dx + dy*dy)**0.5
+                                if dist > 0.01:
+                                    speed = 600.0 * delta
+                                    move = min(speed, dist)
+                                    hazard.x += (dx/dist) * move
+                                    hazard.y += (dy/dist) * move
+
+                                if dist < getattr(hazard, "radius", 10.0) + getattr(target, "radius", 15.0):
+                                    if hasattr(target, "take_damage"):
+                                        target.take_damage(getattr(hazard, "damage", 40.0))
+                                    else:
+                                        target.hp = getattr(target, "hp", 100) - getattr(hazard, "damage", 40.0)
+                                    hazard.duration = 0.0
+                                    if hasattr(self, "_spawn_skill_particles"):
+                                        self._spawn_skill_particles("lightning")
+                            else:
+                                hazard.duration = 0.0
                     elif hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"):
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)

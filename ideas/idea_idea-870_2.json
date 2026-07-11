@@ -1,0 +1,4 @@
+{
+  "title": "Tether Snare Hazard",
+  "description": "A deployable hazard that acts as a tripwire. When a ball hits it, a tether attaches to them, drastically slowing them down and slowly reeling them into a centralized spike trap."
+}
