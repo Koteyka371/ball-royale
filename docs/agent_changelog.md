@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-840] Dynamic Terraforming Hazards — *2026-07-11 22:23:22 UTC*
+
+Implement hazards that permanently alter the arena terrain. For example, a 'Meteor' hazard could leave behind a 'Crater' that slows movement, or an 'Ice Storm' could create permanent 'Ice Patches' that cause sliding mechanics. These terrain alterations would interact with weather, e.g., a crater filling up with water during 'Rain' to create a new 'Mud Pit'.
+
+---
+
 ## [idea-860] Natural Disasters Mode — *2026-07-11 22:07:36 UTC*
 
 Expand weather chaos into a more intense mode featuring larger-scale hazards like earthquakes that shift walls, giant floods that turn the whole map into water affecting movement, and solar eclipses that restrict vision globally.
