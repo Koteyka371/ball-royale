@@ -6641,6 +6641,188 @@ func execute(strategy: String, delta: float):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
 
 
+                elif hazard.kind == "deployable_thumper":
+                    var current_tick = 0
+                    if self.world.get("tick") != null:
+                        current_tick = self.world.tick
+
+                    var last_updated = -1
+                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("last_updated_tick"):
+                        last_updated = hazard.last_updated_tick
+                    elif typeof(hazard) != TYPE_DICTIONARY and hazard.get("last_updated_tick") != null:
+                        last_updated = hazard.last_updated_tick
+
+                    if last_updated != current_tick:
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard.last_updated_tick = current_tick
+                        else:
+                            hazard.set("last_updated_tick", current_tick)
+
+                        if (typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration")) or (typeof(hazard) != TYPE_DICTIONARY and hazard.get("duration") != null):
+                            hazard.duration -= delta
+                            if hazard.duration <= 0:
+                                hazard.active = false
+                                if self.world.arena.hazards.has(hazard):
+                                    self.world.arena.hazards.erase(hazard)
+                                continue
+
+                        var p_timer = 0.0
+                        if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pulse_timer"):
+                            p_timer = hazard.pulse_timer
+                        elif typeof(hazard) != TYPE_DICTIONARY and hazard.get("pulse_timer") != null:
+                            p_timer = hazard.pulse_timer
+                        p_timer += delta
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard.pulse_timer = p_timer
+                        else:
+                            hazard.set("pulse_timer", p_timer)
+
+                        var p_interval = 2.0
+                        if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pulse_interval"):
+                            p_interval = hazard.pulse_interval
+                        elif typeof(hazard) != TYPE_DICTIONARY and hazard.get("pulse_interval") != null:
+                            p_interval = hazard.pulse_interval
+
+                        var h_pa = false
+                        if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pulse_active"):
+                            h_pa = hazard.pulse_active
+                        elif typeof(hazard) != TYPE_DICTIONARY and hazard.get("pulse_active") != null:
+                            h_pa = hazard.pulse_active
+
+                        if h_pa:
+                            var pa_timer = 0.0
+                            if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pulse_active_timer"):
+                                pa_timer = hazard.pulse_active_timer
+                            elif typeof(hazard) != TYPE_DICTIONARY and hazard.get("pulse_active_timer") != null:
+                                pa_timer = hazard.pulse_active_timer
+                            pa_timer -= delta
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hazard.pulse_active_timer = pa_timer
+                            else:
+                                hazard.set("pulse_active_timer", pa_timer)
+                            if pa_timer <= 0:
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard.pulse_active = false
+                                else:
+                                    hazard.set("pulse_active", false)
+
+                        if p_timer >= p_interval:
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hazard.pulse_timer -= p_interval
+                                hazard.pulse_active = true
+                            else:
+                                hazard.set("pulse_timer", p_timer - p_interval)
+                                hazard.set("pulse_active", true)
+
+                            var p_dur = 0.5
+                            if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pulse_duration"):
+                                p_dur = hazard.pulse_duration
+                            elif typeof(hazard) != TYPE_DICTIONARY and hazard.get("pulse_duration") != null:
+                                p_dur = hazard.pulse_duration
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hazard.pulse_active_timer = p_dur
+                            else:
+                                hazard.set("pulse_active_timer", p_dur)
+
+                            var p_rad = 250.0
+                            if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pulse_radius"):
+                                p_rad = hazard.pulse_radius
+                            elif typeof(hazard) != TYPE_DICTIONARY and hazard.get("pulse_radius") != null:
+                                p_rad = hazard.pulse_radius
+
+                            # Disable enemy skills
+                            if self.world.has_method("get_balls") or typeof(self.world.balls) == TYPE_ARRAY:
+                                var balls = self.world.balls
+                                for b in balls:
+                                    var is_alive = true
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        if b.has("alive"):
+                                            is_alive = b.alive
+                                    else:
+                                        if b.get("alive") != null:
+                                            is_alive = b.alive
+
+                                    if is_alive:
+                                        var b_team = ""
+                                        if typeof(b) == TYPE_DICTIONARY and b.has("team"):
+                                            b_team = b.team
+                                        elif typeof(b) != TYPE_DICTIONARY and b.get("team") != null:
+                                            b_team = b.team
+
+                                        var h_team = ""
+                                        if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"):
+                                            h_team = hazard.team
+                                        elif typeof(hazard) != TYPE_DICTIONARY and hazard.get("team") != null:
+                                            h_team = hazard.team
+
+                                        if b_team != h_team:
+                                            var bx = 0.0
+                                            var by = 0.0
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                bx = b.x
+                                                by = b.y
+                                            else:
+                                                bx = b.x
+                                                by = b.y
+
+                                            var dx = bx - hazard.x
+                                            var dy = by - hazard.y
+                                            var dist_sq = dx*dx + dy*dy
+
+                                            var brad = 10.0
+                                            if typeof(b) == TYPE_DICTIONARY and b.has("radius"):
+                                                brad = b.radius
+                                            elif typeof(b) != TYPE_DICTIONARY and b.get("radius") != null:
+                                                brad = b.radius
+
+                                            if dist_sq <= (p_rad + brad) * (p_rad + brad):
+                                                if typeof(b) == TYPE_DICTIONARY:
+                                                    var cur_st = 0.0
+                                                    if b.has("skills_disabled_timer"):
+                                                        cur_st = b.skills_disabled_timer
+                                                    b.skills_disabled_timer = cur_st + 2.0
+                                                else:
+                                                    var cur_st = 0.0
+                                                    if b.get("skills_disabled_timer") != null:
+                                                        cur_st = b.skills_disabled_timer
+                                                    b.skills_disabled_timer = cur_st + 2.0
+
+                            # Draw aggro from tornados and other neutral entities
+                            if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
+                                for other_hazard in self.world.arena.hazards:
+                                    # We can't do exact object comparison easily in GDScript dicts sometimes, so just check if it's the exact same dict
+                                    if typeof(other_hazard) == typeof(hazard) and other_hazard.hash() == hazard.hash() if typeof(hazard) == TYPE_DICTIONARY else other_hazard == hazard:
+                                        continue
+                                    var k = ""
+                                    if typeof(other_hazard) == TYPE_DICTIONARY and other_hazard.has("kind"):
+                                        k = other_hazard.kind
+                                    elif typeof(other_hazard) != TYPE_DICTIONARY and other_hazard.get("kind") != null:
+                                        k = other_hazard.kind
+
+                                    if k in ["tornado", "local_tornado", "firenado", "poison_tornado"]:
+                                        var ox = 0.0
+                                        var oy = 0.0
+                                        if typeof(other_hazard) == TYPE_DICTIONARY:
+                                            ox = other_hazard.x
+                                            oy = other_hazard.y
+                                        else:
+                                            ox = other_hazard.x
+                                            oy = other_hazard.y
+
+                                        var dx = hazard.x - ox
+                                        var dy = hazard.y - oy
+                                        var dist_sq = dx*dx + dy*dy
+                                        if dist_sq <= (p_rad * 2.0) * (p_rad * 2.0):
+                                            var dist = sqrt(dist_sq)
+                                            if dist > 0:
+                                                var speed = 50.0
+                                                if typeof(other_hazard) == TYPE_DICTIONARY:
+                                                    other_hazard.vx = (dx / dist) * speed
+                                                    other_hazard.vy = (dy / dist) * speed
+                                                else:
+                                                    other_hazard.set("vx", (dx / dist) * speed)
+                                                    other_hazard.set("vy", (dy / dist) * speed)
+
                 elif hazard.kind == "deployable_thin_hazard_line":
                     var is_active = true
                     if typeof(hazard) == TYPE_DICTIONARY:
@@ -18779,6 +18961,44 @@ func _use_skill():
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
 
                 self.world.arena.hazards.append(trap)
+        elif skill_name == "deployable_thumper":
+            if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
+                var bid = -1
+                var bteam = ""
+                var bx = 0.0
+                var by = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    bid = self.ball.id
+                    if self.ball.has("team"):
+                        bteam = self.ball.team
+                    bx = self.ball.x
+                    by = self.ball.y
+                else:
+                    bid = self.ball.id
+                    if self.ball.get("team") != null:
+                        bteam = self.ball.team
+                    bx = self.ball.x
+                    by = self.ball.y
+
+                var node = {
+                    "id": "thumper_" + str(bid) + "_" + str(self.world.tick),
+                    "kind": "deployable_thumper",
+                    "x": bx,
+                    "y": by,
+                    "radius": 20.0,
+                    "team": bteam,
+                    "active": true,
+                    "duration": 10.0,
+                    "pulse_timer": 0.0,
+                    "pulse_interval": 2.0,
+                    "pulse_radius": 250.0,
+                    "pulse_active": false,
+                    "pulse_duration": 0.5,
+                    "pulse_active_timer": 0.0,
+                    "owner_id": bid
+                }
+                self.world.arena.hazards.append(node)
+
         elif skill_name == "deployable_thin_hazard_line":
             var enemies = _get_enemies()
             var end_x = self.ball.x + 300.0
