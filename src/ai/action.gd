@@ -8802,6 +8802,40 @@ func execute(strategy: String, delta: float):
                         if self.has_method("_spawn_skill_particles"):
                             self._spawn_skill_particles("emp")
                         continue
+                    elif hazard.kind == "emp_grenade":
+                        var b_type = ""
+                        if "ball_type" in self.ball: b_type = str(self.ball.ball_type).to_lower()
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): b_type = str(self.ball.get_meta("ball_type")).to_lower()
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = str(self.ball["ball_type"]).to_lower()
+
+                        var is_metal = false
+                        var traits = []
+                        if "traits" in self.ball: traits = self.ball.traits
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("traits"): traits = self.ball.get_meta("traits")
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits"): traits = self.ball["traits"]
+                        if "metal" in b_type or "armor" in b_type or "metal" in traits or "armor" in traits:
+                            is_metal = true
+
+                        if b_type in ["drone", "juggernaut", "tank", "neural"] or is_metal:
+                            if "is_stunned" in self.ball:
+                                self.ball.is_stunned = true
+                                self.ball.stun_timer = max(self.ball.stun_timer if "stun_timer" in self.ball else 0.0, 3.0)
+                            elif self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_stunned", true)
+                                var st = self.ball.get_meta("stun_timer") if self.ball.has_meta("stun_timer") else 0.0
+                                self.ball.set_meta("stun_timer", max(st, 3.0))
+
+                        if "supercharge_timer" in self.ball: self.ball.supercharge_timer = 0.0
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("supercharge_timer", 0.0)
+                        if "speed_buff_timer" in self.ball: self.ball.speed_buff_timer = 0.0
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_buff_timer", 0.0)
+                        if "damage_buff_timer" in self.ball: self.ball.damage_buff_timer = 0.0
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("damage_buff_timer", 0.0)
+                        if "emp_immunity_timer" in self.ball: self.ball.emp_immunity_timer = 0.0
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("emp_immunity_timer", 0.0)
+                        if "damage_booster_timer" in self.ball: self.ball.damage_booster_timer = 0.0
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("damage_booster_timer", 0.0)
+                        continue
                     elif hazard.kind == "poison_nova":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y

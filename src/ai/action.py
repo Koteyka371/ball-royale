@@ -5014,6 +5014,19 @@ class Action:
                             if hasattr(self, "_spawn_skill_particles"):
                                 self._spawn_skill_particles("emp")
                             continue
+                        elif hazard.kind == "emp_grenade":
+                            b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
+                            is_metal = b_type in ["drone", "juggernaut", "tank", "neural"] or "metal" in b_type or "armor" in b_type or "metal" in getattr(self.ball, "traits", []) or "armor" in getattr(self.ball, "traits", [])
+                            if is_metal:
+                                self.ball.is_stunned = True
+                                self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 3.0)
+
+                            if hasattr(self.ball, "supercharge_timer"): self.ball.supercharge_timer = 0.0
+                            if hasattr(self.ball, "speed_buff_timer"): self.ball.speed_buff_timer = 0.0
+                            if hasattr(self.ball, "damage_buff_timer"): self.ball.damage_buff_timer = 0.0
+                            if hasattr(self.ball, "emp_immunity_timer"): self.ball.emp_immunity_timer = 0.0
+                            if hasattr(self.ball, "damage_booster_timer"): self.ball.damage_booster_timer = 0.0
+                            continue
                         elif hazard.kind == "poison_nova":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
