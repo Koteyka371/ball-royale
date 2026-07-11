@@ -17380,3 +17380,109 @@ class DisguisedTrapsMode(GameMode):
 
 GAME_MODES["disguised_traps"] = DisguisedTrapsMode()
 GAME_MODES["dynamic_weather_transitions"] = DynamicWeatherTransitionsMode()
+
+
+
+class AerialArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Aerial Arena"
+        self.description = "An arena heavily populated with large bouncy platforms that propel balls high into the air. Hazards are primarily aerial (e.g. flying drones, lightning clouds). Players must manage their air time and bounces to survive."
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls) -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.spawn_timer = 0.0
+
+        # Add bounce pads across the arena
+        import random
+        w, h = getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)
+
+        try:
+            # Look for Hazard class locally or globally
+            HazardClass = None
+            if hasattr(self, 'Hazard'):
+                HazardClass = self.Hazard
+            else:
+                HazardClass = type("Hazard", (), {})
+        except Exception:
+            pass
+
+        for i in range(5):
+            x = random.uniform(200, w - 200)
+            y = random.uniform(200, h - 200)
+            bp = type("Hazard", (), {"id": 98000 + i, "x": x, "y": y, "radius": 60.0, "kind": "bounce_pad", "damage": 0.0, "active": True})
+            world.arena.hazards.append(bp)
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random, math
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 10.0
+
+            # Spawn aerial hazards if not too many
+            w, h = getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)
+            aerial_hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") in ["scrambler_drone", "lightning_cloud"]]
+            if len(aerial_hazards) < 8:
+                x = random.uniform(100, w - 100)
+                y = random.uniform(100, h - 100)
+                h_id = len(getattr(world.arena, "hazards", [])) + random.randint(1000, 9999)
+                if random.random() < 0.5:
+                    h_obj = type("Hazard", (), {"id": h_id, "x": x, "y": y, "radius": 15.0, "kind": "scrambler_drone", "damage": 0.0, "vx": 0.0, "vy": 0.0, "duration": 15.0, "active": True})
+                else:
+                    h_obj = type("Hazard", (), {"id": h_id, "x": x, "y": y, "radius": 80.0, "kind": "lightning_cloud", "damage": 10.0, "vx": random.uniform(-20, 20), "vy": random.uniform(-20, 20), "duration": 20.0, "active": True})
+                world.arena.hazards.append(h_obj)
+
+        hazards_to_remove = []
+        for hz in getattr(world.arena, "hazards", []):
+            kind = getattr(hz, "kind", "")
+            if kind == "scrambler_drone":
+                # Follow nearest airborn ball
+                closest_dist = 999999
+                target = None
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "fly_timer", 0.0) > 0:
+                        dist = math.hypot(b.x - hz.x, b.y - hz.y)
+                        if dist < closest_dist:
+                            closest_dist = dist
+                            target = b
+                if target:
+                    dx = target.x - hz.x
+                    dy = target.y - hz.y
+                    dist = math.hypot(dx, dy)
+                    if dist > 0:
+                        hz.x += (dx/dist) * 150.0 * delta
+                        hz.y += (dy/dist) * 150.0 * delta
+
+                hz.duration = getattr(hz, "duration", 15.0) - delta
+                if hz.duration <= 0:
+                    hazards_to_remove.append(hz)
+
+            elif kind == "lightning_cloud":
+                hz.x += getattr(hz, "vx", 0.0) * delta
+                hz.y += getattr(hz, "vy", 0.0) * delta
+                # Damage balls in air
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "fly_timer", 0.0) > 0:
+                        dist = math.hypot(b.x - hz.x, b.y - hz.y)
+                        if dist < hz.radius:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(getattr(hz, "damage", 10.0) * delta)
+                            else:
+                                b.hp -= getattr(hz, "damage", 10.0) * delta
+                                if b.hp <= 0:
+                                    b.alive = False
+                hz.duration = getattr(hz, "duration", 15.0) - delta
+                if hz.duration <= 0:
+                    hazards_to_remove.append(hz)
+
+        for hz in hazards_to_remove:
+            if hz in world.arena.hazards:
+                world.arena.hazards.remove(hz)
+
+
+GAME_MODES['aerial_arena'] = AerialArenaMode()
