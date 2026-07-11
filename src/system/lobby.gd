@@ -175,6 +175,22 @@ func apply_default_loadout(ball_id: int, profile: ProfileManager) -> bool:
         return apply_loadout_to_ball(ball_id, profile, default_loadout)
     return false
 
+
+func join_spectator_queue(player_id: String, target_match_id: String = "") -> bool:
+    if not selections.has("spectator_queue"):
+        selections["spectator_queue"] = []
+    selections["spectator_queue"].append({"player_id": player_id, "match_id": target_match_id})
+    return true
+
+func get_spectators_for_match(match_id: String) -> Array:
+    var result = []
+    if not selections.has("spectator_queue"):
+        return result
+    for s in selections["spectator_queue"]:
+        if s["match_id"] == match_id or s["match_id"] == "":
+            result.append(s["player_id"])
+    return result
+
 # Static global instance
 static var instance: PreGameLobby
 

@@ -4,6 +4,18 @@ import random
 
 from typing import Any
 
+
+class CheerEffect:
+    def __init__(self, x, y, kind, owner_id):
+        self.x = x
+        self.y = y
+        self.radius = 2
+        self.kind = kind
+        self.damage = 0
+        self.owner_id = owner_id
+        self.duration = 5.0
+        self.active = True
+
 class HomingMissileHazard:
     def __init__(self, id, x, y, radius, kind, damage):
         self.id = id
@@ -901,6 +913,19 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "ball_type", "") == "spectator":
+            if strategy.startswith("cheer:"):
+                parts = strategy.split(":")
+                if len(parts) >= 2:
+                    cheer_type = parts[1]
+                    cheer_points = getattr(self.ball, "cheer_points", 0)
+                    cost = 10
+                    if cheer_points >= cost:
+                        self.ball.cheer_points -= cost
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            effect = CheerEffect(self.ball.x, self.ball.y, cheer_type, getattr(self.ball, "id", -1))
+                            self.world.arena.hazards.append(effect)
+
         if getattr(self.ball, "ball_type", "") == "broodling":
             import math
             self._update_skill_timer(delta)
