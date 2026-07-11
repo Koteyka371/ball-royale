@@ -24929,6 +24929,61 @@ class ElementalAurasMode extends GameMode:
 								other.vx = vx
 								other.vy = vy
 
+
+class TemporalRiftMode extends GameMode:
+	var rift_spawn_timer = 0.0
+	var rift_spawn_interval = 5.0
+	var max_rifts = 5
+
+	func _init():
+		name = "Temporal Rifts"
+		description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		rift_spawn_timer -= delta
+		if rift_spawn_timer <= 0:
+			rift_spawn_timer = rift_spawn_interval
+
+			if world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+				var hazards = world["arena"]["hazards"]
+				var current_rifts = 0
+				for h in hazards:
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "temporal_rift":
+						current_rifts += 1
+					elif typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "temporal_rift":
+						current_rifts += 1
+
+				if current_rifts < max_rifts:
+					var aw = 1000.0
+					var ah = 1000.0
+					if world["arena"].has("width"):
+						aw = float(world["arena"]["width"])
+					if world["arena"].has("height"):
+						ah = float(world["arena"]["height"])
+
+					var rx = randf_range(50, aw - 50)
+					var ry = randf_range(50, ah - 50)
+
+					var time_scale = 1.0
+					if randf() < 0.5:
+						time_scale = randf_range(2.0, 3.0) # Speed up
+					else:
+						time_scale = randf_range(0.2, 0.5) # Slow down
+
+					var rift = {
+						"kind": "temporal_rift",
+						"x": rx,
+						"y": ry,
+						"radius": 60.0,
+						"damage": 0,
+						"duration": randf_range(10.0, 20.0),
+						"time_scale": time_scale,
+						"is_temporal_rift": true
+					}
+					hazards.append(rift)
+
 var GAME_MODES = {
 	"elemental_auras": ElementalAurasMode.new(),
 
@@ -25009,6 +25064,7 @@ var GAME_MODES = {
 	"prestige_weather_mutator": PrestigeWeatherMutatorMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
 	"domination": DominationMode.new(),
+	"temporal_rifts": TemporalRiftMode.new(),
 	"black_hole": BlackHoleMode.new(),
 	"sweeping_black_hole": SweepingBlackHoleMode.new(),
 	"gravity_well": GravityWellMode.new(),

@@ -15433,7 +15433,47 @@ class ElementalAurasMode(GameMode):
                             other.vx = getattr(other, "vx", 0.0) + (dx / d) * pull * 100
                             other.vy = getattr(other, "vy", 0.0) + (dy / d) * pull * 100
 
+
+
+class TemporalRiftMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Temporal Rifts"
+        self.description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
+        self.rift_spawn_timer = 0.0
+        self.rift_spawn_interval = 5.0
+        self.max_rifts = 5
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        from arena.procedural_arena import Hazard
+
+        self.rift_spawn_timer -= delta
+        if self.rift_spawn_timer <= 0:
+            self.rift_spawn_timer = self.rift_spawn_interval
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                current_rifts = [h for h in world.arena.hazards if getattr(h, "kind", "") == "temporal_rift"]
+                if len(current_rifts) < self.max_rifts:
+                    # Spawn a new rift
+                    rx = random.uniform(50, getattr(world.arena, "width", 1000) - 50)
+                    ry = random.uniform(50, getattr(world.arena, "height", 1000) - 50)
+                    rift = Hazard(0, rx, ry, 60.0, "temporal_rift", 0)
+                    rift.duration = random.uniform(10.0, 20.0)
+                    # 50% chance to speed up, 50% chance to slow down
+                    if random.random() < 0.5:
+                        rift.time_scale = random.uniform(2.0, 3.0)  # Speed up
+                    else:
+                        rift.time_scale = random.uniform(0.2, 0.5)  # Slow down
+                    world.arena.hazards.append(rift)
+
 GAME_MODES = {
+
+
+
+
+
     "elemental_auras": ElementalAurasMode(),
 
     'sticky_arena': StickyArenaMode(),
@@ -15507,6 +15547,15 @@ GAME_MODES = {
     "prestige_weather_mutator": PrestigeWeatherMutatorMode(),
     "lunar_eclipse_event": LunarEclipseEventMode(),
     "domination": DominationMode(),
+    "temporal_rifts": TemporalRiftMode(),
+
+
+
+
+
+
+
+
     "black_hole": BlackHoleMode(),
     "sweeping_black_hole": SweepingBlackHoleMode(),
     "gravity_well": GravityWellMode(),
