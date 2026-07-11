@@ -1,0 +1,4 @@
+{
+    "title": "Chain Disruption",
+    "description": "A mutator mode where any entity that gets its aura disrupted also releases a mini-disruption pulse upon expiration, potentially causing a chain reaction of aura disruptions throughout tightly clustered teams."
+}

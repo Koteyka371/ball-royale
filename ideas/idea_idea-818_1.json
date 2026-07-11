@@ -1,0 +1,4 @@
+{
+    "title": "Aura Converter Trap",
+    "description": "A trap that, when triggered by an enemy, permanently converts their current team-wide aura effects into debuffs (e.g., healing aura turns into decay aura) for 15 seconds, turning their stack advantages into weaknesses."
+}

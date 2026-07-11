@@ -3811,6 +3811,53 @@ func execute(strategy: String, delta: float):
 			self.ball.silence_timer = max(0.0, st)
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("disruptor_grenade"):
+			var enemies = _get_enemies()
+			if enemies.size() > 0:
+				var closest_enemy = enemies[0]
+				var min_dist = (closest_enemy.x - self.ball.x)*(closest_enemy.x - self.ball.x) + (closest_enemy.y - self.ball.y)*(closest_enemy.y - self.ball.y)
+				for i in range(1, enemies.size()):
+					var e = enemies[i]
+					var d = (e.x - self.ball.x)*(e.x - self.ball.x) + (e.y - self.ball.y)*(e.y - self.ball.y)
+					if d < min_dist:
+						min_dist = d
+						closest_enemy = e
+
+				if sqrt(min_dist) < 400.0:
+					if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+						var dx = closest_enemy.x - self.ball.x
+						var dy = closest_enemy.y - self.ball.y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist < 0.0001: dist = 0.0001
+						var nx = dx / dist
+						var ny = dy / dist
+
+						var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+						var br = 10.0
+						if "radius" in self.ball: br = self.ball.radius
+						elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): br = self.ball["radius"]
+
+						var grenade = ProceduralArenaScript.Hazard.new(self.world.arena.hazards.size() + (randi() % 90000) + 10000, self.ball.x + nx * (br + 5.0), self.ball.y + ny * (br + 5.0), 10.0, "thrown_disruptor_grenade", 0.0)
+						grenade.set_meta("vx", nx * 500.0)
+						grenade.set_meta("vy", ny * 500.0)
+						grenade.set_meta("duration", 1.5)
+						var bid = -1
+						if "id" in self.ball: bid = self.ball.id
+						elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): bid = self.ball["id"]
+						grenade.set_meta("owner_id", bid)
+
+						var bteam = ""
+						if "team" in self.ball: bteam = self.ball.team
+						elif "ball_type" in self.ball: bteam = self.ball.ball_type
+						grenade.set_meta("owner_team", bteam)
+
+						self.world.arena.hazards.append(grenade)
+
+						inv.erase("disruptor_grenade")
+						self.ball.set_meta("inventory", inv)
+
+	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
 		if inv.has("deployable_black_hole"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -9050,6 +9097,21 @@ func execute(strategy: String, delta: float):
                                 self.ball.set_meta("scramble_timer", 3.0)
                         if self.has_method("_spawn_skill_particles"):
                             self._spawn_skill_particles("emp")
+                        continue
+                    elif hazard.kind == "disruptor_blast":
+                        var b_team = ""
+                        if "team" in self.ball: b_team = self.ball.team
+                        elif "ball_type" in self.ball: b_team = self.ball.ball_type
+
+                        var h_team = ""
+                        if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_team"): h_team = hazard["owner_team"]
+                        elif hazard.has_method("has_meta") and hazard.has_meta("owner_team"): h_team = hazard.get_meta("owner_team")
+
+                        if b_team != h_team:
+                            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("aura_disruption_timer", 10.0)
+                            else:
+                                self.ball["aura_disruption_timer"] = 10.0
                         continue
                     elif hazard.kind == "emp_grenade":
                         var b_type = ""
@@ -18943,7 +19005,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "disruptor_grenade_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x

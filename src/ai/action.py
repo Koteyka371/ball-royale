@@ -1748,6 +1748,41 @@ class Action:
 
         # Check inventory for traps to place if fleeing or defending
         # Check inventory for black_hole_grenade
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "disruptor_grenade" in self.ball.inventory:
+            enemies = self._get_enemies()
+            if enemies:
+                closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                import math
+                if math.sqrt((closest_enemy.x - self.ball.x)**2 + (closest_enemy.y - self.ball.y)**2) < 400.0:
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            pass
+                        else:
+                            dx = closest_enemy.x - self.ball.x
+                            dy = closest_enemy.y - self.ball.y
+                            dist = max(0.0001, (dx*dx + dy*dy)**0.5)
+                            nx, ny = dx/dist, dy/dist
+
+                            import random as _rnd
+                            grenade = Hazard(
+                                id=len(self.world.arena.hazards) + _rnd.randint(10000, 99999),
+                                x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                                y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                                radius=10.0,
+                                kind="thrown_disruptor_grenade",
+                                damage=0.0
+                            )
+                            setattr(grenade, "vx", nx * 500.0)
+                            setattr(grenade, "vy", ny * 500.0)
+                            setattr(grenade, "duration", 1.5)
+                            setattr(grenade, "owner_id", getattr(self.ball, "id", None))
+                            setattr(grenade, "owner_team", getattr(self.ball, "team", getattr(self.ball, "ball_type", "")))
+                            self.world.arena.hazards.append(grenade)
+
+                        self.ball.inventory.remove("disruptor_grenade")
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "black_hole_grenade" in self.ball.inventory:
             enemies = self._get_enemies()
             if enemies:
@@ -2073,6 +2108,35 @@ class Action:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
                     continue
+
+                if getattr(hazard, "kind", "") == "thrown_disruptor_grenade":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            # Explode into a disruptor blast
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+
+                            # Spawn disruptor blast
+                            blast_id = len(self.world.arena.hazards) + 50001
+                            try:
+                                from arena.procedural_arena import Hazard
+                            except ImportError:
+                                class Hazard:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id
+                                        self.x = x
+                                        self.y = y
+                                        self.radius = radius
+                                        self.kind = kind
+                                        self.damage = damage
+
+                            blast = Hazard(blast_id, hazard.x, hazard.y, 300.0, "disruptor_blast", 0.0)
+                            setattr(blast, 'duration', 0.1)
+                            setattr(blast, 'owner_id', getattr(hazard, 'owner_id', None))
+                            setattr(blast, 'owner_team', getattr(hazard, 'owner_team', ''))
+                            self.world.arena.hazards.append(blast)
 
                 if getattr(hazard, "kind", "") == "thrown_black_hole_grenade":
                     if getattr(hazard, "duration", 0.0) > 0:
@@ -5093,6 +5157,13 @@ class Action:
                             if hasattr(self, "_spawn_skill_particles"):
                                 self._spawn_skill_particles("emp")
                             continue
+                        elif hazard.kind == "disruptor_blast":
+                            b_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                            h_team = getattr(hazard, "owner_team", "")
+
+                            if b_team != h_team:
+                                self.ball.aura_disruption_timer = 10.0
+                            continue
                         elif hazard.kind == "emp_grenade":
                             b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                             is_metal = b_type in ["drone", "juggernaut", "tank", "neural"] or "metal" in b_type or "armor" in b_type or "metal" in getattr(self.ball, "traits", []) or "armor" in getattr(self.ball, "traits", [])
@@ -7994,6 +8065,15 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "disruptor_grenade_booster":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("disruptor_grenade")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "black_hole_grenade_booster":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -9865,7 +9945,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "disruptor_grenade_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
