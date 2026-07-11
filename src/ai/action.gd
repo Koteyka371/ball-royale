@@ -5723,6 +5723,14 @@ func execute(strategy: String, delta: float):
                 var radius = 150.0 if has_volatile else 100.0
                 var explosion_damage = 80.0 if has_volatile else 30.0
 
+                var is_chain_detonated = false
+                if "chain_detonated" in b and b.chain_detonated: is_chain_detonated = true
+                elif b.has_method("get_meta") and b.has_meta("chain_detonated") and b.get_meta("chain_detonated"): is_chain_detonated = true
+
+                if is_chain_detonated:
+                    radius *= 1.5
+                    explosion_damage *= 1.5
+
                 if simultaneous:
                     radius *= 2.0
                     explosion_damage *= 2.0
@@ -5759,6 +5767,15 @@ func execute(strategy: String, delta: float):
                                     if is_ally and is_other_decoy:
                                         if "hp" in other: other.hp = 0.0
                                         elif other.has_method("set_meta"): other.set_meta("hp", 0.0)
+
+                                        var other_already_chain = false
+                                        if "chain_detonated" in other and other.chain_detonated: other_already_chain = true
+                                        elif other.has_method("get_meta") and other.has_meta("chain_detonated") and other.get_meta("chain_detonated"): other_already_chain = true
+
+                                        if not other_already_chain:
+                                            if typeof(other) == TYPE_DICTIONARY: other["chain_detonated"] = true
+                                            elif "chain_detonated" in other: other.chain_detonated = true
+                                            elif other.has_method("set_meta"): other.set_meta("chain_detonated", true)
 
                                         var other_traits = []
                                         if "traits" in other:
@@ -5808,6 +5825,18 @@ func execute(strategy: String, delta: float):
                                             if has_rearm_boost:
                                                 actual_damage *= 1.25
 
+                                            var other_hp = 100.0
+                                            if "hp" in other: other_hp = other.hp
+                                            elif other.has_method("get_meta") and other.has_meta("hp"): other_hp = other.get_meta("hp")
+
+                                            if is_other_decoy and other_hp <= actual_damage:
+                                                var other_already_chain = false
+                                                if "chain_detonated" in other and other.chain_detonated: other_already_chain = true
+                                                elif other.has_method("get_meta") and other.has_meta("chain_detonated") and other.get_meta("chain_detonated"): other_already_chain = true
+                                                if not other_already_chain:
+                                                    if "chain_detonated" in other: other.chain_detonated = true
+                                                    elif other.has_method("set_meta"): other.set_meta("chain_detonated", true)
+
                                             if "hp" in other:
                                                 other.hp -= actual_damage
                                             if "stutter_timer" in other:
@@ -5827,6 +5856,18 @@ func execute(strategy: String, delta: float):
                                                 has_rearm_boost2 = true
                                             if has_rearm_boost2:
                                                 actual_damage2 *= 1.25
+
+                                            var other_hp2 = 100.0
+                                            if "hp" in other: other_hp2 = other.hp
+                                            elif other.has_method("get_meta") and other.has_meta("hp"): other_hp2 = other.get_meta("hp")
+
+                                            if is_other_decoy and other_hp2 <= actual_damage2:
+                                                var other_already_chain = false
+                                                if "chain_detonated" in other and other.chain_detonated: other_already_chain = true
+                                                elif other.has_method("get_meta") and other.has_meta("chain_detonated") and other.get_meta("chain_detonated"): other_already_chain = true
+                                                if not other_already_chain:
+                                                    if "chain_detonated" in other: other.chain_detonated = true
+                                                    elif other.has_method("set_meta"): other.set_meta("chain_detonated", true)
 
                                             if "hp" in other:
                                                 other.hp -= actual_damage2

@@ -3212,6 +3212,10 @@ class Action:
                             radius = 150.0 if has_volatile else 100.0
                             explosion_damage = 80.0 if has_volatile else 30.0
 
+                            if getattr(b, "chain_detonated", False):
+                                radius *= 1.5
+                                explosion_damage *= 1.5
+
                             if simultaneous:
                                 radius *= 2.0
                                 explosion_damage *= 2.0
@@ -3228,6 +3232,8 @@ class Action:
                                     if dist <= radius:
                                         if is_ally and getattr(other, "is_decoy", False):
                                             other.hp = 0
+                                            if not hasattr(other, "chain_detonated") or not other.chain_detonated:
+                                                other.chain_detonated = True
                                             if not hasattr(other, "traits"):
                                                 other.traits = []
                                             if "volatile_decoy" not in other.traits:
@@ -3246,12 +3252,22 @@ class Action:
                                                 actual_damage = explosion_damage
                                                 if getattr(b, "rearm_damage_boost", False):
                                                     actual_damage *= 1.25
+
+                                                if getattr(other, "is_decoy", False) and other.hp <= actual_damage:
+                                                    if not hasattr(other, "chain_detonated") or not other.chain_detonated:
+                                                        other.chain_detonated = True
+
                                                 other.hp -= actual_damage
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
                                             else:
                                                 actual_damage = explosion_damage
                                                 if getattr(b, "rearm_damage_boost", False):
                                                     actual_damage *= 1.25
+
+                                                if getattr(other, "is_decoy", False) and other.hp <= actual_damage:
+                                                    if not hasattr(other, "chain_detonated") or not other.chain_detonated:
+                                                        other.chain_detonated = True
+
                                                 other.hp -= actual_damage
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
 
