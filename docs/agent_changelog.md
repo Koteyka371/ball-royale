@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-855] Wind-Riding Specialization — *2026-07-11 23:39:39 UTC*
+
+Create a new 'Wind Rider' ball type or a skill that gives balls a speed boost and extended jump capability specifically during windy conditions in the Autumn arena, providing a tactical advantage.
+
+---
+
 ## [idea-881] Decoy Chain Reaction — *2026-07-11 23:32:37 UTC*
 
 If an explosive decoy is detonated by the explosion of another decoy, its explosion radius and damage are amplified by 50%, encouraging players to chain decoy placements.

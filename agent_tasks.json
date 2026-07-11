@@ -14697,7 +14697,7 @@
     },
     {
       "id": "idea-855",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wind-Riding Specialization",
@@ -24827,6 +24827,40 @@
         "src/ai/sticky_wall_pads.py",
         "src/ai/sticky_wall_pads.gd",
         "tests/test_sticky_wall_pads.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1450",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Remote Detonator",
+      "description": "Players can manually detonate their own decoys by pressing a specific button, allowing for strategic ambushes.",
+      "allowed_paths": [
+        "src/ai/decoy_remote_detonator.py",
+        "src/ai/decoy_remote_detonator.gd",
+        "tests/test_decoy_remote_detonator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1451",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Elemental Decoys",
+      "description": "Decoys can spawn with an element (fire, ice, lightning) which triggers a secondary status effect on explosion.",
+      "allowed_paths": [
+        "src/ai/elemental_decoys.py",
+        "src/ai/elemental_decoys.gd",
+        "tests/test_elemental_decoys.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
