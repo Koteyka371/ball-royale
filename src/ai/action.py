@@ -2210,7 +2210,7 @@ class Action:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= hazard.radius + getattr(self.ball, "radius", 10.0):
                         time_scale = getattr(hazard, "time_scale", 0.5)
-                        delta *= time_scale
+                        self.ball.speed *= time_scale
                         break
         # Chain lightning timer
         if getattr(self.ball, "_cl_collision_cd", 0.0) > 0:

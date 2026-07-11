@@ -4321,7 +4321,7 @@ func execute(strategy: String, delta: float):
 						time_scale = float(hazard.time_scale)
 					elif hazard.has_method("get_meta") and hazard.has_meta("time_scale"):
 						time_scale = float(hazard.get_meta("time_scale"))
-					delta *= time_scale
+					self.ball["speed"] *= time_scale
 					break
     var my_ball = self.ball
 

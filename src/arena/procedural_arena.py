@@ -1134,7 +1134,7 @@ class ProceduralArena:
                     h.target_radius = h.radius * 1.2
 
             # Periodically trigger random arena-wide events
-            events = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
+            events = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "temporal_rift_event", "none"]
             if seasonal_modifier == "winter":
                 events.append("blizzard")
             elif seasonal_modifier == "summer":
@@ -1318,6 +1318,18 @@ class ProceduralArena:
             setattr(mbh, "duration", 20.0)
             setattr(mbh, "pull_strength", 100.0)
             self.hazards.append(mbh)
+        elif event_type == "temporal_rift_event":
+            num_rifts = random.randint(2, 5)
+            for _ in range(num_rifts):
+                x = random.uniform(50, self.width - 50)
+                y = random.uniform(50, self.height - 50)
+                h_id = 10000 + len(self.hazards) + random.randint(0, 1000)
+                rift = Hazard(id=h_id, x=x, y=y, radius=80.0, kind="temporal_rift", damage=0.0)
+                rift.target_radius = random.uniform(100.0, 200.0)
+                setattr(rift, "duration", random.uniform(15.0, 30.0))
+                # Temporal rifts can drastically slow down or speed up
+                setattr(rift, "time_scale", random.choice([0.2, 0.3, 0.5, 1.5, 2.0, 3.0]))
+                self.hazards.append(rift)
         elif event_type == "gravity_shift":
             # Add a massive gravity well in the center
             h_id = 3000 + len(self.hazards)

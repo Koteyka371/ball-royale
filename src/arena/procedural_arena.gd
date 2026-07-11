@@ -1045,7 +1045,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                         hazards.append(gw)
 
                 if has_method("_trigger_event"):
-                    var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]
+                    var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event", "temporal_rift_event"]
                     call("_trigger_event", event_types[randi() % event_types.size()], current_tick)
                 else:
                     var event_types = ["meteor_shower", "gravity_shift"]
@@ -1386,7 +1386,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.damage *= 1.5
                     if "target_radius" in h: h.target_radius = h.radius * 1.2
 
-            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
+            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "temporal_rift_event", "none"]
             if seasonal_modifier == "winter":
                 event_types.append("blizzard")
             elif seasonal_modifier == "summer":
@@ -1913,6 +1913,18 @@ func _trigger_event(event_type: String, current_tick: int) -> void:
         mbh.set_meta("duration", 20.0)
         mbh.set_meta("pull_strength", 100.0)
         hazards.append(mbh)
+    elif event_type == "temporal_rift_event":
+        var num_rifts = (randi() % 4) + 2
+        for i in range(num_rifts):
+            var x = randf_range(50.0, width - 50.0)
+            var y = randf_range(50.0, height - 50.0)
+            var h_id = 10000 + hazards.size() + (randi() % 1000)
+            var rift = ProceduralArena.Hazard.new(h_id, x, y, 80.0, "temporal_rift", 0.0)
+            rift.target_radius = randf_range(100.0, 200.0)
+            rift.set_meta("duration", randf_range(15.0, 30.0))
+            var scales = [0.2, 0.3, 0.5, 1.5, 2.0, 3.0]
+            rift.set_meta("time_scale", scales[randi() % scales.size()])
+            hazards.append(rift)
     elif event_type == "gravity_shift":
         var h_id = 3000 + hazards.size()
         var gw = ProceduralArena.Hazard.new(h_id, width/2, height/2, width/2, "gravity_well", 0.0)
