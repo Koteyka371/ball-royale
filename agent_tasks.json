@@ -14714,7 +14714,7 @@
     },
     {
       "id": "idea-856",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Transitions",
@@ -24078,6 +24078,23 @@
         "src/arena/altar_traps.py",
         "src/arena/altar_traps.gd",
         "tests/test_altar_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1406",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Ball",
+      "description": "A ball type that passively reflects a percentage of damage taken back to the attacker.",
+      "allowed_paths": [
+        "src/ai/mirror_ball.py",
+        "src/ai/mirror_ball.gd",
+        "tests/test_mirror_ball.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

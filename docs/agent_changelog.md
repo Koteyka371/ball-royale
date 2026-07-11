@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-856] Weather Transitions — *2026-07-11 15:53:49 UTC*
+
+Introduce dynamic weather transitions during a match. For example, a match could start sunny but gradually become cloudy and then transition to a full storm or blizzard, forcing balls to adapt their strategy dynamically rather than staying in one state.
+
+---
+
 ## [idea-838] Emp Grenade Hazard — *2026-07-11 15:32:08 UTC*
 
 A new hazard type that acts like an EMP grenade, disabling robotic balls completely for 3 seconds and clearing all active buffs (like supercharge) in its radius.
