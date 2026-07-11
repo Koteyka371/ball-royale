@@ -9,7 +9,10 @@ class MockWorld:
         self.match_time = 0.0
 
 class MockBall:
-    def __init__(self, hp=100.0, speed=100.0, damage=10.0, traits=None):
+    def __init__(self, hp=100.0, speed=100.0, damage=10.0, traits=None, ball_type="base"):
+        self.ball_type = ball_type
+        self.alive = True
+        self.weather_immunity_timer = 0.0
         self.max_hp = hp
         self.hp = hp
         self.base_speed = speed
@@ -103,3 +106,38 @@ def test_multiple_traits():
     mode.setup(world, [b])
     assert b.speed == 105.0
     assert b.max_hp == 95.0
+
+
+def test_fire_trait_heatwave():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    world.arena.weather = "heatwave"
+    b = MockBall(ball_type="fire")
+    mode.apply_dynamic_traits(world, [b], 1.0)
+    assert b.speed == 120.0
+    assert b.damage == 12.0
+
+def test_fire_trait_rain():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    world.arena.weather = "rain"
+    b = MockBall(ball_type="fire")
+    mode.apply_dynamic_traits(world, [b], 1.0)
+    assert b.speed == 80.0
+    assert b.damage == 8.0
+
+def test_earth_trait_sandstorm():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    world.arena.weather = "sandstorm"
+    b = MockBall(ball_type="earth")
+    mode.apply_dynamic_traits(world, [b], 1.0)
+    assert b.weather_immunity_timer == 2.0
+
+def test_earth_trait_dirt():
+    mode = MockTraitsMode()
+    world = MockWorld()
+    world.arena.name = "dirt_arena"
+    b = MockBall(ball_type="earth")
+    mode.apply_dynamic_traits(world, [b], 1.0)
+    assert b.defense_multiplier == 0.8
