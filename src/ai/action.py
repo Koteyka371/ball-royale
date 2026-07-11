@@ -4782,6 +4782,19 @@ class Action:
                                         self.ball.hp -= poison_damage
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
+
+                                elif trap_variant == "siphon":
+                                    siphon_latch = type("Hazard", (), {})()
+                                    siphon_latch.id = len(self.world.arena.hazards) + 8500
+                                    siphon_latch.x = self.ball.x
+                                    siphon_latch.y = self.ball.y
+                                    siphon_latch.radius = 0.0
+                                    siphon_latch.kind = "siphon_latch"
+                                    siphon_latch.duration = 5.0
+                                    siphon_latch.target_id = self.ball.id
+                                    siphon_latch.owner_id = getattr(hazard, "owner_id", None)
+                                    self.world.arena.hazards.append(siphon_latch)
+                                    hazard.duration = 0.0
                                 elif trap_variant == "hologram":
                                     self.ball.hp -= 15.0
                                     if self.ball.hp <= 0:
@@ -11654,6 +11667,53 @@ class Action:
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
+                    continue
+
+                if getattr(hazard, "kind", "") == "siphon_latch" and getattr(hazard, "target_id", None) == getattr(self.ball, "id", None):
+                    # It's latched onto us
+                    hazard.x = self.ball.x
+                    hazard.y = self.ball.y
+
+                    siphon_dmg = 5.0 * delta
+                    if hasattr(self.ball, "take_damage"):
+                        self.ball.take_damage(siphon_dmg)
+                    else:
+                        self.ball.hp -= siphon_dmg
+
+                    # Transfer health back to owner
+                    owner_id = getattr(hazard, "owner_id", None)
+                    owner_ball = None
+                    if owner_id is not None:
+                        for b in self.world.balls:
+                            if b.id == owner_id:
+                                owner_ball = b
+                                b.hp = min(getattr(b, "max_hp", 100), getattr(b, "hp", 100) + siphon_dmg)
+                                break
+
+                    if self.ball.hp <= 0:
+                        self.ball.alive = False
+                        # Spawn healing aura
+                        aura_owner_team = getattr(owner_ball, "team", "unknown") if owner_ball else "unknown"
+                        healing_aura = type("Hazard", (), {})()
+                        healing_aura.id = len(self.world.arena.hazards) + 9000
+                        healing_aura.x = self.ball.x
+                        healing_aura.y = self.ball.y
+                        healing_aura.radius = 150.0
+                        healing_aura.kind = "healing_aura"
+                        healing_aura.damage = -10.0 # Heals 10 HP/s
+                        healing_aura.duration = 5.0
+                        healing_aura.owner_team = aura_owner_team
+                        self.world.arena.hazards.append(healing_aura)
+
+                        hazard.duration = 0.0
+                    continue
+
+                if getattr(hazard, "kind", "") == "healing_aura":
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist <= getattr(hazard, "radius", 150.0) + getattr(self.ball, "radius", 10.0):
+                        if getattr(self.ball, "team", "") == getattr(hazard, "owner_team", "unknown"):
+                            heal_amount = abs(getattr(hazard, "damage", -10.0)) * delta
+                            self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + heal_amount)
                     continue
                 if getattr(hazard, "kind", "") == "mine_bounce":
                     # Check distance from ball to mine
