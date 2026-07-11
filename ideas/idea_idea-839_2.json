@@ -1,4 +1,0 @@
-{
-  "title": "Dynamic Day/Night Cycle Influencing Traits",
-  "description": "Implement a Day/Night cycle where 'Light' units gain increased perception radius and speed during the day, while 'Shadow' units gain stealth and critical hit chance during the night, adding another layer of dynamic trait mechanics."
-}

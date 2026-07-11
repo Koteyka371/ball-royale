@@ -23895,6 +23895,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1395",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Introduce Elemental Synergy Combos",
+      "description": "When units with 'Fire' and 'Earth' traits interact, they could create a temporary 'Magma' field that slows and damages enemies. This encourages team compositions based on elemental synergies rather than just raw stats.",
+      "allowed_paths": [
+        "src/ai/introduce_elemental_synergy_combos.py",
+        "src/ai/introduce_elemental_synergy_combos.gd",
+        "tests/test_introduce_elemental_synergy_combos.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1396",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Day/Night Cycle Influencing Traits",
+      "description": "Implement a Day/Night cycle where 'Light' units gain increased perception radius and speed during the day, while 'Shadow' units gain stealth and critical hit chance during the night, adding another layer of dynamic trait mechanics.",
+      "allowed_paths": [
+        "src/ai/dynamic_daynight_cycle_influencing_traits.py",
+        "src/ai/dynamic_daynight_cycle_influencing_traits.gd",
+        "tests/test_dynamic_daynight_cycle_influencing_traits.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
