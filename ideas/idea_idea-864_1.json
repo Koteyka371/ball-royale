@@ -1,4 +1,0 @@
-{
-  "title": "Nemesis Tracking Drone",
-  "description": "A consumable item that spawns a drone that automatically flies towards your nemesis and periodically pings their location on the map with a sonar-like effect for 30 seconds."
-}

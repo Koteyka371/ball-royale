@@ -24270,6 +24270,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1417",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror World Mode",
+      "description": "A game mode where the entire arena is horizontally symmetrical. Firing a projectile on the left side of the map simultaneously spawns a 'phantom' projectile on the right side traveling in the mirrored direction. Players have to watch both sides of the arena to dodge effectively.",
+      "allowed_paths": [
+        "src/ai/mirror_world.py",
+        "src/ai/mirror_world.gd",
+        "tests/test_mirror_world.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1418",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Echo Trait",
+      "description": "Balls with the Quantum Echo trait leave behind a faint ghost of their past position every 3 seconds. Pressing their active skill immediately teleports them back to their most recent ghost, resetting their health to whatever it was at that exact moment. A high-skill mobility and sustain option.",
+      "allowed_paths": [
+        "src/ai/quantum_echo_trait.py",
+        "src/ai/quantum_echo_trait.gd",
+        "tests/test_quantum_echo_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
