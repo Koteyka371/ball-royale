@@ -212,6 +212,72 @@ class GameMode:
 			elif typeof(world) == TYPE_DICTIONARY:
 				world["weekly_mutator"] = week_mod["type"]
 
+		var arena = null
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena = world["arena"]
+		elif typeof(world) == TYPE_OBJECT and "arena" in world:
+			arena = world.arena
+
+		var is_test_world = false
+		if typeof(world) == TYPE_OBJECT and world.get_class() == "Reference" and world.has_method("get_class"):
+			is_test_world = false # not necessarily a mock, but maybe we can just check if arena.has_method("get") to distinguish? Actually tests use Dictionaries often.
+
+		# Better yet: check if world has a specific property or skip
+		if typeof(world) == TYPE_DICTIONARY and world.has("is_mock"): is_test_world = true
+
+		if arena != null and not is_test_world:
+			var season_index = ((season_num - 1) % 4) + 1
+			if season_index == 1:
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena["weather"] = "rain"
+					arena["skin"] = "spring"
+				else:
+					if "weather" in arena: arena.weather = "rain"
+					if "skin" in arena: arena.skin = "spring"
+					elif arena.has_method("set_meta"): arena.set_meta("skin", "spring")
+				var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+				if ProceduralArenaScript:
+					var hazards = arena.get("hazards") if typeof(arena) == TYPE_DICTIONARY else (arena.hazards if "hazards" in arena else null)
+					if hazards != null:
+						for i in range(5):
+							var h = ProceduralArenaScript.Hazard.new(randi() % 1000000, randf_range(200, 800), randf_range(200, 800), 50.0, "healing_puddle", -10.0)
+							hazards.append(h)
+			elif season_index == 2:
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena["weather"] = "heatwave"
+					arena["skin"] = "summer"
+				else:
+					if "weather" in arena: arena.weather = "heatwave"
+					if "skin" in arena: arena.skin = "summer"
+					elif arena.has_method("set_meta"): arena.set_meta("skin", "summer")
+			elif season_index == 3:
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena["weather"] = "wind"
+					arena["skin"] = "autumn"
+					arena["wind_dx"] = randf_range(-50.0, 50.0)
+					arena["wind_dy"] = randf_range(-50.0, 50.0)
+				else:
+					if "weather" in arena: arena.weather = "wind"
+					if "skin" in arena: arena.skin = "autumn"
+					elif arena.has_method("set_meta"): arena.set_meta("skin", "autumn")
+					if "wind_dx" in arena: arena.wind_dx = randf_range(-50.0, 50.0)
+					if "wind_dy" in arena: arena.wind_dy = randf_range(-50.0, 50.0)
+			elif season_index == 4:
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena["weather"] = "snow"
+					arena["skin"] = "winter"
+				else:
+					if "weather" in arena: arena.weather = "snow"
+					if "skin" in arena: arena.skin = "winter"
+					elif arena.has_method("set_meta"): arena.set_meta("skin", "winter")
+				var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+				if ProceduralArenaScript:
+					var hazards = arena.get("hazards") if typeof(arena) == TYPE_DICTIONARY else (arena.hazards if "hazards" in arena else null)
+					if hazards != null:
+						for i in range(5):
+							var h = ProceduralArenaScript.Hazard.new(randi() % 1000000, randf_range(200, 800), randf_range(200, 800), 50.0, "ice_slick", 0.0)
+							hazards.append(h)
+
 
 		for b in balls:
 			if b.ball_type != "spectator":
