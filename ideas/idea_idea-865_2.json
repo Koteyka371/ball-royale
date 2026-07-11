@@ -1,0 +1,4 @@
+{
+  "title": "Gravity Inversion Mutator",
+  "description": "Periodically flips the gravity of the arena, sending heavy objects flying and altering player momentum."
+}
