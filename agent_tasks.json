@@ -14782,7 +14782,7 @@
     },
     {
       "id": "idea-860",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Natural Disasters Mode",
@@ -24691,6 +24691,23 @@
         "src/arena/lightning_storm_arena.py",
         "src/arena/lightning_storm_arena.gd",
         "tests/test_lightning_storm_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1442",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Vacuum Item",
+      "description": "A consumable item that drops a miniature black hole. It slowly pulls in hazards and projectiles, effectively clearing the area, before violently exploding and throwing all collected hazards back out in random directions.",
+      "allowed_paths": [
+        "src/ai/black_hole_vacuum_item.py",
+        "src/ai/black_hole_vacuum_item.gd",
+        "tests/test_black_hole_vacuum_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

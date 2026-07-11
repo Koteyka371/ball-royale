@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-860] Natural Disasters Mode — *2026-07-11 22:07:36 UTC*
+
+Expand weather chaos into a more intense mode featuring larger-scale hazards like earthquakes that shift walls, giant floods that turn the whole map into water affecting movement, and solar eclipses that restrict vision globally.
+
+---
+
 ## [idea-882] Bermuda Triangle Arena Hazard — *2026-07-11 21:49:14 UTC*
 
 Three pylons spawn on the arena, forming a triangle. Any ball that enters the center of the triangle randomly teleports to a different location on the map, resetting their momentum to zero.
