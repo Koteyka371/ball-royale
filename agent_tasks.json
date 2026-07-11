@@ -14646,7 +14646,7 @@
     },
     {
       "id": "idea-852",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Control Tower",
@@ -23958,6 +23958,109 @@
         "src/ai/interactive_vip_spectator_drops.py",
         "src/ai/interactive_vip_spectator_drops.gd",
         "tests/test_interactive_vip_spectator_drops.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1399",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Transfer",
+      "description": "A new hazard that randomly swaps the positions and momentum of two entangled balls when one takes massive damage.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_transfer.py",
+        "src/ai/quantum_entanglement_transfer.gd",
+        "tests/test_quantum_entanglement_transfer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1400",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Season Highlight Replays integration",
+      "description": "Store full game replays of the final matches of the top 10 players and allow them to be downloaded or watched in-game.",
+      "allowed_paths": [
+        "src/ai/season_highlight_replays_integration.py",
+        "src/ai/season_highlight_replays_integration.gd",
+        "tests/test_season_highlight_replays_integration.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1401",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Disguise Skill",
+      "description": "An active skill for the Bounty Hunter that temporarily hides their bounty target indicator from the enemy, while disguising themselves as a normal tier ball for 5 seconds to set up surprise attacks.",
+      "allowed_paths": [
+        "src/ui/bounty_hunter_disguise_skill.py",
+        "src/ui/bounty_hunter_disguise_skill.gd",
+        "src/ai/bounty_hunter_disguise_skill.py",
+        "tests/test_bounty_hunter_disguise_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1402",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Bounties",
+      "description": "A new hazard or mutator where fake bounty targets randomly spawn in the arena. They have the same visual indicator as a real bounty but explode into a cloud of smoke or poison when destroyed, punishing players who don't confirm their targets.",
+      "allowed_paths": [
+        "src/ai/decoy_bounties.py",
+        "src/ai/decoy_bounties.gd",
+        "tests/test_decoy_bounties.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1403",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Entanglement Chain",
+      "description": "A new mutator where entanglement can spread from two players to up to four if they remain in close proximity.",
+      "allowed_paths": [
+        "src/ai/entanglement_chain.py",
+        "src/ai/entanglement_chain.gd",
+        "tests/test_entanglement_chain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1404",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "AI Highlight Commentary",
+      "description": "Add text-to-speech commentary during highlight playback, analyzing the player's performance.",
+      "allowed_paths": [
+        "src/ai/ai_highlight_commentary.py",
+        "src/ai/ai_highlight_commentary.gd",
+        "tests/test_ai_highlight_commentary.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

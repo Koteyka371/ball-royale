@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-852] Weather Control Tower — *2026-07-11 15:12:01 UTC*
+
+A new neutral building or capture point that occasionally spawns. Whichever team holds the zone gains control over the weather (e.g. directing lightning strikes at enemies, or causing wind to push enemies away).
+
+---
+
 ## [idea-733] Bounty Hunter Tracking UI — *2026-07-11 15:00:02 UTC*
 
 Add a special UI indicator that points the Bounty Hunter towards their marked target, even if they are out of normal vision range.
