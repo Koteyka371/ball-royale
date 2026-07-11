@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Teleporter Event",
+  "description": "A random game event that temporarily replaces all standard teleporters in the arena with quantum teleporters. When a player enters a quantum teleporter, they are sent to a random location on the map along with a temporary invulnerability shield, but their stamina is fully drained."
+}

@@ -1,0 +1,4 @@
+{
+  "title": "Chrono-Stasis Trap",
+  "description": "A new placeable trap item that, when triggered by an enemy, completely freezes their current velocity and skill cooldowns for 3 seconds. Any incoming damage during this stasis is delayed and applied all at once when the effect ends."
+}
