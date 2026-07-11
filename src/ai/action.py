@@ -11293,6 +11293,12 @@ class Action:
                 cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
                 if cosmetic == "magnetic_boots":
                     knockback_multiplier *= 0.5
+                elif cosmetic == "kinetic_absorber" and getattr(other, "team", None) != getattr(self.ball, "team", None):
+                    knockback_multiplier = 0.0
+                    if not hasattr(self.ball, "kinetic_absorbed_energy"):
+                        self.ball.kinetic_absorbed_energy = 0.0
+                    self.ball.kinetic_absorbed_energy += overlap
+                    self.ball.speed_boost_timer = min(3.0, getattr(self.ball, "speed_boost_timer", 0.0) + (overlap * 0.1))
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
