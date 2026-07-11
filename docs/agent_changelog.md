@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-864] Nemesis Tracker UI — *2026-07-11 18:17:31 UTC*
+
+Add an overlay on the edge of the screen pointing towards the nearest Nemesis when the compass is active.
+
+---
+
 ## [idea-781] Sniper Nests — *2026-07-11 17:47:15 UTC*
 
 Add elevated 'sniper nest' terrain zones. Balls inside a sniper nest gain a 25% increase to their perception radius and a minor damage bonus to ranged attacks. However, being in the nest marks them with a visual indicator, making them a high-priority target for aggro AI bots.

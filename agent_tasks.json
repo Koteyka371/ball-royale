@@ -14850,7 +14850,7 @@
     },
     {
       "id": "idea-864",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Tracker UI",
@@ -24180,6 +24180,40 @@
         "src/ai/aura_syphoning_skill.py",
         "src/ai/aura_syphoning_skill.gd",
         "tests/test_aura_syphoning_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1412",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sniper Nest Spotter Drone",
+      "description": "Balls in a sniper nest could periodically release a tiny spotter drone that orbits the nest, revealing the location of any enemies in an even larger radius to the sniper. The drone can be destroyed by enemies to deny vision.",
+      "allowed_paths": [
+        "src/ai/sniper_nest_spotter_drone.py",
+        "src/ai/sniper_nest_spotter_drone.gd",
+        "tests/test_sniper_nest_spotter_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1413",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Camouflage Net",
+      "description": "An interactable item that can be placed over a sniper nest. It hides the visual indicator that normally marks the nest's occupant as a high-priority target, allowing for stealthy ambushes until the camouflage is blown away by explosives or wind.",
+      "allowed_paths": [
+        "src/ai/camouflage_net.py",
+        "src/ai/camouflage_net.gd",
+        "tests/test_camouflage_net.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
