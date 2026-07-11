@@ -27,7 +27,7 @@ class BallGenetics:
         self.skills = [
             "wave_attack", "shield", "dash", "health_link", "precision_shot",
             "explosion", "rage_burst", "ground_pound", "phase_through",
-            "steal_boost", "clone", "mimic_clone", "protect_ally", "command", "stealth", "summon_minions"
+            "steal_boost", "clone", "mimic_clone", "protect_ally", "command", "stealth", "summon_minions", "wind_rider"
         ]
 
     def _generate_dna_hash(self, dna: Dict[str, Any]) -> str:

@@ -7900,7 +7900,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
+                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar', 'wind_rider']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -8850,6 +8850,33 @@ class Action:
             if skill_name == "energy_shield":
                 self.ball.energy_shield_active = True
                 self.ball.energy_shield_timer = 3.0
+            elif skill_name == "wind_rider":
+                if getattr(self.world.arena, "is_windy", False):
+                    self.ball.speed_buff_timer = 5.0
+                    self._spawn_skill_particles("wind_rider")
+                    import math
+                    import random
+                    jump_range = 800.0
+                    mag = math.hypot(getattr(self.ball, "vx", 0.0), getattr(self.ball, "vy", 0.0))
+                    if mag > 0:
+                        dx = (getattr(self.ball, "vx", 0.0) / mag) * jump_range
+                        dy = (getattr(self.ball, "vy", 0.0) / mag) * jump_range
+                    else:
+                        angle = random.uniform(0, 2 * math.pi)
+                        dx = math.cos(angle) * jump_range
+                        dy = math.sin(angle) * jump_range
+
+                    # Update position and apply clamping
+                    self.ball.x += dx
+                    self.ball.y += dy
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                        clamped = self.world.arena.clamp_position(self.ball.x, self.ball.y, getattr(self.ball, "radius", 15.0))
+                        if len(clamped) >= 2:
+                            self.ball.x = clamped[0]
+                            self.ball.y = clamped[1]
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "skill_used", "data": {"skill": "wind_rider", "id": getattr(self.ball, "id", None)}})
             elif skill_name == "trickster_swap":
                 all_entities = getattr(self.world, "balls", [])
 

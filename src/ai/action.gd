@@ -14171,7 +14171,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
+                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar', 'wind_rider']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -15879,6 +15879,71 @@ func _use_skill():
             else:
                 self.ball.energy_shield_active = true
                 self.ball.energy_shield_timer = 3.0
+        elif skill_name == "wind_rider":
+            var _arena = world.get("arena") if "arena" in world else null
+            var _is_windy = false
+            if _arena != null and typeof(_arena) == TYPE_OBJECT and "is_windy" in _arena:
+                _is_windy = _arena.get("is_windy")
+            elif _arena != null and typeof(_arena) == TYPE_DICTIONARY and _arena.has("is_windy"):
+                _is_windy = _arena.is_windy
+
+            if _is_windy:
+                if typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"):
+                    ball.set_meta("speed_buff_timer", 5.0)
+                else:
+                    ball["speed_buff_timer"] = 5.0
+                _spawn_skill_particles("wind_rider")
+
+                var jump_range = 800.0
+                var bx = 0.0
+                var by = 0.0
+                if "vx" in ball: bx = ball.vx
+                elif typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("vx"): bx = ball.get_meta("vx")
+                if "vy" in ball: by = ball.vy
+                elif typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("vy"): by = ball.get_meta("vy")
+
+                var mag = sqrt(bx * bx + by * by)
+                var dx = 0.0
+                var dy = 0.0
+                if mag > 0:
+                    dx = (bx / mag) * jump_range
+                    dy = (by / mag) * jump_range
+                else:
+                    var angle = randf_range(0, 2 * PI)
+                    dx = cos(angle) * jump_range
+                    dy = sin(angle) * jump_range
+
+                var nx = 0.0
+                var ny = 0.0
+                if "x" in ball:
+                    ball.x += dx
+                    ball.y += dy
+                    nx = ball.x
+                    ny = ball.y
+                elif typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta") and ball.has_meta("x"):
+                    nx = ball.get_meta("x") + dx
+                    ny = ball.get_meta("y") + dy
+                    ball.set_meta("x", nx)
+                    ball.set_meta("y", ny)
+
+                if _arena != null and typeof(_arena) == TYPE_OBJECT and _arena.has_method("clamp_position"):
+                    var brad = 15.0
+                    if "radius" in ball: brad = ball.radius
+                    elif typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("radius"): brad = ball.get_meta("radius")
+                    var clamped = _arena.clamp_position(nx, ny, brad)
+                    if typeof(clamped) == TYPE_ARRAY and clamped.size() >= 2:
+                        if "x" in ball:
+                            ball.x = clamped[0]
+                            ball.y = clamped[1]
+                        elif typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"):
+                            ball.set_meta("x", clamped[0])
+                            ball.set_meta("y", clamped[1])
+
+                if "events" in world:
+                    var bid = null
+                    if "id" in ball: bid = ball.id
+                    elif typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("id"): bid = ball.get_meta("id")
+                    world.events.append({"type": "skill_used", "data": {"skill": "wind_rider", "id": bid}})
         elif skill_name == "trickster_swap":
             var all_entities = []
             if "balls" in self.world:
