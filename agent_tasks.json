@@ -13130,7 +13130,7 @@
     },
     {
       "id": "idea-763",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grounding Boots Booster",
@@ -24112,6 +24112,40 @@
         "src/ai/dynamic_mutator_flood.py",
         "src/ai/dynamic_mutator_flood.gd",
         "tests/test_dynamic_mutator_flood.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1408",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Recoil-Powered Evasive Maneuver Skill",
+      "description": "An active skill that fires a rapid burst of high-recoil blanks, generating intense backward thrust to quickly escape dangerous situations without damaging enemies.",
+      "allowed_paths": [
+        "src/ai/recoil_powered_evasive_maneuver_skill.py",
+        "src/ai/recoil_powered_evasive_maneuver_skill.gd",
+        "tests/test_recoil_powered_evasive_maneuver_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1409",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Projectile Recoil Trajectory Modification Booster",
+      "description": "A new booster that amplifies or dampens the recoil from ranged attacks, allowing players to fine-tune their evasion mechanics or minimize recoil for stable firing lines.",
+      "allowed_paths": [
+        "src/ai/projectile_recoil_trajectory_modification_booster.py",
+        "src/ai/projectile_recoil_trajectory_modification_booster.gd",
+        "tests/test_projectile_recoil_trajectory_modification_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

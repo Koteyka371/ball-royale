@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-763] Grounding Boots Booster — *2026-07-11 16:02:13 UTC*
+
+An item that protects entities from chain damage...
+
+---
+
 ## [idea-858] Weaponized Recoil — *2026-07-11 15:55:41 UTC*
 
 Shooting projectiles or using certain strong skills applies a slight knockback/recoil to the user, allowing skilled players to use recoil for evasive movement or faster traversal.
