@@ -1182,7 +1182,12 @@ func _attempt_damage(attacker, target) -> void:
 					var nearby = []
 					for e in enemies:
 						if not hit_entities.has(e):
-							var dist_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
+							var has_ins = false
+							if typeof(e) == TYPE_DICTIONARY and e.has("insulator_timer") and e["insulator_timer"] > 0: has_ins = true
+							elif typeof(e) == TYPE_OBJECT and "insulator_timer" in e and e.insulator_timer > 0: has_ins = true
+							elif typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("insulator_timer") and e.get_meta("insulator_timer") > 0: has_ins = true
+							if not has_ins:
+								var dist_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
 							if dist_sq < chain_range_sq:
 								nearby.append({"dist": dist_sq, "entity": e, "type": "enemy"})
 					for h in hazards:
@@ -13851,6 +13856,34 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+
+            elif "kind" in nearest and nearest.kind == "insulator_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("insulator_timer", 15.0)
+                elif "insulator_timer" in self.ball:
+                    self.ball.insulator_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
+            elif "kind" in nearest and nearest.kind == "insulator_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("insulator_timer", 15.0)
+                elif "insulator_timer" in self.ball:
+                    self.ball.insulator_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "hazard_immunity_booster":
                 if "hazard_immunity_timer" in self.ball:
                     self.ball.hazard_immunity_timer = 15.0
@@ -17885,7 +17918,12 @@ func _use_skill():
 
                         for e in enemies:
                             if hit_entities.find(e) == -1:
-                                var d_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
+                                var has_ins = false
+                                if typeof(e) == TYPE_DICTIONARY and e.has("insulator_timer") and e["insulator_timer"] > 0: has_ins = true
+                                elif typeof(e) == TYPE_OBJECT and "insulator_timer" in e and e.insulator_timer > 0: has_ins = true
+                                elif typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("insulator_timer") and e.get_meta("insulator_timer") > 0: has_ins = true
+                                if not has_ins:
+                                    var d_sq = pow(e.x - current_target.x, 2) + pow(e.y - current_target.y, 2)
                                 if d_sq <= chain_range * chain_range:
                                     nearby_entities.append({"d_sq": d_sq, "entity": e, "type": "enemy"})
                         for h in hazards:
@@ -18648,7 +18686,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x

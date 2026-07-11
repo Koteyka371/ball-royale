@@ -717,7 +717,7 @@ class Action:
                 while jump_count < 3:
                     nearby_entities = []
                     for e in enemies:
-                        if e not in hit_entities:
+                        if e not in hit_entities and getattr(e, "insulator_timer", 0.0) <= 0:
                             dist_sq = (e.x - current_target.x)**2 + (e.y - current_target.y)**2
                             if dist_sq < chain_range_sq:
                                 nearby_entities.append((dist_sq, e, "enemy"))
@@ -7870,6 +7870,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "insulator_booster":
+                    self.ball.insulator_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "hazard_immunity_booster":
                     self.ball.hazard_immunity_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -9783,7 +9791,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -10240,7 +10248,7 @@ class Action:
                                 chain_range *= 1.5
 
                             for e in enemies:
-                                if e not in hit_entities:
+                                if e not in hit_entities and getattr(e, "insulator_timer", 0.0) <= 0:
                                     d_sq = (e.x - current_target.x)**2 + (e.y - current_target.y)**2
                                     if d_sq <= chain_range**2:
                                         nearby_entities.append((d_sq, e, "enemy"))
@@ -10987,7 +10995,7 @@ class Action:
                             best_dist = float("inf")
                             next_target = None
                             for e in nearby: # 'nearby' already contains allies and enemies, we filter enemies
-                                if e not in bounced_enemies and getattr(e, "team", None) != getattr(self.ball, "team", None) and getattr(e, "alive", True):
+                                if e not in bounced_enemies and getattr(e, "team", None) != getattr(self.ball, "team", None) and getattr(e, "alive", True) and getattr(e, "insulator_timer", 0.0) <= 0:
                                     d = (e.x - current_pos.x)**2 + (e.y - current_pos.y)**2
                                     if d < best_dist and d <= 40000.0: # 200^2
                                         best_dist = d
@@ -11490,6 +11498,11 @@ class Action:
                                 elif closest_wall == "bottom":
                                     if hasattr(other, "y"): other.y += push_strength
 
+
+        if getattr(self.ball, "insulator_timer", 0.0) > 0:
+            self.ball.insulator_timer -= delta
+            if self.ball.insulator_timer < 0:
+                self.ball.insulator_timer = 0.0
         if getattr(self.ball, "hazard_immunity_timer", 0.0) > 0:
             self.ball.hazard_immunity_timer -= delta
             if self.ball.hazard_immunity_timer < 0:
@@ -11535,7 +11548,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
