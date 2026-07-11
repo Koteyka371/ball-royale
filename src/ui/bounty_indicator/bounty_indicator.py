@@ -23,6 +23,17 @@ class BountyIndicatorUI:
                         "owner_id": owner_id
                     })
 
+            elif event.get("type") == "sniper_nest_indicator":
+                data = event.get("data", {})
+                self.active_indicators.append({
+                    "target_x": data.get("target_x", 0.0),
+                    "target_y": data.get("target_y", 0.0),
+                    "owner_id": None, # Always show
+                    "is_sniper": True
+                })
+
+
+
     def get_render_data(self, camera_x: float, camera_y: float, zoom: float) -> List[Dict[str, Any]]:
         render_data = []
         center_x = self.screen_width / 2
@@ -75,12 +86,24 @@ class BountyIndicatorUI:
                     # Calculate angle for rotation (pointing towards target)
                     angle = math.atan2(ny, nx)
 
-                    render_data.append({
-                        "type": "bounty_pointer",
-                        "x": indicator_x,
-                        "y": indicator_y,
-                        "angle": angle,
-                        "color": "orange"
-                    })
+                    if indicator.get("is_sniper"):
+                        render_data.append({
+                            "type": "sniper_indicator",
+                            "x": indicator_x,
+                            "y": indicator_y,
+                            "angle": angle,
+                            "color": "red"
+                        })
+                    else:
+
+
+
+                        render_data.append({
+                            "type": "bounty_pointer",
+                            "x": indicator_x,
+                            "y": indicator_y,
+                            "angle": angle,
+                            "color": "orange"
+                        })
 
         return render_data

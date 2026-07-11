@@ -1805,11 +1805,123 @@ func execute(strategy: String, delta: float):
 
 	if world != null and typeof(world) == TYPE_OBJECT and "arena" in world:
 		var arena = world.get("arena")
+
+	if typeof(self.ball) == TYPE_DICTIONARY:
+		self.ball["in_sniper_nest"] = false
+
+		var base_dmg = 1.0
+		if self.ball.has("base_damage_multiplier"): base_dmg = self.ball["base_damage_multiplier"]
+		elif self.ball.has("damage_multiplier"):
+			base_dmg = self.ball["damage_multiplier"]
+			self.ball["base_damage_multiplier"] = base_dmg
+		self.ball["damage_multiplier"] = base_dmg
+
+		var base_p = 250.0
+		if self.ball.has("base_perception_radius"): base_p = self.ball["base_perception_radius"]
+		elif self.ball.has("perception_radius"):
+			base_p = self.ball["perception_radius"]
+			self.ball["base_perception_radius"] = base_p
+		self.ball["perception_radius"] = base_p
+	else:
+		if self.ball.has_method("set_meta"):
+			self.ball.set_meta("in_sniper_nest", false)
+		if "in_sniper_nest" in self.ball:
+			self.ball.in_sniper_nest = false
+
+		var base_dmg = 1.0
+		if "base_damage_multiplier" in self.ball: base_dmg = self.ball.base_damage_multiplier
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("base_damage_multiplier"): base_dmg = self.ball.get_meta("base_damage_multiplier")
+		elif "damage_multiplier" in self.ball:
+			base_dmg = self.ball.damage_multiplier
+			if self.ball.has_method("set_meta"): self.ball.set_meta("base_damage_multiplier", base_dmg)
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("damage_multiplier"):
+			base_dmg = self.ball.get_meta("damage_multiplier")
+			if self.ball.has_method("set_meta"): self.ball.set_meta("base_damage_multiplier", base_dmg)
+
+		if "damage_multiplier" in self.ball: self.ball.damage_multiplier = base_dmg
+		if self.ball.has_method("set_meta"): self.ball.set_meta("damage_multiplier", base_dmg)
+
+		var base_p = 250.0
+		if "base_perception_radius" in self.ball: base_p = self.ball.base_perception_radius
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("base_perception_radius"): base_p = self.ball.get_meta("base_perception_radius")
+		elif "perception_radius" in self.ball:
+			base_p = self.ball.perception_radius
+			if self.ball.has_method("set_meta"): self.ball.set_meta("base_perception_radius", base_p)
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("perception_radius"):
+			base_p = self.ball.get_meta("perception_radius")
+			if self.ball.has_method("set_meta"): self.ball.set_meta("base_perception_radius", base_p)
+
+		if "perception_radius" in self.ball: self.ball.perception_radius = base_p
+		if self.ball.has_method("set_meta"): self.ball.set_meta("perception_radius", base_p)
+
 		if arena != null and typeof(arena) == TYPE_OBJECT and "hazards" in arena:
 			for hazard in arena.hazards:
 				var kind = ""
 				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): kind = hazard["kind"]
 				elif typeof(hazard) == TYPE_OBJECT and "kind" in hazard: kind = hazard.kind
+
+				if kind == "sniper_nest":
+					var hx = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]
+					elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: hx = hazard.x
+					var hy = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): hy = hazard["y"]
+					elif typeof(hazard) == TYPE_OBJECT and "y" in hazard: hy = hazard.y
+					var rad = 50.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): rad = hazard["radius"]
+					elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: rad = hazard.radius
+
+					var bx = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bx = self.ball["x"]
+					elif typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: bx = self.ball.x
+					var by = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): by = self.ball["y"]
+					elif typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: by = self.ball.y
+
+					var dx = hx - bx
+					var dy = hy - by
+					if sqrt(dx*dx + dy*dy) <= rad:
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["in_sniper_nest"] = true
+							self.ball["perception_radius"] = base_p * 1.25
+							self.ball["damage_multiplier"] = base_dmg * 1.15
+							self.ball["show_sniper_nest_indicator"] = true
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("in_sniper_nest", true)
+								self.ball.set_meta("perception_radius", base_p * 1.25)
+								self.ball.set_meta("damage_multiplier", base_dmg * 1.15)
+								self.ball.set_meta("show_sniper_nest_indicator", true)
+							if "in_sniper_nest" in self.ball: self.ball.in_sniper_nest = true
+							if "perception_radius" in self.ball: self.ball.perception_radius = base_p * 1.25
+							if "damage_multiplier" in self.ball: self.ball.damage_multiplier = base_dmg * 1.15
+							if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = true
+
+							if typeof(world) == TYPE_OBJECT and "events" in world:
+								var bx2 = 0.0
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bx2 = self.ball["x"]
+								elif typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: bx2 = self.ball.x
+								var by2 = 0.0
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): by2 = self.ball["y"]
+								elif typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: by2 = self.ball.y
+								world.events.append({
+									"type": "sniper_nest_indicator",
+									"data": {
+										"target_x": bx2,
+										"target_y": by2
+									}
+								})
+
+
+					else:
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["show_sniper_nest_indicator"] = false
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("show_sniper_nest_indicator", false)
+							if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = false
+
+
 
 				if kind == "slow_motion_zone":
 					var hx = 0.0
@@ -12005,6 +12117,42 @@ func _get_target(enemies: Array) -> Object:
                 c_flare = f_ent
         if c_flare != null:
             return c_flare
+
+    var nest_targets = []
+    for e in enemies:
+        if "in_sniper_nest" in e and e.in_sniper_nest:
+            nest_targets.append(e)
+        elif e.has_method("has_meta") and e.has_meta("in_sniper_nest") and e.get_meta("in_sniper_nest"):
+            nest_targets.append(e)
+
+    if nest_targets.size() > 0:
+        var c_nest = null
+        var min_d_sq = INF
+        for n_ent in nest_targets:
+            var bx = 0.0
+            if "x" in self.ball: bx = self.ball.x
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bx = self.ball["x"]
+
+            var by = 0.0
+            if "y" in self.ball: by = self.ball.y
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): by = self.ball["y"]
+
+            var nx = 0.0
+            if "x" in n_ent: nx = n_ent.x
+            elif typeof(n_ent) == TYPE_DICTIONARY and n_ent.has("x"): nx = n_ent["x"]
+
+            var ny = 0.0
+            if "y" in n_ent: ny = n_ent.y
+            elif typeof(n_ent) == TYPE_DICTIONARY and n_ent.has("y"): ny = n_ent["y"]
+
+            var d_sq = pow(nx - bx, 2) + pow(ny - by, 2)
+            if d_sq < min_d_sq:
+                min_d_sq = d_sq
+                c_nest = n_ent
+        if c_nest != null:
+            return c_nest
+
+
 
     var ball_memory = {}
     if self.ball.has_method("get_meta") and self.ball.has_meta("memory"):
