@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Trap",
+  "description": "A placeable trap that links the positions of the ball that triggers it with the ball that placed it. For 10 seconds, any displacement force (like knockback or gravity wells) applied to one ball is identically applied to the other, making positional play extremely risky and highly strategic."
+}

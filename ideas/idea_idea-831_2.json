@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Conversion Shield",
+  "description": "An equippable booster item that, when activated, creates a shield for 3 seconds. Instead of blocking damage, any physical damage or knockback taken during this time is converted into raw stamina regeneration and a temporary speed boost when the shield expires."
+}
