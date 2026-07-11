@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-853] Overcharge Mechanic for Lightning Balls — *2026-07-11 20:55:27 UTC*
+
+If a ball type like Lightning Rod absorbs too many strikes in a short period of time, it gains an 'Overcharged' state where it moves 30% faster and periodically zaps nearby enemies but slowly loses health due to excess energy.
+
+---
+
 ## [idea-818] Aura Disruption Bomb — *2026-07-11 20:38:27 UTC*
 
 A throwable item or character skill that detonates in a large area, stripping the team aura buffs from all enemies caught in the blast and applying the aura_disruption_timer to them for 10 seconds, forcing teams to rely on individual skills rather than stacking benefits.

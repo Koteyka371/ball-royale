@@ -14663,7 +14663,7 @@
     },
     {
       "id": "idea-853",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Overcharge Mechanic for Lightning Balls",
@@ -24521,6 +24521,40 @@
         "src/arena/dynamic_evolution.py",
         "src/arena/dynamic_evolution.gd",
         "tests/test_dynamic_evolution.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1432",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Syphon Field Trap",
+      "description": "A trap that creates an aura siphon field. Any enemy caught inside has their positive aura buffs (speed, healing, etc.) constantly transferred to the trap owner, turning enemy team coordination into an advantage for the individual.",
+      "allowed_paths": [
+        "src/arena/aura_syphon_field_trap.py",
+        "src/arena/aura_syphon_field_trap.gd",
+        "tests/test_aura_syphon_field_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1433",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corrosive Chain Reaction",
+      "description": "A new skill that applies a corrosive debuff on a target. If the target dies while under the effect, it explodes and applies the debuff to all nearby enemies. Successive explosions deal increased damage.",
+      "allowed_paths": [
+        "src/ai/corrosive_chain_reaction.py",
+        "src/ai/corrosive_chain_reaction.gd",
+        "tests/test_corrosive_chain_reaction.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
