@@ -202,6 +202,25 @@ class Action:
             return
         if getattr(target, "quantum_state_timer", 0.0) > 0.0:
             return
+
+        # Karma Hazard Logic: Reflect friendly fire
+        a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
+        t_team = getattr(target, "team", getattr(target, "ball_type", ""))
+
+        # Check if they are friends and not the same ball
+        if a_team == t_team and getattr(attacker, "id", None) != getattr(target, "id", None):
+            if getattr(attacker, "karma_timer", 0.0) > 0.0 or getattr(target, "karma_timer", 0.0) > 0.0:
+                # Reflect damage
+                original_damage = getattr(attacker, "damage", 10.0)
+                if hasattr(attacker, "take_damage"):
+                    attacker.take_damage(original_damage)
+                else:
+                    attacker.hp = getattr(attacker, "hp", 100) - original_damage
+                    if attacker.hp <= 0:
+                        attacker.alive = False
+                        attacker.killer = "karma_reflect"
+                return # Prevent damage to the target
+
         import random
         if getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower() == 'alchemist' and random.random() < 0.25:
             # 25% chance to apply a weak stacking poison effect
@@ -10057,7 +10076,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "karma_hazard", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -10107,7 +10126,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 40000.0  # Range 200
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "karma_hazard", "booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -10116,7 +10135,7 @@ class Action:
                                 target_hazard = h
 
                     if target_hazard:
-                        new_kind = _rnd.choice(["healing_spring", "booster"])
+                        new_kind = _rnd.choice(["healing_spring", "karma_hazard", "booster"])
                         setattr(target_hazard, "kind", new_kind)
                         setattr(target_hazard, "damage", 0.0)
                         setattr(target_hazard, "duration", 10.0)
@@ -11874,7 +11893,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "insulator_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "karma_hazard", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "insulator_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -12080,6 +12099,13 @@ class Action:
                         self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 3.0)
                         self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 0.1 # heavily slow
                         hazard.duration = 0.0 # Destroy trap after springing
+
+                if getattr(hazard, "kind", "") == "karma_hazard":
+                    dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                    trigger_radius = getattr(hazard, "radius", 20.0)
+                    if dist_sq < trigger_radius * trigger_radius:
+                        self.ball.karma_timer = 5.0
+                        hazard.duration = 0.0
                 if getattr(hazard, "kind", "") == "booster_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
@@ -12391,6 +12417,9 @@ class Action:
                     self.world.arena.hazards.append(m)
 
 
+
+        if getattr(self.ball, "karma_timer", 0.0) > 0:
+            self.ball.karma_timer -= delta
         if getattr(self.ball, "time_warp_timer", 0.0) > 0:
             self.ball.time_warp_timer -= delta
             # Increase movement and attack speed

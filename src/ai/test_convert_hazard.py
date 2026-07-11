@@ -42,7 +42,7 @@ def test_convert_hazard_skill():
 
     action._use_skill()
 
-    assert h1.kind in ["healing_spring", "booster"]
+    assert h1.kind in ["healing_spring", "booster", "karma_hazard"]
     assert h1.damage == 0.0
     assert h1.duration == 10.0
     assert h1.owner_id == 1

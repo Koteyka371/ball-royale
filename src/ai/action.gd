@@ -329,6 +329,62 @@ func _attempt_damage(attacker, target) -> void:
     elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("intangible_timer"): a_timer = attacker.get_meta("intangible_timer")
     if a_intangible or a_timer > 0.0:
         return
+
+    var a_team = ""
+    if typeof(attacker) == TYPE_OBJECT and "team" in attacker: a_team = attacker.team
+    elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("team"): a_team = attacker.get_meta("team")
+    elif typeof(attacker) == TYPE_OBJECT and "ball_type" in attacker: a_team = attacker.ball_type
+    elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("team"): a_team = attacker["team"]
+
+    var t_team = ""
+    if typeof(target) == TYPE_OBJECT and "team" in target: t_team = target.team
+    elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("team"): t_team = target.get_meta("team")
+    elif typeof(target) == TYPE_OBJECT and "ball_type" in target: t_team = target.ball_type
+    elif typeof(target) == TYPE_DICTIONARY and target.has("team"): t_team = target["team"]
+
+    var a_id = null
+    if typeof(attacker) == TYPE_OBJECT and "id" in attacker: a_id = attacker.id
+    elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("id"): a_id = attacker.get_meta("id")
+    elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("id"): a_id = attacker["id"]
+
+    var t_id = null
+    if typeof(target) == TYPE_OBJECT and "id" in target: t_id = target.id
+    elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("id"): t_id = target.get_meta("id")
+    elif typeof(target) == TYPE_DICTIONARY and target.has("id"): t_id = target["id"]
+
+    if a_team != "" and a_team == t_team and a_id != null and t_id != null and a_id != t_id:
+        var a_karma = 0.0
+        if typeof(attacker) == TYPE_OBJECT and "karma_timer" in attacker: a_karma = float(attacker.karma_timer)
+        elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("karma_timer"): a_karma = float(attacker.get_meta("karma_timer"))
+        elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("karma_timer"): a_karma = float(attacker["karma_timer"])
+
+        var t_karma = 0.0
+        if typeof(target) == TYPE_OBJECT and "karma_timer" in target: t_karma = float(target.karma_timer)
+        elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("karma_timer"): t_karma = float(target.get_meta("karma_timer"))
+        elif typeof(target) == TYPE_DICTIONARY and target.has("karma_timer"): t_karma = float(target["karma_timer"])
+
+        if a_karma > 0.0 or t_karma > 0.0:
+            var original_damage = 10.0
+            if typeof(attacker) == TYPE_OBJECT and "damage" in attacker: original_damage = float(attacker.damage)
+            elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("damage"): original_damage = float(attacker.get_meta("damage"))
+            elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"): original_damage = float(attacker["damage"])
+
+            if typeof(attacker) == TYPE_OBJECT and attacker.has_method("take_damage"):
+                attacker.take_damage(original_damage)
+            else:
+                var hp = 100.0
+                if typeof(attacker) == TYPE_OBJECT and "hp" in attacker: hp = float(attacker.hp)
+                elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("hp"): hp = float(attacker["hp"])
+                hp -= original_damage
+                if typeof(attacker) == TYPE_OBJECT and "hp" in attacker: attacker.hp = hp
+                elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("hp"): attacker["hp"] = hp
+                if hp <= 0:
+                    if typeof(attacker) == TYPE_OBJECT and "alive" in attacker: attacker.alive = false
+                    elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("alive"): attacker["alive"] = false
+                    if typeof(attacker) == TYPE_OBJECT and "killer" in attacker: attacker.killer = "karma_reflect"
+                    elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("killer"): attacker["killer"] = "karma_reflect"
+            return
+
     var q_state = 0.0
     if typeof(target) == TYPE_OBJECT and "quantum_state_timer" in target: q_state = target.quantum_state_timer
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("quantum_state_timer"): q_state = target.get_meta("quantum_state_timer")
@@ -19430,7 +19486,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                    if not kind in ["healing_spring", "karma_hazard", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -21443,7 +21499,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item"]
+                var pullable = ["healing_spring", "karma_hazard", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -21849,6 +21905,21 @@ func _update_skill_timer(delta: float):
                                         if "duration" in hazard: hazard.duration = 0.0
                                         elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                         elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+
+                if h_kind == "karma_hazard":
+                    var dist_sq = (h_x - self.ball.x) * (h_x - self.ball.x) + (h_y - self.ball.y) * (h_y - self.ball.y)
+                    var trigger_radius = 20.0
+                    if "radius" in hazard: trigger_radius = float(hazard.radius)
+                    elif typeof(hazard) == TYPE_OBJECT and hazard.has_meta("radius"): trigger_radius = float(hazard.get_meta("radius"))
+
+                    if dist_sq < trigger_radius * trigger_radius:
+                        if "karma_timer" in self.ball: self.ball.karma_timer = 5.0
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("karma_timer", 5.0)
+                        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["karma_timer"] = 5.0
+
+                        if "duration" in hazard: hazard.duration = 0.0
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
                 if h_kind == "booster_trap":
                     var h_owner_id = null
                     if "owner_id" in hazard: h_owner_id = hazard.owner_id

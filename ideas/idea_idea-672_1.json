@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Item",
+  "description": "An item that, when picked up, allows the ball to instantly swap positions with the nearest enemy if they fall below 10% health, transferring aggro and placing the enemy in danger."
+}
