@@ -196,6 +196,17 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+        a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
+        t_team = getattr(target, "team", getattr(target, "ball_type", ""))
+        if a_team == t_team and getattr(target, "thorn_aura_timer", 0.0) > 0.0:
+            # Friendly fire reflection
+            original_damage = getattr(attacker, "damage", 10.0)
+            if hasattr(self.world, "_deal_damage"):
+                old_dmg = getattr(target, "damage", 10.0)
+                target.damage = original_damage
+                self.world._deal_damage(target, attacker)
+                target.damage = old_dmg
+            return
         if getattr(target, "intangible", False) or getattr(target, "intangible_timer", 0.0) > 0.0:
             return
         if getattr(attacker, "intangible", False) or getattr(attacker, "intangible_timer", 0.0) > 0.0:
@@ -927,6 +938,8 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "thorn_aura_timer", 0.0) > 0.0:
+            self.ball.thorn_aura_timer -= delta
         if getattr(self.ball, "ball_type", "") == "spectator":
             if strategy.startswith("cheer:"):
                 parts = strategy.split(":")
@@ -4980,6 +4993,10 @@ class Action:
 
                                     hazard.duration = 0.0 # Destroy trap
 
+                                elif trap_variant == "thorn":
+                                    self.ball.thorn_aura_timer = 5.0
+                                    if hasattr(hazard, "duration"):
+                                        hazard.duration = 0.0
                                 elif trap_variant == "warp":
                                     # Warp trap: teleport the ball to the opposite side of the map along its velocity vector
                                     import math

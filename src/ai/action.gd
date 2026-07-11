@@ -313,6 +313,29 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 
 func _attempt_damage(attacker, target) -> void:
     var t_intangible = false
+    var a_team = ""
+    if typeof(attacker) == TYPE_OBJECT and "team" in attacker: a_team = attacker.team
+    elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("team"): a_team = attacker.get_meta("team")
+    var t_team = ""
+    if typeof(target) == TYPE_OBJECT and "team" in target: t_team = target.team
+    elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("team"): t_team = target.get_meta("team")
+    var t_thorn = 0.0
+    if typeof(target) == TYPE_OBJECT and "thorn_aura_timer" in target: t_thorn = target.thorn_aura_timer
+    elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("thorn_aura_timer"): t_thorn = target.get_meta("thorn_aura_timer")
+    if a_team == t_team and a_team != "" and t_thorn > 0.0:
+        var orig_damage = 10.0
+        if typeof(attacker) == TYPE_OBJECT and "damage" in attacker: orig_damage = attacker.damage
+        elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("damage"): orig_damage = attacker.get_meta("damage")
+        if self.world != null and typeof(self.world) == TYPE_OBJECT and self.world.has_method("_deal_damage"):
+            var old_dmg = 10.0
+            if typeof(target) == TYPE_OBJECT and "damage" in target: old_dmg = target.damage
+            elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("damage"): old_dmg = target.get_meta("damage")
+            if typeof(target) == TYPE_OBJECT and "damage" in target: target.damage = orig_damage
+            elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("damage", orig_damage)
+            self.world._deal_damage(target, attacker)
+            if typeof(target) == TYPE_OBJECT and "damage" in target: target.damage = old_dmg
+            elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("damage", old_dmg)
+        return
     if typeof(target) == TYPE_OBJECT and "intangible" in target: t_intangible = target.intangible
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible"): t_intangible = target.get_meta("intangible")
     var t_timer = 0.0
@@ -1504,6 +1527,13 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var t_thorn_decay = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "thorn_aura_timer" in self.ball: t_thorn_decay = self.ball.thorn_aura_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("thorn_aura_timer"): t_thorn_decay = self.ball.get_meta("thorn_aura_timer")
+    if t_thorn_decay > 0.0:
+        t_thorn_decay -= delta
+        if typeof(self.ball) == TYPE_OBJECT and "thorn_aura_timer" in self.ball: self.ball.thorn_aura_timer = t_thorn_decay
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("thorn_aura_timer", t_thorn_decay)
     var b_type = ""
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball.ball_type
     elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: b_type = self.ball.ball_type
@@ -8484,6 +8514,15 @@ func execute(strategy: String, delta: float):
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
 
+                            elif trap_variant == "thorn":
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("thorn_aura_timer", 5.0)
+                                elif "thorn_aura_timer" in self.ball:
+                                    self.ball.thorn_aura_timer = 5.0
+                                if "duration" in hazard: hazard.duration = 0.0
+                                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
                             elif trap_variant == "warp":
                                 var vx = 0.0
                                 var vy = 0.0
