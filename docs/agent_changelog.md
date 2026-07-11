@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-806] New Item: Hookshot — *2026-07-11 22:55:56 UTC*
+
+Players can find and equip a Hookshot that allows them to grapple to walls or platforms quickly. This would add a ton of mobility and allow for clutch saves from falling into the lava or out of bounds.
+
+---
+
 ## [idea-859] Seasonal Map Rotations — *2026-07-11 22:44:19 UTC*
 
 Introduce dynamic map skins and weather biases based on the 'current_season' value (e.g., season 1 is spring with lots of healing puddles and rain, season 4 is winter with constant snow and ice slicks).
