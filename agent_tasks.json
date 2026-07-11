@@ -23878,6 +23878,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1394",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shockwave Mine Trap",
+      "description": "A deployable mine that detonates upon enemy contact, emitting a massive radial shockwave that deals low damage but pushes all enemies significantly far away and disables their movement abilities for 1.5 seconds.",
+      "allowed_paths": [
+        "src/arena/shockwave_mine_trap.py",
+        "src/arena/shockwave_mine_trap.gd",
+        "tests/test_shockwave_mine_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
