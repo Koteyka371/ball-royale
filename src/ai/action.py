@@ -5555,6 +5555,14 @@ class Action:
                                 if b_type == "lightning_rod":
                                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + hazard.damage)
                                     self.ball.supercharge_timer = 5.0
+
+                                    absorbs = getattr(self.ball, "recent_absorbs", 0) + 1
+                                    self.ball.recent_absorbs = absorbs
+                                    self.ball.absorb_window_timer = 3.0
+                                    if absorbs >= 3:
+                                        self.ball.overcharged_timer = 5.0
+                                        self.ball.recent_absorbs = 0
+
                                     if hasattr(self, "_spawn_skill_particles"):
                                         self._spawn_skill_particles("lightning")
                                 else:
@@ -11524,6 +11532,9 @@ class Action:
                 self.ball.speed *= 1.5
                 self.ball.damage *= 1.5
 
+            if getattr(self.ball, "overcharged_timer", 0.0) > 0:
+                self.ball.speed *= 1.3
+
 
 
 
@@ -11543,6 +11554,41 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if getattr(self.ball, "absorb_window_timer", 0.0) > 0:
+            self.ball.absorb_window_timer -= delta
+            if self.ball.absorb_window_timer <= 0:
+                self.ball.absorb_window_timer = 0.0
+                self.ball.recent_absorbs = 0
+
+        if getattr(self.ball, "overcharged_timer", 0.0) > 0:
+            self.ball.overcharged_timer -= delta
+
+            drain = 10.0 * delta
+            if hasattr(self.ball, "take_damage"):
+                self.ball.take_damage(drain)
+            elif hasattr(self.ball, "hp"):
+                self.ball.hp -= drain
+                if self.ball.hp <= 0:
+                    self.ball.alive = False
+
+            if self.ball.alive:
+                zap_timer = getattr(self.ball, "overcharge_zap_timer", 0.0) - delta
+                if zap_timer <= 0:
+                    zap_timer = 1.0
+                    enemies = self._get_enemies()
+                    for enemy in enemies:
+                        if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 <= 22500: # 150 radius
+                            if hasattr(enemy, "take_damage"):
+                                enemy.take_damage(10.0)
+                            elif hasattr(enemy, "hp"):
+                                enemy.hp -= 10.0
+                            if hasattr(self, "_spawn_directed_particles"):
+                                self._spawn_directed_particles(self.ball, enemy, "lightning")
+                self.ball.overcharge_zap_timer = zap_timer
+
+            if self.ball.overcharged_timer <= 0:
+                self.ball.overcharged_timer = 0.0
+
         if getattr(self.ball, "supercharge_timer", 0.0) > 0:
             self.ball.supercharge_timer -= delta
             drain_amount = 5.0 * delta

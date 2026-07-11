@@ -9794,6 +9794,36 @@ func execute(strategy: String, delta: float):
                                     self.ball.supercharge_timer = 5.0
                                 else:
                                     self.ball["supercharge_timer"] = 5.0
+
+                                var absorbs = 0
+                                if self.ball.has_method("has_meta") and self.ball.has_meta("recent_absorbs"):
+                                    absorbs = self.ball.get_meta("recent_absorbs")
+                                elif "recent_absorbs" in self.ball:
+                                    absorbs = self.ball.recent_absorbs
+
+                                absorbs += 1
+
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("recent_absorbs", absorbs)
+                                    self.ball.set_meta("absorb_window_timer", 3.0)
+                                elif typeof(self.ball) == TYPE_OBJECT and "recent_absorbs" in self.ball:
+                                    self.ball.recent_absorbs = absorbs
+                                    self.ball.absorb_window_timer = 3.0
+                                else:
+                                    self.ball["recent_absorbs"] = absorbs
+                                    self.ball["absorb_window_timer"] = 3.0
+
+                                if absorbs >= 3:
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("overcharged_timer", 5.0)
+                                        self.ball.set_meta("recent_absorbs", 0)
+                                    elif typeof(self.ball) == TYPE_OBJECT and "overcharged_timer" in self.ball:
+                                        self.ball.overcharged_timer = 5.0
+                                        self.ball.recent_absorbs = 0
+                                    else:
+                                        self.ball["overcharged_timer"] = 5.0
+                                        self.ball["recent_absorbs"] = 0
+
                                 if has_method("_spawn_particles"):
                                     _spawn_particles(self.ball.x, self.ball.y, "lightning")
                             else:
@@ -20668,6 +20698,16 @@ func _apply_friendly_aura(delta: float):
             if "damage" in self.ball:
                 self.ball.damage *= 1.5
 
+        var over_timer = 0.0
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("overcharged_timer"):
+            over_timer = float(self.ball.get_meta("overcharged_timer"))
+        elif "overcharged_timer" in self.ball:
+            over_timer = float(self.ball.overcharged_timer)
+
+        if over_timer > 0.0:
+            if "speed" in self.ball:
+                self.ball.speed *= 1.3
+
         var b_type_aura = ""
         if "ball_type" in self.ball:
             b_type_aura = str(self.ball.ball_type).to_lower()
@@ -20699,6 +20739,85 @@ func _update_skill_timer(delta: float):
         sc_timer = float(self.ball.get_meta("supercharge_timer"))
     elif "supercharge_timer" in self.ball:
         sc_timer = float(self.ball.supercharge_timer)
+
+    var absorb_wt = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("absorb_window_timer"):
+        absorb_wt = float(self.ball.get_meta("absorb_window_timer"))
+    elif "absorb_window_timer" in self.ball:
+        absorb_wt = float(self.ball.absorb_window_timer)
+
+    if absorb_wt > 0.0:
+        absorb_wt -= delta
+        if absorb_wt <= 0.0:
+            absorb_wt = 0.0
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("recent_absorbs", 0)
+            elif typeof(self.ball) != TYPE_DICTIONARY and "recent_absorbs" in self.ball:
+                self.ball.recent_absorbs = 0
+            else:
+                self.ball["recent_absorbs"] = 0
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+            self.ball.set_meta("absorb_window_timer", absorb_wt)
+        if "absorb_window_timer" in self.ball:
+            self.ball["absorb_window_timer"] = absorb_wt
+
+    var oc_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("overcharged_timer"):
+        oc_timer = float(self.ball.get_meta("overcharged_timer"))
+    elif "overcharged_timer" in self.ball:
+        oc_timer = float(self.ball.overcharged_timer)
+
+    if oc_timer > 0.0:
+        oc_timer -= delta
+        var odrain = 10.0 * delta
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("take_damage"):
+            self.ball.take_damage(odrain)
+        elif "hp" in self.ball:
+            self.ball.hp -= odrain
+            if self.ball.hp <= 0:
+                self.ball.alive = false
+
+        var is_alive = true
+        if "alive" in self.ball:
+            is_alive = self.ball.alive
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("alive"):
+            is_alive = self.ball.get_meta("alive")
+
+        if is_alive:
+            var z_timer = 0.0
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("overcharge_zap_timer"):
+                z_timer = float(self.ball.get_meta("overcharge_zap_timer"))
+            elif "overcharge_zap_timer" in self.ball:
+                z_timer = float(self.ball.overcharge_zap_timer)
+            z_timer -= delta
+            if z_timer <= 0:
+                z_timer = 1.0
+                var enemies = _get_enemies()
+                for enemy in enemies:
+                    var bx = self.ball.x if "x" in self.ball else 0.0
+                    var by = self.ball.y if "y" in self.ball else 0.0
+                    var ex = enemy.x if "x" in enemy else 0.0
+                    var ey = enemy.y if "y" in enemy else 0.0
+                    var edx = ex - bx
+                    var edy = ey - by
+                    if edx*edx + edy*edy <= 22500:
+                        if typeof(enemy) != TYPE_DICTIONARY and enemy.has_method("take_damage"):
+                            enemy.take_damage(10.0)
+                        elif "hp" in enemy:
+                            enemy.hp -= 10.0
+                        if has_method("_spawn_directed_particles"):
+                            _spawn_directed_particles(self.ball, enemy, "lightning")
+
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("overcharge_zap_timer", z_timer)
+            if "overcharge_zap_timer" in self.ball:
+                self.ball["overcharge_zap_timer"] = z_timer
+
+        if oc_timer < 0.0: oc_timer = 0.0
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+            self.ball.set_meta("overcharged_timer", oc_timer)
+        if "overcharged_timer" in self.ball:
+            self.ball["overcharged_timer"] = oc_timer
 
     if sc_timer > 0.0:
         sc_timer -= delta
