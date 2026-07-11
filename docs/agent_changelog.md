@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-859] Seasonal Map Rotations — *2026-07-11 22:44:19 UTC*
+
+Introduce dynamic map skins and weather biases based on the 'current_season' value (e.g., season 1 is spring with lots of healing puddles and rain, season 4 is winter with constant snow and ice slicks).
+
+---
+
 ## [idea-851] Kinetic Rebound Armor — *2026-07-11 22:39:42 UTC*
 
 A new equippable item or innate ball skill that, when hit by an enemy dash or melee attack, absorbs a portion of the kinetic energy, completely negating knockback, and stores it as a temporary speed boost or a charged explosive counter-attack.

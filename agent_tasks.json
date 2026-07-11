@@ -14765,7 +14765,7 @@
     },
     {
       "id": "idea-859",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Seasonal Map Rotations",
@@ -24759,6 +24759,23 @@
         "src/ai/trail_blazer_mutation.py",
         "src/ai/trail_blazer_mutation.gd",
         "tests/test_trail_blazer_mutation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1446",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ice Boots",
+      "description": "Boots that ignore snow/ice",
+      "allowed_paths": [
+        "src/ai/ice_boots.py",
+        "src/ai/ice_boots.gd",
+        "tests/test_ice_boots.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
