@@ -1,0 +1,4 @@
+{
+    "title": "Corrosive Chain Reaction",
+    "description": "A new skill that applies a corrosive debuff on a target. If the target dies while under the effect, it explodes and applies the debuff to all nearby enemies. Successive explosions deal increased damage."
+}
