@@ -8096,6 +8096,15 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "kinetic_absorber_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("kinetic_absorber_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "status_absorber_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -9967,7 +9976,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "kinetic_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -11165,6 +11174,32 @@ class Action:
                 cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
                 if cosmetic == "magnetic_boots":
                     knockback_multiplier *= 0.5
+
+                has_kinetic_absorber = getattr(self.ball, "skill", "") == "kinetic_absorber" or (hasattr(self.ball, "inventory") and "kinetic_absorber_item" in self.ball.inventory)
+                if has_kinetic_absorber and getattr(other, "is_dashing", False):
+                    knockback_multiplier = 0.0
+                    self.ball.speed_boost_timer = 3.0
+                    current_charge = getattr(self.ball, "kinetic_absorber_charge", 0.0)
+                    new_charge = current_charge + getattr(other, "damage", 10.0) * 3.0
+
+                    if new_charge >= 100.0:
+                        self.ball.kinetic_absorber_charge = 0.0
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_explosion', 'x': self.ball.x, 'y': self.ball.y}})
+
+                        explosion_radius = 120.0
+                        for enemy in self._get_enemies():
+                            ex, ey = enemy.x, enemy.y
+                            if (ex - self.ball.x)**2 + (ey - self.ball.y)**2 <= explosion_radius**2:
+                                if hasattr(enemy, "take_damage"):
+                                    enemy.take_damage(50.0)
+                                elif hasattr(enemy, "hp"):
+                                    enemy.hp -= 50.0
+                                    if enemy.hp <= 0:
+                                        enemy.alive = False
+                                enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 1.5)
+                    else:
+                        self.ball.kinetic_absorber_charge = new_charge
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier

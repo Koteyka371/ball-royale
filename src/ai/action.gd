@@ -19261,7 +19261,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "kinetic_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -20042,6 +20042,87 @@ func _resolve_collisions() -> bool:
 
             if cosmetic_val == "magnetic_boots":
                 knockback_multiplier *= 0.5
+
+            var has_kinetic_absorber = false
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("skill") and self.ball["skill"] == "kinetic_absorber": has_kinetic_absorber = true
+                elif self.ball.has("inventory") and "kinetic_absorber_item" in self.ball["inventory"]: has_kinetic_absorber = true
+            else:
+                if "skill" in self.ball and self.ball.skill == "kinetic_absorber": has_kinetic_absorber = true
+                elif "inventory" in self.ball and "kinetic_absorber_item" in self.ball.inventory: has_kinetic_absorber = true
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("inventory") and "kinetic_absorber_item" in self.ball.get_meta("inventory"): has_kinetic_absorber = true
+
+            var other_is_dashing = false
+            if typeof(other) == TYPE_DICTIONARY:
+                if other.has("is_dashing") and other["is_dashing"]: other_is_dashing = true
+            else:
+                if "is_dashing" in other and other.is_dashing: other_is_dashing = true
+                elif other.has_method("has_meta") and other.has_meta("is_dashing") and other.get_meta("is_dashing"): other_is_dashing = true
+
+            if has_kinetic_absorber and other_is_dashing:
+                knockback_multiplier = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["speed_boost_timer"] = 3.0
+                else:
+                    if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = 3.0
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_boost_timer", 3.0)
+
+                var current_charge = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("kinetic_absorber_charge"): current_charge = self.ball["kinetic_absorber_charge"]
+                elif typeof(self.ball) == TYPE_OBJECT and "kinetic_absorber_charge" in self.ball: current_charge = self.ball.kinetic_absorber_charge
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_absorber_charge"): current_charge = self.ball.get_meta("kinetic_absorber_charge")
+
+                var other_dmg = 10.0
+                if typeof(other) == TYPE_DICTIONARY and other.has("damage"): other_dmg = other["damage"]
+                elif typeof(other) == TYPE_OBJECT and "damage" in other: other_dmg = other.damage
+                elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("damage"): other_dmg = other.get_meta("damage")
+
+                var new_charge = current_charge + (other_dmg * 3.0)
+
+                if new_charge >= 100.0:
+                    new_charge = 0.0
+                    if self.world != null and "events" in self.world:
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_explosion', 'x': self.ball.x, 'y': self.ball.y}})
+
+                    var explosion_radius = 120.0
+                    var enemies_list = []
+                    if self.world != null and self.world.has_method("get_nearby_entities"):
+                        var data_e = self.world.get_nearby_entities(self.ball, 9999.0)
+                        if typeof(data_e) == TYPE_DICTIONARY and data_e.has("enemies"): enemies_list = data_e["enemies"]
+
+                    for enemy in enemies_list:
+                        var ex = enemy.x
+                        var ey = enemy.y
+                        if pow(ex - self.ball.x, 2) + pow(ey - self.ball.y, 2) <= pow(explosion_radius, 2):
+                            if typeof(enemy) == TYPE_OBJECT and enemy.has_method("take_damage"):
+                                enemy.take_damage(50.0)
+                            else:
+                                var eh = 0.0
+                                if typeof(enemy) == TYPE_DICTIONARY and enemy.has("hp"): eh = enemy["hp"]
+                                elif "hp" in enemy: eh = enemy.hp
+                                elif enemy.has_method("get_meta") and enemy.has_meta("hp"): eh = enemy.get_meta("hp")
+                                eh -= 50.0
+                                if typeof(enemy) == TYPE_DICTIONARY and enemy.has("hp"): enemy["hp"] = eh
+                                elif "hp" in enemy: enemy.hp = eh
+                                elif enemy.has_method("set_meta"): enemy.set_meta("hp", eh)
+                                if eh <= 0.0:
+                                    if typeof(enemy) == TYPE_DICTIONARY and enemy.has("alive"): enemy["alive"] = false
+                                    elif "alive" in enemy: enemy.alive = false
+                                    elif enemy.has_method("set_meta"): enemy.set_meta("alive", false)
+
+                            var c_stun = 0.0
+                            if typeof(enemy) == TYPE_DICTIONARY and enemy.has("stun_timer"): c_stun = enemy["stun_timer"]
+                            elif "stun_timer" in enemy: c_stun = enemy.stun_timer
+                            elif enemy.has_method("has_meta") and enemy.has_meta("stun_timer"): c_stun = enemy.get_meta("stun_timer")
+
+                            var n_stun = max(c_stun, 1.5)
+                            if typeof(enemy) == TYPE_DICTIONARY and enemy.has("stun_timer"): enemy["stun_timer"] = n_stun
+                            elif "stun_timer" in enemy: enemy.stun_timer = n_stun
+                            elif enemy.has_method("set_meta"): enemy.set_meta("stun_timer", n_stun)
+
+                if typeof(self.ball) == TYPE_DICTIONARY: self.ball["kinetic_absorber_charge"] = new_charge
+                elif "kinetic_absorber_charge" in self.ball: self.ball.kinetic_absorber_charge = new_charge
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("kinetic_absorber_charge", new_charge)
 
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
