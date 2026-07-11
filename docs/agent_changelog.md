@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-680] Seismic Shockwave Modulator — *2026-07-11 19:52:46 UTC*
+
+A deployable hazard that acts like a thumper from Dune. It periodically sends out a seismic pulse that temporarily disables enemy skills in a wide radius and draws aggro from neutral environmental entities like tornados.
+
+---
+
 ## [idea-868] Teleportation Trap — *2026-07-11 19:25:30 UTC*
 
 A deployable trap that teleports the first enemy that steps on it to a random location in the arena.
