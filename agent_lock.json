@@ -131,9 +131,9 @@
     "agent-16": {
       "name": "Jules Worker 16",
       "area": "innovation",
-      "status": "assigned",
+      "status": "working",
       "task_id": "idea-831",
-      "started_at": "2026-07-11T12:32:13.248399+00:00",
+      "started_at": "2026-07-11T12:34:01.071069+00:00",
       "cycles_today": 0
     },
     "agent-17": {
