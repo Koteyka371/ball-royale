@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-794] Necromancer Minion Synergy - Sacrificial Shield — *2026-07-11 19:06:02 UTC*
+
+Give the Necromancer a passive ability where, if taking fatal damage, the damage is redirected to the nearest allied minion within range instead, killing the minion but saving the Necromancer.
+
+---
+
 ## [idea-850] Chronosphere Hazard — *2026-07-11 18:56:43 UTC*
 
 A new arena hazard that creates a large, slowly expanding bubble of warped time. Balls entering the sphere have their movement speed, skill cooldowns, and projectile velocities reduced by 75%, allowing for precise dodging and creating 'bullet time' zones during chaotic endgame teamfights.
