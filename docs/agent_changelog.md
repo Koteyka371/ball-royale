@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-847] Season Recap Video Generation — *2026-07-11 14:59:58 UTC*
+
+Automatically compiles a short highlight reel or stats summary video at the end of each season for the top players.
+
+---
+
 ## [idea-848] Quantum Entanglement Modifier — *2026-07-11 14:59:53 UTC*
 
 Pairs of random balls become 'entangled'. Damage taken or healed by one is instantly mirrored to the other, creating unpredictable dynamics and forcing players to protect unlikely allies.
