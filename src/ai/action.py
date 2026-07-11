@@ -743,7 +743,7 @@ class Action:
                             dist_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
                             if dist_sq < chain_range_sq:
                                 # Attract lightning to emp_trap
-                                if getattr(h, "trap_variant", "") == "emp_trap":
+                                if getattr(h, "trap_variant", "") == "emp_trap" or getattr(h, "kind", "") == "lightning_rod":
                                     nearby_entities.append((-999999 + dist_sq, h, "hazard")) # High priority
                                 else:
                                     nearby_entities.append((dist_sq, h, "hazard"))
@@ -874,6 +874,31 @@ class Action:
                                                     b.speed = getattr(b, "base_speed", 100.0) * 0.5
                                                     b.is_scrambled = True
                                                     b.scramble_timer = 3.0
+                        elif getattr(next_entity, "kind", "") == "lightning_rod":
+                            setattr(next_entity, "active", False)
+                            if hasattr(self.world, "balls"):
+                                amplified_damage = current_damage * 2.0
+                                valid_targets = [b for b in self.world.balls if getattr(b, "alive", True) and b not in hit_entities]
+                                if valid_targets:
+                                    valid_targets.sort(key=lambda b: (b.x - next_entity.x)**2 + (b.y - next_entity.y)**2, reverse=True)
+                                    for ft in valid_targets[:3]:
+                                        if hasattr(self.world, "_deal_damage"):
+                                            old_dmg = getattr(attacker, "damage", 10.0)
+                                            attacker.damage = amplified_damage
+                                            self.world._deal_damage(attacker, ft)
+                                            attacker.damage = old_dmg
+                                        elif hasattr(ft, "take_damage"):
+                                            ft.take_damage(amplified_damage)
+                                        elif hasattr(ft, "hp"):
+                                            ft.hp -= amplified_damage
+                                            if ft.hp <= 0: ft.alive = False
+
+                                        if hasattr(self, "_spawn_directed_particles"):
+                                            self._spawn_directed_particles(next_entity, ft, "chain_lightning")
+                                        hit_entities.append(ft)
+                            # Stop chaining from the rod itself to other nearby things, as it already split to 3
+                            jump_count = 3
+                            break
                         elif getattr(next_entity, "kind", next_entity.get("kind", "") if isinstance(next_entity, dict) else "") == "material":
                             if getattr(next_entity, "active", next_entity.get("active", False) if isinstance(next_entity, dict) else False):
                                 if hasattr(next_entity, "active"): next_entity.active = False
@@ -11288,8 +11313,31 @@ class Action:
                                     if d < best_dist and d <= 40000.0: # 200^2
                                         best_dist = d
                                         next_target = e
+                                elif e not in bounced_enemies and getattr(e, "kind", "") == "lightning_rod":
+                                    d = (e.x - current_pos.x)**2 + (e.y - current_pos.y)**2
+                                    if (-999999 + d) < best_dist and d <= 40000.0:
+                                        best_dist = -999999 + d
+                                        next_target = e
                             if next_target:
-                                if hasattr(next_target, "hp"):
+                                if getattr(next_target, "kind", "") == "lightning_rod":
+                                    setattr(next_target, "active", False)
+                                    if hasattr(self.world, "balls"):
+                                        amplified_damage = chain_damage * 2.0
+                                        valid_targets = [b for b in self.world.balls if getattr(b, "alive", True) and b not in bounced_enemies]
+                                        if valid_targets:
+                                            valid_targets.sort(key=lambda b: (b.x - next_target.x)**2 + (b.y - next_target.y)**2, reverse=True)
+                                            for ft in valid_targets[:3]:
+                                                if hasattr(ft, "hp"):
+                                                    ft.hp -= amplified_damage
+                                                elif hasattr(ft, "take_damage"):
+                                                    ft.take_damage(amplified_damage)
+                                                if hasattr(self, "_spawn_directed_particles"):
+                                                    self._spawn_directed_particles(next_target, ft, "chain_lightning")
+                                                bounced_enemies.add(ft)
+                                    bounced_enemies.add(next_target)
+                                    current_pos = next_target
+                                    break
+                                elif hasattr(next_target, "hp"):
                                     next_target.hp -= chain_damage
                                 elif hasattr(next_target, "take_damage"):
                                     next_target.take_damage(chain_damage)

@@ -20285,8 +20285,79 @@ func _resolve_collisions() -> bool:
                                 if d < best_dist:
                                     best_dist = d
                                     next_target = e
+                            elif not bounced_enemies.has(e):
+                                var e_kind = ""
+                                if typeof(e) == TYPE_OBJECT and "kind" in e: e_kind = e.kind
+                                elif typeof(e) == TYPE_DICTIONARY and e.has("kind"): e_kind = e["kind"]
+                                if e_kind == "lightning_rod":
+                                    var e_x = e.x if typeof(e) == TYPE_OBJECT else e["x"]
+                                    var e_y = e.y if typeof(e) == TYPE_OBJECT else e["y"]
+                                    var c_x = current_pos.x if typeof(current_pos) == TYPE_OBJECT else current_pos["x"]
+                                    var c_y = current_pos.y if typeof(current_pos) == TYPE_OBJECT else current_pos["y"]
+                                    var d = (e_x - c_x) * (e_x - c_x) + (e_y - c_y) * (e_y - c_y)
+                                    if (-999999 + d) < best_dist and d <= 40000.0:
+                                        best_dist = -999999 + d
+                                        next_target = e
                         if next_target != null:
-                            if typeof(next_target) == TYPE_DICTIONARY and next_target.has("hp"):
+                            var nt_kind = ""
+                            if typeof(next_target) == TYPE_OBJECT and "kind" in next_target: nt_kind = next_target.kind
+                            elif typeof(next_target) == TYPE_DICTIONARY and next_target.has("kind"): nt_kind = next_target["kind"]
+
+                            if nt_kind == "lightning_rod":
+                                if typeof(next_target) == TYPE_OBJECT and "active" in next_target: next_target.active = false
+                                elif typeof(next_target) == TYPE_DICTIONARY and next_target.has("active"): next_target["active"] = false
+                                elif typeof(next_target) == TYPE_OBJECT and next_target.has_method("set_meta"): next_target.set_meta("active", false)
+
+                                var balls_list = []
+                                if self.world != null and "balls" in self.world: balls_list = self.world.balls
+                                elif self.world != null and "entities" in self.world: balls_list = self.world.entities
+
+                                if balls_list.size() > 0:
+                                    var amplified_damage = chain_damage * 2.0
+                                    var valid_targets = []
+                                    for b in balls_list:
+                                        var is_alive = true
+                                        if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+                                        elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+                                        if is_alive and not bounced_enemies.has(b):
+                                            valid_targets.append(b)
+
+                                    if valid_targets.size() > 0:
+                                        var nt_x = next_target.x if typeof(next_target) == TYPE_OBJECT else next_target["x"]
+                                        var nt_y = next_target.y if typeof(next_target) == TYPE_OBJECT else next_target["y"]
+
+                                        for i in range(valid_targets.size()):
+                                            for j in range(i + 1, valid_targets.size()):
+                                                var bi = valid_targets[i]
+                                                var bj = valid_targets[j]
+                                                var di = pow(bi.x - nt_x, 2) + pow(bi.y - nt_y, 2)
+                                                var dj = pow(bj.x - nt_x, 2) + pow(bj.y - nt_y, 2)
+                                                if dj > di:
+                                                    var temp = valid_targets[i]
+                                                    valid_targets[i] = valid_targets[j]
+                                                    valid_targets[j] = temp
+
+                                        var furthest = []
+                                        for k in range(min(3, valid_targets.size())):
+                                            furthest.append(valid_targets[k])
+
+                                        for ft in furthest:
+                                            if typeof(ft) == TYPE_OBJECT and ft.has_method("take_damage"):
+                                                ft.take_damage(amplified_damage)
+                                            elif typeof(ft) == TYPE_OBJECT and "hp" in ft:
+                                                ft.hp -= amplified_damage
+                                                if ft.hp <= 0: ft.alive = false
+                                            elif typeof(ft) == TYPE_DICTIONARY and ft.has("hp"):
+                                                ft["hp"] -= amplified_damage
+                                                if ft["hp"] <= 0: ft["alive"] = false
+
+                                            if self.has_method("_spawn_directed_particles"):
+                                                self._spawn_directed_particles(next_target, ft, "chain_lightning")
+                                            bounced_enemies.append(ft)
+                                bounced_enemies.append(next_target)
+                                current_pos = next_target
+                                break
+                            elif typeof(next_target) == TYPE_DICTIONARY and next_target.has("hp"):
                                 next_target["hp"] -= chain_damage
                             elif typeof(next_target) == TYPE_OBJECT and next_target.has_method("take_damage"):
                                 next_target.take_damage(chain_damage)
