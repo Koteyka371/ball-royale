@@ -5723,6 +5723,16 @@ func execute(strategy: String, delta: float):
                 var radius = 150.0 if has_volatile else 100.0
                 var explosion_damage = 80.0 if has_volatile else 30.0
 
+                var is_amplified = false
+                if "amplified_explosion" in b: is_amplified = b.amplified_explosion
+                elif b.has_method("get_meta") and b.has_meta("amplified_explosion"): is_amplified = b.get_meta("amplified_explosion")
+
+                var this_decoy_type = b.decoy_type if "decoy_type" in b else (b.get_meta("decoy_type") if b.has_method("has_meta") and b.has_meta("decoy_type") else "")
+
+                if is_amplified and this_decoy_type == "explosive":
+                    radius *= 1.5
+                    explosion_damage *= 1.5
+
                 if simultaneous:
                     radius *= 2.0
                     explosion_damage *= 2.0
@@ -5772,6 +5782,11 @@ func execute(strategy: String, delta: float):
                                                 other.traits = other_traits
                                             elif other.has_method("set_meta"):
                                                 other.set_meta("traits", other_traits)
+
+                                        if "amplified_explosion" in other:
+                                            other.amplified_explosion = true
+                                        elif other.has_method("set_meta"):
+                                            other.set_meta("amplified_explosion", true)
 
                                     var b_decoy_type = b.decoy_type if "decoy_type" in b else (b.get_meta("decoy_type") if b.has_method("has_meta") and b.has_meta("decoy_type") else "")
 
