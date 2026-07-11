@@ -3866,6 +3866,61 @@ class Action:
                                     beam.hit_ids = []
                                     self.world.arena.hazards.append(beam)
 
+                    elif hazard.kind == "deployable_thumper":
+                        # Only update once per tick to avoid multiple balls updating the timer
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 10.0) - delta
+                            if hazard.duration <= 0:
+                                hazard.active = False
+                                if hazard in self.world.arena.hazards:
+                                    self.world.arena.hazards.remove(hazard)
+                                continue
+
+                            hazard.pulse_timer = getattr(hazard, "pulse_timer", 0.0) + delta
+                            pulse_interval = getattr(hazard, "pulse_interval", 2.0)
+
+                            # Handle pulse active visual state
+                            if getattr(hazard, "pulse_active", False):
+                                hazard.pulse_active_timer = getattr(hazard, "pulse_active_timer", 0.0) - delta
+                                if hazard.pulse_active_timer <= 0:
+                                    hazard.pulse_active = False
+
+                            if hazard.pulse_timer >= pulse_interval:
+                                hazard.pulse_timer -= pulse_interval
+                                hazard.pulse_active = True
+                                hazard.pulse_active_timer = getattr(hazard, "pulse_duration", 0.5)
+                                pulse_radius = getattr(hazard, "pulse_radius", 250.0)
+
+                                # Disable enemy skills
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "alive", True) and getattr(b, "team", "") != getattr(hazard, "team", ""):
+                                            dx = b.x - hazard.x
+                                            dy = b.y - hazard.y
+                                            dist_sq = dx*dx + dy*dy
+                                            if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
+                                                b.skills_disabled_timer = getattr(b, "skills_disabled_timer", 0.0) + 2.0
+
+                                # Draw aggro from tornados and other neutral entities
+                                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                    for other_hazard in self.world.arena.hazards:
+                                        if other_hazard == hazard:
+                                            continue
+                                        if getattr(other_hazard, "kind", "") in ["tornado", "local_tornado", "firenado", "poison_tornado"]:
+                                            dx = hazard.x - other_hazard.x
+                                            dy = hazard.y - other_hazard.y
+                                            dist_sq = dx*dx + dy*dy
+                                            if dist_sq <= (pulse_radius * 2)**2: # Even wider aggro range
+                                                dist = dist_sq**0.5
+                                                if dist > 0:
+                                                    # Steer tornado towards thumper
+                                                    speed = 50.0
+                                                    other_hazard.vx = (dx / dist) * speed
+                                                    other_hazard.vy = (dy / dist) * speed
+
                     elif hazard.kind == "deployable_thin_hazard_line":
                         hazard_is_active = getattr(hazard, "active", True)
 
@@ -10721,6 +10776,28 @@ class Action:
                         self.world.arena.rooms.append(new_room)
                     except ImportError:
                         pass
+
+            elif skill_name == "deployable_thumper":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class ThumperNode:
+                        pass
+                    node = ThumperNode()
+                    node.id = f"thumper_{self.ball.id}_{self.world.tick}"
+                    node.kind = "deployable_thumper"
+                    node.x = self.ball.x
+                    node.y = self.ball.y
+                    node.radius = 20.0
+                    node.team = getattr(self.ball, "team", "")
+                    node.active = True
+                    node.duration = 10.0
+                    node.pulse_timer = 0.0
+                    node.pulse_interval = 2.0
+                    node.pulse_radius = 250.0
+                    node.pulse_active = False
+                    node.pulse_duration = 0.5
+                    node.pulse_active_timer = 0.0
+                    node.owner_id = self.ball.id
+                    self.world.arena.hazards.append(node)
 
             elif skill_name == "deployable_thin_hazard_line":
                 enemies = self._get_enemies()
