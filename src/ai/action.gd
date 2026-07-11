@@ -14324,7 +14324,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
+                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -18441,6 +18441,103 @@ func _use_skill():
                 ball.set_meta("skill_timer", cooldown)
             else:
                 ball.skill_timer = cooldown
+
+        elif skill_name == "wind_rider":
+            _spawn_skill_particles("dash")
+
+            var arena_weather = ""
+            if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+                if "weather" in world.arena:
+                    arena_weather = world.arena.weather
+                elif typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get") and world.arena.get("weather") != null:
+                    arena_weather = world.arena.get("weather")
+            elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+                if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("weather"):
+                    arena_weather = world.arena.weather
+                elif typeof(world.arena) == TYPE_OBJECT and "weather" in world.arena:
+                    arena_weather = world.arena.weather
+
+            var arena_name = ""
+            if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+                if typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get_script"):
+                    var arena_script = world.arena.get_script()
+                    if arena_script != null:
+                        arena_name = arena_script.resource_path.get_file().get_basename()
+            elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+                if typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get_script"):
+                    var arena_script = world.arena.get_script()
+                    if arena_script != null:
+                        arena_name = arena_script.resource_path.get_file().get_basename()
+
+            var dash_dist = 100.0
+            if arena_weather == "wind" or arena_name == "autumn_arena" or arena_name == "AutumnArena":
+                dash_dist = 200.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball.speed_buff_timer = 5.0
+                else:
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("speed_buff_timer", 5.0)
+                    else:
+                        self.ball.speed_buff_timer = 5.0
+
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = enemies[0]
+                var min_dist = (target.x - self.ball.x)*(target.x - self.ball.x) + (target.y - self.ball.y)*(target.y - self.ball.y)
+                for i in range(1, enemies.size()):
+                    var e = enemies[i]
+                    var d = (e.x - self.ball.x)*(e.x - self.ball.x) + (e.y - self.ball.y)*(e.y - self.ball.y)
+                    if d < min_dist:
+                        target = e
+                        min_dist = d
+                var dx = target.x - self.ball.x
+                var dy = target.y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist > 0.0001:
+                    self.ball.x += (dx / dist) * dash_dist
+                    self.ball.y += (dy / dist) * dash_dist
+            else:
+                var angle = randf() * 2.0 * PI
+                self.ball.x += cos(angle) * dash_dist
+                self.ball.y += sin(angle) * dash_dist
+
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+                if "width" in world.arena:
+                    arena_width = float(world.arena.width)
+                if "height" in world.arena:
+                    arena_height = float(world.arena.height)
+            elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+                if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"):
+                    arena_width = float(world.arena.width)
+                elif typeof(world.arena) == TYPE_OBJECT and "width" in world.arena:
+                    arena_width = float(world.arena.width)
+
+                if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"):
+                    arena_height = float(world.arena.height)
+                elif typeof(world.arena) == TYPE_OBJECT and "height" in world.arena:
+                    arena_height = float(world.arena.height)
+
+            self.ball.x = max(0.0, min(float(arena_width), self.ball.x))
+            self.ball.y = max(0.0, min(float(arena_height), self.ball.y))
+
+            var cooldown = 5.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("SKILL_COOLDOWN"): cooldown = self.ball.SKILL_COOLDOWN
+                elif self.ball.has("skill_cooldown"): cooldown = self.ball.skill_cooldown
+            else:
+                if "SKILL_COOLDOWN" in self.ball: cooldown = self.ball.SKILL_COOLDOWN
+                elif "skill_cooldown" in self.ball: cooldown = self.ball.skill_cooldown
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cooldown = self.ball.get_meta("SKILL_COOLDOWN")
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball.skill_timer = cooldown
+            else:
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill_timer", cooldown)
+                else:
+                    self.ball.skill_timer = cooldown
 
         elif skill_name == "dash":
             _spawn_skill_particles("dash")

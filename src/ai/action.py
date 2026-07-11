@@ -8031,7 +8031,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
+                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -10476,6 +10476,43 @@ class Action:
                 # Move ball to final target
                 self.ball.x = max(0.0, min(float(arena_width), target_x))
                 self.ball.y = max(0.0, min(float(arena_height), target_y))
+
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", getattr(self.ball, "skill_cooldown", 5.0))
+
+            elif skill_name == "wind_rider":
+                self._spawn_skill_particles("dash")
+
+                # Check for wind conditions (weather is wind or arena is AutumnArena)
+                arena_weather = getattr(self.world.arena, "weather", "") if hasattr(self.world, "arena") and self.world.arena else ""
+                arena_name = type(self.world.arena).__name__ if hasattr(self.world, "arena") and self.world.arena else ""
+
+                if arena_weather == "wind" or arena_name == "AutumnArena":
+                    self.ball.speed_buff_timer = 5.0
+                    dash_dist = 200.0
+                else:
+                    dash_dist = 100.0
+
+                enemies = self._get_enemies()
+
+                if enemies:
+                    import math
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        self.ball.x += (dx / dist) * dash_dist
+                        self.ball.y += (dy / dist) * dash_dist
+                else:
+                    import math, random
+                    angle = random.uniform(0, 2 * math.pi)
+                    self.ball.x += math.cos(angle) * dash_dist
+                    self.ball.y += math.sin(angle) * dash_dist
+
+                arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
+                arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
+                self.ball.x = max(0.0, min(float(arena_width), self.ball.x))
+                self.ball.y = max(0.0, min(float(arena_height), self.ball.y))
 
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", getattr(self.ball, "skill_cooldown", 5.0))
 
