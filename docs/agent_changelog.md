@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-851] Kinetic Rebound Armor — *2026-07-11 22:39:42 UTC*
+
+A new equippable item or innate ball skill that, when hit by an enemy dash or melee attack, absorbs a portion of the kinetic energy, completely negating knockback, and stores it as a temporary speed boost or a charged explosive counter-attack.
+
+---
+
 ## [idea-878] Paint the Floor Mode — *2026-07-11 22:35:13 UTC*
 
 Every entity leaves a trail of their team's color. Stepping on your own color gives a speed and regen buff, while stepping on enemy colors causes slowdown and damage. Teams win by controlling the most territory.

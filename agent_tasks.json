@@ -14629,7 +14629,7 @@
     },
     {
       "id": "idea-851",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Rebound Armor",
@@ -24742,6 +24742,23 @@
         "src/arena/tornado_that_pulls_balls_in.py",
         "src/arena/tornado_that_pulls_balls_in.gd",
         "tests/test_tornado_that_pulls_balls_in.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1445",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trail Blazer Mutation",
+      "description": "Mutator: All players move 2x faster when on their own team's color trail.",
+      "allowed_paths": [
+        "src/ai/trail_blazer_mutation.py",
+        "src/ai/trail_blazer_mutation.gd",
+        "tests/test_trail_blazer_mutation.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
