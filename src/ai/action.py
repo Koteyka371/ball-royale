@@ -5370,6 +5370,16 @@ class Action:
                                 if b_type == "lightning_rod":
                                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + hazard.damage)
                                     self.ball.supercharge_timer = 5.0
+
+                                    if getattr(self.ball, "lightning_strikes_timer", 0.0) <= 0:
+                                        self.ball.lightning_strikes_absorbed_count = 0
+
+                                    self.ball.lightning_strikes_absorbed_count = getattr(self.ball, "lightning_strikes_absorbed_count", 0) + 1
+                                    self.ball.lightning_strikes_timer = 5.0
+
+                                    if self.ball.lightning_strikes_absorbed_count >= 3:
+                                        self.ball.overcharged_timer = 10.0
+
                                     if hasattr(self, "_spawn_skill_particles"):
                                         self._spawn_skill_particles("lightning")
                                 else:
@@ -11284,6 +11294,9 @@ class Action:
                 self.ball.speed *= 1.5
                 self.ball.damage *= 1.5
 
+            if getattr(self.ball, "overcharged_timer", 0.0) > 0:
+                self.ball.speed *= 1.3
+
 
 
 
@@ -11318,6 +11331,40 @@ class Action:
             self.ball.aura_booster_timer -= delta
             if self.ball.aura_booster_timer < 0:
                 self.ball.aura_booster_timer = 0.0
+
+        if getattr(self.ball, "lightning_strikes_timer", 0.0) > 0:
+            self.ball.lightning_strikes_timer -= delta
+            if self.ball.lightning_strikes_timer < 0:
+                self.ball.lightning_strikes_timer = 0.0
+
+        if getattr(self.ball, "overcharged_timer", 0.0) > 0:
+            self.ball.overcharged_timer -= delta
+
+            drain_amount = 2.0 * delta
+            if hasattr(self.ball, "take_damage"):
+                self.ball.take_damage(drain_amount)
+            elif hasattr(self.ball, "hp"):
+                self.ball.hp -= drain_amount
+                if self.ball.hp <= 0:
+                    self.ball.alive = False
+
+            self.ball.overcharged_zap_timer = getattr(self.ball, "overcharged_zap_timer", 0.0) - delta
+            if self.ball.overcharged_zap_timer <= 0:
+                self.ball.overcharged_zap_timer = 1.0
+                if hasattr(self.world, "get_nearby_entities"):
+                    nearby = self.world.get_nearby_entities(self.ball, 150)
+                    for enemy in nearby.get("enemies", []):
+                        if hasattr(enemy, "take_damage"):
+                            enemy.take_damage(15.0)
+                        elif hasattr(enemy, "hp"):
+                            enemy.hp -= 15.0
+                            if enemy.hp <= 0:
+                                enemy.alive = False
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': enemy.x, 'y': enemy.y, 'tx': enemy.x, 'ty': enemy.y}})
+
+            if self.ball.overcharged_timer < 0:
+                self.ball.overcharged_timer = 0.0
 
         if getattr(self.ball, "disruptor_aura_timer", 0.0) > 0:
             self.ball.disruptor_aura_timer -= delta
