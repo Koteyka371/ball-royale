@@ -17486,3 +17486,81 @@ class AerialArenaMode(GameMode):
 
 
 GAME_MODES['aerial_arena'] = AerialArenaMode()
+
+class BermudaTriangleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bermuda Triangle"
+        self.description = "Three pylons spawn on the arena, forming a triangle. Any ball that enters the center of the triangle randomly teleports to a different location on the map, resetting their momentum to zero."
+        self.pylons = []
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+        arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+
+        import math
+        cx, cy = arena_w / 2.0, arena_h / 2.0
+        radius = 150.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+            self.pylons = []
+            for i in range(3):
+                angle = i * (2 * math.pi / 3) - math.pi / 2
+                px = cx + radius * math.cos(angle)
+                py = cy + radius * math.sin(angle)
+                pylon = Hazard(id=f"bermuda_pylon_{i}", x=px, y=py, radius=20.0, kind="magnetic_pylon", damage=0.0)
+                world.arena.hazards.append(pylon)
+                self.pylons.append((px, py))
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if len(self.pylons) < 3:
+            return
+
+        p1, p2, p3 = self.pylons
+
+        def point_in_triangle(pt, v1, v2, v3):
+            def sign(p1, p2, p3):
+                return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
+
+            d1 = sign(pt, v1, v2)
+            d2 = sign(pt, v2, v3)
+            d3 = sign(pt, v3, v1)
+
+            has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
+            has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
+
+            return not (has_neg and has_pos)
+
+        arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+        arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+        import random
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            x = getattr(b, "x", 0.0)
+            y = getattr(b, "y", 0.0)
+
+            if point_in_triangle((x, y), p1, p2, p3):
+                b.x = random.uniform(50.0, arena_w - 50.0)
+                b.y = random.uniform(50.0, arena_h - 50.0)
+                b.vx = 0.0
+                b.vy = 0.0
+
+GAME_MODES['bermuda_triangle'] = BermudaTriangleMode()
