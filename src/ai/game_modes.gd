@@ -277,6 +277,111 @@ class GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+
+		# Seasonal Hazards
+		var seasonal_timer = 0.0
+		if typeof(world) == TYPE_DICTIONARY:
+			seasonal_timer = world.get("seasonal_hazard_timer", 0.0)
+		elif typeof(world) == TYPE_OBJECT:
+			if "seasonal_hazard_timer" in world:
+				var st = world.seasonal_hazard_timer
+				if typeof(st) == TYPE_REAL or typeof(st) == TYPE_INT:
+					seasonal_timer = st
+			elif world.has_method("has_meta") and world.has_meta("seasonal_hazard_timer"):
+				var st = world.get_meta("seasonal_hazard_timer")
+				if typeof(st) == TYPE_REAL or typeof(st) == TYPE_INT:
+					seasonal_timer = st
+
+		seasonal_timer += delta
+
+		if seasonal_timer >= 5.0:
+			seasonal_timer = 0.0
+			var season_num = 1
+			var theme = "Genesis"
+			var lbm = null
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.has("leaderboard_manager"): lbm = world["leaderboard_manager"]
+				elif world.has("profile_manager") and typeof(world["profile_manager"]) == TYPE_OBJECT and "leaderboard_manager" in world["profile_manager"]:
+					lbm = world["profile_manager"].leaderboard_manager
+			elif typeof(world) == TYPE_OBJECT:
+				if "leaderboard_manager" in world: lbm = world.leaderboard_manager
+				elif "profile_manager" in world and world.profile_manager != null and "leaderboard_manager" in world.profile_manager:
+					lbm = world.profile_manager.leaderboard_manager
+
+			if lbm != null:
+				if typeof(lbm) == TYPE_OBJECT and "data" in lbm and typeof(lbm.data) == TYPE_DICTIONARY:
+					season_num = lbm.data.get("current_season", 1)
+				elif typeof(lbm) == TYPE_DICTIONARY and lbm.has("data") and typeof(lbm["data"]) == TYPE_DICTIONARY:
+					season_num = lbm["data"].get("current_season", 1)
+
+				if typeof(lbm) == TYPE_OBJECT and lbm.has_method("get_theme"):
+					theme = lbm.get_theme(season_num)
+				elif typeof(lbm) == TYPE_DICTIONARY and lbm.has("get_theme") and lbm["get_theme"] != null and lbm["get_theme"].has_method("call"):
+					theme = lbm["get_theme"].call(season_num)
+
+			if theme == "Frost" or theme == "Inferno" or theme == "Void" or theme == "Abyssal":
+				var has_arena = false
+				var arena_ref = null
+				if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+					has_arena = true
+					arena_ref = world["arena"]
+				elif typeof(world) == TYPE_OBJECT and "arena" in world:
+					has_arena = true
+					arena_ref = world.arena
+
+				if has_arena and arena_ref != null:
+					var has_hazards = false
+					if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("hazards"): has_hazards = true
+					elif typeof(arena_ref) == TYPE_OBJECT and "hazards" in arena_ref: has_hazards = true
+
+					if has_hazards:
+						var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+						if ProceduralArenaScript != null:
+							var arena_w = 800.0
+							var arena_h = 600.0
+							if typeof(arena_ref) == TYPE_DICTIONARY:
+								arena_w = arena_ref.get("width", 800.0)
+								arena_h = arena_ref.get("height", 600.0)
+							else:
+								if "width" in arena_ref: arena_w = arena_ref.width
+								if "height" in arena_ref: arena_h = arena_ref.height
+
+							var hx = randf_range(50.0, arena_w - 50.0)
+							var hy = randf_range(50.0, arena_h - 50.0)
+							var hz_len = 0
+							if typeof(arena_ref) == TYPE_DICTIONARY: hz_len = arena_ref["hazards"].size()
+							else: hz_len = arena_ref.hazards.size()
+
+							var h_id = 999000 + hz_len + (randi() % 10000)
+							var new_hazard = null
+
+							if theme == "Frost":
+								new_hazard = ProceduralArenaScript.Hazard.new(h_id, hx, hy, 60.0, "ice_patch", 0.0)
+								new_hazard.set_meta("duration", 10.0)
+							elif theme == "Inferno":
+								new_hazard = ProceduralArenaScript.Hazard.new(h_id, hx, hy, 50.0, "lava", 10.0)
+								new_hazard.set_meta("duration", 10.0)
+							elif theme == "Void":
+								new_hazard = ProceduralArenaScript.Hazard.new(h_id, hx, hy, 30.0, "black_hole", 5.0)
+								new_hazard.set_meta("duration", 8.0)
+								new_hazard.set_meta("pull_strength", 50.0)
+							elif theme == "Abyssal":
+								new_hazard = ProceduralArenaScript.Hazard.new(h_id, hx, hy, 45.0, "puddle", 2.0)
+								new_hazard.set_meta("duration", 12.0)
+
+							if new_hazard != null:
+								if typeof(arena_ref) == TYPE_DICTIONARY:
+									arena_ref["hazards"].append(new_hazard)
+								else:
+									arena_ref.hazards.append(new_hazard)
+
+		if typeof(world) == TYPE_DICTIONARY:
+			world["seasonal_hazard_timer"] = seasonal_timer
+		elif typeof(world) == TYPE_OBJECT:
+			if "seasonal_hazard_timer" in world:
+				world.seasonal_hazard_timer = seasonal_timer
+			elif world.has_method("set_meta"):
+				world.set_meta("seasonal_hazard_timer", seasonal_timer)
 		var match_time = 0.0
 
 		for b in balls:

@@ -313,6 +313,66 @@ class GameMode:
 
 
 
+
+
+        # Seasonal Hazards
+        if not hasattr(world, "seasonal_hazard_timer") or not isinstance(getattr(world, "seasonal_hazard_timer"), (int, float)):
+            world.seasonal_hazard_timer = 0.0
+        try:
+            world.seasonal_hazard_timer += delta
+        except Exception:
+            world.seasonal_hazard_timer = delta
+
+        try:
+            is_time = world.seasonal_hazard_timer >= 5.0
+        except Exception:
+            is_time = False
+
+        if is_time:
+            world.seasonal_hazard_timer = 0.0
+            season_num = 1
+            if hasattr(world, "leaderboard_manager"):
+                season_num = getattr(world.leaderboard_manager, "data", {}).get("current_season", 1)
+            elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+                season_num = getattr(world.profile_manager.leaderboard_manager, "data", {}).get("current_season", 1)
+
+            theme = "Genesis"
+            if hasattr(world, "leaderboard_manager") and hasattr(world.leaderboard_manager, "get_theme"):
+                theme = world.leaderboard_manager.get_theme(season_num)
+            elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager") and hasattr(world.profile_manager.leaderboard_manager, "get_theme"):
+                theme = world.profile_manager.leaderboard_manager.get_theme(season_num)
+
+            if theme in ["Frost", "Inferno", "Void", "Abyssal"]:
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                        import random
+                        arena_w = getattr(world.arena, "width", 800.0)
+                        arena_h = getattr(world.arena, "height", 600.0)
+                        hx = random.uniform(50, arena_w - 50)
+                        hy = random.uniform(50, arena_h - 50)
+                        h_id = 999000 + len(world.arena.hazards) + random.randint(0, 10000)
+
+                        if theme == "Frost":
+                            ice = Hazard(id=h_id, x=hx, y=hy, radius=60.0, kind="ice_patch", damage=0.0)
+                            setattr(ice, "duration", 10.0)
+                            world.arena.hazards.append(ice)
+                        elif theme == "Inferno":
+                            lava = Hazard(id=h_id, x=hx, y=hy, radius=50.0, kind="lava", damage=10.0)
+                            setattr(lava, "duration", 10.0)
+                            world.arena.hazards.append(lava)
+                        elif theme == "Void":
+                            bh = Hazard(id=h_id, x=hx, y=hy, radius=30.0, kind="black_hole", damage=5.0)
+                            setattr(bh, "duration", 8.0)
+                            setattr(bh, "pull_strength", 50.0)
+                            world.arena.hazards.append(bh)
+                        elif theme == "Abyssal":
+                            puddle = Hazard(id=h_id, x=hx, y=hy, radius=45.0, kind="puddle", damage=2.0)
+                            setattr(puddle, "duration", 12.0)
+                            world.arena.hazards.append(puddle)
+                    except ImportError:
+                        pass
+
         # Aura explosion logic
         for b in balls:
             cooldown = getattr(b, "aura_explosion_cooldown", 0.0)
