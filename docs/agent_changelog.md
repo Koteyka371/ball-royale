@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-882] Bermuda Triangle Arena Hazard — *2026-07-11 21:49:14 UTC*
+
+Three pylons spawn on the arena, forming a triangle. Any ball that enters the center of the triangle randomly teleports to a different location on the map, resetting their momentum to zero.
+
+---
+
 ## [idea-870] Arcane Prism Hazard — *2026-07-11 21:25:41 UTC*
 
 A new hazard that absorbs nearby chain lightning strikes and immediately amplifies and splits them into 3 distinct bolts that seek out the furthest entities on the map, drastically altering standard engagement ranges during thunderstorms.

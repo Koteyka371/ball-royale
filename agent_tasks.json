@@ -15159,7 +15159,7 @@
     },
     {
       "id": "idea-882",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bermuda Triangle Arena Hazard",
@@ -24657,6 +24657,40 @@
         "src/ai/synergistic_trait_combos.py",
         "src/ai/synergistic_trait_combos.gd",
         "tests/test_synergistic_trait_combos.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1440",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Enhancer Booster",
+      "description": "A new booster that, when picked up, gives the player a temporary buff that makes their chain lightning jump an additional 2 times and deal 50% more damage to secondary targets.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_enhancer_booster.py",
+        "src/ai/chain_lightning_enhancer_booster.gd",
+        "tests/test_chain_lightning_enhancer_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1441",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lightning Storm Arena Event",
+      "description": "An arena event where chain lightning periodically strikes the center of the arena, and any entity caught in it becomes a conduit, rapidly spreading smaller, low-damage chain lightnings to anyone nearby for 10 seconds.",
+      "allowed_paths": [
+        "src/arena/lightning_storm_arena.py",
+        "src/arena/lightning_storm_arena.gd",
+        "tests/test_lightning_storm_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
