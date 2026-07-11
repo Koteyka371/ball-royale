@@ -24370,6 +24370,78 @@ class WeatherStationMode extends GameMode:
 				self.active_weather = null
 				self.controlling_team = null
 
+
+class DynamicWeatherTransitionsMode extends GameMode:
+	var weather_sequence = ["clear", "cloudy", "storm", "blizzard"]
+	var current_stage = 0
+	var weather_timer = 20.0
+
+	func _init():
+		name = "Dynamic Weather Transitions"
+		description = "Match starts sunny, gradually becoming cloudy, and transitioning to full storm or blizzard."
+		weather = weather_sequence[current_stage]
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		current_stage = 0
+		weather = weather_sequence[current_stage]
+		weather_timer = 20.0
+		if world.get("arena") != null:
+			world.arena.weather = weather
+
+	func apply_dynamic_traits(world, balls, delta):
+		var w = weather
+		if w == "" and world.get("arena") != null:
+			w = world.arena.get("weather", "")
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var base_s = 100.0
+			if typeof(b) == TYPE_DICTIONARY:
+				base_s = b.get("base_speed", b.get("speed", 100.0))
+			else:
+				base_s = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+
+			if w == "storm":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = base_s * 0.8
+				else:
+					if "speed" in b: b.speed = base_s * 0.8
+			elif w == "blizzard":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = base_s * 0.5
+				else:
+					if "speed" in b: b.speed = base_s * 0.5
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = base_s
+				else:
+					if "speed" in b: b.speed = base_s
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		weather_timer -= delta
+		if weather_timer <= 0:
+			if current_stage < weather_sequence.size() - 1:
+				current_stage += 1
+				weather = weather_sequence[current_stage]
+				weather_timer = 20.0
+				if world.get("arena") != null:
+					world.arena.weather = weather
+				if world.has_method("add_event"):
+					world.add_event("weather_transition", {"new_weather": weather})
+			else:
+				weather_timer = 9999.0
+
 var GAME_MODES = {
 	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
@@ -24466,6 +24538,7 @@ var GAME_MODES = {
 	"capture_the_flag": CaptureTheFlagMode.new(),
 	"evolutionary_simulation": EvolutionarySimulationMode.new(),
 	"interactive_training": load("res://src/ai/interactive_training.gd").new(),
+	"dynamic_weather_transitions": DynamicWeatherTransitionsMode.new(),
 	"shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
 	"shrinking_boundary": ShrinkingBoundaryMode.new(),
 	"inverse_safe_zone": InverseSafeZoneMode.new(),

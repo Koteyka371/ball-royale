@@ -15134,6 +15134,60 @@ class WeatherStationMode(GameMode):
                 self.active_weather = None
                 self.controlling_team = None
 
+
+class DynamicWeatherTransitionsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Weather Transitions"
+        self.description = "Match starts sunny, gradually becoming cloudy, and transitioning to full storm or blizzard."
+        self.weather_sequence = ["clear", "cloudy", "storm", "blizzard"]
+        self.current_stage = 0
+        self.weather = self.weather_sequence[self.current_stage]
+        self.weather_timer = 20.0  # Time before next transition
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.current_stage = 0
+        self.weather = self.weather_sequence[self.current_stage]
+        self.weather_timer = 20.0
+        if hasattr(world, "arena"):
+            world.arena.weather = self.weather
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+            if weather == "storm":
+                b.speed = base_s * 0.8
+            elif weather == "blizzard":
+                b.speed = base_s * 0.5
+            else:
+                b.speed = base_s
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.weather_timer -= delta
+        if self.weather_timer <= 0:
+            if self.current_stage < len(self.weather_sequence) - 1:
+                self.current_stage += 1
+                self.weather = self.weather_sequence[self.current_stage]
+                self.weather_timer = 20.0  # Reset timer for next stage
+                if hasattr(world, "arena"):
+                    world.arena.weather = self.weather
+                if hasattr(world, "add_event"):
+                    world.add_event("weather_transition", {"new_weather": self.weather})
+            else:
+                # Keep it at the final weather
+                self.weather_timer = 9999.0
+
 GAME_MODES = {
     "falling_panels": FallingPanelsMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
@@ -17017,3 +17071,4 @@ class DisguisedTrapsMode(GameMode):
                 world.arena.hazards.append(trap)
 
 GAME_MODES["disguised_traps"] = DisguisedTrapsMode()
+GAME_MODES["dynamic_weather_transitions"] = DynamicWeatherTransitionsMode()
