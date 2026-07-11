@@ -14,7 +14,7 @@ func update(events: Array, local_player_id = null) -> void:
     active_indicators.clear()
 
     for event in events:
-        if typeof(event) == TYPE_DICTIONARY and event.has("type") and event["type"] == "bounty_compass":
+        if typeof(event) == TYPE_DICTIONARY and event.has("type") and (event["type"] == "bounty_compass" or event["type"] == "nemesis_compass"):
             var data = event.get("data", {})
             var owner_id = data.get("owner_id")
 
@@ -22,7 +22,8 @@ func update(events: Array, local_player_id = null) -> void:
                 active_indicators.append({
                     "target_x": float(data.get("target_x", 0.0)),
                     "target_y": float(data.get("target_y", 0.0)),
-                    "owner_id": owner_id
+                    "owner_id": owner_id,
+                    "is_nemesis": event["type"] == "nemesis_compass"
                 })
 
 func get_render_data(camera_x: float, camera_y: float, zoom: float) -> Array:
@@ -60,12 +61,21 @@ func get_render_data(camera_x: float, camera_y: float, zoom: float) -> Array:
 
                 var angle = atan2(ny, nx)
 
-                render_data.append({
-                    "type": "bounty_pointer",
-                    "x": indicator_x,
-                    "y": indicator_y,
-                    "angle": angle,
-                    "color": "orange"
-                })
+                if indicator.get("is_nemesis", false):
+                    render_data.append({
+                        "type": "nemesis_pointer",
+                        "x": indicator_x,
+                        "y": indicator_y,
+                        "angle": angle,
+                        "color": "purple"
+                    })
+                else:
+                    render_data.append({
+                        "type": "bounty_pointer",
+                        "x": indicator_x,
+                        "y": indicator_y,
+                        "angle": angle,
+                        "color": "orange"
+                    })
 
     return render_data

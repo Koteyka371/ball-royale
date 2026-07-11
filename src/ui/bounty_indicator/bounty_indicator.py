@@ -10,7 +10,7 @@ class BountyIndicatorUI:
         self.active_indicators.clear()
 
         for event in events:
-            if event.get("type") == "bounty_compass":
+            if event.get("type") in ("bounty_compass", "nemesis_compass"):
                 data = event.get("data", {})
                 owner_id = data.get("owner_id")
 
@@ -20,7 +20,8 @@ class BountyIndicatorUI:
                     self.active_indicators.append({
                         "target_x": data.get("target_x", 0.0),
                         "target_y": data.get("target_y", 0.0),
-                        "owner_id": owner_id
+                        "owner_id": owner_id,
+                        "is_nemesis": event.get("type") == "nemesis_compass"
                     })
 
             elif event.get("type") == "sniper_nest_indicator":
@@ -94,10 +95,15 @@ class BountyIndicatorUI:
                             "angle": angle,
                             "color": "red"
                         })
+                    elif indicator.get("is_nemesis"):
+                        render_data.append({
+                            "type": "nemesis_pointer",
+                            "x": indicator_x,
+                            "y": indicator_y,
+                            "angle": angle,
+                            "color": "purple"
+                        })
                     else:
-
-
-
                         render_data.append({
                             "type": "bounty_pointer",
                             "x": indicator_x,
