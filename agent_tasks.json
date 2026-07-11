@@ -14748,7 +14748,7 @@
     },
     {
       "id": "idea-858",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weaponized Recoil",
@@ -24095,6 +24095,23 @@
         "src/ai/mirror_ball.py",
         "src/ai/mirror_ball.gd",
         "tests/test_mirror_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1407",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Weather Mutator - Flood",
+      "description": "A rare weather event that gradually floods the arena with water. Balls that lack aquatic or floating traits will have their movement speed significantly reduced, and deep areas might cause continuous stamina drain.",
+      "allowed_paths": [
+        "src/ai/dynamic_mutator_flood.py",
+        "src/ai/dynamic_mutator_flood.gd",
+        "tests/test_dynamic_mutator_flood.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

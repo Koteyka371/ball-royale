@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-858] Weaponized Recoil — *2026-07-11 15:55:41 UTC*
+
+Shooting projectiles or using certain strong skills applies a slight knockback/recoil to the user, allowing skilled players to use recoil for evasive movement or faster traversal.
+
+---
+
 ## [idea-856] Weather Transitions — *2026-07-11 15:53:49 UTC*
 
 Introduce dynamic weather transitions during a match. For example, a match could start sunny but gradually become cloudy and then transition to a full storm or blizzard, forcing balls to adapt their strategy dynamically rather than staying in one state.
