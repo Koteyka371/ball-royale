@@ -5039,29 +5039,26 @@ class Action:
                                     hazard.duration = 0.0 # Destroy trap
 
                                 elif trap_variant == "warp":
-                                    # Warp trap: teleport the ball to the opposite side of the map along its velocity vector
-                                    import math
-                                    vx = getattr(self.ball, "vx", 0.0)
-                                    vy = getattr(self.ball, "vy", 0.0)
-                                    if abs(vx) < 0.1 and abs(vy) < 0.1:
-                                        # Fallback direction if not moving
-                                        dx, dy = -1.0, 0.0
-                                    else:
-                                        v_dist = math.sqrt(vx*vx + vy*vy)
-                                        dx = vx / v_dist
-                                        dy = vy / v_dist
-
-                                    target_x = old_x - dx * 2000.0
-                                    target_y = old_y - dy * 2000.0
+                                    # Warp trap: teleport the ball to a random location in the arena
+                                    import random
 
                                     my_radius = getattr(self.ball, "radius", 10.0)
+
+                                    arena_w = 1000.0
+                                    arena_h = 1000.0
+                                    if hasattr(self.world, "arena"):
+                                        arena_w = getattr(self.world.arena, "width", 1000.0)
+                                        arena_h = getattr(self.world.arena, "height", 1000.0)
+
+                                    target_x = random.uniform(my_radius, arena_w - my_radius)
+                                    target_y = random.uniform(my_radius, arena_h - my_radius)
+
                                     clamped_x, clamped_y = target_x, target_y
                                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
                                         clamped_x, clamped_y, _ = self.world.arena.clamp_position(target_x, target_y, my_radius)
 
-                                    # Add small inward offset to prevent getting stuck in walls
-                                    self.ball.x = clamped_x + dx * 5.0
-                                    self.ball.y = clamped_y + dy * 5.0
+                                    self.ball.x = clamped_x
+                                    self.ball.y = clamped_y
 
                                     if hasattr(self.world, "events"):
                                         self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
