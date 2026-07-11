@@ -329,6 +329,14 @@ func _attempt_damage(attacker, target) -> void:
     elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("intangible_timer"): a_timer = attacker.get_meta("intangible_timer")
     if a_intangible or a_timer > 0.0:
         return
+
+    # Track for Bounty Tag and other modes
+    if typeof(target) == TYPE_DICTIONARY:
+        target["last_damaged_by"] = attacker.get("id") if typeof(attacker) == TYPE_DICTIONARY else (attacker.id if "id" in attacker else null)
+    elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+        target.set_meta("last_damaged_by", attacker.get("id") if typeof(attacker) == TYPE_DICTIONARY else (attacker.id if "id" in attacker else null))
+    elif typeof(target) == TYPE_OBJECT and "last_damaged_by" in target:
+        target.last_damaged_by = attacker.get("id") if typeof(attacker) == TYPE_DICTIONARY else (attacker.id if "id" in attacker else null)
     var q_state = 0.0
     if typeof(target) == TYPE_OBJECT and "quantum_state_timer" in target: q_state = target.quantum_state_timer
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("quantum_state_timer"): q_state = target.get_meta("quantum_state_timer")

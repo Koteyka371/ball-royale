@@ -202,6 +202,10 @@ class Action:
             return
         if getattr(target, "quantum_state_timer", 0.0) > 0.0:
             return
+
+        # Track for Bounty Tag and other modes
+        target.last_damaged_by = getattr(attacker, 'id', None)
+
         import random
         if getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower() == 'alchemist' and random.random() < 0.25:
             # 25% chance to apply a weak stacking poison effect

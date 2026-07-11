@@ -24692,6 +24692,7 @@ var GAME_MODES = {
 	"moving_safe_zone": MovingSafeZoneMode.new(),
 	"poison_gas_zone": PoisonGasZoneMode.new(),
 	"bounty_hunt": BountyHuntMode.new(),
+	"bounty_tag": BountyTagMode.new(),
 	"earthquake": EarthquakeMode.new(),
 	"inverse_mirror_arena": InverseMirrorArenaMode.new(),
 	"mirror_match": MirrorMatchMode.new(),
@@ -26284,3 +26285,247 @@ class UndergroundTunnelMode extends GameMode:
 					if "vy" in b: b.vy = 0.0
 					elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
 					break
+
+
+class BountyTagMode extends GameMode:
+	var bounty_id = null
+	var bounty_timers = {}
+	var ping_timer = 0.0
+
+	func _init() -> void:
+		name = "Bounty Tag"
+		description = "One player starts as the Bounty, gaining buffs and vision, but their location is pinged. Taking down the Bounty steals the tag. The player holding the tag the longest wins."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		bounty_timers.clear()
+		bounty_id = null
+		ping_timer = 0.0
+
+		var valid_balls = []
+		for b in balls:
+			var is_spec = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_spec = b.get("ball_type", "") == "spectator" or b.get("ball_type", "") == "shadow_monster"
+			else:
+				is_spec = b.ball_type == "spectator" or b.ball_type == "shadow_monster"
+
+			if not is_spec:
+				valid_balls.append(b)
+				var id = null
+				if typeof(b) == TYPE_DICTIONARY:
+					id = b.get("id")
+				else:
+					id = b.id
+				bounty_timers[str(id)] = 0.0
+
+		if valid_balls.size() > 0:
+			var initial_bounty = valid_balls[randi() % valid_balls.size()]
+			if typeof(initial_bounty) == TYPE_DICTIONARY:
+				bounty_id = str(initial_bounty.get("id"))
+			else:
+				bounty_id = str(initial_bounty.id)
+
+			if world != null and world.has_method("add_event"):
+				world.add_event("bounty_assigned", {"message": "Player " + str(bounty_id) + " is the first Bounty!"})
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var valid_balls = []
+		var bounty_ball = null
+
+		for b in balls:
+			var is_spec = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_spec = b.get("ball_type", "") == "spectator" or b.get("ball_type", "") == "shadow_monster"
+			else:
+				is_spec = b.ball_type == "spectator" or b.ball_type == "shadow_monster"
+
+			if not is_spec:
+				valid_balls.append(b)
+				var id = null
+				if typeof(b) == TYPE_DICTIONARY:
+					id = str(b.get("id"))
+				else:
+					id = str(b.id)
+
+				if id == bounty_id:
+					bounty_ball = b
+
+		# If the bounty player died or left, assign a new one
+		var bounty_alive = false
+		if bounty_ball != null:
+			if typeof(bounty_ball) == TYPE_DICTIONARY:
+				bounty_alive = bounty_ball.get("alive", false)
+			else:
+				bounty_alive = bounty_ball.alive
+
+		if not bounty_alive:
+			var alive_balls = []
+			for b in valid_balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.alive
+				if is_alive:
+					alive_balls.append(b)
+
+			var new_bounty = null
+
+			if bounty_ball != null:
+				var last_dmg = null
+				if typeof(bounty_ball) == TYPE_DICTIONARY:
+					last_dmg = bounty_ball.get("last_damaged_by")
+				elif bounty_ball.has_method("get_meta"):
+					last_dmg = bounty_ball.get_meta("last_damaged_by") if bounty_ball.has_meta("last_damaged_by") else null
+
+				if last_dmg == null and typeof(bounty_ball) != TYPE_DICTIONARY and "last_damaged_by" in bounty_ball:
+					last_dmg = bounty_ball.last_damaged_by
+
+				if last_dmg != null:
+					for b in alive_balls:
+						var id = null
+						if typeof(b) == TYPE_DICTIONARY:
+							id = b.get("id")
+						else:
+							id = b.id if "id" in b else null
+						if str(id) == str(last_dmg):
+							new_bounty = b
+							if world != null and world.has_method("add_event"):
+								world.add_event("bounty_assigned", {"message": "Player " + str(id) + " stole the Bounty!"})
+							break
+
+			if new_bounty == null and alive_balls.size() > 0:
+				new_bounty = alive_balls[randi() % alive_balls.size()]
+				var id = null
+				if typeof(new_bounty) == TYPE_DICTIONARY:
+					id = new_bounty.get("id")
+				else:
+					id = new_bounty.id if "id" in new_bounty else null
+				if world != null and world.has_method("add_event"):
+					world.add_event("bounty_assigned", {"message": "The Bounty was lost! Player " + str(id) + " is the new Bounty!"})
+
+			if new_bounty != null:
+				if typeof(new_bounty) == TYPE_DICTIONARY:
+					bounty_id = str(new_bounty.get("id"))
+				else:
+					bounty_id = str(new_bounty.id if "id" in new_bounty else "")
+
+		# Apply buffs to the bounty and update timer
+		if bounty_id != null:
+			if bounty_timers.has(bounty_id):
+				bounty_timers[bounty_id] += delta
+			else:
+				bounty_timers[bounty_id] = delta
+
+			for b in valid_balls:
+				var id = null
+				if typeof(b) == TYPE_DICTIONARY:
+					id = str(b.get("id"))
+				else:
+					id = str(b.id)
+
+				if id == bounty_id:
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+					else:
+						is_alive = b.alive
+
+					if is_alive:
+						if typeof(b) == TYPE_DICTIONARY:
+							if not b.get("_bounty_health_buffed", false):
+								var old_max = b.get("max_hp", 100.0)
+								var new_max = old_max * 1.5
+								b["max_hp"] = new_max
+								b["hp"] = min(new_max, b.get("hp", 100.0) + (old_max * 0.5))
+								b["_bounty_health_buffed"] = true
+							b["damage_multiplier"] = 1.5
+							b["speed_multiplier"] = 1.5
+							b["perception_radius"] = 500.0
+						else:
+							var buffed = b.get("_bounty_health_buffed") if "_bounty_health_buffed" in b else (b.get_meta("_bounty_health_buffed") if b.has_method("has_meta") and b.has_meta("_bounty_health_buffed") else false)
+							if not buffed:
+								var old_max = b.get("max_hp") if "max_hp" in b else 100.0
+								var new_max = old_max * 1.5
+								if "max_hp" in b: b.max_hp = new_max
+								var old_hp = b.get("hp") if "hp" in b else 100.0
+								if "hp" in b: b.hp = min(new_max, old_hp + (old_max * 0.5))
+								if "_bounty_health_buffed" in b: b._bounty_health_buffed = true
+								elif b.has_method("set_meta"): b.set_meta("_bounty_health_buffed", true)
+
+							if "damage_multiplier" in b: b.damage_multiplier = 1.5
+							elif b.has_method("set_meta"): b.set_meta("damage_multiplier", 1.5)
+							if "speed_multiplier" in b: b.speed_multiplier = 1.5
+							elif b.has_method("set_meta"): b.set_meta("speed_multiplier", 1.5)
+							if "perception_radius" in b: b.perception_radius = 500.0
+							elif b.has_method("set_meta"): b.set_meta("perception_radius", 500.0)
+
+						ping_timer += delta
+						if ping_timer >= 3.0:
+							ping_timer = 0.0
+							if world != null and world.has_method("add_event"):
+								var bx = 0.0
+								var by = 0.0
+								if typeof(b) == TYPE_DICTIONARY:
+									bx = b.get("x", 0.0)
+									by = b.get("y", 0.0)
+								else:
+									bx = b.x if "x" in b else 0.0
+									by = b.y if "y" in b else 0.0
+
+								world.add_event("minimap_ping", {
+									"x": bx,
+									"y": by,
+									"type": "bounty_ping",
+									"color": "red"
+								})
+
+	func check_winner(world, balls: Array):
+		var alive_count = 0
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", "")
+			else:
+				is_alive = b.alive if "alive" in b else false
+				b_type = b.ball_type if "ball_type" in b else ""
+
+			if is_alive and b_type != "spectator" and b_type != "shadow_monster":
+				alive_count += 1
+
+		if alive_count <= 1:
+			if bounty_timers.is_empty():
+				return "Draw"
+
+			var max_time = -1.0
+			var winner_id = ""
+			for id in bounty_timers.keys():
+				if bounty_timers[id] > max_time:
+					max_time = bounty_timers[id]
+					winner_id = id
+
+			var winner_team = null
+			for b in balls:
+				var id = null
+				if typeof(b) == TYPE_DICTIONARY:
+					id = str(b.get("id"))
+				else:
+					id = str(b.id if "id" in b else "")
+
+				if id == winner_id:
+					if typeof(b) == TYPE_DICTIONARY:
+						winner_team = b.get("team", b.get("ball_type", winner_id))
+					else:
+						winner_team = b.team if "team" in b else (b.ball_type if "ball_type" in b else winner_id)
+					break
+
+			if winner_team != null:
+				return winner_team
+			return winner_id
+
+		return null

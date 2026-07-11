@@ -17107,6 +17107,7 @@ class WeatherClashMode(GameMode):
 GAME_MODES['freeze_tag'] = FreezeTagMode()
 GAME_MODES['vortex_orbit'] = VortexOrbitMode()
 GAME_MODES['weather_clash'] = WeatherClashMode()
+GAME_MODES['bounty_tag'] = BountyTagMode()
 
 
 class DisguisedTrapsMode(GameMode):
@@ -17141,3 +17142,117 @@ class DisguisedTrapsMode(GameMode):
 
 GAME_MODES["disguised_traps"] = DisguisedTrapsMode()
 GAME_MODES["dynamic_weather_transitions"] = DynamicWeatherTransitionsMode()
+
+
+class BountyTagMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bounty Tag"
+        self.description = "One player starts as the Bounty, gaining buffs and vision, but their location is pinged. Taking down the Bounty steals the tag. The player holding the tag the longest wins."
+        self.bounty_id = None
+        self.bounty_timers = {}
+        self.ping_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        for b in valid_balls:
+            self.bounty_timers[getattr(b, "id", None)] = 0.0
+
+        import random
+        if valid_balls:
+            initial_bounty = random.choice(valid_balls)
+            self.bounty_id = getattr(initial_bounty, "id", None)
+            if hasattr(world, "add_event"):
+                world.add_event("bounty_assigned", {"message": f"Player {self.bounty_id} is the first Bounty!"})
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.0) -> None:
+        super().tick(world, balls, delta)
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        bounty_ball = next((b for b in valid_balls if getattr(b, "id", None) == self.bounty_id), None)
+
+        # If the bounty player died or left, assign a new one or transfer to killer
+        if not bounty_ball or not getattr(bounty_ball, "alive", False):
+            new_bounty = None
+            alive_balls = [b for b in valid_balls if getattr(b, "alive", False)]
+
+            # Check if someone killed them
+            if bounty_ball and getattr(bounty_ball, "last_damaged_by", None) is not None:
+                killer_id = getattr(bounty_ball, "last_damaged_by")
+                killer = next((b for b in alive_balls if getattr(b, "id", None) == killer_id), None)
+                if killer:
+                    new_bounty = killer
+                    if hasattr(world, "add_event"):
+                        world.add_event("bounty_assigned", {"message": f"Player {killer_id} stole the Bounty!"})
+
+            # Fallback to random if no valid killer
+            if not new_bounty and alive_balls:
+                import random
+                new_bounty = random.choice(alive_balls)
+                if hasattr(world, "add_event"):
+                    world.add_event("bounty_assigned", {"message": f"The Bounty was lost! Player {getattr(new_bounty, 'id', None)} is the new Bounty!"})
+
+            if new_bounty:
+                self.bounty_id = getattr(new_bounty, "id", None)
+
+        # Apply buffs to the bounty and update timer
+        if self.bounty_id is not None:
+            self.bounty_timers[self.bounty_id] = self.bounty_timers.get(self.bounty_id, 0.0) + delta
+
+            for b in valid_balls:
+                if getattr(b, "id", None) == self.bounty_id and getattr(b, "alive", False):
+                    # Apply buffs (ensure we use base stats for multipliers to avoid exponential growth)
+                    # Instead of multiplying the current multiplier, we set a flat buff state.
+                    # Or we calculate using base stats.
+                    b.base_damage = getattr(b, "base_damage", 10.0)
+                    b.base_speed = getattr(b, "base_speed", 100.0)
+
+                    # Enhanced health (e.g. 50% max HP increase, and keep current HP proportional)
+                    if not getattr(b, "_bounty_health_buffed", False):
+                        b.max_hp = getattr(b, "max_hp", 100.0) * 1.5
+                        b.hp = min(b.max_hp, getattr(b, "hp", 100.0) + (b.max_hp / 3.0)) # Add the 50% extra
+                        b._bounty_health_buffed = True
+
+                    # Temporary buff logic for multipliers
+                    b.damage_multiplier = 1.5
+                    b.speed_multiplier = 1.5
+                    b.perception_radius = 500.0 # Enhanced vision
+
+                    # Ping location periodically
+                    self.ping_timer += delta
+                    if self.ping_timer >= 3.0: # Ping every 3 seconds
+                        self.ping_timer = 0.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("minimap_ping", {
+                                "x": getattr(b, "x", 0.0),
+                                "y": getattr(b, "y", 0.0),
+                                "type": "bounty_ping",
+                                "color": "red"
+                            })
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        # The winner is checked when the match ends (usually when time runs out or 1 player left)
+        # We need to find the player with the highest bounty_timer
+        alive_count = sum(1 for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"])
+
+        # In this mode, we wait until time is up, or only 1 player remains
+        if alive_count <= 1:
+            if not self.bounty_timers:
+                return "Draw"
+
+            # Find the ID with the maximum time
+            winner_id = max(self.bounty_timers, key=self.bounty_timers.get)
+
+            # Find the team of this player
+            winner_team = None
+            for b in balls:
+                if getattr(b, "id", None) == winner_id:
+                    winner_team = getattr(b, "team", getattr(b, "ball_type", str(winner_id)))
+                    break
+
+            if winner_team:
+                return winner_team
+            return str(winner_id)
+
+        return None
