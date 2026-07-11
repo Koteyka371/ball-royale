@@ -25034,7 +25034,247 @@ class ElementalAurasMode extends GameMode:
 								other.vx = vx
 								other.vy = vy
 
+
+class AerialArenaMode extends GameMode:
+	var spawn_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Aerial Arena"
+		description = "An arena heavily populated with large bouncy platforms that propel balls high into the air. Hazards are primarily aerial (e.g. flying drones, lightning clouds). Players must manage their air time and bounces to survive."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "hazards" in world.arena or world.arena.hazards == null:
+			world.arena.hazards = []
+		spawn_timer = 0.0
+
+		var w = 1000.0
+		var h = 1000.0
+		if "width" in world.arena:
+			w = world.arena.width
+		if "height" in world.arena:
+			h = world.arena.height
+
+		for i in range(5):
+			var rx = randf_range(200, w - 200)
+			var ry = randf_range(200, h - 200)
+			var bp = {
+				"id": 98000 + i,
+				"x": rx,
+				"y": ry,
+				"radius": 60.0,
+				"kind": "bounce_pad",
+				"damage": 0.0,
+				"active": true
+			}
+			world.arena.hazards.append(bp)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 10.0
+			var w = 1000.0
+			var h = 1000.0
+			if "width" in world.arena:
+				w = world.arena.width
+			if "height" in world.arena:
+				h = world.arena.height
+
+			var aerial_count = 0
+			for hz in world.arena.hazards:
+				var kind = ""
+				if typeof(hz) == TYPE_DICTIONARY:
+					kind = hz.get("kind", "")
+				elif "kind" in hz:
+					kind = hz.kind
+				if kind in ["scrambler_drone", "lightning_cloud"]:
+					aerial_count += 1
+
+			if aerial_count < 8:
+				var rx = randf_range(100, w - 100)
+				var ry = randf_range(100, h - 100)
+				var h_id = world.arena.hazards.size() + randi_range(1000, 9999)
+
+				if randf() < 0.5:
+					world.arena.hazards.append({
+						"id": h_id,
+						"x": rx,
+						"y": ry,
+						"radius": 15.0,
+						"kind": "scrambler_drone",
+						"damage": 0.0,
+						"vx": 0.0,
+						"vy": 0.0,
+						"duration": 15.0,
+						"active": true
+					})
+				else:
+					world.arena.hazards.append({
+						"id": h_id,
+						"x": rx,
+						"y": ry,
+						"radius": 80.0,
+						"kind": "lightning_cloud",
+						"damage": 10.0,
+						"vx": randf_range(-20, 20),
+						"vy": randf_range(-20, 20),
+						"duration": 20.0,
+						"active": true
+					})
+
+		var hazards_to_remove = []
+		for hz in world.arena.hazards:
+			var kind = ""
+			var h_x = 0.0
+			var h_y = 0.0
+			var h_radius = 0.0
+			var h_vx = 0.0
+			var h_vy = 0.0
+			var h_duration = 0.0
+			var h_damage = 0.0
+
+			if typeof(hz) == TYPE_DICTIONARY:
+				kind = hz.get("kind", "")
+				h_x = hz.get("x", 0.0)
+				h_y = hz.get("y", 0.0)
+				h_radius = hz.get("radius", 0.0)
+				h_vx = hz.get("vx", 0.0)
+				h_vy = hz.get("vy", 0.0)
+				h_duration = hz.get("duration", 0.0)
+				h_damage = hz.get("damage", 10.0)
+			else:
+				if "kind" in hz: kind = hz.kind
+				if "x" in hz: h_x = hz.x
+				if "y" in hz: h_y = hz.y
+				if "radius" in hz: h_radius = hz.radius
+				if "vx" in hz: h_vx = hz.vx
+				if "vy" in hz: h_vy = hz.vy
+				if "duration" in hz: h_duration = hz.duration
+				if "damage" in hz: h_damage = hz.damage
+
+			if kind == "scrambler_drone":
+				var closest_dist = 999999.0
+				var target_x = h_x
+				var target_y = h_y
+				var has_target = false
+
+				for b in balls:
+					var b_alive = false
+					var b_x = 0.0
+					var b_y = 0.0
+					var b_fly_timer = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						b_alive = b.get("alive", false)
+						b_x = b.get("x", 0.0)
+						b_y = b.get("y", 0.0)
+						b_fly_timer = b.get("fly_timer", 0.0)
+					else:
+						b_alive = b.alive if "alive" in b else false
+						b_x = b.x if "x" in b else 0.0
+						b_y = b.y if "y" in b else 0.0
+						if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("fly_timer"):
+							b_fly_timer = b.get_meta("fly_timer")
+						elif "fly_timer" in b:
+							b_fly_timer = b.fly_timer
+
+					if b_alive and b_fly_timer > 0.0:
+						var dx = b_x - h_x
+						var dy = b_y - h_y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist < closest_dist:
+							closest_dist = dist
+							target_x = b_x
+							target_y = b_y
+							has_target = true
+
+				if has_target:
+					var dx = target_x - h_x
+					var dy = target_y - h_y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0:
+						h_x += (dx/dist) * 150.0 * delta
+						h_y += (dy/dist) * 150.0 * delta
+
+				h_duration -= delta
+
+				if typeof(hz) == TYPE_DICTIONARY:
+					hz["x"] = h_x
+					hz["y"] = h_y
+					hz["duration"] = h_duration
+				else:
+					if "x" in hz: hz.x = h_x
+					if "y" in hz: hz.y = h_y
+					if "duration" in hz: hz.duration = h_duration
+
+				if h_duration <= 0:
+					hazards_to_remove.append(hz)
+
+			elif kind == "lightning_cloud":
+				h_x += h_vx * delta
+				h_y += h_vy * delta
+
+				for b in balls:
+					var b_alive = false
+					var b_x = 0.0
+					var b_y = 0.0
+					var b_fly_timer = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						b_alive = b.get("alive", false)
+						b_x = b.get("x", 0.0)
+						b_y = b.get("y", 0.0)
+						b_fly_timer = b.get("fly_timer", 0.0)
+					else:
+						b_alive = b.alive if "alive" in b else false
+						b_x = b.x if "x" in b else 0.0
+						b_y = b.y if "y" in b else 0.0
+						if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("fly_timer"):
+							b_fly_timer = b.get_meta("fly_timer")
+						elif "fly_timer" in b:
+							b_fly_timer = b.fly_timer
+
+					if b_alive and b_fly_timer > 0.0:
+						var dx = b_x - h_x
+						var dy = b_y - h_y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist < h_radius:
+							if typeof(b) == TYPE_DICTIONARY:
+								var dmg = h_damage * delta
+								b["hp"] = b.get("hp", 100.0) - dmg
+								if b["hp"] <= 0:
+									b["alive"] = false
+							else:
+								var dmg = h_damage * delta
+								if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+									b.take_damage(dmg)
+								elif "hp" in b:
+									b.hp -= dmg
+									if b.hp <= 0:
+										if "alive" in b: b.alive = false
+
+				h_duration -= delta
+
+				if typeof(hz) == TYPE_DICTIONARY:
+					hz["x"] = h_x
+					hz["y"] = h_y
+					hz["duration"] = h_duration
+				else:
+					if "x" in hz: hz.x = h_x
+					if "y" in hz: hz.y = h_y
+					if "duration" in hz: hz.duration = h_duration
+
+				if h_duration <= 0:
+					hazards_to_remove.append(hz)
+
+		for hz in hazards_to_remove:
+			var idx = world.arena.hazards.find(hz)
+			if idx != -1:
+				world.arena.hazards.remove_at(idx)
+
 var GAME_MODES = {
+	"aerial_arena": AerialArenaMode.new(),
+
 	"elemental_auras": ElementalAurasMode.new(),
 
 	"sticky_arena": StickyArenaMode.new(),
