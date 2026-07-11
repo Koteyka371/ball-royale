@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-773] Weather-Adaptive Shields — *2026-07-11 19:24:29 UTC*
+
+A new loadout item 'Weather Shield' that absorbs negative status effects (e.g. wet, cold, sandblind) and converts them into a temporary health regeneration boost.
+
+---
+
 ## [idea-827] New 'Vampiric Drain' trap variant — *2026-07-11 19:24:24 UTC*
 
 A trap that latches onto the triggering ball, continuously siphoning a small amount of health and transferring it back to the trap's owner over 5 seconds. If the victim is destroyed by the drain, the trap spawns a healing aura for the owner's team.
