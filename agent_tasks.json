@@ -14067,7 +14067,7 @@
     },
     {
       "id": "idea-818",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Disruption Bomb",
@@ -24504,6 +24504,23 @@
         "src/ai/daily_token_scratchcards.py",
         "src/ai/daily_token_scratchcards.gd",
         "tests/test_daily_token_scratchcards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1431",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Hazard Evolution",
+      "description": "Hazards can interact with the current seasonal theme. For example, a standard trap could freeze over during Frost season or catch fire during Inferno season, adding an extra layer of strategy.",
+      "allowed_paths": [
+        "src/arena/dynamic_evolution.py",
+        "src/arena/dynamic_evolution.gd",
+        "tests/test_dynamic_evolution.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

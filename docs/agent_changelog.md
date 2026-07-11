@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-818] Aura Disruption Bomb — *2026-07-11 20:38:27 UTC*
+
+A throwable item or character skill that detonates in a large area, stripping the team aura buffs from all enemies caught in the blast and applying the aura_disruption_timer to them for 10 seconds, forcing teams to rely on individual skills rather than stacking benefits.
+
+---
+
 ## [idea-834] Dynamic Map Hazards Based on Season — *2026-07-11 20:14:42 UTC*
 
 Extend the seasonal theme logic so that it not only affects the main menu background, but also alters map hazards during gameplay. For example, during the Frost season, random ice patches can appear causing players to slide, while during Inferno season, occasional lava pools deal small damage over time.
