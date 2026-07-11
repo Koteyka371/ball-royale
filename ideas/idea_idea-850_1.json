@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Echo Trait",
+  "description": "Balls with the Quantum Echo trait leave behind a faint ghost of their past position every 3 seconds. Pressing their active skill immediately teleports them back to their most recent ghost, resetting their health to whatever it was at that exact moment. A high-skill mobility and sustain option."
+}
