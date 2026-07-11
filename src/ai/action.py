@@ -281,7 +281,7 @@ class Action:
                         hr = getattr(h, "radius", 40.0)
                         if math.hypot(t_x - hx, t_y - hy) <= hr:
                             return
-                    elif getattr(h, "kind", "") == "slow_motion_zone":
+                    elif getattr(h, "kind", "") in ["slow_motion_zone", "time_bubble"]:
                         hx = h.x
                         hy = h.y
                         hr = getattr(h, "radius", 50.0)
@@ -309,9 +309,12 @@ class Action:
                                     # Actually, a simple way is just:
                                     is_resuming = getattr(attacker, "_is_resuming_projectile", False)
                                     if not is_resuming:
+                                        timer_val = 2.0
+                                        if getattr(h, "kind", "") == "time_bubble":
+                                            timer_val = 4.0
                                         attacker.suspended_projectiles.append({
                                             "target": target,
-                                            "timer": 2.0
+                                            "timer": timer_val
                                         })
                                         return
                     elif getattr(h, "kind", "") in ["energy_barrier", "smokescreen"]:
@@ -1079,6 +1082,7 @@ class Action:
 
         self.ball.slow_motion_zone_active = False
         self.ball.fast_motion_zone_active = False
+        self.ball.time_bubble_active = False
 
         # Sniper Nest
         self.ball.in_sniper_nest = False
@@ -1129,6 +1133,19 @@ class Action:
                         # Restore stamina rapidly
                         if hasattr(self.ball, "stamina"):
                             self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + 60.0 * delta)
+                elif getattr(hazard, "kind", "") == "time_bubble":
+                    if getattr(hazard, "last_updated_tick", -1) != getattr(self.world, "tick", 0):
+                        hazard.radius = min(200.0, getattr(hazard, "radius", 50.0) + (10.0 * delta))
+                        hazard.last_updated_tick = getattr(self.world, "tick", 0)
+
+                    hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
+                        self.ball.time_bubble_active = True
+                        if hasattr(self.ball, "speed"):
+                            self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.25
+                            if hasattr(self.ball, "speed_multiplier"):
+                                self.ball.speed_multiplier *= 0.25
                 elif getattr(hazard, "kind", "") == "fast_motion_zone":
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
                     hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
@@ -11909,6 +11926,8 @@ class Action:
         is_windy = getattr(arena, 'is_windy', False) if arena else False
 
         cooldown_mult = 1.0
+        if getattr(self.ball, "time_bubble_active", False):
+            cooldown_mult *= 0.25
         if getattr(self.ball, "slow_motion_zone_active", False):
             cooldown_mult *= 0.5
         elif getattr(self.ball, "fast_motion_zone_active", False):

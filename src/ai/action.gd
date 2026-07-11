@@ -418,7 +418,7 @@ func _attempt_damage(attacker, target) -> void:
 				var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 40.0))
 				if sqrt((t_x2 - hx)*(t_x2 - hx) + (t_y2 - hy)*(t_y2 - hy)) <= hr:
 					return
-			elif h_kind == "slow_motion_zone":
+			elif h_kind == "slow_motion_zone" or h_kind == "time_bubble":
 				var hx = float(h.x if "x" in h else h.get_meta("x"))
 				var hy = float(h.y if "y" in h else h.get_meta("y"))
 				var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 50.0))
@@ -452,9 +452,12 @@ func _attempt_damage(attacker, target) -> void:
 								elif "suspended_projectiles" in attacker:
 									sus_proj = attacker.suspended_projectiles
 
+								var timer_val = 2.0
+								if h_kind == "time_bubble":
+									timer_val = 4.0
 								sus_proj.append({
 									"target": target,
-									"timer": 2.0
+									"timer": timer_val
 								})
 
 								if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
@@ -1780,13 +1783,16 @@ func execute(strategy: String, delta: float):
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		self.ball["slow_motion_zone_active"] = false
 		self.ball["fast_motion_zone_active"] = false
+		self.ball["time_bubble_active"] = false
 	else:
 		if self.ball.has_method("set_meta"):
 			self.ball.set_meta("slow_motion_zone_active", false)
 			self.ball.set_meta("fast_motion_zone_active", false)
+			self.ball.set_meta("time_bubble_active", false)
 		else:
 			self.ball.slow_motion_zone_active = false
 			self.ball.fast_motion_zone_active = false
+			self.ball.time_bubble_active = false
 
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		c_active = self.ball.get("charging_shockwave_shield_active", false)
@@ -1922,6 +1928,83 @@ func execute(strategy: String, delta: float):
 							if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = false
 
 
+
+				if kind == "time_bubble":
+					if typeof(hazard) == TYPE_DICTIONARY:
+						var lut = hazard.get("last_updated_tick", -1)
+						var ct = 0
+						if typeof(self.world) == TYPE_DICTIONARY and self.world.has("tick"): ct = self.world["tick"]
+						elif typeof(self.world) == TYPE_OBJECT and "tick" in self.world: ct = self.world.tick
+						if lut != ct:
+							hazard["radius"] = min(200.0, hazard.get("radius", 50.0) + (10.0 * delta))
+							hazard["last_updated_tick"] = ct
+					elif typeof(hazard) == TYPE_OBJECT:
+						var lut = -1
+						if "last_updated_tick" in hazard: lut = hazard.last_updated_tick
+						elif hazard.has_method("has_meta") and hazard.has_meta("last_updated_tick"): lut = hazard.get_meta("last_updated_tick")
+						var ct = 0
+						if typeof(self.world) == TYPE_DICTIONARY and self.world.has("tick"): ct = self.world["tick"]
+						elif typeof(self.world) == TYPE_OBJECT and "tick" in self.world: ct = self.world.tick
+						if lut != ct:
+							var r = 50.0
+							if "radius" in hazard: r = hazard.radius
+							elif hazard.has_method("has_meta") and hazard.has_meta("radius"): r = hazard.get_meta("radius")
+							r = min(200.0, r + (10.0 * delta))
+							if "radius" in hazard: hazard.radius = r
+							elif hazard.has_method("set_meta"): hazard.set_meta("radius", r)
+							if "last_updated_tick" in hazard: hazard.last_updated_tick = ct
+							elif hazard.has_method("set_meta"): hazard.set_meta("last_updated_tick", ct)
+					var hx = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]
+					elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: hx = hazard.x
+					var hy = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): hy = hazard["y"]
+					elif typeof(hazard) == TYPE_OBJECT and "y" in hazard: hy = hazard.y
+					var rad = 50.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): rad = hazard["radius"]
+					elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: rad = hazard.radius
+
+					var bx = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bx = self.ball["x"]
+					elif typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: bx = self.ball.x
+					var by = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): by = self.ball["y"]
+					elif typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: by = self.ball.y
+
+					var dx = hx - bx
+					var dy = hy - by
+					if sqrt(dx*dx + dy*dy) <= rad:
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["time_bubble_active"] = true
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("time_bubble_active", true)
+							else:
+								self.ball.time_bubble_active = true
+
+						var cur_base_speed = 100.0
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): cur_base_speed = self.ball["base_speed"]
+						elif typeof(self.ball) == TYPE_OBJECT and "base_speed" in self.ball: cur_base_speed = self.ball.base_speed
+
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["speed"] = cur_base_speed * 0.25
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("speed", cur_base_speed * 0.25)
+							else:
+								self.ball.speed = cur_base_speed * 0.25
+
+						var cur_speed_mult = 1.0
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_multiplier"): cur_speed_mult = self.ball["speed_multiplier"]
+						elif typeof(self.ball) == TYPE_OBJECT and "speed_multiplier" in self.ball: cur_speed_mult = self.ball.speed_multiplier
+
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["speed_multiplier"] = cur_speed_mult * 0.25
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("speed_multiplier", cur_speed_mult * 0.25)
+							else:
+								self.ball.speed_multiplier = cur_speed_mult * 0.25
 
 				if kind == "slow_motion_zone":
 					var hx = 0.0
@@ -21512,6 +21595,17 @@ func _update_skill_timer(delta: float):
         smz_active = self.ball.get_meta("slow_motion_zone_active")
     elif typeof(self.ball) == TYPE_OBJECT and "slow_motion_zone_active" in self.ball:
         smz_active = self.ball.slow_motion_zone_active
+
+    var tba_active = false
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("time_bubble_active"):
+        tba_active = self.ball.get("time_bubble_active", false)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("time_bubble_active"):
+        tba_active = self.ball.get_meta("time_bubble_active")
+    elif typeof(self.ball) == TYPE_OBJECT and "time_bubble_active" in self.ball:
+        tba_active = self.ball.time_bubble_active
+
+    if tba_active:
+        cooldown_mult *= 0.25
 
     if smz_active:
         cooldown_mult *= 0.5
