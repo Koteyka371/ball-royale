@@ -13676,7 +13676,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
+                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar', 'aura_disruption']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -18652,6 +18652,58 @@ func _use_skill():
 
 
 
+        elif skill_name == "aura_disruption":
+            if "hazards" in world.arena:
+                var hazards = world.arena.hazards
+                var enemies = _get_enemies()
+                var nx = 1.0
+                var ny = 0.0
+                if enemies.size() > 0:
+                    var closest_enemy = enemies[0]
+                    var min_dist_sq = INF
+                    for e in enemies:
+                        var dx_e = e.x - self.ball.x
+                        var dy_e = e.y - self.ball.y
+                        var dist_sq = dx_e*dx_e + dy_e*dy_e
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            closest_enemy = e
+                    var dx = closest_enemy.x - self.ball.x
+                    var dy = closest_enemy.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        nx = dx/dist
+                        ny = dy/dist
+
+                var b_radius = 10.0
+                if "radius" in self.ball: b_radius = self.ball.radius
+
+                var thrown_disrupter = {
+                    "id": hazards.size() + int(randf() * 90000) + 19000,
+                    "x": self.ball.x + nx * (b_radius + 5.0),
+                    "y": self.ball.y + ny * (b_radius + 5.0),
+                    "radius": 150.0,
+                    "kind": "thrown_aura_disrupter",
+                    "damage": 0.0,
+                    "vx": nx * 600.0,
+                    "vy": ny * 600.0,
+                    "duration": 1.5,
+                    "owner_id": self.ball.id if "id" in self.ball else null,
+                    "active": true
+                }
+                hazards.append(thrown_disrupter)
+
+                var skill_cooldown = 8.0
+                if "skill_cooldown" in self.ball: skill_cooldown = float(self.ball.skill_cooldown)
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"): skill_cooldown = float(self.ball.get_meta("skill_cooldown"))
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball.skill_timer = skill_cooldown
+                else:
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("skill_timer", skill_cooldown)
+                    if "skill_timer" in self.ball:
+                        self.ball.skill_timer = skill_cooldown
         elif skill_name == "throw_bomb":
             if "hazards" in self.world.arena:
                 var hazards = self.world.arena.hazards

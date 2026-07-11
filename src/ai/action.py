@@ -2122,6 +2122,43 @@ class Action:
                             hazard.vx *= (1.0 - 2.0 * delta)
                             hazard.vy *= (1.0 - 2.0 * delta)
 
+                if getattr(hazard, "kind", "") == "thrown_aura_disrupter":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            # Explode
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+
+                            explosion_radius = getattr(hazard, "radius", 150.0)
+
+                            # Apply disruption to nearby enemies
+                            if hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
+                                        dx = hazard.x - b.x
+                                        dy = hazard.y - b.y
+                                        if dx*dx + dy*dy <= explosion_radius**2:
+                                            b.aura_disruption_timer = 10.0
+                                            # Strip existing buffs
+                                            b.supercharge_timer = 0.0
+                                            b.speed_buff_timer = 0.0
+                                            b.damage_buff_timer = 0.0
+                                            b.emp_immunity_timer = 0.0
+                                            b.damage_booster_timer = 0.0
+
+
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'aura_disruption_explosion', 'x': hazard.x, 'y': hazard.y, 'radius': explosion_radius}})
+                        else:
+                            # Move bomb
+                            hazard.x += getattr(hazard, "vx", 0) * delta
+                            hazard.y += getattr(hazard, "vy", 0) * delta
+                            # Friction
+                            hazard.vx *= (1.0 - 2.0 * delta)
+                            hazard.vy *= (1.0 - 2.0 * delta)
+
                 elif getattr(hazard, "kind", "") == "shrapnel":
                     if getattr(hazard, "duration", 0.0) > 0:
                         hazard.duration -= delta
@@ -7747,7 +7784,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
+                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar', 'aura_disruption']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -9759,6 +9796,42 @@ class Action:
 
 
 
+            elif skill_name == "aura_disruption":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    enemies = self._get_enemies()
+                    nx = 1.0
+                    ny = 0.0
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        import math
+                        dx = closest_enemy.x - self.ball.x
+                        dy = closest_enemy.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx = dx/dist
+                            ny = dy/dist
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+
+
+                    trap_id = len(self.world.arena.hazards) + __import__('random').randint(1000, 9999)
+                    disrupter = Hazard(id=trap_id, x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0), y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0), radius=150.0, kind="thrown_aura_disrupter", damage=0.0)
+                    if not hasattr(disrupter, "vx"):
+                        setattr(disrupter, "vx", nx * 600.0)
+                        setattr(disrupter, "vy", ny * 600.0)
+                        setattr(disrupter, "duration", 1.5)
+                        setattr(disrupter, "owner_id", getattr(self.ball, "id", None))
+                    self.world.arena.hazards.append(disrupter)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 8.0)
             elif skill_name == "throw_bomb":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     enemies = self._get_enemies()
