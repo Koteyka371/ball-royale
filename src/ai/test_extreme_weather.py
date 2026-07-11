@@ -77,6 +77,7 @@ def test_extreme_weather_boss_spawn_and_drop():
         def choice(self, seq): return "blizzard"
         def uniform(self, a, b): return a + (b-a)/2.0
         def randint(self, a, b): return a
+        def random(self): return 0.1
     mode.random = MockRandom()
 
     mode.tick(world, world.balls, 0.1)

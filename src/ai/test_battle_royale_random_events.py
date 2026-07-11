@@ -52,6 +52,8 @@ def test_loot_goblin_event():
             return a
         def randint(self, a, b):
             return a
+        def random(self):
+            return 0.1
     mode.random = MockRandom()
 
     # Trigger event
@@ -91,6 +93,8 @@ def test_low_gravity_event():
             return a
         def randint(self, a, b):
             return a
+        def random(self):
+            return 0.1
     mode.random = MockRandom()
 
     # Trigger event
