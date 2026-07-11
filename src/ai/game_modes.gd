@@ -24442,7 +24442,150 @@ class DynamicWeatherTransitionsMode extends GameMode:
 			else:
 				weather_timer = 9999.0
 
+
+class StickyArenaMode extends GameMode:
+	func _init():
+		super._init()
+		name = "Sticky Arena"
+		description = "An arena with glue patches and sticky walls that slow down players and heavily dampen bouncing physics, forcing close-quarters combat."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not world or not "arena" in world or not world.arena:
+			return
+
+		var arena_w = 800
+		if "width" in world.arena: arena_w = world.arena.width
+		elif world.arena.has_method("get_meta") and world.arena.has_meta("width"): arena_w = world.arena.get_meta("width")
+		var arena_h = 600
+		if "height" in world.arena: arena_h = world.arena.height
+		elif world.arena.has_method("get_meta") and world.arena.has_meta("height"): arena_h = world.arena.get_meta("height")
+
+		var num_patches = randi() % 4 + 5 # 5 to 8
+		for i in range(num_patches):
+			var x = 100.0 + randf() * (arena_w - 200.0)
+			var y = 100.0 + randf() * (arena_h - 200.0)
+			var r = 30.0 + randf() * 30.0
+
+			if "hazards" in world.arena:
+				world.arena.hazards.append({
+					"id": 30000 + i,
+					"x": x,
+					"y": y,
+					"radius": r,
+					"kind": "glue_patch",
+					"damage": 0.0,
+					"duration": 9999.0
+				})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_w = 800
+		var arena_h = 600
+		var glue_patches = []
+
+		if world and "arena" in world and world.arena:
+			if "width" in world.arena: arena_w = world.arena.width
+			elif world.arena.has_method("get_meta") and world.arena.has_meta("width"): arena_w = world.arena.get_meta("width")
+			if "height" in world.arena: arena_h = world.arena.height
+			elif world.arena.has_method("get_meta") and world.arena.has_meta("height"): arena_h = world.arena.get_meta("height")
+
+			if "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var k = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						k = h.get("kind", "")
+					elif typeof(h) == TYPE_OBJECT:
+						if "kind" in h: k = h.kind
+						elif h.has_method("get_meta") and h.has_meta("kind"): k = h.get_meta("kind")
+
+					if k == "glue_patch":
+						glue_patches.append(h)
+
+		for b in balls:
+			var b_alive = true
+			if "alive" in b: b_alive = b.alive
+			elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+			if not b_alive: continue
+
+			var bx = 0.0
+			var by = 0.0
+			var br = 10.0
+
+			if "x" in b: bx = b.x
+			elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+			if "y" in b: by = b.y
+			elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+			if "radius" in b: br = b.radius
+			elif b.has_method("get_meta") and b.has_meta("radius"): br = b.get_meta("radius")
+
+			var in_glue = false
+			for p in glue_patches:
+				var px = 0.0
+				var py = 0.0
+				var pr = 0.0
+
+				if typeof(p) == TYPE_DICTIONARY:
+					px = p.get("x", 0.0)
+					py = p.get("y", 0.0)
+					pr = p.get("radius", 0.0)
+				elif typeof(p) == TYPE_OBJECT:
+					if "x" in p: px = p.x
+					elif p.has_method("get_meta") and p.has_meta("x"): px = p.get_meta("x")
+					if "y" in p: py = p.y
+					elif p.has_method("get_meta") and p.has_meta("y"): py = p.get_meta("y")
+					if "radius" in p: pr = p.radius
+					elif p.has_method("get_meta") and p.has_meta("radius"): pr = p.get_meta("radius")
+
+				var dist_sq = (bx - px)*(bx - px) + (by - py)*(by - py)
+				if dist_sq <= (pr + br)*(pr + br):
+					in_glue = true
+					break
+
+			if in_glue:
+				var base_speed = 100.0
+				if "base_speed" in b: base_speed = b.base_speed
+				elif b.has_method("get_meta") and b.has_meta("base_speed"): base_speed = b.get_meta("base_speed")
+
+				if "speed" in b: b.speed = base_speed * 0.5
+				elif b.has_method("set_meta"): b.set_meta("speed", base_speed * 0.5)
+
+				var vx = 0.0
+				var vy = 0.0
+				if "vx" in b: vx = b.vx
+				elif b.has_method("get_meta") and b.has_meta("vx"): vx = b.get_meta("vx")
+				if "vy" in b: vy = b.vy
+				elif b.has_method("get_meta") and b.has_meta("vy"): vy = b.get_meta("vy")
+
+				if "vx" in b: b.vx = vx * 0.95
+				elif b.has_method("set_meta"): b.set_meta("vx", vx * 0.95)
+				if "vy" in b: b.vy = vy * 0.95
+				elif b.has_method("set_meta"): b.set_meta("vy", vy * 0.95)
+			else:
+				var base_speed = 100.0
+				if "base_speed" in b: base_speed = b.base_speed
+				elif b.has_method("get_meta") and b.has_meta("base_speed"): base_speed = b.get_meta("base_speed")
+
+				if "speed" in b: b.speed = base_speed
+				elif b.has_method("set_meta"): b.set_meta("speed", base_speed)
+
+			var margin = br + 5.0
+			if bx <= margin or bx >= arena_w - margin or by <= margin or by >= arena_h - margin:
+				var vx = 0.0
+				var vy = 0.0
+				if "vx" in b: vx = b.vx
+				elif b.has_method("get_meta") and b.has_meta("vx"): vx = b.get_meta("vx")
+				if "vy" in b: vy = b.vy
+				elif b.has_method("get_meta") and b.has_meta("vy"): vy = b.get_meta("vy")
+
+				if "vx" in b: b.vx = vx * 0.8
+				elif b.has_method("set_meta"): b.set_meta("vx", vx * 0.8)
+				if "vy" in b: b.vy = vy * 0.8
+				elif b.has_method("set_meta"): b.set_meta("vy", vy * 0.8)
+
 var GAME_MODES = {
+	"sticky_arena": StickyArenaMode.new(),
 	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
