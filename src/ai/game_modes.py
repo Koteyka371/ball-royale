@@ -15493,7 +15493,114 @@ class ElementalAurasMode(GameMode):
                             other.vx = getattr(other, "vx", 0.0) + (dx / d) * pull * 100
                             other.vy = getattr(other, "vy", 0.0) + (dy / d) * pull * 100
 
+
+class ColorControlMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Color Control"
+        self.description = "Leave a trail of your team's color. Stepping on your own color gives a speed and regen buff, while stepping on enemy colors causes slowdown and damage. Teams win by controlling the most territory."
+        self.trail_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        self.trail_timer += delta
+        should_spawn_trail = False
+        if self.trail_timer >= 0.1:
+            self.trail_timer = 0.0
+            should_spawn_trail = True
+
+        import math
+        from arena.procedural_arena import Hazard
+
+        arena_hazards = getattr(world.arena, "hazards", []) if hasattr(world, "arena") else []
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+            if not b_team:
+                continue
+
+            if should_spawn_trail:
+                # Add trail hazard
+                import random
+                trail_id = len(arena_hazards) + random.randint(10000, 99999)
+                trail = Hazard(trail_id, b.x, b.y, 15.0, "color_trail", 0.0)
+                setattr(trail, "team", b_team)
+                setattr(trail, "duration", 10.0) # Lasts 10 seconds
+                arena_hazards.append(trail)
+
+            # Check collisions with color trails
+
+            if not hasattr(b, "original_base_speed"):
+                setattr(b, "original_base_speed", getattr(b, "base_speed", getattr(b, "speed", 100.0)))
+            base_speed = b.original_base_speed
+
+            on_own_trail = False
+            on_enemy_trail = False
+
+            for h in arena_hazards:
+                if getattr(h, "kind", "") == "color_trail":
+                    h_team = getattr(h, "team", "")
+                    dx = b.x - h.x
+                    dy = b.y - h.y
+                    dist_sq = dx*dx + dy*dy
+
+                    b_rad = getattr(b, "radius", 20.0)
+                    h_rad = getattr(h, "radius", 15.0)
+
+                    if dist_sq < (b_rad + h_rad) ** 2:
+                        # Inside a trail
+                        if h_team == b_team:
+                            on_own_trail = True
+                        else:
+                            on_enemy_trail = True
+
+            if on_enemy_trail:
+                b.speed = base_speed * 0.5
+                if hasattr(b, "take_damage"):
+                    b.take_damage(10.0 * delta, "Color Trail")
+                else:
+                    b.hp -= 10.0 * delta
+            elif on_own_trail:
+                b.speed = base_speed * 1.5
+                b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 5.0 * delta)
+            else:
+                b.speed = base_speed
+
+    def check_winner(self, world, balls):
+        # 1. If only one team alive or time is up
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+
+        # If time is up, territory control determines winner
+        arena_hazards = getattr(world.arena, "hazards", []) if hasattr(world, "arena") else []
+        territory = {}
+        for h in arena_hazards:
+            if getattr(h, "kind", "") == "color_trail":
+                h_team = getattr(h, "team", "")
+                if h_team:
+                    territory[h_team] = territory.get(h_team, 0) + 1
+
+        is_time_up = getattr(self, "timer", 1) <= 0  # Assuming timer is set if there's a timeout
+
+        if len(teams_alive) <= 1 or is_time_up:
+            if territory:
+                # Win by territory
+                winner = max(territory, key=territory.get)
+                return winner
+            elif len(teams_alive) == 1:
+                return list(teams_alive)[0]
+            else:
+                return "Draw"
+
+        return None
+
+
 GAME_MODES = {
+    "color_control": ColorControlMode(),
     "elemental_auras": ElementalAurasMode(),
 
     'sticky_arena': StickyArenaMode(),
@@ -17266,7 +17373,8 @@ class WeatherClashMode(GameMode):
         for b in valid_balls:
             if not hasattr(b, "team"):
                 b.team = getattr(b, "ball_type", "unknown")
-            b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+            base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+
             b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0))
 
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:

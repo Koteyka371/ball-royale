@@ -25034,6 +25034,177 @@ class ElementalAurasMode extends GameMode:
 								other.vx = vx
 								other.vy = vy
 
+
+class ColorControlMode extends GameMode:
+	var trail_timer = 0.0
+
+	func _init():
+		super._init()
+		name = "Color Control"
+		description = "Leave a trail of your team's color. Stepping on your own color gives a speed and regen buff, while stepping on enemy colors causes slowdown and damage. Teams win by controlling the most territory."
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		trail_timer += delta
+		var should_spawn_trail = false
+		if trail_timer >= 0.1:
+			trail_timer = 0.0
+			should_spawn_trail = true
+
+		var arena = world.get("arena") if typeof(world) == TYPE_DICTIONARY else (world.arena if "arena" in world else null)
+		var arena_hazards = []
+		if arena != null:
+			arena_hazards = arena.get("hazards") if typeof(arena) == TYPE_DICTIONARY else arena.hazards
+
+		for b in balls:
+			var b_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+			if not b_alive or b_type == "spectator":
+				continue
+
+			var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else b.get("team", b_type)
+			if b_team == "" or b_team == null:
+				continue
+
+			var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+			var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+			var b_rad = b.get("radius") if typeof(b) == TYPE_DICTIONARY else b.get("radius", 20.0)
+
+			if should_spawn_trail and arena != null:
+				var trail = {
+					"id": "color_trail_" + str(randi()),
+					"x": b_x,
+					"y": b_y,
+					"radius": 15.0,
+					"kind": "color_trail",
+					"damage": 0.0,
+					"team": b_team,
+					"duration": 10.0,
+					"active": true
+				}
+				arena_hazards.append(trail)
+
+
+			var b_orig_base_speed = 100.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("original_base_speed"):
+					b_orig_base_speed = b.original_base_speed
+				else:
+					b_orig_base_speed = b.get("base_speed", b.get("speed", 100.0))
+					b["original_base_speed"] = b_orig_base_speed
+			else:
+				if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("original_base_speed"):
+					b_orig_base_speed = b.get_meta("original_base_speed")
+				elif "original_base_speed" in b:
+					b_orig_base_speed = b.original_base_speed
+				else:
+					b_orig_base_speed = b.get("base_speed", b.get("speed", 100.0))
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("original_base_speed", b_orig_base_speed)
+					elif "original_base_speed" in b:
+						b.original_base_speed = b_orig_base_speed
+			var b_base_speed = b_orig_base_speed
+
+			var on_own_trail = false
+			var on_enemy_trail = false
+
+			for h in arena_hazards:
+				var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY else h.get("kind", "")
+				if h_kind == "color_trail":
+					var h_team = h.get("team") if typeof(h) == TYPE_DICTIONARY else h.get("team", "")
+					var h_x = h.get("x") if typeof(h) == TYPE_DICTIONARY else h.x
+					var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY else h.y
+					var h_rad = h.get("radius") if typeof(h) == TYPE_DICTIONARY else h.get("radius", 15.0)
+
+					var dx = b_x - h_x
+					var dy = b_y - h_y
+					var dist_sq = dx*dx + dy*dy
+
+					if dist_sq < (b_rad + h_rad) * (b_rad + h_rad):
+						if h_team == b_team:
+							on_own_trail = true
+						else:
+							on_enemy_trail = true
+
+			if on_enemy_trail:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = b_base_speed * 0.5
+				else:
+					b.speed = b_base_speed * 0.5
+
+				if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+					b.take_damage(10.0 * delta, "Color Trail")
+				else:
+					var b_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = b_hp - 10.0 * delta
+					else:
+						b.hp = b_hp - 10.0 * delta
+			elif on_own_trail:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = b_base_speed * 1.5
+				else:
+					b.speed = b_base_speed * 1.5
+
+				var b_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp
+				var b_max_hp = b.get("max_hp") if typeof(b) == TYPE_DICTIONARY else b.get("max_hp", 100.0)
+				var new_hp = min(b_max_hp, b_hp + 5.0 * delta)
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = new_hp
+				else:
+					b.hp = new_hp
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = b_base_speed
+				else:
+					b.speed = b_base_speed
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		var teams_alive = {}
+		for b in balls:
+			var b_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+			if b_alive and b_type != "spectator":
+				alive.append(b)
+				var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else b.get("team", b_type)
+				teams_alive[b_team] = true
+
+		var arena = world.get("arena") if typeof(world) == TYPE_DICTIONARY else (world.arena if "arena" in world else null)
+		var arena_hazards = []
+		if arena != null:
+			arena_hazards = arena.get("hazards") if typeof(arena) == TYPE_DICTIONARY else arena.hazards
+
+		var territory = {}
+		for h in arena_hazards:
+			var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY else h.get("kind", "")
+			if h_kind == "color_trail":
+				var h_team = h.get("team") if typeof(h) == TYPE_DICTIONARY else h.get("team", "")
+				if h_team != "":
+					if h_team in territory:
+						territory[h_team] += 1
+					else:
+						territory[h_team] = 1
+
+		var is_time_up = (self.get("timer") if "timer" in self else 1) <= 0
+
+		if teams_alive.size() <= 1 or is_time_up:
+			if territory.size() > 0:
+				var max_terr = -1
+				var winner = null
+				for t in territory.keys():
+					if territory[t] > max_terr:
+						max_terr = territory[t]
+						winner = t
+				return winner
+			elif teams_alive.size() == 1:
+				return teams_alive.keys()[0]
+			else:
+				return "Draw"
+		return null
+
+
 var GAME_MODES = {
 	"elemental_auras": ElementalAurasMode.new(),
 
@@ -25133,6 +25304,7 @@ var GAME_MODES = {
 	"capture_the_flag": CaptureTheFlagMode.new(),
 	"evolutionary_simulation": EvolutionarySimulationMode.new(),
 	"interactive_training": load("res://src/ai/interactive_training.gd").new(),
+	"color_control": ColorControlMode.new(),
 	"dynamic_weather_transitions": DynamicWeatherTransitionsMode.new(),
 	"shrinking_danger_zone": ShrinkingDangerZoneMode.new(),
 	"shrinking_boundary": ShrinkingBoundaryMode.new(),

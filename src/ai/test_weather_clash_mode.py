@@ -25,6 +25,8 @@ class MockBall:
         self.alive = True
         self.speed = 100.0
         self.damage = 10.0
+        self.base_speed = 100.0
+        self.base_damage = 10.0
 
 def test_weather_clash_altar_capture():
     mode = GAME_MODES["weather_clash"]
