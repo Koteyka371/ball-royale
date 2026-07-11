@@ -52,7 +52,7 @@ class GameMode:
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -592,7 +592,7 @@ class DraftRoyaleMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -787,7 +787,7 @@ class BattleRoyaleMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -2495,7 +2495,7 @@ class TeamDeathmatchMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -2558,7 +2558,7 @@ class ZombieInfectionMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -2672,7 +2672,7 @@ class GuildBossFightMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -2796,7 +2796,7 @@ class BossFightMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -2914,7 +2914,7 @@ class DualPayloadMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -3127,7 +3127,7 @@ class EscortMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -3372,7 +3372,7 @@ class VIPDefenseMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -3446,7 +3446,7 @@ class SurvivalMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -3590,7 +3590,7 @@ class CaptureTheFlagMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -3680,7 +3680,7 @@ class EvolutionarySimulationMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -3809,7 +3809,7 @@ class MassiveGravityWellMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -3980,7 +3980,7 @@ class KingOfTheHillMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -4111,7 +4111,7 @@ class SweepingBlackHoleMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -4335,7 +4335,7 @@ class WeatherChaosMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -5125,7 +5125,7 @@ class DominationMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -5385,7 +5385,7 @@ class MemoryTrapsMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -5500,7 +5500,7 @@ class CustomMatchMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -5723,7 +5723,7 @@ class EcholocationMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -5841,7 +5841,7 @@ class PitchBlackMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -5944,7 +5944,7 @@ class VisionReducedMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -6057,7 +6057,7 @@ class EMPBurstMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -6140,7 +6140,7 @@ class DynamicHazardsMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -7283,7 +7283,7 @@ class MirrorMatchMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -7361,7 +7361,7 @@ class VolatileClonesMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -7550,7 +7550,7 @@ class CloneChaosMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -7759,7 +7759,7 @@ class BumperBallsMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -7999,7 +7999,7 @@ class ModifierZonesMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -8167,7 +8167,7 @@ class WindstormMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -8437,7 +8437,7 @@ class BountyHuntMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -8719,7 +8719,7 @@ class GravityWellMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -9219,7 +9219,7 @@ class MagneticCollisionsMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -9513,7 +9513,7 @@ class PinballMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -10734,7 +10734,7 @@ class StaminaSpeedMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -10848,7 +10848,7 @@ class HazardBilliardsMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -11457,7 +11457,7 @@ class DailyMutatorMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -11563,7 +11563,7 @@ class BlackMarketMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -11906,7 +11906,7 @@ class BlizzardMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -12043,7 +12043,7 @@ class MeteorShowerMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -12209,7 +12209,7 @@ class CursedBuffZoneMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -12329,7 +12329,7 @@ class RhythmPanelsMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -12746,7 +12746,7 @@ class ArtifactUpgraderMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -12931,7 +12931,7 @@ class SweepingPaddlesMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -13376,7 +13376,7 @@ class InvisibleDecoysMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -13791,7 +13791,7 @@ class JuggernautMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -14155,7 +14155,7 @@ class TickingPayloadMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -14378,7 +14378,7 @@ class WeaponCollectionMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -14483,7 +14483,7 @@ class CenterBlackHoleMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -15564,8 +15564,104 @@ class ElementalAurasMode(GameMode):
                             other.vx = getattr(other, "vx", 0.0) + (dx / d) * pull * 100
                             other.vy = getattr(other, "vy", 0.0) + (dy / d) * pull * 100
 
+
+class HeavyRainMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Heavy Rain"
+        self.description = "A weather mutator that increases the rain DoT and temporarily destroys small obstacles."
+        self.weather = "heavy_rain"
+        self.obstacle_destroy_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.weather = self.weather
+            world.arena.is_raining = True
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.obstacle_destroy_timer += delta
+
+        # Apply increased rain DoT
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if is_immune:
+                continue
+
+            b.cosmetic = "umbrella"
+            b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 0.5
+            b.dash_range_mult = 1.5
+            b.steering_mult = 0.5
+            b.attack_accuracy = 0.8
+
+            # Increased DoT for non-water types
+            b_type = str(getattr(b, "ball_type", "")).lower()
+            traits = getattr(b, "traits", [])
+            has_water_trait = "water" in b_type or "swamp" in b_type or any("water" in str(t).lower() or "swamp" in str(t).lower() for t in traits)
+
+            if not has_water_trait:
+                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.8
+                if hasattr(b, "hp"):
+                    # Heavy rain DoT: 5.0 per second instead of 2.0
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(5.0 * delta)
+                    else:
+                        b.hp -= 5.0 * delta
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if hasattr(b, "id") and hasattr(world, "dead_balls") and b.id not in world.dead_balls:
+                                world.dead_balls.append(b.id)
+            else:
+                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                if hasattr(b, "hp"):
+                    max_hp = getattr(b, "max_hp", 100.0)
+                    b.hp = min(max_hp, b.hp + 5.0 * delta)
+
+            if getattr(b, "SKILL", "") == "fireball":
+                if hasattr(b, "hp"):
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(5.0 * delta)
+                    else:
+                        b.hp -= 5.0 * delta
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+
+            # Slide more
+            if hasattr(b, "vx") and hasattr(b, "vy"):
+                b.x += getattr(b, "vx") * delta * 0.5
+                b.y += getattr(b, "vy") * delta * 0.5
+
+        # Temporarily destroy small obstacles
+        if self.obstacle_destroy_timer >= 10.0:
+            self.obstacle_destroy_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                hazards_to_remove = []
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") in ["rock", "spikes", "puddle", "trap", "proximity_trap", "hidden_trap"]:
+                        if getattr(h, "radius", 0.0) <= 20.0:
+                            hazards_to_remove.append(h)
+
+                for h in hazards_to_remove:
+                    if h in world.arena.hazards:
+                        world.arena.hazards.remove(h)
+
+                if hazards_to_remove and hasattr(world, "add_event"):
+                    world.add_event("obstacles_destroyed", {"message": "Heavy Rain washed away small obstacles!"})
+
 GAME_MODES = {
     "elemental_auras": ElementalAurasMode(),
+    "heavy_rain_mutator": HeavyRainMode(),
 
     'sticky_arena': StickyArenaMode(),
     "falling_panels": FallingPanelsMode(),
@@ -15718,7 +15814,7 @@ class RollingBouldersMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -15955,7 +16051,7 @@ class SoulLinkMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -16204,7 +16300,7 @@ class TagTeamMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -16330,7 +16426,7 @@ class CrossfireMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -16430,7 +16526,7 @@ class TeleporterHubMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8
@@ -17145,7 +17241,7 @@ class FreezeTagMode(GameMode):
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 1.2
                     b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard"]:
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
                     base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                     base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
                     b.speed = base_s * 0.8

@@ -25376,12 +25376,123 @@ class AerialArenaMode extends GameMode:
 			if idx != -1:
 				world.arena.hazards.remove_at(idx)
 
+
+class HeavyRainMode:
+	extends GameMode
+
+	var obstacle_destroy_timer = 0.0
+
+	func _init():
+		name = "Heavy Rain"
+		description = "A weather mutator that increases the rain DoT and temporarily destroys small obstacles."
+		weather = "heavy_rain"
+
+	func apply_dynamic_traits(world: Object, balls: Array, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+
+	func setup(world: Object, balls: Array) -> void:
+		super.setup(world, balls)
+		if world.has_method("get"):
+			var arena = world.get("arena")
+			if arena:
+				arena.set("weather", self.weather)
+				arena.set("is_raining", true)
+		elif "arena" in world and world.arena:
+			world.arena.weather = self.weather
+			world.arena.is_raining = true
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		obstacle_destroy_timer += delta
+
+		for b in balls:
+			if not b.get("alive", false) or str(b.get("ball_type", "")).to_lower() == "spectator":
+				continue
+
+			var w_timer = b.get("weather_immunity_timer", 0.0)
+			if w_timer > 0.0:
+				continue
+
+			b.set("cosmetic", "umbrella")
+			b.set("perception_radius", b.get("base_perception_radius", 250.0) * 0.5)
+			b.set("dash_range_mult", 1.5)
+			b.set("steering_mult", 0.5)
+			b.set("attack_accuracy", 0.8)
+
+			var bt = str(b.get("ball_type", "")).to_lower()
+			var has_wt = false
+			if "water" in bt or "swamp" in bt:
+				has_wt = true
+			var tr = b.get("traits", [])
+			if typeof(tr) == TYPE_ARRAY:
+				for t in tr:
+					if "water" in str(t).to_lower() or "swamp" in str(t).to_lower():
+						has_wt = true
+						break
+
+			var base_spd = b.get("base_speed", b.get("speed", 100.0))
+
+			if not has_wt:
+				b.set("speed", base_spd * 0.8)
+				if "hp" in b:
+					if b.has_method("take_damage"):
+						b.take_damage(5.0 * delta)
+					else:
+						b.hp -= 5.0 * delta
+						if b.hp <= 0:
+							b.hp = 0
+							b.alive = false
+			else:
+				b.set("speed", base_spd)
+				if "hp" in b:
+					var m_hp = b.get("max_hp", 100.0)
+					b.hp = min(m_hp, b.hp + 5.0 * delta)
+
+			var sk_r = str(b.get("SKILL", ""))
+			if sk_r == "fireball":
+				if "hp" in b:
+					if b.has_method("take_damage"):
+						b.take_damage(5.0 * delta)
+					else:
+						b.hp -= 5.0 * delta
+						if b.hp <= 0:
+							b.hp = 0
+							b.alive = false
+
+			if "vx" in b and "vy" in b:
+				b.x += b.vx * delta * 0.5
+				b.y += b.vy * delta * 0.5
+
+		if obstacle_destroy_timer >= 10.0:
+			obstacle_destroy_timer = 0.0
+			var arena = null
+			if world.has_method("get"):
+				arena = world.get("arena")
+			elif "arena" in world:
+				arena = world.arena
+
+			if arena and "hazards" in arena:
+				var hazards_to_remove = []
+				for h in arena.hazards:
+					var kind = h.get("kind", "")
+					if kind in ["rock", "spikes", "puddle", "trap", "proximity_trap", "hidden_trap"]:
+						if h.get("radius", 0.0) <= 20.0:
+							hazards_to_remove.append(h)
+
+				for h in hazards_to_remove:
+					arena.hazards.erase(h)
+
+				if hazards_to_remove.size() > 0 and world.has_method("add_event"):
+					world.add_event("obstacles_destroyed", {"message": "Heavy Rain washed away small obstacles!"})
+
 var GAME_MODES = {
 	"bermuda_triangle": BermudaTriangleMode.new(),
 	"color_trail": ColorTrailMode.new(),
 	"aerial_arena": AerialArenaMode.new(),
 
 	"elemental_auras": ElementalAurasMode.new(),
+	"heavy_rain_mutator": HeavyRainMode.new(),
 
 	"sticky_arena": StickyArenaMode.new(),
 	"falling_panels": FallingPanelsMode.new(),
