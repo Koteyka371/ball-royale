@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-868] Teleportation Trap — *2026-07-11 19:25:30 UTC*
+
+A deployable trap that teleports the first enemy that steps on it to a random location in the arena.
+
+---
+
 ## [idea-773] Weather-Adaptive Shields — *2026-07-11 19:24:29 UTC*
 
 A new loadout item 'Weather Shield' that absorbs negative status effects (e.g. wet, cold, sandblind) and converts them into a temporary health regeneration boost.

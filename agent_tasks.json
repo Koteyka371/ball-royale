@@ -14919,7 +14919,7 @@
     },
     {
       "id": "idea-868",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Teleportation Trap",
@@ -24367,6 +24367,57 @@
         "src/ai/chain_lightning_mutator.py",
         "src/ai/chain_lightning_mutator.gd",
         "tests/test_chain_lightning_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1423",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grapple Hook Trap",
+      "description": "A trap that shoots out a grappling hook when triggered, reeling the victim into the trap's center and rooting them for 2 seconds.",
+      "allowed_paths": [
+        "src/arena/grapple_hook_trap.py",
+        "src/arena/grapple_hook_trap.gd",
+        "tests/test_grapple_hook_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1424",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New mode 'Meteor Shower'",
+      "description": "Periodically, meteors fall from the sky onto the arena, creating temporary craters that act as hazards, dealing damage and knocking back balls.",
+      "allowed_paths": [
+        "src/ai/new_meteor_shower.py",
+        "src/ai/new_meteor_shower.gd",
+        "tests/test_new_meteor_shower.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1425",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New loadout item 'Phase Boots'",
+      "description": "Allows the ball to briefly ignore obstacles and hazards, moving through them without taking damage or being slowed down, but consumes stamina while active.",
+      "allowed_paths": [
+        "src/ai/new_loadout_item_phase_boots.py",
+        "src/ai/new_loadout_item_phase_boots.gd",
+        "tests/test_new_loadout_item_phase_boots.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
