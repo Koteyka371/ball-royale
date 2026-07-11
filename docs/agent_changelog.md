@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-838] Emp Grenade Hazard — *2026-07-11 15:32:08 UTC*
+
+A new hazard type that acts like an EMP grenade, disabling robotic balls completely for 3 seconds and clearing all active buffs (like supercharge) in its radius.
+
+---
+
 ## [idea-816] Booster Trap Item — *2026-07-11 15:32:04 UTC*
 
 Introduce a new inventory item called 'Booster Trap' that any ball can place on the ground. When picked up by an enemy, it applies a random negative status effect (like poison, freeze, or stun) instead of giving a buff.
