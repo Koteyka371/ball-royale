@@ -3873,6 +3873,48 @@ func execute(strategy: String, delta: float):
 
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("weather_shield"):
+			var weather_statuses = ["wet", "cold", "sandblind", "burn_timer", "poison_timer", "slow_timer", "frozen_timer"]
+			var absorbed = false
+			for stat in weather_statuses:
+				var stat_val = 0.0
+				if stat in self.ball: stat_val = self.ball.get(stat)
+				elif self.ball is Dictionary and self.ball.has(stat): stat_val = self.ball.get(stat, 0.0)
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta(stat): stat_val = self.ball.get_meta(stat)
+
+				if stat_val > 0.0:
+					if stat in self.ball: self.ball.set(stat, 0.0)
+					elif self.ball is Dictionary: self.ball[stat] = 0.0
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta(stat, 0.0)
+					absorbed = true
+
+			if absorbed:
+				var current_hp = 0
+				if "hp" in self.ball: current_hp = self.ball.hp
+				elif self.ball is Dictionary and self.ball.has("hp"): current_hp = self.ball["hp"]
+
+				var max_hp = 100
+				if "max_hp" in self.ball: max_hp = self.ball.max_hp
+				elif self.ball is Dictionary and self.ball.has("max_hp"): max_hp = self.ball["max_hp"]
+
+				var new_hp = min(max_hp, current_hp + 20)
+				if "hp" in self.ball: self.ball.hp = new_hp
+				elif self.ball is Dictionary: self.ball["hp"] = new_hp
+
+				var current_healing_buff = 0.0
+				if "healing_buff_timer" in self.ball: current_healing_buff = self.ball.healing_buff_timer
+				elif self.ball is Dictionary and self.ball.has("healing_buff_timer"): current_healing_buff = self.ball.get("healing_buff_timer", 0.0)
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("healing_buff_timer"): current_healing_buff = self.ball.get_meta("healing_buff_timer")
+
+				if "healing_buff_timer" in self.ball: self.ball.healing_buff_timer = current_healing_buff + 5.0
+				elif self.ball is Dictionary: self.ball["healing_buff_timer"] = current_healing_buff + 5.0
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("healing_buff_timer", current_healing_buff + 5.0)
+
+				inv.erase("weather_shield")
+				self.ball.set_meta("inventory", inv)
+
+	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
 		if inv.has("nemesis_compass_item"):
 			if self.world != null and "profile_manager" in self.world and self.world.profile_manager != null:
 				var pm = self.world.profile_manager
@@ -15153,6 +15195,22 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "weather_shield_item":
+                var inv = []
+                if "inventory" in self.ball: inv = self.ball.inventory
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                inv.append("weather_shield")
+                if "inventory" in self.ball: self.ball.inventory = inv
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+
+                if world != null and "arena" in world and "hazards" in world.arena:
+                    var idx = world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        world.arena.hazards.remove_at(idx)
+                if world != null and "boosters" in world:
+                    var idx = world.boosters.find(nearest)
+                    if idx != -1:
+                        world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "booster_trap_item":
                 var inv = []
                 if "inventory" in self.ball: inv = self.ball.inventory
@@ -18990,7 +19048,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -20914,7 +20972,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
