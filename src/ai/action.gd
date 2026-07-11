@@ -8490,6 +8490,23 @@ func execute(strategy: String, delta: float):
                                     self.ball.hp -= poison_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = false
+                            elif trap_variant == "siphon":
+                                var siphon_latch = null
+                                if load("res://src/arena/procedural_arena.gd") != null:
+                                    siphon_latch = load("res://src/arena/procedural_arena.gd").Hazard.new()
+                                if siphon_latch != null:
+                                    siphon_latch.id = self.world.arena.hazards.size() + 8500
+                                    siphon_latch.x = self.ball.x
+                                    siphon_latch.y = self.ball.y
+                                    siphon_latch.radius = 0.0
+                                    siphon_latch.kind = "siphon_latch"
+                                    siphon_latch.set_meta("duration", 5.0)
+                                    siphon_latch.set_meta("target_id", self.ball.id if "id" in self.ball else self.ball.get_meta("id"))
+                                    siphon_latch.set_meta("owner_id", trap_owner_id)
+                                    self.world.arena.hazards.append(siphon_latch)
+
+                                if hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard: hazard.duration = 0.0
                             elif trap_variant == "hologram":
                                 var holo_dmg = 15.0
                                 if self.ball.has_method("take_damage"):
@@ -20918,6 +20935,96 @@ func _update_skill_timer(delta: float):
                 var h_kind = ""
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+
+                if h_kind == "siphon_latch" and (hazard.target_id if "target_id" in hazard else (hazard.get_meta("target_id") if hazard.has_method("get_meta") and hazard.has_meta("target_id") else -1)) == (self.ball.id if "id" in self.ball else self.ball.get_meta("id")):
+                    var h_owner_id = hazard.get_meta("owner_id") if hazard.has_method("get_meta") and hazard.has_meta("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)
+
+                    if "x" in hazard: hazard.x = self.ball.x
+                    elif hazard.has_method("set_meta") and hazard.has_meta("x"): hazard.set_meta("x", self.ball.x)
+                    if "y" in hazard: hazard.y = self.ball.y
+                    elif hazard.has_method("set_meta") and hazard.has_meta("y"): hazard.set_meta("y", self.ball.y)
+
+                    var siphon_dmg = 5.0 * delta
+                    if self.ball.has_method("take_damage"):
+                        self.ball.take_damage(siphon_dmg)
+                    elif "hp" in self.ball:
+                        self.ball.hp -= siphon_dmg
+
+                    var owner_ball = null
+                    if h_owner_id != null and self.world != null:
+                        var w_balls = []
+                        if "balls" in self.world: w_balls = self.world.balls
+                        elif "entities" in self.world: w_balls = self.world.entities
+
+                        for b in w_balls:
+                            var b_id = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+                            if b_id == h_owner_id:
+                                owner_ball = b
+                                var b_hp = b.hp if "hp" in b else (b.get_meta("hp") if b.has_method("get_meta") and b.has_meta("hp") else 100.0)
+                                var b_max_hp = b.max_hp if "max_hp" in b else (b.get_meta("max_hp") if b.has_method("get_meta") and b.has_meta("max_hp") else 100.0)
+                                b_hp += siphon_dmg
+                                if b_hp > b_max_hp: b_hp = b_max_hp
+                                if "hp" in b: b.hp = b_hp
+                                elif b.has_method("set_meta"): b.set_meta("hp", b_hp)
+                                break
+
+                    var current_hp = self.ball.hp if "hp" in self.ball else (self.ball.get_meta("hp") if self.ball.has_method("get_meta") and self.ball.has_meta("hp") else 0.0)
+                    if current_hp <= 0:
+                        if "alive" in self.ball: self.ball.alive = false
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+
+                        if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                            var healing_aura = null
+                            if load("res://src/arena/procedural_arena.gd") != null:
+                                healing_aura = load("res://src/arena/procedural_arena.gd").Hazard.new()
+                                healing_aura.id = self.world.arena.hazards.size() + 9000
+                                healing_aura.x = self.ball.x
+                                healing_aura.y = self.ball.y
+                                healing_aura.radius = 150.0
+                                healing_aura.kind = "healing_aura"
+                                healing_aura.damage = -10.0
+                                healing_aura.set_meta("duration", 5.0)
+
+                                var o_team = "unknown"
+                                if owner_ball != null:
+                                    if "team" in owner_ball: o_team = owner_ball.team
+                                    elif owner_ball.has_method("get_meta") and owner_ball.has_meta("team"): o_team = owner_ball.get_meta("team")
+                                healing_aura.set_meta("owner_team", o_team)
+
+                                self.world.arena.hazards.append(healing_aura)
+
+                        if hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                        elif "duration" in hazard: hazard.duration = 0.0
+                    continue
+
+                if h_kind == "healing_aura":
+                    var h_rad = hazard.radius if "radius" in hazard else (hazard.get_meta("radius") if hazard.has_method("get_meta") and hazard.has_meta("radius") else 150.0)
+                    var b_rad = self.ball.radius if "radius" in self.ball else (self.ball.get_meta("radius") if self.ball.has_method("get_meta") and self.ball.has_meta("radius") else 10.0)
+
+                    var hx = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
+                    var hy = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
+
+                    var dx = self.ball.x - hx
+                    var dy = self.ball.y - hy
+                    var dist = sqrt(dx*dx + dy*dy)
+
+                    if dist <= h_rad + b_rad:
+                        var b_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if self.ball.has_method("get_meta") and self.ball.has_meta("team") else "")
+                        var h_team = hazard.owner_team if "owner_team" in hazard else (hazard.get_meta("owner_team") if hazard.has_method("get_meta") and hazard.has_meta("owner_team") else "unknown")
+
+                        if b_team == h_team:
+                            var h_dmg = hazard.damage if "damage" in hazard else (hazard.get_meta("damage") if hazard.has_method("get_meta") and hazard.has_meta("damage") else -10.0)
+                            var heal_amount = abs(h_dmg) * delta
+
+                            var current_hp = self.ball.hp if "hp" in self.ball else (self.ball.get_meta("hp") if self.ball.has_method("get_meta") and self.ball.has_meta("hp") else 100.0)
+                            var current_max_hp = self.ball.max_hp if "max_hp" in self.ball else (self.ball.get_meta("max_hp") if self.ball.has_method("get_meta") and self.ball.has_meta("max_hp") else 100.0)
+
+                            current_hp += heal_amount
+                            if current_hp > current_max_hp: current_hp = current_max_hp
+
+                            if "hp" in self.ball: self.ball.hp = current_hp
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", current_hp)
+                    continue
                 if h_kind == "mine_bounce":
                     var owner_id = null
                     if "owner_id" in hazard: owner_id = hazard.owner_id
