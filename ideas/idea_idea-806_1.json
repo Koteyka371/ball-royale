@@ -1,0 +1,4 @@
+{
+  "title": "Bungee Cord Item",
+  "description": "An item that attaches a player to a specific point on the map. They can move freely within a certain radius, but if they go too far or get knocked back, they are snapped back to the anchor point with high velocity."
+}

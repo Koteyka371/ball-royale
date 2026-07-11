@@ -1979,6 +1979,51 @@ class Action:
                 self.ball.inventory.remove("position_swap")
 
 
+
+        # Check inventory for hookshot
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "hookshot" in self.ball.inventory:
+            # We want to pull towards another ball or wall, similar to grapple hook, but prioritized when in danger like lava or out of bounds
+            in_danger = False
+            # Check if in lava or out of bounds
+            arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
+            arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
+
+            if self.ball.x < 0 or self.ball.x > arena_width or self.ball.y < 0 or self.ball.y > arena_height:
+                in_danger = True
+
+            if not in_danger and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for h in self.world.arena.hazards:
+                    if getattr(h, "kind", "") == "lava":
+                        dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
+                        rad = getattr(h, "radius", 100)
+                        if dist_sq < rad**2:
+                            in_danger = True
+                            break
+
+            if in_danger or strategy == "flee":
+                pull_dist = 400.0
+
+                # Wall distances
+                dists = {
+                    "left": self.ball.x,
+                    "right": arena_width - self.ball.x,
+                    "top": self.ball.y,
+                    "bottom": arena_height - self.ball.y
+                }
+                closest_wall = min(dists, key=dists.get)
+
+                # Grapple to wall to save oneself
+                if closest_wall == "left":
+                    self.ball.x = max(0.0, self.ball.x - pull_dist)
+                elif closest_wall == "right":
+                    self.ball.x = min(float(arena_width), self.ball.x + pull_dist)
+                elif closest_wall == "top":
+                    self.ball.y = max(0.0, self.ball.y - pull_dist)
+                elif closest_wall == "bottom":
+                    self.ball.y = min(float(arena_height), self.ball.y + pull_dist)
+
+                self.ball.inventory.remove("hookshot")
+
         # Check inventory for tether hook
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "tether_hook" in self.ball.inventory:
             enemies = self._get_enemies()
@@ -8404,6 +8449,16 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "hookshot_booster":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("hookshot")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "tether_hook_booster":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -10095,7 +10150,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -11958,7 +12013,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "insulator_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "insulator_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
