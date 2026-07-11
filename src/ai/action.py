@@ -4495,15 +4495,35 @@ class Action:
                                 pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                    elif hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"):
+                    elif hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "thumper"):
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             if not hasattr(hazard, "vx"):
+                                import random
+                                if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"):
+                                    hazard.vx = random.uniform(-100.0, 100.0)
+                                    hazard.vy = random.uniform(-100.0, 100.0)
+                                else:
+                                    hazard.vx = random.uniform(-10.0, 10.0)
+                                    hazard.vy = random.uniform(-10.0, 10.0)
 
-                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm") else random.uniform(-10.0, 10.0)
-                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm") else random.uniform(-10.0, 10.0)
+                            # Tornado seeking logic happens on every tick
+                            if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                                nearest_thumper = None
+                                min_dist_sq = 1000000.0 # 1000^2
+                                for h in self.world.arena.hazards:
+                                    if getattr(h, "kind", "") == "thumper":
+                                        tdist_sq = (h.x - hazard.x)**2 + (h.y - hazard.y)**2
+                                        if tdist_sq < min_dist_sq:
+                                            min_dist_sq = tdist_sq
+                                            nearest_thumper = h
+                                if nearest_thumper:
+                                    tdist = max(0.1, min_dist_sq ** 0.5)
+                                    hazard.vx = (nearest_thumper.x - hazard.x) / tdist * 150.0
+                                    hazard.vy = (nearest_thumper.y - hazard.y) / tdist * 150.0
+
                             if not hasattr(hazard, "lifetime"):
                                 hazard.lifetime = 0.0
                             hazard.lifetime += delta
@@ -4516,6 +4536,22 @@ class Action:
                                     hazard.vy *= -1
 
                             h_lifetime = getattr(hazard, "lifetime", 0.0)
+
+                            if hazard.kind == "thumper":
+                                thump_timer = getattr(hazard, "thump_timer", 0.0)
+                                thump_timer -= delta
+                                if thump_timer <= 0:
+                                    thump_timer = 3.0
+                                    # Send pulse
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({"type": "thumper_pulse", "x": hazard.x, "y": hazard.y, "radius": hazard.radius})
+                                    if hasattr(self.world, "balls"):
+                                        for b in self.world.balls:
+                                            if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(hazard, "team", ""):
+                                                if (b.x - hazard.x)**2 + (b.y - hazard.y)**2 <= hazard.radius**2:
+                                                    b.skill_timer = max(getattr(b, "skill_timer", 0.0), 3.0)
+                                hazard.thump_timer = thump_timer
+
                             if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and h_lifetime >= 10.0:
                                 hazard.duration = 0.0
                                 if hasattr(self.world, "events"):
@@ -7790,7 +7826,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
+                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_thumper', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -9301,6 +9337,28 @@ class Action:
                     self.world.arena.hazards.append(p1)
                     self.world.arena.hazards.append(p2)
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+            elif skill_name == "deploy_thumper":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random
+                    thumper_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                    thumper = Hazard(thumper_id, self.ball.x, self.ball.y, 300.0, "thumper", 0.0)
+                    setattr(thumper, 'duration', 15.0)
+                    setattr(thumper, 'thump_timer', 0.0)
+                    setattr(thumper, 'owner_id', getattr(self.ball, "id", None))
+                    setattr(thumper, 'team', getattr(self.ball, "team", getattr(self.ball, "ball_type", "")))
+                    self.world.arena.hazards.append(thumper)
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 15.0)
             elif skill_name == "deploy_turret":
                 import copy
                 import random

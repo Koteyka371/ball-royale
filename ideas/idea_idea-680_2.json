@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Skill",
+  "description": "A new skill that shoots a bolt of lightning at the nearest enemy. If it hits, it arcs to the next nearest enemy within a certain radius, dealing slightly reduced damage. Can bounce up to 4 times, making it highly effective against grouped enemies or minion swarms."
+}

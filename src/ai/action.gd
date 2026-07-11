@@ -7958,7 +7958,7 @@ func execute(strategy: String, delta: float):
                             if anchor_timer <= 0:
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                elif hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
+                elif hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "thumper"]:
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
@@ -7971,6 +7971,20 @@ func execute(strategy: String, delta: float):
                             else:
                                 hazard.set_meta("vx", 10.0)
                                 hazard.set_meta("vy", 10.0)
+
+                        if hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
+                            var nearest_thumper = null
+                            var min_dist_sq = 1000000.0
+                            for h in self.world.arena.hazards:
+                                if h.kind == "thumper":
+                                    var tdist_sq = (h.x - hazard.x) * (h.x - hazard.x) + (h.y - hazard.y) * (h.y - hazard.y)
+                                    if tdist_sq < min_dist_sq:
+                                        min_dist_sq = tdist_sq
+                                        nearest_thumper = h
+                            if nearest_thumper != null:
+                                var tdist = max(0.1, sqrt(min_dist_sq))
+                                hazard.set_meta("vx", (nearest_thumper.x - hazard.x) / tdist * 150.0)
+                                hazard.set_meta("vy", (nearest_thumper.y - hazard.y) / tdist * 150.0)
                         if not hazard.has_meta("lifetime"):
                             hazard.set_meta("lifetime", 0.0)
                         hazard.set_meta("lifetime", hazard.get_meta("lifetime") + delta)
@@ -7986,6 +8000,39 @@ func execute(strategy: String, delta: float):
                         var h_lifetime = 0.0
                         if hazard.has_meta("lifetime"):
                             h_lifetime = hazard.get_meta("lifetime")
+
+                        if hazard.kind == "thumper":
+                            var thump_timer = 0.0
+                            if hazard.has_meta("thump_timer"): thump_timer = hazard.get_meta("thump_timer")
+                            thump_timer -= delta
+                            if thump_timer <= 0:
+                                thump_timer = 3.0
+                                if "events" in self.world:
+                                    self.world.events.append({"type": "thumper_pulse", "x": hazard.x, "y": hazard.y, "radius": hazard.radius})
+                                if "balls" in self.world:
+                                    var haz_team = ""
+                                    if hazard.has_meta("team"): haz_team = hazard.get_meta("team")
+                                    for b in self.world.balls:
+                                        var is_alive = true
+                                        if "alive" in b: is_alive = b.alive
+                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get"): is_alive = b.get("alive")
+                                        if is_alive:
+                                            var b_team = ""
+                                            if "team" in b: b_team = b.team
+                                            elif "ball_type" in b: b_team = b.ball_type
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                                                b_team = b.get("team")
+                                                if b_team == null or b_team == "": b_team = b.get("ball_type")
+                                            if b_team != haz_team:
+                                                var dist_sq = (b.x - hazard.x)*(b.x - hazard.x) + (b.y - hazard.y)*(b.y - hazard.y)
+                                                if dist_sq <= hazard.radius * hazard.radius:
+                                                    var current_timer = 0.0
+                                                    if "skill_timer" in b: current_timer = b.skill_timer
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("skill_timer") != null: current_timer = b.get("skill_timer")
+                                                    var new_timer = max(current_timer, 3.0)
+                                                    if "skill_timer" in b: b.skill_timer = new_timer
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("skill_timer", new_timer)
+                            hazard.set_meta("thump_timer", thump_timer)
 
                         if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and h_lifetime >= 10.0:
                             hazard.set_meta("duration", 0.0)
@@ -13824,7 +13871,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
+                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_thumper', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'yeti_roar']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -16459,6 +16506,29 @@ func _use_skill():
                     self.ball.skill_timer = cd
                 else:
                     self.ball.skill_timer = 5.0
+        elif skill_name == "deploy_thumper":
+            var thumper_id = arena.hazards.size() + (randi() % 9000 + 1000)
+            var thumper = ProceduralArena.Hazard.new(thumper_id, self.ball.x, self.ball.y, 300.0, "thumper", 0.0)
+            thumper.set_meta("duration", 15.0)
+            thumper.set_meta("thump_timer", 0.0)
+            var b_id = null
+            if "id" in self.ball: b_id = self.ball.id
+            elif self.ball.has_method("get"): b_id = self.ball.get("id")
+            thumper.set_meta("owner_id", b_id)
+            var b_team = ""
+            if "team" in self.ball: b_team = self.ball.team
+            elif "ball_type" in self.ball: b_team = self.ball.ball_type
+            elif self.ball.has_method("get"): b_team = self.ball.get("team")
+            if b_team == null or b_team == "":
+                if self.ball.has_method("get"): b_team = self.ball.get("ball_type")
+            thumper.set_meta("team", b_team)
+            arena.hazards.append(thumper)
+
+            var cd = 15.0
+            if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+            elif self.ball.has_method("get") and self.ball.get("SKILL_COOLDOWN") != null: cd = self.ball.get("SKILL_COOLDOWN")
+            if "skill_timer" in self.ball: self.ball.skill_timer = cd
+            elif self.ball.has_method("set"): self.ball.set("skill_timer", cd)
         elif skill_name == "deploy_turret":
             var turret = null
             if self.ball.has_method("duplicate"): turret = self.ball.duplicate()

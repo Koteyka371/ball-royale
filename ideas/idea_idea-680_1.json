@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic Minefield",
+  "description": "A new deployable hazard that places a cluster of magnetic mines. These mines do not explode on proximity, but instead strongly repel or attract balls depending on their polarity (which swaps every 3 seconds). Useful for manipulating enemy movement or protecting an area."
+}
