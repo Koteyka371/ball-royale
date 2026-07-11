@@ -14424,7 +14424,7 @@
     },
     {
       "id": "idea-839",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-Adaptive Traits System",
@@ -24606,6 +24606,23 @@
         "src/ai/kinetic_rebound_shield.py",
         "src/ai/kinetic_rebound_shield.gd",
         "tests/test_kinetic_rebound_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1437",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Alley Mode",
+      "description": "A game mode where the arena has multiple huge tornados slowly moving around, constantly sucking players in and dealing damage.",
+      "allowed_paths": [
+        "src/ai/tornado_alley.py",
+        "src/ai/tornado_alley.gd",
+        "tests/test_tornado_alley.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

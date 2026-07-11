@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-839] Weather-Adaptive Traits System — *2026-07-11 21:16:05 UTC*
+
+Introduce a dynamic trait system where units gain temporary buffs or debuffs depending on the current weather and arena terrain. For instance, 'fire' units gain speed and damage in 'Lava' or 'Heatwave' conditions but suffer heavy penalties during 'Rain' or 'Blizzard'. 'Earth' or 'Rock' traits could gain defense in 'Dirt' arenas and remain unaffected by 'Sandstorm' damage.
+
+---
+
 ## [idea-877] Bouncy Castles Mode — *2026-07-11 21:10:53 UTC*
 
 An arena heavily populated with large bouncy platforms that propel balls high into the air. Hazards are primarily aerial (e.g. flying drones, lightning clouds). Players must manage their air time and bounces to survive.
