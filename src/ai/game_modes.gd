@@ -25272,7 +25272,218 @@ class AerialArenaMode extends GameMode:
 			if idx != -1:
 				world.arena.hazards.remove_at(idx)
 
+
+class TemporalRiftsMode extends GameMode:
+	var spawn_timer: float = 0.0
+
+	func _init():
+		self.name = "Temporal Rifts"
+		self.description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 5.0
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
+				var rifts = []
+				for h in world.arena.hazards:
+					var hk = ""
+					if typeof(h) == TYPE_DICTIONARY and "kind" in h:
+						hk = h.kind
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get") and h.get("kind"):
+						hk = h.get("kind")
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"):
+						hk = h.get_meta("kind")
+					if hk == "temporal_rift":
+						rifts.append(h)
+				if rifts.size() < 5:
+					var w = 1000.0
+					var h_dim = 1000.0
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						if "width" in world.arena: w = float(world.arena.width)
+						if "height" in world.arena: h_dim = float(world.arena.height)
+					elif typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get"):
+						if world.arena.get("width") != null: w = float(world.arena.get("width"))
+						if world.arena.get("height") != null: h_dim = float(world.arena.get("height"))
+					var rx = randf_range(100, w - 100)
+					var ry = randf_range(100, h_dim - 100)
+					var r_id = 8000 + randi() % 10000
+					var r_rad = randf_range(60, 150)
+
+					var scales = [0.2, 0.5, 2.0, 3.0]
+					var scale_val = scales[randi() % scales.size()]
+					var new_rift = {
+						"id": r_id,
+						"x": rx,
+						"y": ry,
+						"radius": r_rad,
+						"kind": "temporal_rift",
+						"damage": 0.0,
+						"time_scale": scale_val,
+						"duration": randf_range(10.0, 30.0)
+					}
+					world.arena.hazards.append(new_rift)
+
+			elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null:
+				var arena = world.get("arena")
+				if arena.has_method("get") and arena.get("hazards") != null:
+					var hazards = arena.get("hazards")
+					var rifts = []
+					for h in hazards:
+						var hk = ""
+						if typeof(h) == TYPE_DICTIONARY and "kind" in h:
+							hk = h.kind
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get") and h.get("kind"):
+							hk = h.get("kind")
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"):
+							hk = h.get_meta("kind")
+						if hk == "temporal_rift":
+							rifts.append(h)
+					if rifts.size() < 5:
+						var w = 1000.0
+						var h_dim = 1000.0
+						if arena.has_method("get"):
+							if arena.get("width") != null: w = float(arena.get("width"))
+							if arena.get("height") != null: h_dim = float(arena.get("height"))
+						var rx = randf_range(100, w - 100)
+						var ry = randf_range(100, h_dim - 100)
+						var r_id = 8000 + randi() % 10000
+						var r_rad = randf_range(60, 150)
+
+						var scales = [0.2, 0.5, 2.0, 3.0]
+						var scale_val = scales[randi() % scales.size()]
+						var new_rift = {
+							"id": r_id,
+							"x": rx,
+							"y": ry,
+							"radius": r_rad,
+							"kind": "temporal_rift",
+							"damage": 0.0,
+							"time_scale": scale_val,
+							"duration": randf_range(10.0, 30.0)
+						}
+						hazards.append(new_rift)
+
+		var rifts = []
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
+			var alive_hazards = []
+			for h in world.arena.hazards:
+				var hk = ""
+				if typeof(h) == TYPE_DICTIONARY and "kind" in h:
+					hk = h.kind
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get") and h.get("kind"):
+					hk = h.get("kind")
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"):
+					hk = h.get_meta("kind")
+
+				if hk == "temporal_rift":
+					var dur = 0.0
+					if typeof(h) == TYPE_DICTIONARY and "duration" in h: dur = float(h.duration)
+					elif typeof(h) == TYPE_OBJECT and "duration" in h: dur = float(h.duration)
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("duration"): dur = float(h.get_meta("duration"))
+
+					dur -= delta
+					if dur > 0:
+						if typeof(h) == TYPE_DICTIONARY: h.duration = dur
+						elif typeof(h) == TYPE_OBJECT and "duration" in h: h.duration = dur
+						elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("duration", dur)
+						alive_hazards.append(h)
+						rifts.append(h)
+				else:
+					alive_hazards.append(h)
+			world.arena.hazards = alive_hazards
+		elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null:
+			var arena = world.get("arena")
+			if arena.has_method("get") and arena.get("hazards") != null:
+				var alive_hazards = []
+				for h in arena.get("hazards"):
+					var hk = ""
+					if typeof(h) == TYPE_DICTIONARY and "kind" in h:
+						hk = h.kind
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get") and h.get("kind"):
+						hk = h.get("kind")
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"):
+						hk = h.get_meta("kind")
+					if hk == "temporal_rift":
+						var dur = 0.0
+						if typeof(h) == TYPE_DICTIONARY and "duration" in h: dur = float(h.duration)
+						elif typeof(h) == TYPE_OBJECT and "duration" in h: dur = float(h.duration)
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("duration"): dur = float(h.get_meta("duration"))
+
+						dur -= delta
+						if dur > 0:
+							if typeof(h) == TYPE_DICTIONARY: h.duration = dur
+							elif typeof(h) == TYPE_OBJECT and "duration" in h: h.duration = dur
+							elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("duration", dur)
+							alive_hazards.append(h)
+							rifts.append(h)
+					else:
+						alive_hazards.append(h)
+				arena.hazards = alive_hazards
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			if not is_alive: continue
+
+			var bx = 0.0
+			var by = 0.0
+			var br = 10.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if "x" in b: bx = float(b.x)
+				if "y" in b: by = float(b.y)
+				if "radius" in b: br = float(b.radius)
+			elif typeof(b) == TYPE_OBJECT:
+				if "x" in b: bx = float(b.x)
+				if "y" in b: by = float(b.y)
+				if "radius" in b: br = float(b.radius)
+
+			var in_rift = false
+			for rift in rifts:
+				var rx = 0.0
+				var ry = 0.0
+				var rr = 50.0
+				var ts = 1.0
+				if typeof(rift) == TYPE_DICTIONARY:
+					if "x" in rift: rx = float(rift.x)
+					if "y" in rift: ry = float(rift.y)
+					if "radius" in rift: rr = float(rift.radius)
+					if "time_scale" in rift: ts = float(rift.time_scale)
+				elif typeof(rift) == TYPE_OBJECT:
+					if "x" in rift: rx = float(rift.x)
+					if "y" in rift: ry = float(rift.y)
+					if "radius" in rift: rr = float(rift.radius)
+					if rift.has_method("get_meta") and rift.has_meta("time_scale"):
+						ts = float(rift.get_meta("time_scale"))
+					elif "time_scale" in rift:
+						ts = float(rift.time_scale)
+
+				var dist = sqrt((bx - rx)*(bx - rx) + (by - ry)*(by - ry))
+				if dist < rr + br:
+					var bs = 100.0
+					if typeof(b) == TYPE_DICTIONARY and "base_speed" in b: bs = float(b.base_speed)
+					elif typeof(b) == TYPE_OBJECT and "base_speed" in b: bs = float(b.base_speed)
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b.speed = bs * ts
+					elif typeof(b) == TYPE_OBJECT:
+						b.speed = bs * ts
+					in_rift = true
+					break
+			if not in_rift:
+				var bs = 100.0
+				if typeof(b) == TYPE_DICTIONARY and "base_speed" in b: bs = float(b.base_speed)
+				elif typeof(b) == TYPE_OBJECT and "base_speed" in b: bs = float(b.base_speed)
+				if typeof(b) == TYPE_DICTIONARY:
+					b.speed = bs
+				elif typeof(b) == TYPE_OBJECT:
+					b.speed = bs
+
+
 var GAME_MODES = {
+	"temporal_rifts": TemporalRiftsMode.new(),
 	"bermuda_triangle": BermudaTriangleMode.new(),
 	"aerial_arena": AerialArenaMode.new(),
 

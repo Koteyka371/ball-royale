@@ -17564,3 +17564,77 @@ class BermudaTriangleMode(GameMode):
                 b.vy = 0.0
 
 GAME_MODES['bermuda_triangle'] = BermudaTriangleMode()
+
+
+class TemporalRiftsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Temporal Rifts"
+        self.description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
+        self.spawn_timer = 0.0
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.spawn_timer -= delta
+        import random, math
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 5.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+
+                # count rifts
+                rifts = [h for h in world.arena.hazards if getattr(h, "kind", "") == "temporal_rift"]
+                if len(rifts) < 5:
+                    w = getattr(world.arena, "width", 1000)
+                    h = getattr(world.arena, "height", 1000)
+                    rx = random.uniform(100, w - 100)
+                    ry = random.uniform(100, h - 100)
+                    r_id = 8000 + random.randint(0, 9999)
+                    new_rift = Hazard(r_id, rx, ry, random.uniform(60, 150), "temporal_rift", 0.0)
+                    setattr(new_rift, "time_scale", random.choice([0.2, 0.5, 2.0, 3.0]))
+                    setattr(new_rift, "duration", random.uniform(10.0, 30.0))
+                    world.arena.hazards.append(new_rift)
+                    if hasattr(world, "add_event"):
+                        world.add_event("temporal_rift", {"type": "rift_spawn", "message": "A new Temporal Rift has formed!"})
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            # Update duration and remove expired
+            alive_hazards = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "temporal_rift":
+                    d = getattr(h, "duration", 0.0) - delta
+                    if d > 0:
+                        setattr(h, "duration", d)
+                        alive_hazards.append(h)
+                else:
+                    alive_hazards.append(h)
+            world.arena.hazards = alive_hazards
+
+            rifts = [h for h in world.arena.hazards if getattr(h, "kind", "") == "temporal_rift"]
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+
+                in_rift = False
+                for rift in rifts:
+                    dist = math.sqrt((b.x - rift.x)**2 + (b.y - rift.y)**2)
+                    if dist < rift.radius + getattr(b, "radius", 10.0):
+                        ts = getattr(rift, "time_scale", 1.0)
+                        # Apply speed modifications
+                        b.speed = getattr(b, "base_speed", 100.0) * ts
+                        in_rift = True
+                        break
+                if not in_rift:
+                    b.speed = getattr(b, "base_speed", 100.0)
+
+GAME_MODES["temporal_rifts"] = TemporalRiftsMode()
