@@ -197,6 +197,29 @@ class GameMode:
 		var mod_index = ((season_num - 1) % 4) + 1
 		var mod = modifiers[mod_index]
 
+		if "arena" in world and world.arena != null:
+			var season_index = ((season_num - 1) % 4) + 1
+			if season_index == 1:
+				if world.arena.has_method("set_meta") or typeof(world.arena) == TYPE_OBJECT:
+					world.arena.weather = ["clear", "rain"][randi() % 2]
+					if world.arena.has_method("set_meta"):
+						world.arena.set_meta("seasonal_modifier", "spring")
+			elif season_index == 2:
+				if world.arena.has_method("set_meta") or typeof(world.arena) == TYPE_OBJECT:
+					world.arena.weather = ["clear", "heatwave"][randi() % 2]
+					if world.arena.has_method("set_meta"):
+						world.arena.set_meta("seasonal_modifier", "summer")
+			elif season_index == 3:
+				if world.arena.has_method("set_meta") or typeof(world.arena) == TYPE_OBJECT:
+					world.arena.weather = ["clear", "wind", "fog"][randi() % 3]
+					if world.arena.has_method("set_meta"):
+						world.arena.set_meta("seasonal_modifier", "autumn")
+			elif season_index == 4:
+				if world.arena.has_method("set_meta") or typeof(world.arena) == TYPE_OBJECT:
+					world.arena.weather = ["clear", "snow", "blizzard"][randi() % 3]
+					if world.arena.has_method("set_meta"):
+						world.arena.set_meta("seasonal_modifier", "winter")
+
 		var current_week = int(Time.get_unix_time_from_system() / (7.0 * 24.0 * 3600.0))
 		var weekly_mutators = {
 			0: {"type": "low_gravity"},

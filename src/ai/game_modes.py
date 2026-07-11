@@ -134,6 +134,22 @@ class GameMode:
         elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
             season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
 
+        if hasattr(world, "arena"):
+            import random
+            season_index = ((season_num - 1) % 4) + 1
+            if season_index == 1:
+                world.arena.weather = random.choice(["clear", "rain"])
+                world.arena.seasonal_modifier = "spring"
+            elif season_index == 2:
+                world.arena.weather = random.choice(["clear", "heatwave"])
+                world.arena.seasonal_modifier = "summer"
+            elif season_index == 3:
+                world.arena.weather = random.choice(["clear", "wind", "fog"])
+                world.arena.seasonal_modifier = "autumn"
+            elif season_index == 4:
+                world.arena.weather = random.choice(["clear", "snow", "blizzard"])
+                world.arena.seasonal_modifier = "winter"
+
         modifiers = {
             1: {"type": "global_speed", "value": 1.2},
             2: {"type": "global_damage", "value": 0.9},
