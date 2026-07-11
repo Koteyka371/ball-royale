@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-857] Aura Stacking Mode — *2026-07-11 19:06:07 UTC*
+
+Players start with no base abilities but can collect elemental auras that drop globally. Collecting auras stacks their intensity or combines elements to unlock unique hybrid effects.
+
+---
+
 ## [idea-794] Necromancer Minion Synergy - Sacrificial Shield — *2026-07-11 19:06:02 UTC*
 
 Give the Necromancer a passive ability where, if taking fatal damage, the damage is redirected to the nearest allied minion within range instead, killing the minion but saving the Necromancer.
