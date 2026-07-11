@@ -5594,6 +5594,7 @@ func execute(strategy: String, delta: float):
                     radius *= 2.0
                     explosion_damage *= 2.0
 
+                var swap_targets = []
                 for other in world.balls:
                             var other_alive = false
                             if "alive" in other:
@@ -5641,7 +5642,9 @@ func execute(strategy: String, delta: float):
 
                                     var b_decoy_type = b.decoy_type if "decoy_type" in b else (b.get_meta("decoy_type") if b.has_method("has_meta") and b.has_meta("decoy_type") else "")
 
-                                    if b_decoy_type == "healing" and is_ally:
+                                    if b_decoy_type == "swap_trap":
+                                        swap_targets.append(other)
+                                    elif b_decoy_type == "healing" and is_ally:
                                         var max_hp = 100.0
                                         if "max_hp" in other: max_hp = float(other.max_hp)
                                         elif other.has_method("get_meta") and other.has_meta("max_hp"): max_hp = float(other.get_meta("max_hp"))
@@ -5795,6 +5798,33 @@ func execute(strategy: String, delta: float):
                                                     elif owner.has_method("set_meta"):
                                                         owner.set_meta("score", 5)
                                                     break
+
+                        if b_decoy_type == "swap_trap" and swap_targets.size() > 1:
+                            var rng = RandomNumberGenerator.new()
+                            rng.randomize()
+                            # Fisher-Yates shuffle
+                            for i in range(swap_targets.size() - 1, 0, -1):
+                                var j = rng.randi() % (i + 1)
+                                var temp = swap_targets[i]
+                                swap_targets[i] = swap_targets[j]
+                                swap_targets[j] = temp
+
+                            var first_x = swap_targets[0].x if "x" in swap_targets[0] else (swap_targets[0].get_meta("x") if swap_targets[0].has_method("get_meta") else 0.0)
+                            var first_y = swap_targets[0].y if "y" in swap_targets[0] else (swap_targets[0].get_meta("y") if swap_targets[0].has_method("get_meta") else 0.0)
+
+                            for i in range(swap_targets.size() - 1):
+                                var next_x = swap_targets[i+1].x if "x" in swap_targets[i+1] else (swap_targets[i+1].get_meta("x") if swap_targets[i+1].has_method("get_meta") else 0.0)
+                                var next_y = swap_targets[i+1].y if "y" in swap_targets[i+1] else (swap_targets[i+1].get_meta("y") if swap_targets[i+1].has_method("get_meta") else 0.0)
+
+                                if "x" in swap_targets[i]: swap_targets[i].x = next_x
+                                elif swap_targets[i].has_method("set_meta"): swap_targets[i].set_meta("x", next_x)
+                                if "y" in swap_targets[i]: swap_targets[i].y = next_y
+                                elif swap_targets[i].has_method("set_meta"): swap_targets[i].set_meta("y", next_y)
+
+                            if "x" in swap_targets[swap_targets.size()-1]: swap_targets[swap_targets.size()-1].x = first_x
+                            elif swap_targets[swap_targets.size()-1].has_method("set_meta"): swap_targets[swap_targets.size()-1].set_meta("x", first_x)
+                            if "y" in swap_targets[swap_targets.size()-1]: swap_targets[swap_targets.size()-1].y = first_y
+                            elif swap_targets[swap_targets.size()-1].has_method("set_meta"): swap_targets[swap_targets.size()-1].set_meta("y", first_y)
 
                         var pull_radius = 150.0
                         if "balls" in world:
