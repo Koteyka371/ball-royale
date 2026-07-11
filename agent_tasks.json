@@ -14612,7 +14612,7 @@
     },
     {
       "id": "idea-850",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chronosphere Hazard",
@@ -24248,6 +24248,23 @@
         "src/ai/nemesis_tracking_drone.py",
         "src/ai/nemesis_tracking_drone.gd",
         "tests/test_nemesis_tracking_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1416",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slingshot Arena Mode",
+      "description": "An arena mode where walls apply a massive multiplying force to balls when they bounce off them, making the edges of the arena extremely dangerous due to high velocity ricochets.",
+      "allowed_paths": [
+        "src/arena/slingshot_arena.py",
+        "src/arena/slingshot_arena.gd",
+        "tests/test_slingshot_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

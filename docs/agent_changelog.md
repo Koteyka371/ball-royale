@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-850] Chronosphere Hazard — *2026-07-11 18:56:43 UTC*
+
+A new arena hazard that creates a large, slowly expanding bubble of warped time. Balls entering the sphere have their movement speed, skill cooldowns, and projectile velocities reduced by 75%, allowing for precise dodging and creating 'bullet time' zones during chaotic endgame teamfights.
+
+---
+
 ## [idea-861] Sticky Wall Arena — *2026-07-11 18:29:43 UTC*
 
 An arena with glue patches and sticky walls that slow down players and heavily dampen bouncing physics, forcing close-quarters combat.
