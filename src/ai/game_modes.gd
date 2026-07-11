@@ -25273,6 +25273,7 @@ class AerialArenaMode extends GameMode:
 				world.arena.hazards.remove_at(idx)
 
 var GAME_MODES = {
+	"bermuda_triangle": BermudaTriangleMode.new(),
 	"aerial_arena": AerialArenaMode.new(),
 
 	"elemental_auras": ElementalAurasMode.new(),
@@ -26976,3 +26977,124 @@ class UndergroundTunnelMode extends GameMode:
 					if "vy" in b: b.vy = 0.0
 					elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
 					break
+class BermudaTriangleMode extends GameMode:
+	var pylons = []
+
+	func _init().():
+		name = "Bermuda Triangle"
+		description = "Three pylons spawn on the arena, forming a triangle. Any ball that enters the center of the triangle randomly teleports to a different location on the map, resetting their momentum to zero."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		var arena_w = 800.0
+		var arena_h = 600.0
+		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_w = world.arena.get("width", 800.0)
+			arena_h = world.arena.get("height", 600.0)
+		elif world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_w = world.arena.get("width", 800.0)
+				arena_h = world.arena.get("height", 600.0)
+			else:
+				if "width" in world.arena: arena_w = world.arena.width
+				if "height" in world.arena: arena_h = world.arena.height
+
+		var cx = arena_w / 2.0
+		var cy = arena_h / 2.0
+		var radius = 150.0
+		pylons = []
+
+		if world != null and "arena" in world and world.arena != null:
+			var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+
+			for i in range(3):
+				var angle = i * (2.0 * PI / 3.0) - PI / 2.0
+				var px = cx + radius * cos(angle)
+				var py = cy + radius * sin(angle)
+				pylons.append(Vector2(px, py))
+
+				var pylon = HazardObj.new("bermuda_pylon_" + str(i), px, py, 20.0, "magnetic_pylon", 0.0)
+
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("hazards"):
+						world.arena.hazards.append(pylon)
+				else:
+					if "hazards" in world.arena:
+						world.arena.hazards.append(pylon)
+
+	func sign_point(p1: Vector2, p2: Vector2, p3: Vector2) -> float:
+		return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y)
+
+	func point_in_triangle(pt: Vector2, v1: Vector2, v2: Vector2, v3: Vector2) -> bool:
+		var d1 = sign_point(pt, v1, v2)
+		var d2 = sign_point(pt, v2, v3)
+		var d3 = sign_point(pt, v3, v1)
+
+		var has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
+		var has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
+
+		return not (has_neg and has_pos)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		if pylons.size() < 3:
+			return
+
+		var arena_w = 800.0
+		var arena_h = 600.0
+		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_w = world.arena.get("width", 800.0)
+			arena_h = world.arena.get("height", 600.0)
+		elif world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_w = world.arena.get("width", 800.0)
+				arena_h = world.arena.get("height", 600.0)
+			else:
+				if "width" in world.arena: arena_w = world.arena.width
+				if "height" in world.arena: arena_h = world.arena.height
+
+		var p1 = pylons[0]
+		var p2 = pylons[1]
+		var p3 = pylons[2]
+
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				b_alive = b.get("alive", false)
+			else:
+				b_alive = b.get("alive") if "alive" in b else false
+
+			if not b_alive: continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			else:
+				if "x" in b: bx = b.x
+				elif b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
+				if "y" in b: by = b.y
+				elif b.has_method("has_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+			var pt = Vector2(bx, by)
+			if point_in_triangle(pt, p1, p2, p3):
+				var rng = RandomNumberGenerator.new()
+				rng.randomize()
+				var new_x = rng.randf_range(50.0, arena_w - 50.0)
+				var new_y = rng.randf_range(50.0, arena_h - 50.0)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] = new_x
+					b["y"] = new_y
+					b["vx"] = 0.0
+					b["vy"] = 0.0
+				else:
+					if "x" in b: b.x = new_x
+					elif b.has_method("set_meta"): b.set_meta("x", new_x)
+					if "y" in b: b.y = new_y
+					elif b.has_method("set_meta"): b.set_meta("y", new_y)
+					if "vx" in b: b.vx = 0.0
+					elif b.has_method("set_meta"): b.set_meta("vx", 0.0)
+					if "vy" in b: b.vy = 0.0
+					elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
