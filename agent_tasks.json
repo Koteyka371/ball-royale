@@ -14868,7 +14868,7 @@
     },
     {
       "id": "idea-865",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Acid Rain Mutator",
@@ -24861,6 +24861,23 @@
         "src/ai/elemental_decoys.py",
         "src/ai/elemental_decoys.gd",
         "tests/test_elemental_decoys.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1452",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Windstorm event",
+      "description": "Add a new Windstorm event that knocks all balls back.",
+      "allowed_paths": [
+        "src/ai/windstorm.py",
+        "src/ai/windstorm.gd",
+        "tests/test_windstorm.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

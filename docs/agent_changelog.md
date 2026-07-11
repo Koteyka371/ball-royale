@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-865] Acid Rain Mutator — *2026-07-11 23:43:20 UTC*
+
+A weather mutator that increases the rain DoT and temporarily destroys small obstacles.
+
+---
+
 ## [idea-855] Wind-Riding Specialization — *2026-07-11 23:39:39 UTC*
 
 Create a new 'Wind Rider' ball type or a skill that gives balls a speed boost and extended jump capability specifically during windy conditions in the Autumn arena, providing a tactical advantage.
