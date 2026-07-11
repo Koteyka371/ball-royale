@@ -21296,7 +21296,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse"]
 
 	func _init():
 		name = "Extreme Weather"
@@ -21377,6 +21377,10 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "acid_rain": booster_kind = "hazmat_booster"
 			elif current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
 			elif current_weather == "tsunami": booster_kind = "life_jacket_booster"
+			elif current_weather == "ice": booster_kind = "thermal_booster"
+			elif current_weather == "earthquake": booster_kind = "seismic_booster"
+			elif current_weather == "giant_flood": booster_kind = "life_jacket_booster"
+			elif current_weather == "solar_eclipse": booster_kind = "vision_booster"
 
 			var boss_map = {
 				"blizzard": "Frost Titan",
@@ -21384,7 +21388,11 @@ class ExtremeWeatherMode extends GameMode:
 				"acid_rain": "Toxic Behemoth",
 				"hurricane": "Storm Caller",
 				"tsunami": "Leviathan",
-				"meteor_shower": "Astral Destroyer"
+				"meteor_shower": "Astral Destroyer",
+				"ice": "Frost Titan",
+				"earthquake": "Tremor Behemoth",
+				"giant_flood": "Ocean Overlord",
+				"solar_eclipse": "Umbra Lord"
 			}
 
 			if current_weather in boss_map and world != null and "balls" in world:
@@ -21510,6 +21518,53 @@ class ExtremeWeatherMode extends GameMode:
 						arena_w = world.arena.width
 					if b.x >= arena_w - 20:
 						b.hp -= 20.0 * delta
+			elif current_weather == "ice":
+				if not is_immune:
+					if b.has_method("set_meta"):
+						b.set_meta("is_frictionless", true)
+						if not b.has_meta("is_slipping") or not b.get_meta("is_slipping"):
+							b.set_meta("is_slipping", true)
+					else:
+						b.is_frictionless = true
+						if not "is_slipping" in b or not b.is_slipping:
+							b.is_slipping = true
+			elif current_weather == "earthquake":
+				var has_seismic = (b.has_meta("seismic_booster_timer") and b.get_meta("seismic_booster_timer") > 0.0) or (b.has_meta("mega_seismic_booster_timer") and b.get_meta("mega_seismic_booster_timer") > 0.0)
+				if not has_seismic:
+					var angle = randf_range(0, 2 * PI)
+					b.x += cos(angle) * 150.0 * delta
+					b.y += sin(angle) * 150.0 * delta
+			elif current_weather == "giant_flood":
+				if not has_life_jacket:
+					b.speed = b.get_meta("base_speed") * 0.3
+					if "steering_mult" in b:
+						b.steering_mult = b.steering_mult * 0.5
+					elif b.has_meta("steering_mult"):
+						b.set_meta("steering_mult", b.get_meta("steering_mult") * 0.5)
+			elif current_weather == "solar_eclipse":
+				var has_vision = (b.has_meta("vision_booster_timer") and b.get_meta("vision_booster_timer") > 0.0) or (b.has_meta("mega_vision_booster_timer") and b.get_meta("mega_vision_booster_timer") > 0.0)
+				if not has_vision:
+					if b.has_method("set_meta"):
+						b.set_meta("perception_radius", 50.0)
+					else:
+						b.perception_radius = 50.0
+
+		if current_weather == "earthquake" and world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var h_kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+				elif "kind" in h:
+					h_kind = h.kind
+
+				if h_kind == "wall" or h_kind == "breakable_wall":
+					if typeof(h) == TYPE_DICTIONARY:
+						if "x" in h: h["x"] += randf_range(-100.0 * delta, 100.0 * delta)
+						if "y" in h: h["y"] += randf_range(-100.0 * delta, 100.0 * delta)
+					else:
+						if "x" in h: h.x += randf_range(-100.0 * delta, 100.0 * delta)
+						if "y" in h: h.y += randf_range(-100.0 * delta, 100.0 * delta)
+
 
 
 class JuggernautMode extends GameMode:
