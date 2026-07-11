@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-843] Interactive Match Spectating — *2026-07-11 12:55:45 UTC*
+
+Allow players waiting in queue to spectate high-ranked live matches. Spectators can drop small, harmless, but visually fun elements into the arena (like confetti or emotes) using a limited pool of 'cheer points' to engage with the players.
+
+---
+
 ## [idea-836] Chain Reaction Power-up — *2026-07-10 23:53:01 UTC*
 
 A rare power-up that makes regular ball collisions trigger a chain lightning effect. When a player with this power-up hits an enemy, a bolt of energy jumps to the next nearest enemy within a medium radius, dealing half damage, and can chain up to 3 times.
