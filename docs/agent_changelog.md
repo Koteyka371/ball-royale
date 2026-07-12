@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-903] Amnesia Gas Hazard — *2026-07-12 20:50:11 UTC*
+
+A cloud-based hazard that, upon contact, temporarily clears the AI's relationship memory (rivalries, perceived allies, last attacker) for 10 seconds. This forces the AI to re-evaluate their threat assessment from scratch, often leading to them ignoring current targets and behaving erratically until the effect wears off.
+
+---
+
 ## [idea-907] Shield Blast — *2026-07-12 20:27:49 UTC*
 
 When the reflect shield reaches its capacity or duration ends, it erupts, dealing a portion of the absorbed damage back in an AoE explosion.

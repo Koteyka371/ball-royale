@@ -15516,7 +15516,7 @@
     },
     {
       "id": "idea-903",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Amnesia Gas Hazard",
@@ -25389,6 +25389,57 @@
         "src/ai/bounty_hunter_progression.py",
         "src/ai/bounty_hunter_progression.gd",
         "tests/test_bounty_hunter_progression.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1483",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Recall Beacon",
+      "description": "Players can deploy a beacon that saves their current HP, shield state, and position. After 5 seconds, or upon reactivation, they are teleported back to the beacon and their state is restored. This allows for risky plays or escaping dangerous AoE zones like explosions.",
+      "allowed_paths": [
+        "src/ai/quantum_recall_beacon.py",
+        "src/ai/quantum_recall_beacon.gd",
+        "tests/test_quantum_recall_beacon.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1484",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Market Auction",
+      "description": "Periodically during a match, a hidden item (like a legendary artifact) goes up for auction among alive players. They can bid the gold they have earned to win the item, causing a bidding war.",
+      "allowed_paths": [
+        "src/ai/black_market_auction.py",
+        "src/ai/black_market_auction.gd",
+        "tests/test_black_market_auction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1485",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Overload Mutator",
+      "description": "A new mutator/buff that accumulates kinetic energy based on distance traveled. The more a player moves without stopping, the higher their next collision or attack damage becomes, culminating in an AoE kinetic blast if they maintain maximum speed for over 5 seconds.",
+      "allowed_paths": [
+        "src/ai/kinetic_overload_mutator.py",
+        "src/ai/kinetic_overload_mutator.gd",
+        "tests/test_kinetic_overload_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
