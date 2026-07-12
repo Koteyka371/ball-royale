@@ -5819,18 +5819,32 @@ class Action:
                                 launch_dist = 50.0 + pseudo_rand2 * 100.0
                                 self.ball.x += _math.cos(angle) * launch_dist
                                 self.ball.y += _math.sin(angle) * launch_dist
-                                # Deal damage upon landing
-                                hazard_damage = hazard.damage
-                                if hasattr(self.ball, "take_damage"):
-                                    self.ball.take_damage(hazard_damage)
-                                elif hasattr(self.ball, "hp"):
-                                    self.ball.hp -= hazard_damage
-                                    if getattr(self.ball, "hp", 0) <= 0:
-                                        self.ball.alive = False
+                                b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", ""))
+                                b_skill = getattr(self.ball, "skill", "")
+                                is_wind_rider = b_type == "wind_rider" or b_skill == "wind_rider"
 
-                                # Apply dizzy effect (confusion)
-                                self.ball.is_confused = True
-                                self.ball.confusion_timer = max(getattr(self.ball, "confusion_timer", 0.0), 3.0)
+                                if is_wind_rider:
+                                    # Boost launch distance for wind rider
+                                    # Let's say we launched them by launch_dist. We can increase that
+                                    # The original code added to self.ball.x/y
+                                    extra_launch_dist = 200.0  # Give them a massive extra boost
+                                    self.ball.x += _math.cos(angle) * extra_launch_dist
+                                    self.ball.y += _math.sin(angle) * extra_launch_dist
+
+                                    # Negate damage and don't apply confusion
+                                else:
+                                    # Deal damage upon landing
+                                    hazard_damage = hazard.damage
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(hazard_damage)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= hazard_damage
+                                        if getattr(self.ball, "hp", 0) <= 0:
+                                            self.ball.alive = False
+
+                                    # Apply dizzy effect (confusion)
+                                    self.ball.is_confused = True
+                                    self.ball.confusion_timer = max(getattr(self.ball, "confusion_timer", 0.0), 3.0)
 
                                 if hazard.kind in ("firenado", "local_firenado"):
                                     self.ball.burn_timer = max(getattr(self.ball, "burn_timer", 0.0), 5.0)

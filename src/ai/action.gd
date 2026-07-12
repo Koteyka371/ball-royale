@@ -10483,20 +10483,37 @@ func execute(strategy: String, delta: float):
                             self.ball.x += cos(angle) * launch_dist
                             self.ball.y += sin(angle) * launch_dist
 
-                            var hazard_damage = hazard.damage
-                            if self.ball.has_method("take_damage"):
-                                self.ball.take_damage(hazard_damage)
-                            elif "hp" in self.ball:
-                                self.ball.hp -= hazard_damage
-                                if self.ball.hp <= 0:
-                                    self.ball.alive = false
+                            var b_type = ""
+                            if "ball_type" in self.ball:
+                                b_type = self.ball.ball_type
+                            elif "BALL_TYPE" in self.ball:
+                                b_type = self.ball.BALL_TYPE
 
-                            # Apply dizzy effect (confusion)
-                            self.ball.is_confused = true
-                            if "confusion_timer" in self.ball and self.ball.confusion_timer > 3.0:
-                                pass
+                            var b_skill = ""
+                            if "skill" in self.ball:
+                                b_skill = self.ball.skill
+
+                            var is_wind_rider = (b_type == "wind_rider" or b_skill == "wind_rider")
+
+                            if is_wind_rider:
+                                var extra_launch_dist = 200.0
+                                self.ball.x += cos(angle) * extra_launch_dist
+                                self.ball.y += sin(angle) * extra_launch_dist
                             else:
-                                self.ball.confusion_timer = 3.0
+                                var hazard_damage = hazard.damage
+                                if self.ball.has_method("take_damage"):
+                                    self.ball.take_damage(hazard_damage)
+                                elif "hp" in self.ball:
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = false
+
+                                # Apply dizzy effect (confusion)
+                                self.ball.is_confused = true
+                                if "confusion_timer" in self.ball and self.ball.confusion_timer > 3.0:
+                                    pass
+                                else:
+                                    self.ball.confusion_timer = 3.0
 
                             if hazard.kind in ["firenado", "local_firenado"]:
                                 if "burn_timer" in self.ball:
