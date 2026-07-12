@@ -14110,7 +14110,7 @@ class DayNightMode extends GameMode:
 						var is_supercharged = s_timer > 0.0
 						var has_daylight_buff = not (b_type in ["vampire", "assassin", "phantom"])
 
-						if not has_daylight_buff or is_supercharged:
+						if true:
 							var behind_cover = false
 							var b_radius = 15.0
 							if "radius" in b: b_radius = b.radius
@@ -14140,29 +14140,48 @@ class DayNightMode extends GameMode:
 										break
 
 							if not behind_cover:
-								var actual_damage = beam_damage
-								var is_supercharged_local = false
+								var inv = []
 								if typeof(b) == TYPE_DICTIONARY:
-									is_supercharged_local = b.get("supercharge_timer", 0.0) > 0.0
-								else:
-									var s_timer_local = b.get("supercharge_timer") if "supercharge_timer" in b else (b.get_meta("supercharge_timer") if b.has_method("has_meta") and b.has_meta("supercharge_timer") else 0.0)
-									is_supercharged_local = s_timer_local > 0.0
-								if is_supercharged_local:
-									actual_damage = beam_damage * 2.0
+									inv = b.get("inventory", [])
+								elif "inventory" in b:
+									inv = b.inventory
+								elif b.has_method("has_meta") and b.has_meta("inventory"):
+									inv = b.get_meta("inventory")
 
-								if b.has_method("take_damage"):
-									b.take_damage(actual_damage)
-								else:
+								if "reflective_shield" in inv:
+									inv.erase("reflective_shield")
+									var angle = randf() * 2.0 * PI
+									var new_x = b.x + cos(angle) * 150.0
+									var new_y = b.y + sin(angle) * 150.0
+									active_sunlight_beams.append({"x": new_x, "y": new_y, "radius": beam_radius * 0.5, "duration": 1.0})
+									if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+										world.call("add_event", "visual_effect", {"type": "sunlight_beam_redirect", "x": new_x, "y": new_y, "radius": beam_radius * 0.5, "duration": 1.0, "source_x": b.x, "source_y": b.y})
+									elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+										world.add_event("visual_effect", {"type": "sunlight_beam_redirect", "x": new_x, "y": new_y, "radius": beam_radius * 0.5, "duration": 1.0, "source_x": b.x, "source_y": b.y})
+								elif not has_daylight_buff or is_supercharged:
+									var actual_damage = beam_damage
+									var is_supercharged_local = false
 									if typeof(b) == TYPE_DICTIONARY:
-										var hp = b.get("hp", 100.0)
-										b["hp"] = hp - actual_damage
-										if b.get("hp", 100.0) <= 0:
-											b["alive"] = false
+										is_supercharged_local = b.get("supercharge_timer", 0.0) > 0.0
 									else:
-										var hp = b.get("hp", 100.0)
-										b.set("hp", hp - actual_damage)
-										if b.get("hp", 100.0) <= 0:
-											b.set("alive", false)
+										var s_timer_local = b.get("supercharge_timer") if "supercharge_timer" in b else (b.get_meta("supercharge_timer") if b.has_method("has_meta") and b.has_meta("supercharge_timer") else 0.0)
+										is_supercharged_local = s_timer_local > 0.0
+									if is_supercharged_local:
+										actual_damage = beam_damage * 2.0
+
+									if b.has_method("take_damage"):
+										b.take_damage(actual_damage)
+									else:
+										if typeof(b) == TYPE_DICTIONARY:
+											var hp = b.get("hp", 100.0)
+											b["hp"] = hp - actual_damage
+											if b.get("hp", 100.0) <= 0:
+												b["alive"] = false
+										else:
+											var hp = b.get("hp", 100.0)
+											b.set("hp", hp - actual_damage)
+											if b.get("hp", 100.0) <= 0:
+												b.set("alive", false)
 
 			if is_night:
 				var active_shadows = []
@@ -14316,6 +14335,16 @@ class DayNightMode extends GameMode:
 
 			if not is_night:
 				sunlight_beam_timer += delta
+
+				if randf() < 0.005:
+					var arena_w = 1000.0
+					if "width" in world.arena: arena_w = float(world.arena.width)
+					var arena_h = 1000.0
+					if "height" in world.arena: arena_h = float(world.arena.height)
+
+					if "items" in world.arena:
+						world.arena.items.append({"kind": "reflective_shield", "x": randf_range(50.0, arena_w - 50.0), "y": randf_range(50.0, arena_h - 50.0), "radius": 10.0})
+
 				if sunlight_beam_timer >= 3.0:
 					sunlight_beam_timer = 0.0
 
