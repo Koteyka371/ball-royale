@@ -13999,7 +13999,7 @@
     },
     {
       "id": "idea-814",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Seasonal Weather Variations",
@@ -24929,6 +24929,57 @@
         "src/ai/magnetic_boots_cosmetic_item.py",
         "src/ai/magnetic_boots_cosmetic_item.gd",
         "tests/test_magnetic_boots_cosmetic_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1456",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Center with Shrinking Safe Zone",
+      "description": "A game mode where a black hole at the center of the arena slowly pulls all players inwards. The safe zone outside the black hole slowly shrinks over time. Players must constantly maneuver and fight each other while avoiding the ever-growing black hole.",
+      "allowed_paths": [
+        "src/ai/black_hole_center_with_shrinking_safe_zone.py",
+        "src/ai/black_hole_center_with_shrinking_safe_zone.gd",
+        "tests/test_black_hole_center_with_shrinking_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1457",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky web traps",
+      "description": "New trap variant that slows balls within a web-like radius.",
+      "allowed_paths": [
+        "src/arena/sticky_web_traps.py",
+        "src/arena/sticky_web_traps.gd",
+        "tests/test_sticky_web_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1458",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflect shield upgrade",
+      "description": "Allow upgrading reflect shield duration via currency.",
+      "allowed_paths": [
+        "src/ai/reflect_shield_upgrade.py",
+        "src/ai/reflect_shield_upgrade.gd",
+        "tests/test_reflect_shield_upgrade.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-814] Seasonal Weather Variations — *2026-07-12 15:43:56 UTC*
+
+Introduce weather events that spawn dynamically during matches in seasonal arenas. For instance, occasional blizzards in WinterArena that slow down ball movement, or localized heatwaves in SummerArena that drain stamina faster.
+
+---
+
 ## [idea-895] Trap upgrades — *2026-07-12 15:29:26 UTC*
 
 Upgradable traps via currency.
