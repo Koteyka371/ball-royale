@@ -73,3 +73,68 @@ if __name__ == "__main__":
     test_gravity_boots_collection()
     test_gravity_boots_pull_reduction()
     print("Tests passed")
+
+def test_gravity_boots_wind_immunity():
+    ball = MockBall()
+    ball.x = 100
+    ball.y = 100
+    ball.vx = 0
+    ball.vy = 0
+
+    ball2 = MockBall()
+    ball2.x = 100
+    ball2.y = 100
+    ball2.vx = 0
+    ball2.vy = 0
+    ball2.inventory = ["gravity_boots"]
+
+    world1 = MockWorld()
+    world1.balls = [ball]
+    world1.arena.wind_dx = 50.0
+    world1.arena.wind_dy = 0.0
+
+    world2 = MockWorld()
+    world2.balls = [ball2]
+    world2.arena.wind_dx = 50.0
+    world2.arena.wind_dy = 0.0
+
+    action1 = Action(ball, world1)
+    action1._idle = lambda d: None
+    action1._chase = lambda d: None
+    action1._attack = lambda d: None
+    action1._process_physics = lambda delta: None
+    action1.execute("idle", 0.1)
+
+    action2 = Action(ball2, world2)
+    action2._idle = lambda d: None
+    action2._chase = lambda d: None
+    action2._attack = lambda d: None
+    action2._process_physics = lambda delta: None
+    action2.execute("idle", 0.1)
+
+    assert ball.x > 100
+    assert ball2.x == 100 # Immune to wind
+
+def test_gravity_boots_temporary_effect():
+    ball = MockBall()
+    booster = MockEntity(2, 0, 0, kind="gravity_boots")
+
+    world = MockWorld()
+    world.balls = [ball]
+    world.entities = [ball]
+    world.boosters = [booster]
+    world.arena.hazards = [booster]
+
+    action = Action(ball, world)
+    action.execute("collect_booster", 1.0)
+
+    assert "gravity_boots" in ball.inventory
+    assert ball.gravity_boots_timer == 15.0
+
+    action.execute("idle", 5.0)
+    assert ball.gravity_boots_timer == 10.0
+    assert "gravity_boots" in ball.inventory
+
+    action.execute("idle", 10.0)
+    assert ball.gravity_boots_timer == 0.0
+    assert "gravity_boots" not in ball.inventory
