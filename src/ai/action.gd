@@ -9482,8 +9482,10 @@ func execute(strategy: String, delta: float):
                                     if "height" in self.world.arena:
                                         arena_h = self.world.arena.height
 
-                                var target_x = randf_range(my_radius, arena_w - my_radius)
-                                var target_y = randf_range(my_radius, arena_h - my_radius)
+                                var angle = randf_range(0, 2 * PI)
+                                var dist = randf_range(0, 500.0)
+                                var target_x = self.ball.x + cos(angle) * dist
+                                var target_y = self.ball.y + sin(angle) * dist
 
                                 var clamped_x = target_x
                                 var clamped_y = target_y
