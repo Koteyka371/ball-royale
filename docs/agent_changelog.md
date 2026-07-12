@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-884] New Item: Portable Oasis — *2026-07-12 17:31:17 UTC*
+
+A deployable item that creates a temporary zone where weather effects (like sandstorm damage and vision reduction, heatwave mirages, or blizzard slowness) are negated for all players standing inside it, and slowly regenerates stamina.
+
+---
+
 ## [idea-849] Temporal Rift Hazards — *2026-07-12 16:17:03 UTC*
 
 Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic.
