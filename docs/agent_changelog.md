@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-899] Airdrop Loot System — *2026-07-12 20:13:29 UTC*
+
+Periodically spawn high-tier supply drops at random locations. If a player stays within the drop zone radius for a certain amount of time to capture it, they receive exclusive artifacts or full heals.
+
+---
+
 ## [idea-885] Skill Re-cast Enhancements — *2026-07-12 20:05:31 UTC*
 
 Allowing double-tapping or re-casting of other skills. For example, a fireball could be detonated early by casting the skill again while the fireball is in flight.

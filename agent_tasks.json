@@ -15448,7 +15448,7 @@
     },
     {
       "id": "idea-899",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Airdrop Loot System",
@@ -25338,6 +25338,40 @@
         "src/ai/chain_reaction_mines.py",
         "src/ai/chain_reaction_mines.gd",
         "tests/test_chain_reaction_mines.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1480",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skill Morphing",
+      "description": "If two projectable skills (like fireball and tornado) collide, they morph into a 'Firestorm' hazard that inherits properties of both and deals massive AOE damage.",
+      "allowed_paths": [
+        "src/ai/skill_morphing.py",
+        "src/ai/skill_morphing.gd",
+        "tests/test_skill_morphing.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1481",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Projectiles",
+      "description": "Skills like fireball can bounce off walls once before exploding, adding a tactical element where players can hit opponents around corners.",
+      "allowed_paths": [
+        "src/ai/bouncing_projectiles.py",
+        "src/ai/bouncing_projectiles.gd",
+        "tests/test_bouncing_projectiles.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
