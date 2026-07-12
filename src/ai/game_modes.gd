@@ -25492,7 +25492,8 @@ class JumpPadBoundariesMode extends GameMode:
 		description = "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
 
 var GAME_MODES = {
-	"bermuda_triangle": BermudaTriangleMode.new(),
+	"temporal_rifts": TemporalRiftsMode.new(),
+		"bermuda_triangle": BermudaTriangleMode.new(),
 	"color_trail": ColorTrailMode.new(),
 	"aerial_arena": AerialArenaMode.new(),
 
@@ -27356,6 +27357,106 @@ class ColorTrailMode extends GameMode:
 				return winner
 
 		return null
+
+class TemporalRiftsMode extends GameMode:
+	var spawn_timer = 0.0
+	var rift_lifetime = 15.0
+	var rifts = []
+
+	func _init().():
+		name = "Temporal Rifts"
+		description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		if typeof(world) != TYPE_DICTIONARY and not world.has("arena"):
+			if typeof(world) == TYPE_OBJECT and not world.has_method("get_arena") and not ("arena" in world):
+				return
+
+		var arena = world.arena if typeof(world) == TYPE_DICTIONARY else world.get("arena")
+		if arena == null:
+			return
+
+		if typeof(arena) == TYPE_DICTIONARY:
+			if not arena.has("hazards"):
+				arena["hazards"] = []
+		else:
+			if not ("hazards" in arena):
+				arena.hazards = []
+
+		var hazards = arena["hazards"] if typeof(arena) == TYPE_DICTIONARY else arena.hazards
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 5.0
+
+			var arena_w = 800.0
+			var arena_h = 600.0
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_w = arena.get("width", 800.0)
+				arena_h = arena.get("height", 600.0)
+			else:
+				if "width" in arena: arena_w = arena.width
+				if "height" in arena: arena_h = arena.height
+
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			var x = rng.randf_range(50.0, arena_w - 50.0)
+			var y = rng.randf_range(50.0, arena_h - 50.0)
+
+			var rift_type = "fast" if rng.randf() < 0.5 else "slow"
+
+			var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+			var h_id = "rift_" + str(rng.randi_range(1000, 9999))
+			var h_obj = HazardObj.new(h_id, x, y, 100.0, "temporal_rift", 0.0)
+			h_obj.set_meta("rift_type", rift_type)
+			h_obj.set_meta("duration", rift_lifetime)
+
+			hazards.append(h_obj)
+			rifts.append(h_obj)
+
+		var rifts_to_remove = []
+		for r in rifts:
+			var dur = r.get_meta("duration") if r.has_meta("duration") else 0.0
+			dur -= delta
+			r.set_meta("duration", dur)
+			if dur <= 0:
+				rifts_to_remove.append(r)
+				var h_idx = hazards.find(r)
+				if h_idx != -1:
+					hazards.remove(h_idx)
+
+		for r in rifts_to_remove:
+			rifts.erase(r)
+
+		for b in balls:
+			var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+			if not alive:
+				continue
+
+			var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+
+			var in_rift = null
+			for r in rifts:
+				var dist = sqrt(pow(bx - r.x, 2) + pow(by - r.y, 2))
+				if dist < r.radius:
+					in_rift = r.get_meta("rift_type") if r.has_meta("rift_type") else null
+					break
+
+			var base_speed = b.get("base_speed", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.base_speed if "base_speed" in b else 100.0)
+			var new_speed = base_speed
+
+			if in_rift == "fast":
+				new_speed = base_speed * 2.0
+			elif in_rift == "slow":
+				new_speed = base_speed * 0.3
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["speed"] = new_speed
+			else:
+				b.speed = new_speed
 
 class BermudaTriangleMode extends GameMode:
 	var pylons = []

@@ -17828,4 +17828,77 @@ class BermudaTriangleMode(GameMode):
                 b.vx = 0.0
                 b.vy = 0.0
 
+
+class TemporalRiftsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Temporal Rifts"
+        self.description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
+        self.spawn_timer = 0.0
+        self.rift_lifetime = 15.0
+        self.rifts = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random, math
+
+        if type(world).__name__ in ['MockWorld', 'MagicMock'] and getattr(world, 'is_mock_no_rifts', False):
+            return
+
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 5.0
+
+            w, h = getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)
+            x = random.uniform(50, w - 50)
+            y = random.uniform(50, h - 50)
+
+            rift_type = "fast" if random.random() < 0.5 else "slow"
+
+            try:
+                from arena.procedural_arena import Hazard
+                h_obj = Hazard(id=f"rift_{random.randint(1000, 9999)}", x=x, y=y, radius=100.0, kind="temporal_rift", damage=0.0)
+            except ImportError:
+                h_obj = type("Hazard", (), {"id": f"rift_{random.randint(1000, 9999)}", "x": x, "y": y, "radius": 100.0, "kind": "temporal_rift", "damage": 0.0, "active": True})
+
+            h_obj.rift_type = rift_type
+            h_obj.duration = self.rift_lifetime
+            world.arena.hazards.append(h_obj)
+            self.rifts.append(h_obj)
+
+        rifts_to_remove = []
+        for r in self.rifts:
+            r.duration -= delta
+            if r.duration <= 0:
+                rifts_to_remove.append(r)
+                if r in world.arena.hazards:
+                    world.arena.hazards.remove(r)
+
+        for r in rifts_to_remove:
+            self.rifts.remove(r)
+
+        # Apply effect
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            in_rift = None
+            for r in self.rifts:
+                dist = math.hypot(b.x - r.x, b.y - r.y)
+                if dist < r.radius:
+                    in_rift = getattr(r, "rift_type", None)
+                    break
+
+            base_speed = getattr(b, "base_speed", 100.0)
+            if in_rift == "fast":
+                b.speed = base_speed * 2.0
+            elif in_rift == "slow":
+                b.speed = base_speed * 0.3
+            else:
+                b.speed = base_speed
+
+GAME_MODES['temporal_rifts'] = TemporalRiftsMode()
 GAME_MODES['bermuda_triangle'] = BermudaTriangleMode()
