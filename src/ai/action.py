@@ -332,6 +332,61 @@ class Action:
                                             "timer": timer_val
                                         })
                                         return
+
+                    elif getattr(h, "kind", "") == "clone_trap" or (getattr(h, "kind", "") == "trap" and getattr(h, "trap_variant", "") == "clone_trap"):
+                        h_team = getattr(h, "team", -1)
+                        if h_team == a_team or h_team == -1:
+                            hx = h.x
+                            hy = h.y
+                            hr = getattr(h, "radius", 40.0)
+
+                            dx = t_x - a_x
+                            dy = t_y - a_y
+                            fx = a_x - hx
+                            fy = a_y - hy
+
+                            a = dx*dx + dy*dy
+                            b2 = 2 * (fx*dx + fy*dy)
+                            c = (fx*fx + fy*fy) - hr*hr
+
+                            if a != 0:
+                                disc = b2*b2 - 4*a*c
+                                if disc >= 0:
+                                    disc = math.sqrt(disc)
+                                    t1 = (-b2 - disc) / (2*a)
+                                    t2 = (-b2 + disc) / (2*a)
+                                    if (0 <= t1 <= 1) or (0 <= t2 <= 1) or (t1 < 0 and t2 > 1):
+                                        if not getattr(attacker, "_is_cloning_attack", False):
+                                            nearest_enemy = None
+                                            min_dist = float('inf')
+                                            if hasattr(self.world, 'balls'):
+                                                for b in self.world.balls:
+                                                    b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                                    if b_team != a_team and getattr(b, "hp", 0) > 0 and getattr(b, "alive", True):
+                                                        dist_enemy = math.hypot(b.x - hx, b.y - hy)
+                                                        if dist_enemy < min_dist:
+                                                            min_dist = dist_enemy
+                                                            nearest_enemy = b
+                                            if nearest_enemy:
+                                                attacker._is_cloning_attack = True
+                                                if not hasattr(attacker, "suspended_projectiles"):
+                                                    attacker.suspended_projectiles = []
+
+                                                # Mark trap as used
+                                                h.active = False
+                                                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and h in self.world.arena.hazards:
+                                                    self.world.arena.hazards.remove(h)
+
+                                                attacker.suspended_projectiles.append({
+                                                    "target": nearest_enemy,
+                                                    "timer": 0.0,
+                                                    "damage": getattr(attacker, "damage", 10.0),
+                                                    "x": hx,
+                                                    "y": hy,
+                                                    "is_clone": True
+                                                })
+                                                attacker._is_cloning_attack = False
+
                     elif getattr(h, "kind", "") in ["energy_barrier", "smokescreen"]:
                         h_team = getattr(h, "team", "")
                         if h_team != a_team:
@@ -5261,6 +5316,10 @@ class Action:
 
                                     hazard.duration = 0.0 # Destroy trap
 
+                                elif trap_variant == "clone_trap":
+                                    # Clone trap does not trigger on stepping on it
+                                    # Instead, it acts as a barrier for projectiles that clones them (handled in _attempt_damage)
+                                    pass
                                 elif trap_variant == "warp":
                                     # Warp trap: teleport the ball to a random location in the arena
                                     import random

@@ -521,6 +521,122 @@ func _attempt_damage(attacker, target) -> void:
 								else:
 									attacker["suspended_projectiles"] = sus_proj
 								return
+
+			elif h_kind == "clone_trap" or (h_kind == "trap" and (h.get_meta("trap_variant") if h.has_method("has_meta") and h.has_meta("trap_variant") else (h["trap_variant"] if typeof(h) == TYPE_DICTIONARY and h.has("trap_variant") else (h.trap_variant if typeof(h) == TYPE_OBJECT and "trap_variant" in h else ""))) == "clone_trap"):
+				var h_team = -1
+				if typeof(h) == TYPE_DICTIONARY and h.has("team"): h_team = h["team"]
+				elif typeof(h) == TYPE_OBJECT and "team" in h: h_team = h.team
+				elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("team"): h_team = h.get_meta("team")
+
+				if h_team == a_team or h_team == -1:
+					var hx = float(h.x if "x" in h else h.get_meta("x"))
+					var hy = float(h.y if "y" in h else h.get_meta("y"))
+					var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 40.0))
+
+					var dx = t_x2 - a_x2
+					var dy = t_y2 - a_y2
+					var fx = a_x2 - hx
+					var fy = a_y2 - hy
+
+					var a = dx*dx + dy*dy
+					var b2 = 2.0 * (fx*dx + fy*dy)
+					var c = (fx*fx + fy*fy) - hr*hr
+
+					if a != 0.0:
+						var disc = b2*b2 - 4.0*a*c
+						if disc >= 0.0:
+							disc = sqrt(disc)
+							var t1 = (-b2 - disc) / (2.0*a)
+							var t2 = (-b2 + disc) / (2.0*a)
+							if (t1 >= 0.0 and t1 <= 1.0) or (t2 >= 0.0 and t2 <= 1.0) or (t1 < 0.0 and t2 > 1.0):
+								var is_cloning = false
+								if typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("_is_cloning_attack"):
+									is_cloning = attacker.get_meta("_is_cloning_attack")
+								elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("_is_cloning_attack"):
+									is_cloning = attacker["_is_cloning_attack"]
+								elif typeof(attacker) == TYPE_OBJECT and "_is_cloning_attack" in attacker:
+									is_cloning = attacker._is_cloning_attack
+
+								if not is_cloning:
+									var nearest_enemy = null
+									var min_dist = 9999999.0
+									if self.world != null and "balls" in self.world:
+										for b in self.world.balls:
+											var b_team = -2
+											if typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+											elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+											elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+											var b_hp = 0.0
+											if typeof(b) == TYPE_DICTIONARY and b.has("hp"): b_hp = b["hp"]
+											elif typeof(b) == TYPE_OBJECT and "hp" in b: b_hp = b.hp
+											elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"): b_hp = b.get_meta("hp")
+
+											var b_alive = false
+											if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+											elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+											elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+											if b_team != a_team and b_hp > 0.0 and b_alive:
+												var b_x = float(b.x if typeof(b) == TYPE_OBJECT else (b["x"] if b.has("x") else 0.0))
+												var b_y = float(b.y if typeof(b) == TYPE_OBJECT else (b["y"] if b.has("y") else 0.0))
+												var dist_enemy = sqrt((b_x - hx)*(b_x - hx) + (b_y - hy)*(b_y - hy))
+												if dist_enemy < min_dist:
+													min_dist = dist_enemy
+													nearest_enemy = b
+
+									if nearest_enemy != null:
+										if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"):
+											attacker.set_meta("_is_cloning_attack", true)
+										elif typeof(attacker) == TYPE_DICTIONARY:
+											attacker["_is_cloning_attack"] = true
+										elif typeof(attacker) == TYPE_OBJECT:
+											attacker._is_cloning_attack = true
+
+										var sus_proj = []
+										if typeof(attacker) == TYPE_DICTIONARY and attacker.has("suspended_projectiles"):
+											sus_proj = attacker["suspended_projectiles"]
+										elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("suspended_projectiles"):
+											sus_proj = attacker.get_meta("suspended_projectiles")
+										elif typeof(attacker) == TYPE_OBJECT and "suspended_projectiles" in attacker:
+											sus_proj = attacker.suspended_projectiles
+
+										var a_damage = 10.0
+										if typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"): a_damage = attacker["damage"]
+										elif typeof(attacker) == TYPE_OBJECT and "damage" in attacker: a_damage = attacker.damage
+										elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("damage"): a_damage = attacker.get_meta("damage")
+
+
+										if typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+											h.set_meta("active", false)
+										elif typeof(h) == TYPE_DICTIONARY:
+											h["active"] = false
+										elif typeof(h) == TYPE_OBJECT:
+											h.active = false
+
+										if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+											if typeof(self.world.arena.hazards) == TYPE_ARRAY and h in self.world.arena.hazards:
+												self.world.arena.hazards.erase(h)
+
+										sus_proj.append({
+											"target": nearest_enemy,
+											"timer": 0.0,
+											"damage": a_damage,
+											"x": hx,
+											"y": hy,
+											"is_clone": true
+										})
+
+										if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"):
+											attacker.set_meta("suspended_projectiles", sus_proj)
+											attacker.set_meta("_is_cloning_attack", false)
+										elif typeof(attacker) == TYPE_DICTIONARY:
+											attacker["suspended_projectiles"] = sus_proj
+											attacker["_is_cloning_attack"] = false
+										elif typeof(attacker) == TYPE_OBJECT:
+											attacker.suspended_projectiles = sus_proj
+											attacker._is_cloning_attack = false
+
 			elif h_kind == "energy_barrier" or h_kind == "smokescreen":
 				var h_team = h.get_meta("team") if h.has_meta("team") else ""
 				if h_team != a_team:
@@ -9116,6 +9232,8 @@ func execute(strategy: String, delta: float):
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
 
+                            elif trap_variant == "clone_trap":
+                                pass
                             elif trap_variant == "warp":
                                 var my_radius = 10.0
                                 if "radius" in self.ball:
