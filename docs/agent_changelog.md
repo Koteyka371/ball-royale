@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-849] Temporal Rift Hazards — *2026-07-12 16:17:03 UTC*
+
+Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic.
+
+---
+
 ## [idea-874] Guild Wars Mode — *2026-07-12 15:44:00 UTC*
 
 A new competitive mode where guilds battle each other over territories.

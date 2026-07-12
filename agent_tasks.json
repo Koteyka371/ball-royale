@@ -14595,7 +14595,7 @@
     },
     {
       "id": "idea-849",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Temporal Rift Hazards",
@@ -24980,6 +24980,75 @@
         "src/ai/reflect_shield_upgrade.py",
         "src/ai/reflect_shield_upgrade.gd",
         "tests/test_reflect_shield_upgrade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1459",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Stronghold Upgrade",
+      "description": "Winning territory battles grants a guild a 'Stronghold Upgrade'. They can fortify their base with better automated defenses, traps, or aura buffs for members while fighting in adjacent territories.",
+      "allowed_paths": [
+        "src/ui/guild_stronghold_upgrade.py",
+        "src/ui/guild_stronghold_upgrade.gd",
+        "src/ai/guild_stronghold_upgrade.py",
+        "tests/test_guild_stronghold_upgrade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1460",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Thunderstorm Lightning Chain Damage",
+      "description": "During thunderstorm weather events, lightning strikes could chain to nearby players if they are too close to the primary target, encouraging spacing out.",
+      "allowed_paths": [
+        "src/ai/thunderstorm_lightning_chain_damage.py",
+        "src/ai/thunderstorm_lightning_chain_damage.gd",
+        "tests/test_thunderstorm_lightning_chain_damage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1461",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Resistant Cosmetics",
+      "description": "Introduce cosmetic items or specific ball types (like 'Ice Elemental') that are completely immune to certain localized weather hazards or even gain buffs from them.",
+      "allowed_paths": [
+        "src/ai/resistant_cosmetics.py",
+        "src/ai/resistant_cosmetics.gd",
+        "tests/test_resistant_cosmetics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1462",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Diplomacy/Alliance System",
+      "description": "Guilds can form temporary alliances, sharing territory control and preventing friendly fire, but the alliance breaks when there are no neutral or enemy territories left to conquer.",
+      "allowed_paths": [
+        "src/ai/diplomacyalliance.py",
+        "src/ai/diplomacyalliance.gd",
+        "tests/test_diplomacyalliance.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
