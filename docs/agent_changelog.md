@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-672] Friendly Fire Hazard — *2026-07-12 04:12:49 UTC*
+
+A hazard that when stepped on causes all friendly fire damage to be reflected back onto the attacker for 5 seconds.
+
+---
+
 ## [idea-837] Weather Conductor Booster — *2026-07-12 00:03:56 UTC*
 
 A new booster that makes the collecting ball immune to the negative effects of the current weather and amplifies any positive synergies (e.g., increased supercharge duration during thunderstorms or increased healing from rain).
