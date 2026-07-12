@@ -15,12 +15,16 @@ def test_juggernaut_mode():
     b1.alive = True
     b1.max_hp = 100
     b1.hp = 100
+    b1.x = 0.0
+    b1.y = 0.0
 
     b2 = MagicMock()
     b2.ball_type = "warrior"
     b2.alive = True
     b2.max_hp = 100
     b2.hp = 100
+    b2.x = 0.0
+    b2.y = 0.0
     b2.id = "b2"
 
     b3 = MagicMock()
@@ -28,6 +32,8 @@ def test_juggernaut_mode():
     b3.alive = True
     b3.max_hp = 100
     b3.hp = 100
+    b3.x = 0.0
+    b3.y = 0.0
 
     balls = [b1, b2, b3]
 
