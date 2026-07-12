@@ -1,3 +1,4 @@
+import pytest
 from ai.action import Action
 
 class MockBall:
@@ -14,6 +15,7 @@ class MockBall:
         self.reflect_shield_active = False
         self.reflect_shield_capacity = 0.0
         self.reflect_shield_layers = False
+        self.reflect_shield_layer_size = 25.0
 
 class MockWorld:
     def __init__(self):
@@ -23,6 +25,24 @@ class MockWorld:
 
     def _deal_damage(self, attacker, target):
         pass
+
+def test_layered_shield_absorbs_partially():
+    world = MockWorld()
+    attacker = MockBall(1, 0, 0, "A")
+    attacker.damage = 40.0
+
+    target = MockBall(2, 50, 0, "B")
+    target.reflect_shield_active = True
+    target.reflect_shield_capacity = 75.0
+    target.reflect_shield_layers = True
+    target.reflect_shield_layer_size = 25.0
+
+    world.balls = [attacker, target]
+
+    action = Action(target, world)
+    action._attempt_damage(attacker, target)
+
+    assert target.reflect_shield_capacity == 50.0
 
 def test_unlayered_shield():
     world = MockWorld()
@@ -39,7 +59,6 @@ def test_unlayered_shield():
     action = Action(target, world)
     action._attempt_damage(attacker, target)
 
-    # It absorbs all 40 damage.
     assert target.reflect_shield_capacity == 35.0
 
 def test_unlayered_shield_breaks():
@@ -57,10 +76,26 @@ def test_unlayered_shield_breaks():
     action = Action(target, world)
     action._attempt_damage(attacker, target)
 
-    # Breaks the shield and capacity drops to 0 (and the excess damage should be processed but capacity resets to 0.0 inside the block)
     assert target.reflect_shield_active == False
     assert target.reflect_shield_capacity == 0.0
 
-test_unlayered_shield()
-test_unlayered_shield_breaks()
-print("Success")
+def test_layered_shield_multiple_hits():
+    world = MockWorld()
+    attacker = MockBall(1, 0, 0, "A")
+    attacker.damage = 40.0
+
+    target = MockBall(2, 50, 0, "B")
+    target.reflect_shield_active = True
+    target.reflect_shield_capacity = 60.0
+    target.reflect_shield_layers = True
+    target.reflect_shield_layer_size = 25.0
+
+    world.balls = [attacker, target]
+
+    action = Action(target, world)
+    action._attempt_damage(attacker, target)
+
+    assert target.reflect_shield_capacity == 50.0
+
+    action._attempt_damage(attacker, target)
+    assert target.reflect_shield_capacity == 25.0
