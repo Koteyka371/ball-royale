@@ -1319,3 +1319,59 @@ def test_earthquake_mode_random_impulses():
     prev_vx, prev_vy = b1.vx, b1.vy
     mode.tick(world, balls, 0.016)
     assert b1.vx != prev_vx or b1.vy != prev_vy
+
+def test_day_night_mode_moonlight_shadows():
+    from ai.game_modes import DayNightMode
+    from unittest.mock import MagicMock
+
+    mode = DayNightMode()
+    world = MagicMock()
+    world.leaderboard_manager.data.get.return_value = 1
+    world.arena = MagicMock()
+    world.arena.is_night = False
+    world.arena.width = 1000.0
+    world.arena.height = 1000.0
+
+    b1 = MagicMock()
+    b1.alive = True
+    b1.ball_type = "normal"
+    b1.x = 100.0
+    b1.y = 100.0
+    b1.stamina = 100.0
+
+    b2 = MagicMock()
+    b2.alive = True
+    b2.ball_type = "normal"
+    b2.x = 800.0
+    b2.y = 800.0
+    b2.stamina = 100.0
+
+    balls = [b1, b2]
+    mode.setup(world, balls)
+
+    # Fast forward to night
+    mode.tick(world, balls, delta=10.0)
+    assert world.arena.is_night == True
+
+    # Spawn a moonlight shadow
+    mode.tick(world, balls, delta=3.0)
+    assert len(mode.active_moonlight_shadows) > 0
+
+    shadow = mode.active_moonlight_shadows[-1]
+
+    # Reset stamina and position them
+    b1.stamina = 100.0
+    b1.x = float(shadow['x'])
+    b1.y = float(shadow['y'])
+
+    b2.stamina = 100.0
+    b2.x = float(shadow['x']) + 500.0
+    b2.y = float(shadow['y']) + 500.0
+
+
+    # Tick again
+    mode.tick(world, balls, delta=1.0)
+
+    # b1 should not lose stamina, b2 should lose 10.0
+    assert b1.stamina == 100.0
+    assert b2.stamina == 90.0
