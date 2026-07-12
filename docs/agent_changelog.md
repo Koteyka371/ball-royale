@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-893] New Item: Grappling Hook Booster — *2026-07-12 19:01:47 UTC*
+
+A booster item that, when picked up, gives the ball a 'grappling hook' skill. Using the skill pulls the ball rapidly towards the nearest wall or large environmental hazard, allowing for swift escapes or sudden aggressive gap closures. If it hits an enemy, it pulls the user and enemy together.
+
+---
+
 ## [idea-900] Dynamic Map Sections — *2026-07-12 19:01:43 UTC*
 
 Certain sections of the map collapse or get completely walled off with unbreakable barriers dynamically as the match progresses, forcing players to find alternate routes to the safe zone rather than just a simple shrinking circle.
