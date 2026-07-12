@@ -14,6 +14,8 @@ class MockBall:
         self.speed_buff_timer = 0.0
         self.geyser_immunity_timer = 0.0
         self.stun_timer = 0.0
+        self.fly_timer = 0.0
+        self.is_flying = False
         self.base_speed = 10.0
         self.speed = 10.0
         self.alive = True
@@ -46,6 +48,8 @@ def test_geyser_eruption_damage():
 
     assert ball.hp < 100.0
     assert ball.stun_timer >= 1.0
+    assert ball.fly_timer >= 1.0
+    assert ball.is_flying is True
     assert ball.geyser_immunity_timer > 0.0
 
 def test_geyser_buff():
@@ -63,6 +67,8 @@ def test_geyser_buff():
 
     assert ball.hp > 50.0 # Healed
     assert ball.stun_timer >= 1.0
+    assert ball.fly_timer >= 1.0
+    assert ball.is_flying is True
     assert ball.speed_buff_timer > 0.0
     assert ball.geyser_immunity_timer > 0.0
 
@@ -81,4 +87,5 @@ def test_geyser_no_eruption():
 
     assert ball.hp == 100.0
     assert ball.stun_timer == 0.0
+    assert ball.fly_timer == 0.0
     assert ball.geyser_immunity_timer == 0.0

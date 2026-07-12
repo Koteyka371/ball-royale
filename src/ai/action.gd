@@ -22603,6 +22603,17 @@ func _update_skill_timer(delta: float):
                                 if "stun_timer" in self.ball: self.ball.stun_timer = c_stun
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", c_stun)
 
+                                var c_fly = self.ball.fly_timer if "fly_timer" in self.ball else (self.ball.get_meta("fly_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("fly_timer") else 0.0)
+                                c_fly = max(c_fly, 1.0)
+                                if "fly_timer" in self.ball: self.ball.fly_timer = c_fly
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("fly_timer", c_fly)
+                                if "is_flying" in self.ball: self.ball.is_flying = true
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_flying", true)
+                                if "fly_target_x" in self.ball: self.ball.fly_target_x = self.ball.x
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("fly_target_x", self.ball.x if "x" in self.ball else 0.0)
+                                if "fly_target_y" in self.ball: self.ball.fly_target_y = self.ball.y
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("fly_target_y", self.ball.y if "y" in self.ball else 0.0)
+
                                 if "geyser_immunity_timer" in self.ball: self.ball.geyser_immunity_timer = 3.0
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("geyser_immunity_timer", 3.0)
 

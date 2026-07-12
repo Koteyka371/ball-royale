@@ -1,4 +1,4 @@
 {
-  "title": "Geyser Jumping Boots",
-  "description": "Add an item called 'Geyser Boots' that grants immunity to geyser damage and stun, but instead launches the player far across the map when standing on an erupting geyser."
+  "title": "Thermal Scope Item",
+  "description": "Add a 'Thermal Scope' booster. When picked up, the player's vision/perception radius is not reduced by smoke or weather effects, and enemies hidden in stealth or bushes are highlighted."
 }

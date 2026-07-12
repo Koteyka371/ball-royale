@@ -1,4 +1,4 @@
 {
-  "title": "Volcanic Fissures",
-  "description": "Create a new arena hazard type called 'volcanic_fissure' that slowly opens up over time. Once fully opened, it deals continuous fire damage and creates a smokescreen effect, reducing visibility for players inside."
+  "title": "Geyser Trap Item",
+  "description": "Add a new item called 'Geyser Trap' that players can pick up and place down. After 2 seconds, it creates a geyser at that location which behaves like a normal procedural arena geyser."
 }

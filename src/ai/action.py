@@ -12438,6 +12438,12 @@ class Action:
 
                                 # Launch / Stun effect
                                 self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 1.0)
+                                # Actually launch them upwards in 2D space (we can't move Z, but we can use 'fly' or 'launch' status)
+                                self.ball.fly_timer = max(getattr(self.ball, "fly_timer", 0.0), 1.0)
+                                self.ball.is_flying = True
+                                # Reset fly_target to current pos so they just float in place for a bit
+                                self.ball.fly_target_x = self.ball.x
+                                self.ball.fly_target_y = self.ball.y
                                 self.ball.geyser_immunity_timer = 3.0 # Immunity to prevent multi-hit from same eruption
 
                                 if b_type in ["water_elemental", "earth_elemental"]:
