@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-872] Mirror Traps — *2026-07-12 23:16:40 UTC*
+
+A new trap variant that doesn't deal damage but clones the next projectile or spell that hits it, redirecting the clone towards the nearest enemy.
+
+---
+
 ## [idea-891] Eclipse Devourer Hazard — *2026-07-12 23:16:36 UTC*
 
 A new rare boss hazard that only spawns during a Lunar Eclipse. It wanders the arena and instantly consumes any ball it touches, converting them into shadowy minions that attack other players.
