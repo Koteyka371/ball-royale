@@ -15747,6 +15747,7 @@ GAME_MODES = {
     "boss_fight": BossFightMode(),
     "juggernaut": JuggernautMode(),
     "guild_boss_fight": GuildBossFightMode(),
+    "gvg": GuildVsGuildMode(),
     "vip_defense": VIPDefenseMode(),
     "survival": SurvivalMode(),
     "toxic_environment": ToxicEnvironmentMode(),

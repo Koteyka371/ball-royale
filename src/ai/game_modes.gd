@@ -25584,6 +25584,7 @@ var GAME_MODES = {
 	"boss_fight": BossFightMode.new(),
 	"juggernaut": JuggernautMode.new(),
 	"guild_boss_fight": GuildBossFightMode.new(),
+	"gvg": GuildVsGuildMode.new(),
 	"vip_defense": VIPDefenseMode.new(),
 	"survival": SurvivalMode.new(),
 	"toxic_environment": ToxicEnvironmentMode.new(),
