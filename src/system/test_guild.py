@@ -275,3 +275,40 @@ def test_guild_emblem(temp_guild_file):
     # Verify updated emblem
     guild = gm.get_guild("EmblemGuild")
     assert guild["emblem"] == {"shape": "shield", "color": "red", "symbol": "sword"}
+
+
+def test_guild_tournament(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("ChampGuild", "p1")
+    gm.create_guild("RunnerUpGuild", "p2")
+    gm.create_guild("Top10Guild", "p3")
+    gm.create_guild("LoserGuild", "p4")
+
+    assert gm.register_for_tournament("ChampGuild", "tourney_1") == True
+    assert gm.register_for_tournament("RunnerUpGuild", "tourney_1") == True
+    assert gm.register_for_tournament("Top10Guild", "tourney_1") == True
+    assert gm.register_for_tournament("LoserGuild", "tourney_1") == True
+
+    rankings = [
+        {"guild_name": "ChampGuild", "rank": 1},
+        {"guild_name": "RunnerUpGuild", "rank": 2},
+        {"guild_name": "Top10Guild", "rank": 5},
+        {"guild_name": "LoserGuild", "rank": 20}
+    ]
+
+    assert gm.process_tournament_results("tourney_1", rankings) == True
+
+    champ = gm.get_guild("ChampGuild")
+    assert "Tournament Champion" in champ["titles"]
+    assert "Champion Aura" in champ["cosmetic_auras"]
+    assert champ["prestige_pool"] == 10000
+
+    runner = gm.get_guild("RunnerUpGuild")
+    assert "Tournament Finalist" in runner["titles"]
+    assert runner["prestige_pool"] == 5000
+
+    top10 = gm.get_guild("Top10Guild")
+    assert top10["prestige_pool"] == 1000
+
+    loser = gm.get_guild("LoserGuild")
+    assert loser.get("prestige_pool", 0) == 0
