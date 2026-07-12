@@ -1611,6 +1611,90 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var b_type = ""
+    if typeof(self.ball) == TYPE_OBJECT:
+        if "ball_type" in self.ball:
+            b_type = self.ball.ball_type
+        elif "BALL_TYPE" in self.ball:
+            b_type = self.ball.BALL_TYPE
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"):
+            b_type = self.ball.get_meta("ball_type")
+    elif typeof(self.ball) == TYPE_DICTIONARY:
+        if self.ball.has("ball_type"):
+            b_type = self.ball["ball_type"]
+        elif self.ball.has("BALL_TYPE"):
+            b_type = self.ball["BALL_TYPE"]
+
+    if b_type == "trickster" and "events" in self.world:
+        var self_id = null
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "id" in self.ball:
+                self_id = self.ball.id
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("id"):
+                self_id = self.ball.get_meta("id")
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            if self.ball.has("id"):
+                self_id = self.ball["id"]
+
+        if self_id != null and "balls" in self.world:
+            for b in self.world.balls:
+                var is_decoy = false
+                if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"): is_decoy = true
+                elif typeof(b) == TYPE_DICTIONARY and b.has("is_decoy") and b["is_decoy"]: is_decoy = true
+                if "is_decoy" in b and b.is_decoy: is_decoy = true
+
+                var is_active_clone = false
+                if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_active_clone") and b.get_meta("is_active_clone"): is_active_clone = true
+                elif typeof(b) == TYPE_DICTIONARY and b.has("is_active_clone") and b["is_active_clone"]: is_active_clone = true
+                if "is_active_clone" in b and b.is_active_clone: is_active_clone = true
+
+                var is_decoy_clone = false
+                if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy_clone") and b.get_meta("is_decoy_clone"): is_decoy_clone = true
+                elif typeof(b) == TYPE_DICTIONARY and b.has("is_decoy_clone") and b["is_decoy_clone"]: is_decoy_clone = true
+                if "is_decoy_clone" in b and b.is_decoy_clone: is_decoy_clone = true
+
+                if is_decoy or is_active_clone or is_decoy_clone:
+                    var owner_id = null
+                    if typeof(b) == TYPE_OBJECT:
+                        if "owner_id" in b: owner_id = b.owner_id
+                        elif b.has_method("get_meta") and b.has_meta("owner_id"): owner_id = b.get_meta("owner_id")
+                        if owner_id == null:
+                            if "mimic_owner" in b: owner_id = b.mimic_owner
+                            elif b.has_method("get_meta") and b.has_meta("mimic_owner"): owner_id = b.get_meta("mimic_owner")
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        if b.has("owner_id"): owner_id = b["owner_id"]
+                        elif b.has("mimic_owner"): owner_id = b["mimic_owner"]
+
+                    var alive = true
+                    if typeof(b) == TYPE_OBJECT:
+                        if "alive" in b: alive = b.alive
+                        elif b.has_method("get_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        if b.has("alive"): alive = b["alive"]
+
+                    if owner_id == self_id and alive:
+                        if strategy == "flee" or strategy == "attack" or strategy.begins_with("flee") or strategy.begins_with("attack"):
+                            var bx = 0.0
+                            var by = 0.0
+                            if typeof(b) == TYPE_OBJECT:
+                                if "x" in b: bx = b.x
+                                elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                                if "y" in b: by = b.y
+                                elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+                            elif typeof(b) == TYPE_DICTIONARY:
+                                if b.has("x"): bx = b["x"]
+                                if b.has("y"): by = b["y"]
+
+                            self.world.events.append({
+                                "type": "visual_effect",
+                                "data": {
+                                    "type": "decoy_mimic",
+                                    "x": bx,
+                                    "y": by,
+                                    "mimic_strategy": strategy
+                                }
+                            })
+
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("amnesia_timer"):
         var current_timer = self.ball.get_meta("amnesia_timer")
         if current_timer > 0.0:

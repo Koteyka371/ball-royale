@@ -993,6 +993,22 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        ball_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", ""))
+        if ball_type == "trickster":
+            if hasattr(self.world, "events"):
+                active_decoys = [b for b in getattr(self.world, "balls", []) if (getattr(b, "is_decoy", False) or getattr(b, "is_active_clone", False) or getattr(b, "is_decoy_clone", False)) and (getattr(b, "owner_id", None) == getattr(self.ball, "id", None) or getattr(b, "mimic_owner", None) == getattr(self.ball, "id", None)) and getattr(b, "alive", True)]
+                for decoy in active_decoys:
+                    if strategy in ["flee", "attack"] or strategy.startswith("flee") or strategy.startswith("attack"):
+                        self.world.events.append({
+                            "type": "visual_effect",
+                            "data": {
+                                "type": "decoy_mimic",
+                                "x": decoy.x,
+                                "y": decoy.y,
+                                "mimic_strategy": strategy
+                            }
+                        })
+
         if getattr(self.ball, "amnesia_timer", 0.0) > 0:
             self.ball.amnesia_timer -= delta
 
