@@ -15465,7 +15465,7 @@
     },
     {
       "id": "idea-900",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Map Sections",
@@ -25219,6 +25219,40 @@
         "src/ai/stealth_camouflage_booster.py",
         "src/ai/stealth_camouflage_booster.gd",
         "tests/test_stealth_camouflage_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1473",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror World",
+      "description": "Creates a temporary mirror version of the map.",
+      "allowed_paths": [
+        "src/ai/mirror_world.py",
+        "src/ai/mirror_world.gd",
+        "tests/test_mirror_world.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1474",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Decoy",
+      "description": "Spawns a fake clone of a random teammate.",
+      "allowed_paths": [
+        "src/ai/decoy_decoy.py",
+        "src/ai/decoy_decoy.gd",
+        "tests/test_decoy_decoy.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

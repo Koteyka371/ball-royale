@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-900] Dynamic Map Sections — *2026-07-12 19:01:43 UTC*
+
+Certain sections of the map collapse or get completely walled off with unbreakable barriers dynamically as the match progresses, forcing players to find alternate routes to the safe zone rather than just a simple shrinking circle.
+
+---
+
 ## [idea-889] Decoy Explosion Trigger — *2026-07-12 18:45:17 UTC*
 
 When a mimic clone expires or is destroyed, it could trigger a small explosion or release a smokescreen, punishing enemies who mistakenly attack the clone.
