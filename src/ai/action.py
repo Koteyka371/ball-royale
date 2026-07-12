@@ -970,6 +970,12 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if hasattr(self.ball, "gravity_boots_timer"):
+            if self.ball.gravity_boots_timer > 0.0:
+                self.ball.gravity_boots_timer = max(0.0, self.ball.gravity_boots_timer - delta)
+                if self.ball.gravity_boots_timer <= 0.0:
+                    if hasattr(self.ball, "inventory") and "gravity_boots" in self.ball.inventory:
+                        self.ball.inventory.remove("gravity_boots")
         if getattr(self.ball, "ball_type", "") == "spectator":
             if strategy.startswith("cheer:"):
                 parts = strategy.split(":")
@@ -2819,7 +2825,7 @@ class Action:
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
             ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
             ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"]
-            ignores_wind = cosmetic in ["heavy_boots", "lead_boots"]
+            ignores_wind = cosmetic in ["heavy_boots", "lead_boots"] or (hasattr(self.ball, "inventory") and "gravity_boots" in getattr(self.ball, "inventory", []))
             is_kite = cosmetic == "kite"
 
             wind_dx = getattr(self.world.arena, "wind_dx", 0.0)
@@ -8806,7 +8812,9 @@ class Action:
                 elif getattr(nearest, "kind", None) == "gravity_boots":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
-                    self.ball.inventory.append("gravity_boots")
+                    if "gravity_boots" not in self.ball.inventory:
+                        self.ball.inventory.append("gravity_boots")
+                    self.ball.gravity_boots_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
