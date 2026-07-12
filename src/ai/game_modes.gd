@@ -3922,8 +3922,22 @@ class GuildBossFightMode extends GameMode:
 				valid_balls.append(b)
 
 		if valid_balls.size() > 0:
+			var week_num = 1
+			if week_id.find("_") != -1:
+				var parts = week_id.split("_")
+				if parts.size() > 1:
+					week_num = parts[1].to_int()
+			var elements = ["fire", "water", "earth", "air", "lightning"]
+			var boss_weakness = elements[(week_num - 1) % elements.size()]
+			set_meta("boss_weakness", boss_weakness)
+
 			var boss = valid_balls[0]
 			boss.team = "Boss"
+			if typeof(boss) == TYPE_DICTIONARY:
+				boss["boss_weakness"] = boss_weakness
+			elif boss.has_method("set_meta"):
+				boss.set_meta("boss_weakness", boss_weakness)
+
 			if "max_hp" in boss:
 				boss.max_hp = 10000000.0 * tier
 				boss.hp = boss.max_hp
@@ -3990,6 +4004,49 @@ class GuildBossFightMode extends GameMode:
 
 		if "hp" in boss and "max_hp" in boss and boss.hp < boss.max_hp:
 			var damage_taken = boss.max_hp - boss.hp
+
+			var boss_weak = null
+			if boss.has_meta("boss_weakness"):
+				boss_weak = boss.get_meta("boss_weakness")
+			elif typeof(boss) == TYPE_DICTIONARY and boss.has("boss_weakness"):
+				boss_weak = boss["boss_weakness"]
+			elif self.has_meta("boss_weakness"):
+				boss_weak = self.get_meta("boss_weakness")
+
+			var has_weakness_hunter = false
+			if boss_weak != null:
+				for b in balls:
+					var current_id = null
+					if "id" in b:
+						current_id = b.id
+					elif b.has_meta("id"):
+						current_id = b.get_meta("id")
+
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+					else:
+						is_alive = b.get("alive") if "alive" in b else false
+
+					if current_id != boss_id and is_alive:
+						var traits = []
+						var b_type = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							traits = b.get("traits", [])
+							b_type = str(b.get("ball_type", "")).to_lower()
+						else:
+							if "traits" in b:
+								traits = b.traits
+							if "ball_type" in b:
+								b_type = str(b.ball_type).to_lower()
+
+						if b_type.find(boss_weak) != -1 or traits.has(boss_weak):
+							has_weakness_hunter = true
+							break
+
+			if has_weakness_hunter:
+				damage_taken *= 1.5
+
 			var total_dmg = boss.get_meta("total_damage_taken")
 			boss.set_meta("total_damage_taken", total_dmg + damage_taken)
 			boss.hp = boss.max_hp

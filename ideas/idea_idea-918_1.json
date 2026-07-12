@@ -1,0 +1,4 @@
+{
+  "title": "Guild Boss Enrage Timer",
+  "description": "After a certain amount of time or when reaching low HP thresholds, the guild boss enters an 'Enraged' state where its pull strength doubles and it starts emitting a damaging aura."
+}

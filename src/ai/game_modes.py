@@ -2836,9 +2836,15 @@ class GuildBossFightMode(GameMode):
         if not valid_balls:
             return
 
+        # Apply elemental weakness based on week
+        week_num = int(self.week_id.split("_")[1]) if "_" in self.week_id else 1
+        elements = ["fire", "water", "earth", "air", "lightning"]
+        self.boss_weakness = elements[(week_num - 1) % len(elements)]
+
         # First ball is the boss
         boss = valid_balls[0]
         boss.team = "Boss"
+        boss.boss_weakness = self.boss_weakness
         tier_multiplier = getattr(self, "tier", 1)
         boss.max_hp = 10000000.0 * tier_multiplier # Basically immortal
         boss.hp = boss.max_hp
@@ -2882,6 +2888,21 @@ class GuildBossFightMode(GameMode):
         # Track damage taken and heal boss
         if boss.hp < boss.max_hp:
             damage_taken = boss.max_hp - boss.hp
+
+            has_weakness_hunter = False
+            boss_weak = getattr(boss, "boss_weakness", getattr(self, "boss_weakness", None))
+            if boss_weak:
+                for b in balls:
+                    if b.id != self.boss_id and getattr(b, "alive", False):
+                        traits = getattr(b, "traits", [])
+                        b_type = getattr(b, "ball_type", "").lower()
+                        if boss_weak in b_type or boss_weak in traits:
+                            has_weakness_hunter = True
+                            break
+
+            if has_weakness_hunter:
+                damage_taken *= 1.5
+
             boss.total_damage_taken += damage_taken
             boss.hp = boss.max_hp
 
