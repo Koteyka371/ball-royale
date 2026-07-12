@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-905] Quantum Tunneling Hazard — *2026-07-12 19:44:58 UTC*
+
+A new hazard type that acts as a pair of linked zones. When a ball enters one zone, it is instantly teleported to the other, but its velocity is randomized and it receives a short 'disorientation' debuff (like inverted steering) for 1 second. This adds chaotic repositioning to the arena.
+
+---
+
 ## [idea-893] New Item: Grappling Hook Booster — *2026-07-12 19:01:47 UTC*
 
 A booster item that, when picked up, gives the ball a 'grappling hook' skill. Using the skill pulls the ball rapidly towards the nearest wall or large environmental hazard, allowing for swift escapes or sudden aggressive gap closures. If it hits an enemy, it pulls the user and enemy together.

@@ -15550,7 +15550,7 @@
     },
     {
       "id": "idea-905",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tunneling Hazard",
@@ -25253,6 +25253,40 @@
         "src/ai/decoy_decoy.py",
         "src/ai/decoy_decoy.gd",
         "tests/test_decoy_decoy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1475",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sector Control Mode",
+      "description": "Players capture sections of the map by remaining inside them. Captured sections periodically drop boosters or spawn defensive hazards against enemies.",
+      "allowed_paths": [
+        "src/ai/sector_control.py",
+        "src/ai/sector_control.gd",
+        "tests/test_sector_control.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1476",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Moving Walls Hazard",
+      "description": "Random walls spawn and slowly move across the arena. Players must dodge them to avoid being crushed or taking damage.",
+      "allowed_paths": [
+        "src/arena/moving_walls.py",
+        "src/arena/moving_walls.gd",
+        "tests/test_moving_walls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
