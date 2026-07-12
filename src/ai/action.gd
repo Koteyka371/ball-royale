@@ -22593,6 +22593,124 @@ func _update_skill_timer(delta: float):
 
                             if "duration" in hazard: hazard.duration = 0.0
                             elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+
+                if h_kind == "geyser":
+                    var h_active = true
+                    if "active" in hazard: h_active = hazard.active
+                    elif hazard.has_method("get_meta") and hazard.has_meta("active"): h_active = hazard.get_meta("active")
+
+                    if h_active:
+                        var h_x = 0.0
+                        if "x" in hazard: h_x = hazard.x
+                        elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                        var h_y = 0.0
+                        if "y" in hazard: h_y = hazard.y
+                        elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+                        var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+
+                        var trigger_radius = 40.0
+                        if "radius" in hazard: trigger_radius = hazard.radius
+                        elif hazard.has_method("get_meta") and hazard.has_meta("radius"): trigger_radius = hazard.get_meta("radius")
+
+                        if dist_sq < trigger_radius * trigger_radius:
+                            var b_element = ""
+                            if "element" in self.ball: b_element = self.ball.element
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("element"): b_element = self.ball.get_meta("element")
+
+                            var g_imm = 0.0
+                            if "geyser_immunity_timer" in self.ball: g_imm = self.ball.geyser_immunity_timer
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("geyser_immunity_timer"): g_imm = self.ball.get_meta("geyser_immunity_timer")
+
+                            if g_imm <= 0:
+                                if "geyser_immunity_timer" in self.ball: self.ball.geyser_immunity_timer = 2.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("geyser_immunity_timer", 2.0)
+
+                                if b_element == "water":
+                                    if "speed_multiplier" in self.ball: self.ball.speed_multiplier = 1.5
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier", 1.5)
+
+                                    var current_sbt = 0.0
+                                    if "speed_boost_timer" in self.ball: current_sbt = self.ball.speed_boost_timer
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("speed_boost_timer"): current_sbt = self.ball.get_meta("speed_boost_timer")
+
+                                    var new_sbt = 3.0
+                                    if current_sbt > new_sbt: new_sbt = current_sbt
+
+                                    if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = new_sbt
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_boost_timer", new_sbt)
+
+                                elif b_element == "earth":
+                                    var current_hp = 100.0
+                                    if "hp" in self.ball: current_hp = self.ball.hp
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"): current_hp = self.ball.get_meta("hp")
+
+                                    var max_hp = 100.0
+                                    if "max_hp" in self.ball: max_hp = self.ball.max_hp
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+
+                                    var heal_amt = 15.0
+                                    var new_hp = current_hp + heal_amt
+                                    if new_hp > max_hp: new_hp = max_hp
+
+                                    if "hp" in self.ball: self.ball.hp = new_hp
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", new_hp)
+
+                                else:
+                                    var dmg = 10.0
+                                    if "damage" in hazard: dmg = hazard.damage
+                                    elif hazard.has_method("get_meta") and hazard.has_meta("damage"): dmg = hazard.get_meta("damage")
+
+                                    var current_hp = 100.0
+                                    if "hp" in self.ball: current_hp = self.ball.hp
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"): current_hp = self.ball.get_meta("hp")
+
+                                    var new_hp = current_hp - dmg
+                                    if "hp" in self.ball: self.ball.hp = new_hp
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", new_hp)
+
+                                    if new_hp <= 0:
+                                        if "alive" in self.ball: self.ball.alive = false
+                                        elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+                                        if "killer" in self.ball: self.ball.killer = "geyser"
+                                        elif self.ball.has_method("set_meta"): self.ball.set_meta("killer", "geyser")
+
+                                    var current_fly = 0.0
+                                    if "fly_timer" in self.ball: current_fly = self.ball.fly_timer
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("fly_timer"): current_fly = self.ball.get_meta("fly_timer")
+
+                                    var new_fly = 2.0
+                                    if current_fly > new_fly: new_fly = current_fly
+
+                                    if "fly_timer" in self.ball: self.ball.fly_timer = new_fly
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("fly_timer", new_fly)
+
+                                    var current_stun = 0.0
+                                    if "stun_timer" in self.ball: current_stun = self.ball.stun_timer
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer"): current_stun = self.ball.get_meta("stun_timer")
+
+                                    var new_stun = 1.0
+                                    if current_stun > new_stun: new_stun = current_stun
+
+                                    if "stun_timer" in self.ball: self.ball.stun_timer = new_stun
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", new_stun)
+
+                                    var angle = randf() * PI * 2.0
+                                    var eject_force = 1500.0
+
+                                    var current_vx = 0.0
+                                    if "vx" in self.ball: current_vx = self.ball.vx
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("vx"): current_vx = self.ball.get_meta("vx")
+
+                                    var current_vy = 0.0
+                                    if "vy" in self.ball: current_vy = self.ball.vy
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"): current_vy = self.ball.get_meta("vy")
+
+                                    if "vx" in self.ball: self.ball.vx = current_vx + cos(angle) * eject_force
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", current_vx + cos(angle) * eject_force)
+
+                                    if "vy" in self.ball: self.ball.vy = current_vy + sin(angle) * eject_force
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", current_vy + sin(angle) * eject_force)
                             elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
 
                 if h_kind == "disguised_trap":

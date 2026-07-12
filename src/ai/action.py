@@ -12117,6 +12117,9 @@ class Action:
             self.ball.hazard_immunity_timer -= delta
             if self.ball.hazard_immunity_timer < 0:
                 self.ball.hazard_immunity_timer = 0.0
+
+        if getattr(self.ball, "geyser_immunity_timer", 0.0) > 0:
+            self.ball.geyser_immunity_timer -= delta
         if getattr(self.ball, "emp_immunity_timer", 0.0) > 0:
             self.ball.emp_immunity_timer -= delta
             if self.ball.emp_immunity_timer < 0:
@@ -12377,6 +12380,51 @@ class Action:
                             elif effect == "stun":
                                 self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 3.0)
                             hazard.duration = 0.0
+                if getattr(hazard, "kind", "") == "geyser" and getattr(hazard, "active", True):
+                    dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                    trigger_radius = getattr(hazard, "radius", 40.0)
+                    if dist_sq < trigger_radius * trigger_radius:
+                        import math as _math
+                        dist = _math.sqrt(dist_sq) if dist_sq > 0 else 0.0001
+
+                        # Apply effects only if not recently affected to prevent per-frame explosion
+                        if getattr(self.ball, "geyser_immunity_timer", 0.0) <= 0:
+                            # Set temporary immunity so we don't apply the impulse/speed multiplier every frame
+                            self.ball.geyser_immunity_timer = 2.0
+
+                            # Elemental interactions
+                            element = getattr(self.ball, "element", "")
+                            if element == "water":
+                                # Don't multiply the current, just set it or boost it once
+                                self.ball.speed_multiplier = 1.5
+                                self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
+                            elif element == "earth":
+                                if hasattr(self.ball, "hp"):
+                                    heal_amt = 15.0
+                                    self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), self.ball.hp + heal_amt)
+                            else:
+                                # Default effect: damage and launch/stun
+                                if hasattr(self.ball, "hp"):
+                                    dmg = getattr(hazard, "damage", 10.0)
+                                    self.ball.hp -= dmg
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+                                        self.ball.killer = "geyser"
+
+                                # Shoot upwards / launch
+                                self.ball.fly_timer = max(getattr(self.ball, "fly_timer", 0.0), 2.0)
+                                self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 1.0)
+
+                                # Add some random velocity scatter as a one-time impulse
+                                import random as _rnd
+                                angle = _rnd.uniform(0, _math.pi * 2)
+                                eject_force = 1500.0
+                                self.ball.vx = getattr(self.ball, "vx", 0.0) + _math.cos(angle) * eject_force
+                                self.ball.vy = getattr(self.ball, "vy", 0.0) + _math.sin(angle) * eject_force
+                        else:
+                            # Decrement immunity timer when still inside (though ideally we just let it decrement outside)
+                            # Actually we shouldn't decrement here, we decrement globally. We'll decrement below.
+                            pass
         bumper_booster_timer = getattr(self.ball, "bumper_booster_timer", 0.0)
         if bumper_booster_timer > 0:
             self.ball.bumper_booster_timer -= delta
