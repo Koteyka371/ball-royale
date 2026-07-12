@@ -335,6 +335,34 @@ func _attempt_damage(attacker, target) -> void:
     if q_state > 0.0:
         return
 
+    var is_fake_clone = false
+    if typeof(target) == TYPE_OBJECT and "is_fake_clone" in target: is_fake_clone = target.is_fake_clone
+    elif typeof(target) == TYPE_DICTIONARY and target.has("is_fake_clone"): is_fake_clone = target["is_fake_clone"]
+    elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("is_fake_clone"): is_fake_clone = target.get_meta("is_fake_clone")
+
+    if is_fake_clone:
+        if typeof(target) == TYPE_OBJECT and "hp" in target: target.hp = 0.0
+        elif typeof(target) == TYPE_DICTIONARY and target.has("hp"): target["hp"] = 0.0
+        if typeof(target) == TYPE_OBJECT and "alive" in target: target.alive = false
+        elif typeof(target) == TYPE_DICTIONARY and target.has("alive"): target["alive"] = false
+
+        var current_blind = 0.0
+        if typeof(attacker) == TYPE_OBJECT and "blindness_timer" in attacker: current_blind = attacker.blindness_timer
+        elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("blindness_timer"): current_blind = attacker["blindness_timer"]
+        elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("blindness_timer"): current_blind = attacker.get_meta("blindness_timer")
+
+        if typeof(attacker) == TYPE_OBJECT and "is_blinded" in attacker: attacker.is_blinded = true
+        elif typeof(attacker) == TYPE_DICTIONARY: attacker["is_blinded"] = true
+        elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta"): attacker.set_meta("is_blinded", true)
+
+        if typeof(attacker) == TYPE_OBJECT and "blindness_timer" in attacker: attacker.blindness_timer = max(current_blind, 3.0)
+        elif typeof(attacker) == TYPE_DICTIONARY: attacker["blindness_timer"] = max(current_blind, 3.0)
+        elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta"): attacker.set_meta("blindness_timer", max(current_blind, 3.0))
+
+        self._spawn_directed_particles(target, attacker, "mirage_explosion")
+        return
+
+
     # Check for friendly fire reflect
     var a_team = -1
     if typeof(attacker) == TYPE_DICTIONARY and attacker.has("team"): a_team = attacker.team
@@ -1620,7 +1648,71 @@ func execute(strategy: String, delta: float):
             self.ball["amnesia_timer"] -= delta
 
 
-	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+
+    var ball_type = ""
+    if typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: ball_type = self.ball.ball_type
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): ball_type = self.ball["ball_type"]
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ball_type"): ball_type = self.ball.get_meta("ball_type")
+
+    var is_fake_clone = false
+    if typeof(self.ball) == TYPE_OBJECT and "is_fake_clone" in self.ball: is_fake_clone = self.ball.is_fake_clone
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_fake_clone"): is_fake_clone = self.ball["is_fake_clone"]
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_fake_clone"): is_fake_clone = self.ball.get_meta("is_fake_clone")
+
+    if str(ball_type) == "mirage" and not is_fake_clone:
+        var mirage_spawn_timer = 1.0
+        if typeof(self.ball) == TYPE_OBJECT and "mirage_spawn_timer" in self.ball: mirage_spawn_timer = self.ball.mirage_spawn_timer
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("mirage_spawn_timer"): mirage_spawn_timer = self.ball["mirage_spawn_timer"]
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("mirage_spawn_timer"): mirage_spawn_timer = self.ball.get_meta("mirage_spawn_timer")
+
+        var vx = 0.0
+        var vy = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and "vx" in self.ball: vx = self.ball.vx
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vx"): vx = self.ball["vx"]
+        if typeof(self.ball) == TYPE_OBJECT and "vy" in self.ball: vy = self.ball.vy
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vy"): vy = self.ball["vy"]
+        if vx == 0.0 and vy == 0.0:
+            if typeof(self.ball) == TYPE_OBJECT and "_last_vx" in self.ball: vx = self.ball._last_vx
+            if typeof(self.ball) == TYPE_OBJECT and "_last_vy" in self.ball: vy = self.ball._last_vy
+
+        var is_moving = abs(vx) > 0.1 or abs(vy) > 0.1
+        if not is_moving:
+            var b_speed = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "speed" in self.ball: b_speed = self.ball.speed
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): b_speed = self.ball["speed"]
+            is_moving = b_speed > 0.1
+
+        if is_moving:
+            mirage_spawn_timer -= delta
+            if mirage_spawn_timer <= 0.0:
+                mirage_spawn_timer = 1.0
+                if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                    var clone = null
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("duplicate"):
+                        clone = self.ball.duplicate()
+                        clone.id = randi() % 90000 + 10000
+                        if "hp" in clone: clone.hp = 1.0
+                        if "max_hp" in clone: clone.max_hp = 1.0
+                        if "damage" in clone: clone.damage = 0.0
+                        clone.is_fake_clone = true
+                        clone.mirage_spawn_timer = 999.0
+                        self.world.balls.append(clone)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        clone = self.ball.duplicate()
+                        clone["id"] = randi() % 90000 + 10000
+                        clone["hp"] = 1.0
+                        clone["max_hp"] = 1.0
+                        clone["damage"] = 0.0
+                        clone["is_fake_clone"] = true
+                        clone["mirage_spawn_timer"] = 999.0
+                        self.world.balls.append(clone)
+
+        if typeof(self.ball) == TYPE_OBJECT and "mirage_spawn_timer" in self.ball: self.ball.mirage_spawn_timer = mirage_spawn_timer
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("mirage_spawn_timer"): self.ball["mirage_spawn_timer"] = mirage_spawn_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta"): self.ball.set_meta("mirage_spawn_timer", mirage_spawn_timer)
+
+
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
 		if self.ball.has_meta("gravity_boots_timer"):
 			var gb_timer = self.ball.get_meta("gravity_boots_timer")
 			if gb_timer > 0.0:

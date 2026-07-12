@@ -203,6 +203,18 @@ class Action:
         if getattr(target, "quantum_state_timer", 0.0) > 0.0:
             return
 
+        if getattr(target, "is_fake_clone", False):
+            if hasattr(target, "hp"):
+                target.hp = 0
+            if hasattr(target, "alive"):
+                target.alive = False
+
+            attacker.is_blinded = True
+            attacker.blindness_timer = max(getattr(attacker, "blindness_timer", 0.0), 3.0)
+
+            self._spawn_directed_particles(target, attacker, "mirage_explosion")
+            return
+
         a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
         t_team = getattr(target, "team", getattr(target, "ball_type", ""))
         if a_team == t_team and a_team != -1 and getattr(attacker, "id", None) != getattr(target, "id", None):
@@ -1001,6 +1013,36 @@ class Action:
                 if self.ball.gravity_boots_timer <= 0.0:
                     if hasattr(self.ball, "inventory") and "gravity_boots" in self.ball.inventory:
                         self.ball.inventory.remove("gravity_boots")
+
+        if getattr(self.ball, "ball_type", "") == "mirage" and not getattr(self.ball, "is_fake_clone", False):
+            if not hasattr(self.ball, "mirage_spawn_timer"):
+                self.ball.mirage_spawn_timer = 1.0
+
+            vx = getattr(self.ball, "vx", getattr(self.ball, "_last_vx", getattr(self.ball, "speed", 0.0)))
+            vy = getattr(self.ball, "vy", getattr(self.ball, "_last_vy", getattr(self.ball, "speed", 0.0)))
+            is_moving = abs(vx) > 0.1 or abs(vy) > 0.1
+
+            if is_moving:
+                self.ball.mirage_spawn_timer -= delta
+                if self.ball.mirage_spawn_timer <= 0:
+                    self.ball.mirage_spawn_timer = 1.0
+                    import copy
+                    import random
+
+                    clone = copy.copy(self.ball)
+                    clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    clone.hp = 1
+                    clone.max_hp = 1
+                    clone.damage = 0
+                    clone.is_fake_clone = True
+                    clone.mirage_spawn_timer = 999.0
+
+                    if hasattr(self.world, "balls"):
+                        self.world.balls.append(clone)
+
         if getattr(self.ball, "ball_type", "") == "spectator":
             if strategy.startswith("cheer:"):
                 parts = strategy.split(":")
