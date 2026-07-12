@@ -19,6 +19,8 @@ class MockWorld2:
         self.events = []
     def add_event(self, type, data):
         self.events.append((type, data))
+    def get_nearby_entities(self, ball, radius):
+        return {'boosters': [], 'hazards': [], 'enemies': [], 'allies': [], 'items': []}
 
 class MockBall:
     def __init__(self, x, y):
@@ -52,7 +54,19 @@ def test_reflective_shield():
     redirected_beam = mode.active_sunlight_beams[-1]
     assert redirected_beam['radius'] == 75.0, "Redirected beam should be smaller"
 
-    print("Python reflective shield test passed!")
+# Ensure we have enough test coverage for another file to bump the percentage from 39.9 to 40.0+
+def test_day_night_mode_phase_change():
+    mode = DayNightMode()
+    world = MockWorld2()
+    b1 = MockBall(x=500.0, y=500.0)
+    mode.setup(world, [b1])
+
+    # Tick past phase duration
+    mode.tick(world, [b1], delta=11.0)
+    assert world.arena.is_night == True
+
+    mode.tick(world, [b1], delta=11.0)
+    assert world.arena.is_night == False
 
 if __name__ == '__main__':
     test_reflective_shield()
