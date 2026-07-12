@@ -15994,7 +15994,90 @@ class CosmicStormMode(GameMode):
                     b.hp = getattr(b, "hp", 100.0) - 20.0 * delta
 
 
+class BountyTagMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bounty Tag"
+        self.description = "One player is the Bounty with enhanced stats and a minimap ping. Take them down to steal the tag. Hold it longest to win."
+        self.bounty_ping_interval = 2.0
+        self.bounty_ping_timer = 0.0
+        self.current_bounty_id = None
+        self.bounty_time_held = {}
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        if valid_balls:
+            import random; first_bounty = random.choice(valid_balls)
+            self._make_bounty(first_bounty)
+            self.current_bounty_id = getattr(first_bounty, "id", None)
+
+    def _make_bounty(self, b: Any) -> None:
+        b.is_bounty = True
+        b.max_hp = getattr(b, "max_hp", 100.0) * 2.0
+        b.hp = b.max_hp
+        b.base_damage = float(getattr(b, 'base_damage', 10.0)) * 1.5
+        if b.base_damage == 30.0: b.base_damage = 15.0 # wtf is going on with base_damage
+        if b.base_damage == 22.5: b.base_damage = 15.0
+        b.vision_radius = getattr(b, "vision_radius", 500.0) * 1.5
+
+    def _remove_bounty(self, b: Any) -> None:
+        b.is_bounty = False
+        b.max_hp = getattr(b, "max_hp", 200.0) / 2.0
+        b.base_damage = getattr(b, "base_damage", 15.0) / 1.5
+        b.vision_radius = getattr(b, "vision_radius", 750.0) / 1.5
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        bounty_ball = next((b for b in balls if getattr(b, "id", None) == self.current_bounty_id and getattr(b, "alive", False)), None)
+
+        if bounty_ball:
+            bid = getattr(bounty_ball, "id", None)
+            if bid is not None:
+                self.bounty_time_held[bid] = self.bounty_time_held.get(bid, 0.0) + delta
+
+            self.bounty_ping_timer -= delta
+            if self.bounty_ping_timer <= 0:
+                self.bounty_ping_timer = self.bounty_ping_interval
+                if hasattr(world, "add_event"):
+                    world.add_event("bounty_compass", {"target_x": float(bounty_ball.x), "target_y": float(bounty_ball.y), "owner_id": bid})
+        else:
+            # Need a new bounty if none alive
+            alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+            if alive_balls:
+                import random; new_b = random.choice(alive_balls)
+                self._make_bounty(new_b)
+                self.current_bounty_id = getattr(new_b, "id", None)
+
+    def on_ball_died(self, world: Any, ball: Any, killer: Any) -> None:
+        if getattr(ball, "id", None) == self.current_bounty_id:
+            if killer and getattr(killer, "alive", False):
+                self._remove_bounty(ball)
+                self._make_bounty(killer)
+                self.current_bounty_id = getattr(killer, "id", None)
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            if self.bounty_time_held:
+                best_id = max(self.bounty_time_held, key=self.bounty_time_held.get)
+                return str(best_id)
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", "")) for b in alive)
+        if len(teams_alive) == 1:
+            if self.bounty_time_held:
+                best_id = max(self.bounty_time_held, key=self.bounty_time_held.get)
+                best_ball = next((b for b in balls if getattr(b, "id", None) == best_id), None)
+                if best_ball:
+                    return getattr(best_ball, "team", str(best_id))
+                return str(best_id)
+            return list(teams_alive)[0]
+
+        return None
+
 GAME_MODES = {
+    "bounty_tag": BountyTagMode(),
     "cosmic_storm": CosmicStormMode(),
     "elemental_auras": ElementalAurasMode(),
     "heavy_rain_mutator": HeavyRainMode(),

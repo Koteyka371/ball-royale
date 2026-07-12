@@ -26160,7 +26160,171 @@ class CosmicStormMode extends GameMode:
 						var hp = b.hp if "hp" in b else 100.0
 						b.hp = hp - 20.0 * delta
 
+class BountyTagMode extends GameMode:
+	var bounty_ping_interval = 2.0
+	var bounty_ping_timer = 0.0
+	var current_bounty_id = null
+	var bounty_time_held = {}
+
+	func _init() -> void:
+		name = "Bounty Tag"
+		description = "One player is the Bounty with enhanced stats and a minimap ping. Take them down to steal the tag. Hold it longest to win."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var valid_balls = []
+		for b in balls:
+			if "ball_type" in b and b.ball_type != "spectator":
+				valid_balls.append(b)
+		if valid_balls.size() > 0:
+			var first_bounty = valid_balls[randi() % valid_balls.size()]
+			_make_bounty(first_bounty)
+			if typeof(first_bounty) == TYPE_DICTIONARY:
+				current_bounty_id = first_bounty["id"] if "id" in first_bounty else null
+			else:
+				current_bounty_id = first_bounty.get("id") if "id" in first_bounty else null
+
+	func _make_bounty(b) -> void:
+		if b.has_method("set_meta"):
+			b.set_meta("is_bounty", true)
+		elif typeof(b) == TYPE_DICTIONARY:
+			b["is_bounty"] = true
+		else:
+			if "is_bounty" in b: b.is_bounty = true
+
+		if "max_hp" in b:
+			b.max_hp = b.max_hp * 2.0
+			b.hp = b.max_hp
+		elif typeof(b) == TYPE_DICTIONARY and b.has("max_hp"):
+			b["max_hp"] = b["max_hp"] * 2.0
+			b["hp"] = b["max_hp"]
+
+		if "base_damage" in b:
+			b.base_damage = b.base_damage * 1.5
+		elif typeof(b) == TYPE_DICTIONARY and b.has("base_damage"):
+			b["base_damage"] = b["base_damage"] * 1.5
+
+		if "vision_radius" in b:
+			b.vision_radius = b.vision_radius * 1.5
+		elif typeof(b) == TYPE_DICTIONARY and b.has("vision_radius"):
+			b["vision_radius"] = b["vision_radius"] * 1.5
+
+	func _remove_bounty(b) -> void:
+		if b.has_method("set_meta"):
+			b.set_meta("is_bounty", false)
+		elif typeof(b) == TYPE_DICTIONARY:
+			b["is_bounty"] = false
+		else:
+			if "is_bounty" in b: b.is_bounty = false
+
+		if "max_hp" in b:
+			b.max_hp = b.max_hp / 2.0
+		elif typeof(b) == TYPE_DICTIONARY and b.has("max_hp"):
+			b["max_hp"] = b["max_hp"] / 2.0
+
+		if "base_damage" in b:
+			b.base_damage = b.base_damage / 1.5
+		elif typeof(b) == TYPE_DICTIONARY and b.has("base_damage"):
+			b["base_damage"] = b["base_damage"] / 1.5
+
+		if "vision_radius" in b:
+			b.vision_radius = b.vision_radius / 1.5
+		elif typeof(b) == TYPE_DICTIONARY and b.has("vision_radius"):
+			b["vision_radius"] = b["vision_radius"] / 1.5
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		var bounty_ball = null
+		for b in balls:
+			var b_id = b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.get("id") if "id" in b else null)
+			var b_alive = b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.get("alive") if "alive" in b else false)
+			if b_id == current_bounty_id and b_alive:
+				bounty_ball = b
+				break
+
+		if bounty_ball != null:
+			var bid = bounty_ball["id"] if typeof(bounty_ball) == TYPE_DICTIONARY and bounty_ball.has("id") else (bounty_ball.get("id") if "id" in bounty_ball else null)
+			if bid != null:
+				var current_time = 0.0
+				if bounty_time_held.has(bid):
+					current_time = bounty_time_held[bid]
+				bounty_time_held[bid] = current_time + delta
+
+			bounty_ping_timer -= delta
+			if bounty_ping_timer <= 0:
+				bounty_ping_timer = bounty_ping_interval
+				if world.has_method("add_event"):
+					var tx = float(bounty_ball["x"] if typeof(bounty_ball) == TYPE_DICTIONARY and bounty_ball.has("x") else (bounty_ball.get("x") if "x" in bounty_ball else 0))
+					var ty = float(bounty_ball["y"] if typeof(bounty_ball) == TYPE_DICTIONARY and bounty_ball.has("y") else (bounty_ball.get("y") if "y" in bounty_ball else 0))
+					world.add_event("bounty_compass", {"target_x": tx, "target_y": ty, "owner_id": bid})
+		else:
+			var alive_balls = []
+			for b in balls:
+				var b_alive = b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.get("alive") if "alive" in b else false)
+				var b_type = b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else (b.get("ball_type") if "ball_type" in b else null)
+				if b_alive and b_type != "spectator":
+					alive_balls.append(b)
+			if alive_balls.size() > 0:
+				var new_b = alive_balls[randi() % alive_balls.size()]
+				_make_bounty(new_b)
+				current_bounty_id = new_b["id"] if typeof(new_b) == TYPE_DICTIONARY and new_b.has("id") else (new_b.get("id") if "id" in new_b else null)
+
+	func on_ball_died(world, ball, killer) -> void:
+		var ball_id = ball["id"] if typeof(ball) == TYPE_DICTIONARY and ball.has("id") else (ball.get("id") if "id" in ball else null)
+		if ball_id == current_bounty_id:
+			var killer_alive = killer["alive"] if typeof(killer) == TYPE_DICTIONARY and killer.has("alive") else (killer.get("alive") if killer != null and "alive" in killer else false)
+			if killer != null and killer_alive:
+				_remove_bounty(ball)
+				_make_bounty(killer)
+				current_bounty_id = killer["id"] if typeof(killer) == TYPE_DICTIONARY and killer.has("id") else (killer.get("id") if "id" in killer else null)
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			var b_alive = b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.get("alive") if "alive" in b else false)
+			var b_type = b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else (b.get("ball_type") if "ball_type" in b else null)
+			if b_alive and b_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			if bounty_time_held.size() > 0:
+				var best_id = null
+				var max_time = -1.0
+				for k in bounty_time_held.keys():
+					if bounty_time_held[k] > max_time:
+						max_time = bounty_time_held[k]
+						best_id = k
+				return str(best_id)
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else (b.get("team") if "team" in b else null)
+			if t == null: t = b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else (b.get("ball_type") if "ball_type" in b else null)
+			teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			if bounty_time_held.size() > 0:
+				var best_id = null
+				var max_time = -1.0
+				for k in bounty_time_held.keys():
+					if bounty_time_held[k] > max_time:
+						max_time = bounty_time_held[k]
+						best_id = k
+				var best_team = str(best_id)
+				for b in balls:
+					var b_id = b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.get("id") if "id" in b else null)
+					if b_id == best_id:
+						var t = b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else (b.get("team") if "team" in b else null)
+						if t != null: best_team = t
+						break
+				return best_team
+			return teams_alive.keys()[0]
+
+		return null
+
 var GAME_MODES = {
+	"bounty_tag": BountyTagMode.new(),
 	"cosmic_storm": CosmicStormMode.new(),
 	"temporal_rifts": TemporalRiftsMode.new(),
 		"sector_collapse": SectorCollapseMode.new(),
