@@ -11,9 +11,9 @@
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-810",
+      "status": "assigned",
+      "started_at": "2026-07-12T16:09:46.608594+00:00",
       "cycles_today": 0
     },
     "agent-3": {
@@ -219,9 +219,9 @@
     "agent-27": {
       "name": "Jules Worker 27",
       "area": "content",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-898",
+      "started_at": "2026-07-12T16:09:46.608594+00:00",
       "cycles_today": 0
     },
     "agent-28": {
