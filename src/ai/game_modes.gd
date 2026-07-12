@@ -13524,11 +13524,13 @@ class DayNightMode extends GameMode:
 	var phase_duration = 10.0
 	var sunlight_beam_timer = 0.0
 	var active_sunlight_beams = []
+	var moonlight_zone_timer = 0.0
+	var active_moonlight_zones = []
 
 	func _init():
 		super._init()
 		name = "Day/Night Cycle"
-		description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear."
+		description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear. During the night, occasional moonlight shadow events spawn safe zones. Balls remaining outside these zones slowly lose stamina, forcing engagements in key areas."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
 		for b in balls:
@@ -13636,6 +13638,8 @@ class DayNightMode extends GameMode:
 		timer = 0.0
 		sunlight_beam_timer = 0.0
 		active_sunlight_beams = []
+		moonlight_zone_timer = 0.0
+		active_moonlight_zones = []
 
 	func _line_intersects_circle(p1_x, p1_y, p2_x, p2_y, cx, cy, radius):
 		var dx = p2_x - p1_x
@@ -13665,6 +13669,8 @@ class DayNightMode extends GameMode:
 					world.arena.is_night = true
 				sunlight_beam_timer = 0.0
 				active_sunlight_beams.clear()
+				moonlight_zone_timer = 0.0
+				active_moonlight_zones.clear()
 
 			var is_night = false
 			if "is_night" in world.arena:
@@ -13754,6 +13760,64 @@ class DayNightMode extends GameMode:
 
 					if world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
+
+			if is_night:
+				moonlight_zone_timer += delta
+				if moonlight_zone_timer >= 4.0:
+					moonlight_zone_timer = 0.0
+
+					var arena_w = 1000.0
+					var arena_h = 1000.0
+					if "width" in world.arena: arena_w = world.arena.width
+					if "height" in world.arena: arena_h = world.arena.height
+
+					var fx = randf_range(150.0, arena_w - 150.0)
+					var fy = randf_range(150.0, arena_h - 150.0)
+					var zone_radius = 200.0
+
+					active_moonlight_zones.append({"x": fx, "y": fy, "radius": zone_radius, "duration": 3.0})
+
+					if world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "moonlight_zone", "x": fx, "y": fy, "radius": zone_radius, "duration": 3.0})
+
+			var active_zones = []
+			var has_moonlight = active_moonlight_zones.size() > 0
+			for i in range(active_moonlight_zones.size()):
+				var zone = active_moonlight_zones[i]
+				zone["duration"] -= delta
+				if zone["duration"] > 0:
+					active_zones.append(zone)
+			active_moonlight_zones = active_zones
+
+			if is_night and has_moonlight:
+				for b in balls:
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if "alive" in b else false)
+					var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if "ball_type" in b else "")
+
+					if not b_alive or b_type == "spectator":
+						continue
+
+					var in_safe_zone = false
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+
+					for zone in active_moonlight_zones:
+						var zx = zone["x"]
+						var zy = zone["y"]
+						var zr = zone["radius"]
+
+						var dist_sq = (bx - zx) * (bx - zx) + (by - zy) * (by - zy)
+						if dist_sq <= zr * zr:
+							in_safe_zone = true
+							break
+
+					if not in_safe_zone:
+						if typeof(b) == TYPE_DICTIONARY:
+							if "stamina" in b:
+								b["stamina"] = max(0.0, b.get("stamina", 100.0) - 20.0 * delta)
+						else:
+							if "stamina" in b:
+								b.stamina = max(0.0, b.get("stamina", 100.0) - 20.0 * delta)
 
 class GuildVsGuildMode extends GameMode:
 	var guilds = {}

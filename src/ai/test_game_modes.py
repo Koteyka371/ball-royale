@@ -704,18 +704,54 @@ def test_supernova_mode():
 def test_day_night_mode():
     from ai.game_modes import DayNightMode
     world = type('MockWorld', (), {})()
-    world.arena = type('MockArena', (), {'is_night': False})()
+    world.arena = type('MockArena', (), {'is_night': False, 'width': 1000, 'height': 1000})()
 
     mode = DayNightMode()
-    mode.setup(world, [])
+
+    class MockBall:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+            self.stamina = 100.0
+            self.alive = True
+            self.ball_type = "normal"
+
+    b1 = MockBall(500, 500)
+    b2 = MockBall(100, 100)
+    balls = [b1, b2]
+
+    mode.setup(world, balls)
     assert world.arena.is_night == False
 
+    # Trigger moonlight zone spawn
     # Tick past phase duration
-    mode.tick(world, [], delta=11.0)
+    mode.tick(world, balls, delta=11.0)
     assert world.arena.is_night == True
 
+    # Tick loop to prevent delta from removing it instantly
+    for _ in range(4):
+        mode.tick(world, balls, delta=1.0)
+
+    assert len(mode.active_moonlight_zones) > 0
+    zone = mode.active_moonlight_zones[0]
+
+    # Place b1 in the zone, b2 outside
+    b1.x, b1.y = zone['x'], zone['y']
+    b2.x, b2.y = zone['x'] + zone['radius'] + 100, zone['y']
+
+    b1.stamina = 100.0
+    b2.stamina = 100.0
+
+    # Tick to apply effect
+    mode.tick(world, balls, delta=1.0)
+
+    # b1 is in safe zone, shouldn't lose stamina
+    assert b1.stamina == 100.0
+    # b2 is outside, should lose stamina
+    assert b2.stamina < 100.0
+
     # Tick again past phase duration
-    mode.tick(world, [], delta=11.0)
+    mode.tick(world, balls, delta=11.0)
     assert world.arena.is_night == False
 
 def test_zero_gravity_mode():

@@ -1,0 +1,4 @@
+{
+  "title": "Stamina Transfer Link Booster",
+  "description": "A new booster that tethers a ball to its nearest ally or enemy. If tethered to an ally, they share stamina regeneration. If tethered to an enemy, the ball passively siphons the enemy's stamina into its own pool as long as the tether remains unbroken by distance or line-of-sight blockers."
+}

@@ -8899,11 +8899,13 @@ class DayNightMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Day/Night Cycle"
-        self.description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear."
+        self.description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear. During the night, occasional moonlight shadow events spawn safe zones. Balls remaining outside these zones slowly lose stamina, forcing engagements in key areas."
         self.timer = 0.0
         self.phase_duration = 10.0
         self.sunlight_beam_timer = 0.0
-        self.active_sunlight_beams = [] # list of dicts: {'x', 'y', 'radius', 'duration'}
+        self.active_sunlight_beams = []
+        self.moonlight_zone_timer = 0.0
+        self.active_moonlight_zones = [] # list of dicts: {'x', 'y', 'radius', 'duration'}
 
     def setup(self, world, balls):
         super().setup(world, balls)
@@ -8913,6 +8915,8 @@ class DayNightMode(GameMode):
         self.timer = 0.0
         self.sunlight_beam_timer = 0.0
         self.active_sunlight_beams = []
+        self.moonlight_zone_timer = 0.0
+        self.active_moonlight_zones = []
 
     def _line_intersects_circle(self, p1, p2, circle_center, radius):
         # Math calculation to see if a line segment intersects a circle
@@ -8954,6 +8958,10 @@ class DayNightMode(GameMode):
                 world.arena.is_night = not getattr(world.arena, "is_night", False)
                 self.sunlight_beam_timer = 0.0 # reset on phase change
                 self.active_sunlight_beams = [] # clear beams on phase change
+                if hasattr(self, "moonlight_zone_timer"):
+                    self.moonlight_zone_timer = 0.0
+                if hasattr(self, "active_moonlight_zones"):
+                    self.active_moonlight_zones = []
 
             is_night = getattr(world.arena, "is_night", False)
             world.arena.night_ratio = (self.timer / max(0.1, self.phase_duration)) if is_night else 0.0
@@ -9028,6 +9036,47 @@ class DayNightMode(GameMode):
 
                     if hasattr(world, "add_event"):
                         world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
+
+            # Moonlight zones during the night
+            if is_night:
+                self.moonlight_zone_timer += delta
+                if self.moonlight_zone_timer >= 4.0:
+                    self.moonlight_zone_timer = 0.0
+
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    fx = random.uniform(150, arena_w - 150)
+                    fy = random.uniform(150, arena_h - 150)
+                    zone_radius = 200.0
+
+                    self.active_moonlight_zones.append({'x': fx, 'y': fy, 'radius': zone_radius, 'duration': 3.0})
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "moonlight_zone", "x": fx, "y": fy, "radius": zone_radius, "duration": 3.0})
+
+            # Update and apply effects from moonlight zones
+            has_moonlight = len(self.active_moonlight_zones) > 0
+            for zone in list(self.active_moonlight_zones):
+                zone['duration'] -= delta
+                if zone['duration'] <= 0:
+                    self.active_moonlight_zones.remove(zone)
+                    continue
+
+            if is_night and has_moonlight:
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+
+                    in_safe_zone = False
+                    for zone in self.active_moonlight_zones:
+                        dist_sq = (b.x - zone['x'])**2 + (b.y - zone['y'])**2
+                        if dist_sq <= zone['radius']**2:
+                            in_safe_zone = True
+                            break
+
+                    if not in_safe_zone:
+                        if hasattr(b, "stamina"):
+                            b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 20.0 * delta)
 
 class GuildVsGuildMode(GameMode):
     """Guild vs Guild mode where players capture territory on a persistent world map."""
