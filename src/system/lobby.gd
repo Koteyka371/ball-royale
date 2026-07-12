@@ -35,6 +35,12 @@ func get_trap_variant(ball_id: int) -> String:
         return selections[ball_id]
     return "normal"
 
+func get_trap_level(ball_id: int) -> int:
+    var key = str(ball_id) + "_trap_level"
+    if selections.has(key):
+        return selections[key]
+    return 1
+
 func select_perk(ball_id: int, perk: String) -> void:
     var key = str(ball_id) + "_perks"
     if not selections.has(key):
@@ -135,6 +141,7 @@ func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: 
     if not loadout.is_empty():
         var trap = loadout.get("trap_variant", "normal")
         select_trap_variant(ball_id, trap)
+        selections[str(ball_id) + "_trap_level"] = profile.get_trap_level(trap) if profile.has_method("get_trap_level") else 1
         if loadout.has("ball_type"):
             selections[str(ball_id) + "_ball_type"] = loadout["ball_type"]
         if loadout.has("preferred_bonuses"):
@@ -162,6 +169,7 @@ func apply_random_loadout(ball_id: int, profile: ProfileManager) -> bool:
     var trap_variant = trap_variants[randi() % trap_variants.size()]
 
     select_trap_variant(ball_id, trap_variant)
+    selections[str(ball_id) + "_trap_level"] = profile.get_trap_level(trap_variant) if profile.has_method("get_trap_level") else 1
     selections[str(ball_id) + "_ball_type"] = ball_type
 
     # Add random loadout challenge quest

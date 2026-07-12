@@ -36,6 +36,8 @@ func load_profile():
                 data["titles"] = []
             if not data.has("status_effects"):
                 data["status_effects"] = []
+            if not data.has("trap_levels"):
+                data["trap_levels"] = {}
             if not data.has("nemeses"):
                 data["nemeses"] = {}
             if not data.has("login_streak"):
@@ -67,11 +69,30 @@ func load_profile():
         "titles": [],
         "status_effects": [],
         "nemeses": {},
+        "trap_levels": {},
         "login_streak": 0,
         "last_login_date": "",
         "guild_name": "",
         "clan_name": ""
     }
+
+func get_trap_level(trap_variant: String) -> int:
+    if data.has("trap_levels") and data["trap_levels"].has(trap_variant):
+        return data["trap_levels"][trap_variant]
+    return 1
+
+func upgrade_trap(trap_variant: String, cost: int) -> bool:
+    if data.has("skill_points") and data["skill_points"] >= cost:
+        if not data.has("trap_levels"):
+            data["trap_levels"] = {}
+        var current_level = 1
+        if data["trap_levels"].has(trap_variant):
+            current_level = data["trap_levels"][trap_variant]
+        data["skill_points"] -= cost
+        data["trap_levels"][trap_variant] = current_level + 1
+        save_profile()
+        return true
+    return false
 
 func add_quest(quest_description: String, reward: Variant):
     if not data.has("quests"):
