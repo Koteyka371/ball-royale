@@ -13722,9 +13722,15 @@ class DayNightMode extends GameMode:
 					var dist_sq = (b.x - fx) * (b.x - fx) + (b.y - fy) * (b.y - fy)
 					if dist_sq < beam_radius * beam_radius:
 						var b_type = b.get("ball_type", "").to_lower()
+						var s_timer = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							s_timer = b.get("supercharge_timer", 0.0)
+						else:
+							s_timer = b.get("supercharge_timer") if "supercharge_timer" in b else (b.get_meta("supercharge_timer") if b.has_method("has_meta") and b.has_meta("supercharge_timer") else 0.0)
+						var is_supercharged = s_timer > 0.0
 						var has_daylight_buff = not (b_type in ["vampire", "assassin", "phantom"])
 
-						if not has_daylight_buff:
+						if not has_daylight_buff or is_supercharged:
 							var behind_cover = false
 							var b_radius = 15.0
 							if "radius" in b: b_radius = b.radius
@@ -13754,13 +13760,29 @@ class DayNightMode extends GameMode:
 										break
 
 							if not behind_cover:
-								if b.has_method("take_damage"):
-									b.take_damage(beam_damage)
+								var actual_damage = beam_damage
+								var is_supercharged_local = false
+								if typeof(b) == TYPE_DICTIONARY:
+									is_supercharged_local = b.get("supercharge_timer", 0.0) > 0.0
 								else:
-									var hp = b.get("hp", 100.0)
-									b.set("hp", hp - beam_damage)
-									if b.get("hp", 100.0) <= 0:
-										b.set("alive", false)
+									var s_timer_local = b.get("supercharge_timer") if "supercharge_timer" in b else (b.get_meta("supercharge_timer") if b.has_method("has_meta") and b.has_meta("supercharge_timer") else 0.0)
+									is_supercharged_local = s_timer_local > 0.0
+								if is_supercharged_local:
+									actual_damage = beam_damage * 2.0
+
+								if b.has_method("take_damage"):
+									b.take_damage(actual_damage)
+								else:
+									if typeof(b) == TYPE_DICTIONARY:
+										var hp = b.get("hp", 100.0)
+										b["hp"] = hp - actual_damage
+										if b.get("hp", 100.0) <= 0:
+											b["alive"] = false
+									else:
+										var hp = b.get("hp", 100.0)
+										b.set("hp", hp - actual_damage)
+										if b.get("hp", 100.0) <= 0:
+											b.set("alive", false)
 
 			if is_night:
 				var active_shadows = []
@@ -13930,6 +13952,73 @@ class DayNightMode extends GameMode:
 
 					if world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
+
+
+			# Solar flare timer decay (runs always) and random buff (only during day)
+			for b in balls:
+				var balive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					balive = b.get("alive", false)
+				else:
+					balive = b.get("alive") if "alive" in b else false
+
+				var btype = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					btype = str(b.get("ball_type", ""))
+				else:
+					btype = str(b.get("ball_type", "")) if "ball_type" in b else ""
+
+				if balive and btype != "spectator":
+					var current_s_timer = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						current_s_timer = b.get("supercharge_timer", 0.0)
+						if current_s_timer > 0.0:
+							b["supercharge_timer"] = current_s_timer - delta
+							if b["supercharge_timer"] <= 0.0:
+								b["supercharge_timer"] = 0.0
+								var base_s = b.get("base_speed", b.get("speed", 100.0))
+								var base_d = b.get("base_damage", b.get("damage", 10.0))
+								b["speed"] = base_s
+								b["damage"] = base_d
+					else:
+						current_s_timer = b.get("supercharge_timer") if "supercharge_timer" in b else (b.get_meta("supercharge_timer") if b.has_method("has_meta") and b.has_meta("supercharge_timer") else 0.0)
+						if current_s_timer > 0.0:
+							var new_t = current_s_timer - delta
+							if new_t <= 0.0:
+								new_t = 0.0
+								var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+								var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+								if "speed" in b: b.speed = base_s
+								if "damage" in b: b.damage = base_d
+
+							if "supercharge_timer" in b: b.supercharge_timer = new_t
+							elif b.has_method("set_meta"): b.set_meta("supercharge_timer", new_t)
+
+					if not is_night:
+						if randf_range(0.0, 1.0) < 0.01 * delta:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["supercharge_timer"] = b.get("supercharge_timer", 0.0) + 5.0
+								var base_s = b.get("base_speed", b.get("speed", 100.0))
+								var base_d = b.get("base_damage", b.get("damage", 10.0))
+								b["speed"] = base_s * 2.5
+								b["damage"] = base_d * 2.5
+							else:
+								var s_timer = b.get("supercharge_timer") if "supercharge_timer" in b else (b.get_meta("supercharge_timer") if b.has_method("has_meta") and b.has_meta("supercharge_timer") else 0.0)
+								if "supercharge_timer" in b: b.supercharge_timer = s_timer + 5.0
+								elif b.has_method("set_meta"): b.set_meta("supercharge_timer", s_timer + 5.0)
+
+								var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+								var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+								if "speed" in b: b.speed = base_s * 2.5
+								if "damage" in b: b.damage = base_d * 2.5
+
+							if world != null and world.has_method("add_event"):
+								var bid = 0
+								if typeof(b) == TYPE_DICTIONARY:
+									bid = b.get("id", 0)
+								else:
+									bid = b.get("id", 0) if "id" in b else 0
+								world.add_event("visual_effect", {"type": "solar_flare_supercharge", "ball_id": bid})
 
 class GuildVsGuildMode extends GameMode:
 	var guilds = {}
