@@ -15312,7 +15312,7 @@
     },
     {
       "id": "idea-891",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Eclipse Devourer Hazard",
@@ -25680,6 +25680,23 @@
         "src/ui/cross_guild_alliance.gd",
         "src/ai/cross_guild_alliance.py",
         "tests/test_cross_guild_alliance.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1500",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Smoke Bomb",
+      "description": "Trickster can drop a smoke bomb that creates a large fog zone, blinding enemies.",
+      "allowed_paths": [
+        "src/ai/trickster_smoke_bomb.py",
+        "src/ai/trickster_smoke_bomb.gd",
+        "tests/test_trickster_smoke_bomb.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

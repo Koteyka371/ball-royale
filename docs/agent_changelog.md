@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-891] Eclipse Devourer Hazard — *2026-07-12 23:16:36 UTC*
+
+A new rare boss hazard that only spawns during a Lunar Eclipse. It wanders the arena and instantly consumes any ball it touches, converting them into shadowy minions that attack other players.
+
+---
+
 ## [idea-915] Decoy Mimic Behaviors — *2026-07-12 23:02:27 UTC*
 
 Allow the trickster's decoys to mimic specific abilities like 'flee' or 'attack' visually when the real Trickster executes them, sending out harmless but confusing particle effects to make the illusion even more convincing.
