@@ -9023,8 +9023,20 @@ class Action:
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             return
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
-        if skill_timer <= 0:
-            if hasattr(self.ball, "use_skill"):
+        skill_name = getattr(self.ball, "skill", getattr(self.ball, "SKILL", ""))
+        if hasattr(self.ball, "active_skill"):
+            skill_name = self.ball.active_skill
+
+        can_recast = False
+        if skill_timer > 0 and skill_name == "fireball":
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for h in self.world.arena.hazards:
+                    if getattr(h, "kind", "") == "fireball" and getattr(h, "owner_id", None) == self.ball.id:
+                        can_recast = True
+                        break
+
+        if skill_timer <= 0 or can_recast:
+            if hasattr(self.ball, "use_skill") and skill_timer <= 0:
                 self.ball.use_skill()
 
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -11033,6 +11045,64 @@ class Action:
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 8.0)
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("explosion")
+
+            elif skill_name == "fireball":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    fireball_hazard = None
+                    for h in self.world.arena.hazards:
+                        if getattr(h, "kind", "") == "fireball" and getattr(h, "owner_id", None) == self.ball.id:
+                            fireball_hazard = h
+                            break
+
+                    if fireball_hazard and can_recast:
+                        # Detonate early
+                        fireball_hazard.duration = 0.0
+                        fireball_hazard.radius = 100.0  # explosion radius
+                        fireball_hazard.damage = getattr(self.ball, "damage", 25) * 1.5
+                        fireball_hazard.kind = "fireball_explosion"
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("explosion")
+                    elif skill_timer <= 0:
+                        # Cast new fireball
+                        enemies = self._get_enemies()
+                        nx, ny = 1.0, 0.0
+                        if enemies:
+                            closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                            dx = closest_enemy.x - self.ball.x
+                            dy = closest_enemy.y - self.ball.y
+                            import math
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist > 0.0001:
+                                nx, ny = dx/dist, dy/dist
+
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            class Hazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id
+                                    self.x = x
+                                    self.y = y
+                                    self.radius = radius
+                                    self.kind = kind
+                                    self.damage = damage
+
+                        fb = Hazard(
+                            id=18000 + len(self.world.arena.hazards),
+                            x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                            y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                            radius=15.0,
+                            kind="fireball",
+                            damage=getattr(self.ball, "damage", 25)
+                        )
+                        setattr(fb, "vx", nx * 350.0)
+                        setattr(fb, "vy", ny * 350.0)
+                        setattr(fb, "duration", 3.0)
+                        setattr(fb, "owner_id", getattr(self.ball, "id", None))
+                        self.world.arena.hazards.append(fb)
+                        self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 4.5)
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("fireball")
 
             elif skill_name == "explosion":
                 enemies = self._get_enemies()

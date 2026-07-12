@@ -16301,14 +16301,37 @@ func _use_skill():
     if "skill_timer" in self.ball:
         skill_timer = self.ball.skill_timer
 
-    if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
-        self.ball.use_skill()
+    var skill_name = ""
+    if "skill" in self.ball:
+        skill_name = self.ball.skill
+    elif "SKILL" in self.ball:
+        skill_name = self.ball.SKILL
 
-        var skill_name = ""
-        if "skill" in self.ball:
-            skill_name = self.ball.skill
-        elif "SKILL" in self.ball:
-            skill_name = self.ball.SKILL
+    if "active_skill" in self.ball and self.ball.active_skill != "":
+        skill_name = self.ball.active_skill
+
+    var can_recast = false
+    if skill_timer > 0.0 and skill_name == "fireball":
+        if world != null and world.has_method("get_arena"):
+            var arena = world.call("get_arena")
+            if arena != null and "hazards" in arena:
+                for h in arena.hazards:
+                    if "kind" in h and h.kind == "fireball":
+                        var h_owner_id = null
+                        if "owner_id" in h: h_owner_id = h.owner_id
+                        elif h.has_method("has_meta") and h.has_meta("owner_id"): h_owner_id = h.get_meta("owner_id")
+
+                        var b_id = null
+                        if "id" in self.ball: b_id = self.ball.id
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                        if h_owner_id != null and b_id != null and h_owner_id == b_id:
+                            can_recast = true
+                            break
+
+    if skill_timer <= 0.0 or can_recast:
+        if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
+            self.ball.use_skill()
 
         # Synergy Logic
         var allies = []
@@ -18289,6 +18312,101 @@ func _use_skill():
             if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
             if self.ball is Dictionary: self.ball["skill_timer"] = cd
             else: self.ball.set("skill_timer", cd)
+
+        elif skill_name == "fireball":
+            if world != null and world.has_method("get_arena"):
+                var arena = world.call("get_arena")
+                if arena != null and "hazards" in arena:
+                    var fireball_hazard = null
+                    for h in arena.hazards:
+                        if "kind" in h and h.kind == "fireball":
+                            var h_owner_id = null
+                            if "owner_id" in h: h_owner_id = h.owner_id
+                            elif h.has_method("has_meta") and h.has_meta("owner_id"): h_owner_id = h.get_meta("owner_id")
+
+                            var b_id = null
+                            if "id" in self.ball: b_id = self.ball.id
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                            if h_owner_id != null and b_id != null and h_owner_id == b_id:
+                                fireball_hazard = h
+                                break
+
+                    if fireball_hazard != null and can_recast:
+                        # Detonate early
+                        if fireball_hazard is Dictionary:
+                            fireball_hazard["duration"] = 0.0
+                            fireball_hazard["radius"] = 100.0
+                            var dmg = 25
+                            if "damage" in self.ball: dmg = self.ball.damage
+                            fireball_hazard["damage"] = dmg * 1.5
+                            fireball_hazard["kind"] = "fireball_explosion"
+                        else:
+                            fireball_hazard.set_meta("duration", 0.0)
+                            if "radius" in fireball_hazard: fireball_hazard.radius = 100.0
+                            var dmg = 25
+                            if "damage" in self.ball: dmg = self.ball.damage
+                            if "damage" in fireball_hazard: fireball_hazard.damage = dmg * 1.5
+                            if "kind" in fireball_hazard: fireball_hazard.kind = "fireball_explosion"
+
+                        if has_method("_spawn_skill_particles"):
+                            _spawn_skill_particles("explosion")
+
+                    elif skill_timer <= 0:
+                        var enemies = _get_enemies()
+                        var nx = 1.0
+                        var ny = 0.0
+                        if enemies.size() > 0:
+                            var closest_enemy = enemies[0]
+                            var min_dist_sq = INF
+                            for e in enemies:
+                                var dx_e = e.x - self.ball.x
+                                var dy_e = e.y - self.ball.y
+                                var dist_sq = dx_e*dx_e + dy_e*dy_e
+                                if dist_sq < min_dist_sq:
+                                    min_dist_sq = dist_sq
+                                    closest_enemy = e
+                            var dx = closest_enemy.x - self.ball.x
+                            var dy = closest_enemy.y - self.ball.y
+                            var dist = sqrt(dx*dx + dy*dy)
+                            if dist > 0.0001:
+                                nx = dx/dist
+                                ny = dy/dist
+
+                        var b_radius = 10.0
+                        if "radius" in self.ball: b_radius = self.ball.radius
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"): b_radius = self.ball.get_meta("radius")
+
+                        var b_damage = 25.0
+                        if "damage" in self.ball: b_damage = self.ball.damage
+
+                        var b_id = null
+                        if "id" in self.ball: b_id = self.ball.id
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                        var fb = {
+                            "id": arena.hazards.size() + int(randf() * 90000) + 18000,
+                            "x": self.ball.x + nx * (b_radius + 5.0),
+                            "y": self.ball.y + ny * (b_radius + 5.0),
+                            "radius": 15.0,
+                            "kind": "fireball",
+                            "damage": b_damage,
+                            "vx": nx * 350.0,
+                            "vy": ny * 350.0,
+                            "duration": 3.0,
+                            "owner_id": b_id,
+                            "active": true
+                        }
+                        arena.hazards.append(fb)
+
+                        var cd = 4.5
+                        if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+
+                        if self.ball is Dictionary: self.ball["skill_timer"] = cd
+                        else: self.ball.set("skill_timer", cd)
+
+                        if has_method("_spawn_skill_particles"):
+                            _spawn_skill_particles("fireball")
 
         elif skill_name == "explosion":
             var enemies = _get_enemies()
