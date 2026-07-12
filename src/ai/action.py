@@ -1524,6 +1524,10 @@ class Action:
             self.ball.mimic_timer = getattr(self.ball, "mimic_timer", 10.0) - delta
             if self.ball.mimic_timer <= 0 or getattr(self.ball, "hp", 1.0) <= 0:
                 self.ball.alive = False
+                if hasattr(self.world, "events"):
+                    self.world.events.append({"type": "smokescreen", "data": {"x": self.ball.x, "y": self.ball.y, "radius": 80.0, "duration": 5.0}})
+                elif hasattr(self.world, "add_event"):
+                    self.world.add_event("smokescreen", {"x": self.ball.x, "y": self.ball.y, "radius": 80.0, "duration": 5.0})
                 return
 
             owner_id = getattr(self.ball, "mimic_owner", None)

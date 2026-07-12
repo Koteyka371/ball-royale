@@ -2842,6 +2842,16 @@ func execute(strategy: String, delta: float):
 		if mimic_timer <= 0 or hp_ac <= 0:
 			if "alive" in self.ball: self.ball.alive = false
 			elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+			var mx_ac = 0.0
+			var my_ac = 0.0
+			if "x" in self.ball: mx_ac = self.ball.x
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): mx_ac = self.ball.get_meta("x")
+			if "y" in self.ball: my_ac = self.ball.y
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my_ac = self.ball.get_meta("y")
+			if world != null and "events" in world:
+				world.events.append({"type": "smokescreen", "data": {"x": mx_ac, "y": my_ac, "radius": 80.0, "duration": 5.0}})
+			elif world != null and world.has_method("add_event"):
+				world.add_event("smokescreen", {"x": mx_ac, "y": my_ac, "radius": 80.0, "duration": 5.0})
 			return
 
 		var owner_id = null
