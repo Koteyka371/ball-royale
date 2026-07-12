@@ -15215,7 +15215,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'passive_replicant']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -18254,6 +18254,62 @@ func _use_skill():
                                 self.ball.skill_timer = 0.5
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("skill_timer", 0.5)
+        elif skill_name == "passive_replicant":
+            if "balls" in self.world:
+                var active_replicas = 0
+                for b in self.world.balls:
+                    if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_replicant_clone") and b.get_meta("is_replicant_clone") and b.has_meta("mimic_owner") and b.get_meta("mimic_owner") == self.ball.id:
+                        if b.has("alive") and b.alive:
+                            active_replicas += 1
+                    elif typeof(b) == TYPE_DICTIONARY and b.has("is_replicant_clone") and b["is_replicant_clone"] and b.has("mimic_owner") and b["mimic_owner"] == self.ball.id:
+                        if b.has("alive") and b["alive"]:
+                            active_replicas += 1
+
+                if active_replicas < 5:
+                    var clone = null
+                    if self.ball.has_method("duplicate"):
+                        clone = self.ball.duplicate()
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        clone = self.ball.duplicate()
+
+                    if clone != null:
+                        var next_id = randi() % 90000 + 10000
+                        if "next_id" in self.world:
+                            next_id = self.world.next_id
+                            self.world.next_id += 1
+
+                        if "id" in clone: clone.id = next_id
+                        if "hp" in clone: clone.hp = 1.0
+                        if "max_hp" in clone: clone.max_hp = 1.0
+                        if "damage" in clone: clone.damage = 0.0
+
+                        if "vx" in self.ball and "vx" in clone: clone.vx = self.ball.vx
+                        if "vy" in self.ball and "vy" in clone: clone.vy = self.ball.vy
+                        if "x" in self.ball and "x" in clone: clone.x = self.ball.x
+                        if "y" in self.ball and "y" in clone: clone.y = self.ball.y
+
+                        if typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
+                            clone.set_meta("is_replicant_clone", true)
+                            clone.set_meta("is_illusion", true)
+                            clone.set_meta("mimic_owner", self.ball.id)
+                            clone.set_meta("mimic_timer", 5.0)
+                        elif typeof(clone) == TYPE_DICTIONARY:
+                            clone["is_replicant_clone"] = true
+                            clone["is_illusion"] = true
+                            clone["mimic_owner"] = self.ball.id
+                            clone["mimic_timer"] = 5.0
+
+                        if "skill" in clone: clone.skill = ""
+                        if "SKILL" in clone: clone.SKILL = ""
+                        if "active_skill" in clone: clone.active_skill = ""
+                        if "skill_timer" in clone: clone.skill_timer = 9999.0
+
+                        self.world.balls.append(clone)
+
+                        if "skill_timer" in self.ball:
+                            self.ball.skill_timer = 2.0
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                            self.ball.set_meta("skill_timer", 2.0)
         elif skill_name == "trickster_clone":
             if "balls" in self.world:
                 var clone = null

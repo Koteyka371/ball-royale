@@ -8364,7 +8364,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'passive_replicant']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -10085,6 +10085,39 @@ class Action:
 
                         self.world.balls.append(decoy)
 
+            elif skill_name == "passive_replicant":
+                import copy
+                import random
+                if hasattr(self.world, "balls"):
+                    active_replicas = [b for b in self.world.balls if getattr(b, "is_replicant_clone", False) and getattr(b, "mimic_owner", None) == self.ball.id and getattr(b, "alive", True)]
+
+                    if len(active_replicas) < 5:
+                        clone = copy.copy(self.ball)
+                        clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        clone.hp = 1.0
+                        clone.max_hp = 1.0
+                        clone.damage = 0.0
+
+                        clone.vx = getattr(self.ball, "vx", 0.0)
+                        clone.vy = getattr(self.ball, "vy", 0.0)
+                        clone.x = self.ball.x
+                        clone.y = self.ball.y
+
+                        clone.is_replicant_clone = True
+                        clone.is_illusion = True
+                        clone.mimic_owner = self.ball.id
+                        clone.mimic_timer = 5.0
+                        clone.skill = None
+                        clone.SKILL = None
+                        if hasattr(clone, "active_skill"):
+                            clone.active_skill = None
+                        clone.skill_timer = 9999.0
+
+                        self.world.balls.append(clone)
+                        self.ball.skill_timer = 2.0
             elif skill_name == "trickster_clone":
                 import copy
                 if hasattr(self.world, "balls"):
@@ -11816,6 +11849,41 @@ class Action:
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
+
+                # Replicant clone collision
+                if getattr(self.ball, "is_replicant_clone", False) and getattr(other, "team", None) != getattr(self.ball, "team", None):
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({
+                            "type": "explosion",
+                            "x": self.ball.x,
+                            "y": self.ball.y,
+                            "radius": 40.0,
+                            "color": "magenta"
+                        })
+                    if not getattr(other, "is_blinded", False):
+                        other.is_blinded = True
+                        other.blindness_timer = 2.0
+                    else:
+                        other.blindness_timer = max(getattr(other, "blindness_timer", 0.0), 2.0)
+                    self.ball.hp = 0
+                    self.ball.alive = False
+
+                if getattr(other, "is_replicant_clone", False) and getattr(other, "team", None) != getattr(self.ball, "team", None):
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({
+                            "type": "explosion",
+                            "x": other.x,
+                            "y": other.y,
+                            "radius": 40.0,
+                            "color": "magenta"
+                        })
+                    if not getattr(self.ball, "is_blinded", False):
+                        self.ball.is_blinded = True
+                        self.ball.blindness_timer = 2.0
+                    else:
+                        self.ball.blindness_timer = max(getattr(self.ball, "blindness_timer", 0.0), 2.0)
+                    other.hp = 0
+                    other.alive = False
 
                 # Chain lightning power-up logic on collision
                 # If we have the power-up, and we hit an enemy, trigger it

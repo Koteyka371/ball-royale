@@ -865,7 +865,7 @@ class DraftRoyaleMode extends GameMode:
 		"time_mage", "assassin", "berserker", "bomber", "brawler", "chaos", "conjurer", "druid",
 		"elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
 		"monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue", "drone", "shield_drone",
-		"scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
+		"scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire", "replicant",
 		"warlock", "warrior"
 	]
 	var team_rosters: Dictionary = {"Team A": [], "Team B": []}
