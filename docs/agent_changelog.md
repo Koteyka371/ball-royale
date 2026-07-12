@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-908] Cosmic Storm Mode — *2026-07-12 21:25:11 UTC*
+
+A new game mode where the entire arena is occasionally bombarded by cosmic storms, forcing players to find temporary shelters or risk being heavily damaged. Shelters have limited capacity and are procedurally generated during the storm.
+
+---
+
 ## [idea-888] New Hazard Type: Geyser — *2026-07-12 21:25:07 UTC*
 
 A dynamic map hazard that erupts periodically. When erupting, it shoots players upwards (applying a short stun or launch status) and deals minor water-elemental damage. Water and Earth elemental balls could receive a temporary speed boost or healing when hit by it instead of taking damage.
