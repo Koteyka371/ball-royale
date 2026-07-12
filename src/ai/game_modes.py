@@ -18604,3 +18604,93 @@ GAME_MODES['constricting_boundary_trap'] = ConstrictingBoundaryTrapMode()
 GAME_MODES['temporal_rifts'] = TemporalRiftsMode()
 GAME_MODES['sector_collapse'] = SectorCollapseMode()
 GAME_MODES['bermuda_triangle'] = BermudaTriangleMode()
+
+class CollapsingBubblesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Collapsing Bubbles"
+        self.description = "Instead of one large shrinking circle, the arena has multiple smaller safe zones that randomly collapse, forcing players to constantly migrate between different safe bubbles to survive."
+        self.bubbles = []
+        self.bubble_spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.bubbles = []
+        self.bubble_spawn_timer = 0.0
+        # spawn initial bubbles
+        for _ in range(5):
+            self._spawn_bubble(world)
+
+    def tick(self, world, balls, delta=0.016):
+        import math, random
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        self.bubble_spawn_timer -= delta
+        if self.bubble_spawn_timer <= 0:
+            self._spawn_bubble(world)
+            self.bubble_spawn_timer = random.uniform(3.0, 6.0)
+
+        active_bubbles = []
+        for b in self.bubbles:
+            b["timer"] -= delta
+            if b["timer"] <= 0 and not b["collapsing"]:
+                b["collapsing"] = True
+                if hasattr(world, "add_event"):
+                    world.add_event("bubble_collapsing", {"x": b["x"], "y": b["y"], "message": "A safe bubble is collapsing!"})
+
+            if b["collapsing"]:
+                b["radius"] -= 50.0 * delta
+
+            if b["radius"] > 0:
+                active_bubbles.append(b)
+
+        self.bubbles = active_bubbles
+
+        for ball in balls:
+            w_timer = getattr(ball, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if not getattr(ball, "alive", False):
+                continue
+            if is_immune:
+                continue
+
+            in_bubble = False
+            for b in self.bubbles:
+                dx = ball.x - b["x"]
+                dy = ball.y - b["y"]
+                if math.sqrt(dx*dx + dy*dy) <= b["radius"]:
+                    in_bubble = True
+                    break
+
+            if not in_bubble:
+                damage = 20.0 * delta
+                if hasattr(ball, "take_damage"):
+                    ball.take_damage(damage)
+                else:
+                    ball.hp -= damage
+                    if ball.hp <= 0:
+                        ball.hp = 0
+                        ball.alive = False
+                        if hasattr(ball, "id") and ball.id not in world.dead_balls:
+                            world.dead_balls.append(ball.id)
+                            if hasattr(world, "add_event"):
+                                world.add_event("ball_died", {"id": ball.id, "reason": "outside_bubble", "killer_id": -1})
+
+    def _spawn_bubble(self, world):
+        import random
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        radius = random.uniform(100.0, 250.0)
+        x = random.uniform(radius, arena_width - radius)
+        y = random.uniform(radius, arena_height - radius)
+        self.bubbles.append({
+            "x": x,
+            "y": y,
+            "radius": radius,
+            "timer": random.uniform(10.0, 20.0),
+            "collapsing": False
+        })
+GAME_MODES['collapsing_bubbles'] = CollapsingBubblesMode()

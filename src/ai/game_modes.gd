@@ -1,5 +1,6 @@
 class_name GameModes
 
+
 class GameMode:
 	var name: String = "Unknown"
 	var description: String = "Base game mode"
@@ -26416,6 +26417,115 @@ class BountyTagMode extends GameMode:
 
 		return null
 
+
+class CollapsingBubblesMode extends GameMode:
+	var bubbles = []
+	var bubble_spawn_timer = 0.0
+
+	func _init():
+		name = "Collapsing Bubbles"
+		description = "Instead of one large shrinking circle, the arena has multiple smaller safe zones that randomly collapse, forcing players to constantly migrate between different safe bubbles to survive."
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		bubbles.clear()
+		bubble_spawn_timer = 0.0
+		for i in range(5):
+			_spawn_bubble(world)
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		if not world.has("dead_balls"):
+			world["dead_balls"] = []
+
+		bubble_spawn_timer -= delta
+		if bubble_spawn_timer <= 0:
+			_spawn_bubble(world)
+			bubble_spawn_timer = randf_range(3.0, 6.0)
+
+		var active_bubbles = []
+		for b in bubbles:
+			b["timer"] -= delta
+			if b["timer"] <= 0 and not b["collapsing"]:
+				b["collapsing"] = true
+				if world.has_method("add_event"):
+					world.add_event("bubble_collapsing", {"x": b["x"], "y": b["y"], "message": "A safe bubble is collapsing!"})
+
+			if b["collapsing"]:
+				b["radius"] -= 50.0 * delta
+
+			if b["radius"] > 0:
+				active_bubbles.append(b)
+
+		bubbles = active_bubbles
+
+		for ball in balls:
+			var w_timer = 0.0
+			if typeof(ball) == TYPE_DICTIONARY:
+				w_timer = ball.get("weather_immunity_timer", 0.0)
+				if not ball.get("alive", false): continue
+			else:
+				w_timer = ball.get("weather_immunity_timer") if ball.has_method("get") and ball.get("weather_immunity_timer") != null else 0.0
+				if not ball.get("alive"): continue
+
+			var is_immune = w_timer > 0.0
+			if is_immune: continue
+
+			var b_x = ball["x"] if typeof(ball) == TYPE_DICTIONARY else ball.get("x")
+			var b_y = ball["y"] if typeof(ball) == TYPE_DICTIONARY else ball.get("y")
+
+			var in_bubble = false
+			for b in bubbles:
+				var dx = b_x - b["x"]
+				var dy = b_y - b["y"]
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist <= b["radius"]:
+					in_bubble = true
+					break
+
+			if not in_bubble:
+				var damage = 20.0 * delta
+				var hp = ball["hp"] if typeof(ball) == TYPE_DICTIONARY else ball.get("hp")
+				hp -= damage
+				if hp <= 0:
+					hp = 0
+					if typeof(ball) == TYPE_DICTIONARY:
+						ball["alive"] = false
+					else:
+						ball.set("alive", false)
+					var b_id = ball["id"] if typeof(ball) == TYPE_DICTIONARY else ball.get("id")
+					var db = world["dead_balls"] if typeof(world) == TYPE_DICTIONARY else world.get("dead_balls")
+					if db.find(b_id) == -1:
+						db.append(b_id)
+						if world.has_method("add_event"):
+							world.add_event("ball_died", {"id": b_id, "reason": "outside_bubble", "killer_id": -1})
+
+				if typeof(ball) == TYPE_DICTIONARY:
+					ball["hp"] = hp
+				else:
+					ball.set("hp", hp)
+
+	func _spawn_bubble(world):
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			elif world.arena.has_method("get"):
+				arena_width = float(world.arena.get("width"))
+				arena_height = float(world.arena.get("height"))
+
+		var radius = randf_range(100.0, 250.0)
+		var x = randf_range(radius, arena_width - radius)
+		var y = randf_range(radius, arena_height - radius)
+		bubbles.append({
+			"x": x,
+			"y": y,
+			"radius": radius,
+			"timer": randf_range(10.0, 20.0),
+			"collapsing": false
+		})
+
 var GAME_MODES = {
 	"bounty_tag": BountyTagMode.new(),
 	"cosmic_storm": CosmicStormMode.new(),
@@ -26432,6 +26542,7 @@ var GAME_MODES = {
 	"sticky_arena": StickyArenaMode.new(),
 	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
+	"collapsing_bubbles": CollapsingBubblesMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
