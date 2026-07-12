@@ -7492,7 +7492,7 @@ func execute(strategy: String, delta: float):
                                             self.ball.set_meta("last_teleport_tick", current_tick)
                                         if entity_to_swap.has_method("set_meta"):
                                             entity_to_swap.set_meta("last_teleport_tick", current_tick)
-                elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter" or hazard.kind == "wormhole" or hazard.kind == "quantum_teleporter":
+                elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter" or hazard.kind == "wormhole" or hazard.kind == "quantum_teleporter" or hazard.kind == "chaos_portal":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
@@ -7556,6 +7556,101 @@ func execute(strategy: String, delta: float):
                                             self.world.arena.hazards.append(trap)
 
                                     self.ball.set_meta("last_teleport_tick", current_tick)
+                                    return
+                            if hazard.kind == "chaos_portal":
+                                var pair_id = null
+                                if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pair_id"): pair_id = hazard["pair_id"]
+                                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("pair_id"): pair_id = hazard.get_meta("pair_id")
+                                elif typeof(hazard) == TYPE_OBJECT and "pair_id" in hazard: pair_id = hazard.pair_id
+
+                                var paired_hazard = null
+                                var arena_hazards = self.world.arena.hazards if "arena" in self.world and "hazards" in self.world.arena else []
+                                for h in arena_hazards:
+                                    var is_disabled = false
+                                    if typeof(h) == TYPE_DICTIONARY and h.has("is_disabled_by_flare"): is_disabled = h["is_disabled_by_flare"]
+                                    elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"): is_disabled = h.get_meta("is_disabled_by_flare")
+                                    if is_disabled: continue
+
+                                    var hid = null
+                                    if typeof(h) == TYPE_DICTIONARY and h.has("id"): hid = h["id"]
+                                    elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("id"): hid = h.get_meta("id")
+                                    elif typeof(h) == TYPE_OBJECT and "id" in h: hid = h.id
+
+                                    if hid == pair_id:
+                                        paired_hazard = h
+                                        break
+
+                                if paired_hazard != null:
+                                    var px = 0.0
+                                    var py = 0.0
+                                    if typeof(paired_hazard) == TYPE_DICTIONARY:
+                                        px = paired_hazard.get("x", 0.0)
+                                        py = paired_hazard.get("y", 0.0)
+                                    else:
+                                        px = paired_hazard.position.x if "position" in paired_hazard else paired_hazard.x
+                                        py = paired_hazard.position.y if "position" in paired_hazard else paired_hazard.y
+
+                                    if "position" in self.ball:
+                                        self.ball.position.x = px
+                                        self.ball.position.y = py
+                                    else:
+                                        if self.ball is Dictionary:
+                                            self.ball["x"] = px
+                                            self.ball["y"] = py
+                                        else:
+                                            if "x" in self.ball: self.ball.x = px
+                                            if "y" in self.ball: self.ball.y = py
+
+                                    # Randomize velocity
+                                    var vx = 0.0
+                                    var vy = 0.0
+                                    if "linear_velocity" in self.ball:
+                                        vx = self.ball.linear_velocity.x
+                                        vy = self.ball.linear_velocity.y
+                                    elif "vx" in self.ball:
+                                        vx = self.ball.vx
+                                        vy = self.ball.vy
+                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vx"):
+                                        vx = self.ball["vx"]
+                                        vy = self.ball["vy"]
+
+                                    var speed = sqrt(vx * vx + vy * vy)
+                                    if speed == 0.0:
+                                        speed = self.ball.base_speed if "base_speed" in self.ball else 150.0
+
+                                    var angle = randf_range(-PI, PI)
+                                    var nvx = cos(angle) * speed
+                                    var nvy = sin(angle) * speed
+
+                                    if "linear_velocity" in self.ball:
+                                        self.ball.linear_velocity.x = nvx
+                                        self.ball.linear_velocity.y = nvy
+                                    elif self.ball is Dictionary:
+                                        self.ball["vx"] = nvx
+                                        self.ball["vy"] = nvy
+                                    else:
+                                        if "vx" in self.ball: self.ball.vx = nvx
+                                        if "vy" in self.ball: self.ball.vy = nvy
+
+                                    # Apply confusion
+                                    if "is_confused" in self.ball: self.ball.is_confused = true
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_confused", true)
+
+                                    var cur_conf = 0.0
+                                    if "confusion_timer" in self.ball: cur_conf = self.ball.confusion_timer
+                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("confusion_timer"): cur_conf = self.ball["confusion_timer"]
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("confusion_timer"): cur_conf = self.ball.get_meta("confusion_timer")
+
+                                    var new_conf = max(cur_conf, 1.0)
+                                    if "confusion_timer" in self.ball: self.ball.confusion_timer = new_conf
+                                    elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["confusion_timer"] = new_conf
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("confusion_timer", new_conf)
+
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("_teleported_this_tick", true)
+
+                                    if "last_teleport_tick" in self.ball: self.ball.last_teleport_tick = current_tick
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("last_teleport_tick", current_tick)
+
                                     return
                             if hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter":
                                 if hazard.has_meta("target_x") and hazard.has_meta("target_y"):
@@ -8619,14 +8714,14 @@ func execute(strategy: String, delta: float):
                             if anchor_timer <= 0:
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                elif hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
+                elif hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal"]:
                     var current_tick = 0
                     if "tick" in self.world:
                         current_tick = self.world.tick
                     if not hazard.has_meta("last_updated_tick") or hazard.get_meta("last_updated_tick") != current_tick:
                         hazard.set_meta("last_updated_tick", current_tick)
                         if not hazard.has_meta("vx"):
-                            if hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm"]:
+                            if hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal"]:
                                 hazard.set_meta("vx", randf_range(-100.0, 100.0))
                                 hazard.set_meta("vy", randf_range(-100.0, 100.0))
                             else:
