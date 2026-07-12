@@ -5160,6 +5160,120 @@ class Action:
                                         bh.duration = 3.0 # Short duration
                                         self.world.arena.hazards.append(bh)
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "laser_bounce":
+                                    import math
+                                    cx, cy = hazard.x, hazard.y
+                                    dx, dy = self.ball.x - cx, self.ball.y - cy
+                                    dist = math.hypot(dx, dy)
+                                    if dist > 0:
+                                        dx /= dist
+                                        dy /= dist
+                                    else:
+                                        dx, dy = 1.0, 0.0
+
+                                    arena_w = getattr(self.world.arena, "width", 2000.0) if hasattr(self.world, "arena") else 2000.0
+                                    arena_h = getattr(self.world.arena, "height", 2000.0) if hasattr(self.world, "arena") else 2000.0
+
+                                    base_damage = 5.0
+                                    consecutive_target = None
+                                    current_multiplier = 1.0
+
+                                    balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+                                    owner_id = getattr(hazard, "owner_id", None)
+
+                                    for _ in range(5):
+                                        best_t = float('inf')
+                                        hit_type = None
+                                        hit_normal = (0.0, 0.0)
+                                        hit_target = None
+
+                                        if dx < 0:
+                                            t = -cx / dx
+                                            if 0.01 < t < best_t: best_t = t; hit_type = 'wall'; hit_normal = (1.0, 0.0)
+                                        elif dx > 0:
+                                            t = (arena_w - cx) / dx
+                                            if 0.01 < t < best_t: best_t = t; hit_type = 'wall'; hit_normal = (-1.0, 0.0)
+
+                                        if dy < 0:
+                                            t = -cy / dy
+                                            if 0.01 < t < best_t: best_t = t; hit_type = 'wall'; hit_normal = (0.0, 1.0)
+                                        elif dy > 0:
+                                            t = (arena_h - cy) / dy
+                                            if 0.01 < t < best_t: best_t = t; hit_type = 'wall'; hit_normal = (0.0, -1.0)
+
+                                        for b in balls:
+                                            if not getattr(b, "alive", True): continue
+                                            if owner_id is not None and getattr(b, "id", None) == owner_id: continue
+
+                                            bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                                            r = getattr(b, "radius", 15.0)
+                                            fx = cx - bx
+                                            fy = cy - by
+
+                                            b_coef = 2 * (fx * dx + fy * dy)
+                                            c_coef = (fx * fx + fy * fy) - r * r
+
+                                            discriminant = b_coef * b_coef - 4 * c_coef
+                                            if discriminant >= 0:
+                                                t1 = (-b_coef - math.sqrt(discriminant)) / 2.0
+                                                t2 = (-b_coef + math.sqrt(discriminant)) / 2.0
+                                                t = t1 if t1 > 0.01 else t2
+                                                if 0.01 < t < best_t:
+                                                    best_t = t
+                                                    hit_type = 'ball'
+                                                    hit_target = b
+                                                    hx = cx + t * dx
+                                                    hy = cy + t * dy
+                                                    nx = hx - bx
+                                                    ny = hy - by
+                                                    ndist = math.hypot(nx, ny)
+                                                    if ndist > 0:
+                                                        hit_normal = (nx / ndist, ny / ndist)
+                                                    else:
+                                                        hit_normal = (-dx, -dy)
+
+                                        if best_t == float('inf'):
+                                            break
+
+                                        hx = cx + best_t * dx
+                                        hy = cy + best_t * dy
+
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append(('visual_effect', {'type': 'laser', 'x': cx, 'y': cy, 'tx': hx, 'ty': hy, 'color': 'red'}))
+
+                                        if hit_type == 'ball' and hit_target:
+                                            if hit_target == consecutive_target:
+                                                current_multiplier *= 2.0
+                                            else:
+                                                consecutive_target = hit_target
+                                                current_multiplier = 1.0
+
+                                            dmg = base_damage * current_multiplier
+
+                                            if hasattr(hit_target, "hp"):
+                                                hit_target.hp -= dmg
+                                                if hit_target.hp <= 0:
+                                                    hit_target.alive = False
+                                                    if hasattr(self.world, "add_event"):
+                                                        self.world.add_event("kill", {"killer_id": owner_id if owner_id is not None else -1, "victim_id": getattr(hit_target, "id", -1)})
+
+                                            hit_target.slow_timer = max(getattr(hit_target, "slow_timer", 0.0), 2.0)
+                                        else:
+                                            consecutive_target = None
+                                            current_multiplier = 1.0
+
+                                        nx, ny = hit_normal
+                                        dot = dx * nx + dy * ny
+                                        dx = dx - 2 * dot * nx
+                                        dy = dy - 2 * dot * ny
+                                        ndist = math.hypot(dx, dy)
+                                        if ndist > 0:
+                                            dx /= ndist
+                                            dy /= ndist
+
+                                        cx, cy = hx, hy
+
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "chain_lightning":
                                     # Chain Lightning trap: zap the triggering ball and then jump to nearest enemy
                                     if hasattr(self.world, "_deal_damage"):

@@ -9471,6 +9471,173 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "laser_bounce":
+                                var cx = hazard.x
+                                var cy = hazard.y
+                                var dx = self.ball.x - cx
+                                var dy = self.ball.y - cy
+                                var dist = sqrt(dx*dx + dy*dy)
+                                if dist > 0:
+                                    dx /= dist
+                                    dy /= dist
+                                else:
+                                    dx = 1.0
+                                    dy = 0.0
+
+                                var arena_w = 2000.0
+                                var arena_h = 2000.0
+                                if world != null and "arena" in world:
+                                    if "width" in world.arena: arena_w = world.arena.width
+                                    if "height" in world.arena: arena_h = world.arena.height
+
+                                var base_damage = 5.0
+                                var consecutive_target = null
+                                var current_multiplier = 1.0
+
+                                var balls_list = []
+                                if world != null and "balls" in world:
+                                    balls_list = world.balls
+                                elif world != null and "entities" in world:
+                                    balls_list = world.entities
+
+                                var owner_id = null
+                                if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
+                                    owner_id = hazard.get_meta("owner_id")
+                                elif "owner_id" in hazard:
+                                    owner_id = hazard.owner_id
+
+                                for _i in range(5):
+                                    var best_t = 9999999.0
+                                    var hit_type = ""
+                                    var hit_normal_x = 0.0
+                                    var hit_normal_y = 0.0
+                                    var hit_target = null
+
+                                    if dx < 0:
+                                        var t = -cx / dx
+                                        if t > 0.01 and t < best_t:
+                                            best_t = t
+                                            hit_type = "wall"
+                                            hit_normal_x = 1.0
+                                            hit_normal_y = 0.0
+                                    elif dx > 0:
+                                        var t = (arena_w - cx) / dx
+                                        if t > 0.01 and t < best_t:
+                                            best_t = t
+                                            hit_type = "wall"
+                                            hit_normal_x = -1.0
+                                            hit_normal_y = 0.0
+
+                                    if dy < 0:
+                                        var t = -cy / dy
+                                        if t > 0.01 and t < best_t:
+                                            best_t = t
+                                            hit_type = "wall"
+                                            hit_normal_x = 0.0
+                                            hit_normal_y = 1.0
+                                    elif dy > 0:
+                                        var t = (arena_h - cy) / dy
+                                        if t > 0.01 and t < best_t:
+                                            best_t = t
+                                            hit_type = "wall"
+                                            hit_normal_x = 0.0
+                                            hit_normal_y = -1.0
+
+                                    for b in balls_list:
+                                        var is_alive = true
+                                        if "alive" in b: is_alive = b.alive
+                                        if not is_alive: continue
+
+                                        var b_id = null
+                                        if "id" in b: b_id = b.id
+                                        elif b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+                                        if owner_id != null and b_id == owner_id: continue
+
+                                        var bx = 0.0
+                                        var by = 0.0
+                                        if "x" in b: bx = b.x
+                                        if "y" in b: by = b.y
+
+                                        var r = 15.0
+                                        if "radius" in b: r = b.radius
+
+                                        var fx = cx - bx
+                                        var fy = cy - by
+
+                                        var b_coef = 2 * (fx * dx + fy * dy)
+                                        var c_coef = (fx * fx + fy * fy) - r * r
+                                        var discriminant = b_coef * b_coef - 4 * c_coef
+
+                                        if discriminant >= 0:
+                                            var t1 = (-b_coef - sqrt(discriminant)) / 2.0
+                                            var t2 = (-b_coef + sqrt(discriminant)) / 2.0
+                                            var t = t1 if t1 > 0.01 else t2
+                                            if t > 0.01 and t < best_t:
+                                                best_t = t
+                                                hit_type = "ball"
+                                                hit_target = b
+                                                var hx = cx + t * dx
+                                                var hy = cy + t * dy
+                                                var nx = hx - bx
+                                                var ny = hy - by
+                                                var ndist = sqrt(nx*nx + ny*ny)
+                                                if ndist > 0:
+                                                    hit_normal_x = nx / ndist
+                                                    hit_normal_y = ny / ndist
+                                                else:
+                                                    hit_normal_x = -dx
+                                                    hit_normal_y = -dy
+
+                                    if best_t > 9000000.0:
+                                        break
+
+                                    var hx = cx + best_t * dx
+                                    var hy = cy + best_t * dy
+
+                                    if world != null and world.has_method("add_event"):
+                                        world.add_event("visual_effect", {"type": "laser", "x": cx, "y": cy, "tx": hx, "ty": hy, "color": "red"})
+
+                                    if hit_type == "ball" and hit_target != null:
+                                        if hit_target == consecutive_target:
+                                            current_multiplier *= 2.0
+                                        else:
+                                            consecutive_target = hit_target
+                                            current_multiplier = 1.0
+
+                                        var dmg = base_damage * current_multiplier
+
+                                        if "hp" in hit_target:
+                                            hit_target.hp -= dmg
+                                            if hit_target.hp <= 0:
+                                                hit_target.alive = false
+                                                if world != null and world.has_method("add_event"):
+                                                    var ht_id = -1
+                                                    if "id" in hit_target: ht_id = hit_target.id
+                                                    world.add_event("kill", {"killer_id": owner_id if owner_id != null else -1, "victim_id": ht_id})
+
+                                        if "slow_timer" in hit_target:
+                                            hit_target.slow_timer = max(hit_target.slow_timer, 2.0)
+                                        elif hit_target.has_method("set_meta"):
+                                            var st = 0.0
+                                            if hit_target.has_meta("slow_timer"): st = hit_target.get_meta("slow_timer")
+                                            hit_target.set_meta("slow_timer", max(st, 2.0))
+                                    else:
+                                        consecutive_target = null
+                                        current_multiplier = 1.0
+
+                                    var dot_prod = dx * hit_normal_x + dy * hit_normal_y
+                                    dx = dx - 2 * dot_prod * hit_normal_x
+                                    dy = dy - 2 * dot_prod * hit_normal_y
+
+                                    var ndist = sqrt(dx*dx + dy*dy)
+                                    if ndist > 0:
+                                        dx /= ndist
+                                        dy /= ndist
+
+                                    cx = hx
+                                    cy = hy
+
+                                hazard.duration = 0.0
                             elif trap_variant == "chain_lightning":
                                 var current_damage = 25.0
                                 if "damage" in hazard and hazard.damage > 0:

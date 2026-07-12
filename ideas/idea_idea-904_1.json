@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Trap",
+  "description": "A trap variant that, when triggered, links the health and movement speeds of the triggering ball with a randomly selected enemy. Damage taken by one is shared, and if one is slowed, the other is slowed as well, until the effect wears off after 10 seconds."
+}
