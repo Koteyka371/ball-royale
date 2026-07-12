@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-896] Bounty targets per mode — *2026-07-12 18:09:00 UTC*
+
+Make bounties unique depending on game mode.
+
+---
+
 ## [idea-897] Solar Flare Mechanics — *2026-07-12 18:04:37 UTC*
 
 In Day/Night mode, random solar flares can supercharge balls during the day cycle, granting them a temporary massive speed and damage buff but causing them to take double damage from sunlight beams.

@@ -15397,7 +15397,7 @@
     },
     {
       "id": "idea-896",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty targets per mode",
@@ -25168,6 +25168,23 @@
         "src/arena/decoy_distraction.py",
         "src/arena/decoy_distraction.gd",
         "tests/test_decoy_distraction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1470",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sunlight Reflector Hazard",
+      "description": "A deployable hazard that can bounce active sunlight beams in new directions, creating dynamic, shifting danger zones during the day cycle.",
+      "allowed_paths": [
+        "src/arena/sunlight_reflector.py",
+        "src/arena/sunlight_reflector.gd",
+        "tests/test_sunlight_reflector.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
