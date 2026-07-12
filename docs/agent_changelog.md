@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-902] Shrinking Floor Trap — *2026-07-12 22:24:03 UTC*
+
+Introduces a dynamic trap that temporarily causes the entire arena boundaries to rapidly constrict for 10 seconds, forcing intense close-quarters combat before expanding back out.
+
+---
+
 ## [idea-898] Bounty Hunter Mode with Dynamic Economy — *2026-07-12 22:13:32 UTC*
 
 Killing players grants gold which can be spent mid-game in a neutral shop zone to permanently upgrade max HP, base speed, or base damage for the rest of the match.
