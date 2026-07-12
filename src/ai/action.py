@@ -499,6 +499,7 @@ class Action:
             attacker.hp = min(getattr(attacker, 'max_hp', 100.0), getattr(attacker, 'hp', 100.0) + target_max_hp * 0.5)
             attacker.reflect_shield_active = True
             attacker.reflect_shield_capacity = max(getattr(attacker, 'reflect_shield_capacity', 0.0), target_max_hp * 0.5 + getattr(attacker, "bonus_reflect_shield_capacity", 0.0))
+            attacker.reflect_shield_initial_capacity = attacker.reflect_shield_capacity
             attacker.reflect_shield_timer = 5.0 + getattr(attacker, "bonus_reflect_shield_duration", 0.0)
         else:
             if is_nemesis_active:
@@ -530,6 +531,27 @@ class Action:
                 if capacity <= 0:
                     target.reflect_shield_active = False
                     target.reflect_shield_capacity = 0.0
+                    target.reflect_shield_timer = 0.0
+
+                    # Shield broke explosion
+                    initial = getattr(target, "reflect_shield_initial_capacity", 0)
+                    if initial > 0 and initial != 999999.0:
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 150.0, "damage": initial * 0.5})
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if b != target and getattr(b, "alive", True):
+                                    dist = ((target.x - b.x)**2 + (target.y - b.y)**2)**0.5
+                                    if dist <= 150.0:
+                                        if hasattr(self.world, "_deal_damage"):
+                                            old_atk_dmg = getattr(target, "damage", 10.0)
+                                            target.damage = initial * 0.5
+                                            self.world._deal_damage(target, b)
+                                            target.damage = old_atk_dmg
+                                        elif hasattr(b, "take_damage"):
+                                            b.take_damage(initial * 0.5)
+                                        elif hasattr(b, "hp"):
+                                            b.hp -= initial * 0.5
                 else:
                     target.reflect_shield_capacity = capacity
 
@@ -1335,6 +1357,7 @@ class Action:
                 self.ball.reflect_shield_active = True
                 self.ball.reflect_shield_timer = 0.5
                 self.ball.reflect_shield_capacity = 20.0 * nearby_enemies
+                self.ball.reflect_shield_initial_capacity = self.ball.reflect_shield_capacity
 
 
         # Platforms
@@ -2074,7 +2097,7 @@ class Action:
             if grapple_targets:
                 closest_target_data = min(grapple_targets, key=lambda t: t["dist_sq"])
 
-            closest_target_dist_sq = float('inf')
+            closest_target_dist_sq = 999999.0
             if closest_target_data:
                 closest_target_dist_sq = closest_target_data["dist_sq"]
 
@@ -2625,7 +2648,7 @@ class Action:
 
         if getattr(self.ball, "is_mimic_charging", False) and getattr(self.ball, "alive", True):
             nearest_enemy = None
-            min_dist = float('inf')
+            min_dist = 999999.0
             if hasattr(self.world, "balls"):
                 for b in self.world.balls:
                     b_team = getattr(b, "team", "")
@@ -3559,7 +3582,7 @@ class Action:
             ball_type = getattr(self.ball, "ball_type", None)
             if ball_type != "spectator":
                 cx, cy = getattr(self.world.arena, "safe_zone_center", (0, 0))
-                radius = getattr(self.world.arena, "safe_zone_radius", float('inf'))
+                radius = getattr(self.world.arena, "safe_zone_radius", 999999.0)
                 dist = math.sqrt((self.ball.x - cx)**2 + (self.ball.y - cy)**2)
                 ball_r = getattr(self.ball, "radius", 10.0)
                 if dist >= radius - ball_r - 0.01:
@@ -3743,7 +3766,7 @@ class Action:
                             target_to_clone = None
 
                             # Find nearest booster or healing spring
-                            nearest_dist = float('inf')
+                            nearest_dist = 999999.0
                             if hasattr(self.world, "boosters"):
                                 for b in self.world.boosters:
                                     d_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
@@ -6068,7 +6091,7 @@ class Action:
 
                             # Find ball with lowest HP to heal
                             lowest_hp_ball = None
-                            lowest_hp = float('inf')
+                            lowest_hp = 999999.0
                             if hasattr(self.world, "balls"):
                                 for b in self.world.balls:
                                     if getattr(b, "alive", True) and hasattr(b, "hp") and hasattr(b, "max_hp") and b.hp < b.max_hp:
@@ -6086,7 +6109,7 @@ class Action:
                         elif hazard.kind == "damage_link":
                             if not getattr(self.ball, "damage_link_target", None):
                                 # Find closest other ball
-                                closest_dist = float('inf')
+                                closest_dist = 999999.0
                                 closest_ball = None
                                 if hasattr(self.world, "balls"):
                                     for b in self.world.balls:
@@ -6550,7 +6573,7 @@ class Action:
                 pm = getattr(self.world, "profile_manager", None)
                 if pm and hasattr(pm, "is_nemesis"):
                     nemesis = None
-                    min_dist_sq = float('inf')
+                    min_dist_sq = 999999.0
                     if hasattr(self.world, "balls"):
                         for other in self.world.balls:
                             if getattr(other, "id", None) != getattr(self.ball, "id", None) and getattr(other, "hp", 0) > 0:
@@ -7290,7 +7313,7 @@ class Action:
 
     def _get_flank_target(self, enemies: list) -> Any:
         best_target = None
-        best_score = (-float('inf'), -float('inf'), -float('inf'))
+        best_score = (-999999.0, -999999.0, -999999.0)
 
         for e in enemies:
             dx = e.x - self.ball.x
@@ -8974,7 +8997,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "damage_link_booster":
                     closest_enemy = None
-                    closest_dist = float('inf')
+                    closest_dist = 999999.0
 
                     enemies = self._get_enemies()
                     if enemies:
@@ -10126,6 +10149,7 @@ class Action:
                 self.ball.reflect_shield_active = True
                 self.ball.reflect_shield_timer = 5.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
                 self.ball.reflect_shield_capacity = 50.0 + getattr(self.ball, "bonus_reflect_shield_capacity", 0.0)
+                self.ball.reflect_shield_initial_capacity = self.ball.reflect_shield_capacity
 
             elif skill_name == "heal":
                 if hasattr(self.ball, "hp"):
@@ -10429,7 +10453,7 @@ class Action:
                         grapple_targets.append(("hazard", h, dist_sq))
 
                 closest_target = None
-                closest_target_dist_sq = float('inf')
+                closest_target_dist_sq = 999999.0
                 for t_type, t, dist_sq in grapple_targets:
                     if dist_sq < closest_target_dist_sq:
                         closest_target = t
@@ -11266,19 +11290,23 @@ class Action:
                 # Activate reflect shield
                 self.ball.reflect_shield_active = True
                 self.ball.reflect_shield_timer = 3.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
-                self.ball.reflect_shield_capacity = float('inf')  # Reflects all damage
+                self.ball.reflect_shield_capacity = 999999.0
+                self.ball.reflect_shield_initial_capacity = self.ball.reflect_shield_capacity  # Reflects all damage
+                self.ball.reflect_shield_initial_capacity = 999999.0
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("shield")
             elif skill_name == "holy_shield":
                 self.ball.reflect_shield_active = True
                 self.ball.reflect_shield_timer = 5.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
                 self.ball.reflect_shield_capacity = 100.0 + getattr(self.ball, "bonus_reflect_shield_capacity", 0.0)
+                self.ball.reflect_shield_initial_capacity = self.ball.reflect_shield_capacity
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("shield")
             elif skill_name == "mirror_stance":
                 self.ball.reflect_shield_active = True
                 self.ball.reflect_shield_timer = 3.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
-                self.ball.reflect_shield_capacity = float('inf')
+                self.ball.reflect_shield_capacity = 999999.0
+                self.ball.reflect_shield_initial_capacity = self.ball.reflect_shield_capacity
                 self.ball.mirror_stance_timer = 3.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("shield")
@@ -12735,6 +12763,29 @@ class Action:
             self.ball.reflect_shield_timer -= delta
             if self.ball.reflect_shield_timer <= 0:
                 self.ball.reflect_shield_active = False
+
+                # Shield timer expired explosion
+                if hasattr(self.ball, "reflect_shield_capacity") and hasattr(self.ball, "reflect_shield_initial_capacity"):
+                    capacity = getattr(self.ball, "reflect_shield_capacity", 0)
+                    initial = getattr(self.ball, "reflect_shield_initial_capacity", 0)
+                    absorbed = initial - capacity
+                    if absorbed > 0 and absorbed != 999999.0:
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 150.0, "damage": absorbed * 0.5})
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if b != self.ball and getattr(b, "alive", True):
+                                    dist = ((self.ball.x - b.x)**2 + (self.ball.y - b.y)**2)**0.5
+                                    if dist <= 150.0:
+                                        if hasattr(self.world, "_deal_damage"):
+                                            old_atk_dmg = getattr(self.ball, "damage", 10.0)
+                                            self.ball.damage = absorbed * 0.5
+                                            self.world._deal_damage(self.ball, b)
+                                            self.ball.damage = old_atk_dmg
+                                        elif hasattr(b, "take_damage"):
+                                            b.take_damage(absorbed * 0.5)
+                                        elif hasattr(b, "hp"):
+                                            b.hp -= absorbed * 0.5
 
         if getattr(self.ball, "is_blinded", False):
             self.ball.blindness_timer = getattr(self.ball, "blindness_timer", 0.0) - delta

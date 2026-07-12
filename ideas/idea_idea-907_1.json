@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Recall Beacon",
+  "description": "Players can deploy a beacon that saves their current HP, shield state, and position. After 5 seconds, or upon reactivation, they are teleported back to the beacon and their state is restored. This allows for risky plays or escaping dangerous AoE zones like explosions."
+}
