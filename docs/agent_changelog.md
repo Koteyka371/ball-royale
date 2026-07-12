@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-907] Shield Blast — *2026-07-12 20:27:49 UTC*
+
+When the reflect shield reaches its capacity or duration ends, it erupts, dealing a portion of the absorbed damage back in an AoE explosion.
+
+---
+
 ## [idea-899] Airdrop Loot System — *2026-07-12 20:13:29 UTC*
 
 Periodically spawn high-tier supply drops at random locations. If a player stays within the drop zone radius for a certain amount of time to capture it, they receive exclusive artifacts or full heals.

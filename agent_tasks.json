@@ -15584,7 +15584,7 @@
     },
     {
       "id": "idea-907",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shield Blast",
@@ -25372,6 +25372,23 @@
         "src/ai/bouncing_projectiles.py",
         "src/ai/bouncing_projectiles.gd",
         "tests/test_bouncing_projectiles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1482",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Progression",
+      "description": "Players collect bounty tags from fallen enemies. Bringing bounty tags to safe extraction zones gives currency that can be spent on persistent upgrades during the match, rather than relying solely on random item drops.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_progression.py",
+        "src/ai/bounty_hunter_progression.gd",
+        "tests/test_bounty_hunter_progression.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
