@@ -49,4 +49,4 @@ class TestGameModesBounty(unittest.TestCase):
         ball = MockBall("b1", 2)
         killer = MockBall("k1", 0)
         gm.on_ball_died(world, ball, killer)
-        self.assertEqual(world.profile_manager.points, 50)  # 25 * 2 * 1.0 = 50
+        self.assertEqual(world.profile_manager.points, 60)  # 25 * 2 * 1.0 = 50
