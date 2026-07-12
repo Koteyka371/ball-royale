@@ -497,7 +497,12 @@ class GameMode:
             # If the target had a bounty, reward the killer
             target_bounty = getattr(ball, "kill_bounty", 0)
             if target_bounty > 0 and pm and hasattr(pm, "add_skill_points"):
-                reward = 15 * target_bounty
+                base_reward = getattr(self, "bounty_base_reward", 15)
+                multiplier = getattr(self, "bounty_multiplier", 1.0)
+                if hasattr(self, "calculate_bounty_reward"):
+                    reward = self.calculate_bounty_reward(target_bounty)
+                else:
+                    reward = int(base_reward * target_bounty * multiplier)
                 pm.add_skill_points(reward)
                 if hasattr(world, "add_event"):
                     world.add_event("bounty_claimed", {
@@ -2535,6 +2540,7 @@ class ZombieInfectionMode(GameMode):
         super().__init__()
         self.name = "Zombie Infection"
         self.description = "One zombie infects others. Survivors win if time runs out."
+        self.bounty_base_reward = 5
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         weather = getattr(self, "weather", "")
@@ -3349,6 +3355,7 @@ class VIPDefenseMode(GameMode):
         super().__init__()
         self.name = "VIP Defense"
         self.description = "Protect the VIP. If the VIP dies, the attackers win."
+        self.bounty_base_reward = 25
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         weather = getattr(self, "weather", "")
@@ -3722,6 +3729,7 @@ class VampireRoyaleMode(GameMode):
         self.name = "Vampire Royale"
         self.description = "All balls slowly lose HP over time but regain HP when dealing damage. Last one standing wins."
         self.tick_timer = 0.0
+        self.bounty_multiplier = 1.5
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
@@ -8414,6 +8422,8 @@ class BountyHuntMode(GameMode):
         super().__init__()
         self.name = "Bounty Hunt"
         self.description = "One ball on each team is the Bounty. Destroying the enemy Bounty grants a massive buff and extra skill points."
+        self.bounty_base_reward = 30
+        self.bounty_multiplier = 2.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         weather = getattr(self, "weather", "")
