@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-911] Chronos Booster — *2026-07-12 22:34:35 UTC*
+
+A booster that drastically reduces all skill cooldowns for a 5-second duration, allowing an entity to spam their abilities and abilities of allies nearby.
+
+---
+
 ## [idea-917] Guild Boss Raid Tiers — *2026-07-12 22:24:46 UTC*
 
 Add multiple difficulty tiers for guild bosses with better rewards for higher tiers.

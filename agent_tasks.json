@@ -15652,7 +15652,7 @@
     },
     {
       "id": "idea-911",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chronos Booster",
@@ -25627,6 +25627,41 @@
         "src/ai/phantom_spectator_intervention.py",
         "src/ai/phantom_spectator_intervention.gd",
         "tests/test_phantom_spectator_intervention.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1497",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Boss Mutations per Tier",
+      "description": "Introduce dynamic mutations for guild bosses that scale with tier. For example, a tier 2 boss might reflect 10% of damage, while a tier 3 boss might spawn minions periodically during the fight.",
+      "allowed_paths": [
+        "src/ai/boss_mutations_per_tier.py",
+        "src/ai/boss_mutations_per_tier.gd",
+        "tests/test_boss_mutations_per_tier.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1498",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Leaderboards for Boss Tiers",
+      "description": "Add a new leaderboard that specifically tracks which guilds have cleared the highest tiers of guild bosses each week, rewarding the top 3 guilds with exclusive cosmetic auras.",
+      "allowed_paths": [
+        "src/ui/guild_leaderboards_for_boss_tiers.py",
+        "src/ui/guild_leaderboards_for_boss_tiers.gd",
+        "src/ai/guild_leaderboards_for_boss_tiers.py",
+        "tests/test_guild_leaderboards_for_boss_tiers.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
