@@ -15210,7 +15210,7 @@
     },
     {
       "id": "idea-885",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Skill Re-cast Enhancements",
@@ -25287,6 +25287,57 @@
         "src/arena/moving_walls.py",
         "src/arena/moving_walls.gd",
         "tests/test_moving_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1477",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wind Tunnel Hazard",
+      "description": "A hazard that blows a strong, concentrated gust of wind in one direction across the map. Balls entering it gain massive speed in that direction, which can be used to traverse quickly or escape bad situations, but can also fling them into traps.",
+      "allowed_paths": [
+        "src/arena/wind_tunnel.py",
+        "src/arena/wind_tunnel.gd",
+        "tests/test_wind_tunnel.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1478",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Decay Hazard",
+      "description": "A hazard zone that doesn't damage players directly, but rapidly drains their cooldown timers, making their abilities recharge much faster, at the cost of draining their current stamina or slightly slowing them down. It creates risk/reward spots on the map.",
+      "allowed_paths": [
+        "src/arena/quantum_decay.py",
+        "src/arena/quantum_decay.gd",
+        "tests/test_quantum_decay.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1479",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Mines",
+      "description": "A cluster of proximity mines that arm over 3 seconds. When one mine detonates, it triggers an explosion that forces nearby mines to detonate as well, creating a cascading blast effect that covers a huge area. Players can trigger it intentionally by throwing items or using ranged attacks.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_mines.py",
+        "src/ai/chain_reaction_mines.gd",
+        "tests/test_chain_reaction_mines.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

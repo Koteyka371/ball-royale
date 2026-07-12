@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-885] Skill Re-cast Enhancements — *2026-07-12 20:05:31 UTC*
+
+Allowing double-tapping or re-casting of other skills. For example, a fireball could be detonated early by casting the skill again while the fireball is in flight.
+
+---
+
 ## [idea-886] Gravity Nullifier Item — *2026-07-12 19:45:05 UTC*
 
 An item that temporarily makes the ball unaffected by global wind or localized gravity wells/pull hazards.
