@@ -211,7 +211,7 @@ class GameMode:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
 
-        if hasattr(world, "arena") and getattr(world.arena, "is_constricted", False):
+        if hasattr(world, "arena") and getattr(world.arena, "is_constricted", False) is True:
             world.arena.constriction_timer -= delta
             if world.arena.constriction_timer <= 0.0:
                 world.arena.is_constricted = False

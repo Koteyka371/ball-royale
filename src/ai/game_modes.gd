@@ -301,7 +301,7 @@ class GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena.get("is_constricted", false):
+			if world.has("arena") and typeof(world.arena.get("is_constricted", false)) == TYPE_BOOL and world.arena.get("is_constricted", false):
 				world.arena.constriction_timer -= delta
 				if world.arena.constriction_timer <= 0.0:
 					world.arena.is_constricted = false
