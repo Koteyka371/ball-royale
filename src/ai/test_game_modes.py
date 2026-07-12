@@ -1338,6 +1338,7 @@ def test_day_night_mode_moonlight_shadows():
     b1.x = 100.0
     b1.y = 100.0
     b1.stamina = 100.0
+    b1.supercharge_timer = 0.0
 
     b2 = MagicMock()
     b2.alive = True
@@ -1345,6 +1346,7 @@ def test_day_night_mode_moonlight_shadows():
     b2.x = 800.0
     b2.y = 800.0
     b2.stamina = 100.0
+    b2.supercharge_timer = 0.0
 
     balls = [b1, b2]
     mode.setup(world, balls)
