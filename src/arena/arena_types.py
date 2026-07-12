@@ -1638,6 +1638,27 @@ class SummerArena(ProceduralArena):
             sand_trap.active = True
             self.hazards.append(sand_trap)
 
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        import random
+        if getattr(self, "is_heatwave", False) and current_tick % 300 == 0 and random.random() < 0.3:
+            # Spawn localized heatwave
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            heatwave_id = 15000 + len(self.hazards)
+            # Using proper Hazard
+            hw = Hazard(id=heatwave_id, x=x, y=y, radius=100.0, kind="localized_heatwave", damage=0.0)
+            hw.duration = 10.0
+            self.hazards.append(hw)
+
+        # Manage heatwaves
+        for h in self.hazards:
+            if h.kind == "localized_heatwave":
+                h.duration -= delta
+                if h.duration <= 0:
+                    h.active = False
+
+
 class LavaArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
@@ -1747,6 +1768,27 @@ class WinterArena(ProceduralArena):
             snowman.damage = 0.0
             snowman.active = True
             self.hazards.append(snowman)
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        import random
+        if getattr(self, "is_snowing", False) and current_tick % 300 == 0 and random.random() < 0.3:
+            # Spawn localized blizzard
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            blizzard_id = 16000 + len(self.hazards)
+            # Using proper Hazard
+            bz = Hazard(id=blizzard_id, x=x, y=y, radius=120.0, kind="localized_blizzard", damage=0.0)
+            bz.duration = 12.0
+            self.hazards.append(bz)
+
+        # Manage blizzards
+        for h in self.hazards:
+            if h.kind == "localized_blizzard":
+                h.duration -= delta
+                if h.duration <= 0:
+                    h.active = False
+
 
 ARENAS["summer"] = SummerArena
 ARENAS["autumn"] = AutumnArena

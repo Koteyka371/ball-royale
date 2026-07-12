@@ -2429,6 +2429,17 @@ class Action:
                         time_scale = getattr(hazard, "time_scale", 0.5)
                         delta *= time_scale
                         break
+
+                if getattr(hazard, "kind", "") == "localized_blizzard":
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist <= getattr(hazard, "radius", 120.0) + getattr(self.ball, "radius", 10.0):
+                        self.ball.speed = getattr(self.ball, "base_speed", 150.0) * 0.5
+
+                if getattr(hazard, "kind", "") == "localized_heatwave":
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist <= getattr(hazard, "radius", 100.0) + getattr(self.ball, "radius", 10.0):
+                        self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 100.0) - 20.0 * delta)
+
         # Chain lightning timer
         if getattr(self.ball, "_cl_collision_cd", 0.0) > 0:
             self.ball._cl_collision_cd -= delta

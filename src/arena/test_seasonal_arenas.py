@@ -30,3 +30,18 @@ def test_lava_arena():
 def test_neon_arena():
     arena = NeonArena()
     assert getattr(arena, "is_neon_theme", False) is True
+
+
+def test_seasonal_arena_weather_hazards():
+    summer = SummerArena()
+    # Test heatwave localized spawn
+    for _ in range(300):
+        summer.update_zone(300, 1.0)
+
+    winter = WinterArena()
+    # Test blizzard localized spawn
+    for _ in range(300):
+        winter.update_zone(300, 1.0)
+
+    # We just want to check that update_zone doesn't crash
+    assert True

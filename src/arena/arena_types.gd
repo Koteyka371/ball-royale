@@ -798,6 +798,27 @@ class SummerArena extends ProceduralArena:
 			var h_id = 5100 + hazards.size()
 			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(50.0, 100.0), "sand_trap", 0.0))
 
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		if is_heatwave and current_tick % 300 == 0 and randf() < 0.3:
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 15000 + hazards.size()
+			var hw = ProceduralArena.Hazard.new(h_id, x, y, 100.0, "localized_heatwave", 0.0)
+			hw.set_meta("duration", 10.0)
+			hazards.append(hw)
+
+		for h in hazards:
+			if h.kind == "localized_heatwave":
+				var dur = h.get_meta("duration") - delta
+				h.set_meta("duration", dur)
+				if dur <= 0:
+					if h.has_method("set_meta"):
+						h.set_meta("active", false)
+					if "active" in h:
+						h.active = false
+
+
 class LavaArena extends ProceduralArena:
 	var is_lava_theme = true
 
@@ -860,6 +881,27 @@ class WinterArena extends ProceduralArena:
 			var y = randf_range(100, height - 100)
 			var h_id = 4100 + hazards.size()
 			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, 20.0, "snowman_decoy", 0.0))
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		if is_snowing and current_tick % 300 == 0 and randf() < 0.3:
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 16000 + hazards.size()
+			var bz = ProceduralArena.Hazard.new(h_id, x, y, 120.0, "localized_blizzard", 0.0)
+			bz.set_meta("duration", 12.0)
+			hazards.append(bz)
+
+		for h in hazards:
+			if h.kind == "localized_blizzard":
+				var dur = h.get_meta("duration") - delta
+				h.set_meta("duration", dur)
+				if dur <= 0:
+					if h.has_method("set_meta"):
+						h.set_meta("active", false)
+					if "active" in h:
+						h.active = false
+
 
 
 class TimeDistortionArena extends ProceduralArena:
