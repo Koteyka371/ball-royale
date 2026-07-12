@@ -740,6 +740,9 @@ class ShadowMonster:
         self.team = "ShadowMonsters"
 
 class BattleRoyaleMode(GameMode):
+    def calculate_bounty_reward(self, target_bounty: int) -> int:
+        return int(15 * (1.2 ** target_bounty))
+
     def __init__(self):
         super().__init__()
         self.name = "Battle Royale"
@@ -2473,6 +2476,9 @@ class BattleRoyaleMode(GameMode):
             pass
 
 class TeamDeathmatchMode(GameMode):
+    def calculate_bounty_reward(self, target_bounty: int) -> int:
+        return int(20 + 10 * target_bounty)
+
     def __init__(self):
         super().__init__()
         self.name = "Team Deathmatch"
@@ -2536,6 +2542,9 @@ class TeamDeathmatchMode(GameMode):
         return None
 
 class ZombieInfectionMode(GameMode):
+    def calculate_bounty_reward(self, target_bounty: int) -> int:
+        return int(5 * target_bounty)
+
     def __init__(self):
         super().__init__()
         self.name = "Zombie Infection"
@@ -3351,6 +3360,9 @@ class EscortMode(GameMode):
         return None
 
 class VIPDefenseMode(GameMode):
+    def calculate_bounty_reward(self, target_bounty: int) -> int:
+        return int(25 * target_bounty * 1.2)
+
     def __init__(self):
         super().__init__()
         self.name = "VIP Defense"
@@ -8418,6 +8430,9 @@ class BlackoutMode(GameMode):
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)
 
 class BountyHuntMode(GameMode):
+    def calculate_bounty_reward(self, target_bounty: int) -> int:
+        return int(30 * target_bounty * 2.0)
+
     def __init__(self):
         super().__init__()
         self.name = "Bounty Hunt"

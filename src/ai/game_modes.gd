@@ -1031,6 +1031,9 @@ class ShadowMonster:
 	var team = "ShadowMonsters"
 
 class BattleRoyaleMode extends GameMode:
+	func calculate_bounty_reward(target_kb: int) -> int:
+		return int(15 * pow(1.2, target_kb))
+
 	var dark_phase_timer: float = 0.0
 	var is_dark_phase: bool = false
 	var weather_timer: float = 0.0
@@ -3202,6 +3205,9 @@ class BattleRoyaleMode extends GameMode:
 		pm.add_skill_points(points)
 
 class TeamDeathmatchMode extends GameMode:
+	func calculate_bounty_reward(target_kb: int) -> int:
+		return int(20 + 10 * target_kb)
+
 	func _init() -> void:
 		name = "Team Deathmatch"
 		description = "Two teams fight until one is eliminated."
@@ -3341,6 +3347,9 @@ class TeamDeathmatchMode extends GameMode:
 		return null
 
 class ZombieInfectionMode extends GameMode:
+	func calculate_bounty_reward(target_kb: int) -> int:
+		return int(5 * target_kb)
+
 	var bounty_base_reward = 5
 
 	func _init() -> void:
@@ -3953,6 +3962,9 @@ class BossFightMode extends GameMode:
 		return null
 
 class VIPDefenseMode extends GameMode:
+	func calculate_bounty_reward(target_kb: int) -> int:
+		return int(25 * target_kb * 1.2)
+
 	var bounty_base_reward = 25
 
 	func _init() -> void:
@@ -12844,6 +12856,9 @@ class BlackoutMode extends GameMode:
 					b.perception_radius = base_perc
 
 class BountyHuntMode extends GameMode:
+	func calculate_bounty_reward(target_kb: int) -> int:
+		return int(30 * target_kb * 2.0)
+
 	var bounties = {}
 	var buffed_teams = {}
 	var bounty_base_reward = 30
