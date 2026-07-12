@@ -8992,9 +8992,10 @@ class DayNightMode(GameMode):
                     dist_sq = (b.x - fx)**2 + (b.y - fy)**2
                     if dist_sq < beam_radius**2:
                         ball_type = getattr(b, "ball_type", "").lower()
+                        is_supercharged = getattr(b, "supercharge_timer", 0.0) > 0.0
                         has_daylight_buff = ball_type not in ["vampire", "assassin", "phantom"]
 
-                        if not has_daylight_buff:
+                        if not has_daylight_buff or is_supercharged:
                             behind_cover = False
                             b_radius = getattr(b, "radius", 15.0)
 
@@ -9021,10 +9022,14 @@ class DayNightMode(GameMode):
                                         break
 
                             if not behind_cover:
-                                if hasattr(b, "take_damage"):
-                                    b.take_damage(beam_damage)
+                                if getattr(b, "supercharge_timer", 0.0) > 0.0:
+                                    actual_damage = beam_damage * 2.0
                                 else:
-                                    b.hp -= beam_damage
+                                    actual_damage = beam_damage
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(actual_damage)
+                                else:
+                                    b.hp -= actual_damage
                                     if b.hp <= 0:
                                         b.alive = False
 
@@ -9086,6 +9091,36 @@ class DayNightMode(GameMode):
 
                     if hasattr(world, "add_event"):
                         world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
+
+
+            # Solar flare timer decay (runs always) and random buff (only during day)
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    # Decay timer
+                    if getattr(b, "supercharge_timer", 0.0) > 0.0:
+                        b.supercharge_timer -= delta
+                        if b.supercharge_timer <= 0.0:
+                            b.supercharge_timer = 0.0
+                            # Revert stats
+                            if hasattr(b, "base_speed"):
+                                b.speed = b.base_speed
+                            elif hasattr(b, "speed"):
+                                b.speed = getattr(b, "_pre_flare_speed", b.speed / 2.5)
+                            if hasattr(b, "base_damage"):
+                                b.damage = b.base_damage
+                            elif hasattr(b, "damage"):
+                                b.damage = getattr(b, "_pre_flare_damage", b.damage / 2.5)
+
+                    if not getattr(world.arena, "is_night", False):
+                        if random.random() < 0.01 * delta: # Rare chance per frame per ball
+                            if getattr(b, "supercharge_timer", 0.0) <= 0.0:
+                                b._pre_flare_speed = getattr(b, "speed", 100.0)
+                                b._pre_flare_damage = getattr(b, "damage", 10.0)
+                            b.supercharge_timer = getattr(b, "supercharge_timer", 0.0) + 5.0
+                            b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.5
+                            b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.5
+                            if hasattr(world, "add_event"):
+                                world.add_event("visual_effect", {"type": "solar_flare_supercharge", "ball_id": b.id})
 
 class GuildVsGuildMode(GameMode):
     """Guild vs Guild mode where players capture territory on a persistent world map."""
