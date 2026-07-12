@@ -12843,10 +12843,37 @@ class LunarEclipseEventMode(GameMode):
                 self.event_active = True
                 self.event_duration = 10.0
                 self.event_timer = 0.0
+                self.boss_spawned = False
                 if hasattr(world, "add_event"):
                     world.add_event("lunar_eclipse_warning", {"type": "weather_warning", "message": "A LUNAR ECLIPSE HAS BEGUN!"})
                 if hasattr(world, "add_event"):
                     world.add_event("visual_effect", {"type": "lunar_eclipse", "duration": 10.0})
+
+                # Rare boss spawn during lunar eclipse
+                if hasattr(world, "arena") and random.random() < 0.3:  # 30% chance to spawn the boss
+                    if not hasattr(world.arena, "hazards"):
+                        world.arena.hazards = []
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    bx, by = random.uniform(100, arena_w-100), random.uniform(100, arena_h-100)
+                    boss = Hazard(id=60000+random.randint(0,9999), x=bx, y=by, radius=40.0, kind="eclipse_boss", damage=0.0)
+                    setattr(boss, "dx", random.uniform(-1, 1))
+                    setattr(boss, "dy", random.uniform(-1, 1))
+                    import math
+                    mag = math.hypot(getattr(boss, "dx", 1), getattr(boss, "dy", 0))
+                    if mag > 0:
+                        boss.dx /= mag
+                        boss.dy /= mag
+                    world.arena.hazards.append(boss)
+                    self.boss_spawned = True
+                    if hasattr(world, "add_event"):
+                        world.add_event("boss_warning", {"type": "weather_warning", "message": "THE ECLIPSE BOSS HAS AWAKENED!"})
             else:
                 self.event_timer = 0.0
 
@@ -12856,11 +12883,48 @@ class LunarEclipseEventMode(GameMode):
                 world.arena.is_lunar_eclipse = True
                 world.arena.is_eclipse = True
 
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "eclipse_boss":
+                        speed = 100.0 * delta
+                        dx = getattr(h, "dx", 1.0)
+                        dy = getattr(h, "dy", 0.0)
+                        h.x += dx * speed
+                        h.y += dy * speed
+                        import math, random
+                        if random.random() < 0.05:
+                            angle = random.uniform(0, 2 * math.pi)
+                            h.dx = math.cos(angle)
+                            h.dy = math.sin(angle)
+
+                        arena_w = getattr(world.arena, "width", 1000)
+                        arena_h = getattr(world.arena, "height", 1000)
+                        if h.x < h.radius or h.x > arena_w - h.radius:
+                            h.dx *= -1
+                            h.x = max(h.radius, min(h.x, arena_w - h.radius))
+                        if h.y < h.radius or h.y > arena_h - h.radius:
+                            h.dy *= -1
+                            h.y = max(h.radius, min(h.y, arena_h - h.radius))
+
+                        for b in balls:
+                            if getattr(b, "alive", True) and getattr(b, "team", "") != "Shadow":
+                                dist = math.hypot(b.x - h.x, b.y - h.y)
+                                b_radius = getattr(b, "radius", 15.0)
+                                if isinstance(b_radius, type(world)): b_radius = 15.0
+                                if dist < h.radius + b_radius:
+                                    b.team = "Shadow"
+                                    if hasattr(b, "hp"):
+                                        b.hp = getattr(b, "max_hp", 100.0)
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("shadow_conversion", {"type": "visual_effect", "target_id": getattr(b, "id", 0)})
+
             if self.event_duration <= 0:
                 self.event_active = False
                 if hasattr(world, "arena"):
                     world.arena.is_lunar_eclipse = False
                     world.arena.is_eclipse = False
+                    if hasattr(world.arena, "hazards"):
+                        world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "eclipse_boss"]
                 if hasattr(world, "add_event"):
                     world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
 

@@ -20205,6 +20205,34 @@ class LunarEclipseEventMode extends GameMode:
 				if world != null and world.has_method("add_event"):
 					world.add_event("lunar_eclipse_warning", {"type": "weather_warning", "message": "A LUNAR ECLIPSE HAS BEGUN!"})
 					world.add_event("visual_effect", {"type": "lunar_eclipse", "duration": 10.0})
+
+				# Rare boss spawn during lunar eclipse
+				if world != null and "arena" in world and randf() < 0.3: # 30% chance
+					if not "hazards" in world.arena:
+						world.arena.hazards = []
+
+					var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+					var arena_w = 1000.0
+					if "width" in world.arena: arena_w = float(world.arena.width)
+					var arena_h = 1000.0
+					if "height" in world.arena: arena_h = float(world.arena.height)
+
+					var bx = randf_range(100.0, arena_w - 100.0)
+					var by = randf_range(100.0, arena_h - 100.0)
+					var boss = HazardObj.new(60000 + (randi() % 10000), bx, by, 40.0, "eclipse_boss", 0.0)
+
+					var dx = randf_range(-1.0, 1.0)
+					var dy = randf_range(-1.0, 1.0)
+					var mag = sqrt(dx*dx + dy*dy)
+					if mag > 0:
+						dx /= mag
+						dy /= mag
+					boss.set_meta("dx", dx)
+					boss.set_meta("dy", dy)
+
+					world.arena.hazards.append(boss)
+					if world.has_method("add_event"):
+						world.add_event("boss_warning", {"type": "weather_warning", "message": "THE ECLIPSE BOSS HAS AWAKENED!"})
 			else:
 				event_timer = 0.0
 
@@ -20214,11 +20242,76 @@ class LunarEclipseEventMode extends GameMode:
 				world.arena.is_lunar_eclipse = true
 				world.arena.is_eclipse = true
 
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena_w = 1000.0
+				if "width" in world.arena: arena_w = float(world.arena.width)
+				var arena_h = 1000.0
+				if "height" in world.arena: arena_h = float(world.arena.height)
+
+				for h in world.arena.hazards:
+					if typeof(h) == TYPE_OBJECT and h.kind == "eclipse_boss":
+						var speed = 100.0 * delta
+						var h_dx = h.get_meta("dx") if h.has_meta("dx") else 1.0
+						var h_dy = h.get_meta("dy") if h.has_meta("dy") else 0.0
+
+						h.x += h_dx * speed
+						h.y += h_dy * speed
+
+						if randf() < 0.05:
+							var angle = randf() * 2.0 * PI
+							h.set_meta("dx", cos(angle))
+							h.set_meta("dy", sin(angle))
+
+						if h.x < h.radius or h.x > arena_w - h.radius:
+							h.set_meta("dx", -h_dx)
+							h.x = clamp(h.x, h.radius, arena_w - h.radius)
+						if h.y < h.radius or h.y > arena_h - h.radius:
+							h.set_meta("dy", -h_dy)
+							h.y = clamp(h.y, h.radius, arena_h - h.radius)
+
+						for b in balls:
+							var b_alive = true
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("alive"): b_alive = b["alive"]
+							else:
+								if "alive" in b: b_alive = b.alive
+
+							var b_team = ""
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("team"): b_team = b["team"]
+							else:
+								if "team" in b: b_team = b.team
+
+							if b_alive and b_team != "Shadow":
+								var b_x = b["x"] if typeof(b) == TYPE_DICTIONARY else b.x
+								var b_y = b["y"] if typeof(b) == TYPE_DICTIONARY else b.y
+								var b_r = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 15.0)
+								var dist = sqrt(pow(b_x - h.x, 2) + pow(b_y - h.y, 2))
+
+								if dist < h.radius + b_r:
+									if typeof(b) == TYPE_DICTIONARY:
+										b["team"] = "Shadow"
+										if b.has("hp"): b["hp"] = b.get("max_hp", 100.0)
+									else:
+										if "team" in b: b.team = "Shadow"
+										if "hp" in b: b.hp = b.get("max_hp", 100.0)
+
+									var b_id = b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else 0)
+									if world.has_method("add_event"):
+										world.add_event("shadow_conversion", {"type": "visual_effect", "target_id": b_id})
+
 			if event_duration <= 0:
 				event_active = false
 				if world != null and "arena" in world:
 					world.arena.is_lunar_eclipse = false
 					world.arena.is_eclipse = false
+					if "hazards" in world.arena:
+						var new_hazards = []
+						for h in world.arena.hazards:
+							if typeof(h) == TYPE_OBJECT and h.kind == "eclipse_boss":
+								continue
+							new_hazards.append(h)
+						world.arena.hazards = new_hazards
 				if world != null and world.has_method("add_event"):
 					world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
 
