@@ -6,8 +6,11 @@ class MockWorld:
         self.arena = MockArena()
         self.balls = []
 
-    def _deal_damage(self, owner, target):
-        target.hp -= owner.damage
+    def _deal_damage(self, owner, target, dmg=None):
+        if dmg is not None:
+            target.hp -= dmg
+        else:
+            target.hp -= owner.damage
 
 class MockArena:
     def __init__(self):

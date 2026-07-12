@@ -2691,6 +2691,16 @@ class Action:
                 if hasattr(self.world, "events"):
                     self.world.events.append({'type': 'explosion', 'data': {'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0}})
 
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                        h_id = 9500 + len(self.world.arena.hazards) + int(self.ball.x) + int(self.ball.y)
+                        smoke = Hazard(id=h_id, x=self.ball.x, y=self.ball.y, radius=100.0, kind="smokescreen", damage=0.0)
+                        setattr(smoke, "duration", 5.0)
+                        self.world.arena.hazards.append(smoke)
+                    except Exception:
+                        pass
+
             self._clamp_position()
             return
 

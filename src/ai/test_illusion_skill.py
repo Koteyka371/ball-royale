@@ -19,10 +19,16 @@ class MockBall:
         self.damage = 10
         self.perception_radius = 200
 
+class MockArena:
+    def __init__(self):
+        self.hazards = []
+
 class MockWorld:
     def __init__(self):
         self.balls = []
         self.next_id = 100
+        self.arena = MockArena()
+        self.events = []
     def get_nearby_entities(self, ball, radius):
         return [b for b in self.balls if b != ball]
 
@@ -127,3 +133,7 @@ def test_mimic_clone_does_not_explode():
     assert clone.alive == False
     # Enemy takes damage because it detonates
     assert enemy.hp == 80.0
+    assert len(world.arena.hazards) > 0
+    assert world.arena.hazards[0].kind == "smokescreen"
+    assert len(world.events) > 0
+    assert world.events[0]['type'] == 'explosion'

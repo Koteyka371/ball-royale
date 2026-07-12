@@ -3686,6 +3686,13 @@ func execute(strategy: String, delta: float):
 					world.events.append({"type": "explosion", "data": {"x": mx, "y": my, "radius": 60.0}})
 				elif world != null and world.has_method("add_event"):
 					world.add_event("explosion", {"x": mx, "y": my, "radius": 60.0})
+
+				if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+					var h_id = 9500 + world.arena.hazards.size() + int(mx) + int(my)
+					var HazardObj = load('res://src/arena/procedural_arena.gd').Hazard
+					var smoke = HazardObj.new(h_id, mx, my, 100.0, "smokescreen", 0.0)
+					smoke.duration = 5.0
+					world.arena.hazards.append(smoke)
 		self._clamp_position()
 		return
 
