@@ -26136,7 +26136,108 @@ class JumpPadBoundariesMode extends GameMode:
 		name = "Jump Pad Boundaries"
 		description = "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
 
+
+class CosmicStormMode extends GameMode:
+	var storm_timer: float = 20.0
+	var is_storm_active: bool = false
+	var shelters: Array = []
+	var rng = RandomNumberGenerator.new()
+
+	func _init().():
+		name = "Cosmic Storm"
+		description = "The entire arena is occasionally bombarded by cosmic storms. Find temporary shelters generated procedurally, or take heavy damage. Shelters have limited capacity."
+
+	func tick(world, balls: Array, delta: float) -> void:
+		storm_timer -= delta
+
+		if not is_storm_active and storm_timer <= 0.0:
+			is_storm_active = true
+			storm_timer = 10.0
+
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				var arena = world["arena"]
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena_width = arena["width"] if arena.has("width") else 1000.0
+					arena_height = arena["height"] if arena.has("height") else 1000.0
+				else:
+					arena_width = arena.width if "width" in arena else 1000.0
+					arena_height = arena.height if "height" in arena else 1000.0
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				arena_width = world.arena.width if "width" in world.arena else 1000.0
+				arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+			var num_shelters = rng.randi_range(3, 5)
+			shelters.clear()
+			for _i in range(num_shelters):
+				shelters.append({
+					"x": rng.randf_range(100.0, arena_width - 100.0),
+					"y": rng.randf_range(100.0, arena_height - 100.0),
+					"radius": rng.randf_range(50.0, 80.0),
+					"capacity": rng.randi_range(1, 3)
+				})
+
+		elif is_storm_active and storm_timer <= 0.0:
+			is_storm_active = false
+			storm_timer = 20.0
+			shelters.clear()
+
+		if is_storm_active:
+			var shelter_occupancy = {}
+			for i in range(shelters.size()):
+				shelter_occupancy[i] = 0
+			var safe_balls = []
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b["alive"] if b.has("alive") else false
+				else:
+					is_alive = b.alive if "alive" in b else false
+
+				if not is_alive:
+					continue
+
+				var best_shelter_idx = -1
+				var best_dist = 999999.0
+				var bx = b["x"] if typeof(b) == TYPE_DICTIONARY else b.x
+				var by = b["y"] if typeof(b) == TYPE_DICTIONARY else b.y
+
+				for i in range(shelters.size()):
+					var shelter = shelters[i]
+					var dx = bx - shelter["x"]
+					var dy = by - shelter["y"]
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist <= shelter["radius"] and dist < best_dist and shelter_occupancy[i] < shelter["capacity"]:
+						best_dist = dist
+						best_shelter_idx = i
+
+				if best_shelter_idx != -1:
+					shelter_occupancy[best_shelter_idx] += 1
+					safe_balls.append(b)
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b["alive"] if b.has("alive") else false
+				else:
+					is_alive = b.alive if "alive" in b else false
+
+				if not is_alive:
+					continue
+
+				if not safe_balls.has(b):
+					if typeof(b) == TYPE_DICTIONARY:
+						var hp = b["hp"] if b.has("hp") else 100.0
+						b["hp"] = hp - 20.0 * delta
+					else:
+						var hp = b.hp if "hp" in b else 100.0
+						b.hp = hp - 20.0 * delta
+
 var GAME_MODES = {
+	"cosmic_storm": CosmicStormMode.new(),
 	"temporal_rifts": TemporalRiftsMode.new(),
 		"sector_collapse": SectorCollapseMode.new(),
 	"bermuda_triangle": BermudaTriangleMode.new(),
