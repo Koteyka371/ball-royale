@@ -1620,6 +1620,39 @@ func execute(strategy: String, delta: float):
             self.ball["amnesia_timer"] -= delta
 
 
+
+	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+		if self.ball.has_meta("overclock_timer"):
+			var ot_timer = self.ball.get_meta("overclock_timer")
+			if ot_timer > 0.0:
+				self.ball.set_meta("overclock_timer", max(0.0, ot_timer - delta))
+				if self.ball.get_meta("overclock_timer") <= 0.0:
+					if self.ball.has_meta("inventory"):
+						var inv = self.ball.get_meta("inventory")
+						if inv.has("overclock_booster"):
+							inv.erase("overclock_booster")
+							self.ball.set_meta("inventory", inv)
+	elif typeof(self.ball) == TYPE_DICTIONARY:
+		if self.ball.has("overclock_timer"):
+			var ot_timer = self.ball.overclock_timer
+			if ot_timer > 0.0:
+				self.ball.overclock_timer = max(0.0, ot_timer - delta)
+				if self.ball.overclock_timer <= 0.0:
+					if self.ball.has("inventory"):
+						var inv = self.ball.inventory
+						if inv.has("overclock_booster"):
+							inv.erase("overclock_booster")
+							self.ball.inventory = inv
+	if "overclock_timer" in self.ball and typeof(self.ball) == TYPE_OBJECT:
+		if self.ball.overclock_timer > 0.0:
+			self.ball.overclock_timer = max(0.0, self.ball.overclock_timer - delta)
+			if self.ball.overclock_timer <= 0.0:
+				if "inventory" in self.ball:
+					var inv = self.ball.inventory
+					if inv.has("overclock_booster"):
+						inv.erase("overclock_booster")
+						self.ball.inventory = inv
+
 	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
 		if self.ball.has_meta("gravity_boots_timer"):
 			var gb_timer = self.ball.get_meta("gravity_boots_timer")
@@ -14791,7 +14824,53 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
-            elif "kind" in nearest and nearest.kind == "drone_item":
+            elif "kind" in nearest and nearest.kind == "overclock_booster":
+				var inv = []
+				if "inventory" in self.ball: inv = self.ball.inventory
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+				if typeof(inv) == TYPE_ARRAY and not inv.has("overclock_booster"): inv.append("overclock_booster")
+				if "inventory" in self.ball: self.ball.inventory = inv
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+
+				if "overclock_timer" in self.ball: self.ball.overclock_timer = 5.0
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("overclock_timer", 5.0)
+
+				if self.world != null and "events" in self.world:
+					self.world.events.append({"type": "overclock_start", "x": self.ball.x, "y": self.ball.y})
+
+				if self.world != null and "balls" in self.world:
+					for b in self.world.balls:
+						if b != self.ball:
+							var my_team = -1
+							if "team" in self.ball: my_team = self.ball.team
+							elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+							elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball.team
+							var b_team = -2
+							if "team" in b: b_team = b.team
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+							elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b.team
+							if b_team == my_team:
+								var dist_sq = (b.x - self.ball.x)*(b.x - self.ball.x) + (b.y - self.ball.y)*(b.y - self.ball.y)
+								if dist_sq < 40000.0:
+									var binv = []
+									if "inventory" in b: binv = b.inventory
+									elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("inventory"): binv = b.get_meta("inventory")
+									if typeof(binv) == TYPE_ARRAY and not binv.has("overclock_booster"): binv.append("overclock_booster")
+									if "inventory" in b: b.inventory = binv
+									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("inventory", binv)
+
+									if "overclock_timer" in b: b.overclock_timer = 5.0
+									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("overclock_timer", 5.0)
+
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1:
+						self.world.arena.hazards.remove_at(idx)
+				if self.world != null and "boosters" in self.world:
+					var idx = self.world.boosters.find(nearest)
+					if idx != -1:
+						self.world.boosters.remove_at(idx)
+			elif "kind" in nearest and nearest.kind == "drone_item":
                 self.ball.has_drone = true
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
@@ -20316,7 +20395,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -22496,7 +22575,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone"]
+                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -23421,6 +23500,12 @@ func _update_skill_timer(delta: float):
         em_timer -= delta
         if self.ball.has_method("set_meta"): self.ball.set_meta("extended_mag_timer", em_timer)
         else: self.ball.extended_mag_timer = em_timer
+
+    var ot_timer = 0.0
+    if "overclock_timer" in self.ball: ot_timer = self.ball.overclock_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("overclock_timer"): ot_timer = self.ball.get_meta("overclock_timer")
+    if ot_timer > 0.0:
+        cooldown_mult *= 10.0
 
     var sil_timer = 0.0
     if "silencer_timer" in self.ball: sil_timer = self.ball.silencer_timer
