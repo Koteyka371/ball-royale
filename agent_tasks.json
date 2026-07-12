@@ -24900,6 +24900,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1454",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Absorber Skill",
+      "description": "An active skill that absorbs a percentage of incoming kinetic knockback and converts it into a temporary speed boost or supercharge timer increase, allowing the ball to counter-attack aggressively after being struck.",
+      "allowed_paths": [
+        "src/ai/kinetic_absorber_skill.py",
+        "src/ai/kinetic_absorber_skill.gd",
+        "tests/test_kinetic_absorber_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1455",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Boots Cosmetic Item",
+      "description": "A cosmetic item that alters physical collisions by significantly reducing the knockback multiplier when a ball is hit by an attack, effectively rooting them or slowing their displacement in the arena.",
+      "allowed_paths": [
+        "src/ai/magnetic_boots_cosmetic_item.py",
+        "src/ai/magnetic_boots_cosmetic_item.gd",
+        "tests/test_magnetic_boots_cosmetic_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
