@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-898] Bounty Hunter Mode with Dynamic Economy — *2026-07-12 22:13:32 UTC*
+
+Killing players grants gold which can be spent mid-game in a neutral shop zone to permanently upgrade max HP, base speed, or base damage for the rest of the match.
+
+---
+
 ## [idea-914] Sunlight Reflection Shields — *2026-07-12 22:00:22 UTC*
 
 Balls can find and equip reflective shields during the day cycle. These shields completely nullify the sunlight beam damage and instead redirect a weaker beam in a random direction that can damage nearby enemies or trigger explosive traps, adding a dynamic counter-play to the day cycle.

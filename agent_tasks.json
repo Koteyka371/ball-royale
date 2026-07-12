@@ -15431,7 +15431,7 @@
     },
     {
       "id": "idea-898",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter Mode with Dynamic Economy",
@@ -25559,6 +25559,40 @@
         "src/ai/volcanic_fissures.py",
         "src/ai/volcanic_fissures.gd",
         "tests/test_volcanic_fissures.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1493",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Moonlight Mirage Mode",
+      "description": "During the night cycle, active moonlight shadows will occasionally spawn illusory copies of balls standing inside them. These 'Mirages' only take 1 damage to destroy but perfectly mimic the player's movements, confusing enemies and auto-targeting abilities.",
+      "allowed_paths": [
+        "src/ai/moonlight_mirage.py",
+        "src/ai/moonlight_mirage.gd",
+        "tests/test_moonlight_mirage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1494",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sun-Kissed Power-Up",
+      "description": "Balls standing directly under a sunlight beam for exactly 2 seconds without a reflective shield become permanently 'Sun-Kissed'. This boosts their base speed by 10% and causes them to glow softly at night, granting slightly wider night vision at the cost of being highly visible to other players.",
+      "allowed_paths": [
+        "src/ai/sun_kissed_power_up.py",
+        "src/ai/sun_kissed_power_up.gd",
+        "tests/test_sun_kissed_power_up.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
