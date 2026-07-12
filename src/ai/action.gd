@@ -4014,12 +4014,14 @@ func execute(strategy: String, delta: float):
 
 					var trap_type = "mine"
 					var r = randf()
-					if r > 0.75:
+					if r > 0.8:
 						trap_type = "freeze"
-					elif r > 0.5:
+					elif r > 0.6:
 						trap_type = "black_hole"
-					elif r > 0.25:
+					elif r > 0.4:
 						trap_type = "swap"
+					elif r > 0.2:
+						trap_type = "reverse_gravity"
 					trap.set_meta("trap_variant", trap_type)
 					trap.set_meta("owner_id", self.ball.id)
 
@@ -8547,6 +8549,122 @@ func execute(strategy: String, delta: float):
 
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
+                elif hazard.kind == "reverse_gravity_field":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var owner_id = -1
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
+                            owner_id = hazard.get_meta("owner_id")
+                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id"):
+                            owner_id = hazard["owner_id"]
+
+                        var is_enemy = true
+                        if owner_id != -1 and world != null and "balls" in world:
+                            for b in world.balls:
+                                var b_id = -1
+                                if typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+                                elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+
+                                if b_id == owner_id:
+                                    var b_team = -1
+                                    if typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+                                    elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+
+                                    var self_team = -2
+                                    if typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: self_team = self.ball.team
+                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): self_team = self.ball["team"]
+
+                                    if b_team == self_team:
+                                        is_enemy = false
+                                    break
+
+                        if is_enemy:
+                            if dist_sq > 0.0001:
+                                var dist = sqrt(dist_sq)
+                                var nx = -dx / dist
+                                var ny = -1.0
+                                var push_strength = 200.0 * delta
+
+                                if typeof(self.ball) == TYPE_OBJECT:
+                                    if "x" in self.ball: self.ball.x += nx * push_strength
+                                    if "y" in self.ball: self.ball.y += ny * push_strength
+                                    if "vx" in self.ball: self.ball.vx *= 0.5
+                                    if "vy" in self.ball: self.ball.vy *= 0.5
+                                elif typeof(self.ball) == TYPE_DICTIONARY:
+                                    if self.ball.has("x"): self.ball["x"] += nx * push_strength
+                                    if self.ball.has("y"): self.ball["y"] += ny * push_strength
+                                    if self.ball.has("vx"): self.ball["vx"] *= 0.5
+                                    if self.ball.has("vy"): self.ball["vy"] *= 0.5
+
+                                # Scatter items
+                                var ball_inv = []
+                                if typeof(self.ball) == TYPE_OBJECT and "inventory" in self.ball:
+                                    ball_inv = self.ball.inventory
+                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory"):
+                                    ball_inv = self.ball["inventory"]
+
+                                if ball_inv.size() > 0:
+                                    if randf() < 0.1:
+                                        var dropped_item = ball_inv.pop_front()
+                                        if world != null and world.has_method("get_arena") and world.get_arena() != null and "items" in world.get_arena():
+                                            var new_id = 9999
+                                            if "next_id" in world:
+                                                new_id = world.next_id
+                                                world.next_id += 1
+                                            var b_x = 0
+                                            var b_y = 0
+                                            if typeof(self.ball) == TYPE_OBJECT:
+                                                b_x = self.ball.x
+                                                b_y = self.ball.y
+                                            elif typeof(self.ball) == TYPE_DICTIONARY:
+                                                b_x = self.ball["x"]
+                                                b_y = self.ball["y"]
+                                            var item_obj = {"id": "item_" + str(new_id), "x": b_x, "y": b_y, "ball_type": "item", "kind": dropped_item, "radius": 15.0, "active": true}
+                                            world.get_arena().items.append(item_obj)
+
+                    var current_tick = 0
+                    if world != null and "tick" in world:
+                        current_tick = world.tick
+                    if world != null and "boosters" in world:
+                        for booster in world.boosters:
+                            var processed = -1
+                            if typeof(booster) == TYPE_OBJECT and booster.has_method("get_meta") and booster.has_meta("processed_rgf_tick"):
+                                processed = booster.get_meta("processed_rgf_tick")
+                            elif typeof(booster) == TYPE_DICTIONARY and booster.has("processed_rgf_tick"):
+                                processed = booster["processed_rgf_tick"]
+
+                            if processed == current_tick:
+                                continue
+
+                            var b_x = booster.x if typeof(booster) == TYPE_OBJECT else booster["x"]
+                            var b_y = booster.y if typeof(booster) == TYPE_OBJECT else booster["y"]
+                            var b_dx = hazard.x - b_x
+                            var b_dy = hazard.y - b_y
+                            var b_dist_sq = b_dx * b_dx + b_dy * b_dy
+                            if b_dist_sq < hazard.radius * hazard.radius:
+                                if typeof(booster) == TYPE_OBJECT and booster.has_method("set_meta"):
+                                    booster.set_meta("processed_rgf_tick", current_tick)
+                                elif typeof(booster) == TYPE_DICTIONARY:
+                                    booster["processed_rgf_tick"] = current_tick
+
+                                if b_dist_sq > 0.0001:
+                                    var b_dist = sqrt(b_dist_sq)
+                                    var b_nx = -b_dx / b_dist
+                                    var b_ny = -1.0
+                                    var b_push_strength = 300.0 * delta
+
+                                    if typeof(booster) == TYPE_OBJECT:
+                                        if "x" in booster: booster.x += b_nx * b_push_strength
+                                        if "y" in booster: booster.y += b_ny * b_push_strength
+                                        if "vx" in booster: booster.vx *= 0.5
+                                        if "vy" in booster: booster.vy *= 0.5
+                                    elif typeof(booster) == TYPE_DICTIONARY:
+                                        if booster.has("x"): booster["x"] += b_nx * b_push_strength
+                                        if booster.has("y"): booster["y"] += b_ny * b_push_strength
+                                        if booster.has("vx"): booster["vx"] *= 0.5
+                                        if booster.has("vy"): booster["vy"] *= 0.5
                 elif hazard.kind == "reverse_gravity":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
@@ -9638,6 +9756,30 @@ func execute(strategy: String, delta: float):
                                         gw.damage = 0.0
                                         gw.set_meta("duration", 4.0)
                                         world.get_arena().hazards.append(gw)
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
+                            elif trap_variant == "reverse_gravity":
+                                if world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
+                                    var rg = null
+                                    if load("res://src/arena/procedural_arena.gd") != null:
+                                        rg = load("res://src/arena/procedural_arena.gd").Hazard.new()
+                                    if rg != null:
+                                        rg.id = world.get_arena().hazards.size() + 8600
+                                        rg.x = hazard.x
+                                        rg.y = hazard.y
+                                        rg.radius = 150.0
+                                        rg.kind = "reverse_gravity_field"
+                                        rg.damage = 0.0
+                                        rg.set_meta("duration", 5.0)
+                                        var hazard_owner = -1
+                                        if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
+                                            hazard_owner = hazard.get_meta("owner_id")
+                                        elif "owner_id" in hazard:
+                                            hazard_owner = hazard.owner_id
+                                        rg.set_meta("owner_id", hazard_owner)
+                                        world.get_arena().hazards.append(rg)
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
