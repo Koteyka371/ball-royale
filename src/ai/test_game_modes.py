@@ -1363,10 +1363,12 @@ def test_day_night_mode_moonlight_shadows():
 
     # Reset stamina and position them
     b1.stamina = 100.0
+    b1.supercharge_timer = 0.0
     b1.x = float(shadow['x'])
     b1.y = float(shadow['y'])
 
     b2.stamina = 100.0
+    b2.supercharge_timer = 0.0
     b2.x = float(shadow['x']) + 500.0
     b2.y = float(shadow['y']) + 500.0
 

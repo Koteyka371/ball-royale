@@ -2045,7 +2045,7 @@ class Action:
 
         # Check inventory for grapple hook
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "grapple_hook" in self.ball.inventory:
-            # We want to pull towards another ball or wall
+            # We want to pull towards another ball, large hazard, or wall
             arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
             arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
             pull_dist = 200.0
@@ -2055,15 +2055,22 @@ class Action:
                 for b in self.world.balls:
                     if b != self.ball and getattr(b, "alive", True):
                         dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
-                        grapple_targets.append(b)
+                        grapple_targets.append({"target": b, "type": "ball", "dist_sq": dist_sq, "x": b.x, "y": b.y})
 
-            closest_target = None
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for h in self.world.arena.hazards:
+                    # Large environmental hazard
+                    if getattr(h, "radius", 0) >= 30.0:
+                        dist_sq = (h.x - self.ball.x)**2 + (h.y - self.ball.y)**2
+                        grapple_targets.append({"target": h, "type": "hazard", "dist_sq": dist_sq, "x": h.x, "y": h.y})
+
+            closest_target_data = None
             if grapple_targets:
-                closest_target = min(grapple_targets, key=lambda b: (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)
+                closest_target_data = min(grapple_targets, key=lambda t: t["dist_sq"])
 
             closest_target_dist_sq = float('inf')
-            if closest_target:
-                closest_target_dist_sq = (closest_target.x - self.ball.x)**2 + (closest_target.y - self.ball.y)**2
+            if closest_target_data:
+                closest_target_dist_sq = closest_target_data["dist_sq"]
 
             dists = {
                 "left": self.ball.x,
@@ -2076,13 +2083,21 @@ class Action:
 
             import math
             # Decide whether to grapple to wall or target based on distance
-            if closest_target and closest_target_dist_sq < (closest_wall_dist ** 2):
+            if closest_target_data and closest_target_dist_sq < (closest_wall_dist ** 2):
                 # Grapple to target
                 dist = math.sqrt(closest_target_dist_sq)
                 if dist > 0.0001:
                     # Pull ball towards target
-                    self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
-                    self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+                    dx = closest_target_data["x"] - self.ball.x
+                    dy = closest_target_data["y"] - self.ball.y
+                    self.ball.x += (dx / dist) * pull_dist
+                    self.ball.y += (dy / dist) * pull_dist
+
+                    if closest_target_data["type"] == "ball":
+                        # If it hits an enemy/ball, it pulls user and enemy together
+                        target_b = closest_target_data["target"]
+                        target_b.x -= (dx / dist) * pull_dist
+                        target_b.y -= (dy / dist) * pull_dist
             else:
                 # Grapple to wall
                 if closest_wall == "left":

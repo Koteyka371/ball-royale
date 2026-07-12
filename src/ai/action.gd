@@ -4296,7 +4296,26 @@ func execute(strategy: String, delta: float):
 						var dx = bx - self.ball.x
 						var dy = by - self.ball.y
 						var dist_sq = dx*dx + dy*dy
-						grapple_targets.append({"ball": b, "dist_sq": dist_sq, "x": bx, "y": by})
+						grapple_targets.append({"target": b, "type": "ball", "dist_sq": dist_sq, "x": bx, "y": by})
+
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var r = 0.0
+					if typeof(h) == TYPE_DICTIONARY and h.has("radius"): r = float(h.radius)
+					elif typeof(h) != TYPE_DICTIONARY and "radius" in h: r = float(h.radius)
+					if r >= 30.0:
+						var hx = 0.0
+						var hy = 0.0
+						if typeof(h) == TYPE_DICTIONARY:
+							if h.has("x"): hx = float(h.x)
+							if h.has("y"): hy = float(h.y)
+						else:
+							if "x" in h: hx = float(h.x)
+							if "y" in h: hy = float(h.y)
+						var dx = hx - self.ball.x
+						var dy = hy - self.ball.y
+						var dist_sq = dx*dx + dy*dy
+						grapple_targets.append({"target": h, "type": "hazard", "dist_sq": dist_sq, "x": hx, "y": hy})
 
 			var closest_target = null
 			var closest_target_dist_sq = 999999999.0
@@ -4321,6 +4340,24 @@ func execute(strategy: String, delta: float):
 				if dist > 0.0001:
 					self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
 					self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+					if closest_target.type == "ball":
+						var b = closest_target.target
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = float(b.x)
+							by = float(b.y)
+						else:
+							bx = float(b.x)
+							by = float(b.y)
+						bx -= ((closest_target.x - self.ball.x) / dist) * pull_dist
+						by -= ((closest_target.y - self.ball.y) / dist) * pull_dist
+						if typeof(b) == TYPE_DICTIONARY:
+							b.x = bx
+							b.y = by
+						else:
+							b.x = bx
+							b.y = by
 			else:
 				if closest_wall == "left":
 					self.ball.x = max(0.0, self.ball.x - pull_dist)
@@ -4333,7 +4370,6 @@ func execute(strategy: String, delta: float):
 
 			inv.erase("grapple_hook")
 			self.ball.set_meta("inventory", inv)
-
 		if inv.has("portal_gun"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
