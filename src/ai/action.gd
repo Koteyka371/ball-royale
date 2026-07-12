@@ -6191,11 +6191,12 @@ func execute(strategy: String, delta: float):
                                             if world != null and "events" in world:
                                                 world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
 
-                                                var is_confetti = false
-                                                if "is_confetti_clone" in b: is_confetti = b.is_confetti_clone
-                                                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_confetti_clone"): is_confetti = b.get_meta("is_confetti_clone")
+                                            var is_confetti = false
+                                            if "is_confetti_clone" in b: is_confetti = b.is_confetti_clone
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_confetti_clone"): is_confetti = b.get_meta("is_confetti_clone")
 
-                                                if is_confetti:
+                                            if is_confetti:
+                                                if world != null and "events" in world:
                                                     var colors = ["pink", "purple", "yellow", "cyan"]
                                                     for i in range(20):
                                                         var angle = rng.randf_range(0.0, 2.0 * PI)
@@ -6214,22 +6215,44 @@ func execute(strategy: String, delta: float):
                                                             }
                                                         })
                                                 else:
-                                                    for i in range(4):
-                                                        var angle = rng.randf_range(0.0, 2.0 * PI)
-                                                        var tx = other.x + cos(angle) * 150.0
-                                                        var ty = other.y + sin(angle) * 150.0
-                                                        world.events.append({
-                                                            "type": "visual_effect",
-                                                            "data": {
-                                                                "type": "fragmentation_projectile",
-                                                                "x": b.x,
-                                                                "y": b.y,
-                                                                "tx": tx,
-                                                                "ty": ty,
-                                                                "bounce": true,
-                                                                "color": "purple"
+                                                    if world != null and "events" in world:
+                                                        for i in range(4):
+                                                            var angle = rng.randf_range(0.0, 2.0 * PI)
+                                                            var tx = other.x + cos(angle) * 150.0
+                                                            var ty = other.y + sin(angle) * 150.0
+                                                            world.events.append({
+                                                                "type": "visual_effect",
+                                                                "data": {
+                                                                    "type": "fragmentation_projectile",
+                                                                    "x": b.x,
+                                                                    "y": b.y,
+                                                                    "tx": tx,
+                                                                    "ty": ty,
+                                                                    "bounce": true,
+                                                                    "color": "purple"
+                                                                }
+                                                            })
+
+                                                if not is_confetti:
+                                                    if "arena" in world and "hazards" in world.arena:
+                                                        for i in range(3):
+                                                            var angle = rng.randf_range(0.0, 2.0 * PI)
+                                                            var dist = rng.randf_range(20.0, 60.0)
+                                                            var fx = b.x + cos(angle) * dist
+                                                            var fy = b.y + sin(angle) * dist
+                                                            var f_id = 11000 + world.arena.hazards.size() + int(fx) + int(fy)
+                                                            var fragment = {
+                                                                "id": f_id,
+                                                                "x": fx,
+                                                                "y": fy,
+                                                                "radius": 15.0,
+                                                                "kind": "fragmentation_trap",
+                                                                "damage": 5.0,
+                                                                "duration": 10.0,
+                                                                "stutter_effect": 0.5,
+                                                                "active": true
                                                             }
-                                                        })
+                                                            world.arena.hazards.append(fragment)
 
                                         if other.hp <= 0:
                                             if "alive" in other:
@@ -8507,6 +8530,30 @@ func execute(strategy: String, delta: float):
                                 pull_strength = dist * 0.5
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
+                elif hazard.kind == "fragmentation_trap":
+                    var h_owner_id = hazard.owner_id if "owner_id" in hazard else hazard.get("owner_id", null)
+                    var b_id = self.ball.id if "id" in self.ball else self.ball.get("id")
+                    if h_owner_id == null or h_owner_id != b_id:
+                        var dist_sq = (hazard.x - self.ball.x)*(hazard.x - self.ball.x) + (hazard.y - self.ball.y)*(hazard.y - self.ball.y)
+                        var trigger_radius = hazard.get("radius", 15.0) + self.ball.get("radius", 10.0)
+                        if dist_sq < trigger_radius * trigger_radius:
+                            if "stutter_timer" in self.ball:
+                                self.ball.stutter_timer += hazard.get("stutter_effect", 0.5)
+                            elif self.ball.has_method("set_meta"):
+                                var current_stutter = self.ball.get_meta("stutter_timer") if self.ball.has_meta("stutter_timer") else 0.0
+                                self.ball.set_meta("stutter_timer", current_stutter + hazard.get("stutter_effect", 0.5))
+
+                            var dmg = hazard.get("damage", 5.0)
+                            if self.world.has_method("_deal_damage"):
+                                var dummy_att = {"damage": dmg, "id": h_owner_id}
+                                self.world._deal_damage(dummy_att, self.ball, dmg)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= dmg
+
+                            if "duration" in hazard: hazard.duration = 0.0
+                            elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            if "active" in hazard: hazard.active = false
+                            elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
                 elif hazard.kind == "repulsion_field":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
