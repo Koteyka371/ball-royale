@@ -15278,7 +15278,7 @@
     },
     {
       "id": "idea-889",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Explosion Trigger",
@@ -25185,6 +25185,40 @@
         "src/arena/sunlight_reflector.py",
         "src/arena/sunlight_reflector.gd",
         "tests/test_sunlight_reflector.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1471",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Tracking Drone",
+      "description": "Add a deployable tracking drone for Bounty Hunters that patrols the map, seeking out the current high-value bounty target and constantly revealing their location while the drone remains intact.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_tracking_drone.py",
+        "src/ai/bounty_hunter_tracking_drone.gd",
+        "tests/test_bounty_hunter_tracking_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1472",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stealth Camouflage Booster",
+      "description": "A new temporary booster that grants complete invisibility on the minimap and makes the player transparent in the arena for 10 seconds, broken upon attacking or using an ability.",
+      "allowed_paths": [
+        "src/ai/stealth_camouflage_booster.py",
+        "src/ai/stealth_camouflage_booster.gd",
+        "tests/test_stealth_camouflage_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

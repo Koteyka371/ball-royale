@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-889] Decoy Explosion Trigger — *2026-07-12 18:45:17 UTC*
+
+When a mimic clone expires or is destroyed, it could trigger a small explosion or release a smokescreen, punishing enemies who mistakenly attack the clone.
+
+---
+
 ## [idea-896] Bounty targets per mode — *2026-07-12 18:09:00 UTC*
 
 Make bounties unique depending on game mode.
