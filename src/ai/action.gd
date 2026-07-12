@@ -899,8 +899,29 @@ func _attempt_damage(attacker, target) -> void:
 			elif target.has_method("get_meta") and target.has_meta("reflect_shield_capacity"):
 				capacity = target.get_meta("reflect_shield_capacity")
 
-			var damage_to_reflect = min(capacity, original_damage)
-			capacity -= original_damage
+			var damage_to_reflect = 0.0
+			var has_layers = false
+			if "reflect_shield_layers" in target:
+				has_layers = target.reflect_shield_layers
+			elif target.has_method("get_meta") and target.has_meta("reflect_shield_layers"):
+				has_layers = target.get_meta("reflect_shield_layers")
+
+			if has_layers:
+				var layer_size = 25.0
+				if "reflect_shield_layer_size" in target:
+					layer_size = target.reflect_shield_layer_size
+				elif target.has_method("get_meta") and target.has_meta("reflect_shield_layer_size"):
+					layer_size = target.get_meta("reflect_shield_layer_size")
+
+				var current_layer_cap = fmod(capacity, layer_size)
+				if current_layer_cap <= 0.001:
+					current_layer_cap = layer_size
+				var damage_to_absorb = min(current_layer_cap, original_damage)
+				damage_to_reflect = damage_to_absorb
+				capacity -= damage_to_absorb
+			else:
+				damage_to_reflect = min(capacity, original_damage)
+				capacity -= original_damage
 
 			if capacity <= 0:
 				if "reflect_shield_active" in target:
@@ -1395,8 +1416,29 @@ func _attempt_damage(attacker, target) -> void:
 						elif next_entity.has_method("get_meta") and next_entity.has_meta("reflect_shield_capacity"):
 							capacity = next_entity.get_meta("reflect_shield_capacity")
 
-						var damage_to_reflect = min(capacity, current_damage)
-						capacity -= current_damage
+						var damage_to_reflect = 0.0
+						var has_layers = false
+						if "reflect_shield_layers" in next_entity:
+							has_layers = next_entity.reflect_shield_layers
+						elif next_entity.has_method("get_meta") and next_entity.has_meta("reflect_shield_layers"):
+							has_layers = next_entity.get_meta("reflect_shield_layers")
+
+						if has_layers:
+							var layer_size = 25.0
+							if "reflect_shield_layer_size" in next_entity:
+								layer_size = next_entity.reflect_shield_layer_size
+							elif next_entity.has_method("get_meta") and next_entity.has_meta("reflect_shield_layer_size"):
+								layer_size = next_entity.get_meta("reflect_shield_layer_size")
+
+							var current_layer_cap = fmod(capacity, layer_size)
+							if current_layer_cap <= 0.001:
+								current_layer_cap = layer_size
+							var damage_to_absorb = min(current_layer_cap, current_damage)
+							damage_to_reflect = damage_to_absorb
+							capacity -= damage_to_absorb
+						else:
+							damage_to_reflect = min(capacity, current_damage)
+							capacity -= current_damage
 
 						if capacity <= 0:
 							if "reflect_shield_active" in next_entity:
@@ -7461,7 +7503,26 @@ func execute(strategy: String, delta: float):
                                     else:
                                         capacity = self.ball.get("reflect_shield_capacity") if "reflect_shield_capacity" in self.ball else 50.0
 
-                                    capacity -= hazard_damage
+                                    var has_layers = false
+                                    if typeof(self.ball) == TYPE_DICTIONARY:
+                                        has_layers = self.ball.get("reflect_shield_layers", false)
+                                    else:
+                                        has_layers = self.ball.get("reflect_shield_layers") if "reflect_shield_layers" in self.ball else false
+
+                                    if has_layers:
+                                        var layer_size = 25.0
+                                        if typeof(self.ball) == TYPE_DICTIONARY:
+                                            layer_size = self.ball.get("reflect_shield_layer_size", 25.0)
+                                        else:
+                                            layer_size = self.ball.get("reflect_shield_layer_size") if "reflect_shield_layer_size" in self.ball else 25.0
+
+                                        var current_layer_cap = fmod(capacity, layer_size)
+                                        if current_layer_cap <= 0.001:
+                                            current_layer_cap = layer_size
+                                        var damage_to_absorb = min(current_layer_cap, hazard_damage)
+                                        capacity -= damage_to_absorb
+                                    else:
+                                        capacity -= hazard_damage
                                     if capacity <= 0.0:
                                         if typeof(self.ball) == TYPE_DICTIONARY:
                                             self.ball["reflect_shield_active"] = false

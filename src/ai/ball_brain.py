@@ -97,6 +97,8 @@ class BallBrain:
                 self.ball.bonus_reflect_shield_capacity = prestige_upgrades["shield_capacity_up"] * 20.0
             if isinstance(prestige_upgrades, dict) and "shield_duration_up" in prestige_upgrades:
                 self.ball.bonus_reflect_shield_duration = prestige_upgrades["shield_duration_up"] * 1.0
+            if isinstance(prestige_upgrades, dict) and "shield_layers_up" in prestige_upgrades:
+                self.ball.reflect_shield_layers = True
 
             # Apply prestige aura and permanent stat increase
             prestige_level = pm.data.get("prestige_level", 0)

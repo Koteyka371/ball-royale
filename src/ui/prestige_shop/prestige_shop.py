@@ -13,7 +13,8 @@ class PrestigeShop:
             "starting_artifact_dash": {"cost": 10, "description": "Start matches with a dash artifact"},
             "unlock_time_mage": {"cost": 25, "description": "Unlocks the Time-Mage ball archetype"},
             "shield_capacity_up": {"cost": 10, "description": "Increases reflect shield capacity by 20"},
-            "shield_duration_up": {"cost": 10, "description": "Increases reflect shield duration by 1s"}
+            "shield_duration_up": {"cost": 10, "description": "Increases reflect shield duration by 1s"},
+            "shield_layers_up": {"cost": 15, "description": "Breaks reflect shield into multiple layers"}
         }
 
     def buy_upgrade(self, upgrade_name):

@@ -1,0 +1,4 @@
+{
+    "title": "Layered Shield Visual Indicator",
+    "description": "Add a visual indicator in the UI or on the player character (like concentric circles or multiple hexagonal layers) that clearly displays the number of active layers on the reflect shield, so players know how many hits they can absorb before taking damage."
+}

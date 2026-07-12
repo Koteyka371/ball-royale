@@ -524,9 +524,20 @@ class Action:
                 capacity = getattr(target, "reflect_shield_capacity", 50.0)
 
                 # Reflect only the damage that the shield can absorb
-                damage_to_reflect = min(capacity, original_damage)
-
-                capacity -= original_damage
+                # If layered shield is active, break capacity into layers (default 25)
+                has_layers = getattr(target, "reflect_shield_layers", False)
+                if has_layers:
+                    layer_size = getattr(target, "reflect_shield_layer_size", 25.0)
+                    if capacity % layer_size <= 0.001:
+                        current_layer_cap = layer_size
+                    else:
+                        current_layer_cap = capacity % layer_size
+                    damage_to_absorb = min(current_layer_cap, original_damage)
+                    damage_to_reflect = damage_to_absorb
+                    capacity -= damage_to_absorb
+                else:
+                    damage_to_reflect = min(capacity, original_damage)
+                    capacity -= original_damage
 
                 if capacity <= 0:
                     target.reflect_shield_active = False
@@ -834,8 +845,19 @@ class Action:
                                 self.world._deal_damage(next_entity, attacker)
                         elif e_reflect:
                             capacity = getattr(next_entity, "reflect_shield_capacity", 50.0)
-                            damage_to_reflect = min(capacity, current_damage)
-                            capacity -= current_damage
+                            has_layers = getattr(next_entity, "reflect_shield_layers", False)
+                            if has_layers:
+                                layer_size = getattr(next_entity, "reflect_shield_layer_size", 25.0)
+                                if capacity % layer_size <= 0.001:
+                                    current_layer_cap = layer_size
+                                else:
+                                    current_layer_cap = capacity % layer_size
+                                damage_to_absorb = min(current_layer_cap, current_damage)
+                                damage_to_reflect = damage_to_absorb
+                                capacity -= damage_to_absorb
+                            else:
+                                damage_to_reflect = min(capacity, current_damage)
+                                capacity -= current_damage
                             if capacity <= 0:
                                 next_entity.reflect_shield_active = False
                                 next_entity.reflect_shield_capacity = 0.0
@@ -3863,8 +3885,19 @@ class Action:
                                 # Take damage
                                 if getattr(self.ball, "reflect_shield_active", False):
                                     capacity = getattr(self.ball, "reflect_shield_capacity", 50.0)
-                                    damage_to_reflect = min(capacity, hazard.damage)
-                                    capacity -= hazard.damage
+                                    has_layers = getattr(self.ball, "reflect_shield_layers", False)
+                                    if has_layers:
+                                        layer_size = getattr(self.ball, "reflect_shield_layer_size", 25.0)
+                                        if capacity % layer_size <= 0.001:
+                                            current_layer_cap = layer_size
+                                        else:
+                                            current_layer_cap = capacity % layer_size
+                                        damage_to_absorb = min(current_layer_cap, hazard.damage)
+                                        damage_to_reflect = damage_to_absorb
+                                        capacity -= damage_to_absorb
+                                    else:
+                                        damage_to_reflect = min(capacity, hazard.damage)
+                                        capacity -= hazard.damage
                                     if capacity <= 0:
                                         self.ball.reflect_shield_active = False
                                         self.ball.reflect_shield_capacity = 0.0
@@ -3963,8 +3996,19 @@ class Action:
 
                                     if getattr(self.ball, "reflect_shield_active", False):
                                         capacity = getattr(self.ball, "reflect_shield_capacity", 50.0)
-                                        damage_to_reflect = min(capacity, hazard_damage)
-                                        capacity -= hazard_damage
+                                        has_layers = getattr(self.ball, "reflect_shield_layers", False)
+                                        if has_layers:
+                                            layer_size = getattr(self.ball, "reflect_shield_layer_size", 25.0)
+                                            if capacity % layer_size <= 0.001:
+                                                current_layer_cap = layer_size
+                                            else:
+                                                current_layer_cap = capacity % layer_size
+                                            damage_to_absorb = min(current_layer_cap, hazard_damage)
+                                            damage_to_reflect = damage_to_absorb
+                                            capacity -= damage_to_absorb
+                                        else:
+                                            damage_to_reflect = min(capacity, hazard_damage)
+                                            capacity -= hazard_damage
                                         if capacity <= 0:
                                             self.ball.reflect_shield_active = False
                                             self.ball.reflect_shield_capacity = 0.0
@@ -4005,8 +4049,19 @@ class Action:
                                     # Simple damage logic if _deal_damage isn't trivially applicable here, but we can do inline damage
                                     if getattr(self.ball, "reflect_shield_active", False):
                                         capacity = getattr(self.ball, "reflect_shield_capacity", 50.0)
-                                        damage_to_reflect = min(capacity, hazard_damage)
-                                        capacity -= hazard_damage
+                                        has_layers = getattr(self.ball, "reflect_shield_layers", False)
+                                        if has_layers:
+                                            layer_size = getattr(self.ball, "reflect_shield_layer_size", 25.0)
+                                            if capacity % layer_size <= 0.001:
+                                                current_layer_cap = layer_size
+                                            else:
+                                                current_layer_cap = capacity % layer_size
+                                            damage_to_absorb = min(current_layer_cap, hazard_damage)
+                                            damage_to_reflect = damage_to_absorb
+                                            capacity -= damage_to_absorb
+                                        else:
+                                            damage_to_reflect = min(capacity, hazard_damage)
+                                            capacity -= hazard_damage
                                         if capacity <= 0:
                                             self.ball.reflect_shield_active = False
                                             self.ball.reflect_shield_capacity = 0.0
