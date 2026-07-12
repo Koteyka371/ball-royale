@@ -5137,6 +5137,31 @@ class Action:
                                         if self.ball.hp <= 0:
                                             self.ball.alive = False
 
+                                elif trap_variant == "arena_constrictor":
+                                    # Temporarily constrict the arena for 10 seconds
+                                    if hasattr(self.world, "arena") and not getattr(self.world.arena, "is_constricted", False):
+                                        self.world.arena.is_constricted = True
+                                        self.world.arena.constriction_timer = 10.0
+                                        # Save original size
+                                        self.world.arena.original_width = getattr(self.world.arena, "width", 1000.0)
+                                        self.world.arena.original_height = getattr(self.world.arena, "height", 1000.0)
+
+                                        # Constrict to 40% of original size
+                                        new_width = self.world.arena.original_width * 0.4
+                                        new_height = self.world.arena.original_height * 0.4
+
+                                        self.world.arena.width = new_width
+                                        self.world.arena.height = new_height
+
+                                        # Clamp all balls to new boundaries
+                                        balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+                                        for b in balls:
+                                            b.x = max(getattr(b, "radius", 10.0), min(new_width - getattr(b, "radius", 10.0), b.x))
+                                            b.y = max(getattr(b, "radius", 10.0), min(new_height - getattr(b, "radius", 10.0), b.y))
+
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append({'type': 'arena_constrict', 'duration': 10.0})
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "siphon":
                                     siphon_latch = type("Hazard", (), {})()
                                     siphon_latch.id = len(self.world.arena.hazards) + 8500

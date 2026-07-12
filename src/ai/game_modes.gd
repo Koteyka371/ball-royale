@@ -300,6 +300,68 @@ class GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and world.arena.get("is_constricted", false):
+				world.arena.constriction_timer -= delta
+				if world.arena.constriction_timer <= 0.0:
+					world.arena.is_constricted = false
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						if world.arena.has("original_width"):
+							world.arena.width = world.arena.original_width
+						if world.arena.has("original_height"):
+							world.arena.height = world.arena.original_height
+					else:
+						if world.arena.has_method("has_meta") and world.arena.has_meta("original_width"):
+							world.arena.width = world.arena.get_meta("original_width")
+						if world.arena.has_method("has_meta") and world.arena.has_meta("original_height"):
+							world.arena.height = world.arena.get_meta("original_height")
+					if world.has("events"):
+						world.events.append({"type": "arena_expand"})
+		elif typeof(world) == TYPE_OBJECT:
+			if "arena" in world and world.arena != null:
+				var is_constricted = false
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("is_constricted"):
+						is_constricted = world.arena.is_constricted
+				else:
+					if "is_constricted" in world.arena:
+						is_constricted = world.arena.is_constricted
+					elif world.arena.has_method("has_meta") and world.arena.has_meta("is_constricted"):
+						is_constricted = world.arena.get_meta("is_constricted")
+
+				if is_constricted:
+					var current_timer = 0.0
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						if world.arena.has("constriction_timer"):
+							current_timer = world.arena.constriction_timer
+							world.arena.constriction_timer -= delta
+					else:
+						if "constriction_timer" in world.arena:
+							current_timer = world.arena.constriction_timer
+							world.arena.constriction_timer -= delta
+						elif world.arena.has_method("has_meta") and world.arena.has_meta("constriction_timer"):
+							current_timer = world.arena.get_meta("constriction_timer")
+							world.arena.set_meta("constriction_timer", current_timer - delta)
+
+					if current_timer - delta <= 0.0:
+						if typeof(world.arena) == TYPE_DICTIONARY:
+							world.arena.is_constricted = false
+							if world.arena.has("original_width"):
+								world.arena.width = world.arena.original_width
+							if world.arena.has("original_height"):
+								world.arena.height = world.arena.original_height
+						else:
+							if "is_constricted" in world.arena:
+								world.arena.is_constricted = false
+							elif world.arena.has_method("set_meta"):
+								world.arena.set_meta("is_constricted", false)
+
+							if world.arena.has_method("has_meta") and world.arena.has_meta("original_width"):
+								world.arena.width = world.arena.get_meta("original_width")
+							if world.arena.has_method("has_meta") and world.arena.has_meta("original_height"):
+								world.arena.height = world.arena.get_meta("original_height")
+						if "events" in world:
+							world.events.append({"type": "arena_expand"})
 
 		# Task idea-898: Mid-game Neutral Shop Zone logic
 		var shop_x = 500.0

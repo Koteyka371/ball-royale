@@ -9345,6 +9345,88 @@ func execute(strategy: String, delta: float):
                                     self.ball.hp -= poison_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = false
+                            elif trap_variant == "arena_constrictor":
+                                if "arena" in self.world and self.world.arena != null:
+                                    var is_constricted = false
+                                    if typeof(self.world.arena) == TYPE_DICTIONARY:
+                                        if self.world.arena.has("is_constricted"): is_constricted = self.world.arena.is_constricted
+                                    else:
+                                        if "is_constricted" in self.world.arena: is_constricted = self.world.arena.is_constricted
+                                        elif self.world.arena.has_method("has_meta") and self.world.arena.has_meta("is_constricted"): is_constricted = self.world.arena.get_meta("is_constricted")
+
+                                    if not is_constricted:
+                                        var orig_w = 1000.0
+                                        var orig_h = 1000.0
+                                        if typeof(self.world.arena) == TYPE_DICTIONARY:
+                                            self.world.arena.is_constricted = true
+                                            self.world.arena.constriction_timer = 10.0
+                                            if self.world.arena.has("width"): orig_w = float(self.world.arena.width)
+                                            if self.world.arena.has("height"): orig_h = float(self.world.arena.height)
+                                            self.world.arena.original_width = orig_w
+                                            self.world.arena.original_height = orig_h
+                                        else:
+                                            if self.world.arena.has_method("set_meta"):
+                                                self.world.arena.set_meta("is_constricted", true)
+                                                self.world.arena.set_meta("constriction_timer", 10.0)
+                                            if "is_constricted" in self.world.arena: self.world.arena.is_constricted = true
+                                            if "constriction_timer" in self.world.arena: self.world.arena.constriction_timer = 10.0
+
+                                            if "width" in self.world.arena: orig_w = float(self.world.arena.width)
+                                            if "height" in self.world.arena: orig_h = float(self.world.arena.height)
+                                            if self.world.arena.has_method("set_meta"):
+                                                self.world.arena.set_meta("original_width", orig_w)
+                                                self.world.arena.set_meta("original_height", orig_h)
+
+                                        var new_w = orig_w * 0.4
+                                        var new_h = orig_h * 0.4
+
+                                        if typeof(self.world.arena) == TYPE_DICTIONARY:
+                                            self.world.arena.width = new_w
+                                            self.world.arena.height = new_h
+                                        else:
+                                            if "width" in self.world.arena: self.world.arena.width = new_w
+                                            if "height" in self.world.arena: self.world.arena.height = new_h
+
+                                        var balls = []
+                                        if typeof(self.world) == TYPE_DICTIONARY:
+                                            if self.world.has("balls"): balls = self.world.balls
+                                            elif self.world.has("entities"): balls = self.world.entities
+                                        else:
+                                            if "balls" in self.world: balls = self.world.balls
+                                            elif "entities" in self.world: balls = self.world.entities
+
+                                        for b in balls:
+                                            var br = 10.0
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                if b.has("radius"): br = b.radius
+                                            else:
+                                                if "radius" in b: br = b.radius
+
+                                            var bx = 0.0
+                                            var by = 0.0
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                if b.has("x"): bx = b.x
+                                                if b.has("y"): by = b.y
+                                            else:
+                                                if "x" in b: bx = b.x
+                                                if "y" in b: by = b.y
+
+                                            var clamped_x = max(br, min(new_w - br, bx))
+                                            var clamped_y = max(br, min(new_h - br, by))
+
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                b.x = clamped_x
+                                                b.y = clamped_y
+                                            else:
+                                                if "x" in b: b.x = clamped_x
+                                                if "y" in b: b.y = clamped_y
+
+                                        var has_events = false
+                                        if typeof(self.world) == TYPE_DICTIONARY: has_events = self.world.has("events")
+                                        else: has_events = "events" in self.world
+                                        if has_events:
+                                            self.world.events.append({"type": "arena_constrict", "duration": 10.0})
+                                hazard.duration = 0.0 # Destroy trap
                             elif trap_variant == "siphon":
                                 var siphon_latch = null
                                 if load("res://src/arena/procedural_arena.gd") != null:

@@ -70,6 +70,8 @@ class GameMode:
     def setup(self, world: Any, balls: List[Any]) -> None:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -208,6 +210,15 @@ class GameMode:
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+
+        if hasattr(world, "arena") and getattr(world.arena, "is_constricted", False):
+            world.arena.constriction_timer -= delta
+            if world.arena.constriction_timer <= 0.0:
+                world.arena.is_constricted = False
+                world.arena.width = getattr(world.arena, "original_width", 1000.0)
+                world.arena.height = getattr(world.arena, "original_height", 1000.0)
+                if hasattr(world, "events"):
+                    world.events.append({'type': 'arena_expand'})
         self.apply_dynamic_traits(world, balls, delta)
         for b in balls:
             if not getattr(b, "alive", False):

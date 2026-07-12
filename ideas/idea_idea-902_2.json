@@ -1,0 +1,1 @@
+{"title": "Sticky Bomb Attachment", "description": "A new hazard type that acts as a sticky bomb. When a player collides with it, it attaches to them and starts a countdown. The player must either transfer it to another player by colliding with them, or use a dash skill to shake it off before it explodes."}
