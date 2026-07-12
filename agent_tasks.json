@@ -25702,6 +25702,125 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1501",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrink Ray Trap",
+      "description": "Reduces the size and knockback resistance of the triggering ball temporarily, making them move faster but take much more knockback from attacks and collisions.",
+      "allowed_paths": [
+        "src/arena/shrink_ray_trap.py",
+        "src/arena/shrink_ray_trap.gd",
+        "tests/test_shrink_ray_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1502",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sun God's Wrath Day Event",
+      "description": "Similar to the Lunar Eclipse, randomly trigger a blinding solar flare event during the day that causes the arena walls to slowly close in and deals continuous minor burn damage to all players caught in the direct sunlight.",
+      "allowed_paths": [
+        "src/ai/sun_gods_wrath_day.py",
+        "src/ai/sun_gods_wrath_day.gd",
+        "tests/test_sun_gods_wrath_day.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1503",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shadow Form Booster",
+      "description": "Add a new booster that temporarily grants players the Shadow form, increasing their speed and letting them steal HP from nearby enemies, but slowly draining their maximum stamina.",
+      "allowed_paths": [
+        "src/ai/shadow_form_booster.py",
+        "src/ai/shadow_form_booster.gd",
+        "tests/test_shadow_form_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1504",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shifting Gravity Fields",
+      "description": "A mode where gravity periodically shifts in random directions.",
+      "allowed_paths": [
+        "src/ai/shifting_gravity_fields.py",
+        "src/ai/shifting_gravity_fields.gd",
+        "tests/test_shifting_gravity_fields.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1505",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Core",
+      "description": "A modifier where a stationary black hole sits in the center of the arena, dragging balls towards it continuously.",
+      "allowed_paths": [
+        "src/ai/black_hole_core.py",
+        "src/ai/black_hole_core.gd",
+        "tests/test_black_hole_core.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1506",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wind Tunnels",
+      "description": "Periodic powerful gusts of wind that push balls into obstacles or speed them up tremendously if they ride the tailwind.",
+      "allowed_paths": [
+        "src/ai/wind_tunnels.py",
+        "src/ai/wind_tunnels.gd",
+        "tests/test_wind_tunnels.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1507",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflective Barriers",
+      "description": "Barriers spawn in the arena that reflect projectiles and players at high speeds.",
+      "allowed_paths": [
+        "src/ai/reflective_barriers.py",
+        "src/ai/reflective_barriers.gd",
+        "tests/test_reflective_barriers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
