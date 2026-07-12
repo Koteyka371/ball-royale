@@ -18008,5 +18008,132 @@ class TemporalRiftsMode(GameMode):
             else:
                 b.speed = base_speed
 
+
+class SectorCollapseMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sector Collapse"
+        self.description = "Sections of the map dynamically collapse and get walled off with unbreakable barriers, forcing players to navigate around them to reach the shrinking safe zone."
+        self.walls = []
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.zone_shrink_rate = 15.0
+        self.wall_spawn_timer = 0.0
+        self.wall_damage_per_second = 100.0
+        self.outside_damage_per_second = 20.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_radius = max(arena_width, arena_height) / 1.5
+        self.walls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = getattr(b, "team", b.ball_type)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random, math
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        # Shrink the zone
+        if self.zone_radius > 50.0:
+            self.zone_radius -= self.zone_shrink_rate * delta
+            if self.zone_radius < 50.0:
+                self.zone_radius = 50.0
+
+        self.wall_spawn_timer += delta
+        if self.wall_spawn_timer > 10.0:
+            self.wall_spawn_timer = 0.0
+            is_horizontal = random.random() > 0.5
+            thickness = 30.0
+            length = random.uniform(200, 500)
+            if is_horizontal:
+                wx = random.uniform(0, arena_width - length)
+                wy = random.uniform(100, arena_height - 100)
+                self.walls.append({"x": wx, "y": wy, "width": length, "height": thickness})
+            else:
+                wx = random.uniform(100, arena_width - 100)
+                wy = random.uniform(0, arena_height - length)
+                self.walls.append({"x": wx, "y": wy, "width": thickness, "height": length})
+
+            if hasattr(world, "add_event"):
+                world.add_event("wall_spawn", {"message": "A new sector has been walled off!"})
+
+        # Apply damages
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            bdx = b.x - self.zone_x
+            bdy = b.y - self.zone_y
+            bdist = math.hypot(bdx, bdy)
+
+            if bdist > self.zone_radius:
+                dmg = self.outside_damage_per_second * delta
+                if hasattr(b, "take_damage"):
+                    b.take_damage(dmg)
+                else:
+                    b.hp -= dmg
+                    if b.hp <= 0:
+                        b.alive = False
+
+            if getattr(b, "alive", False):
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                br = getattr(b, "radius", 20.0)
+
+                touching_wall = False
+                for w in self.walls:
+                    nearest_x = max(w["x"], min(bx, w["x"] + w["width"]))
+                    nearest_y = max(w["y"], min(by, w["y"] + w["height"]))
+                    dist_sq = (bx - nearest_x)**2 + (by - nearest_y)**2
+                    if dist_sq < br**2:
+                        touching_wall = True
+
+                        push_force = 100.0 * delta
+                        if bx < nearest_x + 0.1:
+                            if hasattr(b, "x"): b.x -= push_force
+                        else:
+                            if hasattr(b, "x"): b.x += push_force
+
+                        if by < nearest_y + 0.1:
+                            if hasattr(b, "y"): b.y -= push_force
+                        else:
+                            if hasattr(b, "y"): b.y += push_force
+                        break
+
+                if touching_wall:
+                    dmg = self.wall_damage_per_second * delta
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(dmg)
+                    else:
+                        b.hp -= dmg
+                        if b.hp <= 0:
+                            b.alive = False
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", "")) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        return None
+
 GAME_MODES['temporal_rifts'] = TemporalRiftsMode()
+GAME_MODES['sector_collapse'] = SectorCollapseMode()
 GAME_MODES['bermuda_triangle'] = BermudaTriangleMode()

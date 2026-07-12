@@ -25773,7 +25773,8 @@ class JumpPadBoundariesMode extends GameMode:
 
 var GAME_MODES = {
 	"temporal_rifts": TemporalRiftsMode.new(),
-		"bermuda_triangle": BermudaTriangleMode.new(),
+		"sector_collapse": SectorCollapseMode.new(),
+	"bermuda_triangle": BermudaTriangleMode.new(),
 	"color_trail": ColorTrailMode.new(),
 	"aerial_arena": AerialArenaMode.new(),
 
@@ -27737,6 +27738,208 @@ class TemporalRiftsMode extends GameMode:
 				b["speed"] = new_speed
 			else:
 				b.speed = new_speed
+
+
+class SectorCollapseMode extends GameMode:
+	var zone_x = 500.0
+	var zone_y = 500.0
+	var zone_radius = 500.0
+	var zone_shrink_rate = 15.0
+	var wall_spawn_timer = 0.0
+	var wall_damage_per_second = 100.0
+	var outside_damage_per_second = 20.0
+	var walls = []
+
+	func _init().():
+		name = "Sector Collapse"
+		description = "Sections of the map dynamically collapse and get walled off with unbreakable barriers, forcing players to navigate around them to reach the shrinking safe zone."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_w = world.arena.get("width", 1000.0)
+			arena_h = world.arena.get("height", 1000.0)
+		elif world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_w = world.arena.get("width", 1000.0)
+				arena_h = world.arena.get("height", 1000.0)
+			else:
+				if "width" in world.arena: arena_w = world.arena.width
+				if "height" in world.arena: arena_h = world.arena.height
+
+		zone_x = arena_w / 2.0
+		zone_y = arena_h / 2.0
+		zone_radius = max(arena_w, arena_h) / 1.5
+		walls = []
+
+		var valid_balls = []
+		for b in balls:
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+			if b_type != "spectator":
+				valid_balls.append(b)
+
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i >= 20:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["ball_type"] = "spectator"
+					b["alive"] = false
+				else:
+					if "ball_type" in b: b.ball_type = "spectator"
+					elif b.has_method("set_meta"): b.set_meta("ball_type", "spectator")
+					if "alive" in b: b.alive = false
+					elif b.has_method("set_meta"): b.set_meta("alive", false)
+			else:
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+				var default_team = b.get("team", b_type) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else b_type)
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = default_team
+				else:
+					if "team" in b: b.team = default_team
+					elif b.has_method("set_meta"): b.set_meta("team", default_team)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_w = world.arena.get("width", 1000.0)
+			arena_h = world.arena.get("height", 1000.0)
+		elif world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_w = world.arena.get("width", 1000.0)
+				arena_h = world.arena.get("height", 1000.0)
+			else:
+				if "width" in world.arena: arena_w = world.arena.width
+				if "height" in world.arena: arena_h = world.arena.height
+
+		if zone_radius > 50.0:
+			zone_radius -= zone_shrink_rate * delta
+			if zone_radius < 50.0:
+				zone_radius = 50.0
+
+		wall_spawn_timer += delta
+		if wall_spawn_timer > 10.0:
+			wall_spawn_timer = 0.0
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			var is_horizontal = rng.randf() > 0.5
+			var thickness = 30.0
+			var length = rng.randf_range(200.0, 500.0)
+			var w_dict = {}
+			if is_horizontal:
+				w_dict["x"] = rng.randf_range(0.0, arena_w - length)
+				w_dict["y"] = rng.randf_range(100.0, arena_h - 100.0)
+				w_dict["width"] = length
+				w_dict["height"] = thickness
+			else:
+				w_dict["x"] = rng.randf_range(100.0, arena_w - 100.0)
+				w_dict["y"] = rng.randf_range(0.0, arena_h - length)
+				w_dict["width"] = thickness
+				w_dict["height"] = length
+			walls.append(w_dict)
+
+			if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+				pass
+			elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("wall_spawn", {"message": "A new sector has been walled off!"})
+
+		for b in balls:
+			var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+			if not b_alive or b_type == "spectator":
+				continue
+
+			var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+			var br = b.get("radius", 20.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 20.0)
+
+			var dist = sqrt(pow(bx - zone_x, 2) + pow(by - zone_y, 2))
+			if dist > zone_radius:
+				var dmg = outside_damage_per_second * delta
+				if typeof(b) == TYPE_DICTIONARY:
+					var cur_hp = b.get("hp", 100.0)
+					b["hp"] = cur_hp - dmg
+					if b["hp"] <= 0:
+						b["alive"] = false
+				else:
+					if b.has_method("take_damage"):
+						b.take_damage(dmg)
+					else:
+						var cur_hp = b.hp if "hp" in b else 100.0
+						b.hp = cur_hp - dmg
+						if b.hp <= 0:
+							if "alive" in b: b.alive = false
+							elif b.has_method("set_meta"): b.set_meta("alive", false)
+
+			b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			if not b_alive: continue
+
+			bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+			by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+
+			var touching_wall = false
+			for w in walls:
+				var nearest_x = max(w.x, min(bx, w.x + w.width))
+				var nearest_y = max(w.y, min(by, w.y + w.height))
+				var dist_sq = pow(bx - nearest_x, 2) + pow(by - nearest_y, 2)
+				if dist_sq < pow(br, 2):
+					touching_wall = true
+					var push_force = 100.0 * delta
+					if bx < nearest_x + 0.1:
+						if typeof(b) == TYPE_DICTIONARY: b["x"] = b.get("x", 0.0) - push_force
+						else:
+							if "x" in b: b.x -= push_force
+					else:
+						if typeof(b) == TYPE_DICTIONARY: b["x"] = b.get("x", 0.0) + push_force
+						else:
+							if "x" in b: b.x += push_force
+
+					if by < nearest_y + 0.1:
+						if typeof(b) == TYPE_DICTIONARY: b["y"] = b.get("y", 0.0) - push_force
+						else:
+							if "y" in b: b.y -= push_force
+					else:
+						if typeof(b) == TYPE_DICTIONARY: b["y"] = b.get("y", 0.0) + push_force
+						else:
+							if "y" in b: b.y += push_force
+					break
+
+			if touching_wall:
+				var dmg = wall_damage_per_second * delta
+				if typeof(b) == TYPE_DICTIONARY:
+					var cur_hp = b.get("hp", 100.0)
+					b["hp"] = cur_hp - dmg
+					if b["hp"] <= 0:
+						b["alive"] = false
+				else:
+					if b.has_method("take_damage"):
+						b.take_damage(dmg)
+					else:
+						var cur_hp = b.hp if "hp" in b else 100.0
+						b.hp = cur_hp - dmg
+						if b.hp <= 0:
+							if "alive" in b: b.alive = false
+							elif b.has_method("set_meta"): b.set_meta("alive", false)
+
+	func check_winner(world, balls: Array):
+		var alive_teams = {}
+		var alive_count = 0
+		for b in balls:
+			var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+			if b_alive and b_type != "spectator":
+				alive_count += 1
+				var b_team = b.get("team", b_type) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else b_type)
+				alive_teams[b_team] = true
+
+		if alive_count == 0:
+			return "Draw"
+		if alive_teams.size() == 1:
+			return alive_teams.keys()[0]
+		return null
 
 class BermudaTriangleMode extends GameMode:
 	var pylons = []
