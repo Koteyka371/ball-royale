@@ -312,6 +312,54 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+    var t_is_fake_clone = false
+    if "is_fake_clone" in target and target.is_fake_clone: t_is_fake_clone = true
+    elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("is_fake_clone") and target.get_meta("is_fake_clone"): t_is_fake_clone = true
+    elif typeof(target) == TYPE_DICTIONARY and target.has("is_fake_clone") and target["is_fake_clone"]: t_is_fake_clone = true
+
+    if t_is_fake_clone:
+        var a_team = -1
+        if "team" in attacker: a_team = attacker.team
+        elif "ball_type" in attacker: a_team = attacker.ball_type
+        elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("team"): a_team = attacker["team"]
+
+        var t_team = -1
+        if "team" in target: t_team = target.team
+        elif "ball_type" in target: t_team = target.ball_type
+        elif typeof(target) == TYPE_DICTIONARY and target.has("team"): t_team = target["team"]
+
+        if str(a_team) != str(t_team):
+            if typeof(attacker) == TYPE_OBJECT:
+                if "is_blinded" in attacker: attacker.is_blinded = true
+                elif attacker.has_method("set_meta"): attacker.set_meta("is_blinded", true)
+
+                var b_timer = 0.0
+                if "blindness_timer" in attacker: b_timer = attacker.blindness_timer
+                elif attacker.has_method("get_meta") and attacker.has_meta("blindness_timer"): b_timer = attacker.get_meta("blindness_timer")
+                b_timer = max(b_timer, 2.0)
+                if "blindness_timer" in attacker: attacker.blindness_timer = b_timer
+                elif attacker.has_method("set_meta"): attacker.set_meta("blindness_timer", b_timer)
+            elif typeof(attacker) == TYPE_DICTIONARY:
+                attacker["is_blinded"] = true
+                var b_timer = 0.0
+                if attacker.has("blindness_timer"): b_timer = attacker["blindness_timer"]
+                attacker["blindness_timer"] = max(b_timer, 2.0)
+
+            var target_x = 0.0
+            if "x" in target: target_x = target.x
+            elif typeof(target) == TYPE_DICTIONARY and target.has("x"): target_x = target["x"]
+            elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("x"): target_x = target.get_meta("x")
+
+            var target_y = 0.0
+            if "y" in target: target_y = target.y
+            elif typeof(target) == TYPE_DICTIONARY and target.has("y"): target_y = target["y"]
+            elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("y"): target_y = target.get_meta("y")
+
+            if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': target_x, 'y': target_y}})
+            elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                self.world["events"].append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': target_x, 'y': target_y}})
+
     var t_intangible = false
     if typeof(target) == TYPE_OBJECT and "intangible" in target: t_intangible = target.intangible
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible"): t_intangible = target.get_meta("intangible")
@@ -1566,6 +1614,86 @@ func execute(strategy: String, delta: float):
     var b_type = ""
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball.ball_type
     elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: b_type = self.ball.ball_type
+
+    if b_type == "doppelganger" and not ("is_fake_clone" in self.ball and self.ball.is_fake_clone) and not (typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_fake_clone") and self.ball["is_fake_clone"]) and not (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("is_fake_clone") and self.ball.get_meta("is_fake_clone")):
+        var vx = 0.0
+        var vy = 0.0
+        if "vx" in self.ball: vx = self.ball.vx
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vx"): vx = self.ball["vx"]
+
+        if "vy" in self.ball: vy = self.ball.vy
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vy"): vy = self.ball["vy"]
+
+        var speed_sq = vx*vx + vy*vy
+        if speed_sq > 0.1:
+            var cst = 0.0
+            if "clone_spawn_timer" in self.ball: cst = self.ball.clone_spawn_timer
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("clone_spawn_timer"): cst = self.ball["clone_spawn_timer"]
+
+            cst -= delta
+            if cst <= 0.0:
+                cst = 1.0 # Frequently spawns
+                var clone = null
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("duplicate"):
+                    clone = self.ball.duplicate()
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    clone = self.ball.duplicate()
+
+                if clone != null:
+                    var next_id = randi() % 90000 + 10000
+                    if typeof(self.world) == TYPE_OBJECT and "next_id" in self.world:
+                        next_id = self.world.next_id
+                        self.world.next_id += 1
+                    elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("next_id"):
+                        next_id = self.world["next_id"]
+                        self.world["next_id"] += 1
+
+                    if "id" in clone: clone.id = next_id
+                    elif typeof(clone) == TYPE_DICTIONARY: clone["id"] = next_id
+
+                    if "hp" in clone: clone.hp = 1.0
+                    elif typeof(clone) == TYPE_DICTIONARY: clone["hp"] = 1.0
+
+                    if "max_hp" in clone: clone.max_hp = 1.0
+                    elif typeof(clone) == TYPE_DICTIONARY: clone["max_hp"] = 1.0
+
+                    if "damage" in clone: clone.damage = 0.0
+                    elif typeof(clone) == TYPE_DICTIONARY: clone["damage"] = 0.0
+
+                    var b_id = -1
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+
+                    if typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
+                        clone.set_meta("is_fake_clone", true)
+                        clone.set_meta("is_decoy", true)
+                        clone.set_meta("decoy_timer", 5.0)
+                        clone.set_meta("owner_id", b_id)
+                    elif typeof(clone) == TYPE_DICTIONARY:
+                        clone["is_fake_clone"] = true
+                        clone["is_decoy"] = true
+                        clone["decoy_timer"] = 5.0
+                        clone["owner_id"] = b_id
+
+                    if "is_fake_clone" in clone: clone.is_fake_clone = true
+
+                    if "skill_timer" in clone: clone.skill_timer = 9999.0
+                    elif typeof(clone) == TYPE_DICTIONARY: clone["skill_timer"] = 9999.0
+
+                    if "skill" in clone: clone.skill = ""
+                    elif typeof(clone) == TYPE_DICTIONARY: clone["skill"] = ""
+                    if "SKILL" in clone: clone.SKILL = ""
+                    elif typeof(clone) == TYPE_DICTIONARY: clone["SKILL"] = ""
+                    if "active_skill" in clone: clone.active_skill = ""
+                    elif typeof(clone) == TYPE_DICTIONARY: clone["active_skill"] = ""
+
+                    if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                        self.world.balls.append(clone)
+                    elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"):
+                        self.world["balls"].append(clone)
+
+            if "clone_spawn_timer" in self.ball: self.ball.clone_spawn_timer = cst
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["clone_spawn_timer"] = cst
 
     if b_type == "broodling":
         _update_skill_timer(delta)

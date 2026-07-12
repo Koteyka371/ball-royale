@@ -196,6 +196,15 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+        if getattr(target, "is_fake_clone", False):
+            a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
+            t_team = getattr(target, "team", getattr(target, "ball_type", ""))
+            if a_team != t_team:
+                attacker.is_blinded = True
+                attacker.blindness_timer = max(getattr(attacker, "blindness_timer", 0.0), 2.0)
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': target.x, 'y': target.y}})
+
         if getattr(target, "intangible", False) or getattr(target, "intangible_timer", 0.0) > 0.0:
             return
         if getattr(attacker, "intangible", False) or getattr(attacker, "intangible_timer", 0.0) > 0.0:
@@ -982,6 +991,39 @@ class Action:
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                             effect = CheerEffect(self.ball.x, self.ball.y, cheer_type, getattr(self.ball, "id", -1))
                             self.world.arena.hazards.append(effect)
+
+        if getattr(self.ball, "ball_type", "") == "doppelganger" and not getattr(self.ball, "is_fake_clone", False):
+            import copy, math, random
+
+            vx = getattr(self.ball, "vx", 0.0)
+            vy = getattr(self.ball, "vy", 0.0)
+            speed_sq = vx*vx + vy*vy
+
+            if speed_sq > 0.1:
+                self.ball.clone_spawn_timer = getattr(self.ball, "clone_spawn_timer", 0.0) - delta
+                if self.ball.clone_spawn_timer <= 0:
+                    self.ball.clone_spawn_timer = 1.0 # Frequently spawns
+
+                    clone = copy.copy(self.ball)
+                    if hasattr(self.world, "next_id"):
+                        clone.id = self.world.next_id
+                        self.world.next_id += 1
+                    else:
+                        clone.id = random.randint(10000, 99999)
+                    clone.hp = 1.0
+                    clone.max_hp = 1.0
+                    clone.damage = 0.0
+                    clone.is_fake_clone = True
+                    clone.is_decoy = True
+                    clone.decoy_timer = 5.0 # Lives for 5 seconds
+                    clone.owner_id = self.ball.id
+
+                    clone.skill_timer = 9999.0
+                    clone.skill = None
+                    if hasattr(clone, "SKILL"): clone.SKILL = None
+                    if hasattr(clone, "active_skill"): clone.active_skill = None
+
+                    self.world.balls.append(clone)
 
         if getattr(self.ball, "ball_type", "") == "broodling":
             import math
