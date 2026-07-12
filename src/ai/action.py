@@ -3391,8 +3391,8 @@ class Action:
                                                     self.world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
 
                                                 # Generate fragmentation visuals bouncing off other
-                                                if hasattr(self.world, "events"):
-                                                    if not getattr(b, "is_confetti_clone", False):
+                                                if not getattr(b, "is_confetti_clone", False):
+                                                    if hasattr(self.world, "events"):
                                                         for i in range(4):
                                                             angle = random.uniform(0, 2 * math.pi)
                                                             tx = other.x + math.cos(angle) * 150
@@ -3409,7 +3409,36 @@ class Action:
                                                                     "color": "purple"
                                                                 }
                                                             })
-                                                    else:
+
+                                                    # Scatter fragmented traps for area denial
+                                                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                                        class DummyHazard:
+                                                            pass
+                                                        for i in range(3):
+                                                            angle = random.uniform(0, 2 * math.pi)
+                                                            dist = random.uniform(20.0, 60.0)
+                                                            fx = b.x + math.cos(angle) * dist
+                                                            fy = b.y + math.sin(angle) * dist
+                                                            f_id = 11000 + len(self.world.arena.hazards) + int(fx) + int(fy)
+
+                                                            try:
+                                                                from arena.procedural_arena import Hazard
+                                                                fragment = Hazard(id=f_id, x=fx, y=fy, radius=15.0, kind="fragmentation_trap", damage=5.0)
+                                                            except Exception:
+                                                                fragment = DummyHazard()
+                                                                fragment.id = f_id
+                                                                fragment.x = fx
+                                                                fragment.y = fy
+                                                                fragment.radius = 15.0
+                                                                fragment.kind = "fragmentation_trap"
+                                                                fragment.damage = 5.0
+
+                                                            setattr(fragment, "duration", 10.0)
+                                                            setattr(fragment, "stutter_effect", 0.5)
+                                                            setattr(fragment, "active", True)
+                                                            self.world.arena.hazards.append(fragment)
+                                                else:
+                                                    if hasattr(self.world, "events"):
                                                         for i in range(20):
                                                             angle = random.uniform(0, 2 * math.pi)
                                                             tx = b.x + math.cos(angle) * 100
@@ -12505,6 +12534,29 @@ class Action:
                                                     old_dmg = getattr(b, "damage", 0)
                                                     self.world._deal_damage(att, b, dmg=att.damage)
                             hazard.duration = 0.0
+                if getattr(hazard, "kind", "") == "fragmentation_trap":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        trigger_radius = getattr(hazard, "radius", 15.0) + getattr(self.ball, "radius", 10.0)
+                        if dist_sq < trigger_radius * trigger_radius:
+                            stutter_effect = getattr(hazard, "stutter_effect", 0.5)
+                            self.ball.stutter_timer = getattr(self.ball, "stutter_timer", 0.0) + stutter_effect
+
+                            if hasattr(self.world, "_deal_damage"):
+                                class DummyAttacker:
+                                    pass
+                                att = DummyAttacker()
+                                att.damage = getattr(hazard, "damage", 5.0)
+                                att.id = getattr(hazard, "owner_id", None)
+                                try:
+                                    self.world._deal_damage(att, self.ball, dmg=att.damage)
+                                except TypeError:
+                                    self.world._deal_damage(att, self.ball)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= getattr(hazard, "damage", 5.0)
+
+                            hazard.duration = 0.0
+                            hazard.active = False
                 if getattr(hazard, "kind", "") == "aura_inverter_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2

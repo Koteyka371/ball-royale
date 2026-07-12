@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Swap Hazard",
+    "description": "A new hazard type that, when triggered, instantly swaps the position of the triggering entity with a random enemy, creating chaos and breaking defensive formations."
+}
