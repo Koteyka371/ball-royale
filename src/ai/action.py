@@ -1880,51 +1880,14 @@ class Action:
 
         # Weather Shield logic
         if hasattr(self.ball, "inventory") and "weather_shield" in self.ball.inventory:
-            # Check for negative weather/status effects
-            weather_statuses = ["wet", "cold", "sandblind", "burn_timer", "poison_timer", "slow_timer", "frozen_timer"]
-            absorbed = False
-            for stat in weather_statuses:
-                if getattr(self.ball, stat, 0.0) > 0:
-                    setattr(self.ball, stat, 0.0)
-                    absorbed = True
-
-            # Amplification of positive synergies based on weather
-            arena_weather = ""
-            if hasattr(self.world, "arena") and hasattr(self.world.arena, "weather"):
-                arena_weather = self.world.arena.weather
-            elif hasattr(self.world, "game_mode") and hasattr(self.world.game_mode, "weather"):
-                arena_weather = self.world.game_mode.weather
-
-            synergy_activated = False
-            if arena_weather == "thunderstorm":
-                if getattr(self.ball, "supercharge_timer", 0.0) > 0:
-                    self.ball.supercharge_timer += 5.0
-                    synergy_activated = True
-            elif arena_weather == "rain" or arena_weather == "heavy_rain":
-                if getattr(self.ball, "healing_buff_timer", 0.0) > 0:
-                    self.ball.healing_buff_timer += 5.0
-                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
-                    synergy_activated = True
-            elif arena_weather == "blizzard" or arena_weather == "snow":
-                if getattr(self.ball, "frozen_timer", 0.0) == 0.0 and getattr(self.ball, "cold", 0.0) == 0.0:
-                    self.ball.speed_buff_timer = getattr(self.ball, "speed_buff_timer", 0.0) + 5.0
-                    synergy_activated = True
-            elif arena_weather == "wind" or arena_weather == "windstorm" or arena_weather == "hurricane":
-                if getattr(self.ball, "speed_buff_timer", 0.0) > 0:
-                    self.ball.speed_buff_timer += 5.0
-                    synergy_activated = True
-            elif arena_weather == "heatwave":
-                if getattr(self.ball, "damage_buff_timer", 0.0) > 0:
-                    self.ball.damage_buff_timer += 5.0
-                    synergy_activated = True
-
-            if absorbed or synergy_activated:
-                if absorbed and not synergy_activated:
-                    # Add temporary health regeneration
-                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 20) # Instant heal
-                    # Maybe a heal over time if engine supports it?
-                    self.ball.healing_buff_timer = getattr(self.ball, "healing_buff_timer", 0.0) + 5.0
-                self.ball.inventory.remove("weather_shield")
+            # Deploy zone instantly
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                zone = Hazard(len(self.world.arena.hazards) + 5000, self.ball.x, self.ball.y, 150.0, "weather_shield_zone", 0.0)
+                setattr(zone, "duration", 10.0)
+                setattr(zone, "owner_id", getattr(self.ball, "id", None))
+                self.world.arena.hazards.append(zone)
+            self.ball.inventory.remove("weather_shield")
 
         # Weather Scanner deployment
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "nemesis_compass_item" in self.ball.inventory:
@@ -10221,7 +10184,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -12034,6 +11997,20 @@ class Action:
                             self._spawn_directed_particles(self.ball, target, "lightning")
                         elif hasattr(self, "_spawn_skill_particles"):
                             self._spawn_skill_particles("lightning")
+
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "weather_shield_zone":
+                    import math
+                    if math.hypot(h.x - self.ball.x, h.y - self.ball.y) <= getattr(h, "radius", 100):
+                        # Inside zone, clear weather effects and restore stamina
+                        weather_statuses = ["wet", "cold", "sandblind", "burn_timer", "poison_timer", "slow_timer", "frozen_timer"]
+                        for stat in weather_statuses:
+                            if getattr(self.ball, stat, 0.0) > 0:
+                                setattr(self.ball, stat, 0.0)
+                        if hasattr(self.ball, "stamina"):
+                            self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), self.ball.stamina + 10.0 * delta)
+
         if hasattr(self.ball, "invert_timer") and self.ball.invert_timer > 0:
             self.ball.invert_timer -= delta
             if self.ball.invert_timer < 0:
@@ -12125,7 +12102,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "insulator_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -12294,7 +12271,7 @@ class Action:
                                             # Using _deal_damage instead of raw hp subtraction to register stats, etc.
                                             old_dmg = getattr(owner, "damage", 10.0)
                                             owner.damage = getattr(hazard, "damage", 10.0) * delta
-                                            self.world._deal_damage(owner, self.ball, dmg=owner.damage)
+                                            self.world._deal_damage(owner, self.ball)
                                             owner.damage = old_dmg
 
                                     # Check distance for explosion
