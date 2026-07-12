@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-888] New Hazard Type: Geyser — *2026-07-12 21:25:07 UTC*
+
+A dynamic map hazard that erupts periodically. When erupting, it shoots players upwards (applying a short stun or launch status) and deals minor water-elemental damage. Water and Earth elemental balls could receive a temporary speed boost or healing when hit by it instead of taking damage.
+
+---
+
 ## [idea-831] Anti-Gravity Trap — *2026-07-12 21:04:16 UTC*
 
 A new placeable trap that temporarily creates an inverted gravity field. Any enemy ball or loose booster that enters the field is violently pushed upwards and outwards, heavily disrupting their momentum and scattering gathered items.

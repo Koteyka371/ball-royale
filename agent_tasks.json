@@ -15261,7 +15261,7 @@
     },
     {
       "id": "idea-888",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New Hazard Type: Geyser",
@@ -25457,6 +25457,23 @@
         "src/ai/holographic_projection_item.py",
         "src/ai/holographic_projection_item.gd",
         "tests/test_holographic_projection_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1487",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Distortion Hazard",
+      "description": "A hazard zone that sporadically slows down time for entities inside it but speeds up projectiles and hazards passing through it, forcing players to perfectly time their dodges.",
+      "allowed_paths": [
+        "src/arena/time_distortion.py",
+        "src/arena/time_distortion.gd",
+        "tests/test_time_distortion.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
