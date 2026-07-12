@@ -312,6 +312,62 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+    var is_holo_clone = false
+    if typeof(target) == TYPE_OBJECT and "is_holo_clone" in target and target.is_holo_clone: is_holo_clone = true
+    elif typeof(target) == TYPE_DICTIONARY and target.has("is_holo_clone") and target.is_holo_clone: is_holo_clone = true
+    elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("is_holo_clone") and target.get_meta("is_holo_clone"): is_holo_clone = true
+
+    var t_team = -1
+    if typeof(target) == TYPE_DICTIONARY and target.has("team"): t_team = target.team
+    elif typeof(target) == TYPE_OBJECT and "team" in target: t_team = target.team
+    elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("team"): t_team = target.get_meta("team")
+    elif typeof(target) == TYPE_OBJECT and "ball_type" in target: t_team = target.ball_type
+
+    var a_team2 = -1
+    if typeof(attacker) == TYPE_DICTIONARY and attacker.has("team"): a_team2 = attacker.team
+    elif typeof(attacker) == TYPE_OBJECT and "team" in attacker: a_team2 = attacker.team
+    elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("team"): a_team2 = attacker.get_meta("team")
+    elif typeof(attacker) == TYPE_OBJECT and "ball_type" in attacker: a_team2 = attacker.ball_type
+
+    if is_holo_clone and a_team2 != t_team:
+        if typeof(target) == TYPE_OBJECT:
+            if "hp" in target: target.hp = 0.0
+            if "alive" in target: target.alive = false
+        elif typeof(target) == TYPE_DICTIONARY:
+            target.hp = 0.0
+            target.alive = false
+
+        var a_blindness = 0.0
+        if typeof(attacker) == TYPE_OBJECT and "blindness_timer" in attacker: a_blindness = attacker.blindness_timer
+        elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("blindness_timer"): a_blindness = attacker.blindness_timer
+        elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("blindness_timer"): a_blindness = attacker.get_meta("blindness_timer")
+
+        a_blindness = max(a_blindness, 2.0)
+
+        if typeof(attacker) == TYPE_OBJECT:
+            if "is_blinded" in attacker: attacker.is_blinded = true
+            if "blindness_timer" in attacker: attacker.blindness_timer = a_blindness
+            elif attacker.has_method("set_meta"):
+                attacker.set_meta("is_blinded", true)
+                attacker.set_meta("blindness_timer", a_blindness)
+        elif typeof(attacker) == TYPE_DICTIONARY:
+            attacker.is_blinded = true
+            attacker.blindness_timer = a_blindness
+
+        var t_x = 0.0
+        var t_y = 0.0
+        if typeof(target) == TYPE_OBJECT:
+            if "x" in target: t_x = target.x
+            if "y" in target: t_y = target.y
+        elif typeof(target) == TYPE_DICTIONARY:
+            if target.has("x"): t_x = target.x
+            if target.has("y"): t_y = target.y
+
+        if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+            if typeof(self.world.events) == TYPE_ARRAY:
+                self.world.events.append({'type': 'explosion', 'x': t_x, 'y': t_y, 'radius': 20.0})
+        return
+
     var t_intangible = false
     if typeof(target) == TYPE_OBJECT and "intangible" in target: t_intangible = target.intangible
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible"): t_intangible = target.get_meta("intangible")
@@ -1611,6 +1667,7 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("amnesia_timer"):
         var current_timer = self.ball.get_meta("amnesia_timer")
         if current_timer > 0.0:
@@ -1618,6 +1675,126 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("amnesia_timer"):
         if self.ball["amnesia_timer"] > 0.0:
             self.ball["amnesia_timer"] -= delta
+
+    var is_hologram = false
+    if typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball and self.ball.ball_type == "hologram": is_hologram = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type") and self.ball.ball_type == "hologram": is_hologram = true
+
+    var b_alive = true
+    if typeof(self.ball) == TYPE_OBJECT and "alive" in self.ball: b_alive = self.ball.alive
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("alive"): b_alive = self.ball.alive
+
+    var is_holo_clone = false
+    if typeof(self.ball) == TYPE_OBJECT and "is_holo_clone" in self.ball and self.ball.is_holo_clone: is_holo_clone = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_holo_clone") and self.ball.is_holo_clone: is_holo_clone = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("is_holo_clone") and self.ball.get_meta("is_holo_clone"): is_holo_clone = true
+
+    if is_hologram and b_alive and not is_holo_clone:
+        var holo_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and "holo_clone_timer" in self.ball: holo_timer = self.ball.holo_clone_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("holo_clone_timer"): holo_timer = self.ball.get_meta("holo_clone_timer")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("holo_clone_timer"): holo_timer = self.ball.holo_clone_timer
+
+        holo_timer -= delta
+
+        var b_x = 0.0
+        var b_y = 0.0
+        var p_x = 0.0
+        var p_y = 0.0
+
+        if typeof(self.ball) == TYPE_OBJECT:
+            b_x = self.ball.x if "x" in self.ball else 0.0
+            b_y = self.ball.y if "y" in self.ball else 0.0
+            p_x = self.ball.prev_x if "prev_x" in self.ball else b_x
+            p_y = self.ball.prev_y if "prev_y" in self.ball else b_y
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            b_x = self.ball.x if self.ball.has("x") else 0.0
+            b_y = self.ball.y if self.ball.has("y") else 0.0
+            p_x = self.ball.prev_x if self.ball.has("prev_x") else b_x
+            p_y = self.ball.prev_y if self.ball.has("prev_y") else b_y
+
+        var dx = b_x - p_x
+        var dy = b_y - p_y
+
+        if (abs(dx) > 0.1 or abs(dy) > 0.1) and holo_timer <= 0.0:
+            holo_timer = 0.5
+            var clone = null
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("duplicate"):
+                clone = self.ball.duplicate()
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                clone = self.ball.duplicate()
+            else:
+                clone = {}
+                for k in ["x", "y", "ball_type", "team", "color", "radius"]:
+                    if k in self.ball: clone[k] = self.ball[k]
+
+            if typeof(clone) == TYPE_OBJECT:
+                if "id" in clone: clone.id = randi() % 100000 + 100000
+                if "hp" in clone: clone.hp = 1.0
+                if "max_hp" in clone: clone.max_hp = 1.0
+                if "damage" in clone: clone.damage = 0.0
+                if "is_holo_clone" in clone: clone.is_holo_clone = true
+                elif clone.has_method("set_meta"): clone.set_meta("is_holo_clone", true)
+                if "holo_clone_lifetime" in clone: clone.holo_clone_lifetime = 2.0
+                elif clone.has_method("set_meta"): clone.set_meta("holo_clone_lifetime", 2.0)
+                if "vx" in clone: clone.vx = dx / delta if delta > 0 else 0
+                if "vy" in clone: clone.vy = dy / delta if delta > 0 else 0
+                if "current_action" in clone: clone.current_action = "idle"
+                if "is_confusion_immune" in clone: clone.is_confusion_immune = true
+                elif clone.has_method("set_meta"): clone.set_meta("is_confusion_immune", true)
+            elif typeof(clone) == TYPE_DICTIONARY:
+                clone.id = randi() % 100000 + 100000
+                clone.hp = 1.0
+                clone.max_hp = 1.0
+                clone.damage = 0.0
+                clone.is_holo_clone = true
+                clone.holo_clone_lifetime = 2.0
+                clone.vx = dx / delta if delta > 0 else 0
+                clone.vy = dy / delta if delta > 0 else 0
+                clone.current_action = "idle"
+                clone.is_confusion_immune = true
+
+            if "balls" in self.world:
+                if typeof(self.world.balls) == TYPE_ARRAY:
+                    self.world.balls.append(clone)
+
+        if typeof(self.ball) == TYPE_OBJECT and "holo_clone_timer" in self.ball: self.ball.holo_clone_timer = holo_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("holo_clone_timer", holo_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball.holo_clone_timer = holo_timer
+
+    if is_holo_clone:
+        var holo_lifetime = 2.0
+        if typeof(self.ball) == TYPE_OBJECT and "holo_clone_lifetime" in self.ball: holo_lifetime = self.ball.holo_clone_lifetime
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("holo_clone_lifetime"): holo_lifetime = self.ball.get_meta("holo_clone_lifetime")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("holo_clone_lifetime"): holo_lifetime = self.ball.holo_clone_lifetime
+
+        holo_lifetime -= delta
+
+        var vx = 0.0
+        var vy = 0.0
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "vx" in self.ball: vx = self.ball.vx
+            if "vy" in self.ball: vy = self.ball.vy
+            if "x" in self.ball: self.ball.x += vx * delta
+            if "y" in self.ball: self.ball.y += vy * delta
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            if self.ball.has("vx"): vx = self.ball.vx
+            if self.ball.has("vy"): vy = self.ball.vy
+            if self.ball.has("x"): self.ball.x += vx * delta
+            if self.ball.has("y"): self.ball.y += vy * delta
+
+        if holo_lifetime <= 0.0:
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "hp" in self.ball: self.ball.hp = 0.0
+                if "alive" in self.ball: self.ball.alive = false
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball.hp = 0.0
+                self.ball.alive = false
+
+        if typeof(self.ball) == TYPE_OBJECT and "holo_clone_lifetime" in self.ball: self.ball.holo_clone_lifetime = holo_lifetime
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("holo_clone_lifetime", holo_lifetime)
+        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball.holo_clone_lifetime = holo_lifetime
+
 
 
 	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):

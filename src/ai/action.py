@@ -195,8 +195,19 @@ class Action:
             else:
                 break
 
+
     def _attempt_damage(self, attacker, target) -> None:
+        if getattr(target, "is_holo_clone", False) and getattr(attacker, "team", None) != getattr(target, "team", None):
+            target.hp = 0
+            target.alive = False
+            attacker.is_blinded = True
+            attacker.blindness_timer = max(getattr(attacker, "blindness_timer", 0.0), 2.0)
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'explosion', 'x': target.x, 'y': target.y, 'radius': 20.0})
+            return
+
         if getattr(target, "intangible", False) or getattr(target, "intangible_timer", 0.0) > 0.0:
+
             return
         if getattr(attacker, "intangible", False) or getattr(attacker, "intangible_timer", 0.0) > 0.0:
             return
@@ -993,8 +1004,56 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+
         if getattr(self.ball, "amnesia_timer", 0.0) > 0:
             self.ball.amnesia_timer -= delta
+
+        if getattr(self.ball, "ball_type", "") == "hologram" and getattr(self.ball, "alive", True) and not getattr(self.ball, "is_holo_clone", False):
+            import copy
+            self.ball.holo_clone_timer = getattr(self.ball, "holo_clone_timer", 0.0) - delta
+
+            # Check if moving. We don't have explicit velocity in standard AI, but we can check prev_x/prev_y displacement
+            prev_x = getattr(self.ball, "prev_x", self.ball.x)
+            prev_y = getattr(self.ball, "prev_y", self.ball.y)
+            dx = self.ball.x - prev_x
+            dy = self.ball.y - prev_y
+            # 5.0 distance per tick is reasonable moving speed
+            if (abs(dx) > 0.1 or abs(dy) > 0.1) and self.ball.holo_clone_timer <= 0:
+                self.ball.holo_clone_timer = 0.5 # spawn a clone every 0.5s of movement
+
+                clone = copy.copy(self.ball)
+                clone.id = getattr(self.world, "next_id", 99999)
+                if hasattr(self.world, "next_id"):
+                    self.world.next_id += 1
+
+                clone.is_holo_clone = True
+                clone.holo_clone_lifetime = 2.0
+                clone.hp = 1.0
+                clone.max_hp = 1.0
+                clone.damage = 0.0
+                # Give it a push in the direction of movement so it continues
+                # (it doesn't actually have a physics loop by itself since it runs AI, we can just make it flee in the same direction or let it sit, wait, issue says "inherit momentum")
+                # Wait, balls move using Action.execute. A clone without targets might just sit there or move randomly.
+                # Let's set its vx/vy if action uses it.
+                clone.vx = dx / delta if delta > 0 else 0
+                clone.vy = dy / delta if delta > 0 else 0
+                clone.current_action = "idle" # it will just use idle AI, which doesn't move much unless we force it.
+                clone.is_confusion_immune = True
+                clone.skill_timer = 9999
+
+                if hasattr(self.world, "balls"):
+                    self.world.balls.append(clone)
+
+        if getattr(self.ball, "is_holo_clone", False):
+            self.ball.holo_clone_lifetime = getattr(self.ball, "holo_clone_lifetime", 2.0) - delta
+            # Move based on inherited momentum if we set it
+            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                self.ball.x += self.ball.vx * delta
+                self.ball.y += self.ball.vy * delta
+            if self.ball.holo_clone_lifetime <= 0:
+                self.ball.hp = 0
+                self.ball.alive = False
+
         if hasattr(self.ball, "gravity_boots_timer"):
             if self.ball.gravity_boots_timer > 0.0:
                 self.ball.gravity_boots_timer = max(0.0, self.ball.gravity_boots_timer - delta)

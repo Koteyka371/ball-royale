@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A new hazard that spawns pairs of connected portals. Balls hitting one portal are instantly teleported to the other, retaining momentum. If an enemy follows them through within 1 second, they are both stunned upon exit due to spatial interference."
+}
