@@ -312,6 +312,31 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+	var b_type_attacker = ""
+	if typeof(attacker) == TYPE_DICTIONARY:
+		b_type_attacker = attacker.get("ball_type", "").to_lower()
+	else:
+		b_type_attacker = attacker.get("ball_type") if "ball_type" in attacker else (attacker.get("BALL_TYPE") if "BALL_TYPE" in attacker else "")
+		b_type_attacker = str(b_type_attacker).to_lower()
+
+	if b_type_attacker == "leech":
+		var leech_dmg = 5.0
+		if typeof(attacker) == TYPE_DICTIONARY:
+			leech_dmg = attacker.get("damage", 5.0)
+		else:
+			leech_dmg = attacker.get("damage") if "damage" in attacker else 5.0
+
+		var current_hp = 100.0
+		var max_hp = 100.0
+		if typeof(attacker) == TYPE_DICTIONARY:
+			current_hp = attacker.get("hp", 100.0)
+			max_hp = attacker.get("max_hp", 100.0)
+			attacker["hp"] = min(current_hp + (leech_dmg * 2.0), max_hp)
+		else:
+			current_hp = attacker.get("hp") if "hp" in attacker else 100.0
+			max_hp = attacker.get("max_hp") if "max_hp" in attacker else 100.0
+			if "hp" in attacker:
+				attacker.hp = min(current_hp + (leech_dmg * 2.0), max_hp)
     var t_intangible = false
     if typeof(target) == TYPE_OBJECT and "intangible" in target: t_intangible = target.intangible
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible"): t_intangible = target.get_meta("intangible")
@@ -1611,6 +1636,135 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var my_b_type = ""
+	if typeof(ball) == TYPE_DICTIONARY: my_b_type = ball.get("ball_type", "").to_lower()
+	else:
+		my_b_type = ball.get("ball_type") if "ball_type" in ball else (ball.get("BALL_TYPE") if "BALL_TYPE" in ball else "")
+		my_b_type = str(my_b_type).to_lower()
+
+	if my_b_type == "leech":
+		var tether_target_id = null
+		if typeof(ball) == TYPE_DICTIONARY: tether_target_id = ball.get("leech_tether_target_id", null)
+		else: tether_target_id = ball.get("leech_tether_target_id") if "leech_tether_target_id" in ball else null
+
+		var s_timer = 0.0
+		if typeof(ball) == TYPE_DICTIONARY: s_timer = ball.get("skill_timer", 0.0)
+		else: s_timer = ball.get("skill_timer") if "skill_timer" in ball else 0.0
+
+		if s_timer <= 0:
+			var closest_enemy = null
+			var closest_dist = 999999.0
+			var tether_range = 150.0
+			var enemies_arr = _get_enemies()
+			for e in enemies_arr:
+				var is_alive = true
+				var e_hp = 100.0
+				if typeof(e) == TYPE_DICTIONARY:
+					is_alive = e.get("alive", true)
+					e_hp = e.get("hp", 100.0)
+				else:
+					is_alive = e.get("alive") if "alive" in e else true
+					e_hp = e.get("hp") if "hp" in e else 100.0
+				if not is_alive or e_hp <= 0: continue
+				var e_intangible = false
+				var e_intangible_t = 0.0
+				if typeof(e) == TYPE_DICTIONARY:
+					e_intangible = e.get("intangible", false)
+					e_intangible_t = e.get("intangible_timer", 0.0)
+				else:
+					e_intangible = e.get("intangible") if "intangible" in e else false
+					e_intangible_t = e.get("intangible_timer") if "intangible_timer" in e else 0.0
+				if e_intangible or e_intangible_t > 0.0: continue
+				var e_x = e.get("x", 0) if typeof(e) == TYPE_DICTIONARY else (e.get("x") if "x" in e else 0)
+				var e_y = e.get("y", 0) if typeof(e) == TYPE_DICTIONARY else (e.get("y") if "y" in e else 0)
+				var my_x = ball.get("x", 0) if typeof(ball) == TYPE_DICTIONARY else (ball.get("x") if "x" in ball else 0)
+				var my_y = ball.get("y", 0) if typeof(ball) == TYPE_DICTIONARY else (ball.get("y") if "y" in ball else 0)
+				var dx = e_x - my_x
+				var dy = e_y - my_y
+				var dist_sq = dx*dx + dy*dy
+				if dist_sq < closest_dist and dist_sq <= tether_range*tether_range:
+					var has_los = true
+					if has_method("_has_line_of_sight"): has_los = _has_line_of_sight(ball, e)
+					if has_los:
+						closest_dist = dist_sq
+						closest_enemy = e
+			if closest_enemy != null:
+				var e_id = closest_enemy.get("id", null) if typeof(closest_enemy) == TYPE_DICTIONARY else (closest_enemy.get("id") if "id" in closest_enemy else null)
+				if typeof(ball) == TYPE_DICTIONARY:
+					ball["leech_tether_target_id"] = e_id
+					ball["skill_timer"] = ball.get("skill_cooldown", 8.0)
+				else:
+					if "leech_tether_target_id" in ball: ball.leech_tether_target_id = e_id
+					else: ball.set_meta("leech_tether_target_id", e_id)
+					var cd = ball.get("skill_cooldown") if "skill_cooldown" in ball else 8.0
+					ball.skill_timer = cd
+				tether_target_id = e_id
+				if has_method("_spawn_skill_particles"): _spawn_skill_particles("leech_tether_start")
+
+		if tether_target_id != null:
+			var target_entity = null
+			var enemies_arr = _get_enemies()
+			for e in enemies_arr:
+				var e_id = e.get("id", null) if typeof(e) == TYPE_DICTIONARY else (e.get("id") if "id" in e else null)
+				if e_id == tether_target_id:
+					target_entity = e
+					break
+			var break_tether = false
+			if target_entity == null: break_tether = true
+			else:
+				var is_alive = true
+				var e_hp = 100.0
+				if typeof(target_entity) == TYPE_DICTIONARY:
+					is_alive = target_entity.get("alive", true)
+					e_hp = target_entity.get("hp", 100.0)
+				else:
+					is_alive = target_entity.get("alive") if "alive" in target_entity else true
+					e_hp = target_entity.get("hp") if "hp" in target_entity else 100.0
+				if not is_alive or e_hp <= 0: break_tether = true
+				else:
+					var e_x = target_entity.get("x", 0) if typeof(target_entity) == TYPE_DICTIONARY else (target_entity.get("x") if "x" in target_entity else 0)
+					var e_y = target_entity.get("y", 0) if typeof(target_entity) == TYPE_DICTIONARY else (target_entity.get("y") if "y" in target_entity else 0)
+					var my_x = ball.get("x", 0) if typeof(ball) == TYPE_DICTIONARY else (ball.get("x") if "x" in ball else 0)
+					var my_y = ball.get("y", 0) if typeof(ball) == TYPE_DICTIONARY else (ball.get("y") if "y" in ball else 0)
+					var dx = e_x - my_x
+					var dy = e_y - my_y
+					var dist_sq = dx*dx + dy*dy
+					var tether_break_range = 250.0
+					if dist_sq > tether_break_range*tether_break_range: break_tether = true
+					elif has_method("_has_line_of_sight") and not _has_line_of_sight(ball, target_entity): break_tether = true
+			if break_tether:
+				if typeof(ball) == TYPE_DICTIONARY: ball["leech_tether_target_id"] = null
+				else:
+					if "leech_tether_target_id" in ball: ball.leech_tether_target_id = null
+					else: ball.set_meta("leech_tether_target_id", null)
+			else:
+				var spd_mult = 1.0
+				if typeof(target_entity) == TYPE_DICTIONARY:
+					spd_mult = target_entity.get("speed_multiplier", 1.0)
+					target_entity["speed_multiplier"] = 0.6
+				else:
+					spd_mult = target_entity.get("speed_multiplier") if "speed_multiplier" in target_entity else 1.0
+					if "speed_multiplier" in target_entity: target_entity.speed_multiplier = 0.6
+				var drain_rate = 15.0
+				var drain_amount = drain_rate * delta
+				var old_hp = 100.0
+				if typeof(target_entity) == TYPE_DICTIONARY: old_hp = target_entity.get("hp", 100.0)
+				else: old_hp = target_entity.get("hp") if "hp" in target_entity else 100.0
+				var new_hp = old_hp - drain_amount
+				if typeof(target_entity) == TYPE_DICTIONARY: target_entity["hp"] = new_hp
+				else:
+					if "hp" in target_entity: target_entity.hp = new_hp
+				var my_hp = 100.0
+				var my_max_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					my_hp = ball.get("hp", 100.0)
+					my_max_hp = ball.get("max_hp", 100.0)
+					ball["hp"] = min(my_hp + drain_amount, my_max_hp)
+				else:
+					my_hp = ball.get("hp") if "hp" in ball else 100.0
+					my_max_hp = ball.get("max_hp") if "max_hp" in ball else 100.0
+					if "hp" in ball: ball.hp = min(my_hp + drain_amount, my_max_hp)
+
     var b_type = ""
     if typeof(self.ball) == TYPE_OBJECT:
         if "ball_type" in self.ball:

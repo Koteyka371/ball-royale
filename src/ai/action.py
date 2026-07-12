@@ -198,6 +198,14 @@ class Action:
     def _attempt_damage(self, attacker, target) -> None:
         if getattr(target, "intangible", False) or getattr(target, "intangible_timer", 0.0) > 0.0:
             return
+
+        b_type_attacker = getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower()
+        if b_type_attacker == "leech":
+            leech_dmg = getattr(attacker, "damage", 5.0)
+            if hasattr(attacker, "max_hp"):
+                attacker.hp = min(getattr(attacker, "hp", 100.0) + (leech_dmg * 2.0), getattr(attacker, "max_hp", 100.0))
+
+
         if getattr(attacker, "intangible", False) or getattr(attacker, "intangible_timer", 0.0) > 0.0:
             return
         if getattr(target, "quantum_state_timer", 0.0) > 0.0:
@@ -992,6 +1000,61 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower() == "leech":
+            tether_target_id = getattr(self.ball, "leech_tether_target_id", None)
+            if self.ball.skill_timer <= 0:
+                closest_enemy = None
+                closest_dist = 999999.0
+                tether_range = 150.0
+                for e in self._get_enemies():
+                    if not getattr(e, "alive", True) or getattr(e, "hp", 0) <= 0: continue
+                    if getattr(e, "intangible", False) or getattr(e, "intangible_timer", 0.0) > 0.0: continue
+                    dx, dy = e.x - self.ball.x, e.y - self.ball.y
+                    dist_sq = dx*dx + dy*dy
+                    if dist_sq < closest_dist and dist_sq <= tether_range*tether_range:
+                        if hasattr(self, "_has_line_of_sight") and self._has_line_of_sight(self.ball, e):
+                            closest_dist = dist_sq
+                            closest_enemy = e
+                        elif not hasattr(self, "_has_line_of_sight"):
+                            closest_dist = dist_sq
+                            closest_enemy = e
+                if closest_enemy:
+                    self.ball.leech_tether_target_id = closest_enemy.id
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 8.0)
+                    tether_target_id = closest_enemy.id
+                    if hasattr(self, "_spawn_skill_particles"): self._spawn_skill_particles("leech_tether_start")
+
+            if tether_target_id is not None:
+                target_entity = None
+                for e in self._get_enemies():
+                    if e.id == tether_target_id:
+                        target_entity = e
+                        break
+                break_tether = False
+                if target_entity is None or not getattr(target_entity, "alive", True) or getattr(target_entity, "hp", 0) <= 0:
+                    break_tether = True
+                else:
+                    dx, dy = target_entity.x - self.ball.x, target_entity.y - self.ball.y
+                    dist_sq = dx*dx + dy*dy
+                    tether_break_range = 250.0
+                    if dist_sq > tether_break_range*tether_break_range: break_tether = True
+                    elif hasattr(self, "_has_line_of_sight") and not self._has_line_of_sight(self.ball, target_entity): break_tether = True
+                if break_tether:
+                    self.ball.leech_tether_target_id = None
+                else:
+                    target_entity.speed_multiplier = 0.6
+                    drain_rate = 15.0
+                    drain_amount = drain_rate * delta
+                    old_hp = getattr(target_entity, "hp", 100.0)
+                    new_hp = old_hp - drain_amount
+                    if hasattr(self.world, "_deal_damage"):
+                        old_dmg = getattr(self.ball, "damage", 5.0)
+                        self.ball.damage = drain_amount
+                        self._attempt_damage(self.ball, target_entity)
+                        self.ball.damage = old_dmg
+                    else:
+                        target_entity.hp = new_hp
+                        self.ball.hp = min(getattr(self.ball, "hp", 100.0) + drain_amount, getattr(self.ball, "max_hp", 100.0))
 
         ball_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", ""))
         if ball_type == "trickster":
