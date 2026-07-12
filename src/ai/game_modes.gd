@@ -301,6 +301,91 @@ class GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 
+		# Task idea-898: Mid-game Neutral Shop Zone logic
+		var shop_x = 500.0
+		var shop_y = 500.0
+		var shop_radius = 50.0
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+			if b_alive:
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = b.x
+					if b.has("y"): by = b.y
+				elif typeof(b) == TYPE_OBJECT:
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+
+				var dx = bx - shop_x
+				var dy = by - shop_y
+				var dist_to_shop = sqrt(dx * dx + dy * dy)
+				if dist_to_shop <= shop_radius:
+					var gold = 0
+					if typeof(b) == TYPE_DICTIONARY and b.has("gold"): gold = b.gold
+					elif typeof(b) == TYPE_OBJECT and "gold" in b: gold = b.gold
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("gold"): gold = b.get_meta("gold")
+
+					if gold >= 100:
+						var new_gold = gold - 100
+						if typeof(b) == TYPE_DICTIONARY: b["gold"] = new_gold
+						elif typeof(b) == TYPE_OBJECT and "gold" in b: b.gold = new_gold
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("gold", new_gold)
+
+						var upgrades = ["hp", "speed", "damage"]
+						var upgrade = upgrades[randi() % upgrades.size()]
+
+						if upgrade == "hp":
+							var mhp = 100
+							if typeof(b) == TYPE_DICTIONARY and b.has("max_hp"): mhp = b.max_hp
+							elif typeof(b) == TYPE_OBJECT and "max_hp" in b: mhp = b.max_hp
+							var chp = 100
+							if typeof(b) == TYPE_DICTIONARY and b.has("hp"): chp = b.hp
+							elif typeof(b) == TYPE_OBJECT and "hp" in b: chp = b.hp
+
+							mhp += 20
+							chp += 20
+							if typeof(b) == TYPE_DICTIONARY:
+								b["max_hp"] = mhp
+								b["hp"] = chp
+							elif typeof(b) == TYPE_OBJECT:
+								if "max_hp" in b: b.max_hp = mhp
+								if "hp" in b: b.hp = chp
+						elif upgrade == "speed":
+							var bs = 100
+							if typeof(b) == TYPE_DICTIONARY and b.has("base_speed"): bs = b.base_speed
+							elif typeof(b) == TYPE_OBJECT and "base_speed" in b: bs = b.base_speed
+							bs += 15
+							if typeof(b) == TYPE_DICTIONARY:
+								b["base_speed"] = bs
+								b["speed"] = bs
+							elif typeof(b) == TYPE_OBJECT:
+								if "base_speed" in b: b.base_speed = bs
+								if "speed" in b: b.speed = bs
+						elif upgrade == "damage":
+							var bd = 10
+							if typeof(b) == TYPE_DICTIONARY and b.has("base_damage"): bd = b.base_damage
+							elif typeof(b) == TYPE_OBJECT and "base_damage" in b: bd = b.base_damage
+							bd += 5
+							if typeof(b) == TYPE_DICTIONARY:
+								b["base_damage"] = bd
+								b["damage"] = bd
+							elif typeof(b) == TYPE_OBJECT:
+								if "base_damage" in b: b.base_damage = bd
+								if "damage" in b: b.damage = bd
+
+						if world.has_method("add_event"):
+							var bid = "Unknown"
+							if typeof(b) == TYPE_DICTIONARY and b.has("id"): bid = str(b.id)
+							elif typeof(b) == TYPE_OBJECT and "id" in b: bid = str(b.id)
+							world.add_event("shop_upgrade", {
+								"message": bid + " spent 100 gold and upgraded " + upgrade + "!"
+							})
+
 		# Seasonal Hazards
 		var seasonal_timer = 0.0
 		if typeof(world) == TYPE_DICTIONARY:
@@ -608,6 +693,28 @@ class GameMode:
 							world.add_event("bounty_claimed", {
 								"message": killer_id + " claimed a nemesis bounty on " + target_id + " for " + str(reward) + " tokens!"
 							})
+
+			# Task idea-898: Killing players grants gold
+			var current_gold = 0
+			if typeof(killer) == TYPE_DICTIONARY and killer.has("gold"): current_gold = killer.gold
+			elif typeof(killer) == TYPE_OBJECT and "gold" in killer: current_gold = killer.gold
+			elif typeof(killer) == TYPE_OBJECT and killer.has_method("get_meta") and killer.has_meta("gold"): current_gold = killer.get_meta("gold")
+
+			var new_gold = current_gold + 50
+			if typeof(killer) == TYPE_DICTIONARY:
+				killer["gold"] = new_gold
+			elif typeof(killer) == TYPE_OBJECT and "gold" in killer:
+				killer.gold = new_gold
+			elif typeof(killer) == TYPE_OBJECT and killer.has_method("set_meta"):
+				killer.set_meta("gold", new_gold)
+
+			if world.has_method("add_event"):
+				var killer_id_str = "Unknown"
+				if typeof(killer) == TYPE_DICTIONARY and killer.has("id"): killer_id_str = str(killer.id)
+				elif typeof(killer) == TYPE_OBJECT and "id" in killer: killer_id_str = str(killer.id)
+				world.add_event("gold_earned", {
+					"message": killer_id_str + " earned 50 gold for a kill!"
+				})
 
 			# Kill bounty logic (Task idea-821)
 			var current_kb = 0

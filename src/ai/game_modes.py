@@ -215,6 +215,33 @@ class GameMode:
 
 
 
+        # Mid-game Neutral Shop Zone logic
+        shop_x, shop_y, shop_radius = 500.0, 500.0, 50.0
+        for b in balls:
+            if getattr(b, "alive", False):
+                bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                dist_to_shop = ((bx - shop_x)**2 + (by - shop_y)**2)**0.5
+                if dist_to_shop <= shop_radius:
+                    gold = getattr(b, "gold", 0)
+                    if gold >= 100:
+                        b.gold -= 100
+                        # Upgrade randomly
+                        import random
+                        upgrade = random.choice(["hp", "speed", "damage"])
+                        if upgrade == "hp":
+                            b.max_hp = getattr(b, "max_hp", 100) + 20
+                            b.hp = getattr(b, "hp", 100) + 20
+                        elif upgrade == "speed":
+                            b.base_speed = getattr(b, "base_speed", 100) + 15
+                            b.speed = b.base_speed
+                        elif upgrade == "damage":
+                            b.base_damage = getattr(b, "base_damage", 10) + 5
+                            b.damage = b.base_damage
+                        if hasattr(world, "add_event"):
+                            world.add_event("shop_upgrade", {
+                                "message": f"{getattr(b, 'id', 'Unknown')} spent 100 gold and upgraded {upgrade}!"
+                            })
+
         if not hasattr(world, "match_time") or not isinstance(getattr(world, "match_time"), (int, float)):
             world.match_time = 0.0
 
@@ -493,6 +520,13 @@ class GameMode:
             # Give the killer a bounty for this kill
             killer.kill_bounty = getattr(killer, "kill_bounty", 0) + 1
             killer.is_bounty = True
+
+            # Task idea-898: Killing players grants gold
+            killer.gold = getattr(killer, "gold", 0) + 50
+            if hasattr(world, "add_event"):
+                world.add_event("gold_earned", {
+                    "message": f"{killer.id} earned 50 gold for a kill!"
+                })
 
             # If the target had a bounty, reward the killer
             target_bounty = getattr(ball, "kill_bounty", 0)
