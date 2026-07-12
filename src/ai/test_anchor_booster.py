@@ -169,6 +169,7 @@ if __name__ == "__main__":
     test_anchor_booster_immunity_pull_trap()
     print("All tests passed!")
 
+
 def test_anchor_booster_immunity_pull_trap():
     ball = MockBall()
     ball.anchor_booster_timer = 5.0
