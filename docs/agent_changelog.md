@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-837] Weather Conductor Booster — *2026-07-12 00:03:56 UTC*
+
+A new booster that makes the collecting ball immune to the negative effects of the current weather and amplifies any positive synergies (e.g., increased supercharge duration during thunderstorms or increased healing from rain).
+
+---
+
 ## [idea-865] Acid Rain Mutator — *2026-07-11 23:43:20 UTC*
 
 A weather mutator that increases the rain DoT and temporarily destroys small obstacles.

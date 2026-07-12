@@ -14390,7 +14390,7 @@
     },
     {
       "id": "idea-837",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Conductor Booster",
@@ -24878,6 +24878,23 @@
         "src/ai/windstorm.py",
         "src/ai/windstorm.gd",
         "tests/test_windstorm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1453",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Inversion Mutator",
+      "description": "Periodically flips the gravity of the arena, sending heavy objects flying and altering player momentum.",
+      "allowed_paths": [
+        "src/ai/gravity_inversion_mutator.py",
+        "src/ai/gravity_inversion_mutator.gd",
+        "tests/test_gravity_inversion_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
