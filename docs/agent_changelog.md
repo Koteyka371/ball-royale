@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-915] Decoy Mimic Behaviors — *2026-07-12 23:02:27 UTC*
+
+Allow the trickster's decoys to mimic specific abilities like 'flee' or 'attack' visually when the real Trickster executes them, sending out harmless but confusing particle effects to make the illusion even more convincing.
+
+---
+
 ## [idea-879] Guild Tournaments — *2026-07-12 22:56:20 UTC*
 
 Introduce weekly Guild vs. Guild tournaments where the top guilds compete for exclusive cosmetic items, unique titles, and massive prestige token payouts.

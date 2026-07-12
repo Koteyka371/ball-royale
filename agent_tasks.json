@@ -15720,7 +15720,7 @@
     },
     {
       "id": "idea-915",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Mimic Behaviors",
@@ -25662,6 +25662,24 @@
         "src/ui/guild_leaderboards_for_boss_tiers.gd",
         "src/ai/guild_leaderboards_for_boss_tiers.py",
         "tests/test_guild_leaderboards_for_boss_tiers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1499",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cross-Guild Alliance System",
+      "description": "Enable up to 3 guilds to form an alliance, sharing a unified chat channel, combined leaderboard presence, and access to massive 50v50 multi-guild events.",
+      "allowed_paths": [
+        "src/ui/cross_guild_alliance.py",
+        "src/ui/cross_guild_alliance.gd",
+        "src/ai/cross_guild_alliance.py",
+        "tests/test_cross_guild_alliance.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
