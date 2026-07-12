@@ -992,6 +992,9 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if getattr(self.ball, "amnesia_timer", 0.0) > 0:
+            self.ball.amnesia_timer -= delta
         if hasattr(self.ball, "gravity_boots_timer"):
             if self.ball.gravity_boots_timer > 0.0:
                 self.ball.gravity_boots_timer = max(0.0, self.ball.gravity_boots_timer - delta)
@@ -6058,6 +6061,17 @@ class Action:
                         elif hazard.kind == "glitch_zone":
                             self.ball.glitch_timer = 2.0
                             continue
+                        elif hazard.kind == "amnesia_cloud":
+                            dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
+                            if dist_sq < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 30.0))**2:
+                                self.ball.amnesia_timer = 10.0
+                                if hasattr(self.ball, "memory"):
+                                    self.ball.memory = {}
+                                # If any specific tracking exists, clear it
+                                if hasattr(self.ball, "last_attacker_id"):
+                                    self.ball.last_attacker_id = None
+                                if hasattr(self.ball, "target_enemy_id"):
+                                    self.ball.target_enemy_id = None
                         elif hazard.kind == "acid_puddle":
                             hazard_damage = hazard.damage * delta
                             if hasattr(self.ball, "take_damage"):
@@ -6811,7 +6825,12 @@ class Action:
 
 
     def _get_enemies(self) -> list:
+        if getattr(self.ball, "amnesia_timer", 0.0) > 0:
+            import random
+            if random.random() < 0.5:
+                return []
         if getattr(self.ball, "is_confused", False):
+
             return self._get_allies_internal()
         return self._get_enemies_internal()
 
