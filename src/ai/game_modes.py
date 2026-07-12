@@ -18331,6 +18331,104 @@ class SectorCollapseMode(GameMode):
 
         return None
 
+class ConstrictingBoundaryTrapMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Constricting Boundary Trap"
+        self.description = "A dynamic trap that temporarily causes the entire arena boundaries to rapidly constrict for 10 seconds, forcing intense close-quarters combat before expanding back out."
+        self.trap_active = False
+        self.trap_timer = 0.0
+        self.original_width = 1000.0
+        self.original_height = 1000.0
+        self.current_width = 1000.0
+        self.current_height = 1000.0
+        self.min_width = 300.0
+        self.min_height = 300.0
+        self.shrink_speed = (1000.0 - 300.0) / 3.0 # Shrink to min in 3 seconds
+        self.expand_speed = (1000.0 - 300.0) / 3.0 # Expand back in 3 seconds
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena:
+            self.original_width = getattr(world.arena, "width", 1000.0)
+            self.original_height = getattr(world.arena, "height", 1000.0)
+            self.current_width = self.original_width
+            self.current_height = self.original_height
+            self.min_width = self.original_width * 0.3
+            self.min_height = self.original_height * 0.3
+            self.shrink_speed = (self.original_width - self.min_width) / 3.0
+            self.expand_speed = (self.original_width - self.min_width) / 3.0
+        self.trap_active = False
+        self.trap_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        if not self.trap_active:
+            # Randomly activate the trap, say every 30 seconds on average
+            if random.random() < delta / 30.0:
+                self.trap_active = True
+                self.trap_timer = 10.0
+                if hasattr(world, "add_event"):
+                    world.add_event("boundary_constrict_warning", {"message": "The arena boundaries are collapsing!"})
+        else:
+            self.trap_timer -= delta
+
+            if self.trap_timer > 7.0: # Shrinking phase (first 3 seconds)
+                self.current_width = max(self.min_width, self.current_width - self.shrink_speed * delta)
+                self.current_height = max(self.min_height, self.current_height - self.shrink_speed * delta)
+            elif self.trap_timer > 3.0: # Hold phase (next 4 seconds)
+                self.current_width = self.min_width
+                self.current_height = self.min_height
+            elif self.trap_timer > 0.0: # Expanding phase (last 3 seconds)
+                self.current_width = min(self.original_width, self.current_width + self.expand_speed * delta)
+                self.current_height = min(self.original_height, self.current_height + self.expand_speed * delta)
+            else: # End of trap
+                self.trap_active = False
+                self.current_width = self.original_width
+                self.current_height = self.original_height
+
+            # Apply the current boundaries to the arena
+            if hasattr(world, "arena") and world.arena:
+                world.arena.width = self.current_width
+                world.arena.height = self.current_height
+
+            # Push balls inside the new boundaries
+            for b in balls:
+                if not getattr(b, "alive", False): continue
+                if getattr(b, "ball_type", "") == "spectator": continue
+
+                br = getattr(b, "radius", 10.0)
+
+                # We want the boundary to collapse towards the center
+                # so the playable area is centered at (original_width/2, original_height/2)
+                cx = self.original_width / 2.0
+                cy = self.original_height / 2.0
+
+                min_x = cx - self.current_width / 2.0 + br
+                max_x = cx + self.current_width / 2.0 - br
+                min_y = cy - self.current_height / 2.0 + br
+                max_y = cy + self.current_height / 2.0 - br
+
+                if hasattr(b, "x"):
+                    if b.x < min_x:
+                        b.x = min_x
+                        if hasattr(b, "vx") and b.vx < 0: b.vx *= -1
+                    elif b.x > max_x:
+                        b.x = max_x
+                        if hasattr(b, "vx") and b.vx > 0: b.vx *= -1
+
+                if hasattr(b, "y"):
+                    if b.y < min_y:
+                        b.y = min_y
+                        if hasattr(b, "vy") and b.vy < 0: b.vy *= -1
+                    elif b.y > max_y:
+                        b.y = max_y
+                        if hasattr(b, "vy") and b.vy > 0: b.vy *= -1
+
+
+GAME_MODES['constricting_boundary_trap'] = ConstrictingBoundaryTrapMode()
 GAME_MODES['temporal_rifts'] = TemporalRiftsMode()
 GAME_MODES['sector_collapse'] = SectorCollapseMode()
 GAME_MODES['bermuda_triangle'] = BermudaTriangleMode()

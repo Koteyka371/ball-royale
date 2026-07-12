@@ -26240,6 +26240,7 @@ var GAME_MODES = {
 	"cosmic_storm": CosmicStormMode.new(),
 	"temporal_rifts": TemporalRiftsMode.new(),
 		"sector_collapse": SectorCollapseMode.new(),
+	"constricting_boundary_trap": ConstrictingBoundaryTrapMode.new(),
 	"bermuda_triangle": BermudaTriangleMode.new(),
 	"color_trail": ColorTrailMode.new(),
 	"aerial_arena": AerialArenaMode.new(),
@@ -28406,6 +28407,137 @@ class SectorCollapseMode extends GameMode:
 		if alive_teams.size() == 1:
 			return alive_teams.keys()[0]
 		return null
+
+class ConstrictingBoundaryTrapMode extends GameMode:
+	var trap_active = false
+	var trap_timer = 0.0
+	var original_width = 1000.0
+	var original_height = 1000.0
+	var current_width = 1000.0
+	var current_height = 1000.0
+	var min_width = 300.0
+	var min_height = 300.0
+	var shrink_speed = (1000.0 - 300.0) / 3.0
+	var expand_speed = (1000.0 - 300.0) / 3.0
+
+	func _init().():
+		name = "Constricting Boundary Trap"
+		description = "A dynamic trap that temporarily causes the entire arena boundaries to rapidly constrict for 10 seconds, forcing intense close-quarters combat before expanding back out."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		trap_active = false
+		trap_timer = 0.0
+
+		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			original_width = world.arena.get("width", 1000.0)
+			original_height = world.arena.get("height", 1000.0)
+		elif world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				original_width = world.arena.get("width", 1000.0)
+				original_height = world.arena.get("height", 1000.0)
+			else:
+				if "width" in world.arena: original_width = world.arena.width
+				if "height" in world.arena: original_height = world.arena.height
+
+		current_width = original_width
+		current_height = original_height
+		min_width = original_width * 0.3
+		min_height = original_height * 0.3
+		shrink_speed = (original_width - min_width) / 3.0
+		expand_speed = (original_width - min_width) / 3.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		if not trap_active:
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			if rng.randf() < delta / 30.0:
+				trap_active = true
+				trap_timer = 10.0
+				if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+					pass
+				elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("boundary_constrict_warning", {"message": "The arena boundaries are collapsing!"})
+		else:
+			trap_timer -= delta
+
+			if trap_timer > 7.0: # Shrinking phase
+				current_width = max(min_width, current_width - shrink_speed * delta)
+				current_height = max(min_height, current_height - shrink_speed * delta)
+			elif trap_timer > 3.0: # Hold phase
+				current_width = min_width
+				current_height = min_height
+			elif trap_timer > 0.0: # Expanding phase
+				current_width = min(original_width, current_width + expand_speed * delta)
+				current_height = min(original_height, current_height + expand_speed * delta)
+			else: # End of trap
+				trap_active = false
+				current_width = original_width
+				current_height = original_height
+
+			if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				world.arena["width"] = current_width
+				world.arena["height"] = current_height
+			elif world != null and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					world.arena["width"] = current_width
+					world.arena["height"] = current_height
+				else:
+					if "width" in world.arena: world.arena.width = current_width
+					if "height" in world.arena: world.arena.height = current_height
+
+			for b in balls:
+				var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+				var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+
+				if not b_alive or b_type == "spectator": continue
+
+				var br = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 10.0)
+				var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+				var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+				var bvx = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.vx if "vx" in b else 0.0)
+				var bvy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.vy if "vy" in b else 0.0)
+
+				var cx = original_width / 2.0
+				var cy = original_height / 2.0
+
+				var min_x = cx - current_width / 2.0 + br
+				var max_x = cx + current_width / 2.0 - br
+				var min_y = cy - current_height / 2.0 + br
+				var max_y = cy + current_height / 2.0 - br
+
+				if bx < min_x:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = min_x
+						if bvx < 0: b["vx"] = -bvx
+					else:
+						if "x" in b: b.x = min_x
+						if "vx" in b and b.vx < 0: b.vx = -b.vx
+				elif bx > max_x:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = max_x
+						if bvx > 0: b["vx"] = -bvx
+					else:
+						if "x" in b: b.x = max_x
+						if "vx" in b and b.vx > 0: b.vx = -b.vx
+
+				if by < min_y:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["y"] = min_y
+						if bvy < 0: b["vy"] = -bvy
+					else:
+						if "y" in b: b.y = min_y
+						if "vy" in b and b.vy < 0: b.vy = -b.vy
+				elif by > max_y:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["y"] = max_y
+						if bvy > 0: b["vy"] = -bvy
+					else:
+						if "y" in b: b.y = max_y
+						if "vy" in b and b.vy > 0: b.vy = -b.vy
+
 
 class BermudaTriangleMode extends GameMode:
 	var pylons = []
