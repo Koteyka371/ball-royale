@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-910] Quantum Tunnel Trap — *2026-07-12 21:25:16 UTC*
+
+A trap that instantly teleports the victim to a random location within a 500-unit radius when stepped on, disorienting them and occasionally placing them in other hazards.
+
+---
+
 ## [idea-908] Cosmic Storm Mode — *2026-07-12 21:25:11 UTC*
 
 A new game mode where the entire arena is occasionally bombarded by cosmic storms, forcing players to find temporary shelters or risk being heavily damaged. Shelters have limited capacity and are procedurally generated during the storm.
