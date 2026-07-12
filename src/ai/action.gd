@@ -3904,27 +3904,114 @@ func execute(strategy: String, delta: float):
 					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta(stat, 0.0)
 					absorbed = true
 
-			if absorbed:
-				var current_hp = 0
-				if "hp" in self.ball: current_hp = self.ball.hp
-				elif self.ball is Dictionary and self.ball.has("hp"): current_hp = self.ball["hp"]
+			var arena_weather = ""
+			if self.world != null:
+				if "arena" in self.world and self.world.arena != null and "weather" in self.world.arena:
+					arena_weather = self.world.arena.weather
+				elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode:
+					arena_weather = self.world.game_mode.weather
 
-				var max_hp = 100
-				if "max_hp" in self.ball: max_hp = self.ball.max_hp
-				elif self.ball is Dictionary and self.ball.has("max_hp"): max_hp = self.ball["max_hp"]
+			var synergy_activated = false
 
-				var new_hp = min(max_hp, current_hp + 20)
-				if "hp" in self.ball: self.ball.hp = new_hp
-				elif self.ball is Dictionary: self.ball["hp"] = new_hp
+			if arena_weather == "thunderstorm":
+				var sc_val = 0.0
+				if "supercharge_timer" in self.ball: sc_val = self.ball.supercharge_timer
+				elif self.ball is Dictionary and self.ball.has("supercharge_timer"): sc_val = self.ball.get("supercharge_timer", 0.0)
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("supercharge_timer"): sc_val = self.ball.get_meta("supercharge_timer")
+				if sc_val > 0:
+					if "supercharge_timer" in self.ball: self.ball.supercharge_timer = sc_val + 5.0
+					elif self.ball is Dictionary: self.ball["supercharge_timer"] = sc_val + 5.0
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("supercharge_timer", sc_val + 5.0)
+					synergy_activated = true
 
-				var current_healing_buff = 0.0
-				if "healing_buff_timer" in self.ball: current_healing_buff = self.ball.healing_buff_timer
-				elif self.ball is Dictionary and self.ball.has("healing_buff_timer"): current_healing_buff = self.ball.get("healing_buff_timer", 0.0)
-				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("healing_buff_timer"): current_healing_buff = self.ball.get_meta("healing_buff_timer")
+			elif arena_weather == "rain" or arena_weather == "heavy_rain":
+				var hb_val = 0.0
+				if "healing_buff_timer" in self.ball: hb_val = self.ball.healing_buff_timer
+				elif self.ball is Dictionary and self.ball.has("healing_buff_timer"): hb_val = self.ball.get("healing_buff_timer", 0.0)
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("healing_buff_timer"): hb_val = self.ball.get_meta("healing_buff_timer")
+				if hb_val > 0:
+					if "healing_buff_timer" in self.ball: self.ball.healing_buff_timer = hb_val + 5.0
+					elif self.ball is Dictionary: self.ball["healing_buff_timer"] = hb_val + 5.0
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("healing_buff_timer", hb_val + 5.0)
 
-				if "healing_buff_timer" in self.ball: self.ball.healing_buff_timer = current_healing_buff + 5.0
-				elif self.ball is Dictionary: self.ball["healing_buff_timer"] = current_healing_buff + 5.0
-				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("healing_buff_timer", current_healing_buff + 5.0)
+					var current_hp = 0
+					if "hp" in self.ball: current_hp = self.ball.hp
+					elif self.ball is Dictionary and self.ball.has("hp"): current_hp = self.ball["hp"]
+					var max_hp = 100
+					if "max_hp" in self.ball: max_hp = self.ball.max_hp
+					elif self.ball is Dictionary and self.ball.has("max_hp"): max_hp = self.ball["max_hp"]
+
+					var new_hp = min(max_hp, current_hp + 30)
+					if "hp" in self.ball: self.ball.hp = new_hp
+					elif self.ball is Dictionary: self.ball["hp"] = new_hp
+					synergy_activated = true
+
+			elif arena_weather == "blizzard" or arena_weather == "snow":
+				var fz_val = 0.0
+				if "frozen_timer" in self.ball: fz_val = self.ball.frozen_timer
+				elif self.ball is Dictionary and self.ball.has("frozen_timer"): fz_val = self.ball.get("frozen_timer", 0.0)
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("frozen_timer"): fz_val = self.ball.get_meta("frozen_timer")
+
+				var cold_val = 0.0
+				if "cold" in self.ball: cold_val = self.ball.cold
+				elif self.ball is Dictionary and self.ball.has("cold"): cold_val = self.ball.get("cold", 0.0)
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cold"): cold_val = self.ball.get_meta("cold")
+
+				if fz_val == 0.0 and cold_val == 0.0:
+					var sb_val = 0.0
+					if "speed_buff_timer" in self.ball: sb_val = self.ball.speed_buff_timer
+					elif self.ball is Dictionary and self.ball.has("speed_buff_timer"): sb_val = self.ball.get("speed_buff_timer", 0.0)
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_buff_timer"): sb_val = self.ball.get_meta("speed_buff_timer")
+
+					if "speed_buff_timer" in self.ball: self.ball.speed_buff_timer = sb_val + 5.0
+					elif self.ball is Dictionary: self.ball["speed_buff_timer"] = sb_val + 5.0
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_buff_timer", sb_val + 5.0)
+					synergy_activated = true
+
+			elif arena_weather == "wind" or arena_weather == "windstorm" or arena_weather == "hurricane":
+				var sb_val = 0.0
+				if "speed_buff_timer" in self.ball: sb_val = self.ball.speed_buff_timer
+				elif self.ball is Dictionary and self.ball.has("speed_buff_timer"): sb_val = self.ball.get("speed_buff_timer", 0.0)
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_buff_timer"): sb_val = self.ball.get_meta("speed_buff_timer")
+				if sb_val > 0:
+					if "speed_buff_timer" in self.ball: self.ball.speed_buff_timer = sb_val + 5.0
+					elif self.ball is Dictionary: self.ball["speed_buff_timer"] = sb_val + 5.0
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_buff_timer", sb_val + 5.0)
+					synergy_activated = true
+
+			elif arena_weather == "heatwave":
+				var db_val = 0.0
+				if "damage_buff_timer" in self.ball: db_val = self.ball.damage_buff_timer
+				elif self.ball is Dictionary and self.ball.has("damage_buff_timer"): db_val = self.ball.get("damage_buff_timer", 0.0)
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("damage_buff_timer"): db_val = self.ball.get_meta("damage_buff_timer")
+				if db_val > 0:
+					if "damage_buff_timer" in self.ball: self.ball.damage_buff_timer = db_val + 5.0
+					elif self.ball is Dictionary: self.ball["damage_buff_timer"] = db_val + 5.0
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("damage_buff_timer", db_val + 5.0)
+					synergy_activated = true
+
+			if absorbed or synergy_activated:
+				if absorbed and not synergy_activated:
+					var current_hp = 0
+					if "hp" in self.ball: current_hp = self.ball.hp
+					elif self.ball is Dictionary and self.ball.has("hp"): current_hp = self.ball["hp"]
+
+					var max_hp = 100
+					if "max_hp" in self.ball: max_hp = self.ball.max_hp
+					elif self.ball is Dictionary and self.ball.has("max_hp"): max_hp = self.ball["max_hp"]
+
+					var new_hp = min(max_hp, current_hp + 20)
+					if "hp" in self.ball: self.ball.hp = new_hp
+					elif self.ball is Dictionary: self.ball["hp"] = new_hp
+
+					var current_healing_buff = 0.0
+					if "healing_buff_timer" in self.ball: current_healing_buff = self.ball.healing_buff_timer
+					elif self.ball is Dictionary and self.ball.has("healing_buff_timer"): current_healing_buff = self.ball.get("healing_buff_timer", 0.0)
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("healing_buff_timer"): current_healing_buff = self.ball.get_meta("healing_buff_timer")
+
+					if "healing_buff_timer" in self.ball: self.ball.healing_buff_timer = current_healing_buff + 5.0
+					elif self.ball is Dictionary: self.ball["healing_buff_timer"] = current_healing_buff + 5.0
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("healing_buff_timer", current_healing_buff + 5.0)
 
 				inv.erase("weather_shield")
 				self.ball.set_meta("inventory", inv)
