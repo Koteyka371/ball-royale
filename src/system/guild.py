@@ -208,6 +208,38 @@ class GuildManager:
                 return reward
         return 0
 
+
+    def register_for_tournament(self, guild_name, tournament_id):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if "tournaments" not in guild:
+                guild["tournaments"] = []
+            if tournament_id not in guild["tournaments"]:
+                guild["tournaments"].append(tournament_id)
+                self.save()
+                return True
+        return False
+
+    def process_tournament_results(self, tournament_id, rankings):
+        # rankings: list of dicts [{"guild_name": str, "rank": int}]
+        for entry in rankings:
+            guild_name = entry["guild_name"]
+            rank = entry["rank"]
+            if guild_name in self.data["guilds"]:
+                guild = self.data["guilds"][guild_name]
+                if "tournaments" in guild and tournament_id in guild["tournaments"]:
+                    if rank == 1:
+                        guild.setdefault("titles", []).append("Tournament Champion")
+                        guild.setdefault("cosmetic_auras", []).append("Champion Aura")
+                        guild["prestige_pool"] = guild.get("prestige_pool", 0) + 10000
+                    elif rank <= 3:
+                        guild.setdefault("titles", []).append("Tournament Finalist")
+                        guild["prestige_pool"] = guild.get("prestige_pool", 0) + 5000
+                    elif rank <= 10:
+                        guild["prestige_pool"] = guild.get("prestige_pool", 0) + 1000
+        self.save()
+        return True
+
     def get_guild_buffs(self, guild_name):
         if guild_name in self.data["guilds"]:
             return self.data["guilds"][guild_name]["buffs"]

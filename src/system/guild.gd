@@ -280,6 +280,49 @@ func claim_bounty(target_guild_name: String, claiming_guild_name: String) -> int
                 return reward
     return 0
 
+
+func register_for_tournament(guild_name: String, tournament_id: String) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if not guild.has("tournaments"):
+            guild["tournaments"] = []
+        if not guild["tournaments"].has(tournament_id):
+            guild["tournaments"].append(tournament_id)
+            save_guilds()
+            return true
+    return false
+
+func process_tournament_results(tournament_id: String, rankings: Array) -> bool:
+    for entry in rankings:
+        var guild_name = entry["guild_name"]
+        var rank = entry["rank"]
+        if data["guilds"].has(guild_name):
+            var guild = data["guilds"][guild_name]
+            if guild.has("tournaments") and guild["tournaments"].has(tournament_id):
+                if rank == 1:
+                    if not guild.has("titles"):
+                        guild["titles"] = []
+                    guild["titles"].append("Tournament Champion")
+                    if not guild.has("cosmetic_auras"):
+                        guild["cosmetic_auras"] = []
+                    guild["cosmetic_auras"].append("Champion Aura")
+                    if not guild.has("prestige_pool"):
+                        guild["prestige_pool"] = 0
+                    guild["prestige_pool"] += 10000
+                elif rank <= 3:
+                    if not guild.has("titles"):
+                        guild["titles"] = []
+                    guild["titles"].append("Tournament Finalist")
+                    if not guild.has("prestige_pool"):
+                        guild["prestige_pool"] = 0
+                    guild["prestige_pool"] += 5000
+                elif rank <= 10:
+                    if not guild.has("prestige_pool"):
+                        guild["prestige_pool"] = 0
+                    guild["prestige_pool"] += 1000
+    save_guilds()
+    return true
+
 func get_guild_buffs(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):
         return data["guilds"][guild_name]["buffs"]
