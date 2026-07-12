@@ -7,8 +7,8 @@ class MockHazard:
         self.kind = kind
         self.trap_variant = "warp"
         self.duration = 10.0
-        self.x = 500
-        self.y = 500
+        self.x = 200
+        self.y = 200
         self.radius = 20
         self.damage = 0
         self.active = True
@@ -55,7 +55,7 @@ class MockBall:
 def test_warp_trap():
     trap = MockHazard("trap")
     arena = MockArena([trap])
-    my_ball = MockBall(1, 500, 500)
+    my_ball = MockBall(1, 200, 200)
     world = MockWorld(arena, [my_ball])
     action = Action(my_ball, world)
 
@@ -63,8 +63,8 @@ def test_warp_trap():
     action.execute("none", 0.0)
 
     # Teleportation now random
-    assert my_ball.x >= 10.0 and my_ball.x <= 990.0
-    assert my_ball.y >= 10.0 and my_ball.y <= 990.0
+    dist = math.hypot(my_ball.x - 200, my_ball.y - 200)
+    assert dist <= 500.0 + 1e-5
     assert trap.duration == 0.0
     assert len(world.events) > 0
     assert world.events[-1]['type'] == 'teleport'

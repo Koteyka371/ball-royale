@@ -5316,8 +5316,11 @@ class Action:
                                         arena_w = getattr(self.world.arena, "width", 1000.0)
                                         arena_h = getattr(self.world.arena, "height", 1000.0)
 
-                                    target_x = random.uniform(my_radius, arena_w - my_radius)
-                                    target_y = random.uniform(my_radius, arena_h - my_radius)
+                                    import math
+                                    angle = random.uniform(0, 2 * math.pi)
+                                    dist = random.uniform(0, 500.0)
+                                    target_x = self.ball.x + math.cos(angle) * dist
+                                    target_y = self.ball.y + math.sin(angle) * dist
 
                                     clamped_x, clamped_y = target_x, target_y
                                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
