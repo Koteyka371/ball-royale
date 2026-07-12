@@ -8914,6 +8914,8 @@ class DayNightMode(GameMode):
         self.phase_duration = 10.0
         self.sunlight_beam_timer = 0.0
         self.active_sunlight_beams = [] # list of dicts: {'x', 'y', 'radius', 'duration'}
+        self.moonlight_shadow_timer = 0.0
+        self.active_moonlight_shadows = [] # list of dicts: {'x', 'y', 'radius', 'duration'}
 
     def setup(self, world, balls):
         super().setup(world, balls)
@@ -8923,6 +8925,8 @@ class DayNightMode(GameMode):
         self.timer = 0.0
         self.sunlight_beam_timer = 0.0
         self.active_sunlight_beams = []
+        self.moonlight_shadow_timer = 0.0
+        self.active_moonlight_shadows = []
 
     def _line_intersects_circle(self, p1, p2, circle_center, radius):
         # Math calculation to see if a line segment intersects a circle
@@ -8964,6 +8968,8 @@ class DayNightMode(GameMode):
                 world.arena.is_night = not getattr(world.arena, "is_night", False)
                 self.sunlight_beam_timer = 0.0 # reset on phase change
                 self.active_sunlight_beams = [] # clear beams on phase change
+                self.moonlight_shadow_timer = 0.0
+                self.active_moonlight_shadows = []
 
             is_night = getattr(world.arena, "is_night", False)
             world.arena.night_ratio = (self.timer / max(0.1, self.phase_duration)) if is_night else 0.0
@@ -9021,6 +9027,48 @@ class DayNightMode(GameMode):
                                     b.hp -= beam_damage
                                     if b.hp <= 0:
                                         b.alive = False
+
+            if is_night:
+                # Update and apply moonlight shadows during night
+                for shadow in list(self.active_moonlight_shadows):
+                    shadow['duration'] -= delta
+                    if shadow['duration'] <= 0:
+                        self.active_moonlight_shadows.remove(shadow)
+                        continue
+
+                # Check safe zones and apply stamina drain
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+
+                    is_safe = False
+                    if self.active_moonlight_shadows:
+                        for shadow in self.active_moonlight_shadows:
+                            dist_sq = (b.x - shadow['x'])**2 + (b.y - shadow['y'])**2
+                            if dist_sq <= shadow['radius']**2:
+                                is_safe = True
+                                break
+                    else:
+                        is_safe = True
+
+                    if not is_safe:
+                        if hasattr(b, "stamina"):
+                            b.stamina -= 10.0 * delta
+                            if b.stamina < 0:
+                                b.stamina = 0.0
+
+                self.moonlight_shadow_timer += delta
+                if self.moonlight_shadow_timer >= 3.0:
+                    self.moonlight_shadow_timer = 0.0
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    fx = random.uniform(50, arena_w - 50)
+                    fy = random.uniform(50, arena_h - 50)
+                    shadow_radius = 200.0
+
+                    self.active_moonlight_shadows.append({'x': fx, 'y': fy, 'radius': shadow_radius, 'duration': 4.0})
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "moonlight_shadow", "x": fx, "y": fy, "radius": shadow_radius, "duration": 4.0})
 
             # Sunlight beams only during the day spawn
             if not is_night:
