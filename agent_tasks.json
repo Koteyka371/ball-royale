@@ -15703,7 +15703,7 @@
     },
     {
       "id": "idea-914",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sunlight Reflection Shields",
@@ -25474,6 +25474,91 @@
         "src/arena/time_distortion.py",
         "src/arena/time_distortion.gd",
         "tests/test_time_distortion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1488",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Elemental Auras",
+      "description": "Players can equip different elemental auras (fire, ice, lightning) that apply passive effects to nearby enemies or alter their own stats.",
+      "allowed_paths": [
+        "src/ai/elemental_auras.py",
+        "src/ai/elemental_auras.gd",
+        "tests/test_elemental_auras.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1489",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Match Event",
+      "description": "An event that spawns identical clones of all players that mimic their inputs with a slight delay.",
+      "allowed_paths": [
+        "src/ai/mirror_match.py",
+        "src/ai/mirror_match.gd",
+        "tests/test_mirror_match.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1490",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Traps",
+      "description": "Hazards that slowly suck in players within a certain radius, dealing no damage but making movement very difficult.",
+      "allowed_paths": [
+        "src/arena/black_hole_traps.py",
+        "src/arena/black_hole_traps.gd",
+        "tests/test_black_hole_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1491",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Geyser Jumping Boots",
+      "description": "Add an item called 'Geyser Boots' that grants immunity to geyser damage and stun, but instead launches the player far across the map when standing on an erupting geyser.",
+      "allowed_paths": [
+        "src/ai/geyser_jumping_boots.py",
+        "src/ai/geyser_jumping_boots.gd",
+        "tests/test_geyser_jumping_boots.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1492",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Volcanic Fissures",
+      "description": "Create a new arena hazard type called 'volcanic_fissure' that slowly opens up over time. Once fully opened, it deals continuous fire damage and creates a smokescreen effect, reducing visibility for players inside.",
+      "allowed_paths": [
+        "src/ai/volcanic_fissures.py",
+        "src/ai/volcanic_fissures.gd",
+        "tests/test_volcanic_fissures.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-914] Sunlight Reflection Shields — *2026-07-12 22:00:22 UTC*
+
+Balls can find and equip reflective shields during the day cycle. These shields completely nullify the sunlight beam damage and instead redirect a weaker beam in a random direction that can damage nearby enemies or trigger explosive traps, adding a dynamic counter-play to the day cycle.
+
+---
+
 ## [idea-910] Quantum Tunnel Trap — *2026-07-12 21:25:16 UTC*
 
 A trap that instantly teleports the victim to a random location within a 500-unit radius when stepped on, disorienting them and occasionally placing them in other hazards.
