@@ -25922,6 +25922,7 @@ class JumpPadBoundariesMode extends GameMode:
 		description = "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
 
 var GAME_MODES = {
+	"scorched_earth": ScorchedEarthMode.new(),
 	"temporal_rifts": TemporalRiftsMode.new(),
 		"sector_collapse": SectorCollapseMode.new(),
 	"bermuda_triangle": BermudaTriangleMode.new(),
@@ -27889,6 +27890,73 @@ class TemporalRiftsMode extends GameMode:
 			else:
 				b.speed = new_speed
 
+
+
+class ScorchedEarthMode:
+	extends GameMode
+
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var zone_shrink_rate: float = 10.0
+	var outside_damage_per_second: float = 15.0
+	var outside_stamina_drain_per_second: float = 25.0
+
+	func _init():
+		name = "Scorched Earth"
+		description = "An intense daytime-only mode where the sun gets progressively hotter, causing a slowly shrinking safe zone of shade. Balls outside the shade take continuous damage and have their stamina drained."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and world.arena != null:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_radius = max(arena_width, arena_height) / 1.5
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if zone_radius > 50.0:
+			zone_radius -= zone_shrink_rate * delta
+			if zone_radius < 50.0:
+				zone_radius = 50.0
+
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
+					continue
+				var bx = b.get("x", 0.0)
+				var by = b.get("y", 0.0)
+				var dist_sq = (bx - zone_x)*(bx - zone_x) + (by - zone_y)*(by - zone_y)
+				if dist_sq > zone_radius * zone_radius:
+					var dmg = outside_damage_per_second * delta
+					b.hp -= dmg
+					if b.hp <= 0:
+						b.alive = false
+					var stam = b.get("stamina", 100.0)
+					var stam_drain = outside_stamina_drain_per_second * delta
+					b["stamina"] = max(0.0, stam - stam_drain)
+			else:
+				if not b.get("alive") or b.get("ball_type") == "spectator":
+					continue
+				var bx = b.get("x")
+				var by = b.get("y")
+				var dist_sq = (bx - zone_x)*(bx - zone_x) + (by - zone_y)*(by - zone_y)
+				if dist_sq > zone_radius * zone_radius:
+					var dmg = outside_damage_per_second * delta
+					if b.has_method("take_damage"):
+						b.take_damage(dmg)
+					else:
+						b.set("hp", b.get("hp") - dmg)
+						if b.get("hp") <= 0:
+							b.set("alive", false)
+					var stam = b.get("stamina")
+					var stam_drain = outside_stamina_drain_per_second * delta
+					b.set("stamina", max(0.0, stam - stam_drain))
 
 class SectorCollapseMode extends GameMode:
 	var zone_x = 500.0

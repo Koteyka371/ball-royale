@@ -18098,6 +18098,56 @@ class TemporalRiftsMode(GameMode):
                 b.speed = base_speed
 
 
+
+class ScorchedEarthMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Scorched Earth"
+        self.description = "An intense daytime-only mode where the sun gets progressively hotter, causing a slowly shrinking safe zone of shade. Balls outside the shade take continuous damage and have their stamina drained."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.zone_shrink_rate = 10.0
+        self.outside_damage_per_second = 15.0
+        self.outside_stamina_drain_per_second = 25.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_radius = max(arena_width, arena_height) / 1.5
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        if self.zone_radius > 50.0:
+            self.zone_radius -= self.zone_shrink_rate * delta
+            if self.zone_radius < 50.0:
+                self.zone_radius = 50.0
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            dist_sq = (bx - self.zone_x)**2 + (by - self.zone_y)**2
+
+            if dist_sq > self.zone_radius**2:
+                dmg = self.outside_damage_per_second * delta
+                if hasattr(b, "take_damage"):
+                    b.take_damage(dmg)
+                else:
+                    b.hp -= dmg
+                    if b.hp <= 0:
+                        b.alive = False
+
+                stam_drain = self.outside_stamina_drain_per_second * delta
+                b.stamina = max(0.0, getattr(b, "stamina", 100.0) - stam_drain)
+
 class SectorCollapseMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -18223,6 +18273,7 @@ class SectorCollapseMode(GameMode):
 
         return None
 
+GAME_MODES['scorched_earth'] = ScorchedEarthMode()
 GAME_MODES['temporal_rifts'] = TemporalRiftsMode()
 GAME_MODES['sector_collapse'] = SectorCollapseMode()
 GAME_MODES['bermuda_triangle'] = BermudaTriangleMode()
