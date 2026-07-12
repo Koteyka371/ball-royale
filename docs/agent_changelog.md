@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-886] Gravity Nullifier Item — *2026-07-12 19:45:05 UTC*
+
+An item that temporarily makes the ball unaffected by global wind or localized gravity wells/pull hazards.
+
+---
+
 ## [idea-905] Quantum Tunneling Hazard — *2026-07-12 19:44:58 UTC*
 
 A new hazard type that acts as a pair of linked zones. When a ball enters one zone, it is instantly teleported to the other, but its velocity is randomized and it receives a short 'disorientation' debuff (like inverted steering) for 1 second. This adds chaotic repositioning to the arena.
