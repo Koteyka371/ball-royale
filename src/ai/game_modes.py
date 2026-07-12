@@ -15659,6 +15659,12 @@ class HeavyRainMode(GameMode):
                 if hazards_to_remove and hasattr(world, "add_event"):
                     world.add_event("obstacles_destroyed", {"message": "Heavy Rain washed away small obstacles!"})
 
+class JumpPadBoundariesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Jump Pad Boundaries"
+        self.description = "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
+
 GAME_MODES = {
     "elemental_auras": ElementalAurasMode(),
     "heavy_rain_mutator": HeavyRainMode(),
@@ -15716,6 +15722,7 @@ GAME_MODES = {
     "bumper_balls": BumperBallsMode(),
     "sumo_knockout": SumoKnockoutMode(),
     "bouncy_terrain": BouncyTerrainMode(),
+    "jump_pad_boundaries": JumpPadBoundariesMode(),
     "pinball": PinballMode(),
     "portal_node": PortalNodeMode(),
     "memory_traps": MemoryTrapsMode(),
