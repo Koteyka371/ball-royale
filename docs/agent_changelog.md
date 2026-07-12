@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-880] Bouncy Castle Game Mode — *2026-07-12 15:29:21 UTC*
+
+A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios.
+
+---
+
 ## [idea-672] Friendly Fire Hazard — *2026-07-12 04:12:49 UTC*
 
 A hazard that when stepped on causes all friendly fire damage to be reflected back onto the attacker for 5 seconds.
