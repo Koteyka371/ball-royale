@@ -36,7 +36,7 @@ class MockWorld:
         self.boosters = []
         self.balls = []
 
-    def _deal_damage(self, attacker, target):
+    def _deal_damage(self, attacker, target, **kwargs):
         target.hp -= attacker.damage
 
 def test_placeable_trap_booster_collection():

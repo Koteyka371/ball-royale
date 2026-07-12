@@ -12294,7 +12294,7 @@ class Action:
                                             # Using _deal_damage instead of raw hp subtraction to register stats, etc.
                                             old_dmg = getattr(owner, "damage", 10.0)
                                             owner.damage = getattr(hazard, "damage", 10.0) * delta
-                                            self.world._deal_damage(owner, self.ball)
+                                            self.world._deal_damage(owner, self.ball, dmg=owner.damage)
                                             owner.damage = old_dmg
 
                                     # Check distance for explosion

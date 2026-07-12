@@ -5084,7 +5084,7 @@ func execute(strategy: String, delta: float):
             wind_dy = world.arena.get("wind_dy")
 
         var is_wind_riding_f = false
-        if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind:
+        if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind and anchor_timer <= 0:
             var b_type_f = null
             if "BALL_TYPE" in my_ball: b_type_f = my_ball.BALL_TYPE
             elif "ball_type" in my_ball: b_type_f = my_ball.ball_type
@@ -5125,7 +5125,7 @@ func execute(strategy: String, delta: float):
                 if "vx" in my_ball and "vy" in my_ball:
                     my_ball.x += my_ball.vx * delta * 0.2
                     my_ball.y += my_ball.vy * delta * 0.2
-        if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind:
+        if (wind_dx != 0.0 or wind_dy != 0.0) and not ignores_wind and anchor_timer <= 0:
             my_ball.x += wind_dx * delta
             my_ball.y += wind_dy * delta
 
