@@ -206,6 +206,42 @@ class GameMode:
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # Task idea-898: Mid-game Neutral Shop Zone logic
+        shop_x = 500.0
+        shop_y = 500.0
+        shop_radius = 50.0
+        try:
+            import random
+            rand_mod = getattr(self, "random", random)
+        except Exception:
+            rand_mod = __import__("random")
+        for b in balls:
+            if getattr(b, "alive", False):
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                try:
+                    dist = ((float(bx) - shop_x)**2 + (float(by) - shop_y)**2)**0.5
+                except (TypeError, ValueError):
+                    continue
+                if dist <= shop_radius:
+                    gold = getattr(b, "gold", 0)
+                    if gold >= 100:
+                        b.gold = gold - 100
+                        upgrade = rand_mod.choice(["hp", "speed", "damage"])
+                        if upgrade == "hp":
+                            b.max_hp = getattr(b, "max_hp", 100) + 20
+                            b.hp = getattr(b, "hp", 100) + 20
+                        elif upgrade == "speed":
+                            b.base_speed = getattr(b, "base_speed", 100) + 15
+                            b.speed = getattr(b, "speed", 100) + 15
+                        elif upgrade == "damage":
+                            b.base_damage = getattr(b, "base_damage", 10) + 5
+                            b.damage = getattr(b, "damage", 10) + 5
+                        if hasattr(world, "add_event"):
+                            world.add_event("shop_upgrade", {
+                                "message": f"{getattr(b, 'id', 'Unknown')} spent 100 gold and upgraded {upgrade}!"
+                            })
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -475,6 +511,15 @@ class GameMode:
                                     })
 
     def on_ball_died(self, world, ball, killer=None):
+
+        # Task idea-898: Killing players grants gold
+        if killer:
+            current_gold = getattr(killer, "gold", 0)
+            killer.gold = current_gold + 50
+            if hasattr(world, "add_event"):
+                world.add_event("gold_earned", {
+                    "message": f"{getattr(killer, 'id', 'Unknown')} earned 50 gold for a kill!"
+                })
         if killer and getattr(ball, "id", None) and getattr(killer, "id", None):
             pm = getattr(world, "profile_manager", None)
             if pm and hasattr(pm, "get_player_bounties"):
