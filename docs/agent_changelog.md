@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-879] Guild Tournaments — *2026-07-12 22:56:20 UTC*
+
+Introduce weekly Guild vs. Guild tournaments where the top guilds compete for exclusive cosmetic items, unique titles, and massive prestige token payouts.
+
+---
+
 ## [idea-911] Chronos Booster — *2026-07-12 22:34:35 UTC*
 
 A booster that drastically reduces all skill cooldowns for a 5-second duration, allowing an entity to spam their abilities and abilities of allies nearby.
