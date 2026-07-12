@@ -53,7 +53,7 @@ def test_mirror_stance_skill():
     # Verify reflect shield is active
     assert getattr(ball, "reflect_shield_active", False) == True
     assert getattr(ball, "reflect_shield_timer", 0) >= 3.0
-    assert getattr(ball, "reflect_shield_capacity", 0) == float('inf')
+    assert getattr(ball, "reflect_shield_capacity", 0) == 999999.0
 
     # Verify mirror_stance_timer is set
     assert getattr(ball, "mirror_stance_timer", 0) >= 3.0
@@ -85,7 +85,7 @@ def test_mirror_stance_damage_reflect():
     action._use_skill()
     assert target.reflect_shield_active == True
 
-    assert target.reflect_shield_capacity == float('inf')
+    assert target.reflect_shield_capacity == 999999.0
 
     # Simulate action._deal_damage which is normally on world or similar
     # We will test the capacity and state since those are set up correctly

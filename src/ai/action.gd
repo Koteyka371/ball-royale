@@ -912,6 +912,54 @@ func _attempt_damage(attacker, target) -> void:
 					target.reflect_shield_capacity = 0.0
 				elif target.has_method("set_meta"):
 					target.set_meta("reflect_shield_capacity", 0.0)
+
+				if "reflect_shield_timer" in target:
+					target.reflect_shield_timer = 0.0
+				elif target.has_method("set_meta"):
+					target.set_meta("reflect_shield_timer", 0.0)
+
+				var initial_cap = 0.0
+				if "reflect_shield_initial_capacity" in target:
+					initial_cap = target.reflect_shield_initial_capacity
+				elif target.has_method("get_meta") and target.has_meta("reflect_shield_initial_capacity"):
+					initial_cap = target.get_meta("reflect_shield_initial_capacity")
+
+				if initial_cap > 0.0 and initial_cap < 999990.0:
+					if self.world != null and self.world.has_method("add_event"):
+						self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 150.0, "damage": initial_cap * 0.5})
+					if self.world != null and "balls" in self.world:
+						for b in self.world.balls:
+							var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+							var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else b.id
+							var target_id = target.get("id", null) if typeof(target) == TYPE_DICTIONARY else target.id
+							if is_alive and b_id != target_id:
+								var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+								var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+								var dx = target.x - bx
+								var dy = target.y - by
+								var dist = sqrt(dx*dx + dy*dy)
+								if dist <= 150.0:
+									var exp_dmg = initial_cap * 0.5
+									if self.world != null and self.world.has_method("_deal_damage"):
+										var old_dmg = 10.0
+										if "damage" in target:
+											old_dmg = target.damage
+											target.damage = exp_dmg
+										elif target.has_method("set_meta"):
+											if target.has_meta("damage"):
+												old_dmg = target.get_meta("damage")
+											target.set_meta("damage", exp_dmg)
+										self.world._deal_damage(target, b)
+										if "damage" in target:
+											target.damage = old_dmg
+										elif target.has_method("set_meta"):
+											target.set_meta("damage", old_dmg)
+									else:
+										if typeof(b) == TYPE_DICTIONARY:
+											if "hp" in b: b["hp"] -= exp_dmg
+										else:
+											if b.has_method("take_damage"): b.take_damage(exp_dmg)
+											elif "hp" in b: b.hp -= exp_dmg
 			else:
 				if "reflect_shield_capacity" in target:
 					target.reflect_shield_capacity = capacity
@@ -2411,10 +2459,12 @@ func execute(strategy: String, delta: float):
 				self.ball.set_meta("reflect_shield_active", true)
 				self.ball.set_meta("reflect_shield_timer", 0.5)
 				self.ball.set_meta("reflect_shield_capacity", 20.0 * nearby_enemies)
+				self.ball.set_meta("reflect_shield_initial_capacity", 20.0 * nearby_enemies)
 			else:
 				self.ball["reflect_shield_active"] = true
 				self.ball["reflect_shield_timer"] = 0.5
 				self.ball["reflect_shield_capacity"] = 20.0 * nearby_enemies
+				self.ball["reflect_shield_initial_capacity"] = 20.0 * nearby_enemies
 
 
     # Platforms
@@ -10798,10 +10848,13 @@ func execute(strategy: String, delta: float):
                                     self.ball.set_meta("reflect_shield_active", true)
                                     self.ball.set_meta("reflect_shield_timer", 5.0 + bonus_dur)
                                     self.ball.set_meta("reflect_shield_capacity", 50.0 + bonus_cap)
+                                    self.ball.set_meta("reflect_shield_initial_capacity", 50.0 + bonus_cap)
                                 else:
                                     if "reflect_shield_active" in self.ball: self.ball.reflect_shield_active = true
                                     if "reflect_shield_timer" in self.ball: self.ball.reflect_shield_timer = 5.0 + bonus_dur
-                                    if "reflect_shield_capacity" in self.ball: self.ball.reflect_shield_capacity = 50.0 + bonus_cap
+                                    if "reflect_shield_capacity" in self.ball:
+                                        self.ball.reflect_shield_capacity = 50.0 + bonus_cap
+                                        self.ball.reflect_shield_initial_capacity = 50.0 + bonus_cap
                                 if "shield" in self.ball: self.ball.shield = shield
 
                             elif powerup == "stamina":
@@ -20217,7 +20270,8 @@ func _use_skill():
                 if "bonus_reflect_shield_duration" in self.ball: bonus_dur2 = self.ball.bonus_reflect_shield_duration
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur2 = self.ball.get_meta("bonus_reflect_shield_duration")
                 self.ball.set_meta("reflect_shield_timer", 3.0 + bonus_dur2)
-                self.ball.set_meta("reflect_shield_capacity", 999999.0) # Infinite reflection for 3s
+                self.ball.set_meta("reflect_shield_capacity", 999999.0)
+                self.ball.set_meta("reflect_shield_initial_capacity", 999999.0) # Infinite reflection for 3s
             else:
                 self.ball.reflect_shield_active = true
                 var bonus_dur3 = 0.0
@@ -20225,6 +20279,7 @@ func _use_skill():
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur3 = self.ball.get_meta("bonus_reflect_shield_duration")
                 self.ball.reflect_shield_timer = 3.0 + bonus_dur3
                 self.ball.reflect_shield_capacity = 999999.0
+                self.ball.reflect_shield_initial_capacity = 999999.0
         elif skill_name == "holy_shield":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("reflect_shield_active", true)
@@ -20236,6 +20291,7 @@ func _use_skill():
                 if "bonus_reflect_shield_capacity" in self.ball: bonus_cap_hs = self.ball.bonus_reflect_shield_capacity
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_capacity"): bonus_cap_hs = self.ball.get_meta("bonus_reflect_shield_capacity")
                 self.ball.set_meta("reflect_shield_capacity", 100.0 + bonus_cap_hs)
+                self.ball.set_meta("reflect_shield_initial_capacity", 100.0 + bonus_cap_hs)
             else:
                 self.ball.reflect_shield_active = true
                 var bonus_dur_hs = 0.0
@@ -20246,6 +20302,7 @@ func _use_skill():
                 if "bonus_reflect_shield_capacity" in self.ball: bonus_cap_hs = self.ball.bonus_reflect_shield_capacity
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_capacity"): bonus_cap_hs = self.ball.get_meta("bonus_reflect_shield_capacity")
                 self.ball.reflect_shield_capacity = 100.0 + bonus_cap_hs
+                self.ball.reflect_shield_initial_capacity = 100.0 + bonus_cap_hs
         elif skill_name == "mirror_stance":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("reflect_shield_active", true)
@@ -20254,6 +20311,7 @@ func _use_skill():
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur2 = self.ball.get_meta("bonus_reflect_shield_duration")
                 self.ball.set_meta("reflect_shield_timer", 3.0 + bonus_dur2)
                 self.ball.set_meta("reflect_shield_capacity", 999999.0)
+                self.ball.set_meta("reflect_shield_initial_capacity", 999999.0)
                 self.ball.set_meta("mirror_stance_timer", 3.0 + bonus_dur2)
             else:
                 self.ball.reflect_shield_active = true
@@ -20262,6 +20320,7 @@ func _use_skill():
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur3 = self.ball.get_meta("bonus_reflect_shield_duration")
                 self.ball.reflect_shield_timer = 3.0 + bonus_dur3
                 self.ball.reflect_shield_capacity = 999999.0
+                self.ball.reflect_shield_initial_capacity = 999999.0
                 self.ball.mirror_stance_timer = 3.0 + bonus_dur3
 
             if self.has_method("_spawn_skill_particles"):
@@ -23169,15 +23228,69 @@ func _update_skill_timer(delta: float):
         reflect_shield_timer = self.ball.get_meta("reflect_shield_timer")
 
     if reflect_shield_timer > 0:
+        var expired = false
         if "reflect_shield_timer" in self.ball:
             self.ball.reflect_shield_timer -= delta
             if self.ball.reflect_shield_timer <= 0:
                 self.ball.reflect_shield_active = false
+                expired = true
         elif self.ball.has_method("set_meta"):
             var new_timer = reflect_shield_timer - delta
             self.ball.set_meta("reflect_shield_timer", new_timer)
             if new_timer <= 0:
                 self.ball.set_meta("reflect_shield_active", false)
+                expired = true
+
+        if expired:
+            var cur_cap = 0.0
+            if "reflect_shield_capacity" in self.ball:
+                cur_cap = self.ball.reflect_shield_capacity
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("reflect_shield_capacity"):
+                cur_cap = self.ball.get_meta("reflect_shield_capacity")
+
+            var initial_cap = 0.0
+            if "reflect_shield_initial_capacity" in self.ball:
+                initial_cap = self.ball.reflect_shield_initial_capacity
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("reflect_shield_initial_capacity"):
+                initial_cap = self.ball.get_meta("reflect_shield_initial_capacity")
+
+            var absorbed = initial_cap - cur_cap
+            if absorbed > 0.0 and absorbed < 999990.0:
+                if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+                    self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 150.0, "damage": absorbed * 0.5})
+                if self.world != null and "balls" in self.world:
+                    for b in self.world.balls:
+                        var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+                        var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else b.id
+                        var self_id = self.ball.get("id", null) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id
+                        if is_alive and b_id != self_id:
+                            var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+                            var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+                            var dx = self.ball.x - bx
+                            var dy = self.ball.y - by
+                            var dist = sqrt(dx*dx + dy*dy)
+                            if dist <= 150.0:
+                                var exp_dmg = absorbed * 0.5
+                                if self.world != null and self.world.has_method("_deal_damage"):
+                                    var old_dmg = 10.0
+                                    if "damage" in self.ball:
+                                        old_dmg = self.ball.damage
+                                        self.ball.damage = exp_dmg
+                                    elif self.ball.has_method("set_meta"):
+                                        if self.ball.has_meta("damage"):
+                                            old_dmg = self.ball.get_meta("damage")
+                                        self.ball.set_meta("damage", exp_dmg)
+                                    self.world._deal_damage(self.ball, b)
+                                    if "damage" in self.ball:
+                                        self.ball.damage = old_dmg
+                                    elif self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("damage", old_dmg)
+                                else:
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        if "hp" in b: b["hp"] -= exp_dmg
+                                    else:
+                                        if b.has_method("take_damage"): b.take_damage(exp_dmg)
+                                        elif "hp" in b: b.hp -= exp_dmg
 
 
     var ricochet_barrier_timer = 0.0
