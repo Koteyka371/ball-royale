@@ -9046,6 +9046,86 @@ class SupernovaMode(GameMode):
 
 
 
+class ScorchingSunMode(GameMode):
+    """
+    An intense daytime-only mode where the sun gets progressively hotter, causing a slowly shrinking safe zone of shade.
+    Balls outside the shade take continuous damage and have their stamina drained.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Scorching Sun"
+        self.description = "The sun gets progressively hotter, causing a slowly shrinking safe zone of shade. Balls outside the shade take continuous damage and have their stamina drained."
+        self.safe_zone_radius = 500.0
+        self.safe_zone_x = 500.0
+        self.safe_zone_y = 500.0
+        self.timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.is_night = False
+            self.safe_zone_x = getattr(world.arena, "width", 1000) / 2
+            self.safe_zone_y = getattr(world.arena, "height", 1000) / 2
+        self.safe_zone_radius = 500.0
+        self.timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        if hasattr(world, "arena"):
+            world.arena.is_night = False
+            # Force heatwave weather for aesthetics and modifiers
+            world.arena.weather = "heatwave"
+
+        self.timer += delta
+        # Slowly shrink the shade
+        # Starts at 500, shrinks to 50 over 120 seconds
+        shrink_rate = (500.0 - 50.0) / 120.0
+        self.safe_zone_radius = max(50.0, 500.0 - (self.timer * shrink_rate))
+
+        # Add visual effect for safe zone
+        if hasattr(world, "add_event"):
+            world.add_event("visual_effect", {
+                "type": "moonlight_shadow", # Reuse shade effect for the safe zone
+                "x": self.safe_zone_x,
+                "y": self.safe_zone_y,
+                "radius": self.safe_zone_radius,
+                "duration": delta * 2
+            })
+            world.add_event("visual_effect", {
+                "type": "sunlight_beam", # Heat effect outside
+                "x": self.safe_zone_x,
+                "y": self.safe_zone_y,
+                "radius": self.safe_zone_radius, # Inverted radius is handled implicitly by renderer usually
+                "duration": delta * 2
+            })
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dist_sq = (b.x - self.safe_zone_x)**2 + (b.y - self.safe_zone_y)**2
+
+            if dist_sq > self.safe_zone_radius**2:
+                # Outside shade: damage and stamina drain
+                damage = 10.0 * delta  # Base damage per second
+                stamina_drain = 20.0 * delta # Drain stamina
+
+                # Hotter over time
+                heat_multiplier = 1.0 + (self.timer / 60.0)
+
+                actual_damage = damage * heat_multiplier
+
+                if hasattr(b, "take_damage"):
+                    b.take_damage(actual_damage)
+                else:
+                    b.hp -= actual_damage
+                    if b.hp <= 0:
+                        b.alive = False
+
+                if hasattr(b, "stamina"):
+                    b.stamina -= stamina_drain
+                    if b.stamina < 0:
+                        b.stamina = 0.0
+
 class DayNightMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -16141,6 +16221,7 @@ class BountyTagMode(GameMode):
         return None
 
 GAME_MODES = {
+    'scorching_sun': ScorchingSunMode(),
     "bounty_tag": BountyTagMode(),
     "cosmic_storm": CosmicStormMode(),
     "elemental_auras": ElementalAurasMode(),
