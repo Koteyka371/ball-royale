@@ -25486,6 +25486,11 @@ class HeavyRainMode:
 				if hazards_to_remove.size() > 0 and world.has_method("add_event"):
 					world.add_event("obstacles_destroyed", {"message": "Heavy Rain washed away small obstacles!"})
 
+class JumpPadBoundariesMode extends GameMode:
+	func _init() -> void:
+		name = "Jump Pad Boundaries"
+		description = "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
+
 var GAME_MODES = {
 	"bermuda_triangle": BermudaTriangleMode.new(),
 	"color_trail": ColorTrailMode.new(),
@@ -25553,6 +25558,7 @@ var GAME_MODES = {
 	"bumper_balls": BumperBallsMode.new(),
 	"sumo_knockout": SumoKnockoutMode.new(),
 	"bouncy_terrain": BouncyTerrainMode.new(),
+	"jump_pad_boundaries": JumpPadBoundariesMode.new(),
 	"pinball": PinballMode.new(),
 	"portal_node": PortalNodeMode.new(),
 	"memory_traps": MemoryTrapsMode.new(),
