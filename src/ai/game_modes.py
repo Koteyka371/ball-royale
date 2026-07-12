@@ -15897,7 +15897,80 @@ class JumpPadBoundariesMode(GameMode):
         self.name = "Jump Pad Boundaries"
         self.description = "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
 
+
+class CosmicStormMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Cosmic Storm"
+        self.description = "The entire arena is occasionally bombarded by cosmic storms. Find temporary shelters generated procedurally, or take heavy damage. Shelters have limited capacity."
+        self.storm_timer = 20.0
+        self.is_storm_active = False
+        self.shelters = []
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        self.storm_timer -= delta
+
+        if not self.is_storm_active and self.storm_timer <= 0.0:
+            self.is_storm_active = True
+            self.storm_timer = 10.0
+
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+            # Generate 3-5 shelters
+            num_shelters = random.randint(3, 5)
+            self.shelters = []
+            for _ in range(num_shelters):
+                self.shelters.append({
+                    "x": random.uniform(100, arena_width - 100),
+                    "y": random.uniform(100, arena_height - 100),
+                    "radius": random.uniform(50.0, 80.0),
+                    "capacity": random.randint(1, 3)
+                })
+
+        elif self.is_storm_active and self.storm_timer <= 0.0:
+            self.is_storm_active = False
+            self.storm_timer = 20.0
+            self.shelters = []
+
+        if self.is_storm_active:
+            # Calculate shelter occupancy
+            shelter_occupancy = {i: 0 for i in range(len(self.shelters))}
+            safe_balls = set()
+
+            # Simple assignment: balls grab the closest shelter that has capacity
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+
+                best_shelter_idx = -1
+                best_dist = float('inf')
+
+                for i, shelter in enumerate(self.shelters):
+                    dx = b.x - shelter["x"]
+                    dy = b.y - shelter["y"]
+                    dist = math.sqrt(dx*dx + dy*dy)
+
+                    if dist <= shelter["radius"] and dist < best_dist and shelter_occupancy[i] < shelter["capacity"]:
+                        best_dist = dist
+                        best_shelter_idx = i
+
+                if best_shelter_idx != -1:
+                    shelter_occupancy[best_shelter_idx] += 1
+                    safe_balls.add(id(b))
+
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                if id(b) not in safe_balls:
+                    b.hp = getattr(b, "hp", 100.0) - 20.0 * delta
+
+
 GAME_MODES = {
+    "cosmic_storm": CosmicStormMode(),
     "elemental_auras": ElementalAurasMode(),
     "heavy_rain_mutator": HeavyRainMode(),
 
