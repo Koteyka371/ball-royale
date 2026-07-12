@@ -2778,16 +2778,17 @@ class ZombieInfectionMode(GameMode):
 
 
 class GuildBossFightMode(GameMode):
-    def __init__(self, guild_name=None, guild_manager=None, week_id="week_1"):
+    def __init__(self, guild_name=None, guild_manager=None, week_id="week_1", tier=1):
         super().__init__()
-        self.name = "Guild Boss Fight"
-        self.description = "Guild members team up to deal as much damage as possible to an immortal boss."
+        self.name = f"Guild Boss Fight (Tier {tier})"
+        self.description = f"Guild members team up to deal as much damage as possible to an immortal tier {tier} boss."
         self.boss_id = None
         self.pull_radius = 300.0
         self.pull_strength = 50.0
         self.guild_name = guild_name
         self.guild_manager = guild_manager
         self.week_id = week_id
+        self.tier = tier
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         weather = getattr(self, "weather", "")
@@ -2838,10 +2839,11 @@ class GuildBossFightMode(GameMode):
         # First ball is the boss
         boss = valid_balls[0]
         boss.team = "Boss"
-        boss.max_hp = 10000000.0  # Basically immortal
+        tier_multiplier = getattr(self, "tier", 1)
+        boss.max_hp = 10000000.0 * tier_multiplier # Basically immortal
         boss.hp = boss.max_hp
-        boss.damage = getattr(boss, "damage", 10.0) * 3.0
-        boss.radius = getattr(boss, "radius", 10.0) * 4.0
+        boss.damage = getattr(boss, "damage", 10.0) * (3.0 * tier_multiplier)
+        boss.radius = getattr(boss, "radius", 10.0) * (4.0 + (tier_multiplier - 1) * 0.5)
 
         # Tracking damage for guild
         boss.total_damage_taken = 0.0
@@ -2905,7 +2907,7 @@ class GuildBossFightMode(GameMode):
                     break
 
             if boss and getattr(boss, "total_damage_taken", 0) > 0:
-                self.guild_manager.record_boss_damage(self.guild_name, boss.total_damage_taken, self.week_id)
+                self.guild_manager.record_boss_damage(self.guild_name, boss.total_damage_taken, self.week_id, getattr(self, "tier", 1))
 
 class BossFightMode(GameMode):
     def __init__(self):

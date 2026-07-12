@@ -3910,13 +3910,15 @@ class GuildBossFightMode extends GameMode:
 	var guild_manager = null
 	var week_id = "week_1"
 
-	func _init(p_guild_name = null, p_guild_manager = null, p_week_id = "week_1") -> void:
-		name = "Guild Boss Fight"
-		description = "Guild members team up to deal as much damage as possible to an immortal boss."
+	var tier = 1
+
+	func _init(p_guild_name = null, p_guild_manager = null, p_week_id = "week_1", p_tier = 1) -> void:
+		tier = p_tier
+		name = "Guild Boss Fight (Tier " + str(tier) + ")"
+		description = "Guild members team up to deal as much damage as possible to an immortal tier " + str(tier) + " boss."
 		guild_name = p_guild_name
 		guild_manager = p_guild_manager
 		week_id = p_week_id
-
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
 		for b in balls:
 			var is_alive = false
@@ -4030,10 +4032,10 @@ class GuildBossFightMode extends GameMode:
 			var boss = valid_balls[0]
 			boss.team = "Boss"
 			if "max_hp" in boss:
-				boss.max_hp = 10000000.0
+				boss.max_hp = 10000000.0 * tier
 				boss.hp = boss.max_hp
 			if "damage" in boss:
-				boss.damage *= 3.0
+				boss.damage *= (3.0 * tier)
 
 			boss.set_meta("total_damage_taken", 0.0)
 			if "id" in boss:
@@ -4054,9 +4056,9 @@ class GuildBossFightMode extends GameMode:
 				boss.y = arena_height / 2.0
 
 			if "radius" in boss:
-				boss.radius *= 4.0
+				boss.radius *= (4.0 + (tier - 1) * 0.5)
 			elif boss.has_meta("radius"):
-				boss.set_meta("radius", boss.get_meta("radius") * 4.0)
+				boss.set_meta("radius", boss.get_meta("radius") * (4.0 + (tier - 1) * 0.5))
 
 			if "base_speed" in boss:
 				boss.base_speed *= 0.5
@@ -4133,7 +4135,7 @@ class GuildBossFightMode extends GameMode:
 			if boss != null and boss.has_meta("total_damage_taken"):
 				var dmg = boss.get_meta("total_damage_taken")
 				if dmg > 0:
-					guild_manager.record_boss_damage(guild_name, dmg, week_id)
+					guild_manager.record_boss_damage(guild_name, dmg, week_id, tier)
 
 
 class BossFightMode extends GameMode:

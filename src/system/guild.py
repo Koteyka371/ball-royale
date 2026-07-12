@@ -313,34 +313,56 @@ class GuildManager:
                 self.data["guilds"][owner]["resources"] += 5
         self.save()
 
-    def record_boss_damage(self, guild_name, damage, week_id):
+    def record_boss_damage(self, guild_name, damage, week_id, tier=1):
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
             if "boss_progress" not in guild:
                 guild["boss_progress"] = {}
             if week_id not in guild["boss_progress"]:
-                guild["boss_progress"][week_id] = {"damage_dealt": 0.0, "claimed_by": []}
-            guild["boss_progress"][week_id]["damage_dealt"] += damage
+                guild["boss_progress"][week_id] = {}
+            if "damage_dealt" in guild["boss_progress"][week_id]:
+                old = guild["boss_progress"][week_id]
+                guild["boss_progress"][week_id] = {"1": old}
+            tier_str = str(tier)
+            if tier_str not in guild["boss_progress"][week_id]:
+                guild["boss_progress"][week_id][tier_str] = {"damage_dealt": 0.0, "claimed_by": []}
+            guild["boss_progress"][week_id][tier_str]["damage_dealt"] += damage
             self.save()
             return True
         return False
 
-    def check_boss_defeated(self, guild_name, week_id, required_damage):
-        if guild_name in self.data["guilds"]:
-            guild = self.data["guilds"][guild_name]
-            if "boss_progress" in guild and week_id in guild["boss_progress"]:
-                return guild["boss_progress"][week_id]["damage_dealt"] >= required_damage
-        return False
-
-    def claim_boss_reward(self, guild_name, player_id, week_id, required_damage):
+    def check_boss_defeated(self, guild_name, week_id, required_damage, tier=1):
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
             if "boss_progress" in guild and week_id in guild["boss_progress"]:
                 progress = guild["boss_progress"][week_id]
-                if progress["damage_dealt"] >= required_damage and player_id not in progress["claimed_by"]:
-                    progress["claimed_by"].append(player_id)
-                    self.save()
-                    return True
+                if "damage_dealt" in progress:
+                    progress = {"1": progress}
+                tier_str = str(tier)
+                if tier_str in progress:
+                    return progress[tier_str]["damage_dealt"] >= required_damage
+        return False
+
+    def claim_boss_reward(self, guild_name, player_id, week_id, required_damage, tier=1):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if "boss_progress" in guild and week_id in guild["boss_progress"]:
+                progress = guild["boss_progress"][week_id]
+                if "damage_dealt" in progress:
+                    progress = {"1": progress}
+                    guild["boss_progress"][week_id] = progress
+                tier_str = str(tier)
+                if tier_str in progress:
+                    tier_prog = progress[tier_str]
+                    if tier_prog["damage_dealt"] >= required_damage and player_id not in tier_prog["claimed_by"]:
+                        tier_prog["claimed_by"].append(player_id)
+                        # Better rewards for higher tiers
+                        reward_amount = 100 * int(tier)
+                        if "resources" not in guild:
+                            guild["resources"] = 0
+                        guild["resources"] += reward_amount
+                        self.save()
+                        return True
         return False
 
     def unlock_hq_feature(self, guild_name, feature_type, feature_id, cost, required_level=1):
