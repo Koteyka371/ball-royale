@@ -25771,7 +25771,109 @@ class JumpPadBoundariesMode extends GameMode:
 		name = "Jump Pad Boundaries"
 		description = "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
 
+
+class SupplyDropCaptureMode extends GameMode:
+	var supply_drops = []
+	var supply_drop_timer = 0.0
+
+	class SupplyDrop:
+		var x: float
+		var y: float
+		var radius: float = 60.0
+		var capture_progress: float = 0.0
+
+		func _init(px: float, py: float):
+			x = px
+			y = py
+
+	func _init() -> void:
+		name = "Supply Drop Capture"
+		description = "High-tier supply drops spawn periodically. Stand in their zone to capture them for exclusive artifacts and full heals!"
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		supply_drop_timer += delta
+		if supply_drop_timer >= 20.0:
+			supply_drop_timer = 0.0
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				arena_width = world.arena.width if "width" in world.arena else 1000.0
+				arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+			var dx = randf_range(100.0, arena_width - 100.0)
+			var dy = randf_range(100.0, arena_height - 100.0)
+			supply_drops.append(SupplyDrop.new(dx, dy))
+
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.has("add_event"):
+					world.add_event.call("supply_drop_spawn", {"message": "A high-tier supply drop has appeared! Capture it!"})
+			else:
+				if world.has_method("add_event"):
+					world.add_event("supply_drop_spawn", {"message": "A high-tier supply drop has appeared! Capture it!"})
+
+		var drops_to_remove = []
+		for drop in supply_drops:
+			var capturing_ball = null
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.alive if "alive" in b else false
+
+				if is_alive:
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+					var dist_sq = (bx - drop.x) * (bx - drop.x) + (by - drop.y) * (by - drop.y)
+					if dist_sq <= drop.radius * drop.radius:
+						capturing_ball = b
+						break
+
+			if capturing_ball != null:
+				drop.capture_progress += delta
+				if drop.capture_progress >= 5.0:
+					var mhp = 100.0
+					if typeof(capturing_ball) == TYPE_DICTIONARY:
+						mhp = capturing_ball.get("max_hp", 100.0)
+						capturing_ball["hp"] = mhp
+						var b_spd = capturing_ball.get("base_speed", capturing_ball.get("speed", 100.0)) * 1.5
+						capturing_ball["base_speed"] = b_spd
+						capturing_ball["speed"] = b_spd
+						var b_dmg = capturing_ball.get("base_damage", capturing_ball.get("damage", 10.0)) * 1.5
+						capturing_ball["base_damage"] = b_dmg
+						capturing_ball["damage"] = b_dmg
+					else:
+						mhp = capturing_ball.max_hp if "max_hp" in capturing_ball else 100.0
+						capturing_ball.hp = mhp
+						var b_spd = (capturing_ball.base_speed if "base_speed" in capturing_ball else (capturing_ball.speed if "speed" in capturing_ball else 100.0)) * 1.5
+						capturing_ball.base_speed = b_spd
+						capturing_ball.speed = b_spd
+						var b_dmg = (capturing_ball.base_damage if "base_damage" in capturing_ball else (capturing_ball.damage if "damage" in capturing_ball else 10.0)) * 1.5
+						capturing_ball.base_damage = b_dmg
+						capturing_ball.damage = b_dmg
+
+					if typeof(world) == TYPE_DICTIONARY:
+						if world.has("add_event"):
+							world.add_event.call("supply_drop_captured", {"message": "A player captured a Supply Drop and gained immense power!"})
+					else:
+						if world.has_method("add_event"):
+							world.add_event("supply_drop_captured", {"message": "A player captured a Supply Drop and gained immense power!"})
+
+					drops_to_remove.append(drop)
+			else:
+				if drop.capture_progress > 0:
+					drop.capture_progress -= delta
+					if drop.capture_progress < 0:
+						drop.capture_progress = 0.0
+
+		for d in drops_to_remove:
+			supply_drops.erase(d)
+
 var GAME_MODES = {
+	"supply_drop_capture": SupplyDropCaptureMode.new(),
 	"temporal_rifts": TemporalRiftsMode.new(),
 		"bermuda_triangle": BermudaTriangleMode.new(),
 	"color_trail": ColorTrailMode.new(),

@@ -1,0 +1,4 @@
+{
+  "title": "Bounty Hunter System",
+  "description": "Players can place a bounty (in-game currency) on a specific opponent. The target gets a visual indicator, and anyone who kills them receives the bounty. If the target survives a certain amount of time, they claim the bounty themselves."
+}

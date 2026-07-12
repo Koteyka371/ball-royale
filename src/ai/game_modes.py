@@ -15773,7 +15773,80 @@ class JumpPadBoundariesMode(GameMode):
         self.name = "Jump Pad Boundaries"
         self.description = "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
 
+
+class SupplyDropCaptureMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Supply Drop Capture"
+        self.description = "High-tier supply drops spawn periodically. Stand in their zone to capture them for exclusive artifacts and full heals!"
+        self.supply_drops = []
+        self.supply_drop_timer = 0.0
+
+    class SupplyDrop:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+            self.radius = 60.0
+            self.capture_progress = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import random
+
+        # Spawn drop
+        self.supply_drop_timer += delta
+        if self.supply_drop_timer >= 20.0:
+            self.supply_drop_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            x = random.uniform(100.0, arena_width - 100.0)
+            y = random.uniform(100.0, arena_height - 100.0)
+            self.supply_drops.append(self.SupplyDrop(x, y))
+            if hasattr(world, "add_event"):
+                world.add_event("supply_drop_spawn", {"message": "A high-tier supply drop has appeared! Capture it!"})
+
+        # Process captures
+        drops_to_remove = []
+        for drop in self.supply_drops:
+            capturing_ball = None
+            for b in balls:
+                if getattr(b, "alive", False):
+                    dx = b.x - drop.x
+                    dy = b.y - drop.y
+                    if (dx*dx + dy*dy) <= drop.radius * drop.radius:
+                        capturing_ball = b
+                        break
+
+            if capturing_ball:
+                drop.capture_progress += delta
+                if drop.capture_progress >= 5.0:
+                    # Captured!
+                    mhp = getattr(capturing_ball, "max_hp", 100)
+                    capturing_ball.hp = mhp
+
+                    b_spd = getattr(capturing_ball, "base_speed", getattr(capturing_ball, "speed", 100)) * 1.5
+                    capturing_ball.base_speed = b_spd
+                    capturing_ball.speed = b_spd
+
+                    b_dmg = getattr(capturing_ball, "base_damage", getattr(capturing_ball, "damage", 10)) * 1.5
+                    capturing_ball.base_damage = b_dmg
+                    capturing_ball.damage = b_dmg
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("supply_drop_captured", {"message": "A player captured a Supply Drop and gained immense power!"})
+                    drops_to_remove.append(drop)
+            else:
+                # decay progress if no one is on it
+                if drop.capture_progress > 0:
+                    drop.capture_progress -= delta
+                    if drop.capture_progress < 0:
+                        drop.capture_progress = 0.0
+
+        for d in drops_to_remove:
+            if d in self.supply_drops:
+                self.supply_drops.remove(d)
+
 GAME_MODES = {
+    "supply_drop_capture": SupplyDropCaptureMode(),
     "elemental_auras": ElementalAurasMode(),
     "heavy_rain_mutator": HeavyRainMode(),
 
