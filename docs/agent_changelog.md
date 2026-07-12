@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-831] Anti-Gravity Trap — *2026-07-12 21:04:16 UTC*
+
+A new placeable trap that temporarily creates an inverted gravity field. Any enemy ball or loose booster that enters the field is violently pushed upwards and outwards, heavily disrupting their momentum and scattering gathered items.
+
+---
+
 ## [idea-903] Amnesia Gas Hazard — *2026-07-12 20:50:11 UTC*
 
 A cloud-based hazard that, upon contact, temporarily clears the AI's relationship memory (rivalries, perceived allies, last attacker) for 10 seconds. This forces the AI to re-evaluate their threat assessment from scratch, often leading to them ignoring current targets and behaving erratically until the effect wears off.

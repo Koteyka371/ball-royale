@@ -14288,7 +14288,7 @@
     },
     {
       "id": "idea-831",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Anti-Gravity Trap",
@@ -25440,6 +25440,23 @@
         "src/ai/kinetic_overload_mutator.py",
         "src/ai/kinetic_overload_mutator.gd",
         "tests/test_kinetic_overload_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1486",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Holographic Projection Item",
+      "description": "An item that players can pick up and use to create a holographic copy of themselves that runs in a straight line, distracting AI enemies or drawing their fire for a few seconds.",
+      "allowed_paths": [
+        "src/ai/holographic_projection_item.py",
+        "src/ai/holographic_projection_item.gd",
+        "tests/test_holographic_projection_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
