@@ -1,0 +1,4 @@
+{
+  "title": "Bounty Contracts Item",
+  "description": "Add an equippable item or pickup called 'Bounty Contract' that temporarily selects a random enemy as a bounty. If the player eliminates that specific enemy within a time limit, they receive a massive payout of skill points and a unique permanent stat boost for the rest of the match."
+}

@@ -632,7 +632,18 @@ class GameMode:
 			elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("kill_bounty"): target_kb = ball.get_meta("kill_bounty")
 
 			if target_kb > 0 and pm != null and pm.has_method("add_skill_points"):
-				var reward = 15 * target_kb
+				var base_reward = 15
+				if "bounty_base_reward" in self: base_reward = self.bounty_base_reward
+				elif self.has_method("get_meta") and self.has_meta("bounty_base_reward"): base_reward = self.get_meta("bounty_base_reward")
+
+				var multiplier = 1.0
+				if "bounty_multiplier" in self: multiplier = self.bounty_multiplier
+				elif self.has_method("get_meta") and self.has_meta("bounty_multiplier"): multiplier = self.get_meta("bounty_multiplier")
+
+				var reward = int(base_reward * target_kb * multiplier)
+				if self.has_method("calculate_bounty_reward"):
+					reward = self.calculate_bounty_reward(target_kb)
+
 				pm.add_skill_points(reward)
 				if world.has_method("add_event"):
 					var killer_id = str(killer.id)
@@ -3330,6 +3341,8 @@ class TeamDeathmatchMode extends GameMode:
 		return null
 
 class ZombieInfectionMode extends GameMode:
+	var bounty_base_reward = 5
+
 	func _init() -> void:
 		name = "Zombie Infection"
 		description = "One zombie infects others. Survivors win if time runs out."
@@ -3940,6 +3953,8 @@ class BossFightMode extends GameMode:
 		return null
 
 class VIPDefenseMode extends GameMode:
+	var bounty_base_reward = 25
+
 	func _init() -> void:
 		name = "VIP Defense"
 		description = "Protect the VIP. If the VIP dies, the attackers win."
@@ -5384,6 +5399,7 @@ class EvolutionarySimulationMode extends GameMode:
 
 class VampireRoyaleMode extends GameMode:
 	var tick_timer = 0.0
+	var bounty_multiplier = 1.5
 
 	func _init() -> void:
 		name = "Vampire Royale"
@@ -12830,6 +12846,8 @@ class BlackoutMode extends GameMode:
 class BountyHuntMode extends GameMode:
 	var bounties = {}
 	var buffed_teams = {}
+	var bounty_base_reward = 30
+	var bounty_multiplier = 2.0
 
 	func _init() -> void:
 		name = "Bounty Hunt"
