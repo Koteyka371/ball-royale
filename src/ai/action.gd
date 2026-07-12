@@ -9586,6 +9586,83 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+
+                            elif trap_variant == "clone" and (self.ball.get("kind") == "projectile" or self.ball.get("ball_type") == "projectile" or self.ball.get("is_spell") == true or self.ball.get("ball_type") == "spell" or self.ball.has_meta("is_spell") or self.ball.get("kind") == "spell"):
+                                var owner_id = null
+                                if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
+                                    owner_id = hazard.get_meta("owner_id")
+                                elif "owner_id" in hazard:
+                                    owner_id = hazard.owner_id
+
+                                var nearest_enemy = null
+                                var min_dist = INF
+                                if "balls" in world:
+                                    for b in world.balls:
+
+                                        var owner_ball = null
+                                        if "balls" in world:
+                                            for o in world.balls:
+                                                if o.get("id") == owner_id:
+                                                    owner_ball = o
+                                                    break
+                                        var owner_team = ""
+                                        if owner_ball != null:
+                                            owner_team = owner_ball.get("team", "")
+                                        else:
+                                            owner_team = self.ball.get("team", "")
+
+                                        if b.get("id") != owner_id and b.get("alive", true) and b.get("team", "") != owner_team:
+                                            var dist_sq = pow(b.x - hazard.x, 2) + pow(b.y - hazard.y, 2)
+                                            if dist_sq < min_dist:
+                                                min_dist = dist_sq
+                                                nearest_enemy = b
+
+                                if nearest_enemy != null:
+                                    var clone = null
+                                    if self.ball.has_method("duplicate"):
+                                        clone = self.ball.duplicate()
+
+                                    if clone != null:
+                                        var next_id = randi() % 90000 + 10000
+                                        if "next_id" in world:
+                                            next_id = world.next_id
+                                            world.next_id += 1
+
+                                        if clone.has_method("set"):
+                                            clone.set("id", next_id)
+                                            clone.set("x", hazard.x)
+                                            clone.set("y", hazard.y)
+                                            clone.set("owner_id", owner_id)
+
+                                            var owner_ball = null
+                                            if "balls" in world:
+                                                for b in world.balls:
+                                                    if b.get("id") == owner_id:
+                                                        owner_ball = b
+                                                        break
+                                            if owner_ball != null and owner_ball.get("team") != null:
+                                                clone.set("team", owner_ball.get("team", ""))
+                                            else:
+                                                clone.set("team", self.ball.get("team", ""))
+
+                                            var dx = nearest_enemy.x - clone.x
+                                            var dy = nearest_enemy.y - clone.y
+                                            var dist = sqrt(dx*dx + dy*dy)
+                                            if dist > 0:
+                                                var speed = sqrt(pow(self.ball.get("vx", 0), 2) + pow(self.ball.get("vy", 0), 2))
+                                                if speed == 0:
+                                                    speed = 300.0
+                                                clone.set("vx", (dx / dist) * speed)
+                                                clone.set("vy", (dy / dist) * speed)
+
+                                        if "balls" in world:
+                                            world.balls.append(clone)
+
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
+
                             elif trap_variant == "decoy":
                                 var owner_id = null
                                 if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
