@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Swap Hazard",
+    "description": "A hazard that periodically swaps the positions of the two balls furthest away from each other on the map, disrupting sniper setups or long-distance fleeing."
+}
