@@ -12417,6 +12417,48 @@ class Action:
                         hazard.duration = 0.0
                     continue
 
+
+                if getattr(hazard, "kind", "") == "geyser":
+                    import math
+                    hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
+                        # Calculate current global time or hazard ticker
+                        current_time = getattr(self.world, "time", 0.0)
+
+                        # Erupt every 5 seconds, for 1.5 seconds
+                        cycle_time = current_time % 5.0
+                        if cycle_time < 1.5:
+                            # It is erupting
+                            if not getattr(self.ball, "geyser_immunity_timer", 0.0) > 0.0:
+                                b_type = getattr(self.ball, "ball_type", "").lower()
+
+                                # Launch / Stun effect
+                                self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 1.0)
+                                self.ball.geyser_immunity_timer = 3.0 # Immunity to prevent multi-hit from same eruption
+
+                                if b_type in ["water_elemental", "earth_elemental"]:
+                                    # Buff instead of damage
+                                    self.ball.speed_buff_timer = max(getattr(self.ball, "speed_buff_timer", 0.0), 3.0)
+                                    # Heal a bit
+                                    heal_amount = getattr(hazard, "damage", 5.0) * 2.0
+                                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + heal_amount)
+                                else:
+                                    # Apply minor water-elemental damage
+                                    class DummyGeyserAttacker:
+                                        pass
+                                    att = DummyGeyserAttacker()
+                                    att.damage = getattr(hazard, "damage", 5.0)
+                                    att.id = getattr(hazard, "id", None)
+                                    att.element = "water"
+
+                                    if hasattr(self.world, "_deal_damage"):
+                                        self.world._deal_damage(att, self.ball, dmg=att.damage)
+                                    elif hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(att.damage)
+                                    else:
+                                        self.ball.hp -= att.damage
+
                 if getattr(hazard, "kind", "") == "healing_aura":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= getattr(hazard, "radius", 150.0) + getattr(self.ball, "radius", 10.0):
@@ -12867,6 +12909,9 @@ class Action:
                     self.world.arena.hazards.append(m)
 
 
+
+        if getattr(self.ball, "geyser_immunity_timer", 0.0) > 0:
+            self.ball.geyser_immunity_timer -= delta
         if getattr(self.ball, "time_warp_timer", 0.0) > 0:
             self.ball.time_warp_timer -= delta
             # Increase movement and attack speed

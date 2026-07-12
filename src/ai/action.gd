@@ -22577,6 +22577,62 @@ func _update_skill_timer(delta: float):
                         elif "duration" in hazard: hazard.duration = 0.0
                     continue
 
+                if h_kind == "geyser":
+                    var h_rad = hazard.radius if "radius" in hazard else (hazard.get_meta("radius") if hazard.has_method("get_meta") and hazard.has_meta("radius") else 50.0)
+                    var h_x = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
+                    var h_y = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
+
+                    var dx = self.ball.x - h_x
+                    var dy = self.ball.y - h_y
+                    var dist = sqrt(dx*dx + dy*dy)
+
+                    if dist <= h_rad:
+                        var current_time = self.world.time if "time" in self.world else 0.0
+                        var cycle_time = fmod(current_time, 5.0)
+
+                        if cycle_time < 1.5:
+                            var immunity = self.ball.geyser_immunity_timer if "geyser_immunity_timer" in self.ball else (self.ball.get_meta("geyser_immunity_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("geyser_immunity_timer") else 0.0)
+                            if immunity <= 0.0:
+                                var b_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_meta("ball_type") if self.ball.has_method("get_meta") and self.ball.has_meta("ball_type") else "")
+                                b_type = b_type.to_lower()
+
+                                var c_stun = self.ball.stun_timer if "stun_timer" in self.ball else (self.ball.get_meta("stun_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer") else 0.0)
+                                c_stun = max(c_stun, 1.0)
+                                if "stun_timer" in self.ball: self.ball.stun_timer = c_stun
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", c_stun)
+
+                                if "geyser_immunity_timer" in self.ball: self.ball.geyser_immunity_timer = 3.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("geyser_immunity_timer", 3.0)
+
+                                if b_type == "water_elemental" or b_type == "earth_elemental":
+                                    var spd_buff = self.ball.speed_buff_timer if "speed_buff_timer" in self.ball else (self.ball.get_meta("speed_buff_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("speed_buff_timer") else 0.0)
+                                    spd_buff = max(spd_buff, 3.0)
+                                    if "speed_buff_timer" in self.ball: self.ball.speed_buff_timer = spd_buff
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_buff_timer", spd_buff)
+
+                                    var h_dmg = hazard.damage if "damage" in hazard else (hazard.get_meta("damage") if hazard.has_method("get_meta") and hazard.has_meta("damage") else 5.0)
+                                    var heal_amount = h_dmg * 2.0
+
+                                    var current_hp = self.ball.hp if "hp" in self.ball else (self.ball.get_meta("hp") if self.ball.has_method("get_meta") and self.ball.has_meta("hp") else 100.0)
+                                    var current_max_hp = self.ball.max_hp if "max_hp" in self.ball else (self.ball.get_meta("max_hp") if self.ball.has_method("get_meta") and self.ball.has_meta("max_hp") else 100.0)
+                                    current_hp += heal_amount
+                                    if current_hp > current_max_hp: current_hp = current_max_hp
+
+                                    if "hp" in self.ball: self.ball.hp = current_hp
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", current_hp)
+                                else:
+                                    var h_dmg = hazard.damage if "damage" in hazard else (hazard.get_meta("damage") if hazard.has_method("get_meta") and hazard.has_meta("damage") else 5.0)
+                                    if self.world != null and self.world.has_method("_deal_damage"):
+                                        var att = {"damage": h_dmg, "element": "water"}
+                                        self.world._deal_damage(att, self.ball, h_dmg)
+                                    elif self.ball.has_method("take_damage"):
+                                        self.ball.take_damage(h_dmg)
+                                    elif "hp" in self.ball:
+                                        self.ball.hp -= h_dmg
+                                    elif self.ball.has_method("set_meta"):
+                                        var chp = self.ball.get_meta("hp") if self.ball.has_meta("hp") else 100.0
+                                        self.ball.set_meta("hp", chp - h_dmg)
+
                 if h_kind == "healing_aura":
                     var h_rad = hazard.radius if "radius" in hazard else (hazard.get_meta("radius") if hazard.has_method("get_meta") and hazard.has_meta("radius") else 150.0)
                     var b_rad = self.ball.radius if "radius" in self.ball else (self.ball.get_meta("radius") if self.ball.has_method("get_meta") and self.ball.has_meta("radius") else 10.0)
@@ -23076,6 +23132,13 @@ func _update_skill_timer(delta: float):
 
     var hl_timer = 0.0
     var chaos_link_timer = 0.0
+
+    var im_timer = self.ball.geyser_immunity_timer if "geyser_immunity_timer" in self.ball else (self.ball.get_meta("geyser_immunity_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("geyser_immunity_timer") else 0.0)
+    if im_timer > 0:
+        im_timer -= delta
+        if "geyser_immunity_timer" in self.ball: self.ball.geyser_immunity_timer = im_timer
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("geyser_immunity_timer", im_timer)
+
     var q_ent_timer = 0.0
     if "quantum_entanglement_timer" in self.ball: q_ent_timer = self.ball.quantum_entanglement_timer
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_entanglement_timer"): q_ent_timer = self.ball.get_meta("quantum_entanglement_timer")
