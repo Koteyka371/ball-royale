@@ -1903,7 +1903,7 @@ class Action:
                 trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                 trap = Hazard(trap_id, self.ball.x, self.ball.y, 20.0, "trap", 0.0)
 
-                trap_type = random.choice(["mine", "freeze", "black_hole", "swap", "emp_trap"])
+                trap_type = random.choice(["mine", "freeze", "black_hole", "swap", "emp_trap", "reverse_gravity"])
                 setattr(trap, 'duration', 10.0)
                 setattr(trap, 'trap_variant', trap_type)
                 setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
@@ -4713,6 +4713,66 @@ class Action:
                                     push_strength *= 0.5
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
+                    elif hazard.kind == "reverse_gravity_field":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            owner_id = getattr(hazard, "owner_id", -1)
+                            # Only affect enemies
+                            is_enemy = True
+                            if owner_id != -1 and hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "id", None) == owner_id:
+                                        if getattr(b, "team", -1) == getattr(self.ball, "team", -2):
+                                            is_enemy = False
+                                        break
+                            if is_enemy:
+                                if dist_sq > 0.0001:
+                                    import math
+                                    dist = math.sqrt(dist_sq)
+                                    # Push upwards and outwards
+                                    nx = -dx / dist
+                                    ny = -1.0 # Violently upwards
+                                    push_strength = 200.0 * delta
+                                    self.ball.x += nx * push_strength
+                                    self.ball.y += ny * push_strength
+                                    # Heavily disrupt momentum
+                                    if hasattr(self.ball, "vx"): self.ball.vx *= 0.5
+                                    if hasattr(self.ball, "vy"): self.ball.vy *= 0.5
+
+                                    # Scatter items
+                                    if hasattr(self.ball, "inventory") and len(self.ball.inventory) > 0:
+                                        import random
+                                        if random.random() < 0.1: # 10% chance per tick to drop an item
+                                            dropped_item = self.ball.inventory.pop(0)
+                                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
+                                                new_id = getattr(self.world, "next_id", 9999)
+                                                if hasattr(self.world, "next_id"): self.world.next_id += 1
+                                                item_obj = {"id": f"item_{new_id}", "x": self.ball.x, "y": self.ball.y, "ball_type": "item", "kind": dropped_item, "radius": 15.0, "active": True}
+                                                self.world.arena.items.append(item_obj)
+
+                        # Process loose boosters
+                        current_tick = getattr(self.world, "tick", 0)
+                        if hasattr(self.world, "boosters"):
+                            for booster in self.world.boosters:
+                                if getattr(booster, "processed_rgf_tick", -1) == current_tick:
+                                    continue
+                                b_dx = hazard.x - booster.x
+                                b_dy = hazard.y - booster.y
+                                b_dist_sq = b_dx * b_dx + b_dy * b_dy
+                                if b_dist_sq < hazard.radius * hazard.radius:
+                                    booster.processed_rgf_tick = current_tick
+                                    if b_dist_sq > 0.0001:
+                                        import math
+                                        b_dist = math.sqrt(b_dist_sq)
+                                        b_nx = -b_dx / b_dist
+                                        b_ny = -1.0
+                                        b_push_strength = 300.0 * delta
+                                        booster.x += b_nx * b_push_strength
+                                        booster.y += b_ny * b_push_strength
+                                        if hasattr(booster, "vx"): booster.vx *= 0.5
+                                        if hasattr(booster, "vy"): booster.vy *= 0.5
                     elif hazard.kind == "reverse_gravity":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -5205,6 +5265,15 @@ class Action:
                                         gw = Hazard(gw_id, hazard.x, hazard.y, 200.0, "gravity_well", 0.0)
                                         gw.duration = 4.0
                                         self.world.arena.hazards.append(gw)
+                                    hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "reverse_gravity":
+                                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                        from arena.procedural_arena import Hazard
+                                        rg_id = len(self.world.arena.hazards) + 8600
+                                        rg = Hazard(rg_id, hazard.x, hazard.y, 150.0, "reverse_gravity_field", 0.0)
+                                        rg.duration = 5.0
+                                        setattr(rg, "owner_id", getattr(hazard, "owner_id", -1))
+                                        self.world.arena.hazards.append(rg)
                                     hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "black_hole" or trap_variant == "mini_black_hole":
                                     # Create a black hole hazard where the trap is
