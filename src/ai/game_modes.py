@@ -9134,7 +9134,7 @@ class DayNightMode(GameMode):
                         is_supercharged = getattr(b, "supercharge_timer", 0.0) > 0.0
                         has_daylight_buff = ball_type not in ["vampire", "assassin", "phantom"]
 
-                        if not has_daylight_buff or is_supercharged:
+                        if True: # Modified to always check for reflective shield first, or damage if no buff
                             behind_cover = False
                             b_radius = getattr(b, "radius", 15.0)
 
@@ -9161,16 +9161,31 @@ class DayNightMode(GameMode):
                                         break
 
                             if not behind_cover:
-                                if getattr(b, "supercharge_timer", 0.0) > 0.0:
-                                    actual_damage = beam_damage * 2.0
-                                else:
-                                    actual_damage = beam_damage
-                                if hasattr(b, "take_damage"):
-                                    b.take_damage(actual_damage)
-                                else:
-                                    b.hp -= actual_damage
-                                    if b.hp <= 0:
-                                        b.alive = False
+                                inv = getattr(b, "inventory", [])
+                                if "reflective_shield" in inv:
+                                    # Completely nullify damage and redirect beam
+                                    b.inventory.remove("reflective_shield")
+                                    # Redirect a weaker beam in a random direction
+                                    import random
+                                    import math
+                                    angle = random.uniform(0, 2 * math.pi)
+                                    # Shorter beam distance and radius
+                                    new_x = b.x + math.cos(angle) * 150.0
+                                    new_y = b.y + math.sin(angle) * 150.0
+                                    self.active_sunlight_beams.append({'x': new_x, 'y': new_y, 'radius': beam_radius * 0.5, 'duration': 1.0})
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("visual_effect", {"type": "sunlight_beam_redirect", "x": new_x, "y": new_y, "radius": beam_radius * 0.5, "duration": 1.0, "source_x": b.x, "source_y": b.y})
+                                elif not has_daylight_buff or is_supercharged:
+                                    if getattr(b, "supercharge_timer", 0.0) > 0.0:
+                                        actual_damage = beam_damage * 2.0
+                                    else:
+                                        actual_damage = beam_damage
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(actual_damage)
+                                    else:
+                                        b.hp -= actual_damage
+                                        if b.hp <= 0:
+                                            b.alive = False
 
             if is_night:
                 # Update and apply moonlight shadows during night
@@ -9217,6 +9232,14 @@ class DayNightMode(GameMode):
             # Sunlight beams only during the day spawn
             if not is_night:
                 self.sunlight_beam_timer += delta
+
+                # Occasionally spawn reflective shields during the day
+                if random.random() < 0.005:  # small chance per tick
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    if hasattr(world.arena, "items"):
+                        world.arena.items.append({"kind": "reflective_shield", "x": random.uniform(50, arena_w-50), "y": random.uniform(50, arena_h-50), "radius": 10.0})
+
                 if self.sunlight_beam_timer >= 3.0:
                     self.sunlight_beam_timer = 0.0
 
