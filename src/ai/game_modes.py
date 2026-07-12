@@ -756,6 +756,8 @@ class BattleRoyaleMode(GameMode):
         self.next_weather = "clear"
         self.weather_warning_issued = False
         self.supply_drop_timer = 0.0
+        self.high_tier_supply_drop_timer = 0.0
+        self.high_tier_drops = []
         self.zone_initialized = False
         self.zone_x = 500.0
         self.zone_y = 500.0
@@ -1334,6 +1336,93 @@ class BattleRoyaleMode(GameMode):
                             world.add_event("hazard_spawn", {"message": "A roaming Tornado has appeared!"})
                 except Exception as e:
                     pass
+
+        # High Tier Supply Drop Logic
+        self.high_tier_supply_drop_timer = getattr(self, "high_tier_supply_drop_timer", 0.0) + delta
+        if self.high_tier_supply_drop_timer >= 30.0:
+            self.high_tier_supply_drop_timer = 0.0
+            if hasattr(world, "arena"):
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+                rnd = getattr(self, "random", __import__("random"))
+                x = rnd.uniform(200, arena_width - 200)
+                y = rnd.uniform(200, arena_height - 200)
+
+                try:
+                    from arena.procedural_arena import Hazard
+                    drop = Hazard(id=f"ht_drop_{rnd.randint(1000, 9999)}", x=x, y=y, radius=100.0, kind="high_tier_drop", damage=0.0)
+                except ImportError:
+                    drop = type("Hazard", (), {"id": f"ht_drop_{rnd.randint(1000, 9999)}", "x": x, "y": y, "radius": 100.0, "kind": "high_tier_drop", "damage": 0.0, "active": True})
+
+                drop.capture_progress = 0.0
+                drop.capturing_team = None
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                world.arena.hazards.append(drop)
+                if not hasattr(self, "high_tier_drops"):
+                    self.high_tier_drops = []
+                self.high_tier_drops.append(drop)
+                if hasattr(world, "add_event"):
+                    world.add_event("high_tier_drop_spawn", {"message": "A high-tier supply drop has appeared! Capture it!"})
+
+        if hasattr(self, "high_tier_drops"):
+            drops_to_remove = []
+            import math
+            for drop in self.high_tier_drops:
+                if not getattr(drop, "active", True):
+                    drops_to_remove.append(drop)
+                    continue
+
+                balls_inside = []
+                for b in balls:
+                    if not getattr(b, "alive", False): continue
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    if math.hypot(bx - drop.x, by - drop.y) < drop.radius:
+                        balls_inside.append(b)
+
+                if balls_inside:
+                    teams_inside = list(set(getattr(b, "team", getattr(b, "ball_type", "")) for b in balls_inside))
+                    if len(teams_inside) == 1:
+                        team = teams_inside[0]
+                        if drop.capturing_team == team:
+                            drop.capture_progress += 20.0 * delta
+                            if drop.capture_progress >= 100.0:
+                                drop.active = False
+                                drops_to_remove.append(drop)
+                                if hasattr(world.arena, "hazards") and drop in world.arena.hazards:
+                                    world.arena.hazards.remove(drop)
+
+                                rnd = getattr(self, "random", __import__("random"))
+                                artifacts = ["artifact_of_power", "artifact_of_speed", "artifact_of_vitality", "full_heal"]
+                                for b in balls_inside:
+                                    reward = rnd.choice(artifacts)
+                                    if reward == "full_heal":
+                                        b.hp = getattr(b, "max_hp", 100.0)
+                                    else:
+                                        if not hasattr(b, "inventory"): b.inventory = []
+                                        b.inventory.append(reward)
+                                        if reward == "artifact_of_power":
+                                            b.damage = getattr(b, "damage", 10.0) * 1.5
+                                        elif reward == "artifact_of_speed":
+                                            b.speed = getattr(b, "speed", 100.0) * 1.5
+                                        elif reward == "artifact_of_vitality":
+                                            b.max_hp = getattr(b, "max_hp", 100.0) + 50.0
+                                            b.hp += 50.0
+
+                                if hasattr(world, "add_event"):
+                                    world.add_event("high_tier_drop_captured", {"message": f"Team {team} captured the high-tier supply drop!"})
+                        else:
+                            drop.capturing_team = team
+                            drop.capture_progress = 20.0 * delta
+                    else:
+                        pass
+                else:
+                    drop.capture_progress = max(0.0, drop.capture_progress - 10.0 * delta)
+
+            for drop in drops_to_remove:
+                if drop in self.high_tier_drops:
+                    self.high_tier_drops.remove(drop)
 
         # Supply Drop Logic
         self.supply_drop_timer += delta

@@ -1039,6 +1039,8 @@ class BattleRoyaleMode extends GameMode:
 	var weather_timer: float = 0.0
 	var weather: String = "clear"
 	var supply_drop_timer: float = 0.0
+	var high_tier_supply_drop_timer: float = 0.0
+	var high_tier_drops: Array = []
 	var zone_initialized: bool = false
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -1824,6 +1826,154 @@ class BattleRoyaleMode extends GameMode:
 					world.add_event("hazard_spawn", {"message": "A roaming Tornado has appeared!"})
 
 		dark_phase_timer += delta
+
+		if not "high_tier_supply_drop_timer" in self:
+			self.high_tier_supply_drop_timer = 0.0
+			self.high_tier_drops = []
+
+		self.high_tier_supply_drop_timer += delta
+		if self.high_tier_supply_drop_timer >= 30.0:
+			self.high_tier_supply_drop_timer = 0.0
+			var arena_width = 1000
+			var arena_height = 1000
+			if world != null and typeof(world) == TYPE_DICTIONARY and "arena" in world:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+			elif world != null and typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+
+			rng.randomize()
+			var cx = rng.randf_range(200, arena_width - 200)
+			var cy = rng.randf_range(200, arena_height - 200)
+			var drop_id = "ht_drop_" + str(rng.randi_range(1000, 9999))
+
+			var drop = {
+				"id": drop_id,
+				"x": cx,
+				"y": cy,
+				"radius": 100.0,
+				"kind": "high_tier_drop",
+				"damage": 0.0,
+				"active": true,
+				"capture_progress": 0.0,
+				"capturing_team": ""
+			}
+			self.high_tier_drops.append(drop)
+
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
+					world.arena.hazards.append(drop)
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena:
+					world.arena.hazards.append(drop)
+
+			if world != null and world.has_method("add_event"):
+				world.add_event("high_tier_drop_spawn", {"message": "A high-tier supply drop has appeared! Capture it!"})
+
+		var drops_to_remove = []
+		for drop in self.high_tier_drops:
+			if not drop.get("active", true):
+				drops_to_remove.append(drop)
+				continue
+
+			var balls_inside = []
+			for b in balls:
+				var b_alive = false
+				if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+				else: b_alive = b.get("alive") if "alive" in b else false
+
+				if not b_alive: continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				else:
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+
+				var dist = sqrt(pow(bx - drop.x, 2) + pow(by - drop.y, 2))
+				if dist < drop.radius:
+					balls_inside.append(b)
+
+			if balls_inside.size() > 0:
+				var teams_inside = []
+				for b in balls_inside:
+					var team = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						team = b.get("team", b.get("ball_type", ""))
+					else:
+						team = b.team if "team" in b else (b.ball_type if "ball_type" in b else "")
+					if not teams_inside.has(team):
+						teams_inside.append(team)
+
+				if teams_inside.size() == 1:
+					var team = teams_inside[0]
+					if drop.capturing_team == team:
+						drop.capture_progress += 20.0 * delta
+						if drop.capture_progress >= 100.0:
+							drop.active = false
+							drops_to_remove.append(drop)
+
+							if world != null:
+								var hazards = null
+								if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+									hazards = world.arena.get("hazards", [])
+								elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+									hazards = world.arena.hazards if "hazards" in world.arena else []
+
+								if hazards != null and hazards.has(drop):
+									hazards.erase(drop)
+
+							rng.randomize()
+							var artifacts = ["artifact_of_power", "artifact_of_speed", "artifact_of_vitality", "full_heal"]
+							for b in balls_inside:
+								var reward = artifacts[rng.randi() % artifacts.size()]
+								if reward == "full_heal":
+									if typeof(b) == TYPE_DICTIONARY:
+										b["hp"] = b.get("max_hp", 100.0)
+									else:
+										if "hp" in b: b.hp = b.get("max_hp") if "max_hp" in b else 100.0
+								else:
+									if typeof(b) == TYPE_DICTIONARY:
+										var inv = b.get("inventory", [])
+										inv.append(reward)
+										b["inventory"] = inv
+										if reward == "artifact_of_power":
+											b["damage"] = b.get("damage", 10.0) * 1.5
+										elif reward == "artifact_of_speed":
+											b["speed"] = b.get("speed", 100.0) * 1.5
+										elif reward == "artifact_of_vitality":
+											b["max_hp"] = b.get("max_hp", 100.0) + 50.0
+											b["hp"] = b.get("hp", 100.0) + 50.0
+									else:
+										if b.has_method("has_meta") and b.has_meta("inventory"):
+											var inv = b.get_meta("inventory")
+											inv.append(reward)
+											b.set_meta("inventory", inv)
+										elif "inventory" in b:
+											b.inventory.append(reward)
+
+										if reward == "artifact_of_power":
+											if "damage" in b: b.damage = b.damage * 1.5
+										elif reward == "artifact_of_speed":
+											if "speed" in b: b.speed = b.speed * 1.5
+										elif reward == "artifact_of_vitality":
+											if "max_hp" in b: b.max_hp = b.max_hp + 50.0
+											if "hp" in b: b.hp = b.hp + 50.0
+
+							if world != null and world.has_method("add_event"):
+								world.add_event("high_tier_drop_captured", {"message": "Team " + str(team) + " captured the high-tier supply drop!"})
+					else:
+						drop.capturing_team = team
+						drop.capture_progress = 20.0 * delta
+			else:
+				drop.capture_progress = max(0.0, drop.capture_progress - 10.0 * delta)
+
+		for drop in drops_to_remove:
+			if self.high_tier_drops.has(drop):
+				self.high_tier_drops.erase(drop)
 
 		supply_drop_timer += delta
 		if supply_drop_timer >= 15.0:
