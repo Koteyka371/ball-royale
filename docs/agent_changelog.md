@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-917] Guild Boss Raid Tiers — *2026-07-12 22:24:46 UTC*
+
+Add multiple difficulty tiers for guild bosses with better rewards for higher tiers.
+
+---
+
 ## [idea-916] Decoy Fragment Mines — *2026-07-12 22:24:06 UTC*
 
 When a trickster decoy explodes, it scatters tiny fragmented traps on the ground that deal minor damage and cause micro-stutters. This turns a single confusing element into an area denial mechanic.

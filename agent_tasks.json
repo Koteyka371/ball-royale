@@ -15754,7 +15754,7 @@
     },
     {
       "id": "idea-917",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Boss Raid Tiers",
@@ -25593,6 +25593,40 @@
         "src/ai/sun_kissed_power_up.py",
         "src/ai/sun_kissed_power_up.gd",
         "tests/test_sun_kissed_power_up.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1495",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster's Mirage Skill",
+      "description": "An active skill for the trickster ball that creates three non-damaging illusions that run in different directions. Enemies attacking these illusions get a minor slow debuff, giving the trickster time to escape or counter-attack.",
+      "allowed_paths": [
+        "src/ai/tricksters_mirage_skill.py",
+        "src/ai/tricksters_mirage_skill.gd",
+        "tests/test_tricksters_mirage_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1496",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Phantom Spectator Intervention",
+      "description": "Eliminated balls become 'Phantom Spectators' with limited ability to spawn minor hazards (like small ice patches) or toss tiny health packs to influence the match before it ends.",
+      "allowed_paths": [
+        "src/ai/phantom_spectator_intervention.py",
+        "src/ai/phantom_spectator_intervention.gd",
+        "tests/test_phantom_spectator_intervention.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
