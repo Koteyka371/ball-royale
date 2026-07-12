@@ -4778,6 +4778,51 @@ func execute(strategy: String, delta: float):
 						time_scale = float(hazard.get_meta("time_scale"))
 					delta *= time_scale
 					break
+
+			if hazard.get("kind") == "localized_blizzard":
+				var my_rad = 10.0
+				if typeof(self.ball) == TYPE_DICTIONARY:
+					if self.ball.has("radius"): my_rad = float(self.ball["radius"])
+				elif "radius" in self.ball:
+					my_rad = float(self.ball.radius)
+				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+				var h_rad = 120.0
+				if "radius" in hazard: h_rad = float(hazard.radius)
+				if s_dist <= h_rad + my_rad:
+					var b_speed = 150.0
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						if self.ball.has("base_speed"): b_speed = float(self.ball["base_speed"])
+					elif "base_speed" in self.ball:
+						b_speed = float(self.ball.base_speed)
+
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						self.ball["speed"] = b_speed * 0.5
+					else:
+						self.ball.speed = b_speed * 0.5
+
+			if hazard.get("kind") == "localized_heatwave":
+				var my_rad = 10.0
+				if typeof(self.ball) == TYPE_DICTIONARY:
+					if self.ball.has("radius"): my_rad = float(self.ball["radius"])
+				elif "radius" in self.ball:
+					my_rad = float(self.ball.radius)
+				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+				var h_rad = 100.0
+				if "radius" in hazard: h_rad = float(hazard.radius)
+				if s_dist <= h_rad + my_rad:
+					var b_stamina = 100.0
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						if self.ball.has("stamina"): b_stamina = float(self.ball["stamina"])
+					elif "stamina" in self.ball:
+						b_stamina = float(self.ball.stamina)
+
+					b_stamina = max(0.0, b_stamina - 20.0 * delta)
+
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						self.ball["stamina"] = b_stamina
+					else:
+						self.ball.stamina = b_stamina
+
     var my_ball = self.ball
 
     var cl_timer = 0.0
