@@ -15414,7 +15414,7 @@
     },
     {
       "id": "idea-897",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Solar Flare Mechanics",
@@ -25151,6 +25151,23 @@
         "src/arena/new_stalker_shadows.py",
         "src/arena/new_stalker_shadows.gd",
         "tests/test_new_stalker_shadows.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1469",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Distraction Hazard",
+      "description": "A hazard zone that generates holographic decoys of nearby balls to distract enemy AI, making them attack holograms instead of real players.",
+      "allowed_paths": [
+        "src/arena/decoy_distraction.py",
+        "src/arena/decoy_distraction.gd",
+        "tests/test_decoy_distraction.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

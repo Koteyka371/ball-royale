@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-897] Solar Flare Mechanics — *2026-07-12 18:04:37 UTC*
+
+In Day/Night mode, random solar flares can supercharge balls during the day cycle, granting them a temporary massive speed and damage buff but causing them to take double damage from sunlight beams.
+
+---
+
 ## [idea-884] New Item: Portable Oasis — *2026-07-12 17:31:17 UTC*
 
 A deployable item that creates a temporary zone where weather effects (like sandstorm damage and vision reduction, heatwave mirages, or blizzard slowness) are negated for all players standing inside it, and slowly regenerates stamina.
