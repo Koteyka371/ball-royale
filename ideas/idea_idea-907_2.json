@@ -1,4 +1,0 @@
-{
-  "title": "Kinetic Overload Mutator",
-  "description": "A new mutator/buff that accumulates kinetic energy based on distance traveled. The more a player moves without stopping, the higher their next collision or attack damage becomes, culminating in an AoE kinetic blast if they maintain maximum speed for over 5 seconds."
-}

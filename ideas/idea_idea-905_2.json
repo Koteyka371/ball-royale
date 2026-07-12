@@ -1,4 +1,0 @@
-{
-  "title": "Chain Reaction Mines",
-  "description": "A cluster of proximity mines that arm over 3 seconds. When one mine detonates, it triggers an explosion that forces nearby mines to detonate as well, creating a cascading blast effect that covers a huge area. Players can trigger it intentionally by throwing items or using ranged attacks."
-}
