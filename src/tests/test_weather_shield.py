@@ -96,3 +96,40 @@ def test_weather_shield_collect_and_use():
     # Healing should be applied
     assert brawler.hp == 100 # 80 + 20
     assert getattr(brawler, "healing_buff_timer", 0.0) == 5.0
+
+def test_weather_shield_thunderstorm_synergy():
+    brawler = MockBall(1, 0, 0, team="teamA")
+    brawler.inventory.append("weather_shield")
+    brawler.supercharge_timer = 2.0
+
+    arena = MockArena([])
+    arena.weather = "thunderstorm"
+    world = MockWorld(arena, [brawler])
+    action = Action(brawler, world)
+
+    action.execute("attack", 1.0)
+
+    # Shield consumed
+    assert "weather_shield" not in brawler.inventory
+    # Supercharge buffed by +5.0 (2.0 + 5.0 = 7.0) - 1.0 delta = 6.0
+    assert getattr(brawler, "supercharge_timer", 0.0) == 6.0
+
+def test_weather_shield_rain_synergy():
+    brawler = MockBall(1, 0, 0, team="teamA")
+    brawler.inventory.append("weather_shield")
+    brawler.healing_buff_timer = 2.0
+    brawler.hp = 50
+
+    arena = MockArena([])
+    arena.weather = "heavy_rain"
+    world = MockWorld(arena, [brawler])
+    action = Action(brawler, world)
+
+    action.execute("attack", 1.0)
+
+    # Shield consumed
+    assert "weather_shield" not in brawler.inventory
+    # Healing buffed by +5.0 (2.0 + 5.0 = 7.0)
+    assert getattr(brawler, "healing_buff_timer", 0.0) == 7.0
+    # HP buffed by +30
+    assert brawler.hp == 80

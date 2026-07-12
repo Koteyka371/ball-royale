@@ -1877,11 +1877,43 @@ class Action:
                 if getattr(self.ball, stat, 0.0) > 0:
                     setattr(self.ball, stat, 0.0)
                     absorbed = True
-            if absorbed:
-                # Add temporary health regeneration
-                self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 20) # Instant heal
-                # Maybe a heal over time if engine supports it?
-                self.ball.healing_buff_timer = getattr(self.ball, "healing_buff_timer", 0.0) + 5.0
+
+            # Amplification of positive synergies based on weather
+            arena_weather = ""
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "weather"):
+                arena_weather = self.world.arena.weather
+            elif hasattr(self.world, "game_mode") and hasattr(self.world.game_mode, "weather"):
+                arena_weather = self.world.game_mode.weather
+
+            synergy_activated = False
+            if arena_weather == "thunderstorm":
+                if getattr(self.ball, "supercharge_timer", 0.0) > 0:
+                    self.ball.supercharge_timer += 5.0
+                    synergy_activated = True
+            elif arena_weather == "rain" or arena_weather == "heavy_rain":
+                if getattr(self.ball, "healing_buff_timer", 0.0) > 0:
+                    self.ball.healing_buff_timer += 5.0
+                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 30)
+                    synergy_activated = True
+            elif arena_weather == "blizzard" or arena_weather == "snow":
+                if getattr(self.ball, "frozen_timer", 0.0) == 0.0 and getattr(self.ball, "cold", 0.0) == 0.0:
+                    self.ball.speed_buff_timer = getattr(self.ball, "speed_buff_timer", 0.0) + 5.0
+                    synergy_activated = True
+            elif arena_weather == "wind" or arena_weather == "windstorm" or arena_weather == "hurricane":
+                if getattr(self.ball, "speed_buff_timer", 0.0) > 0:
+                    self.ball.speed_buff_timer += 5.0
+                    synergy_activated = True
+            elif arena_weather == "heatwave":
+                if getattr(self.ball, "damage_buff_timer", 0.0) > 0:
+                    self.ball.damage_buff_timer += 5.0
+                    synergy_activated = True
+
+            if absorbed or synergy_activated:
+                if absorbed and not synergy_activated:
+                    # Add temporary health regeneration
+                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + 20) # Instant heal
+                    # Maybe a heal over time if engine supports it?
+                    self.ball.healing_buff_timer = getattr(self.ball, "healing_buff_timer", 0.0) + 5.0
                 self.ball.inventory.remove("weather_shield")
 
         # Weather Scanner deployment
