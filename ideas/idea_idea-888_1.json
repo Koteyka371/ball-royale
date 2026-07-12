@@ -1,0 +1,4 @@
+{
+  "title": "Quicksand Pit Hazard",
+  "description": "A hazard that continuously pulls nearby players toward its center while disabling dashes and significantly reducing their movement speed based on their proximity to the center."
+}
