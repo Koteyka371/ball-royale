@@ -13813,6 +13813,109 @@ class SupernovaMode extends GameMode:
 		return null
 
 
+class ScorchingSunMode extends GameMode:
+	var safe_zone_radius = 500.0
+	var safe_zone_x = 500.0
+	var safe_zone_y = 500.0
+	var timer = 0.0
+
+	func _init():
+		super._init()
+		name = "Scorching Sun"
+		description = "The sun gets progressively hotter, causing a slowly shrinking safe zone of shade. Balls outside the shade take continuous damage and have their stamina drained."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world != null and "arena" in world:
+			world.arena.is_night = false
+			safe_zone_x = world.arena.width / 2.0
+			safe_zone_y = world.arena.height / 2.0
+		else:
+			safe_zone_x = 500.0
+			safe_zone_y = 500.0
+		safe_zone_radius = 500.0
+		timer = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null and "arena" in world:
+			world.arena.is_night = false
+			world.arena.weather = "heatwave"
+
+		timer += delta
+		var shrink_rate = (500.0 - 50.0) / 120.0
+		safe_zone_radius = max(50.0, 500.0 - (timer * shrink_rate))
+
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+				world.call("add_event", "visual_effect", {
+					"type": "moonlight_shadow",
+					"x": safe_zone_x,
+					"y": safe_zone_y,
+					"radius": safe_zone_radius,
+					"duration": delta * 2.0
+				})
+			elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+				world.add_event("visual_effect", {
+					"type": "moonlight_shadow",
+					"x": safe_zone_x,
+					"y": safe_zone_y,
+					"radius": safe_zone_radius,
+					"duration": delta * 2.0
+				})
+
+		for b in balls:
+			var balive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				balive = b.get("alive", false)
+			else:
+				balive = b.get("alive") if "alive" in b else false
+
+			var btype = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				btype = str(b.get("ball_type", ""))
+			else:
+				btype = str(b.get("ball_type", "")) if "ball_type" in b else ""
+
+			if not balive or btype == "spectator":
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			else:
+				bx = b.get("x", 0.0) if "x" in b else 0.0
+				by = b.get("y", 0.0) if "y" in b else 0.0
+
+			var dist_sq = (bx - safe_zone_x) * (bx - safe_zone_x) + (by - safe_zone_y) * (by - safe_zone_y)
+
+			if dist_sq > safe_zone_radius * safe_zone_radius:
+				var damage = 10.0 * delta
+				var stamina_drain = 20.0 * delta
+				var heat_multiplier = 1.0 + (timer / 60.0)
+				var actual_damage = damage * heat_multiplier
+
+				if typeof(b) == TYPE_DICTIONARY:
+					var hp = b.get("hp", 100.0)
+					b["hp"] = hp - actual_damage
+					if b.get("hp", 100.0) <= 0:
+						b["alive"] = false
+
+					if b.has("stamina"):
+						b["stamina"] = max(0.0, b["stamina"] - stamina_drain)
+				else:
+					if b.has_method("take_damage"):
+						b.take_damage(actual_damage)
+					else:
+						var hp = b.get("hp", 100.0)
+						b.set("hp", hp - actual_damage)
+						if b.get("hp", 100.0) <= 0:
+							b.set("alive", false)
+
+					if "stamina" in b:
+						b.stamina = max(0.0, b.stamina - stamina_drain)
+
 class DayNightMode extends GameMode:
 	var timer = 0.0
 	var phase_duration = 10.0
@@ -26527,6 +26630,7 @@ class CollapsingBubblesMode extends GameMode:
 		})
 
 var GAME_MODES = {
+	"scorching_sun": ScorchingSunMode.new(),
 	"bounty_tag": BountyTagMode.new(),
 	"cosmic_storm": CosmicStormMode.new(),
 	"temporal_rifts": TemporalRiftsMode.new(),
