@@ -1,0 +1,4 @@
+{
+    "title": "Fake Supply Drops (Traps)",
+    "description": "Add a new 'Fake Supply Drop' trap that looks identical to a high-tier supply drop. If a player attempts to capture it and stays in the zone for the full duration, it explodes or applies a massive debuff instead of a heal/buff."
+}

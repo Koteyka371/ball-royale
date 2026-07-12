@@ -748,6 +748,8 @@ class BattleRoyaleMode(GameMode):
         self.next_weather = "clear"
         self.weather_warning_issued = False
         self.supply_drop_timer = 0.0
+        self.high_tier_supply_drop_timer = 0.0
+
         self.zone_initialized = False
         self.zone_x = 500.0
         self.zone_y = 500.0
@@ -1327,10 +1329,69 @@ class BattleRoyaleMode(GameMode):
                 except Exception as e:
                     pass
 
+        # High-Tier Supply Drop Capture Logic
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in list(world.arena.hazards):
+                if getattr(h, "kind", "") == "high_tier_drop_zone" and getattr(h, "active", True):
+                    import math
+                    capturing_ball = None
+                    for b in balls:
+                        if not getattr(b, "alive", False): continue
+                        dist = math.hypot(b.x - h.x, b.y - h.y)
+                        if dist <= float(h.radius) + float(getattr(b, "radius", 10.0)):
+                            capturing_ball = b
+                            break
+
+                    if capturing_ball:
+                        if getattr(h, "capturing_ball", None) != capturing_ball:
+                            h.capturing_ball = capturing_ball
+                            # DO NOT RESET TO 0.0, allow decay to handle it
+                        h.capture_progress += delta
+                        if h.capture_progress >= 5.0:
+                            h.active = False
+                            # Full heal
+                            capturing_ball.hp = getattr(capturing_ball, "max_hp", 100.0)
+                            if hasattr(world, "add_event"):
+                                world.add_event("drop_captured", {"message": f"{getattr(capturing_ball, 'ball_type', 'A ball')} captured the High-Tier Supply Drop! Full Heal!"})
+                    else:
+                        h.capturing_ball = None
+                        h.capture_progress = max(0.0, getattr(h, "capture_progress", 0.0) - delta)
+
+        # High-Tier Supply Drop Spawn Logic
+        self.high_tier_supply_drop_timer += delta
+        if self.high_tier_supply_drop_timer >= 45.0:
+            self.high_tier_supply_drop_timer = 0.0
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+                rnd = getattr(self, "random", __import__("random"))
+
+                class DropZoneHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                        self.capture_progress = 0.0
+                        self.capturing_ball = None
+
+                tx = rnd.uniform(100.0, arena_width - 100.0)
+                ty = rnd.uniform(100.0, arena_height - 100.0)
+                h_id = 11000 + len(world.arena.hazards) + rnd.randint(0, 1000)
+                world.arena.hazards.append(DropZoneHazard(h_id, tx, ty, 60.0, "high_tier_drop_zone", 0.0))
+
+                if hasattr(world, "add_event"):
+                    world.add_event("high_tier_drop", {"message": "A High-Tier Supply Drop zone has appeared!"})
+
         # Supply Drop Logic
         self.supply_drop_timer += delta
         if self.supply_drop_timer >= 15.0:
             self.supply_drop_timer = 0.0
+
             if hasattr(world, "boosters"):
                 arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
                 arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000

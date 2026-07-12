@@ -1025,6 +1025,7 @@ class BattleRoyaleMode extends GameMode:
 	var weather_timer: float = 0.0
 	var weather: String = "clear"
 	var supply_drop_timer: float = 0.0
+	var high_tier_supply_drop_timer: float = 0.0
 	var zone_initialized: bool = false
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -1810,6 +1811,109 @@ class BattleRoyaleMode extends GameMode:
 					world.add_event("hazard_spawn", {"message": "A roaming Tornado has appeared!"})
 
 		dark_phase_timer += delta
+
+		# High-Tier Supply Drop Capture Logic
+		if "arena" in world and world.arena and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var h_kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+				else:
+					h_kind = h.get("kind") if "kind" in h else h.get_meta("kind") if h.has_method("get_meta") and h.has_meta("kind") else ""
+
+				if h_kind == "high_tier_drop_zone":
+					var is_active = true
+					if typeof(h) == TYPE_DICTIONARY: is_active = h.get("active", true)
+					elif "active" in h: is_active = h.get("active")
+					elif h.has_method("get_meta") and h.has_meta("active"): is_active = h.get_meta("active")
+
+					if is_active:
+						var hx = h.x if typeof(h) != TYPE_DICTIONARY else h.get("x", 0.0)
+						var hy = h.y if typeof(h) != TYPE_DICTIONARY else h.get("y", 0.0)
+						var hrad = h.radius if typeof(h) != TYPE_DICTIONARY else h.get("radius", 60.0)
+
+						var capturing = null
+						for b in balls:
+							var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if "alive" in b else false)
+							if not alive: continue
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var br = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+							var dx = bx - hx
+							var dy = by - hy
+							if sqrt(dx*dx + dy*dy) <= hrad + br:
+								capturing = b
+								break
+
+						var progress = 0.0
+						if typeof(h) == TYPE_DICTIONARY: progress = h.get("capture_progress", 0.0)
+						else: progress = h.get("capture_progress") if "capture_progress" in h else (h.get_meta("capture_progress") if h.has_method("get_meta") and h.has_meta("capture_progress") else 0.0)
+
+						var cap_ball = null
+						if typeof(h) == TYPE_DICTIONARY: cap_ball = h.get("capturing_ball", null)
+						else: cap_ball = h.get("capturing_ball") if "capturing_ball" in h else (h.get_meta("capturing_ball") if h.has_method("get_meta") and h.has_meta("capturing_ball") else null)
+
+						if capturing != null:
+							if cap_ball != capturing:
+								# DO NOT RESET progress to 0.0
+								if typeof(h) == TYPE_DICTIONARY: h["capturing_ball"] = capturing
+								elif "capturing_ball" in h: h.set("capturing_ball", capturing)
+								elif h.has_method("set_meta"): h.set_meta("capturing_ball", capturing)
+
+							progress += delta
+							if progress >= 5.0:
+								if typeof(h) == TYPE_DICTIONARY: h["active"] = false
+								elif "active" in h: h.set("active", false)
+								elif h.has_method("set_meta"): h.set_meta("active", false)
+
+								var mhp = capturing.get("max_hp", 100.0) if typeof(capturing) == TYPE_DICTIONARY else (capturing.get("max_hp") if "max_hp" in capturing else 100.0)
+								if typeof(capturing) == TYPE_DICTIONARY: capturing["hp"] = mhp
+								elif "hp" in capturing: capturing.set("hp", mhp)
+
+								var btype = capturing.get("ball_type", "A ball") if typeof(capturing) == TYPE_DICTIONARY else (capturing.get("ball_type") if "ball_type" in capturing else "A ball")
+								if world.has_method("add_event"):
+									world.add_event("drop_captured", {"message": str(btype) + " captured the High-Tier Supply Drop! Full Heal!"})
+							else:
+								if typeof(h) == TYPE_DICTIONARY: h["capture_progress"] = progress
+								elif "capture_progress" in h: h.set("capture_progress", progress)
+								elif h.has_method("set_meta"): h.set_meta("capture_progress", progress)
+						else:
+							progress = max(0.0, progress - delta)
+							if typeof(h) == TYPE_DICTIONARY: h["capture_progress"] = progress
+							elif "capture_progress" in h: h.set("capture_progress", progress)
+							elif h.has_method("set_meta"): h.set_meta("capture_progress", progress)
+
+							if typeof(h) == TYPE_DICTIONARY: h["capturing_ball"] = null
+							elif "capturing_ball" in h: h.set("capturing_ball", null)
+							elif h.has_method("set_meta"): h.set_meta("capturing_ball", null)
+
+		# High-Tier Supply Drop Spawn Logic
+		high_tier_supply_drop_timer += delta
+		if high_tier_supply_drop_timer >= 45.0:
+			high_tier_supply_drop_timer = 0.0
+			if "arena" in world and world.arena and "hazards" in world.arena:
+				var aw = 1000.0
+				var ah = 1000.0
+				if "width" in world.arena: aw = world.arena.width
+				if "height" in world.arena: ah = world.arena.height
+				var tx = rng.randf_range(100.0, aw - 100.0)
+				var ty = rng.randf_range(100.0, ah - 100.0)
+				var h_id = 11000 + world.arena.hazards.size() + (rng.randi() % 1000)
+
+				var drop_zone = {
+					"id": h_id,
+					"x": tx, "y": ty,
+					"radius": 60.0,
+					"kind": "high_tier_drop_zone",
+					"damage": 0.0,
+					"active": true,
+					"capture_progress": 0.0,
+					"capturing_ball": null
+				}
+				world.arena.hazards.append(drop_zone)
+
+				if world.has_method("add_event"):
+					world.add_event("high_tier_drop", {"message": "A High-Tier Supply Drop zone has appeared!"})
 
 		supply_drop_timer += delta
 		if supply_drop_timer >= 15.0:
