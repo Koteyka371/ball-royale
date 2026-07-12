@@ -138,16 +138,16 @@ class GameMode:
             import random
             season_index = ((season_num - 1) % 4) + 1
             if season_index == 1:
-                world.arena.weather = random.choice(["clear", "rain"])
+                world.arena.weather = self.random.choice(["clear", "rain"])
                 world.arena.seasonal_modifier = "spring"
             elif season_index == 2:
-                world.arena.weather = random.choice(["clear", "heatwave"])
+                world.arena.weather = self.random.choice(["clear", "heatwave"])
                 world.arena.seasonal_modifier = "summer"
             elif season_index == 3:
-                world.arena.weather = random.choice(["clear", "wind", "fog"])
+                world.arena.weather = self.random.choice(["clear", "wind", "fog"])
                 world.arena.seasonal_modifier = "autumn"
             elif season_index == 4:
-                world.arena.weather = random.choice(["clear", "snow", "blizzard"])
+                world.arena.weather = self.random.choice(["clear", "snow", "blizzard"])
                 world.arena.seasonal_modifier = "winter"
 
         modifiers = {
@@ -241,7 +241,7 @@ class GameMode:
                                 from arena.procedural_arena import Hazard
                                 exp_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999)
                                 # Massive explosion radius and damage
-                                exp = Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
+                                exp = self.Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
                                 setattr(exp, "duration", 0.5)
                                 world.arena.hazards.append(exp)
                             except ImportError:
@@ -365,25 +365,25 @@ class GameMode:
                         import random
                         arena_w = getattr(world.arena, "width", 800.0)
                         arena_h = getattr(world.arena, "height", 600.0)
-                        hx = random.uniform(50, arena_w - 50)
-                        hy = random.uniform(50, arena_h - 50)
-                        h_id = 999000 + len(world.arena.hazards) + random.randint(0, 10000)
+                        hx = self.random.uniform(50, arena_w - 50)
+                        hy = self.random.uniform(50, arena_h - 50)
+                        h_id = 999000 + len(world.arena.hazards) + self.random.randint(0, 10000)
 
                         if theme == "Frost":
-                            ice = Hazard(id=h_id, x=hx, y=hy, radius=60.0, kind="ice_patch", damage=0.0)
+                            ice = self.Hazard(id=h_id, x=hx, y=hy, radius=60.0, kind="ice_patch", damage=0.0)
                             setattr(ice, "duration", 10.0)
                             world.arena.hazards.append(ice)
                         elif theme == "Inferno":
-                            lava = Hazard(id=h_id, x=hx, y=hy, radius=50.0, kind="lava", damage=10.0)
+                            lava = self.Hazard(id=h_id, x=hx, y=hy, radius=50.0, kind="lava", damage=10.0)
                             setattr(lava, "duration", 10.0)
                             world.arena.hazards.append(lava)
                         elif theme == "Void":
-                            bh = Hazard(id=h_id, x=hx, y=hy, radius=30.0, kind="black_hole", damage=5.0)
+                            bh = self.Hazard(id=h_id, x=hx, y=hy, radius=30.0, kind="black_hole", damage=5.0)
                             setattr(bh, "duration", 8.0)
                             setattr(bh, "pull_strength", 50.0)
                             world.arena.hazards.append(bh)
                         elif theme == "Abyssal":
-                            puddle = Hazard(id=h_id, x=hx, y=hy, radius=45.0, kind="puddle", damage=2.0)
+                            puddle = self.Hazard(id=h_id, x=hx, y=hy, radius=45.0, kind="puddle", damage=2.0)
                             setattr(puddle, "duration", 12.0)
                             world.arena.hazards.append(puddle)
                     except ImportError:
@@ -515,7 +515,7 @@ class GameMode:
                     self.kind = kind
                     self.damage = damage
                     self.is_disabled_by_flare = False
-            soul_fragment = _SoulHazard(
+            soul_fragment = _Soulself.Hazard(
                 id=f"soul_{ball.id}",
                 x=ball.x,
                 y=ball.y,
@@ -641,7 +641,7 @@ class DraftRoyaleMode(GameMode):
                     if len(self.banned_types) < self.max_bans * len(self.teams):
                         choices = [t for t in self.available_types if t not in self.banned_types]
                         if choices:
-                            ban = self.random.choice(choices)
+                            ban = self.self.random.choice(choices)
                             self.banned_types.append(ban)
                         self.turn_index += 1
 
@@ -661,7 +661,7 @@ class DraftRoyaleMode(GameMode):
                             if not choices:
                                 choices = [t for t in self.available_types if t not in self.banned_types]
                             if choices:
-                                pick = self.random.choice(choices)
+                                pick = self.self.random.choice(choices)
                                 self.team_rosters[current_team].append(pick)
                         self.turn_index += 1
                     else:
@@ -827,9 +827,9 @@ class BattleRoyaleMode(GameMode):
             arena_h = getattr(world.arena, "height", 600)
             for i in range(5):
                 h_id = 97000 + len(world.arena.hazards) + i
-                x = random.uniform(200, arena_w - 200)
-                y = random.uniform(200, arena_h - 200)
-                wall = Hazard(id=h_id, x=x, y=y, radius=60.0, kind="invisible_wall", damage=0.0)
+                x = self.random.uniform(200, arena_w - 200)
+                y = self.random.uniform(200, arena_h - 200)
+                wall = self.Hazard(id=h_id, x=x, y=y, radius=60.0, kind="invisible_wall", damage=0.0)
                 setattr(wall, "visible", False)
                 setattr(wall, "reveal_timer", 0.0)
                 world.arena.hazards.append(wall)
@@ -984,8 +984,8 @@ class BattleRoyaleMode(GameMode):
             self.zone_y += (dy / dist) * getattr(self, "zone_move_speed", 30.0) * delta
         else:
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = self.random.uniform(buffer, arena_width_for_move - buffer)
-            self.zone_target_y = self.random.uniform(buffer, arena_height_for_move - buffer)
+            self.zone_target_x = self.self.random.uniform(buffer, arena_width_for_move - buffer)
+            self.zone_target_y = self.self.random.uniform(buffer, arena_height_for_move - buffer)
 
         if self.zone_radius > 50.0:
             self.zone_radius -= self.shrink_rate * delta
@@ -997,15 +997,15 @@ class BattleRoyaleMode(GameMode):
         random_val = getattr(self.random, "random", lambda: 0.0)()
         if hasattr(world, "arena") and hasattr(world.arena, "hazards") and random_val < 0.1 * delta * 60:
             # Spawn a visual lava puddle outside the safe zone
-            angle = self.random.uniform(0, math.pi * 2)
-            dist = self.random.uniform(self.zone_radius + 50, self.zone_radius + 400)
+            angle = self.self.random.uniform(0, math.pi * 2)
+            dist = self.self.random.uniform(self.zone_radius + 50, self.zone_radius + 400)
             lx = self.zone_x + math.cos(angle) * dist
             ly = self.zone_y + math.sin(angle) * dist
 
             try:
                 from arena.procedural_arena import Hazard
-                h_id = len(world.arena.hazards) + self.random.randint(20000, 99999)
-                lava_h = Hazard(h_id, lx, ly, self.random.uniform(40.0, 80.0), "lava_puddle", 0.0) # Damage handled manually by zone
+                h_id = len(world.arena.hazards) + self.self.random.randint(20000, 99999)
+                lava_h = self.Hazard(h_id, lx, ly, self.self.random.uniform(40.0, 80.0), "lava_puddle", 0.0) # Damage handled manually by zone
                 setattr(lava_h, "duration", 5.0) # Temporary visual
                 world.arena.hazards.append(lava_h)
             except ImportError:
@@ -1054,19 +1054,19 @@ class BattleRoyaleMode(GameMode):
                 self.random_event_timer = 0.0
                 try:
                     from arena.procedural_arena import Hazard
-                    angle = self.random.uniform(0, 2 * math.pi)
+                    angle = self.self.random.uniform(0, 2 * math.pi)
                     spawn_dist = self.zone_radius * 0.9
                     hx = self.zone_x + math.cos(angle) * spawn_dist
                     hy = self.zone_y + math.sin(angle) * spawn_dist
 
                     # Velocity towards the center of the safe zone
-                    v_angle = angle + math.pi + self.random.uniform(-0.5, 0.5)
-                    speed = self.random.uniform(30.0, 80.0)
+                    v_angle = angle + math.pi + self.self.random.uniform(-0.5, 0.5)
+                    speed = self.self.random.uniform(30.0, 80.0)
                     vx = math.cos(v_angle) * speed
                     vy = math.sin(v_angle) * speed
 
-                    wall_id = len(world.arena.hazards) + self.random.randint(10000, 99999)
-                    wall = Hazard(wall_id, hx, hy, 40.0, "moving_wall", 0.0)
+                    wall_id = len(world.arena.hazards) + self.self.random.randint(10000, 99999)
+                    wall = self.Hazard(wall_id, hx, hy, 40.0, "moving_wall", 0.0)
                     setattr(wall, "vx", vx)
                     setattr(wall, "vy", vy)
                     setattr(wall, "duration", 20.0)
@@ -1316,7 +1316,7 @@ class BattleRoyaleMode(GameMode):
                 try:
                     from arena.procedural_arena import Hazard
                     t_id = len(getattr(world.arena, "hazards", [])) + rnd.randint(10000, 99999)
-                    tornado = Hazard(id=t_id, x=tx, y=ty, radius=50.0, kind="tornado", damage=10.0)
+                    tornado = self.Hazard(id=t_id, x=tx, y=ty, radius=50.0, kind="tornado", damage=10.0)
                     setattr(tornado, "vx", rnd.uniform(-100.0, 100.0))
                     setattr(tornado, "vy", rnd.uniform(-100.0, 100.0))
                     setattr(tornado, "duration", 9999.0)
@@ -1444,7 +1444,7 @@ class BattleRoyaleMode(GameMode):
                         from arena.procedural_arena import Hazard
                         x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                         y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                        fire = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="fire_zone", damage=5.0)
+                        fire = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="fire_zone", damage=5.0)
                         setattr(fire, 'duration', 8.0)
                         world.arena.hazards.append(fire)
                     except ImportError:
@@ -1465,11 +1465,11 @@ class BattleRoyaleMode(GameMode):
                     self.meteor_spawn_timer = 0.0
                     arena_width = getattr(world.arena, "width", 1000)
                     arena_height = getattr(world.arena, "height", 1000)
-                    x = random.uniform(50, arena_width - 50)
-                    y = random.uniform(50, arena_height - 50)
+                    x = self.random.uniform(50, arena_width - 50)
+                    y = self.random.uniform(50, arena_height - 50)
 
                     self.active_meteors.append({
-                        "id": f"meteor_{random.randint(10000, 99999)}",
+                        "id": f"meteor_{self.random.randint(10000, 99999)}",
                         "x": x,
                         "y": y,
                         "delay": 2.0,
@@ -1534,11 +1534,11 @@ class BattleRoyaleMode(GameMode):
                                 self.target_radius = radius
 
                     for m in self.active_meteors:
-                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
+                        h = self.Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                         setattr(h, "duration", m["delay"])
                         world.arena.hazards.append(h)
                     for c in self.craters:
-                        h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                        h = self.Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
                         setattr(h, "duration", c["duration"])
                         world.arena.hazards.append(h)
 
@@ -1579,7 +1579,7 @@ class BattleRoyaleMode(GameMode):
                     # Spawn tornado
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    tornado = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
+                    tornado = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
                     setattr(tornado, 'duration', 5.0)
                     setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
@@ -1589,7 +1589,7 @@ class BattleRoyaleMode(GameMode):
                     from arena.procedural_arena import Hazard
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=80.0, kind="ice_patch", damage=0.0)
+                    ice = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=80.0, kind="ice_patch", damage=0.0)
                     setattr(ice, 'duration', 10.0)
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
@@ -1600,7 +1600,7 @@ class BattleRoyaleMode(GameMode):
                     # Spawn ice slicks
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
+                    ice = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
                     setattr(ice, 'duration', 10.0)
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
@@ -1619,7 +1619,7 @@ class BattleRoyaleMode(GameMode):
                     # Spawn randomly moving ice patches
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
+                    ice = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
                     setattr(ice, 'duration', 10.0)
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
@@ -1635,11 +1635,11 @@ class BattleRoyaleMode(GameMode):
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
 
                     if is_dirt_sand:
-                        mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
+                        mud_pit = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
                         setattr(mud_pit, 'duration', 15.0)
                         world.arena.hazards.append(mud_pit)
                     else:
-                        puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="puddle", damage=0.0)
+                        puddle = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="puddle", damage=0.0)
                         setattr(puddle, 'duration', 20.0)
                         world.arena.hazards.append(puddle)
 
@@ -1648,7 +1648,7 @@ class BattleRoyaleMode(GameMode):
                     # Prolonged rain causes flood zones
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    flood = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=100.0, kind="flood_zone", damage=0.0)
+                    flood = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=100.0, kind="flood_zone", damage=0.0)
                     setattr(flood, 'duration', 10.0)
                     world.arena.hazards.append(flood)
                 if season_num == 3:
@@ -1657,7 +1657,7 @@ class BattleRoyaleMode(GameMode):
                         # Spawn healing puddles
                         x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                         y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                        puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="healing_spring", damage=-10.0)
+                        puddle = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="healing_spring", damage=-10.0)
                         setattr(puddle, 'duration', 8.0)
                         world.arena.hazards.append(puddle)
                 else:
@@ -1666,7 +1666,7 @@ class BattleRoyaleMode(GameMode):
                         # Spawn lightning strike zone
                         x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                         y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                        lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
+                        lightning = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                         setattr(lightning, 'duration', 1.0)
                         world.arena.hazards.append(lightning)
             elif self.weather == "thunderstorm":
@@ -1681,7 +1681,7 @@ class BattleRoyaleMode(GameMode):
                         target_b = getattr(self, "random", __import__("random")).choice(metal_balls)
                         x = target_b.x
                         y = target_b.y
-                    lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
+                    lightning = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                     setattr(lightning, 'duration', 1.0)
                     world.arena.hazards.append(lightning)
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
@@ -1689,7 +1689,7 @@ class BattleRoyaleMode(GameMode):
                     # Spawn tornado warning
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    warning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado_warning", damage=0.0)
+                    warning = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado_warning", damage=0.0)
                     setattr(warning, 'duration', 3.0)
                     if hasattr(world, "add_event"):
                         world.add_event("audio_event", {"sound": "siren_warning", "volume": 1.0, "x": x, "y": y})
@@ -1973,7 +1973,7 @@ class BattleRoyaleMode(GameMode):
         self.random_event_timer += delta
         if self.random_event_timer >= 25.0:
             self.random_event_timer = 0.0
-            event_type = self.random.choice(["loot_goblin", "low_gravity_zone", "meteor_shower"])
+            event_type = self.self.random.choice(["loot_goblin", "low_gravity_zone", "meteor_shower"])
 
             if event_type == "loot_goblin":
                 class LootGoblin:
@@ -1994,8 +1994,8 @@ class BattleRoyaleMode(GameMode):
 
                 arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
                 arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
-                spawn_x = self.random.uniform(100, arena_width - 100)
-                spawn_y = self.random.uniform(100, arena_height - 100)
+                spawn_x = self.self.random.uniform(100, arena_width - 100)
+                spawn_y = self.self.random.uniform(100, arena_height - 100)
                 goblin_id = 95000 + getattr(self, "random", __import__("random")).randint(0, 9999)
                 new_goblin = LootGoblin(goblin_id, spawn_x, spawn_y)
 
@@ -2016,7 +2016,7 @@ class BattleRoyaleMode(GameMode):
                 try:
                     from arena.procedural_arena import Hazard
                     h_id = 96000 + getattr(self, "random", __import__("random")).randint(0, 9999)
-                    low_grav = Hazard(h_id, cx, cy, 50.0, "low_gravity_zone", 0.0)
+                    low_grav = self.Hazard(h_id, cx, cy, 50.0, "low_gravity_zone", 0.0)
                     setattr(low_grav, "duration", 15.0)
                     setattr(low_grav, "target_radius", 300.0)
                     if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
@@ -2140,13 +2140,13 @@ class BattleRoyaleMode(GameMode):
                 aw = getattr(world.arena, "width", 1000.0)
                 ah = getattr(world.arena, "height", 1000.0)
                 import random
-                mx = random.uniform(100.0, aw - 100.0)
-                my = random.uniform(100.0, ah - 100.0)
+                mx = self.random.uniform(100.0, aw - 100.0)
+                my = self.random.uniform(100.0, ah - 100.0)
                 if not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
                 try:
                     from arena.procedural_arena import Hazard
-                    shadow = Hazard(id=len(world.arena.hazards) + 9800, x=mx, y=my, radius=10.0, kind="meteor_shadow", damage=0.0)
+                    shadow = self.Hazard(id=len(world.arena.hazards) + 9800, x=mx, y=my, radius=10.0, kind="meteor_shadow", damage=0.0)
                 except ImportError:
                     class FallbackHazard:
                         def __init__(self, id, x, y, radius, kind, damage):
@@ -2157,7 +2157,7 @@ class BattleRoyaleMode(GameMode):
                             self.kind = kind
                             self.damage = damage
                             self.active = True
-                    shadow = FallbackHazard(id=len(world.arena.hazards) + 9800, x=mx, y=my, radius=10.0, kind="meteor_shadow", damage=0.0)
+                    shadow = Fallbackself.Hazard(id=len(world.arena.hazards) + 9800, x=mx, y=my, radius=10.0, kind="meteor_shadow", damage=0.0)
                 setattr(shadow, "shadow_timer", 2.0)
                 setattr(shadow, "max_radius", 60.0)
                 world.arena.hazards.append(shadow)
@@ -2176,7 +2176,7 @@ class BattleRoyaleMode(GameMode):
                         hazards_to_remove.append(h)
                         try:
                             from arena.procedural_arena import Hazard
-                            lava = Hazard(id=h.id + 100, x=h.x, y=h.y, radius=max_rad, kind="lava_puddle", damage=0.0)
+                            lava = self.Hazard(id=h.id + 100, x=h.x, y=h.y, radius=max_rad, kind="lava_puddle", damage=0.0)
                         except ImportError:
                             class FallbackHazard:
                                 def __init__(self, id, x, y, radius, kind, damage):
@@ -2187,7 +2187,7 @@ class BattleRoyaleMode(GameMode):
                                     self.kind = kind
                                     self.damage = damage
                                     self.active = True
-                            lava = FallbackHazard(id=h.id + 100, x=h.x, y=h.y, radius=max_rad, kind="lava_puddle", damage=0.0)
+                            lava = Fallbackself.Hazard(id=h.id + 100, x=h.x, y=h.y, radius=max_rad, kind="lava_puddle", damage=0.0)
                         setattr(lava, "lava_duration", 10.0)
                         new_hazards.append(lava)
 
@@ -2259,7 +2259,7 @@ class BattleRoyaleMode(GameMode):
 
                     try:
                         from arena.procedural_arena import Hazard
-                        crater = Hazard(id=len(world.arena.hazards) + 9500, x=mx, y=my, radius=40.0, kind="wall", damage=0.0)
+                        crater = self.Hazard(id=len(world.arena.hazards) + 9500, x=mx, y=my, radius=40.0, kind="wall", damage=0.0)
                         setattr(crater, "duration", 10.0)
                         world.arena.hazards.append(crater)
                     except ImportError:
@@ -2272,7 +2272,7 @@ class BattleRoyaleMode(GameMode):
                                 self.kind = kind
                                 self.damage = damage
                                 self.active = True
-                        crater = FallbackHazard(id=len(world.arena.hazards) + 9500, x=mx, y=my, radius=40.0, kind="wall", damage=0.0)
+                        crater = Fallbackself.Hazard(id=len(world.arena.hazards) + 9500, x=mx, y=my, radius=40.0, kind="wall", damage=0.0)
                         setattr(crater, "duration", 10.0)
                         world.arena.hazards.append(crater)
 
@@ -2289,7 +2289,7 @@ class BattleRoyaleMode(GameMode):
                 cx = getattr(world.arena, "width", 1000.0) / 2.0
                 cy = getattr(world.arena, "height", 1000.0) / 2.0
                 from arena.procedural_arena import Hazard
-                boss = Hazard(id=len(world.arena.hazards) + 9000, x=cx, y=cy, radius=50.0, kind="massive_black_hole", damage=100.0)
+                boss = self.Hazard(id=len(world.arena.hazards) + 9000, x=cx, y=cy, radius=50.0, kind="massive_black_hole", damage=100.0)
                 setattr(boss, "duration", 9999.0)
                 setattr(boss, "lifetime", 0.0)
                 world.arena.hazards.append(boss)
@@ -2329,8 +2329,8 @@ class BattleRoyaleMode(GameMode):
                 arena_width = getattr(world.arena, "width", 1000)
                 arena_height = getattr(world.arena, "height", 1000)
 
-                spawn_x = random.uniform(50, arena_width - 50)
-                spawn_y = random.uniform(50, arena_height - 50)
+                spawn_x = self.random.uniform(50, arena_width - 50)
+                spawn_y = self.random.uniform(50, arena_height - 50)
 
                 # Check distance to all players
                 valid_spawn = True
@@ -2343,7 +2343,7 @@ class BattleRoyaleMode(GameMode):
                             break
 
                 if valid_spawn or random.random() < 0.1: # Fallback to spawn anyway if no valid spot found quickly
-                    monster_id = getattr(world, "next_id", random.randint(100000, 999999))
+                    monster_id = getattr(world, "next_id", self.random.randint(100000, 999999))
                     if hasattr(world, "next_id"):
                         world.next_id += 1
 
@@ -2580,7 +2580,7 @@ class ZombieInfectionMode(GameMode):
         import random
         # Pick 1 random zombie
         if balls:
-            zombie = random.choice([b for b in balls if getattr(b, "ball_type", None) != "spectator"])
+            zombie = self.random.choice([b for b in balls if getattr(b, "ball_type", None) != "spectator"])
             for b in balls:
                 if getattr(b, "ball_type", None) != "spectator":
                     if b == zombie:
@@ -3156,7 +3156,7 @@ class EscortMode(GameMode):
                     b.team = "Attackers"
 
         import random
-        self.chosen_path = random.randint(0, len(self.paths) - 1)
+        self.chosen_path = self.random.randint(0, len(self.paths) - 1)
         self.current_waypoint_index = 0
         self.hazard_timer = 0.0
 
@@ -3266,11 +3266,11 @@ class EscortMode(GameMode):
                     try:
                         from arena.procedural_arena import Hazard
                         import random
-                        h_id = len(world.arena.hazards) + random.randint(1000, 9999)
-                        hx = getattr(self.payload, "x", 0) + random.uniform(-50, 50)
-                        hy = getattr(self.payload, "y", 0) + random.uniform(-50, 50)
-                        h_type = random.choice(["mine", "spike", "fire"])
-                        new_hazard = Hazard(h_id, hx, hy, 20.0, h_type, 10.0)
+                        h_id = len(world.arena.hazards) + self.random.randint(1000, 9999)
+                        hx = getattr(self.payload, "x", 0) + self.random.uniform(-50, 50)
+                        hy = getattr(self.payload, "y", 0) + self.random.uniform(-50, 50)
+                        h_type = self.random.choice(["mine", "spike", "fire"])
+                        new_hazard = self.Hazard(h_id, hx, hy, 20.0, h_type, 10.0)
                         world.arena.hazards.append(new_hazard)
                     except ImportError:
                         pass
@@ -3287,8 +3287,8 @@ class EscortMode(GameMode):
                     if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                         from arena.procedural_arena import Hazard
                         import random
-                        h_id = len(world.arena.hazards) + random.randint(1000, 9999)
-                        barrier = Hazard(h_id, px, py, 40.0, "energy_barrier", 0.0)
+                        h_id = len(world.arena.hazards) + self.random.randint(1000, 9999)
+                        barrier = self.Hazard(h_id, px, py, 40.0, "energy_barrier", 0.0)
                         setattr(barrier, 'duration', 10.0)
                         setattr(barrier, 'team', getattr(self.payload, "team", "Defenders"))
                         world.arena.hazards.append(barrier)
@@ -3485,26 +3485,26 @@ class SurvivalMode(GameMode):
                 from arena.procedural_arena import Hazard
                 h_id = 10000 + len(world.arena.hazards)
                 # Randomly spawn a moving laser, rotating bumper, or collapsing floor
-                choice = random.choice(["moving_laser", "rotating_bumper", "collapsing_floor"])
+                choice = self.random.choice(["moving_laser", "rotating_bumper", "collapsing_floor"])
                 if choice == "moving_laser":
-                    y = random.uniform(50, h - 50)
-                    hz = Hazard(h_id, w/2, y, w, "moving_laser", 20.0)
-                    hz.vy = random.choice([-100.0, 100.0])
+                    y = self.random.uniform(50, h - 50)
+                    hz = self.Hazard(h_id, w/2, y, w, "moving_laser", 20.0)
+                    hz.vy = self.random.choice([-100.0, 100.0])
                     hz.vx = 0.0
                     hz.duration = 10.0
                     world.arena.hazards.append(hz)
                 elif choice == "rotating_bumper":
-                    x = random.uniform(100, w - 100)
-                    y = random.uniform(100, h - 100)
-                    hz = Hazard(h_id, x, y, 60.0, "rotating_bumper", 10.0)
+                    x = self.random.uniform(100, w - 100)
+                    y = self.random.uniform(100, h - 100)
+                    hz = self.Hazard(h_id, x, y, 60.0, "rotating_bumper", 10.0)
                     hz.vx = 0.0
                     hz.vy = 0.0
                     hz.duration = 15.0
                     world.arena.hazards.append(hz)
                 elif choice == "collapsing_floor":
-                    x = random.uniform(200, w - 200)
-                    y = random.uniform(200, h - 200)
-                    hz = Hazard(h_id, x, y, 150.0, "collapsing_floor", 50.0)
+                    x = self.random.uniform(200, w - 200)
+                    y = self.random.uniform(200, h - 200)
+                    hz = self.Hazard(h_id, x, y, 150.0, "collapsing_floor", 50.0)
                     hz.vx = 0.0
                     hz.vy = 0.0
                     hz.duration = 5.0
@@ -3836,12 +3836,12 @@ class MassiveGravityWellMode(GameMode):
         if not self.spawned:
             self.spawned = True
             # Spawn in a random location but not too close to the edges
-            self.mgw_x = self.random.uniform(200, arena_width - 200)
-            self.mgw_y = self.random.uniform(200, arena_height - 200)
+            self.mgw_x = self.self.random.uniform(200, arena_width - 200)
+            self.mgw_y = self.self.random.uniform(200, arena_height - 200)
 
             # Give it a very slow initial velocity
-            angle = self.random.uniform(0, math.pi * 2)
-            speed = self.random.uniform(10, 30)
+            angle = self.self.random.uniform(0, math.pi * 2)
+            speed = self.self.random.uniform(10, 30)
             self.mgw_vx = math.cos(angle) * speed
             self.mgw_vy = math.sin(angle) * speed
 
@@ -4137,25 +4137,25 @@ class SweepingBlackHoleMode(GameMode):
 
         if not self.is_sweeping:
             self.is_sweeping = True
-            side = self.random.randint(0, 3)
+            side = self.self.random.randint(0, 3)
             if side == 0:  # Top
-                self.bh_x = self.random.uniform(100, arena_width - 100)
+                self.bh_x = self.self.random.uniform(100, arena_width - 100)
                 self.bh_y = -self.bh_radius
                 self.bh_vx = 0.0
                 self.bh_vy = 40.0
             elif side == 1:  # Bottom
-                self.bh_x = self.random.uniform(100, arena_width - 100)
+                self.bh_x = self.self.random.uniform(100, arena_width - 100)
                 self.bh_y = arena_height + self.bh_radius
                 self.bh_vx = 0.0
                 self.bh_vy = -40.0
             elif side == 2:  # Left
                 self.bh_x = -self.bh_radius
-                self.bh_y = self.random.uniform(100, arena_height - 100)
+                self.bh_y = self.self.random.uniform(100, arena_height - 100)
                 self.bh_vx = 40.0
                 self.bh_vy = 0.0
             else:  # Right
                 self.bh_x = arena_width + self.bh_radius
-                self.bh_y = self.random.uniform(100, arena_height - 100)
+                self.bh_y = self.self.random.uniform(100, arena_height - 100)
                 self.bh_vx = -40.0
                 self.bh_vy = 0.0
 
@@ -4559,11 +4559,11 @@ class WeatherChaosMode(GameMode):
                     self.meteor_spawn_timer = 0.0
                     arena_width = getattr(world.arena, "width", 1000)
                     arena_height = getattr(world.arena, "height", 1000)
-                    x = random.uniform(50, arena_width - 50)
-                    y = random.uniform(50, arena_height - 50)
+                    x = self.random.uniform(50, arena_width - 50)
+                    y = self.random.uniform(50, arena_height - 50)
 
                     self.active_meteors.append({
-                        "id": f"meteor_{random.randint(10000, 99999)}",
+                        "id": f"meteor_{self.random.randint(10000, 99999)}",
                         "x": x,
                         "y": y,
                         "delay": 2.0,
@@ -4628,11 +4628,11 @@ class WeatherChaosMode(GameMode):
                                 self.target_radius = radius
 
                     for m in self.active_meteors:
-                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
+                        h = self.Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                         setattr(h, "duration", m["delay"])
                         world.arena.hazards.append(h)
                     for c in self.craters:
-                        h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                        h = self.Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
                         setattr(h, "duration", c["duration"])
                         world.arena.hazards.append(h)
 
@@ -4642,7 +4642,7 @@ class WeatherChaosMode(GameMode):
                     from arena.procedural_arena import Hazard
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    fire = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="fire_zone", damage=5.0)
+                    fire = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="fire_zone", damage=5.0)
                     setattr(fire, 'duration', 8.0)
                     world.arena.hazards.append(fire)
 
@@ -4682,7 +4682,7 @@ class WeatherChaosMode(GameMode):
                     # Spawn tornado
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    tornado = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
+                    tornado = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado", damage=20.0)
                     setattr(tornado, 'duration', 5.0)
                     setattr(tornado, 'vx', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', getattr(self, "random", __import__("random")).uniform(-100.0, 100.0))
@@ -4692,7 +4692,7 @@ class WeatherChaosMode(GameMode):
                     from arena.procedural_arena import Hazard
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=80.0, kind="ice_patch", damage=0.0)
+                    ice = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=80.0, kind="ice_patch", damage=0.0)
                     setattr(ice, 'duration', 10.0)
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
@@ -4703,7 +4703,7 @@ class WeatherChaosMode(GameMode):
                     # Spawn ice slicks
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
+                    ice = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
                     setattr(ice, 'duration', 10.0)
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-20.0, 20.0))
@@ -4722,7 +4722,7 @@ class WeatherChaosMode(GameMode):
                     # Spawn randomly moving ice patches
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    ice = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
+                    ice = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="ice_patch", damage=0.0)
                     setattr(ice, 'duration', 10.0)
                     setattr(ice, 'vx', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
                     setattr(ice, 'vy', getattr(self, "random", __import__("random")).uniform(-50.0, 50.0))
@@ -4738,11 +4738,11 @@ class WeatherChaosMode(GameMode):
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
 
                     if is_dirt_sand:
-                        mud_pit = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
+                        mud_pit = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="quicksand", damage=0.0)
                         setattr(mud_pit, 'duration', 15.0)
                         world.arena.hazards.append(mud_pit)
                     else:
-                        puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="puddle", damage=0.0)
+                        puddle = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=50.0, kind="puddle", damage=0.0)
                         setattr(puddle, 'duration', 20.0)
                         world.arena.hazards.append(puddle)
 
@@ -4751,7 +4751,7 @@ class WeatherChaosMode(GameMode):
                     # Prolonged rain causes flood zones
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    flood = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=100.0, kind="flood_zone", damage=0.0)
+                    flood = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=100.0, kind="flood_zone", damage=0.0)
                     setattr(flood, 'duration', 10.0)
                     world.arena.hazards.append(flood)
                 if season_num == 3:
@@ -4760,7 +4760,7 @@ class WeatherChaosMode(GameMode):
                         # Spawn healing puddles
                         x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                         y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                        puddle = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="healing_spring", damage=-10.0)
+                        puddle = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="healing_spring", damage=-10.0)
                         setattr(puddle, 'duration', 8.0)
                         world.arena.hazards.append(puddle)
                 else:
@@ -4769,7 +4769,7 @@ class WeatherChaosMode(GameMode):
                         # Spawn lightning strike zone
                         x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                         y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                        lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
+                        lightning = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                         setattr(lightning, 'duration', 1.0)
                         world.arena.hazards.append(lightning)
             elif self.weather == "thunderstorm":
@@ -4784,7 +4784,7 @@ class WeatherChaosMode(GameMode):
                         target_b = getattr(self, "random", __import__("random")).choice(metal_balls)
                         x = target_b.x
                         y = target_b.y
-                    lightning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
+                    lightning = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=30.0, kind="lightning_strike", damage=50.0)
                     setattr(lightning, 'duration', 1.0)
                     world.arena.hazards.append(lightning)
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
@@ -4792,7 +4792,7 @@ class WeatherChaosMode(GameMode):
                     # Spawn tornado warning
                     x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
                     y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    warning = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado_warning", damage=0.0)
+                    warning = self.Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=40.0, kind="tornado_warning", damage=0.0)
                     setattr(warning, 'duration', 3.0)
                     if hasattr(world, "add_event"):
                         world.add_event("audio_event", {"sound": "siren_warning", "volume": 1.0, "x": x, "y": y})
@@ -5002,7 +5002,7 @@ class WeatherChaosMode(GameMode):
                 # Assign polarity if not present
                 if not hasattr(b, "polarity"):
                     import random
-                    b.polarity = random.choice([1, -1])
+                    b.polarity = self.random.choice([1, -1])
                 b.cosmetic = "magnet_plus" if b.polarity == 1 else "magnet_minus"
 
                 # Magnetic forces
@@ -5098,8 +5098,8 @@ class DominationMode(GameMode):
         import random
         # Assume arena is around 1000x1000
         for pt in self.points:
-            pt.x = random.uniform(200, 800)
-            pt.y = random.uniform(200, 800)
+            pt.x = self.random.uniform(200, 800)
+            pt.y = self.random.uniform(200, 800)
             pt.capture_progress = 0.0
             pt.owner = None
 
@@ -5288,8 +5288,8 @@ class MovingZoneMode(GameMode):
             self.zone_y += (dy / dist) * 20.0 * delta
         else:
             # Pick a new target
-            self.zone_target_x = random.uniform(self.zone_radius, arena_width - self.zone_radius)
-            self.zone_target_y = random.uniform(self.zone_radius, arena_height - self.zone_radius)
+            self.zone_target_x = self.random.uniform(self.zone_radius, arena_width - self.zone_radius)
+            self.zone_target_y = self.random.uniform(self.zone_radius, arena_height - self.zone_radius)
 
         if self.tick_timer >= 0.5:
             self.tick_timer = 0.0
@@ -5411,8 +5411,8 @@ class MemoryTrapsMode(GameMode):
         import random
         self.traps = []
         for i in range(50):
-            x = random.uniform(50, arena_width - 50)
-            y = random.uniform(50, arena_height - 50)
+            x = self.random.uniform(50, arena_width - 50)
+            y = self.random.uniform(50, arena_height - 50)
             self.traps.append({"x": x, "y": y, "radius": 40.0, "cooldowns": {}})
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
@@ -5623,7 +5623,7 @@ class CustomMatchMode(GameMode):
                         if not valid_bosses:
                             valid_bosses = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
                         if valid_bosses:
-                            new_boss = random.choice(valid_bosses)
+                            new_boss = self.random.choice(valid_bosses)
                             new_boss._is_boss_mutator = True
                             new_boss._boss_mutator_duration = 15.0
 
@@ -5679,12 +5679,12 @@ class CustomMatchMode(GameMode):
 
                 if trigger_reroll:
                     if getattr(b, "ball_type", None) != "spectator":
-                        b.ball_type = random.choice(types)
-                        b.max_hp = random.uniform(50.0, 200.0)
+                        b.ball_type = self.random.choice(types)
+                        b.max_hp = self.random.uniform(50.0, 200.0)
                         b.hp = b.max_hp
-                        b.base_speed = random.uniform(50.0, 200.0)
+                        b.base_speed = self.random.uniform(50.0, 200.0)
                         b.speed = b.base_speed
-                        b.base_damage = random.uniform(5.0, 25.0)
+                        b.base_damage = self.random.uniform(5.0, 25.0)
                         b.damage = b.base_damage
 
 
@@ -6103,10 +6103,10 @@ class EMPBurstMode(GameMode):
             import random
             from arena.procedural_arena import Hazard
 
-            x = random.uniform(100, world.arena.width - 100)
-            y = random.uniform(100, world.arena.height - 100)
+            x = self.random.uniform(100, world.arena.width - 100)
+            y = self.random.uniform(100, world.arena.height - 100)
 
-            emp = Hazard(id=len(world.arena.hazards) + random.randint(1000, 9999),
+            emp = self.Hazard(id=len(world.arena.hazards) + self.random.randint(1000, 9999),
                          x=x, y=y, radius=150.0, kind="emp_burst", damage=0.0)
             emp.duration = 1.0  # Burst lasts briefly
             world.arena.hazards.append(emp)
@@ -6175,11 +6175,11 @@ class DynamicHazardsMode(GameMode):
             active_dynamic_hazards = [h for h in world.arena.hazards if hasattr(h, 'vx') and hasattr(h, 'vy')]
             if len(active_dynamic_hazards) < max_hazards:
                 x = 0.0 if random.random() < 0.5 else world.arena.width
-                y = random.uniform(0, world.arena.height)
-                vx = random.uniform(50, 200) if x == 0.0 else random.uniform(-200, -50)
-                vy = random.uniform(-50, 50)
+                y = self.random.uniform(0, world.arena.height)
+                vx = self.random.uniform(50, 200) if x == 0.0 else self.random.uniform(-200, -50)
+                vy = self.random.uniform(-50, 50)
 
-                hazard_type = random.choice([
+                hazard_type = self.random.choice([
                     ("lava", 25.0, 40.0),
                     ("spikes", 15.0, 30.0),
                     ("ice_patch", 5.0, 50.0),
@@ -6192,7 +6192,7 @@ class DynamicHazardsMode(GameMode):
 
                 kind, base_damage, base_radius = hazard_type
 
-                new_hazard = Hazard(id=len(world.arena.hazards) + random.randint(1000, 9999),
+                new_hazard = self.Hazard(id=len(world.arena.hazards) + self.random.randint(1000, 9999),
                                     x=x, y=y, radius=base_radius * radius_mult,
                                     kind=kind, damage=base_damage * damage_mult)
                 new_hazard.vx = vx
@@ -6266,8 +6266,8 @@ class PortalNodeMode(GameMode):
             self.portal_timer = 0.0
             arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
             arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
-            self.portal_x = random.uniform(100, arena_w - 100)
-            self.portal_y = random.uniform(100, arena_h - 100)
+            self.portal_x = self.random.uniform(100, arena_w - 100)
+            self.portal_y = self.random.uniform(100, arena_h - 100)
             print(f"Portal moved to {self.portal_x}, {self.portal_y}")
 
         # Count balls in portal radius per team
@@ -6358,8 +6358,8 @@ class MovingSafeZoneMode(GameMode):
             # Pick a new target that is within the arena bounds minus radius buffer
             # Ensuring it drifts in a random direction and doesn't just converge on a single static point
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
-            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+            self.zone_target_x = self.random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = self.random.uniform(buffer, arena_height - buffer)
 
         # Shrink safe zone
         if self.zone_radius > self.min_zone_radius:
@@ -6541,8 +6541,8 @@ class ShrinkingDangerZoneMode(GameMode):
             arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
             arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
-            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+            self.zone_target_x = self.random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = self.random.uniform(buffer, arena_height - buffer)
 
         # Count players inside the safe zone to calculate shrink multiplier
         players_in_zone = 0
@@ -6693,8 +6693,8 @@ class ModifierSafeZoneMode(GameMode):
             arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
             arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
-            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+            self.zone_target_x = self.random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = self.random.uniform(buffer, arena_height - buffer)
 
         # Count players inside the safe zone to calculate shrink multiplier
         players_in_zone = 0
@@ -6721,7 +6721,7 @@ class ModifierSafeZoneMode(GameMode):
         if self.modifier_timer <= 0.0:
             self.modifier_timer = self.modifier_interval
             modifiers = ["speed_boost", "damage_boost", "slow", "vulnerable", "heal"]
-            self.active_modifier = random.choice(modifiers)
+            self.active_modifier = self.random.choice(modifiers)
             # Create a brief event to notify players what just happened
             if hasattr(world, "add_event"):
                 world.add_event("modifier_safe_zone_trigger", {"modifier": self.active_modifier})
@@ -6859,8 +6859,8 @@ class ModifierZonesSafeZoneMode(GameMode):
             arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
             arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
-            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+            self.zone_target_x = self.random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = self.random.uniform(buffer, arena_height - buffer)
 
         # Count players inside the safe zone to calculate shrink multiplier
         players_in_zone = 0
@@ -7091,8 +7091,8 @@ class SafeZoneMode(GameMode):
             arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
             arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
-            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+            self.zone_target_x = self.random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = self.random.uniform(buffer, arena_height - buffer)
 
         # Count players inside the safe zone to calculate shrink multiplier
         players_in_zone = 0
@@ -7207,7 +7207,7 @@ class InverseMirrorArenaMode(GameMode):
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             clone = copy.copy(b)
-            clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+            clone.id = getattr(world, "next_id", self.random.randint(10000, 99999))
             if hasattr(world, "next_id"):
                 world.next_id += 1
 
@@ -7313,7 +7313,7 @@ class MirrorMatchMode(GameMode):
         for b in balls:
 
             clone = copy.copy(b)
-            clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+            clone.id = getattr(world, "next_id", self.random.randint(10000, 99999))
             if hasattr(world, "next_id"):
                 world.next_id += 1
 
@@ -7396,14 +7396,14 @@ class VolatileClonesMode(GameMode):
                     b.skill_timer = 1.0
                     import copy
                     import random
-                    num_clones = random.randint(1, 3)
+                    num_clones = self.random.randint(1, 3)
                     for _ in range(num_clones):
                         clone = copy.copy(b)
-                        clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+                        clone.id = getattr(world, "next_id", self.random.randint(10000, 99999))
                         if hasattr(world, "next_id"):
                             world.next_id += 1
-                        clone.x += random.uniform(-30, 30)
-                        clone.y += random.uniform(-30, 30)
+                        clone.x += self.random.uniform(-30, 30)
+                        clone.y += self.random.uniform(-30, 30)
                         clone.hp = getattr(b, "hp", 100)
                         clone.max_hp = getattr(b, "max_hp", 100)
                         clone.team = getattr(b, "team", getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")))
@@ -7493,7 +7493,7 @@ class CloneTrailMode(GameMode):
                     import copy
                     import random
                     clone = copy.copy(b)
-                    clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+                    clone.id = getattr(world, "next_id", self.random.randint(10000, 99999))
                     if hasattr(world, "next_id"):
                         world.next_id += 1
                     clone.x = getattr(b, "x", 0)
@@ -7587,14 +7587,14 @@ class CloneChaosMode(GameMode):
                     b.skill_timer = 1.0
                     import copy
                     import random
-                    num_clones = random.randint(1, 3)
+                    num_clones = self.random.randint(1, 3)
                     for _ in range(num_clones):
                         clone = copy.copy(b)
-                        clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+                        clone.id = getattr(world, "next_id", self.random.randint(10000, 99999))
                         if hasattr(world, "next_id"):
                             world.next_id += 1
-                        clone.x += random.uniform(-30, 30)
-                        clone.y += random.uniform(-30, 30)
+                        clone.x += self.random.uniform(-30, 30)
+                        clone.y += self.random.uniform(-30, 30)
                         clone.hp = getattr(b, "hp", 100)
                         clone.max_hp = getattr(b, "max_hp", 100)
                         clone.team = getattr(b, "team", getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")))
@@ -7641,7 +7641,7 @@ class SumoKnockoutMode(GameMode):
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             from arena.procedural_arena import Hazard
-            spike_pit = Hazard("sumo_spike_pit", self.zone_x, self.zone_y, 80.0, "spike_pit", 50.0)
+            spike_pit = self.Hazard("sumo_spike_pit", self.zone_x, self.zone_y, 80.0, "spike_pit", 50.0)
             world.arena.hazards.append(spike_pit)
 
         for b in balls:
@@ -7911,9 +7911,9 @@ class ToxicEnvironmentMode(GameMode):
             self.spawn_timer = 0.0
             immune_boosters = [b for b in world.boosters if isinstance(b, dict) and b.get("is_immunity") and b.get("active")]
             if len(immune_boosters) < 5:
-                x = random.uniform(100, 900)
-                y = random.uniform(100, 900)
-                b_id = getattr(world, "next_id", random.randint(10000, 99999))
+                x = self.random.uniform(100, 900)
+                y = self.random.uniform(100, 900)
+                b_id = getattr(world, "next_id", self.random.randint(10000, 99999))
                 if hasattr(world, "next_id"):
                     world.next_id += 1
                 world.boosters.append({
@@ -8223,14 +8223,14 @@ class WindstormMode(GameMode):
         if self.tornado_timer <= 0.0:
             if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
                 from arena.procedural_arena import Hazard
-                tx = self.random.uniform(100.0, 900.0)
-                ty = self.random.uniform(100.0, 900.0)
-                tornado = Hazard(id=getattr(world, 'next_id', 99999), x=tx, y=ty, radius=60.0, kind="tornado", damage=5.0)
-                setattr(tornado, 'duration', self.random.uniform(4.0, 7.0))
-                setattr(tornado, 'vx', self.random.uniform(-100.0, 100.0))
-                setattr(tornado, 'vy', self.random.uniform(-100.0, 100.0))
+                tx = self.self.random.uniform(100.0, 900.0)
+                ty = self.self.random.uniform(100.0, 900.0)
+                tornado = self.Hazard(id=getattr(world, 'next_id', 99999), x=tx, y=ty, radius=60.0, kind="tornado", damage=5.0)
+                setattr(tornado, 'duration', self.self.random.uniform(4.0, 7.0))
+                setattr(tornado, 'vx', self.self.random.uniform(-100.0, 100.0))
+                setattr(tornado, 'vy', self.self.random.uniform(-100.0, 100.0))
                 world.arena.hazards.append(tornado)
-            self.tornado_timer = self.random.uniform(8.0, 15.0)
+            self.tornado_timer = self.self.random.uniform(8.0, 15.0)
 
 
         # Tornado movement and interaction
@@ -8238,9 +8238,9 @@ class WindstormMode(GameMode):
             for h in world.arena.hazards:
                 if getattr(h, "kind", "") == "tornado":
                     if not hasattr(h, "vx"):
-                        h.vx = self.random.uniform(-100.0, 100.0)
+                        h.vx = self.self.random.uniform(-100.0, 100.0)
                     if not hasattr(h, "vy"):
-                        h.vy = self.random.uniform(-100.0, 100.0)
+                        h.vy = self.self.random.uniform(-100.0, 100.0)
                     h.x += getattr(h, "vx", 0.0) * delta
                     h.y += getattr(h, "vy", 0.0) * delta
 
@@ -8275,24 +8275,24 @@ class WindstormMode(GameMode):
 
                                 if dist < h.radius:
                                     if hasattr(b, "vx") and hasattr(b, "vy"):
-                                        b.vx = self.random.uniform(-300.0, 300.0)
-                                        b.vy = self.random.uniform(-300.0, 300.0)
+                                        b.vx = self.self.random.uniform(-300.0, 300.0)
+                                        b.vy = self.self.random.uniform(-300.0, 300.0)
 
         self.push_timer -= delta
         if self.push_timer <= 0:
             if self.push_duration <= 0:
                 # Start push
                 import math
-                angle = self.random.uniform(0, 2 * math.pi)
+                angle = self.self.random.uniform(0, 2 * math.pi)
                 if hasattr(world, 'add_event'):
                     world.add_event('weather_warning', {'type': 'weather_warning', 'message': 'Windstorm is pushing!'})
                 self.push_dir_x = math.cos(angle)
                 self.push_dir_y = math.sin(angle)
-                self.push_duration = self.random.uniform(1.0, 2.0)
+                self.push_duration = self.self.random.uniform(1.0, 2.0)
             else:
                 self.push_duration -= delta
                 if self.push_duration <= 0:
-                    self.push_timer = self.random.uniform(2.0, 4.0)
+                    self.push_timer = self.self.random.uniform(2.0, 4.0)
 
         if self.push_duration > 0:
             for b in balls:
@@ -8387,9 +8387,9 @@ class BlackoutMode(GameMode):
                                 Hazard = None
 
                         if Hazard is not None:
-                            bx = self.random.uniform(50, getattr(world.arena, "width", 1000) - 50)
-                            by = self.random.uniform(50, getattr(world.arena, "height", 1000) - 50)
-                            shadow = Hazard(id=len(world.arena.hazards) + 9000, x=bx, y=by, radius=15.0, kind="shadow_booster", damage=0.0)
+                            bx = self.self.random.uniform(50, getattr(world.arena, "width", 1000) - 50)
+                            by = self.self.random.uniform(50, getattr(world.arena, "height", 1000) - 50)
+                            shadow = self.Hazard(id=len(world.arena.hazards) + 9000, x=bx, y=by, radius=15.0, kind="shadow_booster", damage=0.0)
                             world.arena.hazards.append(shadow)
 
         for b in balls:
@@ -8473,12 +8473,12 @@ class BountyHuntMode(GameMode):
         self.bounties = {}
         import random
         if red_team:
-            red_bounty = random.choice(red_team)
+            red_bounty = self.random.choice(red_team)
             red_bounty.is_bounty = True
             red_bounty.bounty_timer = 0
             self.bounties["Red"] = red_bounty
         if blue_team:
-            blue_bounty = random.choice(blue_team)
+            blue_bounty = self.random.choice(blue_team)
             blue_bounty.is_bounty = True
             blue_bounty.bounty_timer = 0
             self.bounties["Blue"] = blue_bounty
@@ -8556,24 +8556,24 @@ class EarthquakeMode(GameMode):
                 # Apply random impulses
                 for b in balls:
                     if getattr(b, "hp", 0) > 0 and getattr(b, "anchor_booster_timer", 0.0) <= 0:
-                        b.x += random.uniform(-50.0, 50.0) * delta
-                        b.y += random.uniform(-50.0, 50.0) * delta
+                        b.x += self.random.uniform(-50.0, 50.0) * delta
+                        b.y += self.random.uniform(-50.0, 50.0) * delta
                         if hasattr(b, "vx"):
-                            b.vx += random.uniform(-50.0, 50.0)
+                            b.vx += self.random.uniform(-50.0, 50.0)
                         if hasattr(b, "vy"):
-                            b.vy += random.uniform(-50.0, 50.0)
+                            b.vy += self.random.uniform(-50.0, 50.0)
 
                 if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                     for hazard in world.arena.hazards:
                         if hasattr(hazard, "x") and hasattr(hazard, "y"):
-                            hazard.x += random.uniform(-20.0, 20.0) * delta
-                            hazard.y += random.uniform(-20.0, 20.0) * delta
+                            hazard.x += self.random.uniform(-20.0, 20.0) * delta
+                            hazard.y += self.random.uniform(-20.0, 20.0) * delta
 
                 if hasattr(world, "arena") and hasattr(world.arena, "items"):
                     for item in world.arena.items:
                         if hasattr(item, "x") and hasattr(item, "y"):
-                            item.x += random.uniform(-20.0, 20.0) * delta
-                            item.y += random.uniform(-20.0, 20.0) * delta
+                            item.x += self.random.uniform(-20.0, 20.0) * delta
+                            item.y += self.random.uniform(-20.0, 20.0) * delta
 
         else:
             self.timer += delta
@@ -8581,7 +8581,7 @@ class EarthquakeMode(GameMode):
             if self.timer > 10.0 and random.random() < 0.2 * delta:
                 self.timer = 0.0
                 self.is_shaking = True
-                self.shake_timer = random.uniform(2.0, 5.0)
+                self.shake_timer = self.random.uniform(2.0, 5.0)
                 if hasattr(world, "add_event"):
                     world.add_event("earthquake", {"type": "earthquake", "intensity": self.shake_timer / 2.0})
 
@@ -8749,12 +8749,12 @@ class GravityWellMode(GameMode):
         gw_hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "gravity_well"]
         for gw in gw_hazards:
             if not hasattr(gw, "invert_timer"):
-                gw.invert_timer = random.uniform(0.0, 5.0)
+                gw.invert_timer = self.random.uniform(0.0, 5.0)
                 gw.is_inverted = False
             gw.invert_timer -= delta
             if gw.invert_timer <= 0:
                 gw.is_inverted = not gw.is_inverted
-                gw.invert_timer = random.uniform(3.0, 5.0)
+                gw.invert_timer = self.random.uniform(3.0, 5.0)
 
         self.spawn_timer += delta
         try:
@@ -8777,13 +8777,13 @@ class GravityWellMode(GameMode):
             arena_width = getattr(world.arena, "width", 2000.0)
             arena_height = getattr(world.arena, "height", 2000.0)
 
-            x = random.uniform(200.0, arena_width - 200.0)
-            y = random.uniform(200.0, arena_height - 200.0)
+            x = self.random.uniform(200.0, arena_width - 200.0)
+            y = self.random.uniform(200.0, arena_height - 200.0)
 
-            h_id = 9000 + len(world.arena.hazards) + random.randint(0, 1000)
+            h_id = 9000 + len(world.arena.hazards) + self.random.randint(0, 1000)
 
             from arena.procedural_arena import Hazard
-            gw = Hazard(id=h_id, x=x, y=y, radius=random.uniform(150.0, 300.0), kind="gravity_well", damage=10.0)
+            gw = self.Hazard(id=h_id, x=x, y=y, radius=self.random.uniform(150.0, 300.0), kind="gravity_well", damage=10.0)
             world.arena.hazards.append(gw)
 
             # Limit total gravity wells to 5 to avoid overcrowding
@@ -9020,8 +9020,8 @@ class DayNightMode(GameMode):
 
                     arena_w = getattr(world.arena, "width", 1000)
                     arena_h = getattr(world.arena, "height", 1000)
-                    fx = random.uniform(50, arena_w - 50)
-                    fy = random.uniform(50, arena_h - 50)
+                    fx = self.random.uniform(50, arena_w - 50)
+                    fy = self.random.uniform(50, arena_h - 50)
                     beam_radius = 150.0
 
                     self.active_sunlight_beams.append({'x': fx, 'y': fy, 'radius': beam_radius, 'duration': 2.0})
@@ -9257,11 +9257,11 @@ class MagneticCollisionsMode(GameMode):
                     self.meteor_spawn_timer = 0.0
                     arena_width = getattr(world.arena, "width", 1000)
                     arena_height = getattr(world.arena, "height", 1000)
-                    x = random.uniform(50, arena_width - 50)
-                    y = random.uniform(50, arena_height - 50)
+                    x = self.random.uniform(50, arena_width - 50)
+                    y = self.random.uniform(50, arena_height - 50)
 
                     self.active_meteors.append({
-                        "id": f"meteor_{random.randint(10000, 99999)}",
+                        "id": f"meteor_{self.random.randint(10000, 99999)}",
                         "x": x,
                         "y": y,
                         "delay": 2.0,
@@ -9326,11 +9326,11 @@ class MagneticCollisionsMode(GameMode):
                                 self.target_radius = radius
 
                     for m in self.active_meteors:
-                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
+                        h = self.Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                         setattr(h, "duration", m["delay"])
                         world.arena.hazards.append(h)
                     for c in self.craters:
-                        h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                        h = self.Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
                         setattr(h, "duration", c["duration"])
                         world.arena.hazards.append(h)
 
@@ -9342,7 +9342,7 @@ class MagneticCollisionsMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 def create_hazard(hid, hx, hy, r, kind):
-                    h = Hazard(id=hid, x=hx, y=hy, radius=r, kind=kind, damage=0.0)
+                    h = self.Hazard(id=hid, x=hx, y=hy, radius=r, kind=kind, damage=0.0)
                     h.invisible = True
                     return h
             except ImportError:
@@ -9356,13 +9356,13 @@ class MagneticCollisionsMode(GameMode):
                         self.damage = 0.0
                         self.invisible = True
                 def create_hazard(hid, hx, hy, r, kind):
-                    return MagHazard(hid, hx, hy, r, kind)
+                    return Magself.Hazard(hid, hx, hy, r, kind)
 
             for i in range(5):
-                x = random.uniform(200, arena_width - 200)
-                y = random.uniform(200, arena_height - 200)
-                r = random.uniform(150, 300)
-                kind = random.choice(["magnetic_field_positive", "magnetic_field_negative"])
+                x = self.random.uniform(200, arena_width - 200)
+                y = self.random.uniform(200, arena_height - 200)
+                r = self.random.uniform(150, 300)
+                kind = self.random.choice(["magnetic_field_positive", "magnetic_field_negative"])
                 h = create_hazard(20000 + i, x, y, r, kind)
                 world.arena.hazards.append(h)
 
@@ -9370,7 +9370,7 @@ class MagneticCollisionsMode(GameMode):
         for b in balls:
 
             if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
-                b.polarity = random.choice(["positive", "negative"])
+                b.polarity = self.random.choice(["positive", "negative"])
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
@@ -9547,11 +9547,11 @@ class PinballMode(GameMode):
                     self.meteor_spawn_timer = 0.0
                     arena_width = getattr(world.arena, "width", 1000)
                     arena_height = getattr(world.arena, "height", 1000)
-                    x = random.uniform(50, arena_width - 50)
-                    y = random.uniform(50, arena_height - 50)
+                    x = self.random.uniform(50, arena_width - 50)
+                    y = self.random.uniform(50, arena_height - 50)
 
                     self.active_meteors.append({
-                        "id": f"meteor_{random.randint(10000, 99999)}",
+                        "id": f"meteor_{self.random.randint(10000, 99999)}",
                         "x": x,
                         "y": y,
                         "delay": 2.0,
@@ -9616,11 +9616,11 @@ class PinballMode(GameMode):
                                 self.target_radius = radius
 
                     for m in self.active_meteors:
-                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
+                        h = self.Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                         setattr(h, "duration", m["delay"])
                         world.arena.hazards.append(h)
                     for c in self.craters:
-                        h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                        h = self.Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
                         setattr(h, "duration", c["duration"])
                         world.arena.hazards.append(h)
 
@@ -9631,7 +9631,7 @@ class PinballMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 def create_hazard(hid, hx, hy, r, k):
-                    return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
+                    return self.Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
             except ImportError:
                 class BumperHazard:
                     def __init__(self, hid, hx, hy, r, k):
@@ -9642,14 +9642,14 @@ class PinballMode(GameMode):
                         self.kind = k
                         self.damage = 0.0
                 def create_hazard(hid, hx, hy, r, k):
-                    return BumperHazard(hid, hx, hy, r, k)
+                    return Bumperself.Hazard(hid, hx, hy, r, k)
 
             hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper"]
             for i in range(25):
-                x = random.uniform(100, arena_width - 100)
-                y = random.uniform(100, arena_height - 100)
-                r = random.uniform(30.0, 60.0)
-                kind = random.choice(hazard_kinds)
+                x = self.random.uniform(100, arena_width - 100)
+                y = self.random.uniform(100, arena_height - 100)
+                r = self.random.uniform(30.0, 60.0)
+                kind = self.random.choice(hazard_kinds)
                 world.arena.hazards.append(create_hazard(10000 + i, x, y, r, kind))
 
         # Reduce damage of basic attacks
@@ -9728,9 +9728,9 @@ class InvisibleWallsMode(GameMode):
 
         for i in range(5):
             h_id = 96000 + len(world.arena.hazards) + i
-            x = random.uniform(200, arena_w - 200)
-            y = random.uniform(200, arena_h - 200)
-            wall = Hazard(id=h_id, x=x, y=y, radius=60.0, kind="invisible_wall", damage=0.0)
+            x = self.random.uniform(200, arena_w - 200)
+            y = self.random.uniform(200, arena_h - 200)
+            wall = self.Hazard(id=h_id, x=x, y=y, radius=60.0, kind="invisible_wall", damage=0.0)
             setattr(wall, "visible", False)
             setattr(wall, "reveal_timer", 0.0)
             world.arena.hazards.append(wall)
@@ -9841,7 +9841,7 @@ class GeometricZoneMode(GameMode):
         self.min_zone_radius = 50.0
 
         import random
-        self.current_shape = random.choice(["circle", "rectangle", "triangle"])
+        self.current_shape = self.random.choice(["circle", "rectangle", "triangle"])
 
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
         for i, b in enumerate(valid_balls):
@@ -9902,7 +9902,7 @@ class GeometricZoneMode(GameMode):
         if self.shape_timer > 15.0:
             self.shape_timer = 0.0
             old_shape = self.current_shape
-            self.current_shape = random.choice(["circle", "rectangle", "triangle", "split"])
+            self.current_shape = self.random.choice(["circle", "rectangle", "triangle", "split"])
             if self.current_shape == "split":
                 offset = max(100.0, self.zone_radius * 0.5)
                 self.split_zones = [
@@ -9924,8 +9924,8 @@ class GeometricZoneMode(GameMode):
             arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
             arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
-            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+            self.zone_target_x = self.random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = self.random.uniform(buffer, arena_height - buffer)
 
         if self.zone_radius > self.min_zone_radius:
             self.zone_radius -= self.shrink_rate * delta
@@ -10209,9 +10209,9 @@ class UnstablePortalsEventMode(GameMode):
                 arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
                 arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
                 self.portals.append({
-                    "x": random.uniform(100, arena_w - 100),
-                    "y": random.uniform(100, arena_h - 100),
-                    "timer": random.uniform(3.0, 7.0),
+                    "x": self.random.uniform(100, arena_w - 100),
+                    "y": self.random.uniform(100, arena_h - 100),
+                    "timer": self.random.uniform(3.0, 7.0),
                     "active": True,
                     "charging": False,
                     "charge_timer": 0.0,
@@ -10270,7 +10270,7 @@ class UnstablePortalsEventMode(GameMode):
 
                             import random
                             import math
-                            angle = random.uniform(0, 2 * math.pi)
+                            angle = self.random.uniform(0, 2 * math.pi)
                             blast_speed = 1000.0
                             b.x += math.cos(angle) * blast_speed * delta
                             b.y += math.sin(angle) * blast_speed * delta
@@ -10360,13 +10360,13 @@ class ChainLightningStormMode(GameMode):
                 self.strikes = []
 
                 # Target random balls for a strike
-                num_strikes = min(len(balls), random.randint(2, 4))
+                num_strikes = min(len(balls), self.random.randint(2, 4))
                 targets = random.sample(balls, num_strikes) if balls else []
 
                 for target in targets:
-                    delay = random.uniform(1.0, 2.5)
+                    delay = self.random.uniform(1.0, 2.5)
                     self.strikes.append({
-                        "id": f"chain_strike_{random.randint(10000, 99999)}",
+                        "id": f"chain_strike_{self.random.randint(10000, 99999)}",
                         "x": target.x,
                         "y": target.y,
                         "radius": 50.0,
@@ -10434,7 +10434,7 @@ class ChainLightningStormMode(GameMode):
                 from arena.procedural_arena import Hazard
                 for s in self.strikes:
                     kind = "chain_lightning_warning" if s["state"] == "warning" else "chain_lightning_active"
-                    world.arena.hazards.append(Hazard(id=s["id"], x=s["x"], y=s["y"], radius=s["radius"], kind=kind, damage=0.0))
+                    world.arena.hazards.append(self.Hazard(id=s["id"], x=s["x"], y=s["y"], radius=s["radius"], kind=kind, damage=0.0))
 
 class LightningStrikeEventMode(GameMode):
     def __init__(self):
@@ -10458,13 +10458,13 @@ class LightningStrikeEventMode(GameMode):
                 self.event_timer = 0.0
                 self.strikes = []
 
-                num_strikes = random.randint(2, 5)
+                num_strikes = self.random.randint(2, 5)
                 for _ in range(num_strikes):
-                    sx = random.uniform(100, 700)
-                    sy = random.uniform(100, 500)
-                    delay = random.uniform(1.0, 3.0)
+                    sx = self.random.uniform(100, 700)
+                    sy = self.random.uniform(100, 500)
+                    delay = self.random.uniform(1.0, 3.0)
                     self.strikes.append({
-                        "id": f"lightning_{random.randint(10000, 99999)}",
+                        "id": f"lightning_{self.random.randint(10000, 99999)}",
                         "x": sx,
                         "y": sy,
                         "radius": 40.0,
@@ -10514,7 +10514,7 @@ class LightningStrikeEventMode(GameMode):
 
                 for s in self.strikes:
                     kind = "lightning_warning" if s["state"] == "warning" else "lightning_strike"
-                    world.arena.hazards.append(Hazard(s["id"], s["x"], s["y"], s["radius"], kind, 0))
+                    world.arena.hazards.append(self.Hazard(s["id"], s["x"], s["y"], s["radius"], kind, 0))
 
 class MeteorCrashEventMode(GameMode):
     def __init__(self):
@@ -10540,12 +10540,12 @@ class MeteorCrashEventMode(GameMode):
                 self.meteors = []
                 self.craters = []
 
-                for _ in range(random.randint(3, 6)):
+                for _ in range(self.random.randint(3, 6)):
                     self.meteors.append({
-                        "id": f"meteor_{random.randint(10000, 99999)}",
-                        "x": random.uniform(100, 700),
-                        "y": random.uniform(100, 500),
-                        "delay": random.uniform(2.0, 5.0),
+                        "id": f"meteor_{self.random.randint(10000, 99999)}",
+                        "x": self.random.uniform(100, 700),
+                        "y": self.random.uniform(100, 500),
+                        "delay": self.random.uniform(2.0, 5.0),
                         "radius": 30
                     })
                 if hasattr(world, "add_event"):
@@ -10575,7 +10575,7 @@ class MeteorCrashEventMode(GameMode):
                                 b.hp = getattr(b, "hp", 100) - 30
 
                     self.craters.append({
-                        "id": f"crater_{random.randint(10000, 99999)}",
+                        "id": f"crater_{self.random.randint(10000, 99999)}",
                         "x": m["x"],
                         "y": m["y"],
                         "radius": m["radius"],
@@ -10612,7 +10612,7 @@ class MeteorCrashEventMode(GameMode):
                                 self.kind = kind
                                 self.radius = 10
                         if hasattr(world, "boosters"):
-                            b_id = 9000 + len(world.boosters) + random.randint(0, 1000)
+                            b_id = 9000 + len(world.boosters) + self.random.randint(0, 1000)
                             world.boosters.append(Booster(b_id, c["x"], c["y"], "rare_material"))
                 else:
                     active_craters.append(c)
@@ -10634,9 +10634,9 @@ class MeteorCrashEventMode(GameMode):
                             self.damage = damage
 
                 for m in self.meteors:
-                    world.arena.hazards.append(Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor_indicator", 0))
+                    world.arena.hazards.append(self.Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor_indicator", 0))
                 for c in self.craters:
-                    world.arena.hazards.append(Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
+                    world.arena.hazards.append(self.Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
 
 
 class MinefieldEventMode(GameMode):
@@ -10663,14 +10663,14 @@ class MinefieldEventMode(GameMode):
                 self.event_timer = 0.0
                 self.mines = []
                 # Spawn some mines
-                for _ in range(random.randint(5, 10)):
+                for _ in range(self.random.randint(5, 10)):
                     self.mines.append({
-                        "x": random.uniform(100, 700),
-                        "y": random.uniform(100, 500),
+                        "x": self.random.uniform(100, 700),
+                        "y": self.random.uniform(100, 500),
                         "radius": 15,
                         "damage": 50,
                         "active": True,
-                        "visible": random.choice([True, False])
+                        "visible": self.random.choice([True, False])
                     })
                 if hasattr(world, "add_event"):
                     world.add_event("minefield_event", {"message": "MINEFIELD EVENT! Watch your step!"})
@@ -11079,24 +11079,24 @@ class MinefieldSafeZoneMode(SafeZoneMode):
             self.mine_spawn_timer = 0.0
 
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
-                angle = random.uniform(0, 3.14159 * 2)
-                dist = self.zone_radius + random.uniform(10.0, 50.0)
+                angle = self.random.uniform(0, 3.14159 * 2)
+                dist = self.zone_radius + self.random.uniform(10.0, 50.0)
                 mx = self.zone_x + math.cos(angle) * dist
                 my = self.zone_y + math.sin(angle) * dist
 
                 mx = max(0.0, min(arena_width, mx))
                 my = max(0.0, min(arena_height, my))
 
-                h_id = len(world.arena.hazards) + random.randint(10000, 99999) + self.mines_spawned
+                h_id = len(world.arena.hazards) + self.random.randint(10000, 99999) + self.mines_spawned
 
                 # Import the real Hazard class or fallback to our _MinefieldHazard
                 try:
                     from arena.procedural_arena import Hazard
-                    mine = Hazard(id=h_id, x=mx, y=my, radius=25.0, kind="hidden_mine", damage=45.0)
+                    mine = self.Hazard(id=h_id, x=mx, y=my, radius=25.0, kind="hidden_mine", damage=45.0)
                     mine.duration = -1.0
                     mine.active = True
                 except ImportError:
-                    mine = _MinefieldHazard(h_id, mx, my, 25.0, "hidden_mine", 45.0, duration=-1.0)
+                    mine = _Minefieldself.Hazard(h_id, mx, my, 25.0, "hidden_mine", 45.0, duration=-1.0)
 
                 world.arena.hazards.append(mine)
                 self.mines_spawned += 1
@@ -11236,8 +11236,8 @@ class DynamicSafeZoneMode(GameMode):
 
     def _pick_new_buff(self):
         import random
-        self.buff_type = random.choice(["speed", "damage", "heal", "shield"])
-        self.buff_timer = random.uniform(5.0, 10.0)
+        self.buff_type = self.random.choice(["speed", "damage", "heal", "shield"])
+        self.buff_timer = self.random.uniform(5.0, 10.0)
 
     def tick(self, world, balls, delta=0.016):
         import math
@@ -11273,8 +11273,8 @@ class DynamicSafeZoneMode(GameMode):
             arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
             arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
-            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+            self.zone_target_x = self.random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = self.random.uniform(buffer, arena_height - buffer)
 
         # Shrink safe zone
         if self.zone_radius > self.min_zone_radius:
@@ -11413,7 +11413,7 @@ class PrestigeWeatherMutatorMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
-            self.weather = random.choice(self.weathers)
+            self.weather = self.random.choice(self.weathers)
 
         if self.weather == "solar_flare":
             for b in balls:
@@ -11592,26 +11592,26 @@ class BlackMarketMode(GameMode):
         import random
         for _ in range(15):
             world.currency_pickups.append({
-                "x": random.uniform(50, arena_width - 50),
-                "y": random.uniform(50, arena_height - 50),
+                "x": self.random.uniform(50, arena_width - 50),
+                "y": self.random.uniform(50, arena_height - 50),
                 "type": "currency"
             })
 
         # Spawn Black Markets
         for _ in range(2):
             world.black_markets.append({
-                "x": random.uniform(100, arena_width - 100),
-                "y": random.uniform(100, arena_height - 100),
-                "vx": random.uniform(-20, 20),
-                "vy": random.uniform(-20, 20),
+                "x": self.random.uniform(100, arena_width - 100),
+                "y": self.random.uniform(100, arena_height - 100),
+                "vx": self.random.uniform(-20, 20),
+                "vy": self.random.uniform(-20, 20),
                 "radius": 40.0
             })
 
         if not hasattr(world, "gambling_nodes"):
             world.gambling_nodes = []
             world.gambling_nodes.append({
-                "x": random.uniform(100, arena_width - 100),
-                "y": random.uniform(100, arena_height - 100),
+                "x": self.random.uniform(100, arena_width - 100),
+                "y": self.random.uniform(100, arena_height - 100),
                 "radius": 30.0
             })
 
@@ -11637,8 +11637,8 @@ class BlackMarketMode(GameMode):
             self.currency_spawn_timer = 0.0
             if len(world.currency_pickups) < 30:
                 world.currency_pickups.append({
-                    "x": random.uniform(50, arena_width - 50),
-                    "y": random.uniform(50, arena_height - 50),
+                    "x": self.random.uniform(50, arena_width - 50),
+                    "y": self.random.uniform(50, arena_height - 50),
                     "type": "currency"
                 })
 
@@ -11688,7 +11688,7 @@ class BlackMarketMode(GameMode):
                         b.purchase_cooldown = 5.0
 
                         # Apply random upgrade
-                        upgrade_type = random.choice(["max_hp", "speed", "damage"])
+                        upgrade_type = self.random.choice(["max_hp", "speed", "damage"])
                         if upgrade_type == "max_hp":
                             if not hasattr(b, "base_max_hp"):
                                 b.base_max_hp = getattr(b, "max_hp", 100.0)
@@ -11717,7 +11717,7 @@ class BlackMarketMode(GameMode):
                     dy = b.y - gn["y"]
                     dist = math.sqrt(dx*dx + dy*dy)
                     if dist <= getattr(b, "radius", 10.0) + gn["radius"]:
-                        deposit = random.randint(1, b.currency)
+                        deposit = self.random.randint(1, b.currency)
                         b.currency -= deposit
                         b.purchase_cooldown = 5.0
 
@@ -11781,12 +11781,12 @@ class FloorIsLavaMode(GameMode):
         arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else 1000
 
         if x is None:
-            x = random.uniform(200, arena_width - 200)
+            x = self.random.uniform(200, arena_width - 200)
         if y is None:
-            y = random.uniform(200, arena_height - 200)
+            y = self.random.uniform(200, arena_height - 200)
 
-        radius = random.uniform(100.0, 200.0)
-        lifetime = random.uniform(10.0, 20.0)
+        radius = self.random.uniform(100.0, 200.0)
+        lifetime = self.random.uniform(10.0, 20.0)
 
         self.platforms.append({
             "x": x,
@@ -11796,7 +11796,7 @@ class FloorIsLavaMode(GameMode):
         })
 
         # Add a bounce pad near the edge of the platform
-        angle = random.uniform(0, 2 * 3.14159)
+        angle = self.random.uniform(0, 2 * 3.14159)
         pad_x = x + (radius * 0.7) * math.cos(angle)
         pad_y = y + (radius * 0.7) * math.sin(angle)
 
@@ -11822,7 +11822,7 @@ class FloorIsLavaMode(GameMode):
         self.platform_timer -= delta
         if self.platform_timer <= 0:
             self._spawn_platform()
-            self.platform_timer = random.uniform(5.0, 10.0)
+            self.platform_timer = self.random.uniform(5.0, 10.0)
 
         # Update lifetimes
         for p in list(self.platforms):
@@ -11844,7 +11844,7 @@ class FloorIsLavaMode(GameMode):
             for idx, bp in enumerate(self.bounce_pads):
                 try:
                     from arena.procedural_arena import Hazard
-                    new_h = Hazard(id=99000 + idx, x=bp["x"], y=bp["y"], radius=bp["radius"], kind="bounce_pad", damage=0.0)
+                    new_h = self.Hazard(id=99000 + idx, x=bp["x"], y=bp["y"], radius=bp["radius"], kind="bounce_pad", damage=0.0)
                     world.arena.hazards.append(new_h)
                 except ImportError:
                     # Fallback to dict
@@ -11968,11 +11968,11 @@ class BlizzardMode(GameMode):
                 arena_width = getattr(world.arena, "width", 1000)
                 arena_height = getattr(world.arena, "height", 1000)
 
-                x = random.uniform(50, arena_width - 50)
-                y = random.uniform(50, arena_height - 50)
+                x = self.random.uniform(50, arena_width - 50)
+                y = self.random.uniform(50, arena_height - 50)
 
-                h_id = 16000 + len(world.arena.hazards) + random.randint(0, 10000)
-                ice_patch = Hazard(id=h_id, x=x, y=y, radius=40.0, kind="ice_patch", damage=0.0)
+                h_id = 16000 + len(world.arena.hazards) + self.random.randint(0, 10000)
+                ice_patch = self.Hazard(id=h_id, x=x, y=y, radius=40.0, kind="ice_patch", damage=0.0)
                 setattr(ice_patch, "duration", 8.0)
                 ice_patch.target_radius = 40.0
 
@@ -12076,11 +12076,11 @@ class MeteorShowerMode(GameMode):
             self.spawn_timer = 0.0
             arena_width = getattr(world.arena, "width", 1000)
             arena_height = getattr(world.arena, "height", 1000)
-            x = random.uniform(50, arena_width - 50)
-            y = random.uniform(50, arena_height - 50)
+            x = self.random.uniform(50, arena_width - 50)
+            y = self.random.uniform(50, arena_height - 50)
 
             self.active_meteors.append({
-                "id": f"meteor_{random.randint(10000, 99999)}",
+                "id": f"meteor_{self.random.randint(10000, 99999)}",
                 "x": x,
                 "y": y,
                 "delay": 2.0,
@@ -12092,7 +12092,7 @@ class MeteorShowerMode(GameMode):
             m["delay"] -= delta
             if m["delay"] <= 0:
                 self.craters.append({
-                    "id": f"crater_{random.randint(10000, 99999)}",
+                    "id": f"crater_{self.random.randint(10000, 99999)}",
                     "x": m["x"],
                     "y": m["y"],
                     "radius": m["radius"] * 1.5,
@@ -12170,11 +12170,11 @@ class MeteorShowerMode(GameMode):
                         self.target_radius = radius
 
             for m in self.active_meteors:
-                h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
+                h = self.Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                 setattr(h, "duration", m["delay"])
                 world.arena.hazards.append(h)
             for c in self.craters:
-                h = Hazard(c["id"], c["x"], c["y"], c["radius"], c.get("kind", "meteor_crater"), 10)
+                h = self.Hazard(c["id"], c["x"], c["y"], c["radius"], c.get("kind", "meteor_crater"), 10)
                 setattr(h, "duration", c["duration"])
                 world.arena.hazards.append(h)
 
@@ -12247,12 +12247,12 @@ class CursedBuffZoneMode(GameMode):
 
         # Spawn 3 zones
         for i in range(3):
-            x = random.uniform(200, arena_width - 200)
-            y = random.uniform(200, arena_height - 200)
-            zone = Hazard(id=21000+i, x=x, y=y, radius=self.zone_radius, kind="cursed_buff_zone", damage=0.0)
+            x = self.random.uniform(200, arena_width - 200)
+            y = self.random.uniform(200, arena_height - 200)
+            zone = self.Hazard(id=21000+i, x=x, y=y, radius=self.zone_radius, kind="cursed_buff_zone", damage=0.0)
             setattr(zone, "buff_multiplier_speed", 3.0)  # +200%
             setattr(zone, "buff_multiplier_damage", 2.5) # +150%
-            setattr(zone, "curse_type", random.choice(["hp_drain", "inverted_steering"]))
+            setattr(zone, "curse_type", self.random.choice(["hp_drain", "inverted_steering"]))
             world.arena.hazards.append(zone)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
@@ -12367,9 +12367,9 @@ class RhythmPanelsMode(GameMode):
         arena_height = getattr(world.arena, "height", 1000)
 
         for i in range(8):
-            x = random.uniform(100, arena_width - 100)
-            y = random.uniform(100, arena_height - 100)
-            panel = Hazard(id=17000+i, x=x, y=y, radius=120.0, kind="rhythm_panel", damage=0.0)
+            x = self.random.uniform(100, arena_width - 100)
+            y = self.random.uniform(100, arena_height - 100)
+            panel = self.Hazard(id=17000+i, x=x, y=y, radius=120.0, kind="rhythm_panel", damage=0.0)
             setattr(panel, "is_lit", False)
             world.arena.hazards.append(panel)
 
@@ -12644,10 +12644,10 @@ class ScramblerDroneMode(GameMode):
                             self.kind = kind
                             self.damage = damage
 
-                x = random.uniform(100, arena_width - 100)
-                y = random.uniform(100, arena_height - 100)
-                h_id = 50000 + len(world.arena.hazards) + random.randint(0, 10000)
-                drone = Hazard(id=h_id, x=x, y=y, radius=15.0, kind="scrambler_drone", damage=0.0)
+                x = self.random.uniform(100, arena_width - 100)
+                y = self.random.uniform(100, arena_height - 100)
+                h_id = 50000 + len(world.arena.hazards) + self.random.randint(0, 10000)
+                drone = self.Hazard(id=h_id, x=x, y=y, radius=15.0, kind="scrambler_drone", damage=0.0)
                 setattr(drone, "hp", 150.0)
                 setattr(drone, "attached_id", None)
                 setattr(drone, "scramble_timer", 0.0)
@@ -12774,8 +12774,8 @@ class ArtifactUpgraderMode(GameMode):
             def __init__(self):
                 self.x = arena_width / 2.0
                 self.y = arena_height / 2.0
-                self.vx = random.uniform(-50, 50)
-                self.vy = random.uniform(-50, 50)
+                self.vx = self.random.uniform(-50, 50)
+                self.vy = self.random.uniform(-50, 50)
                 self.radius = 30.0
                 self.max_hp = 500.0
                 self.hp = 500.0
@@ -12796,14 +12796,14 @@ class ArtifactUpgraderMode(GameMode):
 
         class SimpleHazard:
             def __init__(self):
-                self.x = random.uniform(100, arena_width - 100)
-                self.y = random.uniform(100, arena_height - 100)
+                self.x = self.random.uniform(100, arena_width - 100)
+                self.y = self.random.uniform(100, arena_height - 100)
                 self.radius = 40.0
                 self.damage = 10.0
                 self.kind = "damage_zone"
 
         for _ in range(5):
-            world.arena.hazards.append(SimpleHazard())
+            world.arena.hazards.append(Simpleself.Hazard())
 
         for b in balls:
 
@@ -12965,11 +12965,11 @@ class SweepingPaddlesMode(GameMode):
                     self.meteor_spawn_timer = 0.0
                     arena_width = getattr(world.arena, "width", 1000)
                     arena_height = getattr(world.arena, "height", 1000)
-                    x = random.uniform(50, arena_width - 50)
-                    y = random.uniform(50, arena_height - 50)
+                    x = self.random.uniform(50, arena_width - 50)
+                    y = self.random.uniform(50, arena_height - 50)
 
                     self.active_meteors.append({
-                        "id": f"meteor_{random.randint(10000, 99999)}",
+                        "id": f"meteor_{self.random.randint(10000, 99999)}",
                         "x": x,
                         "y": y,
                         "delay": 2.0,
@@ -13034,11 +13034,11 @@ class SweepingPaddlesMode(GameMode):
                                 self.target_radius = radius
 
                     for m in self.active_meteors:
-                        h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
+                        h = self.Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                         setattr(h, "duration", m["delay"])
                         world.arena.hazards.append(h)
                     for c in self.craters:
-                        h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                        h = self.Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
                         setattr(h, "duration", c["duration"])
                         world.arena.hazards.append(h)
 
@@ -13049,7 +13049,7 @@ class SweepingPaddlesMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 def create_hazard(hid, hx, hy, r, k):
-                    return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
+                    return self.Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
             except ImportError:
                 class FallbackHazard:
                     def __init__(self, hid, hx, hy, r, k):
@@ -13060,7 +13060,7 @@ class SweepingPaddlesMode(GameMode):
                         self.kind = k
                         self.damage = 0.0
                 def create_hazard(hid, hx, hy, r, k):
-                    return FallbackHazard(hid, hx, hy, r, k)
+                    return Fallbackself.Hazard(hid, hx, hy, r, k)
 
             self.sweep_timer = 0.0
             paddle_top = create_hazard(15001, arena_width / 2.0, 50, 150.0, "sweeping_paddle")
@@ -13192,8 +13192,8 @@ class MazeSafeZoneMode(GameMode):
             self.zone_y += (dy / dist) * move_speed * delta
         else:
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
-            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+            self.zone_target_x = self.random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = self.random.uniform(buffer, arena_height - buffer)
 
         # Shrink safe zone
         if self.zone_radius > self.min_zone_radius:
@@ -13402,14 +13402,14 @@ class InvisibleDecoysMode(GameMode):
             pass
 
         for i in range(20):
-            decoy_id = getattr(world, "next_id", random.randint(100000, 999999))
+            decoy_id = getattr(world, "next_id", self.random.randint(100000, 999999))
             if hasattr(world, "next_id"):
                 world.next_id += 1
 
             decoy = DecoyBall()
             decoy.id = decoy_id
-            decoy.x = random.uniform(50, arena_width - 50)
-            decoy.y = random.uniform(50, arena_height - 50)
+            decoy.x = self.random.uniform(50, arena_width - 50)
+            decoy.y = self.random.uniform(50, arena_height - 50)
             decoy.hp = 1.0
             decoy.max_hp = 1.0
             decoy.alive = True
@@ -13470,7 +13470,7 @@ class ExtremeWeatherMode(GameMode):
         if self.weather_timer >= 15.0:
             self.weather_timer = 0.0
             old_weather = self.current_weather
-            self.current_weather = self.random.choice(self.weathers)
+            self.current_weather = self.self.random.choice(self.weathers)
 
             for b in balls:
                 if getattr(b, "forecast_booster_active", False):
@@ -13517,7 +13517,7 @@ class ExtremeWeatherMode(GameMode):
 
                 boss_name = boss_map.get(self.current_weather)
                 if boss_name:
-                    boss_id = getattr(world, "next_id", self.random.randint(100000, 999999))
+                    boss_id = getattr(world, "next_id", self.self.random.randint(100000, 999999))
                     if hasattr(world, "next_id"):
                         world.next_id += 1
 
@@ -13562,8 +13562,8 @@ class ExtremeWeatherMode(GameMode):
                         self.radius = 15.0
 
                 for _ in range(len(balls)):
-                    bx = self.random.uniform(100, arena_w - 100)
-                    by = self.random.uniform(100, arena_h - 100)
+                    bx = self.self.random.uniform(100, arena_w - 100)
+                    by = self.self.random.uniform(100, arena_h - 100)
                     world.boosters.append(TempBooster(booster_kind, bx, by))
 
         # Apply effects
@@ -13636,7 +13636,7 @@ class ExtremeWeatherMode(GameMode):
                     # Push random direction
                     if hasattr(b, "x") and hasattr(b, "y"):
                         import math
-                        angle = self.random.uniform(0, 2 * math.pi)
+                        angle = self.self.random.uniform(0, 2 * math.pi)
                         b.x += math.cos(angle) * 100.0 * delta
                         b.y += math.sin(angle) * 100.0 * delta
             elif self.current_weather == "tsunami":
@@ -13656,7 +13656,7 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "earthquake":
                 if not getattr(b, "seismic_booster_timer", 0.0) > 0 and not getattr(b, "mega_seismic_booster_timer", 0.0) > 0:
                     import math
-                    angle = self.random.uniform(0, 2 * math.pi)
+                    angle = self.self.random.uniform(0, 2 * math.pi)
                     if hasattr(b, "x"): b.x += math.cos(angle) * 150.0 * delta
                     if hasattr(b, "y"): b.y += math.sin(angle) * 150.0 * delta
             elif self.current_weather == "giant_flood":
@@ -13670,8 +13670,8 @@ class ExtremeWeatherMode(GameMode):
         if self.current_weather == "earthquake" and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
                 if getattr(h, "kind", "") in ["wall", "breakable_wall"]:
-                    if hasattr(h, "x"): h.x += self.random.uniform(-100.0 * delta, 100.0 * delta)
-                    if hasattr(h, "y"): h.y += self.random.uniform(-100.0 * delta, 100.0 * delta)
+                    if hasattr(h, "x"): h.x += self.self.random.uniform(-100.0 * delta, 100.0 * delta)
+                    if hasattr(h, "y"): h.y += self.self.random.uniform(-100.0 * delta, 100.0 * delta)
 
         if self.current_weather == "meteor_shower":
             if not hasattr(self, "meteor_spawn_timer"):
@@ -13686,11 +13686,11 @@ class ExtremeWeatherMode(GameMode):
                 self.meteor_spawn_timer = 0.0
                 arena_width = getattr(world.arena, "width", 1000)
                 arena_height = getattr(world.arena, "height", 1000)
-                x = random.uniform(50, arena_width - 50)
-                y = random.uniform(50, arena_height - 50)
+                x = self.random.uniform(50, arena_width - 50)
+                y = self.random.uniform(50, arena_height - 50)
 
                 self.active_meteors.append({
-                    "id": f"meteor_{random.randint(10000, 99999)}",
+                    "id": f"meteor_{self.random.randint(10000, 99999)}",
                     "x": x,
                     "y": y,
                     "delay": 2.0,
@@ -13754,11 +13754,11 @@ class ExtremeWeatherMode(GameMode):
                             self.target_radius = radius
 
                 for m in self.active_meteors:
-                    h = Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
+                    h = self.Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor", 200.0)
                     setattr(h, "duration", m["delay"])
                     world.arena.hazards.append(h)
                 for c in self.craters:
-                    h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+                    h = self.Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
                     setattr(h, "duration", c["duration"])
                     world.arena.hazards.append(h)
 
@@ -14074,13 +14074,13 @@ class HexGridRoyaleMode(GameMode):
             self.drop_timer = 0.0
             safe_tiles = [t for t in self.tiles if t["state"] == "safe"]
             if safe_tiles:
-                t = random.choice(safe_tiles)
+                t = self.random.choice(safe_tiles)
                 t["state"] = "warning"
                 t["timer"] = 0.0
 
                 # Drop an extra tile to speed up occasionally
                 if random.random() < 0.3 and len(safe_tiles) > 1:
-                    t2 = random.choice([tt for tt in safe_tiles if tt != t])
+                    t2 = self.random.choice([tt for tt in safe_tiles if tt != t])
                     t2["state"] = "warning"
                     t2["timer"] = 0.0
 
@@ -14095,7 +14095,7 @@ class HexGridRoyaleMode(GameMode):
                     if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                         try:
                             from arena.procedural_arena import Hazard
-                            world.arena.hazards.append(Hazard(
+                            world.arena.hazards.append(self.Hazard(
                                 id=f"hex_warn_{t['id']}",
                                 x=t["x"], y=t["y"], radius=self.hex_size, kind="hex_warning", damage=0.0
                             ))
@@ -14333,7 +14333,7 @@ class BlackoutEventMode(GameMode):
                                 from arena.procedural_arena import Hazard
                                 exp_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999)
                                 # Massive explosion radius and damage
-                                exp = Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
+                                exp = self.Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
                                 setattr(exp, "duration", 0.5)
                                 world.arena.hazards.append(exp)
                             except ImportError:
@@ -14432,11 +14432,11 @@ class WeaponCollectionMode(GameMode):
         if self.weapon_spawn_timer >= 3.0:
             self.weapon_spawn_timer = 0.0
 
-            x = random.uniform(50, arena_width - 50)
-            y = random.uniform(50, arena_height - 50)
+            x = self.random.uniform(50, arena_width - 50)
+            y = self.random.uniform(50, arena_height - 50)
 
-            weapon_id = len(world.arena.hazards) + random.randint(10000, 99999)
-            weapon = Hazard(id=weapon_id, x=x, y=y, radius=15.0, kind="weapon_drop", damage=0.0)
+            weapon_id = len(world.arena.hazards) + self.random.randint(10000, 99999)
+            weapon = self.Hazard(id=weapon_id, x=x, y=y, radius=15.0, kind="weapon_drop", damage=0.0)
             world.arena.hazards.append(weapon)
 
         for b in balls:
@@ -14510,7 +14510,7 @@ class CenterBlackHoleMode(GameMode):
         existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
         if not existing:
             from arena.procedural_arena import Hazard
-            bh = Hazard(
+            bh = self.Hazard(
                 id=self.bh_id,
                 x=cx,
                 y=cy,
@@ -14628,7 +14628,7 @@ class ShrinkingBoundaryMode(GameMode):
                                 from arena.procedural_arena import Hazard
                                 exp_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999)
                                 # Massive explosion radius and damage
-                                exp = Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
+                                exp = self.Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
                                 setattr(exp, "duration", 0.5)
                                 world.arena.hazards.append(exp)
                             except ImportError:
@@ -14811,7 +14811,7 @@ class MultipleSafeZonesMode(GameMode):
             "target_x": arena_width / 2.0,
             "target_y": arena_height / 2.0
         }]
-        self.split_timer = random.uniform(10.0, 20.0)
+        self.split_timer = self.random.uniform(10.0, 20.0)
 
     def tick(self, world, balls, delta=0.016):
         import math
@@ -14822,7 +14822,7 @@ class MultipleSafeZonesMode(GameMode):
 
         self.split_timer -= delta
         if self.split_timer <= 0.0:
-            self.split_timer = random.uniform(15.0, 25.0)
+            self.split_timer = self.random.uniform(15.0, 25.0)
             self._split_zones(world)
 
         # Update zones
@@ -14845,8 +14845,8 @@ class MultipleSafeZonesMode(GameMode):
                 zone["y"] = zone["target_y"]
                 arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
                 arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
-                zone["target_x"] = random.uniform(200, arena_width - 200)
-                zone["target_y"] = random.uniform(200, arena_height - 200)
+                zone["target_x"] = self.random.uniform(200, arena_width - 200)
+                zone["target_y"] = self.random.uniform(200, arena_height - 200)
 
         # apply damage
         for b in balls:
@@ -14893,7 +14893,7 @@ class MultipleSafeZonesMode(GameMode):
             r1 = zone["radius"] * 0.7
             r2 = zone["radius"] * 0.7
 
-            angle1 = random.uniform(0, 2 * math.pi)
+            angle1 = self.random.uniform(0, 2 * math.pi)
             angle2 = angle1 + math.pi
 
             dist = zone["radius"] * 0.5
@@ -14912,13 +14912,13 @@ class MultipleSafeZonesMode(GameMode):
 
             new_zones.append({
                 "x": x1, "y": y1, "radius": r1, "target_radius": r1,
-                "target_x": random.uniform(r1, arena_width - r1),
-                "target_y": random.uniform(r1, arena_height - r1)
+                "target_x": self.random.uniform(r1, arena_width - r1),
+                "target_y": self.random.uniform(r1, arena_height - r1)
             })
             new_zones.append({
                 "x": x2, "y": y2, "radius": r2, "target_radius": r2,
-                "target_x": random.uniform(r2, arena_width - r2),
-                "target_y": random.uniform(r2, arena_height - r2)
+                "target_x": self.random.uniform(r2, arena_width - r2),
+                "target_y": self.random.uniform(r2, arena_height - r2)
             })
 
         self.zones = new_zones
@@ -14941,8 +14941,8 @@ class FallingPanelsMode(GameMode):
         world.arena = FallingPanelsArena(arena_size=2000.0, num_rooms=1)
         import random
         for ball in balls:
-            ball.x = world.arena.width / 2 + random.uniform(-200, 200)
-            ball.y = world.arena.height / 2 + random.uniform(-200, 200)
+            ball.x = world.arena.width / 2 + self.random.uniform(-200, 200)
+            ball.y = world.arena.height / 2 + self.random.uniform(-200, 200)
 
     def is_game_over(self, world) -> bool:
         alive_balls = [b for b in getattr(world, 'balls', []) if getattr(b, 'alive', True)]
@@ -15077,8 +15077,8 @@ class LavaRoyaleMode(GameMode):
             self.zone_y += (dy / dist) * self.zone_move_speed * delta
         else:
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = self.random.uniform(buffer, arena_width_for_move - buffer)
-            self.zone_target_y = self.random.uniform(buffer, arena_height_for_move - buffer)
+            self.zone_target_x = self.self.random.uniform(buffer, arena_width_for_move - buffer)
+            self.zone_target_y = self.self.random.uniform(buffer, arena_height_for_move - buffer)
 
         if self.zone_radius > 50.0:
             self.zone_radius -= self.shrink_rate * delta
@@ -15087,15 +15087,15 @@ class LavaRoyaleMode(GameMode):
 
         random_val = getattr(self.random, "random", lambda: 0.0)()
         if hasattr(world, "arena") and hasattr(world.arena, "hazards") and random_val < 0.1 * delta * 60:
-            angle = self.random.uniform(0, math.pi * 2)
-            dist_val = self.random.uniform(self.zone_radius + 50, self.zone_radius + 400)
+            angle = self.self.random.uniform(0, math.pi * 2)
+            dist_val = self.self.random.uniform(self.zone_radius + 50, self.zone_radius + 400)
             lx = self.zone_x + math.cos(angle) * dist_val
             ly = self.zone_y + math.sin(angle) * dist_val
 
             try:
                 from arena.procedural_arena import Hazard
-                h_id = len(world.arena.hazards) + self.random.randint(20000, 99999)
-                lava_h = Hazard(id=h_id, x=lx, y=ly, radius=self.random.uniform(40.0, 80.0), kind="lava_puddle", damage=0.0)
+                h_id = len(world.arena.hazards) + self.self.random.randint(20000, 99999)
+                lava_h = self.Hazard(id=h_id, x=lx, y=ly, radius=self.self.random.uniform(40.0, 80.0), kind="lava_puddle", damage=0.0)
                 setattr(lava_h, "duration", 5.0)
                 world.arena.hazards.append(lava_h)
             except ImportError:
@@ -15184,8 +15184,8 @@ class WeatherStationMode(GameMode):
                 arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
                 import random
                 self.station = {
-                    "x": random.uniform(200, arena_w - 200),
-                    "y": random.uniform(200, arena_h - 200),
+                    "x": self.random.uniform(200, arena_w - 200),
+                    "y": self.random.uniform(200, arena_h - 200),
                     "radius": 150.0,
                     "capture_progress": 0.0,
                     "owner": None
@@ -15222,7 +15222,7 @@ class WeatherStationMode(GameMode):
                 # Fully captured
                 self.controlling_team = self.station["owner"]
                 import random
-                self.active_weather = random.choice(["lightning", "wind"])
+                self.active_weather = self.random.choice(["lightning", "wind"])
                 self.weather_timer = 15.0
                 self.station = None # Despawn station
                 self.spawn_timer = 20.0 # Next spawn
@@ -15234,7 +15234,7 @@ class WeatherStationMode(GameMode):
             if self.active_weather == "lightning" and random.random() < 0.1: # 10% chance per tick to strike an enemy
                 enemies = [b for b in balls if getattr(b, "alive", False) and getattr(b, "team", getattr(b, "ball_type", "")) != self.controlling_team and getattr(b, "ball_type", None) != "spectator"]
                 if enemies:
-                    target = random.choice(enemies)
+                    target = self.random.choice(enemies)
                     if hasattr(target, "take_damage"):
                         target.take_damage(20.0)
                     else:
@@ -15337,13 +15337,13 @@ class StickyArenaMode(GameMode):
         arena_w = getattr(world.arena, "width", 800)
         arena_h = getattr(world.arena, "height", 600)
 
-        num_patches = random.randint(5, 8)
+        num_patches = self.random.randint(5, 8)
         for i in range(num_patches):
-            x = random.uniform(100, arena_w - 100)
-            y = random.uniform(100, arena_h - 100)
-            radius = random.uniform(30.0, 60.0)
+            x = self.random.uniform(100, arena_w - 100)
+            y = self.random.uniform(100, arena_h - 100)
+            radius = self.random.uniform(30.0, 60.0)
 
-            patch = Hazard(id=30000 + i, x=x, y=y, radius=radius, kind="glue_patch", damage=0.0)
+            patch = self.Hazard(id=30000 + i, x=x, y=y, radius=radius, kind="glue_patch", damage=0.0)
             setattr(patch, "duration", 9999.0)
             world.arena.hazards.append(patch)
 
@@ -15417,11 +15417,11 @@ class ElementalAurasMode(GameMode):
             if hasattr(world, "arena"):
                 aw = getattr(world.arena, "width", 1000)
                 ah = getattr(world.arena, "height", 1000)
-                element = random.choice(self.elements)
+                element = self.random.choice(self.elements)
 
                 try:
                     from arena.procedural_arena import Hazard
-                    h = Hazard(f"aura_{element}_{random.randint(0, 10000)}", random.uniform(100, aw - 100), random.uniform(100, ah - 100), 20.0, f"aura_pickup_{element}", 0.0)
+                    h = self.Hazard(f"aura_{element}_{self.random.randint(0, 10000)}", self.random.uniform(100, aw - 100), self.random.uniform(100, ah - 100), 20.0, f"aura_pickup_{element}", 0.0)
                 except ImportError:
                     class FallbackHazard:
                         def __init__(self, hid, hx, hy, r, k, d):
@@ -15432,7 +15432,7 @@ class ElementalAurasMode(GameMode):
                             self.kind = k
                             self.damage = d
                             self.active = True
-                    h = FallbackHazard(f"aura_{element}_{random.randint(0, 10000)}", random.uniform(100, aw - 100), random.uniform(100, ah - 100), 20.0, f"aura_pickup_{element}", 0.0)
+                    h = Fallbackself.Hazard(f"aura_{element}_{self.random.randint(0, 10000)}", self.random.uniform(100, aw - 100), self.random.uniform(100, ah - 100), 20.0, f"aura_pickup_{element}", 0.0)
 
                 if not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
@@ -15516,12 +15516,12 @@ class ElementalAurasMode(GameMode):
                     if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                         try:
                             from arena.procedural_arena import Hazard
-                            world.arena.hazards.append(Hazard(f"magma_{b.id}_{random.randint(0,1000)}", b.x, b.y, 30.0, "fire", 10.0))
+                            world.arena.hazards.append(self.Hazard(f"magma_{b.id}_{self.random.randint(0,1000)}", b.x, b.y, 30.0, "fire", 10.0))
                         except ImportError:
                             class FallbackHazard:
                                 def __init__(self, hid, hx, hy, r, k, d):
                                     self.id, self.x, self.y, self.radius, self.kind, self.damage, self.active = hid, hx, hy, r, k, d, True
-                            world.arena.hazards.append(FallbackHazard(f"magma_{b.id}_{random.randint(0,1000)}", b.x, b.y, 30.0, "fire", 10.0))
+                            world.arena.hazards.append(Fallbackself.Hazard(f"magma_{b.id}_{self.random.randint(0,1000)}", b.x, b.y, 30.0, "fire", 10.0))
 
             # Hybrid: Fire + Lightning
             if f_stacks >= 1 and l_stacks >= 1:
@@ -15864,35 +15864,35 @@ class RollingBouldersMode(GameMode):
         if self.spawn_timer >= 5.0:
             self.spawn_timer = 0.0
 
-            side = random.choice(["top", "bottom", "left", "right"])
+            side = self.random.choice(["top", "bottom", "left", "right"])
 
             x, y = 0.0, 0.0
             vx, vy = 0.0, 0.0
-            speed = random.uniform(150.0, 250.0)
+            speed = self.random.uniform(150.0, 250.0)
 
             if side == "top":
-                x = random.uniform(100, arena_width - 100)
+                x = self.random.uniform(100, arena_width - 100)
                 y = 0.0
-                vx = random.uniform(-50.0, 50.0)
+                vx = self.random.uniform(-50.0, 50.0)
                 vy = speed
             elif side == "bottom":
-                x = random.uniform(100, arena_width - 100)
+                x = self.random.uniform(100, arena_width - 100)
                 y = arena_height
-                vx = random.uniform(-50.0, 50.0)
+                vx = self.random.uniform(-50.0, 50.0)
                 vy = -speed
             elif side == "left":
                 x = 0.0
-                y = random.uniform(100, arena_height - 100)
+                y = self.random.uniform(100, arena_height - 100)
                 vx = speed
-                vy = random.uniform(-50.0, 50.0)
+                vy = self.random.uniform(-50.0, 50.0)
             elif side == "right":
                 x = arena_width
-                y = random.uniform(100, arena_height - 100)
+                y = self.random.uniform(100, arena_height - 100)
                 vx = -speed
-                vy = random.uniform(-50.0, 50.0)
+                vy = self.random.uniform(-50.0, 50.0)
 
-            h_id = 30000 + len(world.arena.hazards) + random.randint(0, 10000)
-            boulder = Hazard(id=h_id, x=x, y=y, radius=60.0, kind="rolling_boulder", damage=300.0)
+            h_id = 30000 + len(world.arena.hazards) + self.random.randint(0, 10000)
+            boulder = self.Hazard(id=h_id, x=x, y=y, radius=60.0, kind="rolling_boulder", damage=300.0)
             setattr(boulder, "vx", vx)
             setattr(boulder, "vy", vy)
             setattr(boulder, "duration", 20.0)  # Should hit a wall before expiring
@@ -15962,14 +15962,14 @@ class RollingBouldersMode(GameMode):
 
                     # Shatter into rocks
                     for i in range(3):
-                        rock_id = 40000 + len(world.arena.hazards) + len(new_hazards) + random.randint(0, 10000)
-                        rock = Hazard(id=rock_id, x=h.x, y=h.y, radius=15.0, kind="rock", damage=30.0)
+                        rock_id = 40000 + len(world.arena.hazards) + len(new_hazards) + self.random.randint(0, 10000)
+                        rock = self.Hazard(id=rock_id, x=h.x, y=h.y, radius=15.0, kind="rock", damage=30.0)
                         setattr(rock, "duration", 5.0)
 
                         import random
                         import math
-                        angle = random.uniform(0, 2 * math.pi)
-                        rock_speed = random.uniform(50.0, 150.0)
+                        angle = self.random.uniform(0, 2 * math.pi)
+                        rock_speed = self.random.uniform(50.0, 150.0)
                         setattr(rock, "vx", math.cos(angle) * rock_speed)
                         setattr(rock, "vy", math.sin(angle) * rock_speed)
 
@@ -16453,10 +16453,10 @@ class CrossfireMode(GameMode):
         for i, b in enumerate(alive_balls):
             if i < midpoint:
                 b.team = "team_left"
-                b.x = random.uniform(50.0, arena_width / 2.0 - 50.0)
+                b.x = self.random.uniform(50.0, arena_width / 2.0 - 50.0)
             else:
                 b.team = "team_right"
-                b.x = random.uniform(arena_width / 2.0 + 50.0, arena_width - 50.0)
+                b.x = self.random.uniform(arena_width / 2.0 + 50.0, arena_width - 50.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
@@ -16576,15 +16576,15 @@ class TeleporterHubMode(GameMode):
         self.portals = []
 
         # Select 3-4 random peripheral destinations
-        num_destinations = random.randint(3, 4)
+        num_destinations = self.random.randint(3, 4)
         dests = random.sample(self.peripheral_zones, num_destinations)
 
         # We spawn a central portal and multiple peripheral portals
         for i, (dx, dy) in enumerate(dests):
             # Peripheral to central
-            p_out = Hazard(id=f"hub_dest_in_{i}", x=dx, y=dy, radius=30.0, kind="teleporter", damage=0.0)
-            p_out.target_x = self.hub_x + random.uniform(-10, 10)
-            p_out.target_y = self.hub_y + random.uniform(-10, 10)
+            p_out = self.Hazard(id=f"hub_dest_in_{i}", x=dx, y=dy, radius=30.0, kind="teleporter", damage=0.0)
+            p_out.target_x = self.hub_x + self.random.uniform(-10, 10)
+            p_out.target_y = self.hub_y + self.random.uniform(-10, 10)
             p_out.mode_teleporter = True
             world.arena.hazards.append(p_out)
             self.portals.append(p_out)
@@ -16594,9 +16594,9 @@ class TeleporterHubMode(GameMode):
             cx = self.hub_x + math.cos(angle) * 30.0
             cy = self.hub_y + math.sin(angle) * 30.0
 
-            p_in = Hazard(id=f"hub_dest_out_{i}", x=cx, y=cy, radius=30.0, kind="teleporter", damage=0.0)
-            p_in.target_x = dx + random.uniform(-10, 10)
-            p_in.target_y = dy + random.uniform(-10, 10)
+            p_in = self.Hazard(id=f"hub_dest_out_{i}", x=cx, y=cy, radius=30.0, kind="teleporter", damage=0.0)
+            p_in.target_x = dx + self.random.uniform(-10, 10)
+            p_in.target_y = dy + self.random.uniform(-10, 10)
             p_in.mode_teleporter = True
             world.arena.hazards.append(p_in)
             self.portals.append(p_in)
@@ -16734,7 +16734,7 @@ class TetheredRoyaleMode(GameMode):
             if was_alive and not is_alive:
                 # Trigger explosive recoil
                 from arena.procedural_arena import Hazard
-                h = Hazard(id="recoil_" + str(b.id), x=getattr(b, "x", 0.0), y=getattr(b, "y", 0.0), kind="recoil_explosion", radius=100.0, damage=50.0)
+                h = self.Hazard(id="recoil_" + str(b.id), x=getattr(b, "x", 0.0), y=getattr(b, "y", 0.0), kind="recoil_explosion", radius=100.0, damage=50.0)
                 h.duration = 0.2
                 h.damage = 50.0
                 if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
@@ -16791,8 +16791,6 @@ class RiftRouletteMode(GameMode):
 
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        import random
-        from arena.procedural_arena import Hazard
 
         self.cycle_timer -= delta
         if self.cycle_timer <= 0:
@@ -16809,17 +16807,17 @@ class RiftRouletteMode(GameMode):
                     p1_id = f"rift_{i}_a"
                     p2_id = f"rift_{i}_b"
 
-                    x1 = random.uniform(100, arena_w - 100)
-                    y1 = random.uniform(100, arena_h - 100)
-                    x2 = random.uniform(100, arena_w - 100)
-                    y2 = random.uniform(100, arena_h - 100)
+                    x1 = self.random.uniform(100, arena_w - 100)
+                    y1 = self.random.uniform(100, arena_h - 100)
+                    x2 = self.random.uniform(100, arena_w - 100)
+                    y2 = self.random.uniform(100, arena_h - 100)
 
-                    p1 = Hazard(id=p1_id, x=x1, y=y1, radius=30.0, kind="teleporter", damage=0.0)
+                    p1 = self.Hazard(id=p1_id, x=x1, y=y1, radius=30.0, kind="teleporter", damage=0.0)
                     p1.target_x = x2
                     p1.target_y = y2
                     p1.is_rift_portal = True
 
-                    p2 = Hazard(id=p2_id, x=x2, y=y2, radius=30.0, kind="teleporter", damage=0.0)
+                    p2 = self.Hazard(id=p2_id, x=x2, y=y2, radius=30.0, kind="teleporter", damage=0.0)
                     p2.target_x = x1
                     p2.target_y = y1
                     p2.is_rift_portal = True
@@ -16833,8 +16831,8 @@ class RiftRouletteMode(GameMode):
                 for p in self.portals:
                     if random.random() < 0.5:
                         h_types = ["meteor", "tornado", "black_hole", "poison_cloud"]
-                        h_type = random.choice(h_types)
-                        h = Hazard(id=f"rift_hazard_{random.randint(1000, 9999)}", x=p.x, y=p.y, radius=20.0, kind=h_type, damage=10.0)
+                        h_type = self.random.choice(h_types)
+                        h = self.Hazard(id=f"rift_hazard_{self.random.randint(1000, 9999)}", x=p.x, y=p.y, radius=20.0, kind=h_type, damage=10.0)
                         h.is_rift_hazard = True
                         h.duration = 5.0
                         world.arena.hazards.append(h)
@@ -16842,6 +16840,51 @@ class RiftRouletteMode(GameMode):
 
 
 GAME_MODES["rift_roulette"] = RiftRouletteMode()
+
+class TemporalRiftsMode(GameMode):
+    def __init__(self):
+        import random
+        self.random = random
+        from arena.procedural_arena import Hazard
+        self.Hazard = Hazard
+        super().__init__()
+        self.name = "Temporal Rifts"
+        self.description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
+        self.cycle_timer = 0.0
+        self.cycle_interval = 6.0
+        self.rifts = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.cycle_timer -= delta
+        if self.cycle_timer <= 0:
+            self.cycle_timer = self.cycle_interval
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards = [h for h in world.arena.hazards if not getattr(h, "is_temporal_rift", False)]
+
+                arena_w = getattr(world.arena, "width", 800)
+                arena_h = getattr(world.arena, "height", 600)
+
+                self.rifts = []
+                num_rifts = self.random.randint(3, 5)
+                for i in range(num_rifts):
+                    x = self.random.uniform(100, arena_w - 100)
+                    y = self.random.uniform(100, arena_h - 100)
+                    radius = self.random.uniform(40.0, 70.0)
+                    kind = self.random.choice(["slow_motion_zone", "fast_motion_zone"])
+
+                    h = self.Hazard(id=f"temporal_rift_{self.random.randint(1000, 99999)}", x=x, y=y, radius=radius, kind=kind, damage=0.0)
+                    h.is_temporal_rift = True
+                    world.arena.hazards.append(h)
+                    self.rifts.append(h)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("temporal_rifts_spawned", {"message": "Temporal Rifts have spawned!"})
+
+GAME_MODES["temporal_rifts"] = TemporalRiftsMode()
+
 
 class ItemMorphMode(GameMode):
     """
@@ -16865,7 +16908,7 @@ class ItemMorphMode(GameMode):
                 morphed = False
                 for b in world.boosters:
                     if getattr(b, "active", True):
-                        new_kind = self.random.choice(self.booster_kinds)
+                        new_kind = self.self.random.choice(self.booster_kinds)
                         b.kind = new_kind
                         morphed = True
 
@@ -16913,9 +16956,9 @@ class IllusionWallMode(GameMode):
         for i in range(5):
             h_id = 95000 + len(world.arena.hazards) + i
             # Representing a line using a circle is tricky, we'll just make large circles that look like obstacles
-            x = random.uniform(200, arena_w - 200)
-            y = random.uniform(200, arena_h - 200)
-            wall = Hazard(id=h_id, x=x, y=y, radius=80.0, kind="illusion_wall", damage=0.0)
+            x = self.random.uniform(200, arena_w - 200)
+            y = self.random.uniform(200, arena_h - 200)
+            wall = self.Hazard(id=h_id, x=x, y=y, radius=80.0, kind="illusion_wall", damage=0.0)
             world.arena.hazards.append(wall)
 
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
@@ -17123,10 +17166,10 @@ class UndergroundTunnelMode(GameMode):
         import random
         # Create a few tunnels
         for _ in range(3):
-            x1 = random.uniform(200, 800)
-            y1 = random.uniform(200, 800)
-            x2 = random.uniform(200, 800)
-            y2 = random.uniform(200, 800)
+            x1 = self.random.uniform(200, 800)
+            y1 = self.random.uniform(200, 800)
+            x2 = self.random.uniform(200, 800)
+            y2 = self.random.uniform(200, 800)
             self.tunnels.append(self.Tunnel(x1, y1, x2, y2))
 
         if not hasattr(world, "arena"):
@@ -17378,7 +17421,7 @@ class VortexOrbitMode(GameMode):
         has_vortex = any(getattr(h, "kind", "") == "vortex" for h in world.arena.hazards)
         if not has_vortex:
             from arena.procedural_arena import Hazard
-            vortex = Hazard(
+            vortex = self.Hazard(
                 id=9999,
                 x=world.width / 2,
                 y=world.height / 2,
@@ -17534,16 +17577,16 @@ class DisguisedTrapsMode(GameMode):
         if self.trap_timer >= self.trap_interval:
             self.trap_timer -= self.trap_interval
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
-                trap_id = len(world.arena.hazards) + random.randint(10000, 99999)
+                trap_id = len(world.arena.hazards) + self.random.randint(10000, 99999)
                 arena_w = getattr(world.arena, "width", 800)
                 arena_h = getattr(world.arena, "height", 600)
-                x = random.uniform(100, arena_w - 100)
-                y = random.uniform(100, arena_h - 100)
-                trap = Hazard(trap_id, x, y, 20.0, "disguised_trap", 0.0)
+                x = self.random.uniform(100, arena_w - 100)
+                y = self.random.uniform(100, arena_h - 100)
+                trap = self.Hazard(trap_id, x, y, 20.0, "disguised_trap", 0.0)
                 setattr(trap, "duration", 15.0)
 
                 # Disguise as either fake booster or exit portal
-                disguise = random.choice(["fake_booster", "exit_portal_item", "hp_booster", "speed_booster"])
+                disguise = self.random.choice(["fake_booster", "exit_portal_item", "hp_booster", "speed_booster"])
                 setattr(trap, "disguised_as", disguise)
                 world.arena.hazards.append(trap)
 
@@ -17580,8 +17623,8 @@ class AerialArenaMode(GameMode):
             pass
 
         for i in range(5):
-            x = random.uniform(200, w - 200)
-            y = random.uniform(200, h - 200)
+            x = self.random.uniform(200, w - 200)
+            y = self.random.uniform(200, h - 200)
             bp = type("Hazard", (), {"id": 98000 + i, "x": x, "y": y, "radius": 60.0, "kind": "bounce_pad", "damage": 0.0, "active": True})
             world.arena.hazards.append(bp)
 
@@ -17597,13 +17640,13 @@ class AerialArenaMode(GameMode):
             w, h = getattr(world.arena, "width", 1000), getattr(world.arena, "height", 1000)
             aerial_hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") in ["scrambler_drone", "lightning_cloud"]]
             if len(aerial_hazards) < 8:
-                x = random.uniform(100, w - 100)
-                y = random.uniform(100, h - 100)
-                h_id = len(getattr(world.arena, "hazards", [])) + random.randint(1000, 9999)
+                x = self.random.uniform(100, w - 100)
+                y = self.random.uniform(100, h - 100)
+                h_id = len(getattr(world.arena, "hazards", [])) + self.random.randint(1000, 9999)
                 if random.random() < 0.5:
                     h_obj = type("Hazard", (), {"id": h_id, "x": x, "y": y, "radius": 15.0, "kind": "scrambler_drone", "damage": 0.0, "vx": 0.0, "vy": 0.0, "duration": 15.0, "active": True})
                 else:
-                    h_obj = type("Hazard", (), {"id": h_id, "x": x, "y": y, "radius": 80.0, "kind": "lightning_cloud", "damage": 10.0, "vx": random.uniform(-20, 20), "vy": random.uniform(-20, 20), "duration": 20.0, "active": True})
+                    h_obj = type("Hazard", (), {"id": h_id, "x": x, "y": y, "radius": 80.0, "kind": "lightning_cloud", "damage": 10.0, "vx": self.random.uniform(-20, 20), "vy": self.random.uniform(-20, 20), "duration": 20.0, "active": True})
                 world.arena.hazards.append(h_obj)
 
         hazards_to_remove = []
@@ -17698,7 +17741,7 @@ class ColorTrailMode(GameMode):
             team = getattr(b, "team", getattr(b, "ball_type", ""))
 
             if (gx, gy) not in self.territory:
-                haz = self.TrailHazard(gx * self.tile_size, gy * self.tile_size, team)
+                haz = self.Trailself.Hazard(gx * self.tile_size, gy * self.tile_size, team)
                 world.arena.hazards.append(haz)
                 self.territory[(gx, gy)] = haz
             else:
@@ -17779,7 +17822,7 @@ class BermudaTriangleMode(GameMode):
                 angle = i * (2 * math.pi / 3) - math.pi / 2
                 px = cx + radius * math.cos(angle)
                 py = cy + radius * math.sin(angle)
-                pylon = Hazard(id=f"bermuda_pylon_{i}", x=px, y=py, radius=20.0, kind="magnetic_pylon", damage=0.0)
+                pylon = self.Hazard(id=f"bermuda_pylon_{i}", x=px, y=py, radius=20.0, kind="magnetic_pylon", damage=0.0)
                 world.arena.hazards.append(pylon)
                 self.pylons.append((px, py))
 
@@ -17815,8 +17858,8 @@ class BermudaTriangleMode(GameMode):
             y = getattr(b, "y", 0.0)
 
             if point_in_triangle((x, y), p1, p2, p3):
-                b.x = random.uniform(50.0, arena_w - 50.0)
-                b.y = random.uniform(50.0, arena_h - 50.0)
+                b.x = self.random.uniform(50.0, arena_w - 50.0)
+                b.y = self.random.uniform(50.0, arena_h - 50.0)
                 b.vx = 0.0
                 b.vy = 0.0
 

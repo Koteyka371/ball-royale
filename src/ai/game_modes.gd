@@ -25620,6 +25620,7 @@ var GAME_MODES = {
 	"tag_team": TagTeamMode.new(),
 	"rubber_band": RubberBandMode.new(),
 	"rift_roulette": RiftRouletteMode.new(),
+	"temporal_rifts": TemporalRiftsMode.new(),
 	"item_morph": ItemMorphMode.new(),
 	"disguised_traps": DisguisedTrapsMode.new(),
 	"illusion_wall": IllusionWallMode.new(),
@@ -26531,6 +26532,82 @@ class RiftRouletteMode extends GameMode:
 						h.duration = 5.0
 						world.arena.hazards.append(h)
 
+
+
+class TemporalRiftsMode extends GameMode:
+	var cycle_timer: float = 0.0
+	var cycle_interval: float = 6.0
+
+	func _init():
+		name = "Temporal Rifts"
+		description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
+
+	func tick(world, balls, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		cycle_timer -= delta
+		if cycle_timer <= 0:
+			cycle_timer = cycle_interval
+
+			if world is Object and world.has_method("get") and world.get("arena") != null and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				var new_hazards = []
+				for h in world.arena.hazards:
+					var is_rift = false
+					if typeof(h) == TYPE_DICTIONARY and h.has("is_temporal_rift"):
+						is_rift = h["is_temporal_rift"]
+					elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("is_temporal_rift"):
+						is_rift = h.get_meta("is_temporal_rift")
+					elif typeof(h) == TYPE_OBJECT and "is_temporal_rift" in h:
+						is_rift = h.is_temporal_rift
+
+					if not is_rift:
+						new_hazards.append(h)
+
+				world.arena.hazards = new_hazards
+
+				var arena_w = 800.0
+				if world.arena.has("width"): arena_w = float(world.arena.width)
+				var arena_h = 600.0
+				if world.arena.has("height"): arena_h = float(world.arena.height)
+
+				var rng = RandomNumberGenerator.new()
+				rng.randomize()
+
+				var num_rifts = rng.randi_range(3, 5)
+				var arena_class = load("res://src/arena/procedural_arena.gd")
+
+				for i in range(num_rifts):
+					var x = rng.randf_range(100.0, arena_w - 100.0)
+					var y = rng.randf_range(100.0, arena_h - 100.0)
+					var radius = rng.randf_range(40.0, 70.0)
+					var kind = "slow_motion_zone"
+					if rng.randf() > 0.5:
+						kind = "fast_motion_zone"
+
+					var h_id = "temporal_rift_" + str(rng.randi_range(1000, 99999))
+
+					var h = null
+					if arena_class != null and arena_class.const_defined("Hazard"):
+						h = arena_class.Hazard.new(h_id, x, y, radius, kind, 0.0)
+						if h.has_method("set_meta"):
+							h.set_meta("is_temporal_rift", true)
+						else:
+							h.is_temporal_rift = true
+					else:
+						h = {
+							"id": h_id,
+							"x": x,
+							"y": y,
+							"radius": radius,
+							"kind": kind,
+							"damage": 0.0,
+							"is_temporal_rift": true
+						}
+
+					world.arena.hazards.append(h)
+
+				if world.has_method("add_event"):
+					world.add_event("temporal_rifts_spawned", {"message": "Temporal Rifts have spawned!"})
 
 class ItemMorphMode extends GameMode:
 	var morph_timer: float = 0.0
