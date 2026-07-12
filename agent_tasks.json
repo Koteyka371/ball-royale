@@ -25054,6 +25054,108 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1463",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Grenade",
+      "description": "A deployable grenade that creates a temporary localized wind vortex, sucking in nearby balls and causing chaotic physics interactions.",
+      "allowed_paths": [
+        "src/ai/tornado_grenade.py",
+        "src/ai/tornado_grenade.gd",
+        "tests/test_tornado_grenade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1464",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Bounty Targets based on Score",
+      "description": "Introduce a system where the player or team with the highest score or highest streak automatically becomes a 'Bounty Target', visually highlighted on the map. Killing them grants bonus points and temporary buffs to the killer, encouraging dynamic comebacks.",
+      "allowed_paths": [
+        "src/ai/dynamic_bounty_targets_based_on_score.py",
+        "src/ai/dynamic_bounty_targets_based_on_score.gd",
+        "tests/test_dynamic_bounty_targets_based_on_score.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1465",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Contracts Item",
+      "description": "Add an equippable item or pickup called 'Bounty Contract' that temporarily selects a random enemy as a bounty. If the player eliminates that specific enemy within a time limit, they receive a massive payout of skill points and a unique permanent stat boost for the rest of the match.",
+      "allowed_paths": [
+        "src/ai/bounty_contracts_item.py",
+        "src/ai/bounty_contracts_item.gd",
+        "tests/test_bounty_contracts_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1466",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Anti-Gravity Boots",
+      "description": "An item that makes the ball float slightly, giving immunity to ground hazards like mud or spikes but increased knockback from attacks.",
+      "allowed_paths": [
+        "src/ai/anti_gravity_boots.py",
+        "src/ai/anti_gravity_boots.gd",
+        "tests/test_anti_gravity_boots.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1467",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Weather Events - Solar Flare",
+      "description": "Introduce a random Solar Flare event during Day mode where sunlight beams intensify and all balls' max health is temporarily reduced if they step outside of shade or cover, forcing heavily tactical positioning.",
+      "allowed_paths": [
+        "src/ai/dynamic_events_solar_flare.py",
+        "src/ai/dynamic_events_solar_flare.gd",
+        "tests/test_dynamic_events_solar_flare.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1468",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Hazard - Stalker Shadows",
+      "description": "During the night cycle, AI-controlled shadow entities can spawn. They act as independent hazards that chase the nearest player, slowing them down on contact and slowly sapping stamina.",
+      "allowed_paths": [
+        "src/arena/new_stalker_shadows.py",
+        "src/arena/new_stalker_shadows.gd",
+        "tests/test_new_stalker_shadows.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
