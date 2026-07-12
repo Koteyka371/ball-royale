@@ -9361,6 +9361,12 @@ func execute(strategy: String, delta: float):
                                     self.world.arena.hazards.append(siphon_latch)
 
                                 if hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            elif trap_variant == "constrict":
+                                if "arena" in self.world and self.world.arena != null:
+                                    self.world.arena.set("is_constricted", true)
+                                    self.world.arena.set("constrict_timer", 10.0)
+                                    self.world.arena.set("constrict_factor", 0.0)
+                                if hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard: hazard.duration = 0.0
                             elif trap_variant == "hologram":
                                 var holo_dmg = 15.0

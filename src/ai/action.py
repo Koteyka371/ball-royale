@@ -5149,6 +5149,12 @@ class Action:
                                     siphon_latch.owner_id = getattr(hazard, "owner_id", None)
                                     self.world.arena.hazards.append(siphon_latch)
                                     hazard.duration = 0.0
+                                elif trap_variant == "constrict":
+                                    if hasattr(self.world, "arena") and self.world.arena:
+                                        setattr(self.world.arena, "is_constricted", True)
+                                        setattr(self.world.arena, "constrict_timer", 10.0)
+                                        setattr(self.world.arena, "constrict_factor", 0.0)
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "hologram":
                                     self.ball.hp -= 15.0
                                     if self.ball.hp <= 0:

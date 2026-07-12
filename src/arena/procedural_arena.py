@@ -506,53 +506,78 @@ class ProceduralArena:
         return False
 
     def clamp_position(self, x: float, y: float, radius: float) -> Tuple[float, float, bool]:
-        if self.is_point_inside(x, y, radius):
-            return x, y, False
+        final_x, final_y = x, y
+        bounced = False
 
-        # Find nearest point inside a room or corridor
-        min_dist = float('inf')
-        nearest_x, nearest_y = x, y
+        if not self.is_point_inside(x, y, radius):
+            bounced = True
+            min_dist = float('inf')
+            nearest_x, nearest_y = x, y
 
-        # Room bounds
-        for r in self.rooms:
-            cx = max(r.x + radius, min(x, r.x + r.width - radius))
-            cy = max(r.y + radius, min(y, r.y + r.height - radius))
-            dist = (cx - x)**2 + (cy - y)**2
-            if dist < min_dist:
-                min_dist = dist
-                nearest_x, nearest_y = cx, cy
+            for r in self.rooms:
+                cx = max(r.x + radius, min(x, r.x + r.width - radius))
+                cy = max(r.y + radius, min(y, r.y + r.height - radius))
+                dist = (cx - x)**2 + (cy - y)**2
+                if dist < min_dist:
+                    min_dist = dist
+                    nearest_x, nearest_y = cx, cy
 
-        # Corridor bounds
-        for c in self.corridors:
-            cx = max(c.x + radius, min(x, c.x + c.width - radius))
-            cy = max(c.y + radius, min(y, c.y + c.height - radius))
-            dist = (cx - x)**2 + (cy - y)**2
-            if dist < min_dist:
-                min_dist = dist
-                nearest_x, nearest_y = cx, cy
+            for c in self.corridors:
+                cx = max(c.x + radius, min(x, c.x + c.width - radius))
+                cy = max(c.y + radius, min(y, c.y + c.height - radius))
+                dist = (cx - x)**2 + (cy - y)**2
+                if dist < min_dist:
+                    min_dist = dist
+                    nearest_x, nearest_y = cx, cy
 
-        import math
-        sz_cx, sz_cy = self.safe_zone_center
-        sz_radius = self.safe_zone_radius
-        dist = math.hypot(nearest_x - sz_cx, nearest_y - sz_cy)
+            import math
+            sz_cx, sz_cy = self.safe_zone_center
+            sz_radius = self.safe_zone_radius
+            dist = math.hypot(nearest_x - sz_cx, nearest_y - sz_cy)
 
-        # If outside the safe zone, push inwards towards safe zone edge
-        if dist > max(0.0, sz_radius - radius):
-            if dist > 0.0001:
-                dir_x = (nearest_x - sz_cx) / dist
-                dir_y = (nearest_y - sz_cy) / dist
-                nearest_x = sz_cx + dir_x * max(0.0, sz_radius - radius)
-                nearest_y = sz_cy + dir_y * max(0.0, sz_radius - radius)
-            else:
-                nearest_x = sz_cx
-                nearest_y = sz_cy
+            if dist > max(0.0, sz_radius - radius):
+                if dist > 0.0001:
+                    dir_x = (nearest_x - sz_cx) / dist
+                    dir_y = (nearest_y - sz_cy) / dist
+                    nearest_x = sz_cx + dir_x * max(0.0, sz_radius - radius)
+                    nearest_y = sz_cy + dir_y * max(0.0, sz_radius - radius)
+                else:
+                    nearest_x = sz_cx
+                    nearest_y = sz_cy
+            final_x, final_y = nearest_x, nearest_y
 
-        return nearest_x, nearest_y, True
+        if getattr(self, "is_constricted", False) and getattr(self, "constrict_factor", 0.0) > 0.0:
+            constrict_amount_x = (self.width * 0.4) * self.constrict_factor
+            constrict_amount_y = (self.height * 0.4) * self.constrict_factor
 
+            min_cx = constrict_amount_x + radius
+            max_cx = self.width - constrict_amount_x - radius
+            min_cy = constrict_amount_y + radius
+            max_cy = self.height - constrict_amount_y - radius
 
+            if final_x < min_cx: final_x, bounced = min_cx, True
+            elif final_x > max_cx: final_x, bounced = max_cx, True
+            if final_y < min_cy: final_y, bounced = min_cy, True
+            elif final_y > max_cy: final_y, bounced = max_cy, True
+
+        return final_x, final_y, bounced
 
     def update_zone(self, current_tick: int, delta: float):
-        if current_tick != self.last_tick:
+        if current_tick != getattr(self, "last_tick", -1):
+            self.last_tick = current_tick
+
+            if getattr(self, "constrict_timer", 0.0) > 0.0:
+                self.constrict_timer -= delta
+                if self.constrict_timer > 8.0:
+                    self.constrict_factor = min(1.0, self.constrict_factor + (delta / 2.0))
+                elif self.constrict_timer >= 2.0:
+                    self.constrict_factor = 1.0
+                else:
+                    self.constrict_factor = max(0.0, self.constrict_factor - (delta / 2.0))
+
+                if self.constrict_timer <= 0:
+                    self.is_constricted = False
+                    self.constrict_factor = 0.0
 
             import random
             if current_tick % 400 == 0:

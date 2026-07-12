@@ -96,7 +96,22 @@ class BasicArena:
                 new_y = cy
             bounced = True
 
-        return new_x, new_y, bounced
+        final_x, final_y = new_x, new_y
+        if getattr(self, "is_constricted", False) and getattr(self, "constrict_factor", 0.0) > 0.0:
+            constrict_amount_x = (self.width * 0.4) * self.constrict_factor
+            constrict_amount_y = (self.height * 0.4) * self.constrict_factor
+
+            min_cx = constrict_amount_x + radius
+            max_cx = self.width - constrict_amount_x - radius
+            min_cy = constrict_amount_y + radius
+            max_cy = self.height - constrict_amount_y - radius
+
+            if final_x < min_cx: final_x, bounced = min_cx, True
+            elif final_x > max_cx: final_x, bounced = max_cx, True
+            if final_y < min_cy: final_y, bounced = min_cy, True
+            elif final_y > max_cy: final_y, bounced = max_cy, True
+
+        return final_x, final_y, bounced
 
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:

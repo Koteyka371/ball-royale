@@ -98,7 +98,31 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 			new_y = cy
 		bounced = true
 
-	return [new_x, new_y, bounced]
+	var final_x = new_x
+	var final_y = new_y
+	if "is_constricted" in self and self.is_constricted and "constrict_factor" in self and self.constrict_factor > 0.0:
+		var constrict_amount_x = (width * 0.4) * self.constrict_factor
+		var constrict_amount_y = (height * 0.4) * self.constrict_factor
+
+		var min_cx = constrict_amount_x + radius
+		var max_cx = width - constrict_amount_x - radius
+		var min_cy = constrict_amount_y + radius
+		var max_cy = height - constrict_amount_y - radius
+
+		if final_x < min_cx:
+			final_x = min_cx
+			bounced = true
+		elif final_x > max_cx:
+			final_x = max_cx
+			bounced = true
+		if final_y < min_cy:
+			final_y = min_cy
+			bounced = true
+		elif final_y > max_cy:
+			final_y = max_cy
+			bounced = true
+
+	return [final_x, final_y, bounced]
 
 func update_zone(current_tick: int, delta: float) -> void:
 	if current_tick != last_tick:

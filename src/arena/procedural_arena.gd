@@ -13,6 +13,10 @@ var rng: RandomNumberGenerator
 var safe_zone_radius: float
 var safe_zone_center: Array
 var last_tick: int = -1
+var is_constricted: bool = false
+var constrict_timer: float = 0.0
+var constrict_factor: float = 0.0
+
 var danger_grid: Dictionary = {}
 var boundary_states: Dictionary = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
 var temperature: float = 20.0
@@ -101,6 +105,10 @@ func _init(_arena_size: float = 2000.0, _num_rooms: int = 5, _seed = null):
     safe_zone_radius = width * 0.7
     safe_zone_center = [width / 2.0, height / 2.0]
     last_tick = -1
+
+    is_constricted = false
+    constrict_timer = 0.0
+    constrict_factor = 0.0
 
     generate()
 
@@ -589,50 +597,89 @@ func is_point_inside(x: float, y: float, radius: float) -> bool:
     return false
 
 func clamp_position(x: float, y: float, radius: float) -> Array:
-    if is_point_inside(x, y, radius):
-        return [x, y, false]
+    var final_x = x
+    var final_y = y
+    var bounced = false
 
-    var min_dist = INF
-    var nearest_x = x
-    var nearest_y = y
+    if not is_point_inside(x, y, radius):
+        bounced = true
+        var min_dist = INF
+        var nearest_x = x
+        var nearest_y = y
 
-    for r in rooms:
-        var cx = max(r.x + radius, min(x, r.x + r.width - radius))
-        var cy = max(r.y + radius, min(y, r.y + r.height - radius))
-        var dist = (cx - x)*(cx - x) + (cy - y)*(cy - y)
-        if dist < min_dist:
-            min_dist = dist
-            nearest_x = cx
-            nearest_y = cy
+        for r in rooms:
+            var cx = max(r.x + radius, min(x, r.x + r.width - radius))
+            var cy = max(r.y + radius, min(y, r.y + r.height - radius))
+            var dist = (cx - x)*(cx - x) + (cy - y)*(cy - y)
+            if dist < min_dist:
+                min_dist = dist
+                nearest_x = cx
+                nearest_y = cy
 
-    for c in corridors:
-        var cx = max(c.x + radius, min(x, c.x + c.width - radius))
-        var cy = max(c.y + radius, min(y, c.y + c.height - radius))
-        var dist = (cx - x)*(cx - x) + (cy - y)*(cy - y)
-        if dist < min_dist:
-            min_dist = dist
-            nearest_x = cx
-            nearest_y = cy
+        for c in corridors:
+            var cx = max(c.x + radius, min(x, c.x + c.width - radius))
+            var cy = max(c.y + radius, min(y, c.y + c.height - radius))
+            var dist = (cx - x)*(cx - x) + (cy - y)*(cy - y)
+            if dist < min_dist:
+                min_dist = dist
+                nearest_x = cx
+                nearest_y = cy
 
-    var sz_cx = safe_zone_center[0]
-    var sz_cy = safe_zone_center[1]
-    var sz_dist = sqrt((nearest_x - sz_cx)*(nearest_x - sz_cx) + (nearest_y - sz_cy)*(nearest_y - sz_cy))
+        var sz_cx = safe_zone_center[0]
+        var sz_cy = safe_zone_center[1]
+        var dist_sz = sqrt((nearest_x - sz_cx)*(nearest_x - sz_cx) + (nearest_y - sz_cy)*(nearest_y - sz_cy))
 
-    if sz_dist > max(0.0, safe_zone_radius - radius):
-        if sz_dist > 0.0001:
-            var dir_x = (nearest_x - sz_cx) / sz_dist
-            var dir_y = (nearest_y - sz_cy) / sz_dist
-            nearest_x = sz_cx + dir_x * max(0.0, safe_zone_radius - radius)
-            nearest_y = sz_cy + dir_y * max(0.0, safe_zone_radius - radius)
-        else:
-            nearest_x = sz_cx
-            nearest_y = sz_cy
+        if dist_sz > max(0.0, safe_zone_radius - radius):
+            if dist_sz > 0.0001:
+                var dir_x = (nearest_x - sz_cx) / dist_sz
+                var dir_y = (nearest_y - sz_cy) / dist_sz
+                nearest_x = sz_cx + dir_x * max(0.0, safe_zone_radius - radius)
+                nearest_y = sz_cy + dir_y * max(0.0, safe_zone_radius - radius)
+            else:
+                nearest_x = sz_cx
+                nearest_y = sz_cy
+        final_x = nearest_x
+        final_y = nearest_y
 
-    return [nearest_x, nearest_y, true]
+    if is_constricted and constrict_factor > 0.0:
+        var constrict_amount_x = (width * 0.4) * constrict_factor
+        var constrict_amount_y = (height * 0.4) * constrict_factor
 
+        var min_cx = constrict_amount_x + radius
+        var max_cx = width - constrict_amount_x - radius
+        var min_cy = constrict_amount_y + radius
+        var max_cy = height - constrict_amount_y - radius
+
+        if final_x < min_cx:
+            final_x = min_cx
+            bounced = true
+        elif final_x > max_cx:
+            final_x = max_cx
+            bounced = true
+        if final_y < min_cy:
+            final_y = min_cy
+            bounced = true
+        elif final_y > max_cy:
+            final_y = max_cy
+            bounced = true
+
+    return [final_x, final_y, bounced]
 
 func update_zone(current_tick: int, delta: float) -> void:
     if current_tick != last_tick:
+        if constrict_timer > 0.0:
+            constrict_timer -= delta
+            if constrict_timer > 8.0:
+                constrict_factor = min(1.0, constrict_factor + (delta / 2.0))
+            elif constrict_timer >= 2.0:
+                constrict_factor = 1.0
+            else:
+                constrict_factor = max(0.0, constrict_factor - (delta / 2.0))
+
+            if constrict_timer <= 0:
+                is_constricted = false
+                constrict_factor = 0.0
+
 
         if current_tick % 400 == 0:
             var states = ["bouncy", "bouncy", "bouncy", "bouncy"]
