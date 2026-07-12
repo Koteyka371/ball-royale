@@ -27,6 +27,9 @@ class PreGameLobby:
     def get_trap_variant(self, ball_id):
         return self.selections.get(ball_id, "normal")
 
+    def get_trap_level(self, ball_id):
+        return self.selections.get(f"{ball_id}_trap_level", 1)
+
     def select_perk(self, ball_id, perk):
         key = f"{ball_id}_perks"
         if key not in self.selections:
@@ -112,6 +115,7 @@ class PreGameLobby:
         if loadout:
             trap = loadout.get("trap_variant", "normal")
             self.select_trap_variant(ball_id, trap)
+            self.selections[f"{ball_id}_trap_level"] = profile.get_trap_level(trap) if hasattr(profile, "get_trap_level") else 1
             # Store ball_type and preferred_bonuses in selections if needed by the system
             if "ball_type" in loadout:
                 self.selections[f"{ball_id}_ball_type"] = loadout["ball_type"]
@@ -141,6 +145,7 @@ class PreGameLobby:
         trap_variant = random.choice(trap_variants)
 
         self.select_trap_variant(ball_id, trap_variant)
+        self.selections[f"{ball_id}_trap_level"] = profile.get_trap_level(trap_variant) if hasattr(profile, "get_trap_level") else 1
         self.selections[f"{ball_id}_ball_type"] = ball_type
 
         # Add random loadout challenge quest

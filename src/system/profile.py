@@ -29,6 +29,8 @@ class ProfileManager:
                     data["titles"] = []
                 if "status_effects" not in data:
                     data["status_effects"] = []
+                if "trap_levels" not in data:
+                    data["trap_levels"] = {}
                 if "nemeses" not in data:
                     data["nemeses"] = {}
                 if "login_streak" not in data:
@@ -59,11 +61,26 @@ class ProfileManager:
                 "titles": [],
                 "status_effects": [],
                 "nemeses": {},
+                "trap_levels": {},
                 "login_streak": 0,
                 "last_login_date": "",
                 "guild_name": "",
                 "clan_name": ""
             }
+
+    def get_trap_level(self, trap_variant):
+        return self.data.get("trap_levels", {}).get(trap_variant, 1)
+
+    def upgrade_trap(self, trap_variant, cost):
+        if self.data.get("skill_points", 0) >= cost:
+            if "trap_levels" not in self.data:
+                self.data["trap_levels"] = {}
+            current_level = self.data["trap_levels"].get(trap_variant, 1)
+            self.data["skill_points"] -= cost
+            self.data["trap_levels"][trap_variant] = current_level + 1
+            self.save()
+            return True
+        return False
 
     def add_quest(self, quest_description, reward):
         if "quests" not in self.data:

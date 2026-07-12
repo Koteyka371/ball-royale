@@ -19377,7 +19377,11 @@ func _use_skill():
 
                 var lobby = PreGameLobby.get_instance()
                 var trap_variant = lobby.get_trap_variant(self.ball.id)
+                var trap_level = lobby.get_trap_level(self.ball.id)
                 trap.set_meta("trap_variant", trap_variant)
+                trap.set_meta("trap_level", trap_level)
+                trap.radius = 15.0 + (trap_level - 1) * 2.0
+                trap.duration = 5.0 + (trap_level - 1) * 1.0
 
                 if trap_variant == "ricochet":
                     if "ricochet_barrier_timer" in self.ball:
@@ -23286,7 +23290,11 @@ func _kite(delta: float):
 
                             var lobby = PreGameLobby.get_instance()
                             var trap_variant = lobby.get_trap_variant(self.ball.id)
+                            var trap_level = lobby.get_trap_level(self.ball.id)
                             trap.set_meta("trap_variant", trap_variant)
+                            trap.set_meta("trap_level", trap_level)
+                            trap.radius = 10.0 + (trap_level - 1) * 2.0
+                            trap.duration = 3.0 + (trap_level - 1) * 1.0
 
                             if trap_variant == "ricochet":
                                 if "ricochet_barrier_timer" in self.ball:

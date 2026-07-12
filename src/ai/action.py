@@ -10945,7 +10945,11 @@ class Action:
 
                     from system.lobby import lobby # type: ignore
                     trap_variant = lobby.get_trap_variant(self.ball.id)
+                    trap_level = lobby.get_trap_level(self.ball.id)
                     setattr(trap, 'trap_variant', trap_variant)
+                    setattr(trap, 'trap_level', trap_level)
+                    trap.radius = 15.0 + (trap_level - 1) * 2.0
+                    trap.duration = 5.0 + (trap_level - 1) * 1.0
 
                     if trap_variant == "ricochet":
                         self.ball.ricochet_barrier_timer = 3.0
@@ -12824,7 +12828,11 @@ class Action:
 
                             from system.lobby import lobby # type: ignore
                             trap_variant = lobby.get_trap_variant(self.ball.id)
+                            trap_level = lobby.get_trap_level(self.ball.id)
                             setattr(trap, 'trap_variant', trap_variant)
+                            setattr(trap, 'trap_level', trap_level)
+                            trap.radius = 10.0 + (trap_level - 1) * 2.0
+                            trap.duration = 3.0 + (trap_level - 1) * 1.0
 
                             if trap_variant == "ricochet":
                                 self.ball.ricochet_barrier_timer = 3.0
