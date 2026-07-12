@@ -1,0 +1,4 @@
+{
+  "title": "Vampiric Field Trap",
+  "description": "A placeable trap that creates a vampiric field around it. Any enemy inside the field slowly loses health, while the player who placed the trap receives healing proportional to the damage dealt."
+}

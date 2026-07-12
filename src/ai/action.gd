@@ -4309,8 +4309,23 @@ func execute(strategy: String, delta: float):
 			if closest_target != null and closest_target_dist_sq < (closest_wall_dist * closest_wall_dist):
 				var dist = sqrt(closest_target_dist_sq)
 				if dist > 0.0001:
-					self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
-					self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+					var pull_amount = min(dist, pull_dist)
+					var is_enemy = false
+					if "ball_type" in closest_target: is_enemy = true
+					elif typeof(closest_target) == TYPE_DICTIONARY and closest_target.has("ball_type"): is_enemy = true
+					elif typeof(closest_target) == TYPE_OBJECT and closest_target.has_method("has_meta") and closest_target.has_meta("ball_type"): is_enemy = true
+
+					if is_enemy:
+						var dx = closest_target.x - self.ball.x
+						var dy = closest_target.y - self.ball.y
+						self.ball.x += (dx / dist) * (pull_amount / 2.0)
+						self.ball.y += (dy / dist) * (pull_amount / 2.0)
+						if "x" in closest_target and "y" in closest_target:
+							closest_target.x -= (dx / dist) * (pull_amount / 2.0)
+							closest_target.y -= (dy / dist) * (pull_amount / 2.0)
+					else:
+						self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_amount
+						self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_amount
 			else:
 				if closest_wall == "left":
 					self.ball.x = max(0.0, self.ball.x - pull_dist)
@@ -14187,11 +14202,10 @@ func _collect_booster(delta: float):
 
         if dist <= ball_radius + 10:
             if "kind" in nearest and nearest.kind == "grapple_booster":
-                if not self.ball.has_meta("inventory"):
-                    self.ball.set_meta("inventory", [])
-                var inv = self.ball.get_meta("inventory")
-                inv.append("grapple_hook")
-                self.ball.set_meta("inventory", inv)
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill", "grapple")
+                else:
+                    self.ball.skill = "grapple"
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -15258,11 +15272,10 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "grapple_booster":
-                if not self.ball.has_meta("inventory"):
-                    self.ball.set_meta("inventory", [])
-                var inv = self.ball.get_meta("inventory")
-                inv.append("grapple_hook")
-                self.ball.set_meta("inventory", inv)
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill", "grapple")
+                else:
+                    self.ball.skill = "grapple"
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -18447,8 +18460,23 @@ func _use_skill():
             if closest_target != null and closest_target_dist_sq < (min_dist * min_dist):
                 var dist = sqrt(closest_target_dist_sq)
                 if dist > 0.0001:
-                    self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
-                    self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+                    var pull_amount = min(dist, pull_dist)
+                    var is_enemy = false
+                    if "ball_type" in closest_target: is_enemy = true
+                    elif typeof(closest_target) == TYPE_DICTIONARY and closest_target.has("ball_type"): is_enemy = true
+                    elif typeof(closest_target) == TYPE_OBJECT and closest_target.has_method("has_meta") and closest_target.has_meta("ball_type"): is_enemy = true
+
+                    if is_enemy:
+                        var dx = closest_target.x - self.ball.x
+                        var dy = closest_target.y - self.ball.y
+                        self.ball.x += (dx / dist) * (pull_amount / 2.0)
+                        self.ball.y += (dy / dist) * (pull_amount / 2.0)
+                        if "x" in closest_target and "y" in closest_target:
+                            closest_target.x -= (dx / dist) * (pull_amount / 2.0)
+                            closest_target.y -= (dy / dist) * (pull_amount / 2.0)
+                    else:
+                        self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_amount
+                        self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_amount
                     self.ball.x = max(0.0, min(arena_width, self.ball.x))
                     self.ball.y = max(0.0, min(arena_height, self.ball.y))
             else:

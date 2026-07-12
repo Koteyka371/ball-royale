@@ -57,5 +57,5 @@ def test_grapple_to_entity():
     action = Action(ball, world)
     action._use_skill()
 
-    assert ball.x == 700.0
+    assert ball.x == 600.0
     assert ball.y == 500.0

@@ -2114,8 +2114,20 @@ class Action:
                 dist = math.sqrt(closest_target_dist_sq)
                 if dist > 0.0001:
                     # Pull ball towards target
-                    self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
-                    self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+                    pull_amount = min(dist, pull_dist)
+
+                    if getattr(closest_target, 'ball_type', None) is not None:
+                        # Hit an enemy ball, pull together
+                        dx = closest_target.x - self.ball.x
+                        dy = closest_target.y - self.ball.y
+
+                        self.ball.x += (dx / dist) * (pull_amount / 2.0)
+                        self.ball.y += (dy / dist) * (pull_amount / 2.0)
+                        closest_target.x -= (dx / dist) * (pull_amount / 2.0)
+                        closest_target.y -= (dy / dist) * (pull_amount / 2.0)
+                    else:
+                        self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_amount
+                        self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_amount
             else:
                 # Grapple to wall
                 if closest_wall == "left":
@@ -8525,9 +8537,7 @@ class Action:
                         self.world.boosters.remove(nearest)
 
                 elif getattr(nearest, "kind", None) == "grapple_booster":
-                    if not hasattr(self.ball, "inventory"):
-                        self.ball.inventory = []
-                    self.ball.inventory.append("grapple_hook")
+                    self.ball.skill = "grapple"
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -10416,8 +10426,17 @@ class Action:
                     dist = math.sqrt(closest_target_dist_sq)
                     if dist > 0.0001:
                         # Pull ball towards target
-                        self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
-                        self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+                        pull_amount = min(dist, pull_dist)
+
+                        if getattr(closest_target, 'ball_type', None) is not None:
+                            # Hit an enemy ball, pull together
+                            self.ball.x += ((closest_target.x - self.ball.x) / dist) * (pull_amount / 2.0)
+                            self.ball.y += ((closest_target.y - self.ball.y) / dist) * (pull_amount / 2.0)
+                            closest_target.x -= ((closest_target.x - self.ball.x) / dist) * (pull_amount / 2.0)
+                            closest_target.y -= ((closest_target.y - self.ball.y) / dist) * (pull_amount / 2.0)
+                        else:
+                            self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_amount
+                            self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_amount
                 else:
                     # Grapple to wall
                     if closest_wall == "left":
