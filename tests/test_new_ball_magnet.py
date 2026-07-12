@@ -1,5 +1,5 @@
 import pytest
-from ai.new_ball_magnet import Magnet
+from src.ai.new_ball_magnet import Magnet
 
 def test_magnet_initialization():
     m = Magnet(1, 10, 20)
