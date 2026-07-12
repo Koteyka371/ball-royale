@@ -82,7 +82,7 @@ class MockGuildManager:
     def __init__(self):
         self.recorded_damage = 0.0
 
-    def record_boss_damage(self, guild_name, damage, week_id):
+    def record_boss_damage(self, guild_name, damage, week_id, tier=1):
         self.recorded_damage = damage
 
 def test_guild_boss_fight_mode_end_match():

@@ -1,0 +1,4 @@
+{
+  "title": "Boss Mutations per Tier",
+  "description": "Introduce dynamic mutations for guild bosses that scale with tier. For example, a tier 2 boss might reflect 10% of damage, while a tier 3 boss might spawn minions periodically during the fight."
+}
