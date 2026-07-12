@@ -1,0 +1,4 @@
+{
+  "title": "Heatwave Hazard",
+  "description": "Add a new 'heatwave' hazard type that dynamically spawns only in certain game modes. When inside a heatwave, stamina drains twice as fast and speed is slightly reduced due to exhaustion."
+}

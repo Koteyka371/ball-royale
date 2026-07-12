@@ -26236,7 +26236,103 @@ class CosmicStormMode extends GameMode:
 						var hp = b.hp if "hp" in b else 100.0
 						b.hp = hp - 20.0 * delta
 
+
+class ScorchingSunMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var min_zone_radius: float = 50.0
+	var shrink_rate: float = 10.0
+	var outside_damage_per_second: float = 15.0
+	var outside_stamina_drain_per_second: float = 20.0
+
+	func _init() -> void:
+		name = "Scorching Sun"
+		description = "An intense daytime-only mode where the sun gets progressively hotter, causing a slowly shrinking safe zone of shade. Balls outside the shade take continuous damage and have their stamina drained."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+				var arena = world.get("arena")
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena_width = float(arena.get("width", 1000.0))
+					arena_height = float(arena.get("height", 1000.0))
+				elif arena != null:
+					arena_width = float(arena.get("width") if "width" in arena else 1000.0)
+					arena_height = float(arena.get("height") if "height" in arena else 1000.0)
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					arena_width = float(world.arena.get("width", 1000.0))
+					arena_height = float(world.arena.get("height", 1000.0))
+				else:
+					arena_width = float(world.arena.get("width") if "width" in world.arena else 1000.0)
+					arena_height = float(world.arena.get("height") if "height" in world.arena else 1000.0)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_radius = min(arena_width, arena_height) / 1.2
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		if zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * delta
+			if zone_radius < min_zone_radius:
+				zone_radius = min_zone_radius
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = float(b.get("x", 0.0))
+				by = float(b.get("y", 0.0))
+			else:
+				bx = float(b.get("x") if "x" in b else 0.0)
+				by = float(b.get("y") if "y" in b else 0.0)
+
+			var dx = bx - zone_x
+			var dy = by - zone_y
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > zone_radius:
+				var dmg = outside_damage_per_second * delta
+				var stam_drain = outside_stamina_drain_per_second * delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					var hp = float(b.get("hp", 100.0))
+					hp -= dmg
+					b["hp"] = hp
+					if hp <= 0:
+						b["alive"] = false
+
+					var stam = float(b.get("stamina", 100.0))
+					b["stamina"] = max(0.0, stam - stam_drain)
+				else:
+					if b.has_method("take_damage"):
+						b.take_damage(dmg)
+					else:
+						if "hp" in b:
+							b.hp -= dmg
+							if b.hp <= 0:
+								if "alive" in b:
+									b.alive = false
+
+					if "stamina" in b:
+						b.stamina = max(0.0, b.stamina - stam_drain)
+
 var GAME_MODES = {
+	"scorching_sun": ScorchingSunMode.new(),
 	"cosmic_storm": CosmicStormMode.new(),
 	"temporal_rifts": TemporalRiftsMode.new(),
 		"sector_collapse": SectorCollapseMode.new(),
