@@ -250,6 +250,8 @@ func generate():
             kind = "clone_spawner"
         elif r < 0.99998:
             kind = "skill_reroll_booster"
+        elif r < 0.99999:
+            kind = "friendly_fire_reflect_booster"
         else:
             kind = "switch"
 
@@ -350,7 +352,7 @@ func generate():
         elif kind == "link_booster":
             radius = 15.0
             damage = 0.0
-        elif kind in ["stamina_booster", "weather_booster", "magnet_booster", "material_magnet_booster", "clone_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "skill_reroll_booster"]:
+        elif kind in ["stamina_booster", "weather_booster", "magnet_booster", "material_magnet_booster", "clone_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "skill_reroll_booster", "friendly_fire_reflect_booster"]:
             radius = 15.0
             damage = 0.0
         elif kind == "stealth_zone":
