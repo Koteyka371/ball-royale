@@ -1611,6 +1611,14 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("amnesia_timer"):
+        var current_timer = self.ball.get_meta("amnesia_timer")
+        if current_timer > 0.0:
+            self.ball.set_meta("amnesia_timer", current_timer - delta)
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("amnesia_timer"):
+        if self.ball["amnesia_timer"] > 0.0:
+            self.ball["amnesia_timer"] -= delta
+
 
 	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
 		if self.ball.has_meta("gravity_boots_timer"):
@@ -10994,6 +11002,27 @@ func execute(strategy: String, delta: float):
                             elif "glitch_timer" in self.ball:
                                 self.ball.glitch_timer = 2.0
                         continue
+                    elif hazard.kind == "amnesia_cloud":
+                        var b_x = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball["x"]
+                        var b_y = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball["y"]
+                        var b_radius = self.ball.radius if (typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball) else (self.ball["radius"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius") else 10.0)
+                        var h_radius = hazard.radius if (typeof(hazard) == TYPE_OBJECT and "radius" in hazard) else (hazard["radius"] if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else 30.0)
+                        var dist_sq = (b_x - hazard.x) * (b_x - hazard.x) + (b_y - hazard.y) * (b_y - hazard.y)
+                        if dist_sq < (b_radius + h_radius) * (b_radius + h_radius):
+                            if typeof(self.ball) == TYPE_OBJECT:
+                                if self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("amnesia_timer", 10.0)
+                                if "memory" in self.ball:
+                                    self.ball.memory = {}
+                                if "last_attacker_id" in self.ball:
+                                    self.ball.last_attacker_id = null
+                                if "target_enemy_id" in self.ball:
+                                    self.ball.target_enemy_id = null
+                            elif typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["amnesia_timer"] = 10.0
+                                self.ball["memory"] = {}
+                                self.ball["last_attacker_id"] = null
+                                self.ball["target_enemy_id"] = null
                     elif hazard.kind == "acid_puddle":
                         var acid_damage = hazard.damage * delta
                         if self.ball.has_method("take_damage"):
@@ -12419,7 +12448,18 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
     return [nx, ny]
 
 func _get_enemies() -> Array:
+    var amnesia = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("amnesia_timer"):
+        amnesia = self.ball.get_meta("amnesia_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("amnesia_timer"):
+        amnesia = self.ball["amnesia_timer"]
+
+    if amnesia > 0.0:
+        if randf() < 0.5:
+            return []
+
     var is_conf = false
+
     if "is_confused" in self.ball:
         is_conf = self.ball.is_confused
     elif self.ball.has_method("has_meta") and self.ball.has_meta("is_confused"):
