@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-916] Decoy Fragment Mines — *2026-07-12 22:24:06 UTC*
+
+When a trickster decoy explodes, it scatters tiny fragmented traps on the ground that deal minor damage and cause micro-stutters. This turns a single confusing element into an area denial mechanic.
+
+---
+
 ## [idea-902] Shrinking Floor Trap — *2026-07-12 22:24:03 UTC*
 
 Introduces a dynamic trap that temporarily causes the entire arena boundaries to rapidly constrict for 10 seconds, forcing intense close-quarters combat before expanding back out.
