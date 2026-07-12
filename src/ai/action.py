@@ -5426,6 +5426,69 @@ class Action:
 
                                     hazard.duration = 0.0 # Destroy trap
 
+
+                                elif trap_variant == "clone" and getattr(self.ball, "ball_type", "") in ("projectile", "spell"):
+                                    # Redirect clone towards nearest enemy
+                                    owner_id = getattr(hazard, "owner_id", None)
+                                    nearest_enemy = None
+                                    min_dist = float('inf')
+                                    if hasattr(self.world, "balls"):
+                                        for b in self.world.balls:
+
+                                            owner = None
+                                            if hasattr(self.world, "balls"):
+                                                for o in self.world.balls:
+                                                    if getattr(o, "id", None) == owner_id:
+                                                        owner = o
+                                                        break
+                                            owner_team = getattr(owner, "team", "") if owner else getattr(self.ball, "team", "")
+                                            if getattr(b, "id", None) != owner_id and getattr(b, "alive", True) and getattr(b, "team", "") != owner_team:
+
+                                                dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                                                if dist_sq < min_dist:
+                                                    min_dist = dist_sq
+                                                    nearest_enemy = b
+
+                                    if nearest_enemy:
+                                        import copy
+                                        import math
+                                        import random
+                                        clone = copy.copy(self.ball)
+                                        clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                                        if hasattr(self.world, "next_id"):
+                                            self.world.next_id += 1
+
+                                        clone.x = hazard.x
+                                        clone.y = hazard.y
+                                        clone.owner_id = owner_id
+
+                                        owner = None
+                                        if hasattr(self.world, "balls"):
+                                            for b in self.world.balls:
+                                                if getattr(b, "id", None) == owner_id:
+                                                    owner = b
+                                                    break
+                                        if owner:
+                                            clone.team = getattr(owner, "team", "")
+                                        else:
+                                            clone.team = getattr(self.ball, "team", "") # Fallback
+
+
+                                        # But let's actually just aim it at enemy
+                                        dx = nearest_enemy.x - clone.x
+                                        dy = nearest_enemy.y - clone.y
+                                        dist = math.hypot(dx, dy)
+                                        if dist > 0:
+                                            speed = math.hypot(getattr(self.ball, "vx", 0), getattr(self.ball, "vy", 0))
+                                            if speed == 0:
+                                                speed = 300.0
+                                            clone.vx = (dx / dist) * speed
+                                            clone.vy = (dy / dist) * speed
+
+                                        if hasattr(self.world, "balls"):
+                                            self.world.balls.append(clone)
+                                    hazard.duration = 0.0 # Destroy trap
+
                                 elif trap_variant == "warp":
                                     # Warp trap: teleport the ball to a random location in the arena
                                     import random
