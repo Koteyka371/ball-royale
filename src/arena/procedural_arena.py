@@ -1221,6 +1221,9 @@ class ProceduralArena:
                     kind = "decoy_spawner"
                     damage = 0.0
                 elif random.random() < 0.05:
+                    kind = "geyser"
+                    damage = 5.0
+                elif random.random() < 0.05:
                     kind = "lightning_rod"
                     damage = 0.0
                 else:
