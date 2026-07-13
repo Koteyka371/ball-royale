@@ -16181,7 +16181,7 @@
     },
     {
       "id": "idea-942",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal chaining network",
@@ -26139,6 +26139,57 @@
         "src/arena/bouncy_arena_walls.py",
         "src/arena/bouncy_arena_walls.gd",
         "tests/test_bouncy_arena_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1527",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflective Walls",
+      "description": "Certain walls bounce projectiles back perfectly, creating more geometry puzzles for aiming.",
+      "allowed_paths": [
+        "src/ai/reflective_walls.py",
+        "src/ai/reflective_walls.gd",
+        "tests/test_reflective_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1528",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Battering Ram Booster",
+      "description": "A booster that temporarily gives any ball the ability to instantly break walls if traveling fast enough.",
+      "allowed_paths": [
+        "src/ai/battering_ram_booster.py",
+        "src/ai/battering_ram_booster.gd",
+        "tests/test_battering_ram_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1529",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Modifiers Battle Royale",
+      "description": "A battle royale mode where random modifiers (like double speed or zero gravity) trigger every 60 seconds, forcing players to adapt dynamically.",
+      "allowed_paths": [
+        "src/ai/shrinking_modifiers_battle_royale.py",
+        "src/ai/shrinking_modifiers_battle_royale.gd",
+        "tests/test_shrinking_modifiers_battle_royale.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

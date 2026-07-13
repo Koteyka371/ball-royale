@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-942] Portal chaining network — *2026-07-13 21:39:18 UTC*
+
+Portals could link together to form complex routing networks across the map. If a player is blasted out of one portal, they might land directly in another's suction radius.
+
+---
+
 ## [idea-920] Destructible Environment Interactions — *2026-07-13 21:36:01 UTC*
 
 Introduce destructible walls or obstacles in the arena that break upon high-velocity impact from specific ball types, adding dynamic map changes and new traversal paths during a match.
