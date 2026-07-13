@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-904] Bouncing Laser Trap — *2026-07-13 21:18:20 UTC*
+
+A new trap variant that, when triggered, releases a small laser beam that bounces between nearby walls or entities 5 times. Each bounce deals light damage and slows the target slightly. If it hits the same target consecutively, the damage doubles.
+
+---
+
 ## [idea-938] Vortex Hazard — *2026-07-13 21:18:16 UTC*
 
 A slow-moving vortex appears in the center of the arena. It constantly pulls nearby entities towards it, dealing increasing continuous damage the closer they are to its core.
