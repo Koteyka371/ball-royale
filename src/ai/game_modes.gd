@@ -28411,6 +28411,129 @@ class WatchtowerMode extends GameMode:
 						if b.has_meta("_watchtower_orig_proj_speed"): b.projectile_speed = b.get_meta("_watchtower_orig_proj_speed")
 
 
+
+class MassiveBlackHoleEventMode extends GameMode:
+	var active = false
+	var timer = 0.0
+	var pull_strength = 200.0
+	var base_damage = 50.0
+
+	func _init() -> void:
+		name = "Massive Black Hole Event"
+		description = "A random event where a massive black hole spawns in the center of the arena, slowly pulling all balls towards it. Balls closer to the center take increasing damage, encouraging players to fight on the edges or use speed boosters to escape."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not active:
+			if randf() < 0.02 * delta:
+				active = true
+				timer = 15.0
+				if world != null and world.has_method("add_event"):
+					world.add_event("massive_black_hole", {"message": "A massive black hole has appeared in the center!"})
+		else:
+			timer -= delta
+			if timer <= 0:
+				active = false
+				if world != null and world.has_method("add_event"):
+					world.add_event("massive_black_hole_end", {"message": "The black hole has vanished."})
+				return
+
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				if "width" in world.arena:
+					arena_width = world.arena.width
+				if "height" in world.arena:
+					arena_height = world.arena.height
+			elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+				if world.arena.has("width"):
+					arena_width = world.arena.width
+				if world.arena.has("height"):
+					arena_height = world.arena.height
+
+			var cx = arena_width / 2.0
+			var cy = arena_height / 2.0
+			var max_dist = sqrt(cx * cx + cy * cy)
+
+			for b in balls:
+				var w_timer = 0.0
+				if typeof(b) == TYPE_OBJECT and "weather_immunity_timer" in b:
+					w_timer = b.weather_immunity_timer
+				elif typeof(b) == TYPE_DICTIONARY and b.has("weather_immunity_timer"):
+					w_timer = b.weather_immunity_timer
+
+				var is_immune = w_timer > 0.0
+
+				var is_alive = false
+				if typeof(b) == TYPE_OBJECT and "alive" in b:
+					is_alive = b.alive
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					is_alive = b.alive
+
+				var b_type = ""
+				if typeof(b) == TYPE_OBJECT and "ball_type" in b:
+					b_type = b.ball_type
+				elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+					b_type = b.ball_type
+
+				if not is_alive or b_type == "spectator" or is_immune:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_OBJECT:
+					bx = b.x
+					by = b.y
+				else:
+					bx = b.x
+					by = b.y
+
+				var dx = cx - bx
+				var dy = cy - by
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist > 0:
+					var pull_factor = 1.0 - (dist / max_dist)
+					pull_factor = clamp(pull_factor, 0.1, 1.0)
+
+					if typeof(b) == TYPE_OBJECT:
+						b.x += (dx / dist) * pull_strength * pull_factor * delta
+						b.y += (dy / dist) * pull_strength * pull_factor * delta
+					else:
+						b.x += (dx / dist) * pull_strength * pull_factor * delta
+						b.y += (dy / dist) * pull_strength * pull_factor * delta
+
+					var safe_dist = max_dist * 0.7
+					if dist < safe_dist:
+						var damage_factor = 1.0 - (dist / safe_dist)
+						var damage = base_damage * damage_factor * delta
+
+						var has_hp = false
+						if typeof(b) == TYPE_OBJECT and "hp" in b:
+							has_hp = true
+						elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+							has_hp = true
+
+						if has_hp:
+							b.hp -= damage
+							if b.hp <= 0:
+								b.hp = 0
+								b.alive = false
+								if world != null:
+									if typeof(world) == TYPE_OBJECT:
+										if not world.has_meta("dead_balls"):
+											world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+										if world.has_meta("dead_balls"):
+											if "id" in b and not world.get_meta("dead_balls").has(b.id):
+												world.get_meta("dead_balls").append(b.id)
+									elif typeof(world) == TYPE_DICTIONARY:
+										if not world.has("dead_balls"):
+											world["dead_balls"] = []
+										if b.has("id") and not world["dead_balls"].has(b.id):
+											world["dead_balls"].append(b.id)
+
+
 var GAME_MODES = {
 	"watchtower": WatchtowerMode.new(),
 
@@ -28567,7 +28690,8 @@ var GAME_MODES = {
 
 	"crossfire": CrossfireMode.new(),
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new(),
-	"underground_tunnels": UndergroundTunnelMode.new()
+	"underground_tunnels": UndergroundTunnelMode.new(),
+	"massive_black_hole_event": MassiveBlackHoleEventMode.new(),
 }
 
 
