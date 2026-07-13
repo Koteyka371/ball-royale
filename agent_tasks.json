@@ -15874,7 +15874,7 @@
     },
     {
       "id": "idea-924",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Map Hazards Based on Excitement",
@@ -25867,6 +25867,74 @@
         "src/ai/weaponized_paint.py",
         "src/ai/weaponized_paint.gd",
         "tests/test_weaponized_paint.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1511",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Air Glider Booster",
+      "description": "A booster item that grants temporary immunity to fall damage and hazard launch effects (like tornadoes), instead letting the ball gracefully glide over hazards with increased speed.",
+      "allowed_paths": [
+        "src/ai/air_glider_booster.py",
+        "src/ai/air_glider_booster.gd",
+        "tests/test_air_glider_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1512",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Airdrop Supply Packages",
+      "description": "Periodically, high-value supply packages are dropped via parachute into the arena. They contain powerful one-time use items or strong temporary buffs, but their landing zone is telegraphed early, causing players to fight over the drop location.",
+      "allowed_paths": [
+        "src/ai/airdrop_supply_packages.py",
+        "src/ai/airdrop_supply_packages.gd",
+        "tests/test_airdrop_supply_packages.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1513",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Warning Siren Trap",
+      "description": "A deployable trap that emits a localized siren. If an enemy ball enters the zone, a minor tornado spawns directly on them after 3 seconds, launching them out of the arena.",
+      "allowed_paths": [
+        "src/arena/tornado_warning_siren_trap.py",
+        "src/arena/tornado_warning_siren_trap.gd",
+        "tests/test_tornado_warning_siren_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1514",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weapon Durability and Overheat",
+      "description": "Special weapons and abilities acquired from crates or drops have a durability or overheat mechanic. Players must manage their usage to avoid breaking the weapon or incurring a long cooldown, adding a layer of resource management to combat.",
+      "allowed_paths": [
+        "src/ai/weapon_durability_and_overheat.py",
+        "src/ai/weapon_durability_and_overheat.gd",
+        "tests/test_weapon_durability_and_overheat.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

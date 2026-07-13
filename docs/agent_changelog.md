@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-924] Dynamic Map Hazards Based on Excitement — *2026-07-13 16:42:12 UTC*
+
+When the crowd excitement drops below a critical threshold, trigger a large-scale map event (like a slow-moving closing zone or global weather effect) to force player engagement rather than just single-target hazard throws.
+
+---
+
 ## [idea-767] Tornado Surfing Skill — *2026-07-13 16:16:50 UTC*
 
 A specific ball type or skill that allows the entity to intentionally enter a tornado to gain a massive speed boost and be launched across the map instead of taking damage.
