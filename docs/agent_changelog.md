@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-947] Bouncy Shrapnel Trait — *2026-07-13 21:48:47 UTC*
+
+Give shrapnel hazards the ability to bounce off walls instead of just slowing down and stopping, extending their danger zone.
+
+---
+
 ## [idea-932] Sacrificial Alters — *2026-07-13 21:48:44 UTC*
 
 Hazards where balls can deliberately sacrifice a portion of their max HP to gain permanent buffs or a rare booster drop.
