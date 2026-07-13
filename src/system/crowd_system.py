@@ -156,6 +156,32 @@ class CrowdSystem:
         self._throw_hazards_if_bored(balls, tick)
         self._process_votes(balls, tick)
         self._process_spectator_signs(balls, tick)
+        self._trigger_large_scale_event(balls, tick)
+
+
+    def _trigger_large_scale_event(self, balls: List[Any], tick: int):
+        if self.excitement_level >= 10.0:
+            return
+
+        if random.random() < 0.005:  # 0.5% chance per tick when excitement is critically low
+            event_type = random.choice(["closing_zone", "weather_transition"])
+
+            if hasattr(self.world, 'add_event'):
+                if event_type == "closing_zone":
+                    self.world.add_event("spawn_zone", {
+                        "x": 500.0,
+                        "y": 500.0,
+                        "radius": 1000.0,
+                        "shrink_rate": 10.0,
+                        "damage": 5.0
+                    })
+                    self.world.add_event("crowd_throw", {"message": "The crowd is bored! A shrinking zone has been deployed!"})
+                else:
+                    new_weather = random.choice(["thunderstorm", "blizzard", "acid_rain"])
+                    self.world.add_event("weather_transition", {"new_weather": new_weather})
+                    self.world.add_event("crowd_throw", {"message": f"The crowd is falling asleep! They trigger a {new_weather}!"})
+
+                self.excitement_level += 40.0
 
     def _check_camping(self, balls: List[Any], tick: int):
         for b in balls:
