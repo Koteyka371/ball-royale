@@ -814,6 +814,21 @@ func _attempt_damage(attacker, target) -> void:
 		if b_type.find(target_weakness) != -1 or traits.has(target_weakness):
 			original_damage *= 1.5
 
+	var has_sniper = false
+	if typeof(attacker) == TYPE_DICTIONARY:
+		if attacker.has("has_sniper_stance") and attacker["has_sniper_stance"]: has_sniper = true
+	elif typeof(attacker) == TYPE_OBJECT:
+		if attacker.has_method("has_meta") and attacker.has_meta("has_sniper_stance") and attacker.get_meta("has_sniper_stance"): has_sniper = true
+		elif "has_sniper_stance" in attacker and attacker.has_sniper_stance: has_sniper = true
+
+	if has_sniper and is_ranged_attack:
+		var a_vx = 0.0
+		var a_vy = 0.0
+		if "vx" in attacker: a_vx = float(attacker.vx)
+		if "vy" in attacker: a_vy = float(attacker.vy)
+		if a_vx * a_vx + a_vy * a_vy > 10.0:
+			original_damage *= 1.5
+
 	if "attack_accuracy" in attacker:
 		attack_accuracy = float(attacker.attack_accuracy)
 	elif attacker.has_method("get_meta") and attacker.has_meta("attack_accuracy"):

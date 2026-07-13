@@ -1403,6 +1403,9 @@ class BattleRoyaleMode extends GameMode:
 								b.set_meta("base_speed", b_speed)
 							b.set_meta("base_speed", float(b.get_meta("base_speed")) * 1.1)
 							b.set("speed", b.get_meta("base_speed"))
+							if typeof(b) == TYPE_DICTIONARY: b["has_nimble_perk"] = true
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("has_nimble_perk", true)
+							elif "has_nimble_perk" in b: b.has_nimble_perk = true
 						elif perk == "Heavy Hitter":
 							var b_damage = float(b.get("damage")) if b.get("damage") != null else 10.0
 							if not b.has_meta("base_damage"):
@@ -1412,6 +1415,26 @@ class BattleRoyaleMode extends GameMode:
 						elif perk == "Eagle Eye":
 							b.set_meta("base_perception_radius", float(b.get_meta("base_perception_radius")) * 1.1)
 							b.set("perception_radius", b.get_meta("base_perception_radius"))
+							if typeof(b) == TYPE_DICTIONARY: b["has_eagle_eye_perk"] = true
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("has_eagle_eye_perk", true)
+							elif "has_eagle_eye_perk" in b: b.has_eagle_eye_perk = true
+
+					var has_nimble = false
+					var has_eagle = false
+					if typeof(b) == TYPE_DICTIONARY:
+						has_nimble = b.has("has_nimble_perk") and b["has_nimble_perk"]
+						has_eagle = b.has("has_eagle_eye_perk") and b["has_eagle_eye_perk"]
+					elif typeof(b) == TYPE_OBJECT:
+						if b.has_method("has_meta"):
+							has_nimble = b.has_meta("has_nimble_perk") and b.get_meta("has_nimble_perk")
+							has_eagle = b.has_meta("has_eagle_eye_perk") and b.get_meta("has_eagle_eye_perk")
+						elif "has_nimble_perk" in b and "has_eagle_eye_perk" in b:
+							has_nimble = b.has_nimble_perk
+							has_eagle = b.has_eagle_eye_perk
+					if has_nimble and has_eagle:
+						if typeof(b) == TYPE_DICTIONARY: b["has_sniper_stance"] = true
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("has_sniper_stance", true)
+						elif "has_sniper_stance" in b: b.has_sniper_stance = true
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
