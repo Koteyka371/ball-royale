@@ -1,1 +1,4 @@
-{"title": "Summoning Circle Mode", "description": "Players must stand in specific summoning circles to charge them up. Once fully charged, the circle spawns an allied minion that fights alongside the player for a short duration before expiring."}
+{
+  "title": "Guild Strongholds",
+  "description": "Guilds can construct strongholds that generate passive income, but can be raided by other guilds."
+}

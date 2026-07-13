@@ -1,1 +1,4 @@
-{"title": "Enchanted Forge Mode", "description": "A game mode where players collect ore from randomly spawning mining nodes. Collecting enough ore allows them to interact with a central forge, crafting temporary upgrades like fiery attacks or shielded armor, but they are vulnerable while crafting."}
+{
+  "title": "Weapon Enhancements",
+  "description": "Players can find enhancement materials to permanently buff their starting weapons with elemental effects."
+}
