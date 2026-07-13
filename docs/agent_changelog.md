@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-953] Mimic Clone Chain Reaction Mechanic — *2026-07-13 22:23:03 UTC*
+
+If a mimic clone detonation kills an enemy, it spawns a second, smaller mimic clone that continues the charge with reduced stats, creating a cascading chain reaction if grouped enemies are weak.
+
+---
+
 ## [idea-951] Magnetic Mine — *2026-07-13 22:16:26 UTC*
 
 A deployable hazard that sticks to the first ball that approaches it, ticking down before exploding. Passing close to another ball transfers the mine.

@@ -16368,7 +16368,7 @@
     },
     {
       "id": "idea-953",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mimic Clone Chain Reaction Mechanic",
@@ -26224,6 +26224,23 @@
         "src/ai/ghost_companion.py",
         "src/ai/ghost_companion.gd",
         "tests/test_ghost_companion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1532",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Mine",
+      "description": "A deployable hazard that sticks to the first ball that approaches it, ticking down before exploding. Passing close to another ball transfers the mine.",
+      "allowed_paths": [
+        "src/ai/sticky_mine.py",
+        "src/ai/sticky_mine.gd",
+        "tests/test_sticky_mine.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
