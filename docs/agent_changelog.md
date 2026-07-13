@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-906] Vampiric Leech Balls — *2026-07-13 23:15:10 UTC*
+
+A new ball class 'Leech' that deals very low base damage but heals itself for 200% of the damage it deals. Its special ability is a short-range tether that slows the target and continuously drains HP over time. It forces enemies to break line of sight or outrange the tether to survive.
+
+---
+
 ## [idea-958] Blacksmith Mode — *2026-07-13 23:15:05 UTC*
 
 Players can find and collect scattered anvil pieces to summon a powerful blacksmith boss that drops legendary loot.
