@@ -18468,6 +18468,23 @@ func _use_skill():
 
                     if "state_history" in my_ball: my_ball.state_history = []
                     elif my_ball.has_method("set_meta"): my_ball.set_meta("state_history", [])
+        elif skill_name == "leech_tether":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = enemies[0]
+                var min_dist = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
+                for i in range(1, enemies.size()):
+                    var e = enemies[i]
+                    var dist = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist < min_dist:
+                        min_dist = dist
+                        target = e
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("leech_tether_target", target)
+                    self.ball.set_meta("leech_tether_timer", 3.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball.leech_tether_target = target
+                    self.ball.leech_tether_timer = 3.0
         elif skill_name == "magnet_tether":
             var enemies = _get_enemies()
             if enemies.size() > 0:
@@ -23527,6 +23544,65 @@ func _update_skill_timer(delta: float):
         if "tether_hook_timer" in self.ball: self.ball.tether_hook_timer = tether_hook_timer
         elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("tether_hook_timer", tether_hook_timer)
 
+
+    var l_tether_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("leech_tether_timer"):
+        l_tether_timer = self.ball.get_meta("leech_tether_timer")
+    elif "leech_tether_timer" in self.ball:
+        l_tether_timer = self.ball.leech_tether_timer
+
+    if l_tether_timer > 0:
+        var target = null
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("leech_tether_target"):
+            target = self.ball.get_meta("leech_tether_target")
+        elif "leech_tether_target" in self.ball:
+            target = self.ball.leech_tether_target
+
+        var is_target_alive = true
+        if target:
+            if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("alive"): is_target_alive = target.get_meta("alive")
+            elif "alive" in target: is_target_alive = target.alive
+
+        if target != null and is_target_alive:
+            var dist_sq = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
+            if dist_sq <= 40000.0:
+                var drain_amount = 10.0 * delta
+                var target_hp = 100.0
+                if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("hp"): target_hp = float(target.get_meta("hp"))
+                elif "hp" in target: target_hp = float(target.hp)
+
+                target_hp -= drain_amount
+
+                if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("hp", target_hp)
+                elif "hp" in target: target.hp = target_hp
+
+                var attacker_hp = 100.0
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): attacker_hp = float(self.ball.get_meta("hp"))
+                elif "hp" in self.ball: attacker_hp = float(self.ball.hp)
+
+                var attacker_max_hp = 100.0
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): attacker_max_hp = float(self.ball.get_meta("max_hp"))
+                elif "max_hp" in self.ball: attacker_max_hp = float(self.ball.max_hp)
+
+                var new_attacker_hp = min(attacker_hp + drain_amount, attacker_max_hp)
+
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("hp", new_attacker_hp)
+                elif "hp" in self.ball: self.ball.hp = new_attacker_hp
+
+                var st = 0.0
+                if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("stun_timer"): st = float(target.get_meta("stun_timer"))
+                elif "stun_timer" in target: st = float(target.stun_timer)
+
+                st = max(st, 0.1)
+
+                if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("stun_timer", st)
+                elif "stun_timer" in target: target.stun_timer = st
+            else:
+                l_tether_timer = 0.0
+
+        l_tether_timer = max(0.0, l_tether_timer - delta)
+        if "leech_tether_timer" in self.ball: self.ball.leech_tether_timer = l_tether_timer
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("leech_tether_timer", l_tether_timer)
 
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("magnet_tether_timer"):
         m_tether_timer = self.ball.get_meta("magnet_tether_timer")

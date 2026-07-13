@@ -735,6 +735,12 @@ class Action:
 
         new_hp = getattr(target, "hp", 0.0)
 
+        if b_type_attacker == 'leech':
+            damage_dealt = max(0, old_hp - new_hp)
+            if damage_dealt > 0:
+                heal_amount = damage_dealt * 2.0
+                attacker.hp = min(getattr(attacker, 'hp', 100.0) + heal_amount, getattr(attacker, 'max_hp', 100.0))
+
         # Apply Necromancer healing on attack logic
         # Check if attacker is necromancer and if so, check for minions within range
         b_type = getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower()
@@ -10158,6 +10164,12 @@ class Action:
                         self.ball.poison_timer = 0.0
 
                     self.ball.state_history = []
+            elif skill_name == "leech_tether":
+                enemies = self._get_enemies()
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    self.ball.leech_tether_target = target
+                    self.ball.leech_tether_timer = 3.0
             elif skill_name == "magnet_tether":
                 enemies = self._get_enemies()
                 if enemies:
@@ -13373,6 +13385,26 @@ class Action:
                     target.hp -= damage_per_tick
 
             self.ball.tether_hook_timer -= delta
+
+        leech_tether_timer = getattr(self.ball, "leech_tether_timer", 0.0)
+        if leech_tether_timer > 0:
+            target = getattr(self.ball, "leech_tether_target", None)
+            if target and getattr(target, "alive", True):
+                import math
+                dist_sq = (target.x - self.ball.x)**2 + (target.y - self.ball.y)**2
+                if dist_sq <= 40000.0:  # 200 range
+                    drain_amount = 10.0 * delta
+                    if hasattr(target, "hp"):
+                        target.hp -= drain_amount
+                    self.ball.hp = min(getattr(self.ball, "hp", 100.0) + drain_amount, getattr(self.ball, "max_hp", 100.0))
+
+                    if hasattr(target, "stun_timer"):
+                        target.stun_timer = max(getattr(target, "stun_timer", 0.0), 0.1) # Micro-stun to act as slow/disrupt
+                    else:
+                        target.stun_timer = 0.1
+                else:
+                    self.ball.leech_tether_timer = 0.0
+            self.ball.leech_tether_timer = max(0.0, getattr(self.ball, "leech_tether_timer", 0.0) - delta)
 
         magnet_tether_timer = getattr(self.ball, "magnet_tether_timer", 0.0)
         if magnet_tether_timer > 0:
