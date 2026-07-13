@@ -72,6 +72,10 @@ def test_crowd_throw_buff():
     ]
 
     for i in range(1000):
+        balls[0].x += 10
+        balls[0].y += 10
+        balls[1].x += 10
+        balls[1].y += 10
         crowd.tick(balls, [], i)
         if any(e[0] == "spawn_booster" for e in world.events):
             break
@@ -113,6 +117,10 @@ def test_crowd_throw_hazard():
     ]
 
     for i in range(1000):
+        balls[0].x += 10
+        balls[0].y += 10
+        balls[1].x += 10
+        balls[1].y += 10
         crowd.tick(balls, [], i)
         if any(e[0] == "spawn_hazard" for e in world.events):
             break
