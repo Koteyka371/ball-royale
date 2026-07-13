@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-913] Reflect Overload Mechanic — *2026-07-13 00:17:01 UTC*
+
+If a reflect shield takes damage exceeding its maximum capacity by more than 50% in a single hit, it shatters violently, dealing AoE damage to all nearby entities (including the shielded ball's allies) but inflicting a massive stun to the attacker.
+
+---
+
 ## [idea-872] Mirror Traps — *2026-07-12 23:16:40 UTC*
 
 A new trap variant that doesn't deal damage but clones the next projectile or spell that hits it, redirecting the clone towards the nearest enemy.
