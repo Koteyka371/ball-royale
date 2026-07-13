@@ -44,6 +44,10 @@ def test_sector_collapse_mode():
     assert len(world.events) == 1
     assert world.events[0][0] == "wall_spawn"
 
+    # Reset state after time skip
+    b1.hp = 100.0
+    b1.alive = True
+
     # Move ball into wall
     wall = mode.walls[0]
     b1.x = wall["x"] + 1.0
