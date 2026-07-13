@@ -15618,7 +15618,7 @@
     },
     {
       "id": "idea-909",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Multi-Layer Reflect Shield",
@@ -26020,6 +26020,40 @@
         "src/ai/quantum_swap_power_up.py",
         "src/ai/quantum_swap_power_up.gd",
         "tests/test_quantum_swap_power_up.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1520",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vote Streaks",
+      "description": "If the crowd consistently votes for global stat modifiers over hazard drops, a 'crowd mood' bar shifts. Hitting max mood unlocks a mega-vote where all balls receive a randomized legendary buff for a brief duration, accompanied by special visual fireworks and audio cheers.",
+      "allowed_paths": [
+        "src/ai/vote_streaks.py",
+        "src/ai/vote_streaks.gd",
+        "tests/test_vote_streaks.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1521",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bribe the Crowd",
+      "description": "Players can use collected currency or sacrifice a portion of their max HP to bribe the crowd and artificially skew the vote towards a particular outcome, such as forcing a global heal if they are currently low on health.",
+      "allowed_paths": [
+        "src/ai/bribe_the_crowd.py",
+        "src/ai/bribe_the_crowd.gd",
+        "tests/test_bribe_the_crowd.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

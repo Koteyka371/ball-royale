@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-909] Multi-Layer Reflect Shield — *2026-07-13 19:14:53 UTC*
+
+A new upgrade allowing the reflect shield to block multiple instances of damage by breaking it into smaller capacity layers.
+
+---
+
 ## [idea-918] Boss Weakness Rotation — *2026-07-13 19:12:59 UTC*
 
 Weekly guild bosses have different elemental weaknesses that change every week.
