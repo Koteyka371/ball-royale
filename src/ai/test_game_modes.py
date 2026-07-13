@@ -666,6 +666,7 @@ def test_supernova_mode():
     class MockWorld:
         def __init__(self):
             self.dead_balls = []
+            self.boosters = []
             self.arena = MockArena()
 
     world = MockWorld()
@@ -691,11 +692,17 @@ def test_supernova_mode():
     # b1 should have taken more damage than b2
     assert b1.hp < b2.hp, f"b1 hp ({b1.hp}) should be lower than b2 hp ({b2.hp}) due to heat damage"
 
+    # Store initial booster count
+    initial_booster_count = len(world.boosters)
+
     # Trigger explosion
     mode.explosion_timer = 20.0
     mode.tick(world, balls, delta=1.0)
 
     assert mode.supernova_exploded == True
+
+    # Check that rare boosters were scattered
+    assert len(world.boosters) == initial_booster_count + 10, f"Expected 10 boosters to be scattered, but got {len(world.boosters) - initial_booster_count}"
 
     # Check knockback on survivor
     assert b1.vy != 0 or b1.vx != 0, "b1 should have received knockback velocity"

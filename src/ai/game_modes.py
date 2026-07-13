@@ -9012,6 +9012,26 @@ class SupernovaMode(GameMode):
             if self.explosion_timer >= 20.0:
                 self.supernova_exploded = True
                 self.explosion_timer = 0.0
+
+                # Scatter rare boosters upon explosion
+                if hasattr(world, "boosters"):
+                    booster_kinds = ["damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster"]
+                    import random
+                    class DroppedBooster:
+                        def __init__(self, id, x, y, kind):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.kind = kind
+                            self.ball_type = "booster"
+                            self.active = True
+                    for _ in range(10):
+                        b_id = 9100 + len(world.boosters) + random.randint(0, 1000)
+                        b_x = center_x + random.uniform(-100, 100)
+                        b_y = center_y + random.uniform(-100, 100)
+                        chosen_kind = random.choice(booster_kinds)
+                        world.boosters.append(DroppedBooster(b_id, b_x, b_y, chosen_kind))
+
                 # Trigger knockback for all alive balls
                 for b in balls:
                     if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":

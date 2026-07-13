@@ -13746,6 +13746,34 @@ class SupernovaMode extends GameMode:
 			if explosion_timer >= 20.0:
 				supernova_exploded = true
 				explosion_timer = 0.0
+
+				# Scatter rare boosters upon explosion
+				var boosters_array = null
+				if typeof(world) == TYPE_DICTIONARY and world.has("boosters") and typeof(world["boosters"]) == TYPE_ARRAY:
+					boosters_array = world.boosters
+				elif typeof(world) == TYPE_OBJECT and "boosters" in world and typeof(world.boosters) == TYPE_ARRAY:
+					boosters_array = world.boosters
+
+				if boosters_array != null:
+					var booster_kinds = ["damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster"]
+					var rng = RandomNumberGenerator.new()
+					rng.randomize()
+					for i in range(10):
+						var b_id = 9100 + boosters_array.size() + rng.randi() % 1000
+						var b_x = center_x + rng.randf_range(-100, 100)
+						var b_y = center_y + rng.randf_range(-100, 100)
+						var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
+
+						var dropped_booster = {
+							"id": b_id,
+							"x": b_x,
+							"y": b_y,
+							"kind": chosen_kind,
+							"ball_type": "booster",
+							"active": true
+						}
+						boosters_array.append(dropped_booster)
+
 				# Trigger knockback for all alive balls
 				for b in balls:
 					if b.alive and b.ball_type != "spectator":
