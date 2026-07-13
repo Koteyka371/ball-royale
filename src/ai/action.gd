@@ -11388,6 +11388,87 @@ func execute(strategy: String, delta: float):
 
                             self.ball.vx = nx * 3000.0
                             self.ball.vy = ny * 3000.0
+                    elif hazard.kind == "electric_bumper":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        if d < 0.0001: d = 0.0001
+
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+
+                        if d < (b_rad + hazard.radius):
+                            var nx = dx / d
+                            var ny = dy / d
+
+                            var bounce_strength = 1500.0 * delta
+                            self.ball.x += nx * bounce_strength
+                            self.ball.y += ny * bounce_strength
+
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                if "vx" in self.ball:
+                                    self.ball.vx = nx * 3000.0
+                                    self.ball.vy = ny * 3000.0
+                                else:
+                                    self.ball.set_meta("vx", nx * 3000.0)
+                                    self.ball.set_meta("vy", ny * 3000.0)
+                            elif "vx" in self.ball:
+                                self.ball.vx = nx * 3000.0
+                                self.ball.vy = ny * 3000.0
+
+                            var is_stunned = false
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_stunned"):
+                                is_stunned = self.ball.get_meta("is_stunned")
+                            elif "is_stunned" in self.ball:
+                                is_stunned = self.ball.is_stunned
+
+                            if not is_stunned:
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("is_stunned", true)
+                                if "is_stunned" in self.ball:
+                                    self.ball.is_stunned = true
+
+                                var s_timer = 0.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stun_timer"):
+                                    s_timer = self.ball.get_meta("stun_timer")
+                                elif "stun_timer" in self.ball:
+                                    s_timer = self.ball.stun_timer
+
+                                if s_timer < 2.0:
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("stun_timer", 2.0)
+                                    if "stun_timer" in self.ball:
+                                        self.ball.stun_timer = 2.0
+
+                                if typeof(self.world) == TYPE_OBJECT and self.world.has_method("_deal_damage"):
+                                    self.world._deal_damage(self.ball, hazard)
+                                else:
+                                    var hp = 100.0
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"):
+                                        hp = self.ball.get_meta("hp")
+                                    elif "hp" in self.ball:
+                                        hp = self.ball.hp
+
+                                    hp -= 20.0
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("hp", hp)
+                                    if "hp" in self.ball:
+                                        self.ball.hp = hp
+
+                                    if hp <= 0:
+                                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                            self.ball.set_meta("alive", false)
+                                        if "alive" in self.ball:
+                                            self.ball.alive = false
+
+                                if typeof(self.world) == TYPE_OBJECT and self.world.has_method("has_meta") and self.world.has_meta("events"):
+                                    var events = self.world.get_meta("events")
+                                    events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y}})
+                                elif "events" in self.world:
+                                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y}})
+
+                        continue
                     elif hazard.kind == "bumper":
 
                         var dx = self.ball.x - hazard.x

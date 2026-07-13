@@ -10312,7 +10312,7 @@ class PinballMode(GameMode):
                 def create_hazard(hid, hx, hy, r, k):
                     return BumperHazard(hid, hx, hy, r, k)
 
-            hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper"]
+            hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper"]
             for i in range(25):
                 x = random.uniform(100, arena_width - 100)
                 y = random.uniform(100, arena_height - 100)

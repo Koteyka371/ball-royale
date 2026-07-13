@@ -15977,7 +15977,7 @@ class PinballMode extends GameMode:
 				arena_height = world.arena.height
 
 			var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
-			var hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper"]
+			var hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper"]
 			for i in range(25):
 				var x = randf_range(100.0, arena_width - 100.0)
 				var y = randf_range(100.0, arena_height - 100.0)
