@@ -197,8 +197,12 @@ class Perception:
 
                 if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster:
                     dist = math.sqrt((ex - bx_curr)**2 + (ey - by_curr)**2)
-                    if e_has_stealth_booster and dist > 15.0:
-                        continue
+                    if e_has_stealth_booster:
+                        # Turrets completely ignore stealthed entities
+                        if getattr(self.ball, "is_turret", False) or getattr(self.ball, "ball_type", "") == "turret":
+                            continue
+                        elif dist > 15.0:
+                            continue
                     elif is_sand_cloaked and dist > 40.0:
                         continue
                     elif e_has_shadow and dist > 30.0:

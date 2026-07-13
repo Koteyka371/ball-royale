@@ -210,8 +210,15 @@ func scan() -> Dictionary:
 
             if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster:
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
-                if e_has_stealth_booster and dist > 15.0:
-                    continue
+                if e_has_stealth_booster:
+                    var is_turret = false
+                    if "is_turret" in ball: is_turret = ball.is_turret
+                    elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("is_turret"): is_turret = ball.get_meta("is_turret")
+                    if "ball_type" in ball and ball.ball_type == "turret": is_turret = true
+                    if is_turret:
+                        continue
+                    elif dist > 15.0:
+                        continue
                 elif is_sand_cloaked and dist > 40.0:
                     continue
                 elif e_has_shadow and dist > 30.0:
