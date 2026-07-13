@@ -15305,6 +15305,91 @@ class WeaponCollectionMode(GameMode):
                             world.add_event("weapon_collected", {"ball_id": getattr(b, "id", None), "ability": b.active_skill})
 
 
+class CenterVortexMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Center Vortex"
+        self.description = "A slow-moving vortex appears in the center of the arena. It constantly pulls nearby entities towards it, dealing increasing continuous damage the closer they are to its core."
+        self.vortex_id = 888888
+        self.pull_strength = 150.0
+        self.max_damage = 50.0
+        self.vortex_radius = 400.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        cx = world.arena.width / 2.0
+        cy = world.arena.height / 2.0
+
+        existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "vortex" and getattr(h, "id", None) == self.vortex_id), None)
+        if not existing:
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                        self.target_radius = 0.0
+
+            vx = Hazard(
+                id=self.vortex_id,
+                x=cx,
+                y=cy,
+                radius=self.vortex_radius,
+                kind="vortex",
+                damage=0.0
+            )
+            world.arena.hazards.append(vx)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if not hasattr(world.arena, "hazards"):
+            return
+
+        vx = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "vortex" and getattr(h, "id", None) == self.vortex_id), None)
+        if not vx:
+            return
+
+        # The vortex is 'slow-moving'. We can make it drift slightly around the center, but center is mostly fine or small drift.
+        # Let's just keep it at center as prompt says 'appears in the center'. 'slow-moving' might mean the vortex itself moves slowly? Or it pulls things slowly?
+        # Let's add a slow drift to it.
+        import math
+        import random
+        vx.x += math.sin(world.tick * 0.01 if hasattr(world, 'tick') else 0) * 10.0 * delta
+        vx.y += math.cos(world.tick * 0.013 if hasattr(world, 'tick') else 0) * 10.0 * delta
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            dx = vx.x - b.x
+            dy = vx.y - b.y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > 0 and dist < self.vortex_radius:
+                # Pull
+                pull_factor = 1.0 - (dist / self.vortex_radius)
+                pull_x = (dx / dist) * self.pull_strength * pull_factor * delta
+                pull_y = (dy / dist) * self.pull_strength * pull_factor * delta
+
+                b.vx = getattr(b, "vx", 0.0) + pull_x
+                b.vy = getattr(b, "vy", 0.0) + pull_y
+
+                # Continuous damage closer to core
+                damage_amount = self.max_damage * pull_factor * delta
+                if damage_amount > 0:
+                    b.hp = getattr(b, "hp", 100.0) - damage_amount
+
+        # Apply to other entities if needed, but balls are the main entities
+
 class CenterBlackHoleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -16756,6 +16841,7 @@ GAME_MODES = {
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
     "spiked_walls": SpikedWallsMode(),
+    "center_vortex": CenterVortexMode(),
     "center_black_hole": CenterBlackHoleMode(),
     "extreme_weather": ExtremeWeatherMode(),
     "weather_station": WeatherStationMode(),

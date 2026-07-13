@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Trap",
+  "description": "A trap that links two balls together. If one takes damage, the other takes half of that damage. Their movement speed is also synchronized to the slower of the two."
+}
