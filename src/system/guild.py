@@ -41,6 +41,8 @@ class GuildManager:
                         guild["emblem"] = {"shape": "circle", "color": "white", "symbol": "none"}
                     if "unlocked_emblem_parts" not in guild:
                         guild["unlocked_emblem_parts"] = {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]}
+                    if "allies" not in guild:
+                        guild["allies"] = []
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"guilds": {}, "territories": {}}
@@ -80,7 +82,8 @@ class GuildManager:
                 "training_arena_unlocked": False
             },
             "emblem": {"shape": "circle", "color": "white", "symbol": "none"},
-            "unlocked_emblem_parts": {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]}
+            "unlocked_emblem_parts": {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]},
+            "allies": []
         }
         self.save()
         return True
@@ -348,7 +351,71 @@ class GuildManager:
         for territory, owner in self.data["territories"].items():
             if owner in self.data["guilds"]:
                 self.data["guilds"][owner]["resources"] += 5
+
+                # Also give 2 resources to each ally
+                allies = self.data["guilds"][owner].get("allies", [])
+                for ally in allies:
+                    if ally in self.data["guilds"]:
+                        self.data["guilds"][ally]["resources"] += 2
         self.save()
+
+    def form_alliance(self, guild1_name, guild2_name):
+        if guild1_name in self.data["guilds"] and guild2_name in self.data["guilds"] and guild1_name != guild2_name:
+            guild1 = self.data["guilds"][guild1_name]
+            guild2 = self.data["guilds"][guild2_name]
+
+            if "allies" not in guild1:
+                guild1["allies"] = []
+            if "allies" not in guild2:
+                guild2["allies"] = []
+
+            if guild2_name not in guild1["allies"] and guild1_name not in guild2["allies"]:
+                guild1["allies"].append(guild2_name)
+                guild2["allies"].append(guild1_name)
+                self.save()
+                return True
+        return False
+
+    def break_alliance(self, guild1_name, guild2_name):
+        if guild1_name in self.data["guilds"] and guild2_name in self.data["guilds"]:
+            guild1 = self.data["guilds"][guild1_name]
+            guild2 = self.data["guilds"][guild2_name]
+
+            modified = False
+            if "allies" in guild1 and guild2_name in guild1["allies"]:
+                guild1["allies"].remove(guild2_name)
+                modified = True
+            if "allies" in guild2 and guild1_name in guild2["allies"]:
+                guild2["allies"].remove(guild1_name)
+                modified = True
+
+            if modified:
+                self.save()
+                return True
+        return False
+
+    def _get_alliance_boss_damage(self, guild_name, week_id, tier_str):
+        total_damage = 0.0
+
+        def get_damage_for_guild(g_name):
+            if g_name in self.data["guilds"]:
+                guild = self.data["guilds"][g_name]
+                if "boss_progress" in guild and week_id in guild["boss_progress"]:
+                    progress = guild["boss_progress"][week_id]
+                    if "damage_dealt" in progress:
+                        progress = {"1": progress}
+                    if tier_str in progress:
+                        return progress[tier_str]["damage_dealt"]
+            return 0.0
+
+        total_damage += get_damage_for_guild(guild_name)
+
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            for ally_name in guild.get("allies", []):
+                total_damage += get_damage_for_guild(ally_name)
+
+        return total_damage
 
     def record_boss_damage(self, guild_name, damage, week_id, tier=1):
         if guild_name in self.data["guilds"]:
@@ -370,36 +437,42 @@ class GuildManager:
 
     def check_boss_defeated(self, guild_name, week_id, required_damage, tier=1):
         if guild_name in self.data["guilds"]:
-            guild = self.data["guilds"][guild_name]
-            if "boss_progress" in guild and week_id in guild["boss_progress"]:
-                progress = guild["boss_progress"][week_id]
-                if "damage_dealt" in progress:
-                    progress = {"1": progress}
-                tier_str = str(tier)
-                if tier_str in progress:
-                    return progress[tier_str]["damage_dealt"] >= required_damage
+            tier_str = str(tier)
+            total_damage = self._get_alliance_boss_damage(guild_name, week_id, tier_str)
+            return total_damage >= required_damage
         return False
 
     def claim_boss_reward(self, guild_name, player_id, week_id, required_damage, tier=1):
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
-            if "boss_progress" in guild and week_id in guild["boss_progress"]:
+            tier_str = str(tier)
+
+            # Check if defeated using pooled damage
+            total_damage = self._get_alliance_boss_damage(guild_name, week_id, tier_str)
+            if total_damage >= required_damage:
+                # Ensure the local progress structure exists so we can record who claimed it
+                if "boss_progress" not in guild:
+                    guild["boss_progress"] = {}
+                if week_id not in guild["boss_progress"]:
+                    guild["boss_progress"][week_id] = {}
+
                 progress = guild["boss_progress"][week_id]
                 if "damage_dealt" in progress:
                     progress = {"1": progress}
                     guild["boss_progress"][week_id] = progress
-                tier_str = str(tier)
-                if tier_str in progress:
-                    tier_prog = progress[tier_str]
-                    if tier_prog["damage_dealt"] >= required_damage and player_id not in tier_prog["claimed_by"]:
-                        tier_prog["claimed_by"].append(player_id)
-                        # Better rewards for higher tiers
-                        reward_amount = 100 * int(tier)
-                        if "resources" not in guild:
-                            guild["resources"] = 0
-                        guild["resources"] += reward_amount
-                        self.save()
-                        return True
+
+                if tier_str not in progress:
+                    progress[tier_str] = {"damage_dealt": 0.0, "claimed_by": []}
+
+                tier_prog = progress[tier_str]
+                if player_id not in tier_prog["claimed_by"]:
+                    tier_prog["claimed_by"].append(player_id)
+                    reward_amount = 100 * int(tier)
+                    if "resources" not in guild:
+                        guild["resources"] = 0
+                    guild["resources"] += reward_amount
+                    self.save()
+                    return True
         return False
 
     def unlock_hq_feature(self, guild_name, feature_type, feature_id, cost, required_level=1):
