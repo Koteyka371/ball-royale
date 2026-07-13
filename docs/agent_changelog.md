@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-940] Hackable Turret Mode — *2026-07-13 21:20:03 UTC*
+
+Stationary turrets periodically spawn in the arena. They have a capture radius, and standing inside them captures them for your team, allowing the turret to fire on enemies automatically. If an enemy stands inside, they can hack it back.
+
+---
+
 ## [idea-927] Weapon Scavenger Mode — *2026-07-13 21:18:25 UTC*
 
 Players start with basic attacks and must scavenge weapon crates around the arena to unlock random powerful abilities for their balls. Crates are heavily contested.
