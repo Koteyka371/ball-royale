@@ -47,6 +47,8 @@ func load_guilds():
                     data["guilds"][g_name]["emblem"] = {"shape": "circle", "color": "white", "symbol": "none"}
                 if not data["guilds"][g_name].has("unlocked_emblem_parts"):
                     data["guilds"][g_name]["unlocked_emblem_parts"] = {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]}
+                if not data["guilds"][g_name].has("allies"):
+                    data["guilds"][g_name]["allies"] = []
             return
 
     data = {"guilds": {}, "territories": {}}
@@ -87,7 +89,8 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
             "training_arena_unlocked": false
         },
         "emblem": {"shape": "circle", "color": "white", "symbol": "none"},
-        "unlocked_emblem_parts": {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]}
+        "unlocked_emblem_parts": {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]},
+        "allies": []
     }
     save_guilds()
     return true
@@ -449,7 +452,74 @@ func collect_passive_resources():
         var owner = data["territories"][territory]
         if data["guilds"].has(owner):
             data["guilds"][owner]["resources"] += 5
+
+            var allies = []
+            if data["guilds"][owner].has("allies"):
+                allies = data["guilds"][owner]["allies"]
+
+            for ally in allies:
+                if data["guilds"].has(ally):
+                    data["guilds"][ally]["resources"] += 2
     save_guilds()
+
+func form_alliance(guild1_name: String, guild2_name: String) -> bool:
+    if data["guilds"].has(guild1_name) and data["guilds"].has(guild2_name) and guild1_name != guild2_name:
+        var guild1 = data["guilds"][guild1_name]
+        var guild2 = data["guilds"][guild2_name]
+
+        if not guild1.has("allies"):
+            guild1["allies"] = []
+        if not guild2.has("allies"):
+            guild2["allies"] = []
+
+        if not guild1["allies"].has(guild2_name) and not guild2["allies"].has(guild1_name):
+            guild1["allies"].append(guild2_name)
+            guild2["allies"].append(guild1_name)
+            save_guilds()
+            return true
+    return false
+
+func break_alliance(guild1_name: String, guild2_name: String) -> bool:
+    if data["guilds"].has(guild1_name) and data["guilds"].has(guild2_name):
+        var guild1 = data["guilds"][guild1_name]
+        var guild2 = data["guilds"][guild2_name]
+
+        var modified = false
+        if guild1.has("allies") and guild1["allies"].has(guild2_name):
+            guild1["allies"].erase(guild2_name)
+            modified = true
+        if guild2.has("allies") and guild2["allies"].has(guild1_name):
+            guild2["allies"].erase(guild1_name)
+            modified = true
+
+        if modified:
+            save_guilds()
+            return true
+    return false
+
+func _get_alliance_boss_damage(guild_name: String, week_id: String, tier_str: String) -> float:
+    var total_damage = 0.0
+
+    var get_damage = func(g_name):
+        if data["guilds"].has(g_name):
+            var guild = data["guilds"][g_name]
+            if guild.has("boss_progress") and guild["boss_progress"].has(week_id):
+                var progress = guild["boss_progress"][week_id]
+                if progress.has("damage_dealt"):
+                    progress = {"1": progress}
+                if progress.has(tier_str):
+                    return progress[tier_str]["damage_dealt"]
+        return 0.0
+
+    total_damage += get_damage.call(guild_name)
+
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("allies"):
+            for ally_name in guild["allies"]:
+                total_damage += get_damage.call(ally_name)
+
+    return total_damage
 
 func record_boss_damage(guild_name: String, damage: float, week_id: String, tier: int = 1) -> bool:
     if data["guilds"].has(guild_name):
@@ -471,35 +541,40 @@ func record_boss_damage(guild_name: String, damage: float, week_id: String, tier
 
 func check_boss_defeated(guild_name: String, week_id: String, required_damage: float, tier: int = 1) -> bool:
     if data["guilds"].has(guild_name):
-        var guild = data["guilds"][guild_name]
-        if guild.has("boss_progress") and guild["boss_progress"].has(week_id):
-            var progress = guild["boss_progress"][week_id]
-            if progress.has("damage_dealt"):
-                progress = {"1": progress}
-            var tier_str = str(tier)
-            if progress.has(tier_str):
-                return progress[tier_str]["damage_dealt"] >= required_damage
+        var tier_str = str(tier)
+        var total_damage = _get_alliance_boss_damage(guild_name, week_id, tier_str)
+        return total_damage >= required_damage
     return false
 
 func claim_boss_reward(guild_name: String, player_id: String, week_id: String, required_damage: float, tier: int = 1) -> bool:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
-        if guild.has("boss_progress") and guild["boss_progress"].has(week_id):
+        var tier_str = str(tier)
+
+        var total_damage = _get_alliance_boss_damage(guild_name, week_id, tier_str)
+        if total_damage >= required_damage:
+            if not guild.has("boss_progress"):
+                guild["boss_progress"] = {}
+            if not guild["boss_progress"].has(week_id):
+                guild["boss_progress"][week_id] = {}
+
             var progress = guild["boss_progress"][week_id]
             if progress.has("damage_dealt"):
                 progress = {"1": progress}
                 guild["boss_progress"][week_id] = progress
-            var tier_str = str(tier)
-            if progress.has(tier_str):
-                var tier_prog = progress[tier_str]
-                if tier_prog["damage_dealt"] >= required_damage and not tier_prog["claimed_by"].has(player_id):
-                    tier_prog["claimed_by"].append(player_id)
-                    var reward_amount = 100 * tier
-                    if not guild.has("resources"):
-                        guild["resources"] = 0
-                    guild["resources"] += reward_amount
-                    save_guilds()
-                    return true
+
+            if not progress.has(tier_str):
+                progress[tier_str] = {"damage_dealt": 0.0, "claimed_by": []}
+
+            var tier_prog = progress[tier_str]
+            if not tier_prog["claimed_by"].has(player_id):
+                tier_prog["claimed_by"].append(player_id)
+                var reward_amount = 100 * tier
+                if not guild.has("resources"):
+                    guild["resources"] = 0
+                guild["resources"] += reward_amount
+                save_guilds()
+                return true
     return false
 
 func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: String, cost: int, required_level: int = 1) -> bool:
