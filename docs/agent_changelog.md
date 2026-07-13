@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-869] Cursed Loadout Relics — *2026-07-13 20:59:01 UTC*
+
+Scattered across the map are extremely rare 'Cursed Relics' that, when collected, temporarily provide immense buffs (e.g., 300% movement speed and attack damage) but heavily impair the player's perception radius and invert their controls for a period. Surviving the duration permanently grants the relic's unique badge to the player's profile.
+
+---
+
 ## [idea-909] Multi-Layer Reflect Shield — *2026-07-13 19:14:53 UTC*
 
 A new upgrade allowing the reflect shield to block multiple instances of damage by breaking it into smaller capacity layers.
