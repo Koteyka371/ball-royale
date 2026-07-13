@@ -24741,12 +24741,10 @@ class WeaponCollectionMode extends GameMode:
 
 		for b in balls:
 			if typeof(b) == TYPE_DICTIONARY:
-				b["base_damage"] = 0.0
-				b["damage"] = 0.0
+				b["active_skill"] = null
 			else:
 				if b.has_method("set"):
-					b.set("base_damage", 0.0)
-					b.set("damage", 0.0)
+					b.set("active_skill", null)
 
 	func tick(world, balls: Array) -> void:
 		var delta = 0.016

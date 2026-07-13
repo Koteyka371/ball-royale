@@ -15243,6 +15243,8 @@ class WeaponCollectionMode(GameMode):
             world.arena.hazards = []
         self.weapon_spawn_timer = 0.0
 
+        for b in balls:
+            b.active_skill = None
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
