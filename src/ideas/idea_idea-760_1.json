@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Trap",
+  "description": "A placeable hazard that records the exact position and health of the player who triggered it. Three seconds later, the trapper and the victim swap positions and current health percentages, creating huge outplay potential if triggered during chaotic combat."
+}

@@ -1852,6 +1852,33 @@ func execute(strategy: String, delta: float):
 
 
 
+
+		if "ghost_mode_timer" in self.ball and typeof(self.ball) == TYPE_OBJECT:
+			if self.ball.ghost_mode_timer > 0.0:
+				self.ball.ghost_mode_timer -= delta
+				if self.ball.ghost_mode_timer <= 0.0:
+					self.ball.ghost_mode_timer = 0.0
+					if "ghost_mode_active" in self.ball and self.ball.ghost_mode_active:
+						self.ball.intangible = false
+						self.ball.ghost_mode_active = false
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ghost_mode_timer"):
+			if self.ball.ghost_mode_timer > 0.0:
+				self.ball.ghost_mode_timer -= delta
+				if self.ball.ghost_mode_timer <= 0.0:
+					self.ball.ghost_mode_timer = 0.0
+					if self.ball.has("ghost_mode_active") and self.ball.ghost_mode_active:
+						self.ball.intangible = false
+						self.ball.ghost_mode_active = false
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ghost_mode_timer"):
+			var gmt = self.ball.get_meta("ghost_mode_timer")
+			if gmt > 0.0:
+				self.ball.set_meta("ghost_mode_timer", gmt - delta)
+				if self.ball.get_meta("ghost_mode_timer") <= 0.0:
+					self.ball.set_meta("ghost_mode_timer", 0.0)
+					if self.ball.has_meta("ghost_mode_active") and self.ball.get_meta("ghost_mode_active"):
+						self.ball.set_meta("intangible", false)
+						self.ball.set_meta("ghost_mode_active", false)
+
 	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
 		if self.ball.has_meta("overclock_timer"):
 			var ot_timer = self.ball.get_meta("overclock_timer")
@@ -14478,6 +14505,33 @@ func _chase(delta: float):
     self.ball.y += comb_ny * step
 
 func _attack(delta: float):
+
+	var gmt = 0.0
+	if typeof(self.ball) == TYPE_OBJECT:
+		if "ghost_mode_timer" in self.ball: gmt = self.ball.ghost_mode_timer
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("ghost_mode_timer"): gmt = self.ball.get_meta("ghost_mode_timer")
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ghost_mode_timer"): gmt = self.ball["ghost_mode_timer"]
+
+	if gmt > 0.0:
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "ghost_mode_timer" in self.ball: self.ball.ghost_mode_timer = 0.0
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_timer", 0.0)
+
+			var gm_active = false
+			if "ghost_mode_active" in self.ball: gm_active = self.ball.ghost_mode_active
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("ghost_mode_active"): gm_active = self.ball.get_meta("ghost_mode_active")
+
+			if gm_active:
+				if "intangible" in self.ball: self.ball.intangible = false
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", false)
+				if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = false
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_active", false)
+		elif typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["ghost_mode_timer"] = 0.0
+			if self.ball.has("ghost_mode_active") and self.ball["ghost_mode_active"]:
+				self.ball["intangible"] = false
+				self.ball["ghost_mode_active"] = false
+
     var enemies = _get_enemies()
     if enemies.size() > 0:
         var target = _get_target(enemies)
