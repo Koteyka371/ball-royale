@@ -2987,16 +2987,37 @@ class Action:
                 self.ball.alive = False
                 self.ball.hp = 0
                 if hasattr(self.world, "balls"):
+                    import copy
+                    import random
+                    new_clones = []
                     for b in self.world.balls:
                         if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
                             d = math.sqrt((self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2)
                             if d <= 60.0:
+                                was_alive = getattr(b, "alive", True) and getattr(b, "hp", 1.0) > 0.0
                                 if hasattr(b, "take_damage"):
                                     b.take_damage(20.0)
                                 else:
                                     b.hp -= 20.0
                                     if b.hp <= 0:
                                         b.alive = False
+                                is_alive = getattr(b, "alive", True) and getattr(b, "hp", 1.0) > 0.0
+                                if was_alive and not is_alive:
+                                    cascade_clone = copy.copy(self.ball)
+                                    cascade_clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                                    if hasattr(self.world, "next_id"):
+                                        self.world.next_id += 1
+                                    cascade_clone.x = b.x
+                                    cascade_clone.y = b.y
+                                    cascade_clone.max_hp = max(10.0, getattr(self.ball, "max_hp", 100.0) * 0.5)
+                                    cascade_clone.hp = cascade_clone.max_hp
+                                    cascade_clone.alive = True
+                                    cascade_clone.mimic_cascade = True
+                                    cascade_clone.is_mimic_charging = True
+                                    cascade_clone.mimic_charge_timer = 3.0
+                                    new_clones.append(cascade_clone)
+                    if new_clones:
+                        self.world.balls.extend(new_clones)
                 if hasattr(self.world, "events"):
                     self.world.events.append({'type': 'explosion', 'data': {'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0}})
 
