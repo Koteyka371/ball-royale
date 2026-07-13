@@ -49,6 +49,8 @@ def test_sector_collapse_mode():
     b1.x = wall["x"] + 1.0
     b1.y = wall["y"] + 1.0
 
+    b1.hp = 100.0
+    b1.alive = True
     initial_hp = b1.hp
     mode.tick(world, balls, 1.0)
 
