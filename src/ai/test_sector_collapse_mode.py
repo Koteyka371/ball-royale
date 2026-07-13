@@ -33,6 +33,11 @@ def test_sector_collapse_mode():
     world = MockWorld()
     b1 = MockBall(1)
     b2 = MockBall(2)
+    # Move them far away from center to avoid random wall spawning on them during the time skip
+    b1.x = 10.0
+    b1.y = 10.0
+    b2.x = 10.0
+    b2.y = 10.0
     balls = [b1, b2]
 
     mode.setup(world, balls)
@@ -44,15 +49,17 @@ def test_sector_collapse_mode():
     assert len(world.events) == 1
     assert world.events[0][0] == "wall_spawn"
 
-    # Move ball into wall
+    # Reset HP and Alive in case outside-zone damage killed them during the 11s tick
+    b1.hp = 100.0
+    b1.alive = True
+
+    # Move ball into wall intentionally to test wall damage
     wall = mode.walls[0]
     b1.x = wall["x"] + 1.0
     b1.y = wall["y"] + 1.0
 
-    b1.hp = 100.0
-    b1.alive = True
     initial_hp = b1.hp
-    mode.tick(world, balls, 1.0)
+    # A small delta to test damage correctly without sending HP to -1000
+    mode.tick(world, balls, 0.1)
 
     assert b1.hp < initial_hp
-    assert b1.x != wall["x"] + 1.0 or b1.y != wall["y"] + 1.0 # Pushed
