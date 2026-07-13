@@ -7229,6 +7229,11 @@ class Action:
         def is_visible(enemy) -> bool:
             if getattr(enemy, "is_flying", False):
                 return False
+            if getattr(enemy, "ghost_mode_active", False):
+                dx = getattr(enemy, "x", 0) - self.ball.x
+                dy = getattr(enemy, "y", 0) - self.ball.y
+                if dx*dx + dy*dy > 225.0: # 15.0 radius
+                    return False
             enemy_stealth_zones = []
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for h in self.world.arena.hazards:
@@ -8505,6 +8510,19 @@ class Action:
                     self.ball.ghost_mode_timer = 5.0
                     self.ball.intangible = True
                     self.ball.ghost_mode_active = True
+                    # Apply to nearby allies
+                    if hasattr(self.world, "balls"):
+                        my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                        for other_ball in self.world.balls:
+                            if getattr(other_ball, "alive", True) and other_ball != self.ball:
+                                o_team = getattr(other_ball, "team", getattr(other_ball, "ball_type", ""))
+                                if o_team == my_team:
+                                    dx = other_ball.x - self.ball.x
+                                    dy = other_ball.y - self.ball.y
+                                    if dx*dx + dy*dy <= 40000: # 200 radius
+                                        other_ball.ghost_mode_timer = 5.0
+                                        other_ball.intangible = True
+                                        other_ball.ghost_mode_active = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

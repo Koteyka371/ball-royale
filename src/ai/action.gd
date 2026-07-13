@@ -13463,6 +13463,14 @@ func _get_enemies_internal() -> Array:
                         enemy_stealth_zones.append(h)
 
         var is_visible = true
+        var e_ghost_active = false
+        if "ghost_mode_active" in e: e_ghost_active = e.ghost_mode_active
+        elif e.has_method("has_meta") and e.has_meta("ghost_mode_active"): e_ghost_active = e.get_meta("ghost_mode_active")
+        if e_ghost_active:
+            var dx_g = ex - float(self.ball.x)
+            var dy_g = ey - float(self.ball.y)
+            if dx_g*dx_g + dy_g*dy_g > 225.0:
+                continue
 
         if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
             var my_team_iv = ""
@@ -15499,6 +15507,36 @@ func _collect_booster(delta: float):
                     if "intangible" in self.ball: self.ball.intangible = true
                     self.ball.set_meta("ghost_mode_active", true)
                     if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = true
+                # Apply to nearby allies
+                if self.world != null and "balls" in self.world:
+                    var my_team = ""
+                    if "team" in self.ball: my_team = self.ball.team
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                    elif "ball_type" in self.ball: my_team = self.ball.ball_type
+                    for ob in self.world.balls:
+                        var ob_alive = true
+                        if "alive" in ob: ob_alive = ob.alive
+                        elif ob.has_method("has_meta") and ob.has_meta("alive"): ob_alive = ob.get_meta("alive")
+                        if ob_alive and ob != self.ball:
+                            var ob_team = ""
+                            if "team" in ob: ob_team = ob.team
+                            elif ob.has_method("has_meta") and ob.has_meta("team"): ob_team = ob.get_meta("team")
+                            elif "ball_type" in ob: ob_team = ob.ball_type
+                            if ob_team == my_team:
+                                var dx = ob.x - self.ball.x
+                                var dy = ob.y - self.ball.y
+                                if dx*dx + dy*dy <= 40000.0:
+                                    if typeof(ob) == TYPE_DICTIONARY:
+                                        ob["ghost_mode_timer"] = 5.0
+                                        ob["intangible"] = true
+                                        ob["ghost_mode_active"] = true
+                                    else:
+                                        ob.set_meta("ghost_mode_timer", 5.0)
+                                        if "ghost_mode_timer" in ob: ob.ghost_mode_timer = 5.0
+                                        ob.set_meta("intangible", true)
+                                        if "intangible" in ob: ob.intangible = true
+                                        ob.set_meta("ghost_mode_active", true)
+                                        if "ghost_mode_active" in ob: ob.ghost_mode_active = true
 
                 if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
                     var h_idx = self.world.arena.hazards.find(nearest)
@@ -15520,6 +15558,36 @@ func _collect_booster(delta: float):
                     if "intangible" in self.ball: self.ball.intangible = true
                     self.ball.set_meta("ghost_mode_active", true)
                     if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = true
+                # Apply to nearby allies
+                if self.world != null and "balls" in self.world:
+                    var my_team = ""
+                    if "team" in self.ball: my_team = self.ball.team
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                    elif "ball_type" in self.ball: my_team = self.ball.ball_type
+                    for ob in self.world.balls:
+                        var ob_alive = true
+                        if "alive" in ob: ob_alive = ob.alive
+                        elif ob.has_method("has_meta") and ob.has_meta("alive"): ob_alive = ob.get_meta("alive")
+                        if ob_alive and ob != self.ball:
+                            var ob_team = ""
+                            if "team" in ob: ob_team = ob.team
+                            elif ob.has_method("has_meta") and ob.has_meta("team"): ob_team = ob.get_meta("team")
+                            elif "ball_type" in ob: ob_team = ob.ball_type
+                            if ob_team == my_team:
+                                var dx = ob.x - self.ball.x
+                                var dy = ob.y - self.ball.y
+                                if dx*dx + dy*dy <= 40000.0:
+                                    if typeof(ob) == TYPE_DICTIONARY:
+                                        ob["ghost_mode_timer"] = 5.0
+                                        ob["intangible"] = true
+                                        ob["ghost_mode_active"] = true
+                                    else:
+                                        ob.set_meta("ghost_mode_timer", 5.0)
+                                        if "ghost_mode_timer" in ob: ob.ghost_mode_timer = 5.0
+                                        ob.set_meta("intangible", true)
+                                        if "intangible" in ob: ob.intangible = true
+                                        ob.set_meta("ghost_mode_active", true)
+                                        if "ghost_mode_active" in ob: ob.ghost_mode_active = true
 
                 if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
                     var h_idx = self.world.arena.hazards.find(nearest)
