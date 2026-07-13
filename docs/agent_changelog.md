@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-932] Sacrificial Alters — *2026-07-13 21:48:44 UTC*
+
+Hazards where balls can deliberately sacrifice a portion of their max HP to gain permanent buffs or a rare booster drop.
+
+---
+
 ## [idea-942] Portal chaining network — *2026-07-13 21:39:18 UTC*
 
 Portals could link together to form complex routing networks across the map. If a player is blasted out of one portal, they might land directly in another's suction radius.

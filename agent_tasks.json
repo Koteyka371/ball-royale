@@ -16010,7 +16010,7 @@
     },
     {
       "id": "idea-932",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sacrificial Alters",
@@ -26190,6 +26190,40 @@
         "src/ai/shrinking_modifiers_battle_royale.py",
         "src/ai/shrinking_modifiers_battle_royale.gd",
         "tests/test_shrinking_modifiers_battle_royale.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1530",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Inversion Mode",
+      "description": "Periodically, gravity flips, pulling players to the walls instead of the ground or sending them flying.",
+      "allowed_paths": [
+        "src/ai/gravity_inversion.py",
+        "src/ai/gravity_inversion.gd",
+        "tests/test_gravity_inversion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1531",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ghost Companion",
+      "description": "Eliminated players spawn as ghosts that can attach to living players, applying small buffs or debuffs.",
+      "allowed_paths": [
+        "src/ai/ghost_companion.py",
+        "src/ai/ghost_companion.gd",
+        "tests/test_ghost_companion.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
