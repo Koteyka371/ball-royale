@@ -962,14 +962,62 @@ func _attempt_damage(attacker, target) -> void:
 		elif has_reflect:
 			var capacity = 50.0
 			if "reflect_shield_capacity" in target:
-				capacity = target.reflect_shield_capacity
+				capacity = float(target.reflect_shield_capacity)
 			elif target.has_method("get_meta") and target.has_meta("reflect_shield_capacity"):
-				capacity = target.get_meta("reflect_shield_capacity")
+				capacity = float(target.get_meta("reflect_shield_capacity"))
 
-			var damage_to_reflect = min(capacity, original_damage)
-			capacity -= original_damage
+			var initial_cap = capacity
+			if "reflect_shield_initial_capacity" in target:
+				initial_cap = float(target.reflect_shield_initial_capacity)
+			elif target.has_method("get_meta") and target.has_meta("reflect_shield_initial_capacity"):
+				initial_cap = float(target.get_meta("reflect_shield_initial_capacity"))
 
-			if capacity <= 0:
+			var max_layers = 1
+			if "reflect_shield_max_layers" in target:
+				max_layers = int(target.reflect_shield_max_layers)
+			elif target.has_method("get_meta") and target.has_meta("reflect_shield_max_layers"):
+				max_layers = int(target.get_meta("reflect_shield_max_layers"))
+
+			var damage_to_reflect = 0.0
+
+			if max_layers > 1:
+				var current_layers = max_layers
+				if "reflect_shield_current_layers" in target:
+					current_layers = int(target.reflect_shield_current_layers)
+				elif target.has_method("get_meta") and target.has_meta("reflect_shield_current_layers"):
+					current_layers = int(target.get_meta("reflect_shield_current_layers"))
+
+				var layer_capacity = float(initial_cap) / float(max_layers)
+				damage_to_reflect = min(layer_capacity, original_damage)
+				current_layers -= 1
+
+				if "reflect_shield_current_layers" in target:
+					target.reflect_shield_current_layers = current_layers
+				elif target.has_method("set_meta"):
+					target.set_meta("reflect_shield_current_layers", current_layers)
+
+				capacity = float(current_layers) * layer_capacity
+
+				if "reflect_shield_capacity" in target:
+					target.reflect_shield_capacity = capacity
+				elif target.has_method("set_meta"):
+					target.set_meta("reflect_shield_capacity", capacity)
+
+				original_damage = 0.0 # Block the instance
+
+				if current_layers <= 0:
+					if "reflect_shield_active" in target: target.reflect_shield_active = false
+					elif target.has_method("set_meta"): target.set_meta("reflect_shield_active", false)
+					if "reflect_shield_capacity" in target: target.reflect_shield_capacity = 0.0
+					elif target.has_method("set_meta"): target.set_meta("reflect_shield_capacity", 0.0)
+					if "reflect_shield_timer" in target: target.reflect_shield_timer = 0.0
+					elif target.has_method("set_meta"): target.set_meta("reflect_shield_timer", 0.0)
+					capacity = 0.0
+			else:
+				damage_to_reflect = min(capacity, original_damage)
+				capacity -= original_damage
+
+			if capacity <= 0.0 and max_layers <= 1:
 				if "reflect_shield_active" in target:
 					target.reflect_shield_active = false
 				elif target.has_method("set_meta"):
@@ -1075,7 +1123,7 @@ func _attempt_damage(attacker, target) -> void:
 										else:
 											if b.has_method("take_damage"): b.take_damage(exp_dmg)
 											elif "hp" in b: b.hp -= exp_dmg
-			else:
+			elif max_layers <= 1:
 				if "reflect_shield_capacity" in target:
 					target.reflect_shield_capacity = capacity
 				elif target.has_method("set_meta"):
@@ -1094,7 +1142,7 @@ func _attempt_damage(attacker, target) -> void:
 
 				self._handle_reflect_bounce(attacker, target, damage_to_reflect)
 
-			if capacity < 0:
+			if capacity < 0 and max_layers <= 1:
 				var remainder_damage = -capacity
 				var old_dmg = original_damage
 				if "damage" in attacker:
@@ -16353,6 +16401,36 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "layer_reflect_shield_booster":
+                var bonus_dur = 0.0
+                if "bonus_reflect_shield_duration" in self.ball: bonus_dur = self.ball.bonus_reflect_shield_duration
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_duration"): bonus_dur = self.ball.get_meta("bonus_reflect_shield_duration")
+                var bonus_cap = 0.0
+                if "bonus_reflect_shield_capacity" in self.ball: bonus_cap = self.ball.bonus_reflect_shield_capacity
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("bonus_reflect_shield_capacity"): bonus_cap = self.ball.get_meta("bonus_reflect_shield_capacity")
+
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("reflect_shield_active", true)
+                    self.ball.set_meta("reflect_shield_timer", 5.0 + bonus_dur)
+                    self.ball.set_meta("reflect_shield_capacity", 100.0 + bonus_cap)
+                    self.ball.set_meta("reflect_shield_initial_capacity", 100.0 + bonus_cap)
+                    self.ball.set_meta("reflect_shield_max_layers", 3)
+                    self.ball.set_meta("reflect_shield_current_layers", 3)
+                else:
+                    self.ball.reflect_shield_active = true
+                    self.ball.reflect_shield_timer = 5.0 + bonus_dur
+                    self.ball.reflect_shield_capacity = 100.0 + bonus_cap
+                    self.ball.reflect_shield_initial_capacity = 100.0 + bonus_cap
+                    self.ball.reflect_shield_max_layers = 3
+                    self.ball.reflect_shield_current_layers = 3
+                if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "time_stop_booster":
                 var entities = []
                 if self.world != null:
@@ -24084,7 +24162,11 @@ func _update_skill_timer(delta: float):
                 self.ball.set_meta("reflect_shield_active", false)
                 expired = true
 
-        if expired:
+        var max_l = 1
+        if "reflect_shield_max_layers" in self.ball: max_l = int(self.ball.reflect_shield_max_layers)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("reflect_shield_max_layers"): max_l = int(self.ball.get_meta("reflect_shield_max_layers"))
+
+        if expired and max_l <= 1:
             var cur_cap = 0.0
             if "reflect_shield_capacity" in self.ball:
                 cur_cap = self.ball.reflect_shield_capacity
