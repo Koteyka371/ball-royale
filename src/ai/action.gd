@@ -15918,6 +15918,28 @@ func _collect_booster(delta: float):
                     self.ball.stealth_booster_timer = 10.0
                 else:
                     self.ball.stealth_booster_timer = 10.0
+
+                # Apply to nearby allies within 200 range
+                if self.world != null and "balls" in self.world:
+                    for ally in self.world.balls:
+                        var same_team = false
+                        if "team" in ally and "team" in self.ball and ally.team == self.ball.team:
+                            same_team = true
+
+                        var is_self = false
+                        if "id" in ally and "id" in self.ball and ally.id == self.ball.id:
+                            is_self = true
+
+                        if same_team and not is_self:
+                            var dist = sqrt(pow(ally.x - self.ball.x, 2) + pow(ally.y - self.ball.y, 2))
+                            if dist <= 200.0:
+                                if ally.has_method("set_meta"):
+                                    ally.set_meta("stealth_booster_timer", 10.0)
+                                elif "stealth_booster_timer" in ally:
+                                    ally.stealth_booster_timer = 10.0
+                                else:
+                                    ally.stealth_booster_timer = 10.0
+
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:

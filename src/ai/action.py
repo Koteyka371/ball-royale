@@ -8754,6 +8754,14 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stealth_booster":
                     self.ball.stealth_booster_timer = 10.0
+                    # Apply to nearby allies within 200 range
+                    if hasattr(self.world, "balls"):
+                        for ally in self.world.balls:
+                            if getattr(ally, "team", None) == getattr(self.ball, "team", None) and getattr(ally, "id", None) != getattr(self.ball, "id", None):
+                                dist = math.sqrt((ally.x - self.ball.x)**2 + (ally.y - self.ball.y)**2)
+                                if dist <= 200.0:
+                                    ally.stealth_booster_timer = 10.0
+
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

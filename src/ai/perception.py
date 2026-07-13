@@ -196,7 +196,16 @@ class Perception:
                     is_sand_cloaked = True
 
                 if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster:
+                    is_turret_perceiver = getattr(self.ball, "is_turret", False)
+                    if not is_turret_perceiver and hasattr(self.ball, "has_method") and self.ball.has_method("get_meta") and self.ball.has_meta("is_turret"):
+                        is_turret_perceiver = self.ball.get_meta("is_turret")
+
                     dist = math.sqrt((ex - bx_curr)**2 + (ey - by_curr)**2)
+
+                    # Turrets cannot see entities with stealth booster AT ALL
+                    if e_has_stealth_booster and is_turret_perceiver:
+                        continue
+
                     if e_has_stealth_booster and dist > 15.0:
                         continue
                     elif is_sand_cloaked and dist > 40.0:

@@ -209,7 +209,18 @@ func scan() -> Dictionary:
                 is_sand_cloaked = true
 
             if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster:
+                var is_turret_perceiver = false
+                if "is_turret" in self.ball and self.ball.is_turret:
+                    is_turret_perceiver = true
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_turret") and self.ball.get_meta("is_turret"):
+                    is_turret_perceiver = true
+
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
+
+                # Turrets cannot see entities with stealth booster AT ALL
+                if e_has_stealth_booster and is_turret_perceiver:
+                    continue
+
                 if e_has_stealth_booster and dist > 15.0:
                     continue
                 elif is_sand_cloaked and dist > 40.0:
