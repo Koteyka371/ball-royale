@@ -16130,7 +16130,7 @@
     },
     {
       "id": "idea-939",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Electric Bumpers",
@@ -26071,6 +26071,40 @@
         "src/ai/shrinking_safe_zone_mod.py",
         "src/ai/shrinking_safe_zone_mod.gd",
         "tests/test_shrinking_safe_zone_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1523",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Relic Aura",
+      "description": "A cursed relic that drains the player's health over time but creates a large aura around them. Any enemies caught in the aura take damage, which heals the player for a fraction of the damage dealt.",
+      "allowed_paths": [
+        "src/ai/vampiric_relic_aura.py",
+        "src/ai/vampiric_relic_aura.gd",
+        "tests/test_vampiric_relic_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1524",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Relic Modifier",
+      "description": "A rare relic that causes the player to occasionally 'blink' a short distance in the direction they are moving, briefly becoming intangible, but lowering their max HP temporarily while held.",
+      "allowed_paths": [
+        "src/ai/quantum_relic.py",
+        "src/ai/quantum_relic.gd",
+        "tests/test_quantum_relic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-939] Electric Bumpers — *2026-07-13 21:18:08 UTC*
+
+Certain bumpers in the arena become electrified, shocking and stunning players who bounce off them instead of granting a speed boost.
+
+---
+
 ## [idea-894] Sun God's Wrath Mode — *2026-07-13 20:59:06 UTC*
 
 An intense daytime-only mode where the sun gets progressively hotter, causing a slowly shrinking safe zone of shade. Balls outside the shade take continuous damage and have their stamina drained.
