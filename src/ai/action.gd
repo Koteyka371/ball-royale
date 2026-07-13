@@ -11401,18 +11401,45 @@ func execute(strategy: String, delta: float):
                             var nx = dx / d
                             var ny = dy / d
                             var overlap = (b_rad + hazard.radius) - d
-                            self.ball.x += nx * overlap
-                            self.ball.y += ny * overlap
 
-                        if hazard.has_meta("hp"):
-                            var base_dmg = 100.0
-                            if "damage" in self.ball:
-                                base_dmg = self.ball.damage
-                            var new_hp = hazard.get_meta("hp") - base_dmg * delta * 5.0
-                            hazard.set_meta("hp", new_hp)
-                            if new_hp <= 0:
+                            var b_type = ""
+                            if "ball_type" in self.ball: b_type = str(self.ball.ball_type).to_lower()
+                            elif self.ball is Dictionary and self.ball.has("ball_type"): b_type = str(self.ball["ball_type"]).to_lower()
+
+                            var b_vx = 0.0
+                            if "vx" in self.ball: b_vx = self.ball.vx
+                            elif self.ball is Dictionary and self.ball.has("vx"): b_vx = self.ball["vx"]
+
+                            var b_vy = 0.0
+                            if "vy" in self.ball: b_vy = self.ball.vy
+                            elif self.ball is Dictionary and self.ball.has("vy"): b_vy = self.ball["vy"]
+
+                            var speed = sqrt(b_vx*b_vx + b_vy*b_vy)
+
+                            if (b_type == "juggernaut" or b_type == "tank") and speed > 400.0:
                                 hazard.active = false
                                 hazard.set_meta("active", false)
+                                if hazard.has_meta("hp"):
+                                    hazard.set_meta("hp", 0)
+
+                                if "events" in self.world and typeof(self.world.events) == TYPE_ARRAY:
+                                    var ev = {"type": "explosion", "x": hazard.x, "y": hazard.y, "radius": 50.0, "damage": 50.0}
+                                    if "id" in self.ball: ev["source_id"] = self.ball.id
+                                    elif self.ball is Dictionary and self.ball.has("id"): ev["source_id"] = self.ball["id"]
+                                    self.world.events.append(ev)
+                            else:
+                                self.ball.x += nx * overlap
+                                self.ball.y += ny * overlap
+
+                                if hazard.has_meta("hp"):
+                                    var base_dmg = 100.0
+                                    if "damage" in self.ball:
+                                        base_dmg = self.ball.damage
+                                    var new_hp = hazard.get_meta("hp") - base_dmg * delta * 5.0
+                                    hazard.set_meta("hp", new_hp)
+                                    if new_hp <= 0:
+                                        hazard.active = false
+                                        hazard.set_meta("active", false)
                         continue
                     elif hazard.kind == "launch_pad":
                         var dx = self.ball.x - hazard.x
