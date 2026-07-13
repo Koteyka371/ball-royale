@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-954] Mimic Clone Explosion Visual Effect Upgrade — *2026-07-13 23:35:53 UTC*
+
+Add a distinct visual explosion particle effect specifically for the mimic clone detonation to differentiate it from normal bomber explosions or elemental traps, giving players a clear visual cue.
+
+---
+
 ## [idea-962] Guild Headquarters Cosmetics — *2026-07-13 23:35:49 UTC*
 
 Allow guilds to spend their Guild XP on aesthetic upgrades for their Headquarters that are visible when checking their profile, such as new flags, backgrounds, or custom announcer voices for guild members.
