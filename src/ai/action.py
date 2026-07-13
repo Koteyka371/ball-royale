@@ -5990,20 +5990,28 @@ class Action:
                                 angle = pseudo_rand * 2 * _math.pi
                                 pseudo_rand2 = (getattr(self.ball, "id", 0) * 23 + getattr(hazard, "id", 0) * 7 + current_tick * 19) % 1000 / 1000.0
                                 launch_dist = 50.0 + pseudo_rand2 * 100.0
+
+                                is_wind_rider = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")) == "wind_rider" or getattr(self.ball, "skill", getattr(type(self.ball), "SKILL", "")) == "wind_rider"
+                                if is_wind_rider:
+                                    launch_dist *= 3.0
+                                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 5.0)
+
                                 self.ball.x += _math.cos(angle) * launch_dist
                                 self.ball.y += _math.sin(angle) * launch_dist
-                                # Deal damage upon landing
-                                hazard_damage = hazard.damage
-                                if hasattr(self.ball, "take_damage"):
-                                    self.ball.take_damage(hazard_damage)
-                                elif hasattr(self.ball, "hp"):
-                                    self.ball.hp -= hazard_damage
-                                    if getattr(self.ball, "hp", 0) <= 0:
-                                        self.ball.alive = False
 
-                                # Apply dizzy effect (confusion)
-                                self.ball.is_confused = True
-                                self.ball.confusion_timer = max(getattr(self.ball, "confusion_timer", 0.0), 3.0)
+                                if not is_wind_rider:
+                                    # Deal damage upon landing
+                                    hazard_damage = hazard.damage
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(hazard_damage)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= hazard_damage
+                                        if getattr(self.ball, "hp", 0) <= 0:
+                                            self.ball.alive = False
+
+                                    # Apply dizzy effect (confusion)
+                                    self.ball.is_confused = True
+                                    self.ball.confusion_timer = max(getattr(self.ball, "confusion_timer", 0.0), 3.0)
 
                                 if hazard.kind in ("firenado", "local_firenado"):
                                     self.ball.burn_timer = max(getattr(self.ball, "burn_timer", 0.0), 5.0)
