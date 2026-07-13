@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Explosive Barrels",
+  "description": "Spawn volatile elemental barrels dynamically in the arena. If one is hit, it explodes dealing area of effect damage. If the explosion touches another barrel, they detonate in a cascading chain reaction."
+}

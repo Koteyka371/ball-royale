@@ -17118,10 +17118,18 @@ class UnstablePortalsEventMode extends GameMode:
 								elif "visible" in b:
 									b.visible = false
 
-				if p["charge_timer"] >= 2.0:
+				var sucked_count = p["sucked_balls"].size()
+				var is_overloaded = sucked_count >= 3
+				if p["charge_timer"] >= 2.0 or is_overloaded:
 					p["active"] = false
+					var mult = float(max(1, sucked_count))
+
 					if world != null and world.has_method("add_event"):
-						world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
+						if is_overloaded:
+							world.add_event("portal_overload", {"message": "A portal overloaded!", "x": p["x"], "y": p["y"]})
+							world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": 150.0 * mult, "damage": 30.0 * mult})
+						else:
+							world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
 
 					for b in balls:
 						var alive = false
@@ -17165,12 +17173,47 @@ class UnstablePortalsEventMode extends GameMode:
 							if typeof(b) == TYPE_DICTIONARY:
 								b["x"] = bx
 								b["y"] = by
-								if b.has("hp"): b["hp"] -= 20.0
+								if b.has("hp"): b["hp"] -= 20.0 * mult
 							else:
 								b.x = bx
 								b.y = by
-								if b.has_method("take_damage"): b.take_damage(20.0)
-								elif "hp" in b: b.hp -= 20.0
+								if b.has_method("take_damage"): b.take_damage(20.0 * mult)
+								elif "hp" in b: b.hp -= 20.0 * mult
+						elif is_overloaded:
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								bx = float(b.get("x", 0.0))
+								by = float(b.get("y", 0.0))
+							else:
+								bx = float(b.x)
+								by = float(b.y)
+
+							var dx = bx - p["x"]
+							var dy = by - p["y"]
+							var dist = sqrt(dx * dx + dy * dy)
+							if dist < 150.0 * mult:
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.has("hp"): b["hp"] -= 30.0 * mult
+								else:
+									if b.has_method("take_damage"): b.take_damage(30.0 * mult)
+									elif "hp" in b: b.hp -= 30.0 * mult
+
+								if dist > 0.0001:
+									var nx = dx / dist
+									var ny = dy / dist
+									var knockback = 500.0 * (1.0 - dist / (150.0 * mult))
+									bx += nx * knockback * delta
+									by += ny * knockback * delta
+									bx = max(0.0, min(arena_w, bx))
+									by = max(0.0, min(arena_h, by))
+
+									if typeof(b) == TYPE_DICTIONARY:
+										b["x"] = bx
+										b["y"] = by
+									else:
+										b.x = bx
+										b.y = by
 
 					p["sucked_balls"] = []
 

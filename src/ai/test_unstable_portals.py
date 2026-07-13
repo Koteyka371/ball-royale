@@ -53,3 +53,41 @@ def test_unstable_portals():
     assert balls[0].damage_taken > 0
     # # assert "explosion" in [e[0] for e in world.events]
     assert "portal_blast" in [e[0] for e in world.events]
+
+def test_unstable_portal_overload():
+    mode = UnstablePortalsEventMode()
+    world = DummyWorld()
+
+    # Create multiple balls to cause an overload
+    balls = [DummyBall(150, 150, id=i) for i in range(4)]
+
+    # Tick to spawn a portal
+    for _ in range(100):
+        mode.tick(world, balls, delta=1.0)
+        if mode.portals:
+            break
+
+    portal = mode.portals[0]
+    px, py = portal["x"], portal["y"]
+
+    # Trigger charge mode by entering (dist < 30) for ALL balls
+    for b in balls:
+        b.x = px
+        b.y = py
+
+    # Tick to suck them in and charge
+    for _ in range(50):
+        mode.tick(world, balls, delta=0.1)
+        if not mode.portals or not mode.portals[0]["active"]:
+            break
+
+    # Check if the portal collapsed and we got the expected events
+    explosions = [e for e in world.events if e[0] == "explosion"]
+    overloads = [e for e in world.events if e[0] == "portal_overload"]
+
+    assert len(overloads) > 0, "No overload event triggered despite 4 balls entering."
+    assert len(explosions) > 0, "No explosion triggered for overload."
+    assert explosions[0][1]["radius"] > 150.0, "Radius should be multiplied"
+
+    for b in balls:
+        assert b.damage_taken > 20.0, "Sucked balls should take multiplied damage"

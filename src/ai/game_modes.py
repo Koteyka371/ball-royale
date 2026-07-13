@@ -10924,10 +10924,18 @@ class UnstablePortalsEventMode(GameMode):
                             if hasattr(b, "visible"):
                                 b.visible = False
 
-                if p["charge_timer"] >= 2.0:
+                sucked_count = len(p.get("sucked_balls", []))
+                is_overloaded = sucked_count >= 3
+                if p["charge_timer"] >= 2.0 or is_overloaded:
                     p["active"] = False
+                    mult = float(max(1, sucked_count))
+
                     if hasattr(world, "add_event"):
-                        world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
+                        if is_overloaded:
+                            world.add_event("portal_overload", {"message": "A portal overloaded!", "x": p["x"], "y": p["y"]})
+                            world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": 150.0 * mult, "damage": 30.0 * mult})
+                        else:
+                            world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
 
                     # Blast sucked players out
                     for b in balls:
@@ -10946,9 +10954,27 @@ class UnstablePortalsEventMode(GameMode):
                             b.y = max(0.0, min(arena_h, b.y))
 
                             if hasattr(b, "take_damage"):
-                                b.take_damage(20.0)
+                                b.take_damage(20.0 * mult)
                             elif hasattr(b, "hp"):
-                                b.hp -= 20.0
+                                b.hp -= 20.0 * mult
+                        elif is_overloaded and getattr(b, "alive", False):
+                            # Overloaded shockwave damages nearby non-sucked balls
+                            import math
+                            dx = b.x - p["x"]
+                            dy = b.y - p["y"]
+                            dist = math.hypot(dx, dy)
+                            if dist < 150.0 * mult:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(30.0 * mult)
+                                elif hasattr(b, "hp"):
+                                    b.hp -= 30.0 * mult
+
+                                if dist > 0.0001:
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    knockback = 500.0 * (1.0 - dist / (150.0 * mult))
+                                    b.x = max(0.0, min(arena_w, b.x + nx * knockback * delta))
+                                    b.y = max(0.0, min(arena_h, b.y + ny * knockback * delta))
 
                     p["sucked_balls"] = []
             else:
