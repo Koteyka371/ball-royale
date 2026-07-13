@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-928] Perk Synergy Combinations — *2026-07-13 22:51:48 UTC*
+
+Introduce hidden synergies when specific pairs of perks are equipped. For example, combining 'Nimble' and 'Eagle Eye' grants 'Sniper Stance', providing a large damage bonus when attacking from far away while moving.
+
+---
+
 ## [idea-937] Sniper's Nest Mode — *2026-07-13 22:45:48 UTC*
 
 Periodically, tall towers rise from the ground. Balls that climb them gain massively increased line of sight and projectile speed, but are immobile while on top.

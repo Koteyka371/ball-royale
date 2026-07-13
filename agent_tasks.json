@@ -15942,7 +15942,7 @@
     },
     {
       "id": "idea-928",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Perk Synergy Combinations",
@@ -26275,6 +26275,40 @@
         "src/ai/juggernaut_roulette.py",
         "src/ai/juggernaut_roulette.gd",
         "tests/test_juggernaut_roulette.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1535",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Bounce Challenge",
+      "description": "Portals spawn on the map that reflect projectiles and players based on velocity and incidence angle, turning the arena into a bouncy chaos.",
+      "allowed_paths": [
+        "src/ai/portal_bounce_challenge.py",
+        "src/ai/portal_bounce_challenge.gd",
+        "tests/test_portal_bounce_challenge.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1536",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "King of the Hill Escalation",
+      "description": "A single control point grants increasing global buffs to the controlling player's faction, but they take exponentially more damage the longer they hold it.",
+      "allowed_paths": [
+        "src/ai/king_of_the_hill_escalation.py",
+        "src/ai/king_of_the_hill_escalation.gd",
+        "tests/test_king_of_the_hill_escalation.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
