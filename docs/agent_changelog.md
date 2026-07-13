@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-767] Tornado Surfing Skill — *2026-07-13 16:16:50 UTC*
+
+A specific ball type or skill that allows the entity to intentionally enter a tornado to gain a massive speed boost and be launched across the map instead of taking damage.
+
+---
+
 ## [idea-919] Eclipse Anomaly Event — *2026-07-13 16:16:46 UTC*
 
 A rare mid-day event where the sun goes dark abruptly, swapping all day/night buffs globally for 30 seconds. During this time, indestructible walls become destructible, allowing strong balls to break enemy cover points before the sun returns.
