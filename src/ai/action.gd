@@ -15684,6 +15684,68 @@ func _collect_booster(delta: float):
                         self.world.arena.hazards.erase(nearest)
                 if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
                     self.world.boosters.erase(nearest)
+            elif "kind" in nearest and nearest.kind == "cursed_relic":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("cursed_relic_timer", 10.0)
+                    self.ball.set_meta("invert_timer", 10.0)
+                if "cursed_relic_timer" in self.ball:
+                    self.ball.cursed_relic_timer = 10.0
+                if "invert_timer" in self.ball:
+                    self.ball.invert_timer = 10.0
+
+                var cr_applied = false
+                if "cursed_relic_applied" in self.ball: cr_applied = self.ball.cursed_relic_applied
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("cursed_relic_applied"): cr_applied = self.ball.get_meta("cursed_relic_applied")
+
+                if not cr_applied:
+                    if not "base_perception_radius_relic" in self.ball and not (self.ball.has_method("has_meta") and self.ball.has_meta("base_perception_radius_relic")):
+                        var pr = 250.0
+                        if "perception_radius" in self.ball: pr = self.ball.perception_radius
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("perception_radius"): pr = self.ball.get_meta("perception_radius")
+                        if self.ball.has_method("set_meta"): self.ball.set_meta("base_perception_radius_relic", pr)
+                        if "base_perception_radius_relic" in self.ball: self.ball.base_perception_radius_relic = pr
+
+                    if "base_perception_radius_relic" in self.ball:
+                        self.ball.perception_radius = self.ball.base_perception_radius_relic * 0.1
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("base_perception_radius_relic"):
+                        var new_pr = self.ball.get_meta("base_perception_radius_relic") * 0.1
+                        self.ball.set_meta("perception_radius", new_pr)
+
+                    if not "base_speed_relic" in self.ball and not (self.ball.has_method("has_meta") and self.ball.has_meta("base_speed_relic")):
+                        var sp = 2.0
+                        if "speed" in self.ball: sp = self.ball.speed
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("speed"): sp = self.ball.get_meta("speed")
+                        if self.ball.has_method("set_meta"): self.ball.set_meta("base_speed_relic", sp)
+                        if "base_speed_relic" in self.ball: self.ball.base_speed_relic = sp
+
+                    if "base_speed_relic" in self.ball:
+                        self.ball.speed = self.ball.base_speed_relic * 3.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("base_speed_relic"):
+                        self.ball.set_meta("speed", self.ball.get_meta("base_speed_relic") * 3.0)
+
+                    if not "base_damage_relic" in self.ball and not (self.ball.has_method("has_meta") and self.ball.has_meta("base_damage_relic")):
+                        var dm = 10.0
+                        if "damage" in self.ball: dm = self.ball.damage
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"): dm = self.ball.get_meta("damage")
+                        if self.ball.has_method("set_meta"): self.ball.set_meta("base_damage_relic", dm)
+                        if "base_damage_relic" in self.ball: self.ball.base_damage_relic = dm
+
+                    if "base_damage_relic" in self.ball:
+                        self.ball.damage = self.ball.base_damage_relic * 3.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("base_damage_relic"):
+                        self.ball.set_meta("damage", self.ball.get_meta("base_damage_relic") * 3.0)
+
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("cursed_relic_applied", true)
+                    if "cursed_relic_applied" in self.ball: self.ball.cursed_relic_applied = true
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "cursed_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("slow_timer", 5.0)
@@ -20984,7 +21046,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -24368,6 +24430,65 @@ func _update_skill_timer(delta: float):
             self.ball.stealth_booster_timer = stealth_booster_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("stealth_booster_timer", stealth_booster_timer)
+
+
+    var has_cr_timer = false
+    var cr_timer_val = 0.0
+    if "cursed_relic_timer" in self.ball:
+        has_cr_timer = true
+        cr_timer_val = float(self.ball.cursed_relic_timer)
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("cursed_relic_timer"):
+        has_cr_timer = true
+        cr_timer_val = float(self.ball.get_meta("cursed_relic_timer"))
+
+    if has_cr_timer and cr_timer_val > 0:
+        cr_timer_val -= delta
+        if "cursed_relic_timer" in self.ball: self.ball.cursed_relic_timer = cr_timer_val
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("cursed_relic_timer", cr_timer_val)
+
+        if cr_timer_val <= 0:
+            if "cursed_relic_timer" in self.ball: self.ball.cursed_relic_timer = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("cursed_relic_timer", 0.0)
+
+            var cr_app = false
+            if "cursed_relic_applied" in self.ball: cr_app = self.ball.cursed_relic_applied
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("cursed_relic_applied"): cr_app = self.ball.get_meta("cursed_relic_applied")
+
+            if cr_app:
+                if "base_perception_radius_relic" in self.ball:
+                    self.ball.perception_radius = self.ball.base_perception_radius_relic
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("base_perception_radius_relic"):
+                    self.ball.set_meta("perception_radius", self.ball.get_meta("base_perception_radius_relic"))
+                elif "perception_radius" in self.ball:
+                    self.ball.perception_radius /= 0.1
+
+                if "base_speed_relic" in self.ball:
+                    self.ball.speed = self.ball.base_speed_relic
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("base_speed_relic"):
+                    self.ball.set_meta("speed", self.ball.get_meta("base_speed_relic"))
+                elif "speed" in self.ball:
+                    self.ball.speed /= 3.0
+
+                if "base_damage_relic" in self.ball:
+                    self.ball.damage = self.ball.base_damage_relic
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("base_damage_relic"):
+                    self.ball.set_meta("damage", self.ball.get_meta("base_damage_relic"))
+                elif "damage" in self.ball:
+                    self.ball.damage /= 3.0
+
+                if "cursed_relic_applied" in self.ball: self.ball.cursed_relic_applied = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("cursed_relic_applied", false)
+
+                var b_badges = []
+                if "badges" in self.ball:
+                    b_badges = self.ball.badges
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("badges"):
+                    b_badges = self.ball.get_meta("badges")
+
+                if typeof(b_badges) == TYPE_ARRAY and not "cursed_relic_survivor" in b_badges:
+                    b_badges.append("cursed_relic_survivor")
+                    if "badges" in self.ball: self.ball.badges = b_badges
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("badges", b_badges)
 
     var vb_timer = 0.0
     if "vision_booster_timer" in self.ball:

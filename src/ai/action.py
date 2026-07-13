@@ -8617,6 +8617,29 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "cursed_relic":
+                    self.ball.cursed_relic_timer = 10.0
+                    self.ball.invert_timer = 10.0
+                    if not getattr(self.ball, "cursed_relic_applied", False):
+                        if not hasattr(self.ball, "base_perception_radius_relic"):
+                            self.ball.base_perception_radius_relic = getattr(self.ball, "perception_radius", 250.0)
+                        self.ball.perception_radius = self.ball.base_perception_radius_relic * 0.1
+
+                        if not hasattr(self.ball, "base_speed_relic"):
+                            self.ball.base_speed_relic = getattr(self.ball, "speed", 2.0)
+                        self.ball.speed = self.ball.base_speed_relic * 3.0
+
+                        if not hasattr(self.ball, "base_damage_relic"):
+                            self.ball.base_damage_relic = getattr(self.ball, "damage", 10.0)
+                        self.ball.damage = self.ball.base_damage_relic * 3.0
+
+                        self.ball.cursed_relic_applied = True
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "cursed_booster":
                     self.ball.slow_timer = 5.0
                     self.ball.poison_timer = 5.0
@@ -10679,7 +10702,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
+                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -13222,6 +13245,34 @@ class Action:
                     self.ball.base_perception_radius /= 1.5
                     self.ball.perception_radius = self.ball.base_perception_radius
                     self.ball.modified_scope_applied = False
+
+
+        if getattr(self.ball, "cursed_relic_timer", 0.0) > 0.0:
+            self.ball.cursed_relic_timer -= delta
+            if self.ball.cursed_relic_timer <= 0.0:
+                self.ball.cursed_relic_timer = 0.0
+                if getattr(self.ball, "cursed_relic_applied", False):
+                    if hasattr(self.ball, "base_perception_radius_relic"):
+                        self.ball.perception_radius = self.ball.base_perception_radius_relic
+                        delattr(self.ball, "base_perception_radius_relic")
+                    else:
+                        self.ball.perception_radius /= 0.1
+                    if hasattr(self.ball, "base_speed_relic"):
+                        self.ball.speed = self.ball.base_speed_relic
+                        delattr(self.ball, "base_speed_relic")
+                    else:
+                        self.ball.speed /= 3.0
+                    if hasattr(self.ball, "base_damage_relic"):
+                        self.ball.damage = self.ball.base_damage_relic
+                        delattr(self.ball, "base_damage_relic")
+                    else:
+                        self.ball.damage /= 3.0
+                    self.ball.cursed_relic_applied = False
+
+                    if not hasattr(self.ball, "badges"):
+                        self.ball.badges = []
+                    if "cursed_relic_survivor" not in self.ball.badges:
+                        self.ball.badges.append("cursed_relic_survivor")
 
         if hasattr(self.ball, "vision_booster_timer") and self.ball.vision_booster_timer > 0:
             self.ball.vision_booster_timer -= delta
