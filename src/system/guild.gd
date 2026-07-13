@@ -25,6 +25,9 @@ func load_guilds():
                         "statues": [],
                         "banners": [],
                         "cosmetics": [],
+                        "flags": [],
+                        "backgrounds": [],
+                        "announcer_voices": [],
                         "mini_games": {},
                         "training_arena_unlocked": false
                     }
@@ -577,28 +580,36 @@ func claim_boss_reward(guild_name: String, player_id: String, week_id: String, r
                 return true
     return false
 
-func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: String, cost: int, required_level: int = 1) -> bool:
+func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: String, cost: int, required_level: int = 1, currency: String = "resources") -> bool:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
         var current_level = 1
         if guild.has("level"):
             current_level = guild["level"]
-        if guild["resources"] >= cost and current_level >= required_level:
+
+        if currency != "resources" and currency != "guild_xp":
+            return false
+
+        var current_currency = 0
+        if guild.has(currency):
+            current_currency = guild[currency]
+
+        if current_currency >= cost and current_level >= required_level:
             if not guild.has("hq"):
                 guild["hq"] = {"statues": [], "banners": [],
-            "cosmetics": [], "training_arena_unlocked": false}
+            "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "training_arena_unlocked": false}
 
             if feature_type == "training_arena":
                 if not guild["hq"]["training_arena_unlocked"]:
-                    guild["resources"] -= cost
+                    guild[currency] -= cost
                     guild["hq"]["training_arena_unlocked"] = true
                     save_guilds()
                     return true
-            elif feature_type in ["statues", "banners", "cosmetics"]:
+            elif feature_type in ["statues", "banners", "cosmetics", "flags", "backgrounds", "announcer_voices"]:
                 if not guild["hq"].has(feature_type):
                     guild["hq"][feature_type] = []
                 if not guild["hq"][feature_type].has(feature_id):
-                    guild["resources"] -= cost
+                    guild[currency] -= cost
                     guild["hq"][feature_type].append(feature_id)
                     save_guilds()
                     return true
@@ -606,7 +617,7 @@ func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: Str
                 if not guild["hq"].has("mini_games"):
                     guild["hq"]["mini_games"] = {}
                 if not guild["hq"]["mini_games"].has(feature_id):
-                    guild["resources"] -= cost
+                    guild[currency] -= cost
                     guild["hq"]["mini_games"][feature_id] = {"high_scores": {}}
                     save_guilds()
                     return true
@@ -647,11 +658,14 @@ func get_mini_game_leaderboard(guild_name: String, mini_game_id: String) -> Arra
 func get_hq_status(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
-        var hq = {"statues": [], "banners": [], "cosmetics": [], "mini_games": {}, "training_arena_unlocked": false}
+        var hq = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "mini_games": {}, "training_arena_unlocked": false}
         if guild.has("hq"):
             if guild["hq"].has("statues"): hq["statues"] = guild["hq"]["statues"]
             if guild["hq"].has("banners"): hq["banners"] = guild["hq"]["banners"]
             if guild["hq"].has("cosmetics"): hq["cosmetics"] = guild["hq"]["cosmetics"]
+            if guild["hq"].has("flags"): hq["flags"] = guild["hq"]["flags"]
+            if guild["hq"].has("backgrounds"): hq["backgrounds"] = guild["hq"]["backgrounds"]
+            if guild["hq"].has("announcer_voices"): hq["announcer_voices"] = guild["hq"]["announcer_voices"]
             if guild["hq"].has("mini_games"): hq["mini_games"] = guild["hq"]["mini_games"]
             if guild["hq"].has("training_arena_unlocked"): hq["training_arena_unlocked"] = guild["hq"]["training_arena_unlocked"]
         return hq

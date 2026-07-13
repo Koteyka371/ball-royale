@@ -347,3 +347,33 @@ def test_guild_tournament(temp_guild_file):
 
     loser = gm.get_guild("LoserGuild")
     assert loser.get("prestige_pool", 0) == 0
+
+def test_hq_currency(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("CurrencyGuild", "player1")
+
+    # Give resources and guild_xp
+    gm.donate_resources("CurrencyGuild", 500)
+
+    gm.create_guild("OtherGuild", "player2")
+    # Try unlocking with guild_xp (should fail due to 0 xp)
+    assert gm.unlock_hq_feature("CurrencyGuild", "flags", "jolly_roger", 100, currency="guild_xp") == False
+
+    # Give guild XP
+    gm.record_gvg_match("CurrencyGuild", "OtherGuild", "CurrencyGuild") # +50 XP
+    gm.record_gvg_match("CurrencyGuild", "OtherGuild", "CurrencyGuild") # +50 XP
+
+    assert gm.get_guild("CurrencyGuild")["guild_xp"] == 100
+
+    # Unlock with guild_xp
+    assert gm.unlock_hq_feature("CurrencyGuild", "flags", "jolly_roger", 100, currency="guild_xp") == True
+
+    # XP should be 0 now
+    assert gm.get_guild("CurrencyGuild")["guild_xp"] == 0
+
+    # Resources should still be 500
+    assert gm.get_guild("CurrencyGuild")["resources"] == 500
+
+    # HQ status should have flag
+    hq_status = gm.get_hq_status("CurrencyGuild")
+    assert "jolly_roger" in hq_status["flags"]
