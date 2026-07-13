@@ -837,6 +837,7 @@ class BattleRoyaleMode(GameMode):
         self.high_tier_drops = []
         self.zone_initialized = False
         self.zone_x = 500.0
+        self.capture_points = []
         self.zone_y = 500.0
         self.zone_radius = 1000.0
         self.shrink_rate = 10.0
@@ -899,6 +900,25 @@ class BattleRoyaleMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        import random
+        self.capture_points = []
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        for _ in range(3):
+            cp = {
+                "x": random.uniform(200, arena_width - 200),
+                "y": random.uniform(200, arena_height - 200),
+                "radius": 120.0,
+                "capture_progress": 0.0,
+                "captured_by": None,
+                "active": True
+            }
+            self.capture_points.append(cp)
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         if hasattr(world, "arena") and world.arena:
@@ -1061,6 +1081,56 @@ class BattleRoyaleMode(GameMode):
                                     h.visible = True
                                     h.reveal_timer = 2.0
                                     setattr(atk, "active", False)
+
+        import math
+        # Capture Point Logic
+        if hasattr(self, "capture_points"):
+            for cp in self.capture_points:
+                if not cp["active"]:
+                    continue
+
+                teams_in_point = {}
+                for b in balls:
+                    if getattr(b, "alive", True):
+                        dx = b.x - cp["x"]
+                        dy = b.y - cp["y"]
+                        if math.hypot(dx, dy) <= cp["radius"]:
+                            team = getattr(b, "team", "unknown")
+                            teams_in_point[team] = teams_in_point.get(team, 0) + 1
+
+                if len(teams_in_point) == 1:
+                    team = list(teams_in_point.keys())[0]
+                    if cp["captured_by"] == team:
+                        cp["capture_progress"] = min(100.0, cp["capture_progress"] + 10.0 * delta)
+                    else:
+                        if cp["captured_by"] is not None:
+                            cp["capture_progress"] -= 20.0 * delta
+                            if cp["capture_progress"] <= 0:
+                                cp["captured_by"] = None
+                                cp["capture_progress"] = 0
+                        else:
+                            cp["capture_progress"] += 15.0 * delta
+                            if cp["capture_progress"] >= 100.0:
+                                cp["captured_by"] = team
+                                cp["capture_progress"] = 100.0
+                elif len(teams_in_point) == 0:
+                    if cp["captured_by"] is None and cp["capture_progress"] > 0:
+                        cp["capture_progress"] = max(0.0, cp["capture_progress"] - 5.0 * delta)
+
+                if cp["captured_by"] is not None and cp["capture_progress"] >= 100.0:
+                    for b in balls:
+                        if getattr(b, "alive", True):
+                            b_team = getattr(b, "team", "")
+                            if b_team == cp["captured_by"]:
+                                hp = getattr(b, "hp", 100.0)
+                                max_hp = getattr(b, "max_hp", 100.0)
+                                if not isinstance(max_hp, (int, float)):
+                                    max_hp = 100.0
+                                if hp < max_hp:
+                                    b.hp = min(max_hp, hp + 5.0 * delta)
+                            elif b_team != cp["captured_by"]:
+                                b.revealed = True
+                                b.revealed_timer = getattr(b, "revealed_timer", 0.0) + delta
 
         # Safe Zone logic
         if not getattr(self, "zone_initialized", False):
