@@ -2856,6 +2856,40 @@ class Action:
                 self._clamp_position()
                 return
 
+        if getattr(self.ball, "is_mirror_clone", False) and getattr(self.ball, "alive", True):
+            owner_id = getattr(self.ball, "mirror_clone_owner", None)
+            owner = None
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "id", None) == owner_id:
+                        owner = b
+                        break
+
+            if owner and getattr(owner, "alive", True):
+                width = 1000.0
+                height = 1000.0
+                if hasattr(self.world, "arena"):
+                    width = getattr(self.world.arena, "width", 1000.0)
+                    height = getattr(self.world.arena, "height", 1000.0)
+
+                self.ball.x = width - getattr(owner, "x", 0.0)
+                self.ball.y = height - getattr(owner, "y", 0.0)
+                self.ball.vx = -getattr(owner, "vx", 0.0)
+                self.ball.vy = -getattr(owner, "vy", 0.0)
+            else:
+                self.ball.vx = 0.0
+                self.ball.vy = 0.0
+
+            # Update position based on tracking owner, don't integrate velocity
+            #
+
+            self.ball.mirror_timer = getattr(self.ball, "mirror_timer", 10.0) - delta
+            if self.ball.mirror_timer <= 0 or getattr(self.ball, "hp", 100) <= 0:
+                self.ball.hp = 0
+                self.ball.alive = False
+
+            self._clamp_position()
+            return
         if getattr(self.ball, "is_mimic_clone", False) and getattr(self.ball, "alive", True):
             owner_id = getattr(self.ball, "mimic_owner", None)
             owner = None
@@ -10567,6 +10601,40 @@ class Action:
                     clone.skill_timer = 9999.0
 
                     self.world.balls.append(clone)
+            elif skill_name == "mirror_clone":
+                import copy
+                import random
+                clone = copy.copy(self.ball)
+                clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                if hasattr(self.world, "next_id"):
+                    self.world.next_id += 1
+
+                width = 1000.0
+                height = 1000.0
+                if hasattr(self.world, "arena"):
+                    width = getattr(self.world.arena, "width", 1000.0)
+                    height = getattr(self.world.arena, "height", 1000.0)
+
+                clone.x = width - getattr(self.ball, "x", 0.0)
+                clone.y = height - getattr(self.ball, "y", 0.0)
+
+                clone.is_mirror_clone = True
+                clone.mirror_clone_owner = getattr(self.ball, "id", None)
+                clone.mirror_timer = 10.0
+                clone.hp = getattr(self.ball, "hp", 100)
+                clone.max_hp = getattr(self.ball, "max_hp", 100)
+
+                # Clear skills
+                clone.skill = None
+                clone.SKILL = None
+                if hasattr(clone, "active_skill"):
+                    clone.active_skill = None
+                clone.skill_timer = 9999.0
+
+                if hasattr(self.world, "balls"):
+                    self.world.balls.append(clone)
+
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
             elif skill_name == "mimic_clone":
                 import copy
                 if hasattr(self.world, "balls"):

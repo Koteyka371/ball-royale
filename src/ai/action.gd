@@ -4167,6 +4167,97 @@ func execute(strategy: String, delta: float):
 		self._clamp_position()
 		return
 
+	var is_mirror_clone = false
+	if self.ball.has_method("get_meta") and self.ball.get_meta("is_mirror_clone"): is_mirror_clone = true
+	elif "is_mirror_clone" in self.ball and self.ball.is_mirror_clone: is_mirror_clone = true
+
+	var is_alive_mirror = true
+	if "alive" in self.ball: is_alive_mirror = self.ball.alive
+	elif self.ball.has_method("get_meta") and self.ball.has_meta("alive"): is_alive_mirror = self.ball.get_meta("alive")
+
+	if is_mirror_clone and is_alive_mirror:
+		var owner_id = null
+		if self.ball.has_method("get_meta") and self.ball.has_meta("mirror_clone_owner"): owner_id = self.ball.get_meta("mirror_clone_owner")
+		elif "mirror_clone_owner" in self.ball: owner_id = self.ball.mirror_clone_owner
+
+		var owner = null
+		if world != null and "balls" in world:
+			for b in world.balls:
+				var bid = null
+				if "id" in b: bid = b.id
+				elif b.has_method("get_meta") and b.has_meta("id"): bid = b.get_meta("id")
+
+				if str(bid) == str(owner_id):
+					owner = b
+					break
+
+		var o_alive = true
+		if owner != null:
+			if "alive" in owner: o_alive = owner.alive
+			elif owner.has_method("get_meta") and owner.has_meta("alive"): o_alive = owner.get_meta("alive")
+
+		if owner != null and o_alive:
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"):
+				arena_w = world.arena.width
+				arena_h = world.arena.height
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "width" in world.arena:
+				arena_w = world.arena.width
+				arena_h = world.arena.height
+
+			var ox = 0.0
+			var oy = 0.0
+			if "x" in owner: ox = owner.x
+			elif owner.has_method("get_meta") and owner.has_meta("x"): ox = owner.get_meta("x")
+			if "y" in owner: oy = owner.y
+			elif owner.has_method("get_meta") and owner.has_meta("y"): oy = owner.get_meta("y")
+
+			var ovx = 0.0
+			var ovy = 0.0
+			if "vx" in owner: ovx = owner.vx
+			elif owner.has_method("get_meta") and owner.has_meta("vx"): ovx = owner.get_meta("vx")
+			if "vy" in owner: ovy = owner.vy
+			elif owner.has_method("get_meta") and owner.has_meta("vy"): ovy = owner.get_meta("vy")
+
+			if "x" in self.ball: self.ball.x = arena_w - ox
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("x", arena_w - ox)
+
+			if "y" in self.ball: self.ball.y = arena_h - oy
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("y", arena_h - oy)
+
+			if "vx" in self.ball: self.ball.vx = -ovx
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", -ovx)
+
+			if "vy" in self.ball: self.ball.vy = -ovy
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", -ovy)
+		else:
+			if "vx" in self.ball: self.ball.vx = 0.0
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", 0.0)
+
+			if "vy" in self.ball: self.ball.vy = 0.0
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", 0.0)
+
+		var mirror_timer = 10.0
+		if "mirror_timer" in self.ball: mirror_timer = self.ball.mirror_timer
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("mirror_timer"): mirror_timer = self.ball.get_meta("mirror_timer")
+		mirror_timer -= delta
+		if "mirror_timer" in self.ball: self.ball.mirror_timer = mirror_timer
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("mirror_timer", mirror_timer)
+
+		var hp = 100.0
+		if "hp" in self.ball: hp = self.ball.hp
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"): hp = self.ball.get_meta("hp")
+
+		if mirror_timer <= 0 or hp <= 0:
+			if "hp" in self.ball: self.ball.hp = 0.0
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", 0.0)
+			if "alive" in self.ball: self.ball.alive = false
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+
+		self._clamp_position()
+		return
+
 	var is_mimic_clone = false
 	if self.ball.has_method("get_meta") and self.ball.get_meta("is_mimic_clone"): is_mimic_clone = true
 	elif "is_mimic_clone" in self.ball and self.ball.is_mimic_clone: is_mimic_clone = true
@@ -19287,6 +19378,80 @@ func _use_skill():
                         clone["skill_timer"] = 9999.0
 
                     self.world.balls.append(clone)
+        elif skill_name == "mirror_clone":
+            var clone = null
+            if typeof(self.ball) == TYPE_OBJECT:
+                if self.ball.has_method("duplicate"):
+                    clone = self.ball.duplicate()
+                else:
+                    clone = {}
+            else:
+                clone = self.ball.duplicate()
+
+            var next_id = randi() % 90000 + 10000
+            if "next_id" in self.world:
+                next_id = self.world.next_id
+                self.world.next_id += 1
+
+            var arena_w = 1000.0
+            var arena_h = 1000.0
+            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("width"):
+                arena_w = self.world.arena.width
+                arena_h = self.world.arena.height
+            elif typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "width" in self.world.arena:
+                arena_w = self.world.arena.width
+                arena_h = self.world.arena.height
+
+            var my_x = 0.0
+            var my_y = 0.0
+            if "x" in self.ball: my_x = self.ball.x
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): my_x = self.ball.get_meta("x")
+            if "y" in self.ball: my_y = self.ball.y
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my_y = self.ball.get_meta("y")
+
+            var owner_id = null
+            if "id" in self.ball: owner_id = self.ball.id
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): owner_id = self.ball.get_meta("id")
+
+            if typeof(clone) == TYPE_OBJECT:
+                if "id" in clone: clone.id = next_id
+
+                if "x" in clone: clone.x = arena_w - my_x
+                if "y" in clone: clone.y = arena_h - my_y
+
+                if clone.has_method("set_meta"):
+                    clone.set_meta("is_mirror_clone", true)
+                    clone.set_meta("mirror_clone_owner", owner_id)
+                    clone.set_meta("mirror_timer", 10.0)
+                    clone.set_meta("skill", "")
+                    clone.set_meta("skill_timer", 9999.0)
+                else:
+                    if "is_mirror_clone" in clone: clone.is_mirror_clone = true
+                    if "mirror_clone_owner" in clone: clone.mirror_clone_owner = owner_id
+                    if "mirror_timer" in clone: clone.mirror_timer = 10.0
+                    if "skill" in clone: clone.skill = ""
+                    if "skill_timer" in clone: clone.skill_timer = 9999.0
+
+            elif typeof(clone) == TYPE_DICTIONARY:
+                clone["id"] = next_id
+                clone["x"] = arena_w - my_x
+                clone["y"] = arena_h - my_y
+                clone["is_mirror_clone"] = true
+                clone["mirror_clone_owner"] = owner_id
+                clone["mirror_timer"] = 10.0
+                clone["skill"] = ""
+                clone["skill_timer"] = 9999.0
+
+            if "balls" in self.world:
+                self.world.balls.append(clone)
+
+            if "skill_cooldown" in self.ball:
+                self.ball.skill_timer = self.ball.skill_cooldown
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("skill_cooldown"):
+                self.ball.skill_timer = self.ball.get_meta("skill_cooldown")
+            else:
+                self.ball.skill_timer = 5.0
+
         elif skill_name == "mimic_clone":
             if "balls" in self.world:
                 var active_clone = null
