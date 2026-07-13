@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-938] Vortex Hazard — *2026-07-13 21:18:16 UTC*
+
+A slow-moving vortex appears in the center of the arena. It constantly pulls nearby entities towards it, dealing increasing continuous damage the closer they are to its core.
+
+---
+
 ## [idea-921] Cloaking Field — *2026-07-13 21:18:12 UTC*
 
 A booster that gives the player and nearby allies brief invisibility from AI perception and turret targeting.
