@@ -27788,7 +27788,156 @@ class SolarEclipseEventMode extends GameMode:
 				if world != null and world.has_method("add_event"):
 					world.add_event("solar_eclipse_end", {"type": "weather_warning", "message": "The solar eclipse has ended."})
 
+
+class StationaryTurretsMode extends GameMode:
+	var turrets = []
+	var spawn_timer = 0.0
+	var spawn_interval = 15.0
+
+	func _init() -> void:
+		name = "Stationary Turrets"
+		description = "Stationary turrets periodically spawn in the arena. Capture them by standing inside to make them fire on enemies!"
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		spawn_timer += delta
+		if spawn_timer >= spawn_interval:
+			spawn_timer = 0.0
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+					arena_w = world.arena.get("width", 1000.0)
+					arena_h = world.arena.get("height", 1000.0)
+			else:
+				if "arena" in world:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_w = world.arena.get("width", 1000.0)
+						arena_h = world.arena.get("height", 1000.0)
+					else:
+						arena_w = world.arena.width if "width" in world.arena else 1000.0
+						arena_h = world.arena.height if "height" in world.arena else 1000.0
+
+			var tx = randf_range(100.0, arena_w - 100.0)
+			var ty = randf_range(100.0, arena_h - 100.0)
+			var tid = randi() % 900000 + 100000
+
+			var new_turret = {
+				"id": tid,
+				"x": tx,
+				"y": ty,
+				"radius": 80.0,
+				"capture_progress": 0.0,
+				"team": null,
+				"fire_timer": 0.0,
+				"attack_range": 300.0,
+				"damage": 15.0,
+				"kind": "capture_turret"
+			}
+			turrets.append(new_turret)
+
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("hazards"):
+						world.arena.hazards.append(new_turret)
+			else:
+				if "arena" in world and "hazards" in world.arena:
+					world.arena.hazards.append(new_turret)
+
+		for i in range(turrets.size()):
+			var t = turrets[i]
+			var teams_in_radius = []
+			for b in balls:
+				var is_alive = false
+				var bx = 0.0
+				var by = 0.0
+				var b_team = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					b_team = b.get("team", "")
+				else:
+					is_alive = b.alive if "alive" in b else false
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+					b_team = b.team if "team" in b else ""
+
+				if not is_alive: continue
+
+				var dx = bx - t.x
+				var dy = by - t.y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist <= t.radius:
+					if b_team != "" and not teams_in_radius.has(b_team):
+						teams_in_radius.append(b_team)
+
+			if teams_in_radius.size() == 1:
+				var occupying_team = teams_in_radius[0]
+				if t.team == occupying_team:
+					t.capture_progress = min(100.0, t.capture_progress + 20.0 * delta)
+				else:
+					t.capture_progress -= 20.0 * delta
+					if t.capture_progress <= 0:
+						t.team = occupying_team
+						t.capture_progress = 0.0
+
+			if t.team != null and t.capture_progress >= 0.0:
+				t.fire_timer += delta
+				if t.fire_timer >= 1.0:
+					t.fire_timer = 0.0
+					var nearest_enemy = null
+					var min_dist = t.attack_range
+					for b in balls:
+						var is_alive = false
+						var bx = 0.0
+						var by = 0.0
+						var b_team = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							is_alive = b.get("alive", false)
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+							b_team = b.get("team", "")
+						else:
+							is_alive = b.alive if "alive" in b else false
+							bx = b.x if "x" in b else 0.0
+							by = b.y if "y" in b else 0.0
+							b_team = b.team if "team" in b else ""
+
+						if not is_alive: continue
+						if b_team != "" and b_team != t.team:
+							var dx = bx - t.x
+							var dy = by - t.y
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist <= min_dist:
+								min_dist = dist
+								nearest_enemy = b
+
+					if nearest_enemy != null:
+						if typeof(nearest_enemy) == TYPE_DICTIONARY:
+							nearest_enemy["hp"] = max(0, nearest_enemy.get("hp", 100) - t.damage)
+							var ne_x = nearest_enemy.get("x", 0.0)
+							var ne_y = nearest_enemy.get("y", 0.0)
+							if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+								world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": ne_x, "target_y": ne_y})
+							elif typeof(world) != TYPE_DICTIONARY and "events" in world:
+								world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": ne_x, "target_y": ne_y})
+						else:
+							if nearest_enemy.has_method("take_damage"):
+								nearest_enemy.take_damage(t.damage)
+							else:
+								nearest_enemy.hp = max(0, nearest_enemy.hp - t.damage if "hp" in nearest_enemy else 100.0 - t.damage)
+							var ne_x = nearest_enemy.x if "x" in nearest_enemy else 0.0
+							var ne_y = nearest_enemy.y if "y" in nearest_enemy else 0.0
+							if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+								world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": ne_x, "target_y": ne_y})
+							elif typeof(world) != TYPE_DICTIONARY and "events" in world:
+								world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": ne_x, "target_y": ne_y})
+
+
 var GAME_MODES = {
+	"stationary_turrets": StationaryTurretsMode.new(),
 
 	"scorching_sun": ScorchingSunMode.new(),
 	"bounty_tag": BountyTagMode.new(),
