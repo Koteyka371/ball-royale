@@ -17118,61 +17118,70 @@ class UnstablePortalsEventMode extends GameMode:
 								elif "visible" in b:
 									b.visible = false
 
-				if p["charge_timer"] >= 2.0:
-					p["active"] = false
-					if world != null and world.has_method("add_event"):
-						world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
+					if p["charge_timer"] >= 2.0:
+						p["active"] = false
+						if world != null and world.has_method("add_event"):
+							world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
 
-					for b in balls:
-						var alive = false
-						if typeof(b) == TYPE_DICTIONARY:
-							alive = b.get("alive", false)
-						else:
-							alive = b.alive
+						var other_portals = []
+						for op in portals:
+							if op["active"] and op != p:
+								other_portals.append(op)
 
-						if not alive:
-							continue
-
-						var b_id = -1
-						if typeof(b) == TYPE_DICTIONARY:
-							b_id = b.get("id", -1)
-						elif "id" in b:
-							b_id = b.id
-						elif b.has_method("get_meta") and b.has_meta("id"):
-							b_id = b.get_meta("id")
-
-						if b_id in p["sucked_balls"]:
-							if typeof(b) != TYPE_DICTIONARY and "visible" in b:
-								b.visible = true
-
-							var angle = randf() * 2.0 * PI
-							var blast_speed = 1000.0
-							var bx = 0.0
-							var by = 0.0
-
+						for b in balls:
+							var alive = false
 							if typeof(b) == TYPE_DICTIONARY:
-								bx = float(b.get("x", 0.0))
-								by = float(b.get("y", 0.0))
+								alive = b.get("alive", false)
 							else:
-								bx = float(b.x)
-								by = float(b.y)
+								alive = b.alive
 
-							bx += cos(angle) * blast_speed * delta
-							by += sin(angle) * blast_speed * delta
-							bx = max(0.0, min(arena_w, bx))
-							by = max(0.0, min(arena_h, by))
+							if not alive:
+								continue
 
+							var b_id = -1
 							if typeof(b) == TYPE_DICTIONARY:
-								b["x"] = bx
-								b["y"] = by
-								if b.has("hp"): b["hp"] -= 20.0
-							else:
-								b.x = bx
-								b.y = by
-								if b.has_method("take_damage"): b.take_damage(20.0)
-								elif "hp" in b: b.hp -= 20.0
+								b_id = b.get("id", -1)
+							elif "id" in b:
+								b_id = b.id
+							elif b.has_method("get_meta") and b.has_meta("id"):
+								b_id = b.get_meta("id")
 
-					p["sucked_balls"] = []
+							if b_id in p["sucked_balls"]:
+								if typeof(b) != TYPE_DICTIONARY and "visible" in b:
+									b.visible = true
+
+								var angle = randf() * 2.0 * PI
+								var bx = 0.0
+								var by = 0.0
+
+								if other_portals.size() > 0 and randf() < 0.75:
+									var exit_p = other_portals[randi() % other_portals.size()]
+									bx = exit_p["x"] + cos(angle) * 30.0
+									by = exit_p["y"] + sin(angle) * 30.0
+									if exit_p.has("charging") and exit_p["charging"] and randf() < 0.5:
+										if not exit_p.has("sucked_balls"):
+											exit_p["sucked_balls"] = []
+										exit_p["sucked_balls"].append(b_id)
+										if typeof(b) != TYPE_DICTIONARY and "visible" in b:
+											b.visible = false
+								else:
+									bx = p["x"] + cos(angle) * 30.0
+									by = p["y"] + sin(angle) * 30.0
+
+								bx = max(0.0, min(arena_w, bx))
+								by = max(0.0, min(arena_h, by))
+
+								if typeof(b) == TYPE_DICTIONARY:
+									b["x"] = bx
+									b["y"] = by
+									if b.has("hp"): b["hp"] -= 20.0
+								else:
+									b.x = bx
+									b.y = by
+									if b.has_method("take_damage"): b.take_damage(20.0)
+									elif "hp" in b: b.hp -= 20.0
+
+						p["sucked_balls"] = []
 
 			else:
 				p["timer"] -= delta
