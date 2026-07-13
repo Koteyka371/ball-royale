@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-958] Blacksmith Mode — *2026-07-13 23:15:05 UTC*
+
+Players can find and collect scattered anvil pieces to summon a powerful blacksmith boss that drops legendary loot.
+
+---
+
 ## [idea-928] Perk Synergy Combinations — *2026-07-13 22:51:48 UTC*
 
 Introduce hidden synergies when specific pairs of perks are equipped. For example, combining 'Nimble' and 'Eagle Eye' grants 'Sniper Stance', providing a large damage bonus when attacking from far away while moving.
