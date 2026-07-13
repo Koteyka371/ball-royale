@@ -16830,7 +16830,95 @@ class SolarEclipseEventMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("solar_eclipse_end", {"type": "weather_warning", "message": "The solar eclipse has ended."})
 
+
+class StationaryTurretsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Stationary Turrets"
+        self.description = "Stationary turrets periodically spawn in the arena. Capture them by standing inside to make them fire on enemies!"
+        self.turrets = []
+        self.spawn_timer = 0.0
+        self.spawn_interval = 15.0
+
+    class _CaptureTurret:
+        def __init__(self, id_val, x, y):
+            self.id = id_val
+            self.x = x
+            self.y = y
+            self.radius = 80.0
+            self.capture_progress = 0.0
+            self.team = None
+            self.fire_timer = 0.0
+            self.attack_range = 300.0
+            self.damage = 15.0
+            self.kind = "capture_turret"
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0.0
+            arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+            arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+            tx = random.uniform(100, arena_w - 100)
+            ty = random.uniform(100, arena_h - 100)
+            tid = random.randint(100000, 999999)
+            new_turret = self._CaptureTurret(tid, tx, ty)
+            self.turrets.append(new_turret)
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards.append(new_turret)
+
+        for t in self.turrets:
+            teams_in_radius = set()
+            for b in balls:
+                if not getattr(b, "alive", False): continue
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                dist = ((bx - t.x)**2 + (by - t.y)**2)**0.5
+                if dist <= t.radius:
+                    b_team = getattr(b, "team", "")
+                    if b_team:
+                        teams_in_radius.add(b_team)
+
+            if len(teams_in_radius) == 1:
+                occupying_team = list(teams_in_radius)[0]
+                if t.team == occupying_team:
+                    t.capture_progress = min(100.0, t.capture_progress + 20.0 * delta)
+                else:
+                    t.capture_progress -= 20.0 * delta
+                    if t.capture_progress <= 0:
+                        t.team = occupying_team
+                        t.capture_progress = 0.0
+            elif len(teams_in_radius) > 1:
+                pass # contested
+
+            if t.team and t.capture_progress >= 0.0:
+                t.fire_timer += delta
+                if t.fire_timer >= 1.0:
+                    t.fire_timer = 0.0
+                    nearest_enemy = None
+                    min_dist = t.attack_range
+                    for b in balls:
+                        if not getattr(b, "alive", False): continue
+                        b_team = getattr(b, "team", "")
+                        if b_team and b_team != t.team:
+                            dist = ((getattr(b, "x", 0.0) - t.x)**2 + (getattr(b, "y", 0.0) - t.y)**2)**0.5
+                            if dist <= min_dist:
+                                min_dist = dist
+                                nearest_enemy = b
+
+                    if nearest_enemy:
+                        if hasattr(nearest_enemy, "take_damage"):
+                            nearest_enemy.take_damage(t.damage)
+                        else:
+                            nearest_enemy.hp = getattr(nearest_enemy, "hp", 100) - t.damage
+                        if hasattr(world, "events"):
+                            world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": getattr(nearest_enemy, "x", 0.0), "target_y": getattr(nearest_enemy, "y", 0.0)})
+
 GAME_MODES = {
+    "stationary_turrets": StationaryTurretsMode(),
 
     'scorching_sun': ScorchingSunMode(),
     "bounty_tag": BountyTagMode(),
