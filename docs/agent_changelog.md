@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-927] Weapon Scavenger Mode — *2026-07-13 21:18:25 UTC*
+
+Players start with basic attacks and must scavenge weapon crates around the arena to unlock random powerful abilities for their balls. Crates are heavily contested.
+
+---
+
 ## [idea-904] Bouncing Laser Trap — *2026-07-13 21:18:20 UTC*
 
 A new trap variant that, when triggered, releases a small laser beam that bounces between nearby walls or entities 5 times. Each bounce deals light damage and slows the target slightly. If it hits the same target consecutively, the damage doubles.
