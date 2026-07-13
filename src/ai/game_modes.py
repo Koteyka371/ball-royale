@@ -14754,7 +14754,7 @@ class WeaponCollectionMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Weapon Collection"
-        self.description = "Players start with no attacks. Weapons randomly drop around the map, and players must collect them to deal damage."
+        self.description = "Players start with basic attacks and must scavenge weapon crates around the arena to unlock random powerful abilities for their balls. Crates are heavily contested."
         self.weapon_spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
@@ -14800,9 +14800,6 @@ class WeaponCollectionMode(GameMode):
             world.arena.hazards = []
         self.weapon_spawn_timer = 0.0
 
-        for b in balls:
-            b.base_damage = 0.0
-            b.damage = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
@@ -14837,19 +14834,32 @@ class WeaponCollectionMode(GameMode):
             y = random.uniform(50, arena_height - 50)
 
             weapon_id = len(world.arena.hazards) + random.randint(10000, 99999)
-            weapon = Hazard(id=weapon_id, x=x, y=y, radius=15.0, kind="weapon_drop", damage=0.0)
+            weapon = Hazard(id=weapon_id, x=x, y=y, radius=15.0, kind="weapon_crate", damage=0.0)
             world.arena.hazards.append(weapon)
 
         for b in balls:
             for h in world.arena.hazards:
-                if getattr(h, "active", True) and getattr(h, "kind", "") == "weapon_drop":
+                if getattr(h, "active", True) and getattr(h, "kind", "") == "weapon_crate":
                     dist_sq = (b.x - h.x)**2 + (b.y - h.y)**2
                     combined_rad = getattr(b, "radius", 10.0) + getattr(h, "radius", 15.0)
                     if dist_sq < combined_rad * combined_rad:
                         h.active = False
-                        current_base = getattr(b, "base_damage", 0.0)
-                        b.base_damage = current_base + 10.0
-                        b.damage = b.base_damage
+                        abilities = [
+                            "fireball",
+                            "explosion",
+                            "deployable_thumper",
+                            "deployable_thin_hazard_line",
+                            "laser_tripwire",
+                            "mind_control",
+                            "ground_pound",
+                            "orbital_shield",
+                            "phase_through"
+                        ]
+                        b.active_skill = random.choice(abilities)
+                        b.skill_cooldown = 5.0
+                        b.skill_timer = 0.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("weapon_collected", {"ball_id": getattr(b, "id", None), "ability": b.active_skill})
 
 
 class CenterBlackHoleMode(GameMode):

@@ -23591,7 +23591,7 @@ class WeaponCollectionMode extends GameMode:
 
 	func _init():
 		name = "Weapon Collection"
-		description = "Players start with no attacks. Weapons randomly drop around the map, and players must collect them to deal damage."
+		description = "Players start with basic attacks and must scavenge weapon crates around the arena to unlock random powerful abilities for their balls. Crates are heavily contested."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
 		for b in balls:
@@ -23741,14 +23741,14 @@ class WeaponCollectionMode extends GameMode:
 			var hazard_class = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
 			var weapon = null
 			if hazard_class:
-				weapon = hazard_class.new(w_id, x, y, 15.0, "weapon_drop", 0.0)
+				weapon = hazard_class.new(w_id, x, y, 15.0, "weapon_crate", 0.0)
 			else:
 				weapon = {
 					"id": w_id,
 					"x": x,
 					"y": y,
 					"radius": 15.0,
-					"kind": "weapon_drop",
+					"kind": "weapon_crate",
 					"damage": 0.0,
 					"active": true
 				}
@@ -23762,7 +23762,7 @@ class WeaponCollectionMode extends GameMode:
 			for h in hazards:
 				var h_active = h.get("active", true) if typeof(h) == TYPE_DICTIONARY else h.get("active")
 				var h_kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.get("kind")
-				if h_active and h_kind == "weapon_drop":
+				if h_active and h_kind == "weapon_crate":
 					var hx = h.get("x", 0) if typeof(h) == TYPE_DICTIONARY else h.get("x")
 					var hy = h.get("y", 0) if typeof(h) == TYPE_DICTIONARY else h.get("y")
 					var hr = h.get("radius", 15.0) if typeof(h) == TYPE_DICTIONARY else h.get("radius")
@@ -23774,14 +23774,29 @@ class WeaponCollectionMode extends GameMode:
 						else:
 							h.set("active", false)
 
+						var abilities = [
+							"fireball",
+							"explosion",
+							"deployable_thumper",
+							"deployable_thin_hazard_line",
+							"laser_tripwire",
+							"mind_control",
+							"ground_pound",
+							"orbital_shield",
+							"phase_through"
+						]
+						var selected_ability = abilities[randi() % abilities.size()]
 						if typeof(b) == TYPE_DICTIONARY:
-							var cur_base = b.get("base_damage", 0.0)
-							b["base_damage"] = cur_base + 10.0
-							b["damage"] = b["base_damage"]
+							b["active_skill"] = selected_ability
+							b["skill_cooldown"] = 5.0
+							b["skill_timer"] = 0.0
 						else:
-							var cur_base = b.get("base_damage") if b.get("base_damage") != null else 0.0
-							b.set("base_damage", cur_base + 10.0)
-							b.set("damage", b.get("base_damage"))
+							b.set("active_skill", selected_ability)
+							b.set("skill_cooldown", 5.0)
+							b.set("skill_timer", 0.0)
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+							world.add_event("weapon_collected", {"ball_id": b_id, "ability": selected_ability})
 
 
 class CenterBlackHoleMode extends GameMode:

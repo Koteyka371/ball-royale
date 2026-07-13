@@ -18,6 +18,8 @@ class MockBall:
         self.radius = 10.0
         self.base_damage = 10.0
         self.damage = 10.0
+        self.active_skill = None
+        self.active_skill = None
 
 def test_weapon_collection_setup():
     mode = WeaponCollectionMode()
@@ -27,10 +29,6 @@ def test_weapon_collection_setup():
 
     mode.setup(world, [b1, b2])
 
-    assert b1.base_damage == 0.0
-    assert b1.damage == 0.0
-    assert b2.base_damage == 0.0
-    assert b2.damage == 0.0
     assert len(world.arena.hazards) == 0
 
 def test_weapon_collection_spawn():
@@ -47,7 +45,7 @@ def test_weapon_collection_spawn():
     # Tick over threshold
     mode.tick(world, [b1], delta=2.1)
     assert len(world.arena.hazards) == 1
-    assert world.arena.hazards[0].kind == "weapon_drop"
+    assert world.arena.hazards[0].kind == "weapon_crate"
     assert world.arena.hazards[0].active == True
 
 def test_weapon_collection_pickup():
@@ -63,17 +61,15 @@ def test_weapon_collection_pickup():
             self.x = 500.0
             self.y = 500.0
             self.radius = 15.0
-            self.kind = "weapon_drop"
+            self.kind = "weapon_crate"
             self.active = True
 
     h = MockHazard()
     world.arena.hazards.append(h)
 
-    assert b1.base_damage == 0.0
-
     # Tick should cause pickup
     mode.tick(world, [b1], delta=0.1)
 
     assert h.active == False
-    assert b1.base_damage == 10.0
-    assert b1.damage == 10.0
+    assert b1.active_skill is not None
+    assert b1.skill_cooldown == 5.0
