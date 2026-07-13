@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-944] Seasonal Boss Rotations — *2026-07-13 21:51:58 UTC*
+
+Introduce bosses that are seasonally locked, such as a 'Blizzard Boss' that only spawns during winter (or when the arena has a snow biome active) and a 'Heatwave Boss' that only spawns in desert maps.
+
+---
+
 ## [idea-934] Guild Alliances — *2026-07-13 21:51:54 UTC*
 
 Allow guilds to form alliances with other guilds to share passive resource generation and coordinate attacks on massive multi-guild boss raids.
