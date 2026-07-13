@@ -10805,23 +10805,53 @@ func execute(strategy: String, delta: float):
                             var prand2 = (b_id * 23 + h_id * 7 + current_tick * 19) % 1000 / 1000.0
                             var launch_dist = 50.0 + prand2 * 100.0
 
+                            var b_type = ""
+                            if "ball_type" in self.ball:
+                                b_type = str(self.ball.ball_type)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"):
+                                b_type = str(self.ball.get_meta("ball_type"))
+                            elif "BALL_TYPE" in self.ball:
+                                b_type = str(self.ball.BALL_TYPE)
+
+                            var b_skill = ""
+                            if "skill" in self.ball:
+                                b_skill = str(self.ball.skill)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("skill"):
+                                b_skill = str(self.ball.get_meta("skill"))
+
+                            var is_wind_rider = b_type == "wind_rider" or b_skill == "wind_rider"
+
+                            if is_wind_rider:
+                                launch_dist *= 3.0
+                                var current_speed = 0.0
+                                if "speed_boost_timer" in self.ball:
+                                    current_speed = float(self.ball.speed_boost_timer)
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("speed_boost_timer"):
+                                    current_speed = float(self.ball.get_meta("speed_boost_timer"))
+
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("speed_boost_timer", max(current_speed, 5.0))
+                                if "speed_boost_timer" in self.ball:
+                                    self.ball.speed_boost_timer = max(current_speed, 5.0)
+
                             self.ball.x += cos(angle) * launch_dist
                             self.ball.y += sin(angle) * launch_dist
 
-                            var hazard_damage = hazard.damage
-                            if self.ball.has_method("take_damage"):
-                                self.ball.take_damage(hazard_damage)
-                            elif "hp" in self.ball:
-                                self.ball.hp -= hazard_damage
-                                if self.ball.hp <= 0:
-                                    self.ball.alive = false
+                            if not is_wind_rider:
+                                var hazard_damage = hazard.damage
+                                if self.ball.has_method("take_damage"):
+                                    self.ball.take_damage(hazard_damage)
+                                elif "hp" in self.ball:
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = false
 
-                            # Apply dizzy effect (confusion)
-                            self.ball.is_confused = true
-                            if "confusion_timer" in self.ball and self.ball.confusion_timer > 3.0:
-                                pass
-                            else:
-                                self.ball.confusion_timer = 3.0
+                                # Apply dizzy effect (confusion)
+                                self.ball.is_confused = true
+                                if "confusion_timer" in self.ball and self.ball.confusion_timer > 3.0:
+                                    pass
+                                else:
+                                    self.ball.confusion_timer = 3.0
 
                             if hazard.kind in ["firenado", "local_firenado"]:
                                 if "burn_timer" in self.ball:

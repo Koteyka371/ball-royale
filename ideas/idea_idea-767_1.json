@@ -1,0 +1,4 @@
+{
+    "title": "Tornado Warning Siren Trap",
+    "description": "A deployable trap that emits a localized siren. If an enemy ball enters the zone, a minor tornado spawns directly on them after 3 seconds, launching them out of the arena."
+}
