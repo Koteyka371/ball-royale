@@ -3092,7 +3092,9 @@ class BossFightMode(GameMode):
             if b == boss:
                 continue
             b.team = "Hunters"
-            b.max_hp = getattr(b, "max_hp", 100) * 0.8
+            if not hasattr(b, "base_max_hp"):
+                b.base_max_hp = getattr(b, "max_hp", 100.0)
+            b.max_hp = b.base_max_hp * 0.8
             b.hp = b.max_hp
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
@@ -14660,20 +14662,32 @@ class JuggernautMode(GameMode):
             if b == boss:
                 continue
             b.team = "Hunters"
-            b.max_hp = getattr(b, "max_hp", 100) * 0.8
+            if not hasattr(b, "base_max_hp"):
+                b.base_max_hp = getattr(b, "max_hp", 100.0)
+            b.max_hp = b.base_max_hp * 0.8
             b.hp = b.max_hp
 
     def _make_juggernaut(self, world: Any, b: Any) -> None:
         b.team = "Juggernaut"
-        # Optional: Actually change ball_type to juggernaut? Or just scale stats.
-        # "becomes the new Juggernaut" usually means their role is Juggernaut.
-        b.max_hp = getattr(b, "max_hp", 100) * 10.0
+        if not hasattr(b, "base_max_hp"):
+            b.base_max_hp = getattr(b, "max_hp", 100.0)
+
+        b.max_hp = b.base_max_hp * 10.0
         b.hp = b.max_hp
-        b.damage = getattr(b, "damage", 10.0) * 2.0
-        b.radius = getattr(b, "radius", 10.0) * 3.0
+
+        if not hasattr(b, "base_damage"):
+            b.base_damage = getattr(b, "damage", 10.0)
+        b.damage = b.base_damage * 2.0
+
+        if not hasattr(b, "base_radius"):
+            b.base_radius = getattr(b, "radius", 10.0)
+        b.radius = b.base_radius * 3.0
 
         b.base_speed = float(getattr(b, "base_speed", getattr(b, "speed", 100.0))) * 0.6
-        b.mass = getattr(b, "mass", 1.0) * 5.0
+
+        if not hasattr(b, "base_mass"):
+            b.base_mass = getattr(b, "mass", 1.0)
+        b.mass = b.base_mass * 5.0
 
         # fully heal
         b.hp = b.max_hp
