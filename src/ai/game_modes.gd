@@ -28051,6 +28051,158 @@ class StationaryTurretsMode extends GameMode:
 								world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": ne_x, "target_y": ne_y})
 
 
+
+class SacrificeAltarMode extends GameMode:
+	func _init():
+		super._init()
+		self.name = "Sacrifice Altar"
+		self.description = "Hazards where balls can deliberately sacrifice a portion of their max HP to gain permanent buffs or a rare booster drop."
+
+	func setup(world, balls) -> void:
+		super.setup(world, balls)
+
+		var is_dict = typeof(world) == TYPE_DICTIONARY
+
+		if is_dict:
+			if not world.has("sacrifice_altars"):
+				world["sacrifice_altars"] = []
+		else:
+			if not "sacrifice_altars" in world:
+				world.sacrifice_altars = []
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+
+		if is_dict and world.has("arena"):
+			arena_w = world["arena"].get("width", 1000.0)
+			arena_h = world["arena"].get("height", 1000.0)
+		elif not is_dict and "arena" in world and world.arena != null:
+			arena_w = world.arena.width if "width" in world.arena else 1000.0
+			arena_h = world.arena.height if "height" in world.arena else 1000.0
+
+		var num_altars = rng.randi_range(1, 2)
+		for i in range(num_altars):
+			var x = rng.randf_range(200.0, arena_w - 200.0)
+			var y = rng.randf_range(200.0, arena_h - 200.0)
+			if is_dict:
+				world["sacrifice_altars"].append({"x": x, "y": y, "radius": 60.0})
+			else:
+				world.sacrifice_altars.append({"x": x, "y": y, "radius": 60.0})
+
+	func tick(world, balls, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var is_dict = typeof(world) == TYPE_DICTIONARY
+		var altars = []
+
+		if is_dict:
+			if world.has("sacrifice_altars"):
+				altars = world["sacrifice_altars"]
+			else:
+				return
+		else:
+			if "sacrifice_altars" in world:
+				altars = world.sacrifice_altars
+			else:
+				return
+
+		for b in balls:
+			var b_is_dict = typeof(b) == TYPE_DICTIONARY
+			var b_alive = b.get("alive", false) if b_is_dict else b.alive if "alive" in b else false
+			if not b_alive:
+				continue
+
+			var b_cooldown = b.get("sacrifice_cooldown", 0.0) if b_is_dict else (b.sacrifice_cooldown if "sacrifice_cooldown" in b else 0.0)
+			b_cooldown = max(0.0, b_cooldown - delta)
+
+			if b_is_dict:
+				b["sacrifice_cooldown"] = b_cooldown
+			else:
+				b.sacrifice_cooldown = b_cooldown
+
+			if b_cooldown > 0.0:
+				continue
+
+			var bx = b.get("x", 0.0) if b_is_dict else b.x
+			var by = b.get("y", 0.0) if b_is_dict else b.y
+			var b_radius = b.get("radius", 10.0) if b_is_dict else (b.radius if "radius" in b else 10.0)
+
+			for altar in altars:
+				var ax = altar.get("x", 0.0)
+				var ay = altar.get("y", 0.0)
+				var radius = altar.get("radius", 60.0)
+
+				var dist_sq = (bx - ax) * (bx - ax) + (by - ay) * (by - ay)
+				if dist_sq <= (radius + b_radius) * (radius + b_radius):
+					# Near altar
+					var max_hp = b.get("max_hp", 100.0) if b_is_dict else (b.max_hp if "max_hp" in b else 100.0)
+					if max_hp > 30.0:
+						# Sacrifice HP
+						var new_max_hp = max_hp * 0.7
+						var current_hp = b.get("hp", 100.0) if b_is_dict else (b.hp if "hp" in b else 100.0)
+
+						if b_is_dict:
+							b["max_hp"] = new_max_hp
+							b["hp"] = min(current_hp, new_max_hp)
+							b["sacrifice_cooldown"] = 15.0
+						else:
+							b.max_hp = new_max_hp
+							b.hp = min(current_hp, new_max_hp)
+							b.sacrifice_cooldown = 15.0
+
+						# Apply buff or drop rare booster
+						if rng.randf() < 0.5:
+							# Buff
+							var b_damage = b.get("base_damage", b.get("damage", 10.0)) if b_is_dict else (b.base_damage if "base_damage" in b else (b.damage if "damage" in b else 10.0))
+							var b_speed = b.get("base_speed", b.get("speed", 100.0)) if b_is_dict else (b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0))
+
+							var cur_damage = b.get("damage", 10.0) if b_is_dict else (b.damage if "damage" in b else 10.0)
+							var cur_speed = b.get("speed", 100.0) if b_is_dict else (b.speed if "speed" in b else 100.0)
+
+							if b_is_dict:
+								b["base_damage"] = b_damage * 1.5
+								b["damage"] = cur_damage * 1.5
+								b["base_speed"] = b_speed * 1.5
+								b["speed"] = cur_speed * 1.5
+							else:
+								b.base_damage = b_damage * 1.5
+								b.damage = cur_damage * 1.5
+								b.base_speed = b_speed * 1.5
+								b.speed = cur_speed * 1.5
+						else:
+							# Booster
+							if is_dict:
+								if not world.has("boosters"):
+									world["boosters"] = []
+							else:
+								if not "boosters" in world:
+									world.boosters = []
+
+							var booster_types = ["overclock_booster", "ghost_mode_booster", "mega_booster", "stealth_booster", "shield_booster"]
+							var chosen_booster = booster_types[rng.randi() % booster_types.size()]
+
+							var new_booster = {
+								"id": rng.randi_range(10000, 99999),
+								"x": bx + rng.randf_range(-20.0, 20.0),
+								"y": by + rng.randf_range(-20.0, 20.0),
+								"kind": chosen_booster,
+								"ball_type": "booster",
+								"active": true
+							}
+
+							if is_dict:
+								world["boosters"].append(new_booster)
+							else:
+								world.boosters.append(new_booster)
+
+						# Add event
+						if is_dict:
+							if world.has("add_event") and typeof(world["add_event"]) == TYPE_CALLABLE:
+								world["add_event"].call("sacrifice_altar_used", {"ball": b, "altar": altar})
+						else:
+							if world.has_method("add_event"):
+								world.call("add_event", "sacrifice_altar_used", {"ball": b, "altar": altar})
+
 var GAME_MODES = {
 	"stationary_turrets": StationaryTurretsMode.new(),
 
@@ -28060,6 +28212,7 @@ var GAME_MODES = {
 	"temporal_rifts": TemporalRiftsMode.new(),
 		"sector_collapse": SectorCollapseMode.new(),
 	"constricting_boundary_trap": ConstrictingBoundaryTrapMode.new(),
+	"sacrifice_altar": SacrificeAltarMode.new(),
 	"bermuda_triangle": BermudaTriangleMode.new(),
 	"color_trail": ColorTrailMode.new(),
 	"aerial_arena": AerialArenaMode.new(),

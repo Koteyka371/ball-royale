@@ -16917,6 +16917,99 @@ class StationaryTurretsMode(GameMode):
                         if hasattr(world, "events"):
                             world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": getattr(nearest_enemy, "x", 0.0), "target_y": getattr(nearest_enemy, "y", 0.0)})
 
+
+class SacrificeAltarMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sacrifice Altar"
+        self.description = "Hazards where balls can deliberately sacrifice a portion of their max HP to gain permanent buffs or a rare booster drop."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "sacrifice_altars"):
+            world.sacrifice_altars = []
+
+        import random
+        # Spawn one or two altars randomly
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+        num_altars = random.randint(1, 2)
+        for i in range(num_altars):
+            x = random.uniform(200.0, arena_width - 200.0)
+            y = random.uniform(200.0, arena_height - 200.0)
+            world.sacrifice_altars.append({"x": x, "y": y, "radius": 60.0})
+
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        if not hasattr(world, "sacrifice_altars"):
+            return
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            b.sacrifice_cooldown = max(0.0, getattr(b, "sacrifice_cooldown", 0.0) - delta)
+
+            if b.sacrifice_cooldown > 0.0:
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+
+            for altar in world.sacrifice_altars:
+                ax = altar.get("x", 0.0)
+                ay = altar.get("y", 0.0)
+                radius = altar.get("radius", 60.0)
+
+                dist_sq = (bx - ax)**2 + (by - ay)**2
+                b_radius = getattr(b, "radius", 10.0)
+                if dist_sq <= (radius + b_radius)**2:
+                    # Near altar
+                    max_hp = getattr(b, "max_hp", 100.0)
+                    if max_hp > 30.0:
+                        # Sacrifice HP
+                        new_max_hp = max_hp * 0.7
+                        b.max_hp = new_max_hp
+                        b.hp = min(getattr(b, "hp", 100.0), new_max_hp)
+                        b.sacrifice_cooldown = 15.0
+
+                        # Apply buff or drop rare booster
+                        if random.random() < 0.5:
+                            # Buff
+                            b_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                            b_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                            b.base_damage = b_damage * 1.5
+                            b.damage = getattr(b, "damage", 10.0) * 1.5
+                            b.base_speed = b_speed * 1.5
+                            b.speed = getattr(b, "speed", 100.0) * 1.5
+                        else:
+                            # Booster
+                            if not hasattr(world, "boosters"):
+                                world.boosters = []
+                            booster_types = ["overclock_booster", "ghost_mode_booster", "mega_booster", "stealth_booster", "shield_booster"]
+                            chosen_booster = random.choice(booster_types)
+
+                            new_booster = {
+                                "id": random.randint(10000, 99999),
+                                "x": bx + random.uniform(-20, 20),
+                                "y": by + random.uniform(-20, 20),
+                                "kind": chosen_booster,
+                                "ball_type": "booster",
+                                "active": True
+                            }
+                            world.boosters.append(new_booster)
+
+                        # Add event
+                        if hasattr(world, "add_event"):
+                            world.add_event("sacrifice_altar_used", {"ball": b, "altar": altar})
+
 GAME_MODES = {
     "stationary_turrets": StationaryTurretsMode(),
 
@@ -19431,6 +19524,7 @@ class ConstrictingBoundaryTrapMode(GameMode):
 
 
 GAME_MODES['constricting_boundary_trap'] = ConstrictingBoundaryTrapMode()
+GAME_MODES['sacrifice_altar'] = SacrificeAltarMode()
 GAME_MODES['temporal_rifts'] = TemporalRiftsMode()
 GAME_MODES['sector_collapse'] = SectorCollapseMode()
 GAME_MODES['bermuda_triangle'] = BermudaTriangleMode()
