@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-949] Juggernaut Game Mode — *2026-07-13 22:23:07 UTC*
+
+One player is randomly chosen as the Juggernaut, receiving massive HP, damage, and size buffs. All other players are teamed up to take down the Juggernaut. If the Juggernaut is killed, the player who dealt the finishing blow becomes the next Juggernaut, and their health is restored.
+
+---
+
 ## [idea-953] Mimic Clone Chain Reaction Mechanic — *2026-07-13 22:23:03 UTC*
 
 If a mimic clone detonation kills an enemy, it spawns a second, smaller mimic clone that continues the charge with reduced stats, creating a cascading chain reaction if grouped enemies are weak.
