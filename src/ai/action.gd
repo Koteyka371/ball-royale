@@ -4352,6 +4352,8 @@ func execute(strategy: String, delta: float):
 			detonate = true
 
 		if detonate:
+			if has_method("_spawn_skill_particles"):
+				_spawn_skill_particles("mimic_clone_explosion")
 			if "alive" in self.ball: self.ball.alive = false
 			elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
 			if "hp" in self.ball: self.ball.hp = 0.0
@@ -19991,6 +19993,14 @@ func _use_skill():
                         if has_method("_spawn_skill_particles"):
                             _spawn_skill_particles("fireball")
 
+        elif skill_name == "mimic_clone_explosion":
+            particles.amount = int(75 * tier_multiplier)
+            particles.spread = 360.0
+            particles.initial_velocity_min = 180.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.initial_velocity_max = 220.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.color = Color(0.8, 0.0, 1.0, 0.9) # Purple/Pink flash for mimic
+            particles.lifetime = 0.6 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.explosiveness = 0.95
         elif skill_name == "explosion":
             var enemies = _get_enemies()
             var explosion_radius = 100.0
@@ -22040,6 +22050,14 @@ func _spawn_skill_particles(skill_name: String = ""):
             particles.color = Color(1.0, 0.0, 1.0, 1.0) # Nemesis purple/pink explosion
             particles.lifetime = 0.5 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 1.0
+        elif skill_name == "mimic_clone_explosion":
+            particles.amount = int(75 * tier_multiplier)
+            particles.spread = 360.0
+            particles.initial_velocity_min = 180.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.initial_velocity_max = 220.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.color = Color(0.8, 0.0, 1.0, 0.9) # Purple/Pink flash for mimic
+            particles.lifetime = 0.6 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.explosiveness = 0.95
         elif skill_name == "explosion":
             particles.amount = int(60 * tier_multiplier)
             particles.spread = 360.0
