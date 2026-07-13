@@ -26059,6 +26059,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1522",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone Mod",
+      "description": "A game mode where the safe area continuously shrinks over time, forcing players into closer proximity and increasing the frequency of encounters.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone_mod.py",
+        "src/ai/shrinking_safe_zone_mod.gd",
+        "tests/test_shrinking_safe_zone_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
