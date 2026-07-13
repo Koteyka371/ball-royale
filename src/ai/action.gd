@@ -924,7 +924,55 @@ func _attempt_damage(attacker, target) -> void:
 				elif target.has_method("get_meta") and target.has_meta("reflect_shield_initial_capacity"):
 					initial_cap = target.get_meta("reflect_shield_initial_capacity")
 
-				if initial_cap > 0.0 and initial_cap < 999990.0:
+				if initial_cap > 0.0 and original_damage > initial_cap * 1.5:
+					var explosion_radius = 150.0
+					var explosion_damage = original_damage * 1.5
+
+					var att_stun = 3.0
+					if "stun_timer" in attacker:
+						att_stun = max(attacker.stun_timer, 3.0)
+						attacker.stun_timer = att_stun
+					elif attacker.has_method("set_meta"):
+						att_stun = max(attacker.get_meta("stun_timer") if attacker.has_meta("stun_timer") else 0.0, 3.0)
+						attacker.set_meta("stun_timer", att_stun)
+
+					if self.world != null and self.world.has_method("add_event"):
+						var att_id = attacker.get("id") if typeof(attacker) == TYPE_DICTIONARY else attacker.id
+						self.world.add_event("stun", {"id": att_id, "duration": 3.0})
+						self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": explosion_radius, "damage": explosion_damage})
+
+					if self.world != null and "balls" in self.world:
+						for b in self.world.balls:
+							var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+							if is_alive:
+								var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+								var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+								var dx = target.x - bx
+								var dy = target.y - by
+								var dist = sqrt(dx*dx + dy*dy)
+								if dist <= explosion_radius:
+									if self.world != null and self.world.has_method("_deal_damage"):
+										var old_dmg = 10.0
+										if "damage" in target:
+											old_dmg = target.damage
+											target.damage = explosion_damage
+										elif target.has_method("set_meta"):
+											if target.has_meta("damage"):
+												old_dmg = target.get_meta("damage")
+											target.set_meta("damage", explosion_damage)
+										self.world._deal_damage(target, b)
+										if "damage" in target:
+											target.damage = old_dmg
+										elif target.has_method("set_meta"):
+											target.set_meta("damage", old_dmg)
+									elif b.has_method("take_damage"):
+										b.take_damage(explosion_damage)
+									elif "hp" in b:
+										b.hp -= explosion_damage
+										if b.hp <= 0:
+											b.alive = false
+
+				elif initial_cap > 0.0 and initial_cap < 999990.0:
 					if self.world != null and self.world.has_method("add_event"):
 						self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 150.0, "damage": initial_cap * 0.5})
 					if self.world != null and "balls" in self.world:
@@ -1408,6 +1456,60 @@ func _attempt_damage(attacker, target) -> void:
 								next_entity.reflect_shield_capacity = 0.0
 							elif next_entity.has_method("set_meta"):
 								next_entity.set_meta("reflect_shield_capacity", 0.0)
+
+							var initial_cap = 0.0
+							if "reflect_shield_initial_capacity" in next_entity:
+								initial_cap = next_entity.reflect_shield_initial_capacity
+							elif next_entity.has_method("get_meta") and next_entity.has_meta("reflect_shield_initial_capacity"):
+								initial_cap = next_entity.get_meta("reflect_shield_initial_capacity")
+
+							if initial_cap > 0.0 and current_damage > initial_cap * 1.5:
+								var explosion_radius = 150.0
+								var explosion_damage = current_damage * 1.5
+
+								var att_stun = 3.0
+								if "stun_timer" in attacker:
+									att_stun = max(attacker.stun_timer, 3.0)
+									attacker.stun_timer = att_stun
+								elif attacker.has_method("set_meta"):
+									att_stun = max(attacker.get_meta("stun_timer") if attacker.has_meta("stun_timer") else 0.0, 3.0)
+									attacker.set_meta("stun_timer", att_stun)
+
+								if self.world != null and self.world.has_method("add_event"):
+									var att_id = attacker.get("id") if typeof(attacker) == TYPE_DICTIONARY else attacker.id
+									self.world.add_event("stun", {"id": att_id, "duration": 3.0})
+									self.world.add_event("explosion", {"x": next_entity.x, "y": next_entity.y, "radius": explosion_radius, "damage": explosion_damage})
+
+								if self.world != null and "balls" in self.world:
+									for b in self.world.balls:
+										var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+										if is_alive:
+											var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+											var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+											var dx = next_entity.x - bx
+											var dy = next_entity.y - by
+											var dist = sqrt(dx*dx + dy*dy)
+											if dist <= explosion_radius:
+												if self.world != null and self.world.has_method("_deal_damage"):
+													var old_dmg = 10.0
+													if "damage" in next_entity:
+														old_dmg = next_entity.damage
+														next_entity.damage = explosion_damage
+													elif next_entity.has_method("set_meta"):
+														if next_entity.has_meta("damage"):
+															old_dmg = next_entity.get_meta("damage")
+														next_entity.set_meta("damage", explosion_damage)
+													self.world._deal_damage(next_entity, b)
+													if "damage" in next_entity:
+														next_entity.damage = old_dmg
+													elif next_entity.has_method("set_meta"):
+														next_entity.set_meta("damage", old_dmg)
+												elif b.has_method("take_damage"):
+													b.take_damage(explosion_damage)
+												elif "hp" in b:
+													b.hp -= explosion_damage
+													if b.hp <= 0:
+														b.alive = false
 						else:
 							if "reflect_shield_capacity" in next_entity:
 								next_entity.reflect_shield_capacity = capacity
@@ -7609,6 +7711,68 @@ func execute(strategy: String, delta: float):
                                         else:
                                             self.ball.reflect_shield_active = false
                                             self.ball.reflect_shield_capacity = 0.0
+
+                                        var initial_cap = 0.0
+                                        if typeof(self.ball) == TYPE_DICTIONARY:
+                                            initial_cap = self.ball.get("reflect_shield_initial_capacity", 0.0)
+                                        else:
+                                            initial_cap = self.ball.get("reflect_shield_initial_capacity") if "reflect_shield_initial_capacity" in self.ball else 0.0
+
+                                        if initial_cap > 0.0 and hazard_damage > initial_cap * 1.5:
+                                            var explosion_radius = 150.0
+                                            var explosion_damage = hazard_damage * 1.5
+
+                                            if self.world != null and self.world.has_method("add_event"):
+                                                self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": explosion_radius, "damage": explosion_damage})
+
+                                            if self.world != null and "balls" in self.world:
+                                                for b in self.world.balls:
+                                                    var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+                                                    if is_alive:
+                                                        var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+                                                        var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+                                                        var dx = self.ball.x - bx
+                                                        var dy = self.ball.y - by
+                                                        var dist = sqrt(dx*dx + dy*dy)
+                                                        if dist <= explosion_radius:
+                                                            if self.world != null and self.world.has_method("_deal_damage"):
+                                                                var old_dmg = 10.0
+                                                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                                                    old_dmg = self.ball.get("damage", 10.0)
+                                                                    self.ball["damage"] = explosion_damage
+                                                                else:
+                                                                    if "damage" in self.ball:
+                                                                        old_dmg = self.ball.damage
+                                                                    self.ball.damage = explosion_damage
+                                                                self.world._deal_damage(self.ball, b)
+                                                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                                                    self.ball["damage"] = old_dmg
+                                                                else:
+                                                                    self.ball.damage = old_dmg
+                                                            elif b.has_method("take_damage"):
+                                                                b.take_damage(explosion_damage)
+                                                            elif "hp" in b:
+                                                                b.hp -= explosion_damage
+                                                                if b.hp <= 0:
+                                                                    b.alive = false
+
+                                                var hazard_owner_id = hazard.get("owner_id", null) if typeof(hazard) == TYPE_DICTIONARY else (hazard.owner_id if "owner_id" in hazard else null)
+                                                if hazard_owner_id != null:
+                                                    for b in self.world.balls:
+                                                        var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+                                                        if b_id == hazard_owner_id:
+                                                            var b_stun = 3.0
+                                                            if typeof(b) == TYPE_DICTIONARY:
+                                                                b_stun = max(b.get("stun_timer", 0.0), 3.0)
+                                                                b["stun_timer"] = b_stun
+                                                            else:
+                                                                if "stun_timer" in b:
+                                                                    b_stun = max(b.stun_timer, 3.0)
+                                                                b.stun_timer = b_stun
+
+                                                            if self.world != null and self.world.has_method("add_event"):
+                                                                self.world.add_event("stun", {"id": b_id, "duration": 3.0})
+                                                            break
                                     else:
                                         if typeof(self.ball) == TYPE_DICTIONARY:
                                             self.ball["reflect_shield_capacity"] = capacity
