@@ -29089,3 +29089,77 @@ class BermudaTriangleMode extends GameMode:
 					elif b.has_method("set_meta"): b.set_meta("vx", 0.0)
 					if "vy" in b: b.vy = 0.0
 					elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
+
+
+class InvertedGravityMode extends GameMode:
+	var gravity_inverted = false
+	var toggle_timer = 0.0
+
+	func _init().():
+		name = "Inverted Gravity"
+		description = "Periodically inverts gravity causing balls to fall upwards, requiring them to use ceilings instead of floors."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		gravity_inverted = false
+		toggle_timer = 10.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		toggle_timer -= delta
+		if toggle_timer <= 0:
+			gravity_inverted = not gravity_inverted
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			toggle_timer = rng.randf_range(5.0, 15.0)
+
+			if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+				pass
+			elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				var msg = "Gravity Inverted! Watch the ceiling!" if gravity_inverted else "Gravity Restored!"
+				world.add_event("gravity_toggle", {"message": msg, "inverted": gravity_inverted})
+
+		var gravity_force = 200.0 * delta
+		var arena_height = 1000.0
+
+		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_height = world.arena.get("height", 1000.0)
+		elif world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_height = world.arena.get("height", 1000.0)
+			else:
+				if "height" in world.arena: arena_height = world.arena.height
+
+		for b in balls:
+			var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			if not b_alive: continue
+
+			var bvy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.vy if "vy" in b else 0.0)
+			if gravity_inverted:
+				bvy -= gravity_force
+			else:
+				bvy += gravity_force
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["vy"] = bvy
+			else:
+				if "vy" in b: b.vy = bvy
+
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+			var br = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 10.0)
+
+			if gravity_inverted and by - br < 0:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["y"] = br
+					if b["vy"] < 0: b["vy"] *= -0.5
+				else:
+					if "y" in b: b.y = br
+					if "vy" in b and b.vy < 0: b.vy *= -0.5
+			elif not gravity_inverted and by + br > arena_height:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["y"] = arena_height - br
+					if b["vy"] > 0: b["vy"] *= -0.5
+				else:
+					if "y" in b: b.y = arena_height - br
+					if "vy" in b and b.vy > 0: b.vy *= -0.5

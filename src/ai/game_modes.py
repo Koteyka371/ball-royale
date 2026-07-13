@@ -18895,3 +18895,58 @@ class CollapsingBubblesMode(GameMode):
             "collapsing": False
         })
 GAME_MODES['collapsing_bubbles'] = CollapsingBubblesMode()
+
+
+class InvertedGravityMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Inverted Gravity"
+        self.description = "Periodically inverts gravity causing balls to fall upwards, requiring them to use ceilings instead of floors."
+        self.gravity_inverted = False
+        self.toggle_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.gravity_inverted = False
+        self.toggle_timer = 10.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        super().tick(world, balls, delta)
+
+        self.toggle_timer -= delta
+        if self.toggle_timer <= 0:
+            self.gravity_inverted = not self.gravity_inverted
+            self.toggle_timer = random.uniform(5.0, 15.0)
+
+            if hasattr(world, "add_event"):
+                msg = "Gravity Inverted! Watch the ceiling!" if self.gravity_inverted else "Gravity Restored!"
+                world.add_event("gravity_toggle", {"message": msg, "inverted": self.gravity_inverted})
+
+        # Apply gravity effects based on state
+        gravity_force = 200.0 * delta # example gravity force
+
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if hasattr(b, "vy"):
+                if self.gravity_inverted:
+                    b.vy -= gravity_force # push upwards
+                else:
+                    b.vy += gravity_force # push downwards
+
+            if hasattr(b, "y") and hasattr(b, "radius"):
+                # Handle basic boundary collisions for top/bottom
+                if self.gravity_inverted and b.y - b.radius < 0:
+                    b.y = b.radius
+                    if hasattr(b, "vy") and b.vy < 0:
+                        b.vy *= -0.5 # bounce off ceiling
+                elif not self.gravity_inverted and b.y + b.radius > arena_height:
+                    b.y = arena_height - b.radius
+                    if hasattr(b, "vy") and b.vy > 0:
+                        b.vy *= -0.5 # bounce off floor
+
+GAME_MODES['inverted_gravity'] = InvertedGravityMode()
