@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-960] Decoy Clone Powerup — *2026-07-13 23:55:27 UTC*
+
+A powerup that instantly spawns 2 visually identical AI-controlled clones of the player. They deal no damage but confuse enemies and absorb hits until destroyed.
+
+---
+
 ## [idea-948] Danger Zones with random debuffs — *2026-07-13 23:55:22 UTC*
 
 Being outside the safe zone randomly applies a debuff (e.g. slowed, poisoned, confused) in addition to taking continuous damage, heavily discouraging staying outside the zone.
