@@ -201,6 +201,7 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
     _throw_hazards_if_bored(balls, current_tick)
     _process_votes(balls, current_tick)
     _process_spectator_signs(balls, current_tick)
+    _trigger_large_scale_event(balls, current_tick)
 
 func _check_bets_and_winner(balls: Array, current_tick: int):
     if not match_started and balls.size() > 1:
@@ -269,6 +270,33 @@ func _check_bets_and_winner(balls: Array, current_tick: int):
                         if pm.has_method("save"):
                             pm.call("save")
 
+
+
+func _trigger_large_scale_event(balls: Array, current_tick: int):
+    if excitement_level >= 10.0:
+        return
+
+    if randf() < 0.005:  # 0.5% chance per tick when excitement is critically low
+        var event_types = ["closing_zone", "weather_transition"]
+        var event_type = event_types[randi() % event_types.size()]
+
+        if world != null and world.has_method("add_event"):
+            if event_type == "closing_zone":
+                world.add_event("spawn_zone", {
+                    "x": 500.0,
+                    "y": 500.0,
+                    "radius": 1000.0,
+                    "shrink_rate": 10.0,
+                    "damage": 5.0
+                })
+                world.add_event("crowd_throw", {"message": "The crowd is bored! A shrinking zone has been deployed!"})
+            else:
+                var weathers = ["thunderstorm", "blizzard", "acid_rain"]
+                var new_weather = weathers[randi() % weathers.size()]
+                world.add_event("weather_transition", {"new_weather": new_weather})
+                world.add_event("crowd_throw", {"message": "The crowd is falling asleep! They trigger a " + new_weather + "!"})
+
+            excitement_level += 40.0
 
 func _check_camping(balls: Array, current_tick: int):
     for b in balls:

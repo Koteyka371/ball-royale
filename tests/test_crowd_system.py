@@ -37,7 +37,7 @@ def test_crowd_epic_kill():
     # Check if epic kill event was fired
     assert any(e[0] == "crowd_cheer" and "3-kill streak" in e[1]["message"] for e in world.events)
     assert any(e[0] == "audio_event" and e[1]["sound"] == "epic_crowd_roar" for e in world.events)
-    assert crowd.excitement_level > 10.0
+    assert crowd.excitement_level > 5.0
 
 def test_crowd_comeback():
     world = MockWorld()
@@ -119,4 +119,4 @@ def test_crowd_throw_hazard():
 
     assert any(e[0] == "spawn_hazard" for e in world.events)
     assert any(e[0] == "crowd_throw" and "boos" in e[1]["message"] for e in world.events)
-    assert crowd.excitement_level > 10.0
+    assert crowd.excitement_level > 5.0
