@@ -1088,6 +1088,83 @@ def test_battle_royale_final_boss_spawn():
     assert defeated_events[0][1]["killer_id"] == 1
     assert defeated_events[0][1]["points"] == 5000
 
+
+def test_battle_royale_seasonal_boss_spawns():
+    """Verify that seasonally locked bosses spawn correctly based on season or weather."""
+    def create_mock_world_with_season(season_num, weather):
+        world = MockWorld()
+        if not hasattr(world, "events"):
+            world.events = []
+
+        if not hasattr(world, "add_event"):
+            def add_event(type, data):
+                world.events.append((type, data))
+            world.add_event = add_event
+
+        class MockLeaderboardManager:
+            def __init__(self):
+                self.data = {"current_season": season_num}
+
+        world.leaderboard_manager = MockLeaderboardManager()
+
+        class MockArena:
+            def __init__(self):
+                self.width = 1000
+                self.height = 1000
+                self.hazards = []
+                self.weather = weather
+        world.arena = MockArena()
+        world.balls = []
+        return world
+
+    # Test Winter Season -> Yeti
+    mode_winter = BattleRoyaleMode()
+    world_winter = create_mock_world_with_season(season_num=4, weather="clear")
+    balls_winter = [MockBall(1, "warrior")]
+    mode_winter.setup(world_winter, balls_winter)
+    mode_winter.weather = "clear"  # Force weather to clear
+    mode_winter.tick(world_winter, balls_winter, delta=75.0)
+    assert mode_winter.final_boss_spawned == True
+    bosses_winter = [b for b in world_winter.balls if getattr(b, "is_final_boss", False)]
+    assert len(bosses_winter) == 1
+    assert bosses_winter[0].ball_type == "yeti"
+
+    # Test Summer Season -> Sandworm
+    mode_summer = BattleRoyaleMode()
+    world_summer = create_mock_world_with_season(season_num=2, weather="clear")
+    balls_summer = [MockBall(2, "warrior")]
+    mode_summer.setup(world_summer, balls_summer)
+    mode_summer.weather = "clear"
+    mode_summer.tick(world_summer, balls_summer, delta=75.0)
+    assert mode_summer.final_boss_spawned == True
+    bosses_summer = [b for b in world_summer.balls if getattr(b, "is_final_boss", False)]
+    assert len(bosses_summer) == 1
+    assert bosses_summer[0].ball_type == "sandworm"
+
+    # Test Spring Season but Snow Weather -> Yeti
+    mode_snow = BattleRoyaleMode()
+    world_snow = create_mock_world_with_season(season_num=1, weather="snow")
+    balls_snow = [MockBall(3, "warrior")]
+    mode_snow.setup(world_snow, balls_snow)
+    mode_snow.weather = "snow"
+    mode_snow.tick(world_snow, balls_snow, delta=75.0)
+    assert mode_snow.final_boss_spawned == True
+    bosses_snow = [b for b in world_snow.balls if getattr(b, "is_final_boss", False)]
+    assert len(bosses_snow) == 1
+    assert bosses_snow[0].ball_type == "yeti"
+
+    # Test Autumn Season with Clear Weather -> Juggernaut (default)
+    mode_default = BattleRoyaleMode()
+    world_default = create_mock_world_with_season(season_num=3, weather="clear")
+    balls_default = [MockBall(4, "warrior")]
+    mode_default.setup(world_default, balls_default)
+    mode_default.weather = "clear"
+    mode_default.tick(world_default, balls_default, delta=75.0)
+    assert mode_default.final_boss_spawned == True
+    bosses_default = [b for b in world_default.balls if getattr(b, "is_final_boss", False)]
+    assert len(bosses_default) == 1
+    assert bosses_default[0].ball_type == "juggernaut"
+
 def test_invisible_decoys_mode():
     from ai.game_modes import GAME_MODES
     mode = GAME_MODES.get("invisible_decoys")
