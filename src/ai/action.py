@@ -6134,13 +6134,33 @@ class Action:
                             if dist < (self.ball.radius + hazard.radius) and dist > 0:
                                 nx, ny = dx / dist, dy / dist
                                 overlap = (self.ball.radius + hazard.radius) - dist
-                                self.ball.x += nx * overlap
-                                self.ball.y += ny * overlap
+                                b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
+                                speed = math.hypot(getattr(self.ball, "vx", 0.0), getattr(self.ball, "vy", 0.0))
 
-                            if hasattr(hazard, "hp"):
-                                hazard.hp -= getattr(self.ball, "damage", 100.0) * delta * 5.0 # damage it on bump
-                                if hazard.hp <= 0:
+                                # High velocity juggernaut and tanks break it instantly
+                                if b_type in ["juggernaut", "tank"] and speed > 400.0:
+                                    if hasattr(hazard, "hp"):
+                                        hazard.hp = 0
                                     hazard.active = False
+
+                                    # Create explosion event if possible
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({
+                                            "type": "explosion",
+                                            "x": hazard.x,
+                                            "y": hazard.y,
+                                            "radius": 50.0,
+                                            "damage": 50.0,
+                                            "source_id": getattr(self.ball, "id", None)
+                                        })
+                                else:
+                                    self.ball.x += nx * overlap
+                                    self.ball.y += ny * overlap
+
+                                    if hasattr(hazard, "hp"):
+                                        hazard.hp -= getattr(self.ball, "damage", 100.0) * delta * 5.0 # damage it on bump
+                                        if hazard.hp <= 0:
+                                            hazard.active = False
                             continue
                         elif hazard.kind == "launch_pad":
                             dx = self.ball.x - hazard.x
