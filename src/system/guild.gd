@@ -24,9 +24,13 @@ func load_guilds():
                     data["guilds"][g_name]["hq"] = {
                         "statues": [],
                         "banners": [],
-            "cosmetics": [],
+                        "cosmetics": [],
+                        "mini_games": {},
                         "training_arena_unlocked": false
                     }
+                elif not data["guilds"][g_name]["hq"].has("mini_games"):
+                    data["guilds"][g_name]["hq"]["mini_games"] = {}
+
                 if not data["guilds"][g_name].has("guild_xp"):
                     data["guilds"][g_name]["guild_xp"] = 0
                 if not data["guilds"][g_name].has("perks"):
@@ -79,6 +83,7 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
             "statues": [],
             "banners": [],
             "cosmetics": [],
+            "mini_games": {},
             "training_arena_unlocked": false
         },
         "emblem": {"shape": "circle", "color": "white", "symbol": "none"},
@@ -522,16 +527,57 @@ func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: Str
                     guild["hq"][feature_type].append(feature_id)
                     save_guilds()
                     return true
+            elif feature_type == "mini_games":
+                if not guild["hq"].has("mini_games"):
+                    guild["hq"]["mini_games"] = {}
+                if not guild["hq"]["mini_games"].has(feature_id):
+                    guild["resources"] -= cost
+                    guild["hq"]["mini_games"][feature_id] = {"high_scores": {}}
+                    save_guilds()
+                    return true
     return false
+
+func record_mini_game_score(guild_name: String, mini_game_id: String, player_id: String, score: float) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("hq") and guild["hq"].has("mini_games") and guild["hq"]["mini_games"].has(mini_game_id):
+            var mini_game = guild["hq"]["mini_games"][mini_game_id]
+            if not mini_game.has("high_scores"):
+                mini_game["high_scores"] = {}
+            var high_scores = mini_game["high_scores"]
+            var current_score = 0.0
+            if high_scores.has(player_id):
+                current_score = high_scores[player_id]
+
+            if score > current_score:
+                high_scores[player_id] = score
+                save_guilds()
+                return true
+    return false
+
+func get_mini_game_leaderboard(guild_name: String, mini_game_id: String) -> Array:
+    var scores = []
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("hq") and guild["hq"].has("mini_games") and guild["hq"]["mini_games"].has(mini_game_id):
+            var mini_game = guild["hq"]["mini_games"][mini_game_id]
+            if mini_game.has("high_scores"):
+                var high_scores = mini_game["high_scores"]
+                for player_id in high_scores.keys():
+                    scores.append({"player_id": player_id, "score": high_scores[player_id]})
+
+                scores.sort_custom(func(a, b): return a["score"] > b["score"])
+    return scores
 
 func get_hq_status(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
-        var hq = {"statues": [], "banners": [], "cosmetics": [], "training_arena_unlocked": false}
+        var hq = {"statues": [], "banners": [], "cosmetics": [], "mini_games": {}, "training_arena_unlocked": false}
         if guild.has("hq"):
             if guild["hq"].has("statues"): hq["statues"] = guild["hq"]["statues"]
             if guild["hq"].has("banners"): hq["banners"] = guild["hq"]["banners"]
             if guild["hq"].has("cosmetics"): hq["cosmetics"] = guild["hq"]["cosmetics"]
+            if guild["hq"].has("mini_games"): hq["mini_games"] = guild["hq"]["mini_games"]
             if guild["hq"].has("training_arena_unlocked"): hq["training_arena_unlocked"] = guild["hq"]["training_arena_unlocked"]
         return hq
     return {}

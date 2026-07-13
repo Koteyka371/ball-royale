@@ -18,9 +18,13 @@ class GuildManager:
                         guild["hq"] = {
                             "statues": [],
                             "banners": [],
-                "cosmetics": [],
+                            "cosmetics": [],
+                            "mini_games": {},
                             "training_arena_unlocked": False
                         }
+                    elif "mini_games" not in guild["hq"]:
+                        guild["hq"]["mini_games"] = {}
+
                     if "guild_xp" not in guild:
                         guild["guild_xp"] = 0
                     if "perks" not in guild:
@@ -72,6 +76,7 @@ class GuildManager:
                 "statues": [],
                 "banners": [],
                 "cosmetics": [],
+                "mini_games": {},
                 "training_arena_unlocked": False
             },
             "emblem": {"shape": "circle", "color": "white", "symbol": "none"},
@@ -413,7 +418,41 @@ class GuildManager:
                         guild["hq"][feature_type].append(feature_id)
                         self.save()
                         return True
+                elif feature_type == "mini_games":
+                    hq = guild.setdefault("hq", {})
+                    mini_games = hq.setdefault("mini_games", {})
+                    if feature_id not in mini_games:
+                        guild["resources"] -= cost
+                        mini_games[feature_id] = {"high_scores": {}}
+                        self.save()
+                        return True
         return False
+
+    def record_mini_game_score(self, guild_name, mini_game_id, player_id, score):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            hq = guild.get("hq", {})
+            mini_games = hq.get("mini_games", {})
+            if mini_game_id in mini_games:
+                high_scores = mini_games[mini_game_id].setdefault("high_scores", {})
+                current_score = high_scores.get(player_id, 0)
+                if score > current_score:
+                    high_scores[player_id] = score
+                    self.save()
+                    return True
+        return False
+
+    def get_mini_game_leaderboard(self, guild_name, mini_game_id):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            hq = guild.get("hq", {})
+            mini_games = hq.get("mini_games", {})
+            if mini_game_id in mini_games:
+                high_scores = mini_games[mini_game_id].get("high_scores", {})
+                scores = [{"player_id": player, "score": score} for player, score in high_scores.items()]
+                scores.sort(key=lambda x: x["score"], reverse=True)
+                return scores
+        return []
 
     def get_hq_status(self, guild_name):
         if guild_name in self.data["guilds"]:
@@ -423,6 +462,7 @@ class GuildManager:
                 "statues": hq.get("statues", []),
                 "banners": hq.get("banners", []),
                 "cosmetics": hq.get("cosmetics", []),
+                "mini_games": hq.get("mini_games", {}),
                 "training_arena_unlocked": hq.get("training_arena_unlocked", False)
             }
         return None
