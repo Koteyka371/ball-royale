@@ -16917,6 +16917,111 @@ class StationaryTurretsMode(GameMode):
                         if hasattr(world, "events"):
                             world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": getattr(nearest_enemy, "x", 0.0), "target_y": getattr(nearest_enemy, "y", 0.0)})
 
+
+class PolarityHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Polarity Totems"
+        self.description = "Polarity totems periodically appear and toggle the polarity of nearby balls. Same polarity repels, opposite attracts!"
+        self.spawn_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math, random
+
+        # Ensure random is available
+        if not hasattr(self, "_random"):
+            self._random = __import__("random")
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 5.0:
+            self.spawn_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                # Count current totems
+                totems = [h for h in world.arena.hazards if getattr(h, "kind", "") == "polarity_totem"]
+                if len(totems) < 4:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+                            self.target_radius = radius
+
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    x = self._random.uniform(100, arena_w - 100)
+                    y = self._random.uniform(100, arena_h - 100)
+                    h_id = 81000 + len(world.arena.hazards) + self._random.randint(0, 9999)
+                    totem = Hazard(h_id, x, y, 100.0, "polarity_totem", 0.0)
+                    world.arena.hazards.append(totem)
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("polarity_totem_spawn", {"message": "A Polarity Totem has appeared!"})
+
+        # Hazard logic
+        totems = []
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            totems = [h for h in world.arena.hazards if getattr(h, "kind", "") == "polarity_totem"]
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if not hasattr(b, "polarity_cooldown"):
+                b.polarity_cooldown = 0.0
+            if b.polarity_cooldown > 0:
+                b.polarity_cooldown -= delta
+
+            for t in totems:
+                dist = math.hypot(b.x - t.x, b.y - t.y)
+                if dist < getattr(t, "radius", 100.0):
+                    if b.polarity_cooldown <= 0:
+                        b.polarity_cooldown = 3.0
+                        current_polarity = getattr(b, "polarity", 0)
+                        if current_polarity == 0:
+                            b.polarity = 1
+                        else:
+                            b.polarity = -1 * current_polarity
+                        b.cosmetic = "magnet_plus" if b.polarity == 1 else "magnet_minus"
+
+                        if hasattr(world, "add_event"):
+                            pol_str = "Positive" if b.polarity == 1 else "Negative"
+                            world.add_event("polarity_toggle", {"message": f"Ball polarity is now {pol_str}!"})
+
+        # Physics Interactions
+        for i in range(len(balls)):
+            b1 = balls[i]
+            if not getattr(b1, "alive", False) or getattr(b1, "polarity", 0) == 0:
+                continue
+
+            for j in range(i + 1, len(balls)):
+                b2 = balls[j]
+                if not getattr(b2, "alive", False) or getattr(b2, "polarity", 0) == 0:
+                    continue
+
+                dx = b2.x - b1.x
+                dy = b2.y - b1.y
+                dist = math.hypot(dx, dy)
+                if 0 < dist < 300:
+                    force_mag = 500.0 / (dist + 10.0)
+                    if getattr(b1, "polarity", 0) != getattr(b2, "polarity", 0):
+                        # Attract
+                        b1.x += (dx/dist) * force_mag * delta
+                        b1.y += (dy/dist) * force_mag * delta
+                        b2.x -= (dx/dist) * force_mag * delta
+                        b2.y -= (dy/dist) * force_mag * delta
+                    else:
+                        # Repel
+                        b1.x -= (dx/dist) * force_mag * delta
+                        b1.y -= (dy/dist) * force_mag * delta
+                        b2.x += (dx/dist) * force_mag * delta
+                        b2.y += (dy/dist) * force_mag * delta
+
+
 GAME_MODES = {
     "stationary_turrets": StationaryTurretsMode(),
 
@@ -16957,6 +17062,7 @@ GAME_MODES = {
     "magnetic_collisions": MagneticCollisionsMode(),
     "cursed_aura_event": CursedAuraEventMode(),
     "polarity_shift": PolarityShiftMode(),
+    "polarity_hazard": PolarityHazardMode(),
     "day_night_mode": DayNightMode(),
     "shifting_maze": ShiftingMazeMode(),
     "maze_safe_zone": MazeSafeZoneMode(),

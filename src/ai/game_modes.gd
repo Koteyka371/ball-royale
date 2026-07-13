@@ -28051,6 +28051,253 @@ class StationaryTurretsMode extends GameMode:
 								world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": ne_x, "target_y": ne_y})
 
 
+
+class PolarityHazardMode extends GameMode:
+	var spawn_timer = 0.0
+
+	func _init():
+		name = "Polarity Totems"
+		description = "Polarity totems periodically appear and toggle the polarity of nearby balls. Same polarity repels, opposite attracts!"
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		spawn_timer = 0.0
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		spawn_timer += delta
+		if spawn_timer >= 5.0:
+			spawn_timer = 0.0
+			var is_dict = typeof(world) == TYPE_DICTIONARY
+			var arena_ok = (is_dict and world.has("arena")) or (not is_dict and "arena" in world)
+			if arena_ok:
+				var arena = world["arena"] if is_dict else world.arena
+				var a_is_dict = typeof(arena) == TYPE_DICTIONARY
+				if (a_is_dict and arena.has("hazards")) or (not a_is_dict and "hazards" in arena):
+					var hazards = arena["hazards"] if a_is_dict else arena.hazards
+					var totems = []
+					for h in hazards:
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+						elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+						if kind == "polarity_totem":
+							totems.append(h)
+
+					if totems.size() < 4:
+						var arena_w = 1000.0
+						var arena_h = 1000.0
+						if a_is_dict:
+							if arena.has("width"): arena_w = float(arena["width"])
+							if arena.has("height"): arena_h = float(arena["height"])
+						else:
+							if "width" in arena: arena_w = float(arena.width)
+							if "height" in arena: arena_h = float(arena.height)
+
+						var x = randf_range(100.0, arena_w - 100.0)
+						var y = randf_range(100.0, arena_h - 100.0)
+						var h_id = 81000 + hazards.size() + (randi() % 9999)
+
+						var totem = {
+							"id": h_id,
+							"x": x,
+							"y": y,
+							"radius": 100.0,
+							"kind": "polarity_totem",
+							"damage": 0.0,
+							"active": true,
+							"target_radius": 100.0
+						}
+
+						hazards.append(totem)
+
+						if (is_dict and world.has("add_event")) or (not is_dict and typeof(world) == TYPE_OBJECT and world.has_method("add_event")):
+							if is_dict: world["add_event"].call("polarity_totem_spawn", {"message": "A Polarity Totem has appeared!"})
+							else: world.add_event("polarity_totem_spawn", {"message": "A Polarity Totem has appeared!"})
+
+		var totems = []
+		var is_dict = typeof(world) == TYPE_DICTIONARY
+		var arena_ok = (is_dict and world.has("arena")) or (not is_dict and "arena" in world)
+		if arena_ok:
+			var arena = world["arena"] if is_dict else world.arena
+			var a_is_dict = typeof(arena) == TYPE_DICTIONARY
+			if (a_is_dict and arena.has("hazards")) or (not a_is_dict and "hazards" in arena):
+				var hazards = arena["hazards"] if a_is_dict else arena.hazards
+				for h in hazards:
+					var kind = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+					if kind == "polarity_totem":
+						totems.append(h)
+
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+
+			if not b_alive: continue
+
+			var b_is_dict = typeof(b) == TYPE_DICTIONARY
+
+			if b_is_dict:
+				if not b.has("polarity_cooldown"): b["polarity_cooldown"] = 0.0
+				if b["polarity_cooldown"] > 0: b["polarity_cooldown"] -= delta
+			else:
+				if b.has_method("has_meta") and not b.has_meta("polarity_cooldown"): b.set_meta("polarity_cooldown", 0.0)
+				elif not b.has_method("has_meta") and not "polarity_cooldown" in b: pass # Can't add dynamically to strictly typed objects
+
+				var cooldown = 0.0
+				if b.has_method("has_meta") and b.has_meta("polarity_cooldown"): cooldown = b.get_meta("polarity_cooldown")
+				elif "polarity_cooldown" in b: cooldown = b.polarity_cooldown
+				if cooldown > 0:
+					if b.has_method("set_meta"): b.set_meta("polarity_cooldown", cooldown - delta)
+					elif "polarity_cooldown" in b: b.polarity_cooldown = cooldown - delta
+
+			var b_x = 0.0
+			var b_y = 0.0
+			if b_is_dict:
+				b_x = b.get("x", 0.0)
+				b_y = b.get("y", 0.0)
+			else:
+				b_x = b.x if "x" in b else 0.0
+				b_y = b.y if "y" in b else 0.0
+
+			var b_cd = 0.0
+			if b_is_dict: b_cd = b.get("polarity_cooldown", 0.0)
+			else:
+				if b.has_method("has_meta") and b.has_meta("polarity_cooldown"): b_cd = b.get_meta("polarity_cooldown")
+				elif "polarity_cooldown" in b: b_cd = b.polarity_cooldown
+
+			for t in totems:
+				var t_x = 0.0
+				var t_y = 0.0
+				var t_rad = 100.0
+				if typeof(t) == TYPE_DICTIONARY:
+					t_x = t.get("x", 0.0)
+					t_y = t.get("y", 0.0)
+					t_rad = t.get("radius", 100.0)
+				else:
+					t_x = t.x if "x" in t else 0.0
+					t_y = t.y if "y" in t else 0.0
+					t_rad = t.radius if "radius" in t else 100.0
+
+				var dist = Vector2(b_x - t_x, b_y - t_y).length()
+				if dist < t_rad:
+					if b_cd <= 0:
+						if b_is_dict: b["polarity_cooldown"] = 3.0
+						else:
+							if b.has_method("set_meta"): b.set_meta("polarity_cooldown", 3.0)
+							elif "polarity_cooldown" in b: b.polarity_cooldown = 3.0
+						b_cd = 3.0
+
+						var current_pol = 0
+						if b_is_dict: current_pol = b.get("polarity", 0)
+						else:
+							if b.has_method("has_meta") and b.has_meta("polarity"): current_pol = b.get_meta("polarity")
+							elif "polarity" in b: current_pol = b.polarity
+
+						var new_pol = 1 if current_pol == 0 else -1 * current_pol
+						if b_is_dict:
+							b["polarity"] = new_pol
+							b["cosmetic"] = "magnet_plus" if new_pol == 1 else "magnet_minus"
+						else:
+							if b.has_method("set_meta"): b.set_meta("polarity", new_pol)
+							elif "polarity" in b: b.polarity = new_pol
+							if "cosmetic" in b: b.cosmetic = "magnet_plus" if new_pol == 1 else "magnet_minus"
+
+						if (is_dict and world.has("add_event")) or (not is_dict and typeof(world) == TYPE_OBJECT and world.has_method("add_event")):
+							var pol_str = "Positive" if new_pol == 1 else "Negative"
+							if is_dict: world["add_event"].call("polarity_toggle", {"message": "Ball polarity is now " + pol_str + "!"})
+							else: world.add_event("polarity_toggle", {"message": "Ball polarity is now " + pol_str + "!"})
+
+		# Physics
+		for i in range(balls.size()):
+			var b1 = balls[i]
+			var b1_alive = false
+			if typeof(b1) == TYPE_DICTIONARY: b1_alive = b1.get("alive", false)
+			else: b1_alive = b1.alive if "alive" in b1 else false
+			if not b1_alive: continue
+
+			var b1_pol = 0
+			if typeof(b1) == TYPE_DICTIONARY: b1_pol = b1.get("polarity", 0)
+			else:
+				if b1.has_method("has_meta") and b1.has_meta("polarity"): b1_pol = b1.get_meta("polarity")
+				elif "polarity" in b1: b1_pol = b1.polarity
+			if b1_pol == 0: continue
+
+			var b1_x = 0.0
+			var b1_y = 0.0
+			if typeof(b1) == TYPE_DICTIONARY:
+				b1_x = b1.get("x", 0.0)
+				b1_y = b1.get("y", 0.0)
+			else:
+				b1_x = b1.x if "x" in b1 else 0.0
+				b1_y = b1.y if "y" in b1 else 0.0
+
+			for j in range(i + 1, balls.size()):
+				var b2 = balls[j]
+				var b2_alive = false
+				if typeof(b2) == TYPE_DICTIONARY: b2_alive = b2.get("alive", false)
+				else: b2_alive = b2.alive if "alive" in b2 else false
+				if not b2_alive: continue
+
+				var b2_pol = 0
+				if typeof(b2) == TYPE_DICTIONARY: b2_pol = b2.get("polarity", 0)
+				else:
+					if b2.has_method("has_meta") and b2.has_meta("polarity"): b2_pol = b2.get_meta("polarity")
+					elif "polarity" in b2: b2_pol = b2.polarity
+				if b2_pol == 0: continue
+
+				var b2_x = 0.0
+				var b2_y = 0.0
+				if typeof(b2) == TYPE_DICTIONARY:
+					b2_x = b2.get("x", 0.0)
+					b2_y = b2.get("y", 0.0)
+				else:
+					b2_x = b2.x if "x" in b2 else 0.0
+					b2_y = b2.y if "y" in b2 else 0.0
+
+				var dx = b2_x - b1_x
+				var dy = b2_y - b1_y
+				var dist = Vector2(dx, dy).length()
+
+				if dist > 0 and dist < 300:
+					var force_mag = 500.0 / (dist + 10.0)
+					if b1_pol != b2_pol:
+						# Attract
+						var mx1 = (dx/dist) * force_mag * delta
+						var my1 = (dy/dist) * force_mag * delta
+						if typeof(b1) == TYPE_DICTIONARY:
+							b1["x"] += mx1
+							b1["y"] += my1
+						else:
+							if "x" in b1: b1.x += mx1
+							if "y" in b1: b1.y += my1
+
+						if typeof(b2) == TYPE_DICTIONARY:
+							b2["x"] -= mx1
+							b2["y"] -= my1
+						else:
+							if "x" in b2: b2.x -= mx1
+							if "y" in b2: b2.y -= my1
+					else:
+						# Repel
+						var mx1 = (dx/dist) * force_mag * delta
+						var my1 = (dy/dist) * force_mag * delta
+						if typeof(b1) == TYPE_DICTIONARY:
+							b1["x"] -= mx1
+							b1["y"] -= my1
+						else:
+							if "x" in b1: b1.x -= mx1
+							if "y" in b1: b1.y -= my1
+
+						if typeof(b2) == TYPE_DICTIONARY:
+							b2["x"] += mx1
+							b2["y"] += my1
+						else:
+							if "x" in b2: b2.x += mx1
+							if "y" in b2: b2.y += my1
+
 var GAME_MODES = {
 	"stationary_turrets": StationaryTurretsMode.new(),
 
@@ -28105,6 +28352,7 @@ var GAME_MODES = {
 	"zero_gravity": ZeroGravityMode.new(),
 	"magnetic_collisions": MagneticCollisionsMode.new(),
 	"polarity_shift": PolarityShiftMode.new(),
+	"polarity_hazard": PolarityHazardMode.new(),
 	"day_night_mode": DayNightMode.new(),
 	"shifting_maze": ShiftingMazeMode.new(),
 	"maze_safe_zone": MazeSafeZoneMode.new(),
