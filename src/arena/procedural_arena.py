@@ -938,7 +938,7 @@ class ProceduralArena:
                 elif getattr(h, "kind", "") == "bumper":
                     if getattr(h, "chain_link", False):
                         if hasattr(h, "target_hazard_id"):
-                            target = next((x for x in self.hazards if x.id == h.target_hazard_id), None)
+                            target = next((x for x in self.hazards if getattr(x, "id", None) == h.target_hazard_id), None)
                             if target:
                                 dx = target.x - h.x
                                 dy = target.y - h.y
@@ -948,7 +948,7 @@ class ProceduralArena:
                                     h.x = target.x - (dx / dist) * desired_dist
                                     h.y = target.y - (dy / dist) * desired_dist
                     elif hasattr(h, "target_hazard_id"):
-                        target = next((x for x in self.hazards if x.id == h.target_hazard_id), None)
+                        target = next((x for x in self.hazards if getattr(x, "id", None) == h.target_hazard_id), None)
                         if target:
                             h.orbit_angle += getattr(h, "orbit_speed", 1.0) * delta
                             h.x = target.x + math.cos(h.orbit_angle) * getattr(h, "orbit_radius", 50.0)
@@ -1091,7 +1091,7 @@ class ProceduralArena:
                             h.active = False
 
                 elif isinstance(getattr(h, "id", 0), int) and getattr(h, "id", 0) >= 1000 and hasattr(h, "target_radius"):
-                    if h.radius < h.target_radius:
+                    if (float(h.radius) if isinstance(h.radius, (int, float)) else 0.0) < (float(h.target_radius) if isinstance(h.target_radius, (int, float)) else 0.0):
                         # Grow proportionally to reach target in roughly 600 ticks
                         h.radius += (h.target_radius / 600.0) * delta * 60.0 # Assuming 60 ticks per second
                         if h.radius > h.target_radius:
@@ -1369,7 +1369,7 @@ class ProceduralArena:
                     cx = i * 100 + 50
                     cy = j * 100 + 50
                     dist = ((cx - h.x)**2 + (cy - h.y)**2)**0.5
-                    if dist <= h.radius + 50:
+                    if dist <= (float(h.radius) if isinstance(h.radius, (int, float)) else 0.0) + 50:
                         self.danger_grid[(i, j)] = self.danger_grid.get((i, j), 0.0) + (h.damage / 10.0)
 
         # Check safe zone

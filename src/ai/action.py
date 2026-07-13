@@ -471,6 +471,9 @@ class Action:
         if getattr(target, "takes_double_damage", False):
             original_damage *= 2.0
 
+        if getattr(target, "has_juggernaut_stance", False) and not is_ranged:
+            original_damage *= 0.7
+
         if getattr(attacker, "has_sniper_stance", False) and is_ranged:
             a_vx = getattr(attacker, "vx", 0.0)
             a_vy = getattr(attacker, "vy", 0.0)
@@ -5422,11 +5425,11 @@ class Action:
 
             if hasattr(self.world.arena, "hazards"):
                 # Cleanup dead traps before checking collisions
-                self.world.arena.hazards = [h for h in self.world.arena.hazards if getattr(h, "duration", 1.0) > 0]
+                self.world.arena.hazards = [h for h in self.world.arena.hazards if (float(getattr(h, "duration", 1.0)) > 0 if isinstance(getattr(h, "duration", 1.0), (int, float)) else True)]
             if hasattr(self.world.arena, "hazards") and ball_type != "spectator":
                 for hazard in self.world.arena.hazards:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
-                    if dist < (self.ball.radius + hazard.radius):
+                    if dist < (self.ball.radius + (float(getattr(hazard, "radius", 10.0)) if isinstance(getattr(hazard, "radius", 10.0), (int, float)) else 10.0)):
                         if hazard.kind == "temporal_rift":
                             continue
                         if hazard.kind in ("explosive_barrel", "volatile_barrel"):
@@ -11902,7 +11905,7 @@ class Action:
                         hx = getattr(hazard, "x", 0) - getattr(self.ball, "x", 0)
                         hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
                         h_dist = math.sqrt(hx*hx + hy*hy)
-                        if h_dist <= explosion_radius + getattr(hazard, "radius", 0):
+                        if h_dist <= explosion_radius + (float(getattr(hazard, "radius", 0.0)) if isinstance(getattr(hazard, "radius", 0.0), (int, float)) else 0.0):
                             if hasattr(hazard, "kind"):
                                 if hazard.kind in ["spikes", "fake_booster", "dummy_item"]:
                                     hazards_to_remove.append(hazard)
@@ -12095,7 +12098,7 @@ class Action:
                         hx = getattr(hazard, "x", 0) - getattr(self.ball, "x", 0)
                         hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
                         h_dist = math.sqrt(hx*hx + hy*hy)
-                        if h_dist <= pound_radius + getattr(hazard, "radius", 0):
+                        if h_dist <= pound_radius + (float(getattr(hazard, "radius", 0.0)) if isinstance(getattr(hazard, "radius", 0.0), (int, float)) else 0.0):
                             if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster", "dummy_item"]:
                                 hazards_to_remove.append(hazard)
 

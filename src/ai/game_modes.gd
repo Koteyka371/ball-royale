@@ -1387,6 +1387,9 @@ class BattleRoyaleMode extends GameMode:
 							b.set_meta("base_max_hp", float(b.get_meta("base_max_hp")) * 1.1)
 							b.set("max_hp", b.get_meta("base_max_hp"))
 							b.set("hp", b.get("max_hp"))
+							if typeof(b) == TYPE_DICTIONARY: b["has_thick_skinned_perk"] = true
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("has_thick_skinned_perk", true)
+							elif "has_thick_skinned_perk" in b: b.has_thick_skinned_perk = true
 						elif perk == "Cursed":
 							var b_max_hp = float(b.get("max_hp")) if b.get("max_hp") != null else 100.0
 							if not b.has_meta("base_max_hp"):
@@ -1412,6 +1415,9 @@ class BattleRoyaleMode extends GameMode:
 								b.set_meta("base_damage", b_damage)
 							b.set_meta("base_damage", float(b.get_meta("base_damage")) * 1.1)
 							b.set("damage", b.get_meta("base_damage"))
+							if typeof(b) == TYPE_DICTIONARY: b["has_heavy_hitter_perk"] = true
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("has_heavy_hitter_perk", true)
+							elif "has_heavy_hitter_perk" in b: b.has_heavy_hitter_perk = true
 						elif perk == "Eagle Eye":
 							b.set_meta("base_perception_radius", float(b.get_meta("base_perception_radius")) * 1.1)
 							b.set("perception_radius", b.get_meta("base_perception_radius"))
@@ -1421,20 +1427,33 @@ class BattleRoyaleMode extends GameMode:
 
 					var has_nimble = false
 					var has_eagle = false
+					var has_thick_skinned = false
+					var has_heavy_hitter = false
 					if typeof(b) == TYPE_DICTIONARY:
 						has_nimble = b.has("has_nimble_perk") and b["has_nimble_perk"]
 						has_eagle = b.has("has_eagle_eye_perk") and b["has_eagle_eye_perk"]
+						has_thick_skinned = b.has("has_thick_skinned_perk") and b["has_thick_skinned_perk"]
+						has_heavy_hitter = b.has("has_heavy_hitter_perk") and b["has_heavy_hitter_perk"]
 					elif typeof(b) == TYPE_OBJECT:
 						if b.has_method("has_meta"):
 							has_nimble = b.has_meta("has_nimble_perk") and b.get_meta("has_nimble_perk")
 							has_eagle = b.has_meta("has_eagle_eye_perk") and b.get_meta("has_eagle_eye_perk")
+							has_thick_skinned = b.has_meta("has_thick_skinned_perk") and b.get_meta("has_thick_skinned_perk")
+							has_heavy_hitter = b.has_meta("has_heavy_hitter_perk") and b.get_meta("has_heavy_hitter_perk")
 						elif "has_nimble_perk" in b and "has_eagle_eye_perk" in b:
 							has_nimble = b.has_nimble_perk
 							has_eagle = b.has_eagle_eye_perk
+						elif "has_thick_skinned_perk" in b and "has_heavy_hitter_perk" in b:
+							has_thick_skinned = b.has_thick_skinned_perk
+							has_heavy_hitter = b.has_heavy_hitter_perk
 					if has_nimble and has_eagle:
 						if typeof(b) == TYPE_DICTIONARY: b["has_sniper_stance"] = true
 						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("has_sniper_stance", true)
 						elif "has_sniper_stance" in b: b.has_sniper_stance = true
+					if has_thick_skinned and has_heavy_hitter:
+						if typeof(b) == TYPE_DICTIONARY: b["has_juggernaut_stance"] = true
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("has_juggernaut_stance", true)
+						elif "has_juggernaut_stance" in b: b.has_juggernaut_stance = true
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:

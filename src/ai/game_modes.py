@@ -958,6 +958,7 @@ class BattleRoyaleMode(GameMode):
                             b.base_max_hp *= 1.1
                             b.max_hp = b.base_max_hp
                             b.hp = b.max_hp
+                            b.has_thick_skinned_perk = True
                         elif perk == "Cursed":
                             if not hasattr(b, "base_max_hp"):
                                 b.base_max_hp = getattr(b, "max_hp", 100.0)
@@ -976,6 +977,7 @@ class BattleRoyaleMode(GameMode):
                                 b.base_damage = getattr(b, "damage", 10.0)
                             b.base_damage *= 1.1
                             b.damage = b.base_damage
+                            b.has_heavy_hitter_perk = True
                         elif perk == "Eagle Eye":
                             if not hasattr(b, "base_perception_radius"):
                                 b.base_perception_radius = getattr(b, "perception_radius", 250.0)
@@ -986,6 +988,8 @@ class BattleRoyaleMode(GameMode):
                     pass
                 if getattr(b, "has_nimble_perk", False) and getattr(b, "has_eagle_eye_perk", False):
                     b.has_sniper_stance = True
+                if getattr(b, "has_thick_skinned_perk", False) and getattr(b, "has_heavy_hitter_perk", False):
+                    b.has_juggernaut_stance = True
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
