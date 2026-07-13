@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-934] Guild Alliances — *2026-07-13 21:51:54 UTC*
+
+Allow guilds to form alliances with other guilds to share passive resource generation and coordinate attacks on massive multi-guild boss raids.
+
+---
+
 ## [idea-947] Bouncy Shrapnel Trait — *2026-07-13 21:48:47 UTC*
 
 Give shrapnel hazards the ability to bounce off walls instead of just slowing down and stopping, extending their danger zone.
