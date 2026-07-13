@@ -25855,6 +25855,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1510",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weaponized Paint",
+      "description": "A mode where players shoot paint that stays on the floor, providing a movement speed boost to allies and a slow debuff to enemies traversing over it.",
+      "allowed_paths": [
+        "src/ai/weaponized_paint.py",
+        "src/ai/weaponized_paint.gd",
+        "tests/test_weaponized_paint.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
