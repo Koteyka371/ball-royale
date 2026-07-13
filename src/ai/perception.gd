@@ -204,13 +204,25 @@ func scan() -> Dictionary:
             elif "shadow_booster_timer" in e:
                 e_has_shadow = float(e.shadow_booster_timer) > 0
 
+            var e_has_stealth_booster = false
+            if e.has_method("get_meta") and e.has_meta("stealth_booster_timer"):
+                e_has_stealth_booster = e.get_meta("stealth_booster_timer") > 0
+            elif "stealth_booster_timer" in e:
+                e_has_stealth_booster = float(e.stealth_booster_timer) > 0
+
+            var e_has_ghost_mode_booster = false
+            if e.has_method("get_meta") and e.has_meta("ghost_mode_active"):
+                e_has_ghost_mode_booster = e.get_meta("ghost_mode_active")
+            elif "ghost_mode_active" in e:
+                e_has_ghost_mode_booster = e.ghost_mode_active
+
             var is_sand_cloaked = false
             if "ball_type" in e and e.ball_type == "sand_elemental" and self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena and self.world.arena.is_sandstorming:
                 is_sand_cloaked = true
 
-            if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster:
+            if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster:
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
-                if e_has_stealth_booster and dist > 15.0:
+                if (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
                     continue
                 elif is_sand_cloaked and dist > 40.0:
                     continue
