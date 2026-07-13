@@ -1,0 +1,4 @@
+{
+    "title": "Chain Lightning Ability",
+    "description": "An active ability that shoots a bolt of lightning, which bounces between up to 3 nearby enemies, dealing decreasing damage with each bounce."
+}

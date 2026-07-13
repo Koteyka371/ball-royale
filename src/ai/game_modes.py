@@ -9144,6 +9144,71 @@ class ShiftingMazeMode(GameMode):
         return None
 
 
+
+class MassiveBlackHoleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Massive Black Hole"
+        self.description = "A massive black hole spawns in the center of the arena, slowly pulling all balls towards it. Balls closer to the center take increasing damage, encouraging players to fight on the edges or use speed boosters to escape."
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(world.arena, "width", 2000.0)
+        arena_height = getattr(world.arena, "height", 2000.0)
+        cx = arena_width / 2.0
+        cy = arena_height / 2.0
+
+        max_dist = math.sqrt((arena_width/2)**2 + (arena_height/2)**2)
+        if max_dist <= 0:
+            max_dist = 1000.0
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            dx = cx - b.x
+            dy = cy - b.y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist < 0.1:
+                dist = 0.1
+
+            nx = dx / dist
+            ny = dy / dist
+
+            # The pull force increases as the ball gets closer, or just a constant force.
+            # "slowly pulling all balls towards it."
+            # Let's apply a pull speed. We'll make it stronger when closer.
+            # pull_strength goes from e.g. 50 (at max_dist) to 200 (at center)
+            pull_ratio = 1.0 - min(dist / max_dist, 1.0) # 1 at center, 0 at edge
+            pull_speed = 50.0 + 150.0 * pull_ratio
+
+            b.x += nx * pull_speed * delta
+            b.y += ny * pull_speed * delta
+
+            # "Balls closer to the center take increasing damage"
+            # Damage maxes out at center, 0 at edge
+            damage_per_sec = 25.0 * pull_ratio
+            damage = damage_per_sec * delta
+
+            if damage > 0:
+                if hasattr(b, "take_damage"):
+                    b.take_damage(damage)
+                else:
+                    b.hp -= damage
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+
+                        if not hasattr(world, "dead_balls"):
+                            world.dead_balls = []
+                        if hasattr(b, "id") and b.id not in world.dead_balls:
+                            world.dead_balls.append(b.id)
+                            if hasattr(world, "add_event"):
+                                world.add_event("ball_died", {"id": b.id, "reason": "black_hole", "killer_id": -1})
+
 class GravityWellMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -19636,3 +19701,4 @@ class CollapsingBubblesMode(GameMode):
             "collapsing": False
         })
 GAME_MODES['collapsing_bubbles'] = CollapsingBubblesMode()
+GAME_MODES['massive_black_hole'] = MassiveBlackHoleMode()

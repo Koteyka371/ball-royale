@@ -14330,6 +14330,109 @@ class ShiftingMazeMode extends GameMode:
 		return null
 
 
+
+class MassiveBlackHoleMode extends GameMode:
+	func _init():
+		name = "Massive Black Hole"
+		description = "A massive black hole spawns in the center of the arena, slowly pulling all balls towards it. Balls closer to the center take increasing damage, encouraging players to fight on the edges or use speed boosters to escape."
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		var arena_width = 2000.0
+		var arena_height = 2000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena"):
+				var a = world["arena"]
+				if typeof(a) == TYPE_DICTIONARY:
+					if a.has("width"): arena_width = float(a["width"])
+					if a.has("height"): arena_height = float(a["height"])
+				elif typeof(a) == TYPE_OBJECT:
+					if "width" in a: arena_width = float(a.width)
+					if "height" in a: arena_height = float(a.height)
+		elif typeof(world) == TYPE_OBJECT:
+			if "arena" in world:
+				var a = world.arena
+				if typeof(a) == TYPE_DICTIONARY:
+					if a.has("width"): arena_width = float(a["width"])
+					if a.has("height"): arena_height = float(a["height"])
+				elif typeof(a) == TYPE_OBJECT:
+					if "width" in a: arena_width = float(a.width)
+					if "height" in a: arena_height = float(a.height)
+
+		var cx = arena_width / 2.0
+		var cy = arena_height / 2.0
+
+		var max_dist = sqrt(pow(arena_width/2.0, 2) + pow(arena_height/2.0, 2))
+		if max_dist <= 0:
+			max_dist = 1000.0
+
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+			elif typeof(b) == TYPE_OBJECT:
+				if "alive" in b:
+					alive = b.alive
+
+			if not alive:
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			elif typeof(b) == TYPE_OBJECT:
+				if "x" in b: bx = b.x
+				if "y" in b: by = b.y
+
+			var dx = cx - bx
+			var dy = cy - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist < 0.1:
+				dist = 0.1
+
+			var nx = dx / dist
+			var ny = dy / dist
+
+			var pull_ratio = 1.0 - min(dist / max_dist, 1.0)
+			var pull_speed = 50.0 + 150.0 * pull_ratio
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["x"] = bx + nx * pull_speed * delta
+				b["y"] = by + ny * pull_speed * delta
+			elif typeof(b) == TYPE_OBJECT:
+				if "x" in b: b.x = bx + nx * pull_speed * delta
+				if "y" in b: b.y = by + ny * pull_speed * delta
+
+			var damage_per_sec = 25.0 * pull_ratio
+			var damage = damage_per_sec * delta
+
+			if damage > 0:
+				if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+					b.take_damage(damage)
+				else:
+					var hp = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						hp = b.get("hp", 0.0)
+					elif typeof(b) == TYPE_OBJECT:
+						if "hp" in b: hp = b.hp
+
+					hp -= damage
+					if hp <= 0:
+						hp = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b["alive"] = false
+						elif typeof(b) == TYPE_OBJECT:
+							if "alive" in b: b.alive = false
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = hp
+					elif typeof(b) == TYPE_OBJECT:
+						if "hp" in b: b.hp = hp
+
 class GravityWellMode extends GameMode:
 	var spawn_timer = 0.0
 
@@ -28257,6 +28360,7 @@ var GAME_MODES = {
 	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"collapsing_bubbles": CollapsingBubblesMode.new(),
+	"massive_black_hole": MassiveBlackHoleMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
