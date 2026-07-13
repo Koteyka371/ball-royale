@@ -19636,3 +19636,76 @@ class CollapsingBubblesMode(GameMode):
             "collapsing": False
         })
 GAME_MODES['collapsing_bubbles'] = CollapsingBubblesMode()
+
+
+class WatchtowerMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Watchtower"
+        self.description = "Periodically, tall towers rise from the ground. Balls that climb them gain massively increased line of sight and projectile speed, but are immobile while on top."
+        self.towers = []
+        self.tower_spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.towers = []
+        self.tower_spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        super().tick(world, balls, delta)
+
+        self.tower_spawn_timer -= delta
+        if self.tower_spawn_timer <= 0:
+            self.tower_spawn_timer = random.uniform(15.0, 30.0)
+            aw = getattr(world.arena, "width", 1000.0)
+            ah = getattr(world.arena, "height", 1000.0)
+            self.towers.append({
+                "x": random.uniform(100, aw - 100),
+                "y": random.uniform(100, ah - 100),
+                "radius": 60.0,
+                "duration": random.uniform(20.0, 40.0)
+            })
+            if hasattr(world, "add_event"):
+                world.add_event("tower_spawn", {"message": "A watchtower has risen!"})
+
+        active_towers = []
+        for t in self.towers:
+            t["duration"] -= delta
+            if t["duration"] > 0:
+                active_towers.append(t)
+        self.towers = active_towers
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            on_tower = False
+            for t in self.towers:
+                dist = math.hypot(getattr(b, 'x', 0) - t["x"], getattr(b, 'y', 0) - t["y"])
+                if dist <= t["radius"]:
+                    on_tower = True
+                    break
+
+            if on_tower:
+                if not getattr(b, "_on_watchtower", False):
+                    b._on_watchtower = True
+                    b._watchtower_orig_speed = getattr(b, "speed", 100.0)
+                    b._watchtower_orig_vision = getattr(b, "vision_radius", 500.0)
+                    b._watchtower_orig_proj_speed = getattr(b, "projectile_speed", 300.0)
+
+                    b.speed = 0.0
+                    b.vision_radius = getattr(b, "vision_radius", 500.0) * 3.0
+                    b.projectile_speed = getattr(b, "projectile_speed", 300.0) * 2.0
+            else:
+                if getattr(b, "_on_watchtower", False):
+                    b._on_watchtower = False
+                    if hasattr(b, "_watchtower_orig_speed"):
+                        b.speed = b._watchtower_orig_speed
+                    if hasattr(b, "_watchtower_orig_vision"):
+                        b.vision_radius = b._watchtower_orig_vision
+                    if hasattr(b, "_watchtower_orig_proj_speed"):
+                        b.projectile_speed = b._watchtower_orig_proj_speed
+
+GAME_MODES['watchtower'] = WatchtowerMode()
