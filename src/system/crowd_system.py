@@ -11,6 +11,8 @@ class CrowdSystem:
         self.votes = {}
         self.vote_timer = 0
         self.vote_cooldown = 0
+        self.active_global_modifier = None
+        self.global_modifier_timer = 0
         self.last_kill_tick = 0
         self.kill_streak = {}
         self.ball_positions = {}
@@ -156,6 +158,7 @@ class CrowdSystem:
         self._throw_hazards_if_bored(balls, tick)
         self._process_votes(balls, tick)
         self._process_spectator_signs(balls, tick)
+        self._process_global_modifier(balls, tick)
         self._trigger_large_scale_event(balls, tick)
 
 
@@ -490,7 +493,8 @@ class CrowdSystem:
     def _start_vote(self, balls: List[Any]):
         vote_types = [
             {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
-            {"type": "player_buff", "options": ["speed", "damage", "shield"]}
+            {"type": "player_buff", "options": ["speed", "damage", "shield"]},
+            {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]}
         ]
         chosen_vote = random.choice(vote_types)
 
@@ -554,7 +558,47 @@ class CrowdSystem:
                         "kind": winning_option,
                         "value": 50.0
                     })
+            elif vote_type == "global_stat_modifier":
+                self.active_global_modifier = winning_option
+                self.global_modifier_timer = 1800  # 30 seconds at 60 ticks/sec
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": f"The crowd activated a {winning_option} for 30 seconds!", "volume": 1.2})
 
         self.active_vote = None
         self.votes = {}
         self.vote_cooldown = 1000  # Long cooldown before next vote
+
+
+    def _process_global_modifier(self, balls: List[Any], tick: int):
+        if self.global_modifier_timer > 0:
+            self.global_modifier_timer -= 1
+            if self.global_modifier_timer <= 0:
+                self.active_global_modifier = None
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": "The global stat modifier has worn off!", "volume": 1.0})
+
+                for b in balls:
+                    if getattr(b, "crowd_global_speed", False):
+                        delattr(b, "crowd_global_speed")
+                        b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    if getattr(b, "crowd_global_damage", False):
+                        delattr(b, "crowd_global_damage")
+                        b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    if getattr(b, "crowd_global_shield", False):
+                        delattr(b, "crowd_global_shield")
+            else:
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                        continue
+
+                    if self.active_global_modifier == "global_speed_up":
+                        b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.2
+                        b.crowd_global_speed = True
+                    elif self.active_global_modifier == "global_damage_up":
+                        b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 1.2
+                        b.crowd_global_damage = True
+                    elif self.active_global_modifier == "global_shield_up":
+                        b.shield = getattr(b, "shield", 0.0) + 0.1  # Passive shield regen
+                        if b.shield > 50.0:
+                            b.shield = 50.0
+                        b.crowd_global_shield = True
