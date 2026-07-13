@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-925] Supernova Arena Event — *2026-07-13 16:56:55 UTC*
+
+An arena event where a giant central star expands over time, pulling entities towards it and dealing massive damage in its core. It eventually explodes, repelling everything outward and scattering rare boosters.
+
+---
+
 ## [idea-924] Dynamic Map Hazards Based on Excitement — *2026-07-13 16:42:12 UTC*
 
 When the crowd excitement drops below a critical threshold, trigger a large-scale map event (like a slow-moving closing zone or global weather effect) to force player engagement rather than just single-target hazard throws.

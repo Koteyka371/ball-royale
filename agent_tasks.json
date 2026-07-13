@@ -15891,7 +15891,7 @@
     },
     {
       "id": "idea-925",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Supernova Arena Event",
@@ -25935,6 +25935,23 @@
         "src/ai/weapon_durability_and_overheat.py",
         "src/ai/weapon_durability_and_overheat.gd",
         "tests/test_weapon_durability_and_overheat.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1515",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "King of the Hill - Dynamic Capture Zones",
+      "description": "Introduce dynamic capture zones that move around the arena. Teams earn points by staying inside the zone. If multiple teams are in the zone, points are contested. The zone shrinks over time, forcing closer combat.",
+      "allowed_paths": [
+        "src/ai/king_of_the_hill_dynamic_capture_zones.py",
+        "src/ai/king_of_the_hill_dynamic_capture_zones.gd",
+        "tests/test_king_of_the_hill_dynamic_capture_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
