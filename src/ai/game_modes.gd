@@ -26475,6 +26475,13 @@ class BountyTagMode extends GameMode:
 				_make_bounty(killer)
 				current_bounty_id = killer["id"] if typeof(killer) == TYPE_DICTIONARY and killer.has("id") else (killer.get("id") if "id" in killer else null)
 
+				# Bonus reward for killing the bounty
+				var profile = world["profile_manager"] if typeof(world) == TYPE_DICTIONARY and world.has("profile_manager") else (world.get("profile_manager") if "profile_manager" in world else null)
+				if profile != null and profile.has_method("add_skill_points"):
+					var kb = ball["kill_bounty"] if typeof(ball) == TYPE_DICTIONARY and ball.has("kill_bounty") else (ball.get("kill_bounty") if "kill_bounty" in ball else 2)
+					var points_reward = 30 * kb * 2.0
+					profile.add_skill_points(int(points_reward))
+
 	func check_winner(world, balls: Array):
 		var alive = []
 		for b in balls:

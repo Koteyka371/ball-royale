@@ -16200,6 +16200,12 @@ class BountyTagMode(GameMode):
                 self._make_bounty(killer)
                 self.current_bounty_id = getattr(killer, "id", None)
 
+                # Bonus reward for killing the bounty
+                profile = getattr(world, "profile_manager", None)
+                if profile and hasattr(profile, "add_skill_points"):
+                    points_reward = 30 * getattr(ball, "kill_bounty", 2) * 2.0
+                    profile.add_skill_points(int(points_reward))
+
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
         if not alive:
