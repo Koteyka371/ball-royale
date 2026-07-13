@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-931] Weather-Based Stat Bonuses — *2026-07-13 18:42:39 UTC*
+
+Certain elemental ball types gain passive stat boosts when a specific weather mode matches their element, e.g., elementalist in sandstorm.
+
+---
+
 ## [idea-892] Moonlight Shadow Event — *2026-07-13 18:10:01 UTC*
 
 During the night cycle in Day/Night mode, occasional moonlight shadow events spawn safe zones. Balls remaining outside these zones slowly lose stamina, forcing engagements in key areas.
