@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-926] Shrinking Safe Zones Array — *2026-07-13 17:41:24 UTC*
+
+Instead of one large shrinking circle, the arena has multiple smaller safe zones that randomly collapse, forcing players to constantly migrate between different safe bubbles to survive.
+
+---
+
 ## [idea-925] Supernova Arena Event — *2026-07-13 16:56:55 UTC*
 
 An arena event where a giant central star expands over time, pulling entities towards it and dealing massive damage in its core. It eventually explodes, repelling everything outward and scattering rare boosters.

@@ -15908,7 +15908,7 @@
     },
     {
       "id": "idea-926",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zones Array",
