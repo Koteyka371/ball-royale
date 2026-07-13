@@ -1087,6 +1087,106 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "is_ricochet_laser", False):
+            self.ball.duration -= delta
+            if self.ball.duration <= 0 or getattr(self.ball, "bounces_left", 0) <= 0:
+                self.ball.alive = False
+                return
+
+            self.ball.x += self.ball.vx * delta
+            self.ball.y += self.ball.vy * delta
+
+            bounces_left = getattr(self.ball, "bounces_left", 5)
+            bounced = False
+
+            # Wall collisions
+            if hasattr(self.world, "arena"):
+                width = getattr(self.world.arena, "width", 1000)
+                height = getattr(self.world.arena, "height", 1000)
+            else:
+                width = getattr(self.world, "width", 1000)
+                height = getattr(self.world, "height", 1000)
+
+            radius = getattr(self.ball, "radius", 5.0)
+
+            if self.ball.x < radius:
+                self.ball.x = radius
+                self.ball.vx *= -1
+                bounced = True
+            elif self.ball.x > width - radius:
+                self.ball.x = width - radius
+                self.ball.vx *= -1
+                bounced = True
+
+            if self.ball.y < radius:
+                self.ball.y = radius
+                self.ball.vy *= -1
+                bounced = True
+            elif self.ball.y > height - radius:
+                self.ball.y = height - radius
+                self.ball.vy *= -1
+                bounced = True
+
+            if bounced:
+                bounces_left -= 1
+                setattr(self.ball, "bounces_left", bounces_left)
+
+            # Entity collisions
+            if bounces_left > 0:
+                import math
+                owner_id = getattr(self.ball, "owner_id", None)
+                for other in getattr(self.world, "balls", []):
+                    if not getattr(other, "alive", True) or getattr(other, "id", None) == getattr(self.ball, "id", None):
+                        continue
+                    if getattr(other, "id", None) == owner_id:
+                        continue
+
+                    dist_sq = (self.ball.x - other.x)**2 + (self.ball.y - other.y)**2
+                    r_sum = radius + getattr(other, "radius", 15.0)
+
+                    if dist_sq < r_sum**2:
+                        # Hit!
+                        last_hit = getattr(self.ball, "last_hit_id", None)
+                        base_dmg = getattr(self.ball, "base_damage", 10.0)
+
+                        if getattr(other, "id", None) == last_hit:
+                            dmg = getattr(self.ball, "damage", base_dmg) * 2.0
+                        else:
+                            dmg = base_dmg
+
+                        setattr(self.ball, "damage", dmg)
+                        setattr(self.ball, "last_hit_id", getattr(other, "id", None))
+
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(self.ball, other, dmg)
+                        elif hasattr(other, "take_damage"):
+                            other.take_damage(dmg)
+                        elif hasattr(other, "hp"):
+                            other.hp -= dmg
+
+                        other.slow_timer = getattr(other, "slow_timer", 0.0) + 1.0
+
+                        # Reflect
+                        dist = math.sqrt(dist_sq)
+                        if dist > 0.0001:
+                            nx = (self.ball.x - other.x) / dist
+                            ny = (self.ball.y - other.y) / dist
+                            dot = self.ball.vx * nx + self.ball.vy * ny
+                            if dot < 0:
+                                self.ball.vx = self.ball.vx - 2 * dot * nx
+                                self.ball.vy = self.ball.vy - 2 * dot * ny
+                        else:
+                            self.ball.vx *= -1
+                            self.ball.vy *= -1
+
+                        bounces_left -= 1
+                        setattr(self.ball, "bounces_left", bounces_left)
+                        break
+
+            if bounces_left <= 0:
+                self.ball.alive = False
+            return
+
 
         ball_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", ""))
         if ball_type == "trickster":
@@ -5481,6 +5581,46 @@ class Action:
                                         bh.duration = 3.0 # Short duration
                                         self.world.arena.hazards.append(bh)
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "ricochet":
+                                    hazard.duration = 0.0 # Destroy trap
+
+                                    # Spawn ricochet laser
+                                    if hasattr(self.world, "balls"):
+                                        import math
+                                        dx = self.ball.x - hazard.x
+                                        dy = self.ball.y - hazard.y
+                                        dist = math.sqrt(dx*dx + dy*dy)
+                                        if dist > 0.0001:
+                                            nx, ny = dx/dist, dy/dist
+                                        else:
+                                            nx, ny = 1.0, 0.0
+
+                                        laser = type('MockBall', (), {})()
+                                        setattr(laser, "id", getattr(self.world, "next_id", 99999))
+                                        if hasattr(self.world, "next_id"):
+                                            self.world.next_id += 1
+                                        setattr(laser, "ball_type", "projectile")
+                                        setattr(laser, "is_ricochet_laser", True)
+
+                                        owner_id = getattr(hazard, "owner_id", None)
+                                        setattr(laser, "owner_id", owner_id)
+                                        setattr(laser, "team", getattr(hazard, "owner_team", ""))
+
+                                        dmg = getattr(hazard, "damage", 10.0)
+                                        setattr(laser, "damage", dmg)
+                                        setattr(laser, "base_damage", dmg)
+
+                                        setattr(laser, "bounces_left", 5)
+                                        setattr(laser, "last_hit_id", None)
+                                        setattr(laser, "duration", 10.0)
+                                        setattr(laser, "alive", True)
+                                        setattr(laser, "x", hazard.x)
+                                        setattr(laser, "y", hazard.y)
+                                        setattr(laser, "vx", nx * 500.0)
+                                        setattr(laser, "vy", ny * 500.0)
+                                        setattr(laser, "radius", 5.0)
+
+                                        self.world.balls.append(laser)
                                 elif trap_variant == "chain_lightning":
                                     # Chain Lightning trap: zap the triggering ball and then jump to nearest enemy
                                     if hasattr(self.world, "_deal_damage"):

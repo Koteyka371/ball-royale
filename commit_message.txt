@@ -1,3 +1,0 @@
-Task: idea-367
-
-Adds a new arena hazard called `reverse_gravity`. It acts similarly to a `gravity_well`, but instead of just applying an anomaly effect (which implies pulling or generic anomaly), it explicitly calculates distance and pushes the ball away from the hazard's center. It applies damage to balls inside it (doubled if they have `is_in_quicksand`), and ensures the new hazard type is part of procedural generation. Both Python (`src/ai/action.py`, `src/arena/procedural_arena.py`) and GDScript (`src/ai/action.gd`, `src/arena/procedural_arena.gd`) have been kept in sync. New unit tests in `test_reverse_gravity.py` ensure the hazard pushes effectively.
