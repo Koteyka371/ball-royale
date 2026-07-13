@@ -14614,9 +14614,9 @@ class ScorchingSunMode extends GameMode:
 					if b.has_method("take_damage"):
 						b.take_damage(actual_damage)
 					else:
-						var hp = b.get("hp", 100.0)
+						var hp = (b.get("hp") if "hp" in b else 100.0)
 						b.set("hp", hp - actual_damage)
-						if b.get("hp", 100.0) <= 0:
+						if (b.get("hp") if "hp" in b else 100.0) <= 0:
 							b.set("alive", false)
 
 					if "stamina" in b:
@@ -14896,9 +14896,9 @@ class DayNightMode extends GameMode:
 											if b.get("hp", 100.0) <= 0:
 												b["alive"] = false
 										else:
-											var hp = b.get("hp", 100.0)
+											var hp = (b.get("hp") if "hp" in b else 100.0)
 											b.set("hp", hp - actual_damage)
-											if b.get("hp", 100.0) <= 0:
+											if (b.get("hp") if "hp" in b else 100.0) <= 0:
 												b.set("alive", false)
 
 			if is_night:
