@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-930] Negative Perks for Bonus Multiplier — *2026-07-13 21:35:57 UTC*
+
+Allow players to equip 'Curse' perks that reduce their stats (like '-10% Max HP') in exchange for larger rewards like higher currency drop rates or extra experience points during the Battle Royale.
+
+---
+
 ## [idea-940] Hackable Turret Mode — *2026-07-13 21:20:03 UTC*
 
 Stationary turrets periodically spawn in the arena. They have a capture radius, and standing inside them captures them for your team, allowing the turret to fire on enemies automatically. If an enemy stands inside, they can hack it back.

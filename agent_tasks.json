@@ -15976,7 +15976,7 @@
     },
     {
       "id": "idea-930",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Negative Perks for Bonus Multiplier",
@@ -26105,6 +26105,40 @@
         "src/ai/quantum_relic.py",
         "src/ai/quantum_relic.gd",
         "tests/test_quantum_relic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1525",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hovercraft Mode",
+      "description": "Friction is reduced to zero, making all balls slide uncontrollably until they hit a wall or use a dash ability.",
+      "allowed_paths": [
+        "src/ai/hovercraft.py",
+        "src/ai/hovercraft.gd",
+        "tests/test_hovercraft.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1526",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Arena Walls",
+      "description": "Players hitting the arena boundaries are bounced back at double speed, adding a chaotic pinball element to the game.",
+      "allowed_paths": [
+        "src/arena/bouncy_arena_walls.py",
+        "src/arena/bouncy_arena_walls.gd",
+        "tests/test_bouncy_arena_walls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
