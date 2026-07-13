@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-894] Sun God's Wrath Mode — *2026-07-13 20:59:06 UTC*
+
+An intense daytime-only mode where the sun gets progressively hotter, causing a slowly shrinking safe zone of shade. Balls outside the shade take continuous damage and have their stamina drained.
+
+---
+
 ## [idea-869] Cursed Loadout Relics — *2026-07-13 20:59:01 UTC*
 
 Scattered across the map are extremely rare 'Cursed Relics' that, when collected, temporarily provide immense buffs (e.g., 300% movement speed and attack damage) but heavily impair the player's perception radius and invert their controls for a period. Surviving the duration permanently grants the relic's unique badge to the player's profile.
