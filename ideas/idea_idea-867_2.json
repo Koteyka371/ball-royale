@@ -1,0 +1,4 @@
+{
+    "title": "Reverse Tag",
+    "description": "A single player starts as the target. Every time they are hit, they pass the target status to the attacker. The player who has held the target status the least amount of time wins."
+}
