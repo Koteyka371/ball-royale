@@ -302,17 +302,41 @@ class GameMode:
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             missiles = [h for h in world.arena.hazards if getattr(h, "kind", "") == "homing_missile"]
             for m in missiles:
-                # Find target center
                 target_x = getattr(world.arena, "safe_zone_x", getattr(world.arena, "width", 1000) / 2)
                 target_y = getattr(world.arena, "safe_zone_y", getattr(world.arena, "height", 1000) / 2)
+
+                # Find nearest enemy
+                min_dist = float('inf')
+                for b in balls:
+                    if not getattr(b, "alive", False): continue
+                    if getattr(b, "id", None) == getattr(m, "owner_id", None): continue
+
+                    # Assuming basic team setup or just anyone not owner
+                    bx = getattr(b, "x", 0)
+                    by = getattr(b, "y", 0)
+                    dist = ((bx - getattr(m, "x", 0))**2 + (by - getattr(m, "y", 0))**2)**0.5
+                    if dist < min_dist:
+                        min_dist = dist
+                        target_x = bx
+                        target_y = by
 
                 dx = target_x - getattr(m, "x", 0)
                 dy = target_y - getattr(m, "y", 0)
                 dist = (dx**2 + dy**2)**0.5
                 if dist > 0:
-                    speed = 300.0 * delta
-                    m.x += (dx/dist) * speed
-                    m.y += (dy/dist) * speed
+                    if not hasattr(m, "vx"):
+                        setattr(m, "vx", (dx/dist) * 300.0)
+                        setattr(m, "vy", (dy/dist) * 300.0)
+
+                    desired_vx = (dx/dist) * 300.0
+                    desired_vy = (dy/dist) * 300.0
+
+                    steer_factor = 5.0 * delta
+                    m.vx += (desired_vx - m.vx) * steer_factor
+                    m.vy += (desired_vy - m.vy) * steer_factor
+
+                    m.x += m.vx * delta
+                    m.y += m.vy * delta
 
                 hit = False
                 for b in balls:
