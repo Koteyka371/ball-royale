@@ -19,6 +19,9 @@ class GuildManager:
                             "statues": [],
                             "banners": [],
                             "cosmetics": [],
+                            "flags": [],
+                            "backgrounds": [],
+                            "announcer_voices": [],
                             "mini_games": {},
                             "training_arena_unlocked": False
                         }
@@ -475,19 +478,22 @@ class GuildManager:
                     return True
         return False
 
-    def unlock_hq_feature(self, guild_name, feature_type, feature_id, cost, required_level=1):
+    def unlock_hq_feature(self, guild_name, feature_type, feature_id, cost, required_level=1, currency="resources"):
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
-            if guild["resources"] >= cost and guild.get("level", 1) >= required_level:
+            if currency not in ["resources", "guild_xp"]:
+                return False
+
+            if guild.get(currency, 0) >= cost and guild.get("level", 1) >= required_level:
                 if feature_type == "training_arena":
                     if not guild.get("hq", {}).get("training_arena_unlocked", False):
-                        guild["resources"] -= cost
+                        guild[currency] -= cost
                         guild.setdefault("hq", {})["training_arena_unlocked"] = True
                         self.save()
                         return True
-                elif feature_type in ["statues", "banners", "cosmetics"]:
+                elif feature_type in ["statues", "banners", "cosmetics", "flags", "backgrounds", "announcer_voices"]:
                     if feature_id not in guild.setdefault("hq", {}).setdefault(feature_type, []):
-                        guild["resources"] -= cost
+                        guild[currency] -= cost
                         guild["hq"][feature_type].append(feature_id)
                         self.save()
                         return True
@@ -495,7 +501,7 @@ class GuildManager:
                     hq = guild.setdefault("hq", {})
                     mini_games = hq.setdefault("mini_games", {})
                     if feature_id not in mini_games:
-                        guild["resources"] -= cost
+                        guild[currency] -= cost
                         mini_games[feature_id] = {"high_scores": {}}
                         self.save()
                         return True
@@ -535,6 +541,9 @@ class GuildManager:
                 "statues": hq.get("statues", []),
                 "banners": hq.get("banners", []),
                 "cosmetics": hq.get("cosmetics", []),
+                "flags": hq.get("flags", []),
+                "backgrounds": hq.get("backgrounds", []),
+                "announcer_voices": hq.get("announcer_voices", []),
                 "mini_games": hq.get("mini_games", {}),
                 "training_arena_unlocked": hq.get("training_arena_unlocked", False)
             }
