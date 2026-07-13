@@ -28076,8 +28076,104 @@ class StationaryTurretsMode extends GameMode:
 								world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": ne_x, "target_y": ne_y})
 
 
+
+
+class SniperTowersMode extends GameMode:
+	var towers = []
+	var tower_spawn_timer = 5.0
+
+	func _init():
+		name = "Sniper Towers"
+		description = "Periodically, tall towers rise from the ground. Balls that climb them gain massively increased line of sight and projectile speed, but are immobile while on top."
+
+	func tick(world, balls, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		tower_spawn_timer -= delta
+		if tower_spawn_timer <= 0.0:
+			tower_spawn_timer = 20.0
+			var arena_width = 1000
+			var arena_height = 1000
+			if "arena" in world and world.arena != null:
+				arena_width = world.arena.get("width", 1000) if typeof(world.arena) == TYPE_DICTIONARY else (world.arena.width if "width" in world.arena else 1000)
+				arena_height = world.arena.get("height", 1000) if typeof(world.arena) == TYPE_DICTIONARY else (world.arena.height if "height" in world.arena else 1000)
+
+			var tx = randf_range(100, arena_width - 100)
+			var ty = randf_range(100, arena_height - 100)
+
+			towers.append({"x": tx, "y": ty, "radius": 50.0})
+
+			if not "events" in world:
+				world.events = []
+			world.events.append({
+				"type": "tower_rise",
+				"x": tx,
+				"y": ty,
+				"radius": 50.0
+			})
+
+		for b in balls:
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+			if not is_alive:
+				continue
+
+			var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+
+			var on_tower = false
+			for t in towers:
+				var dx = bx - t["x"]
+				var dy = by - t["y"]
+				if dx*dx + dy*dy <= t["radius"] * t["radius"]:
+					on_tower = true
+					break
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if on_tower:
+					if not b.get("_on_tower", false):
+						b["_on_tower"] = true
+						b["_pre_tower_speed"] = b.get("speed", 100.0)
+						b["_pre_tower_perception"] = b.get("perception_radius", 100.0)
+						b["_pre_tower_proj_mult"] = b.get("projectile_speed_multiplier", 1.0)
+					b["speed"] = 0.0
+					b["perception_radius"] = b.get("_pre_tower_perception", 100.0) * 5.0
+					b["projectile_speed_multiplier"] = b.get("_pre_tower_proj_mult", 1.0) * 5.0
+				else:
+					if b.get("_on_tower", false):
+						b["_on_tower"] = false
+						b["speed"] = b.get("_pre_tower_speed", b.get("base_speed", 100.0))
+						b["perception_radius"] = b.get("_pre_tower_perception", 100.0)
+						b["projectile_speed_multiplier"] = b.get("_pre_tower_proj_mult", 1.0)
+			else:
+				if on_tower:
+					var _on_tower = b.get_meta("_on_tower") if b.has_meta("_on_tower") else false
+					if not _on_tower:
+						b.set_meta("_on_tower", true)
+						b.set_meta("_pre_tower_speed", b.speed if "speed" in b else 100.0)
+						b.set_meta("_pre_tower_perception", b.perception_radius if "perception_radius" in b else 100.0)
+						var init_proj = b.projectile_speed_multiplier if "projectile_speed_multiplier" in b else 1.0
+						b.set_meta("_pre_tower_proj_mult", init_proj)
+
+					b.speed = 0.0
+					if "perception_radius" in b:
+						b.perception_radius = b.get_meta("_pre_tower_perception") * 5.0
+					if "projectile_speed_multiplier" in b:
+						b.projectile_speed_multiplier = b.get_meta("_pre_tower_proj_mult") * 5.0
+					else:
+						b.set_meta("projectile_speed_multiplier", b.get_meta("_pre_tower_proj_mult") * 5.0)
+				else:
+					var _on_tower = b.get_meta("_on_tower") if b.has_meta("_on_tower") else false
+					if _on_tower:
+						b.set_meta("_on_tower", false)
+						b.speed = b.get_meta("_pre_tower_speed")
+						if "perception_radius" in b:
+							b.perception_radius = b.get_meta("_pre_tower_perception")
+						if "projectile_speed_multiplier" in b:
+							b.projectile_speed_multiplier = b.get_meta("_pre_tower_proj_mult")
+
 var GAME_MODES = {
 	"stationary_turrets": StationaryTurretsMode.new(),
+	"sniper_towers": SniperTowersMode.new(),
 
 	"scorching_sun": ScorchingSunMode.new(),
 	"bounty_tag": BountyTagMode.new(),

@@ -16926,8 +16926,73 @@ class StationaryTurretsMode(GameMode):
                         if hasattr(world, "events"):
                             world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": getattr(nearest_enemy, "x", 0.0), "target_y": getattr(nearest_enemy, "y", 0.0)})
 
+
+
+class SniperTowersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sniper Towers"
+        self.description = "Periodically, tall towers rise from the ground. Balls that climb them gain massively increased line of sight and projectile speed, but are immobile while on top."
+        self.towers = []
+        self.tower_spawn_timer = 5.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        import random
+        self.tower_spawn_timer -= delta
+        if self.tower_spawn_timer <= 0.0:
+            self.tower_spawn_timer = 20.0
+            arena_width = 1000
+            arena_height = 1000
+            if hasattr(world, "arena") and world.arena:
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+            tx = random.uniform(100, arena_width - 100)
+            ty = random.uniform(100, arena_height - 100)
+            self.towers.append({"x": tx, "y": ty, "radius": 50.0})
+            if not hasattr(world, "events"):
+                world.events = []
+            world.events.append({
+                "type": "tower_rise",
+                "x": tx,
+                "y": ty,
+                "radius": 50.0
+            })
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            on_tower = False
+            for t in self.towers:
+                dx = b.x - t["x"]
+                dy = b.y - t["y"]
+                dist_sq = dx*dx + dy*dy
+                if dist_sq <= t["radius"] * t["radius"]:
+                    on_tower = True
+                    break
+
+            if on_tower:
+                if not getattr(b, "_on_tower", False):
+                    b._on_tower = True
+                    b._pre_tower_speed = getattr(b, "speed", 100.0)
+                    b._pre_tower_perception = getattr(b, "perception_radius", 100.0)
+                    b._pre_tower_proj_mult = getattr(b, "projectile_speed_multiplier", 1.0)
+
+                b.speed = 0.0
+                b.perception_radius = b._pre_tower_perception * 5.0
+                b.projectile_speed_multiplier = b._pre_tower_proj_mult * 5.0
+            else:
+                if getattr(b, "_on_tower", False):
+                    b._on_tower = False
+                    b.speed = getattr(b, "_pre_tower_speed", getattr(b, "base_speed", 100.0))
+                    b.perception_radius = getattr(b, "_pre_tower_perception", 100.0)
+                    b.projectile_speed_multiplier = getattr(b, "_pre_tower_proj_mult", 1.0)
+
 GAME_MODES = {
     "stationary_turrets": StationaryTurretsMode(),
+    "sniper_towers": SniperTowersMode(),
 
     'scorching_sun': ScorchingSunMode(),
     "bounty_tag": BountyTagMode(),
