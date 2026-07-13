@@ -1203,6 +1203,7 @@ class BattleRoyaleMode extends GameMode:
 	var high_tier_drops: Array = []
 	var zone_initialized: bool = false
 	var zone_x: float = 500.0
+	var capture_points: Array = []
 	var zone_y: float = 500.0
 	var zone_radius: float = 1000.0
 	var shrink_rate: float = 10.0
@@ -1339,6 +1340,28 @@ class BattleRoyaleMode extends GameMode:
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
+		if not "dead_balls" in world:
+			if world.has_method("set_meta"):
+				world.set_meta("dead_balls", [])
+
+		capture_points.clear()
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+		for i in range(3):
+			var cp = {
+				"x": rng.randf_range(200, arena_width - 200),
+				"y": rng.randf_range(200, arena_height - 200),
+				"radius": 120.0,
+				"capture_progress": 0.0,
+				"captured_by": null,
+				"active": true
+			}
+			capture_points.append(cp)
+
 		if not "dead_balls" in world:
 			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
@@ -1505,6 +1528,74 @@ class BattleRoyaleMode extends GameMode:
 										h.set_meta("visible", true)
 										h.set_meta("reveal_timer", 2.0)
 										atk.active = false
+
+		# Capture Point Logic
+		if "capture_points" in self:
+			for cp in self.capture_points:
+				if not cp["active"]:
+					continue
+
+				var teams_in_point = {}
+				for b in balls:
+					if b.alive:
+						var dx = b.x - cp["x"]
+						var dy = b.y - cp["y"]
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= cp["radius"]:
+							var team = b.get("team") if "team" in b else "unknown"
+							if typeof(b) == TYPE_DICTIONARY:
+								team = b.get("team", "unknown")
+							if not teams_in_point.has(team):
+								teams_in_point[team] = 0
+							teams_in_point[team] += 1
+
+				if teams_in_point.size() == 1:
+					var team = teams_in_point.keys()[0]
+					if cp["captured_by"] == team:
+						cp["capture_progress"] = min(100.0, cp["capture_progress"] + 10.0 * delta)
+					else:
+						if cp["captured_by"] != null:
+							cp["capture_progress"] -= 20.0 * delta
+							if cp["capture_progress"] <= 0:
+								cp["captured_by"] = null
+								cp["capture_progress"] = 0
+						else:
+							cp["capture_progress"] += 15.0 * delta
+							if cp["capture_progress"] >= 100.0:
+								cp["captured_by"] = team
+								cp["capture_progress"] = 100.0
+				elif teams_in_point.size() == 0:
+					if cp["captured_by"] == null and cp["capture_progress"] > 0:
+						cp["capture_progress"] = max(0.0, cp["capture_progress"] - 5.0 * delta)
+
+				if cp["captured_by"] != null and cp["capture_progress"] >= 100.0:
+					for b in balls:
+						var b_team = b.get("team") if "team" in b else ""
+						if typeof(b) == TYPE_DICTIONARY:
+							b_team = b.get("team", "")
+						if b.alive and b_team == cp["captured_by"]:
+							var hp = b.hp if "hp" in b else 100.0
+							var max_hp = b.max_hp if "max_hp" in b else 100.0
+							if typeof(b) == TYPE_DICTIONARY:
+								hp = b.get("hp", 100.0)
+								max_hp = b.get("max_hp", 100.0)
+							if hp < max_hp:
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = min(max_hp, hp + 5.0 * delta)
+								else:
+									b.hp = min(max_hp, hp + 5.0 * delta)
+						elif b.alive and b_team != cp["captured_by"]:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["revealed"] = true
+								b["revealed_timer"] = b.get("revealed_timer", 0.0) + delta
+							elif b.has_method("set_meta"):
+								b.set_meta("revealed", true)
+								var r_timer = b.get_meta("revealed_timer") if b.has_meta("revealed_timer") else 0.0
+								b.set_meta("revealed_timer", r_timer + delta)
+							else:
+								b.revealed = true
+								if "revealed_timer" in b:
+									b.revealed_timer += delta
 
 		# Safe Zone logic
 		if not self.get("zone_initialized"):
