@@ -1,3 +1,4 @@
+from unittest.mock import MagicMock
 import pytest
 from system.crowd_system import CrowdSystem
 
@@ -246,3 +247,52 @@ def test_spectator_sign_triggered():
     sign_events = [e[1] for e in world.events if e[0] == "spectator_sign"]
     assert len(sign_events) > 0
     assert "UNSTOPPABLE" in sign_events[0]["text"]
+
+def test_global_modifier_vote():
+    world = MagicMock()
+    crowd = CrowdSystem(world)
+
+    class FakeBall:
+        def __init__(self, id, speed):
+            self.id = id
+            self.alive = True
+            self.ball_type = "player"
+            self.speed = speed
+            self.base_speed = speed
+            self.damage = 10.0
+            self.base_damage = 10.0
+            self.x = 0.0
+            self.y = 0.0
+            self.team = "A"
+
+    b1 = FakeBall(1, 100.0)
+    b2 = FakeBall(2, 50.0)
+    b2.team = "B"
+
+    balls = [b1, b2]
+
+    crowd.active_vote = {
+        "type": "global_stat_modifier",
+        "options": ["global_speed_up", "global_damage_up", "global_shield_up"]
+    }
+    crowd.votes = {"global_speed_up": 10, "global_damage_up": 0, "global_shield_up": 0}
+    crowd.vote_timer = 1
+
+    # resolve vote
+    crowd.tick(balls, [], 1)
+
+    assert crowd.active_global_modifier == "global_speed_up"
+    assert crowd.global_modifier_timer == 1799
+
+    assert getattr(b1, "crowd_global_speed", False) == True
+    assert b1.speed == 120.0
+    assert b2.speed == 60.0
+
+    # Fast forward timer
+    crowd.global_modifier_timer = 1
+    crowd.tick(balls, [], 2)
+
+    assert crowd.active_global_modifier is None
+    assert getattr(b1, "crowd_global_speed", False) == False
+    assert b1.speed == 100.0
+    assert b2.speed == 50.0

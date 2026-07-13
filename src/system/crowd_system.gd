@@ -10,6 +10,8 @@ var active_vote = null
 var vote_timer = 0
 var votes = {}
 var vote_cooldown = 0
+var active_global_modifier = null
+var global_modifier_timer = 0
 var ball_positions = {}
 var camping_time = {}
 var underdog_team = null
@@ -201,6 +203,7 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
     _throw_hazards_if_bored(balls, current_tick)
     _process_votes(balls, current_tick)
     _process_spectator_signs(balls, current_tick)
+    _process_global_modifier(balls, current_tick)
     _trigger_large_scale_event(balls, current_tick)
 
 func _check_bets_and_winner(balls: Array, current_tick: int):
@@ -769,7 +772,8 @@ func _process_spectator_signs(balls: Array, current_tick: int):
 func _start_vote(balls: Array):
     var vote_types = [
         {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
-        {"type": "player_buff", "options": ["speed", "damage", "shield"]}
+        {"type": "player_buff", "options": ["speed", "damage", "shield"]},
+        {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]}
     ]
     var chosen_vote = vote_types[randi() % vote_types.size()]
 
@@ -860,6 +864,11 @@ func _resolve_vote(balls: Array):
                     "kind": winning_option,
                     "value": 50.0
                 })
+        elif vote_type == "global_stat_modifier":
+            active_global_modifier = winning_option
+            global_modifier_timer = 1800
+            if world != null and world.has_method("add_event"):
+                world.add_event("crowd_cheer", {"message": "The crowd activated a " + winning_option + " for 30 seconds!", "volume": 1.2})
 
     active_vote = null
     votes.clear()
@@ -867,3 +876,76 @@ func _resolve_vote(balls: Array):
 
 func _has_meta_safe(key: String) -> bool:
     return has_meta(key)
+
+
+func _process_global_modifier(balls: Array, current_tick: int):
+    if global_modifier_timer > 0:
+        global_modifier_timer -= 1
+        if global_modifier_timer <= 0:
+            active_global_modifier = null
+            if world != null and world.has_method("add_event"):
+                world.add_event("crowd_cheer", {"message": "The global stat modifier has worn off!", "volume": 1.0})
+
+            for b in balls:
+                if typeof(b) == TYPE_OBJECT and b.has_method("has_meta"):
+                    if b.has_meta("crowd_global_speed"):
+                        b.remove_meta("crowd_global_speed")
+                        if "base_speed" in b:
+                            b.speed = b.base_speed
+                    if b.has_meta("crowd_global_damage"):
+                        b.remove_meta("crowd_global_damage")
+                        if "base_damage" in b:
+                            b.damage = b.base_damage
+                    if b.has_meta("crowd_global_shield"):
+                        b.remove_meta("crowd_global_shield")
+                elif typeof(b) == TYPE_DICTIONARY:
+                    if b.has("crowd_global_speed") and b["crowd_global_speed"]:
+                        b.erase("crowd_global_speed")
+                        b["speed"] = b.get("base_speed", b.get("speed", 100.0))
+                    if b.has("crowd_global_damage") and b["crowd_global_damage"]:
+                        b.erase("crowd_global_damage")
+                        b["damage"] = b.get("base_damage", b.get("damage", 10.0))
+                    if b.has("crowd_global_shield") and b["crowd_global_shield"]:
+                        b.erase("crowd_global_shield")
+        else:
+            for b in balls:
+                var is_alive = false
+                var is_spectator = false
+
+                if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                    is_alive = b.get("alive") if b.get("alive") != null else false
+                    is_spectator = b.get("ball_type") == "spectator"
+                elif typeof(b) == TYPE_DICTIONARY:
+                    is_alive = b.get("alive", false)
+                    is_spectator = b.get("ball_type") == "spectator"
+
+                if not is_alive or is_spectator:
+                    continue
+
+                if active_global_modifier == "global_speed_up":
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                        var base_s = b.get("base_speed") if b.get("base_speed") != null else (b.get("speed") if b.get("speed") != null else 100.0)
+                        b.set("speed", base_s * 1.2)
+                        b.set_meta("crowd_global_speed", true)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        var base_s = b.get("base_speed", b.get("speed", 100.0))
+                        b["speed"] = base_s * 1.2
+                        b["crowd_global_speed"] = true
+                elif active_global_modifier == "global_damage_up":
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                        var base_d = b.get("base_damage") if b.get("base_damage") != null else (b.get("damage") if b.get("damage") != null else 10.0)
+                        b.set("damage", base_d * 1.2)
+                        b.set_meta("crowd_global_damage", true)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        var base_d = b.get("base_damage", b.get("damage", 10.0))
+                        b["damage"] = base_d * 1.2
+                        b["crowd_global_damage"] = true
+                elif active_global_modifier == "global_shield_up":
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                        var cur_s = b.get("shield") if b.get("shield") != null else 0.0
+                        b.set("shield", min(50.0, cur_s + 0.1))
+                        b.set_meta("crowd_global_shield", true)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        var cur_s = b.get("shield", 0.0)
+                        b["shield"] = min(50.0, cur_s + 0.1)
+                        b["crowd_global_shield"] = true
