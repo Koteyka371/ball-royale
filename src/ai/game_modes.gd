@@ -16809,7 +16809,7 @@ class MeteorCrashEventMode extends GameMode:
 			event_timer += delta
 
 		if not event_active and event_timer > 20.0:
-			if randf() < 0.2:
+			if randf() < 0.2 * delta:
 				event_active = true
 				event_timer = 0.0
 				meteors.clear()
@@ -26636,7 +26636,64 @@ class CollapsingBubblesMode extends GameMode:
 			"collapsing": false
 		})
 
+
+class SolarEclipseEventMode extends GameMode:
+	var event_timer = 0.0
+	var event_active = false
+	var event_duration = 0.0
+	var modified_walls = []
+
+	func _init():
+		super._init()
+		name = "Solar Eclipse Event"
+		description = "A rare mid-day event where the sun goes dark abruptly, swapping all day/night buffs globally for 30 seconds and turning indestructible walls destructible."
+
+	func tick(world: Object, balls: Array, delta: float = 0.016):
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 30.0:
+			if randf() < 0.2:
+				event_active = true
+				event_duration = 30.0
+				event_timer = 0.0
+				modified_walls = []
+				if world != null and world.has_method("add_event"):
+					world.add_event("solar_eclipse_warning", {"type": "weather_warning", "message": "A SOLAR ECLIPSE HAS BEGUN!"})
+					world.add_event("visual_effect", {"type": "solar_eclipse", "duration": 30.0})
+
+				if world != null and "arena" in world:
+					world.arena.is_night = true
+					world.arena.is_solar_eclipse = true
+					if "hazards" in world.arena:
+						for h in world.arena.hazards:
+							if typeof(h) == TYPE_OBJECT and h.kind == "indestructible_wall":
+								h.kind = "breakable_wall"
+								modified_walls.append(h)
+			else:
+				event_timer = 0.0
+
+		if event_active:
+			event_duration -= delta
+			if world != null and "arena" in world:
+				world.arena.is_night = true
+				world.arena.is_solar_eclipse = true
+
+			if event_duration <= 0:
+				event_active = false
+				if world != null and "arena" in world:
+					world.arena.is_night = false
+					world.arena.is_solar_eclipse = false
+					if "hazards" in world.arena:
+						for h in modified_walls:
+							if world.arena.hazards.has(h) and typeof(h) == TYPE_OBJECT and h.kind == "breakable_wall":
+								h.kind = "indestructible_wall"
+				modified_walls.clear()
+				if world != null and world.has_method("add_event"):
+					world.add_event("solar_eclipse_end", {"type": "weather_warning", "message": "The solar eclipse has ended."})
+
 var GAME_MODES = {
+
 	"scorching_sun": ScorchingSunMode.new(),
 	"bounty_tag": BountyTagMode.new(),
 	"cosmic_storm": CosmicStormMode.new(),
@@ -26728,6 +26785,7 @@ var GAME_MODES = {
 	"weather_chaos": WeatherChaosMode.new(),
 	"prestige_weather_mutator": PrestigeWeatherMutatorMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
+	"solar_eclipse_event": SolarEclipseEventMode.new(),
 	"domination": DominationMode.new(),
 	"black_hole": BlackHoleMode.new(),
 	"sweeping_black_hole": SweepingBlackHoleMode.new(),
