@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-921] Cloaking Field — *2026-07-13 21:18:12 UTC*
+
+A booster that gives the player and nearby allies brief invisibility from AI perception and turret targeting.
+
+---
+
 ## [idea-939] Electric Bumpers — *2026-07-13 21:18:08 UTC*
 
 Certain bumpers in the arena become electrified, shocking and stunning players who bounce off them instead of granting a speed boost.
