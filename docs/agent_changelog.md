@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-923] Crowd Voting Improvements — *2026-07-13 19:12:54 UTC*
+
+Expand the crowd voting system to allow viewers to vote on specific stat modifiers for balls, rather than just boons or hazards. For example, the crowd could vote to increase max speed by 20% for all balls for 30 seconds.
+
+---
+
 ## [idea-935] Interactive HQ Mini-games — *2026-07-13 19:03:19 UTC*
 
 Add interactive mini-games within the Guild HQ, such as an obstacle course or a shooting gallery, allowing members to compete for high scores on a dedicated HQ leaderboard.
