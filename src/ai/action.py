@@ -533,9 +533,38 @@ class Action:
                     target.reflect_shield_capacity = 0.0
                     target.reflect_shield_timer = 0.0
 
-                    # Shield broke explosion
                     initial = getattr(target, "reflect_shield_initial_capacity", 0)
-                    if initial > 0 and initial != 999999.0:
+
+                    # Violent shatter check
+                    if initial > 0 and original_damage > initial * 1.5:
+                        import math
+                        explosion_radius = 150.0
+                        explosion_damage = original_damage * 1.5
+
+                        # Massive stun to attacker
+                        attacker.stun_timer = max(getattr(attacker, "stun_timer", 0.0), 3.0)
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("stun", {"id": getattr(attacker, "id", None), "duration": 3.0})
+                            self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": explosion_radius, "damage": explosion_damage})
+
+                        # AoE damage to all nearby entities
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True): # Affects allies too
+                                    dist = math.hypot(target.x - b.x, target.y - b.y)
+                                    if dist <= explosion_radius:
+                                        if hasattr(self.world, "_deal_damage"):
+                                            old_atk_dmg = getattr(target, "damage", 10.0)
+                                            target.damage = explosion_damage
+                                            self.world._deal_damage(target, b)
+                                            target.damage = old_atk_dmg
+                                        elif hasattr(b, "take_damage"):
+                                            b.take_damage(explosion_damage)
+                                        elif hasattr(b, "hp"):
+                                            b.hp -= explosion_damage
+                                            if b.hp <= 0:
+                                                b.alive = False
+                    elif initial > 0 and initial != 999999.0:
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 150.0, "damage": initial * 0.5})
                         if hasattr(self.world, "balls"):
@@ -839,6 +868,36 @@ class Action:
                             if capacity <= 0:
                                 next_entity.reflect_shield_active = False
                                 next_entity.reflect_shield_capacity = 0.0
+
+                                initial = getattr(next_entity, "reflect_shield_initial_capacity", 0)
+                                if initial > 0 and current_damage > initial * 1.5:
+                                    import math
+                                    explosion_radius = 150.0
+                                    explosion_damage = current_damage * 1.5
+
+                                    # Massive stun to attacker
+                                    attacker.stun_timer = max(getattr(attacker, "stun_timer", 0.0), 3.0)
+                                    if hasattr(self.world, "add_event"):
+                                        self.world.add_event("stun", {"id": getattr(attacker, "id", None), "duration": 3.0})
+                                        self.world.add_event("explosion", {"x": next_entity.x, "y": next_entity.y, "radius": explosion_radius, "damage": explosion_damage})
+
+                                    # AoE damage to all nearby entities
+                                    if hasattr(self.world, "balls"):
+                                        for b in self.world.balls:
+                                            if getattr(b, "alive", True):
+                                                dist = math.hypot(next_entity.x - b.x, next_entity.y - b.y)
+                                                if dist <= explosion_radius:
+                                                    if hasattr(self.world, "_deal_damage"):
+                                                        old_atk_dmg = getattr(next_entity, "damage", 10.0)
+                                                        next_entity.damage = explosion_damage
+                                                        self.world._deal_damage(next_entity, b)
+                                                        next_entity.damage = old_atk_dmg
+                                                    elif hasattr(b, "take_damage"):
+                                                        b.take_damage(explosion_damage)
+                                                    elif hasattr(b, "hp"):
+                                                        b.hp -= explosion_damage
+                                                        if b.hp <= 0:
+                                                            b.alive = False
                             else:
                                 next_entity.reflect_shield_capacity = capacity
 
@@ -3921,6 +3980,41 @@ class Action:
                                     if capacity <= 0:
                                         self.ball.reflect_shield_active = False
                                         self.ball.reflect_shield_capacity = 0.0
+
+                                        initial = getattr(self.ball, "reflect_shield_initial_capacity", 0)
+                                        if initial > 0 and hazard.damage > initial * 1.5:
+                                            import math
+                                            explosion_radius = 150.0
+                                            explosion_damage = hazard.damage * 1.5
+
+                                            if hasattr(self.world, "add_event"):
+                                                self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": explosion_radius, "damage": explosion_damage})
+
+                                            if hasattr(self.world, "balls"):
+                                                for b in self.world.balls:
+                                                    if getattr(b, "alive", True):
+                                                        dist = math.hypot(self.ball.x - b.x, self.ball.y - b.y)
+                                                        if dist <= explosion_radius:
+                                                            if hasattr(self.world, "_deal_damage"):
+                                                                old_atk_dmg = getattr(self.ball, "damage", 10.0)
+                                                                self.ball.damage = explosion_damage
+                                                                self.world._deal_damage(self.ball, b)
+                                                                self.ball.damage = old_atk_dmg
+                                                            elif hasattr(b, "take_damage"):
+                                                                b.take_damage(explosion_damage)
+                                                            elif hasattr(b, "hp"):
+                                                                b.hp -= explosion_damage
+                                                                if b.hp <= 0:
+                                                                    b.alive = False
+
+                                            if hasattr(hazard, "owner_id"):
+                                                # Find owner to stun
+                                                for b in self.world.balls:
+                                                    if getattr(b, "id", None) == hazard.owner_id:
+                                                        b.stun_timer = max(getattr(b, "stun_timer", 0.0), 3.0)
+                                                        if hasattr(self.world, "add_event"):
+                                                            self.world.add_event("stun", {"id": getattr(b, "id", None), "duration": 3.0})
+                                                        break
                                     else:
                                         self.ball.reflect_shield_capacity = capacity
 
