@@ -9174,7 +9174,7 @@ class Action:
                     import copy
                     import math
                     if hasattr(self.world, "balls"):
-                        for i in range(3):
+                        for i in range(2):
                             clone = copy.copy(self.ball)
                             clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
                             if hasattr(self.world, "next_id"):
@@ -9183,6 +9183,7 @@ class Action:
                             clone.hp = getattr(self.ball, "max_hp", 100)
                             clone.max_hp = clone.hp
                             clone.damage = 0
+                            if hasattr(clone, "base_damage"): clone.base_damage = 0
                             clone.speed = getattr(self.ball, "speed", 2.0)
                             clone.owner_id = getattr(self.ball, "id", None)
                             clone.is_decoy = True

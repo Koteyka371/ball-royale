@@ -16691,7 +16691,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "clone_booster":
-                for i in range(3):
+                for i in range(2):
                     var clone = null
                     if self.ball.has_method("duplicate"):
                         clone = self.ball.duplicate()
@@ -16706,6 +16706,8 @@ func _collect_booster(delta: float):
                             clone.hp = clone.max_hp
                         if "damage" in clone:
                             clone.damage = 0.0
+                        if "base_damage" in clone:
+                            clone.base_damage = 0.0
                         if "speed" in clone and "speed" in self.ball:
                             clone.speed = self.ball.speed
 
