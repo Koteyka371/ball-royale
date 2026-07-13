@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-920] Destructible Environment Interactions — *2026-07-13 21:36:01 UTC*
+
+Introduce destructible walls or obstacles in the arena that break upon high-velocity impact from specific ball types, adding dynamic map changes and new traversal paths during a match.
+
+---
+
 ## [idea-930] Negative Perks for Bonus Multiplier — *2026-07-13 21:35:57 UTC*
 
 Allow players to equip 'Curse' perks that reduce their stats (like '-10% Max HP') in exchange for larger rewards like higher currency drop rates or extra experience points during the Battle Royale.
