@@ -16521,7 +16521,7 @@
     },
     {
       "id": "idea-962",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Headquarters Cosmetics",
@@ -26309,6 +26309,74 @@
         "src/ai/king_of_the_hill_escalation.py",
         "src/ai/king_of_the_hill_escalation.gd",
         "tests/test_king_of_the_hill_escalation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1537",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Leech Seed Trap",
+      "description": "A new trap type that acts as a leech seed, attaching to the first ball that passes over it and slowly draining their HP while transferring the health to the ball that deployed the trap.",
+      "allowed_paths": [
+        "src/arena/leech_seed_trap.py",
+        "src/arena/leech_seed_trap.gd",
+        "tests/test_leech_seed_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1538",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Arena Mutator",
+      "description": "A mutator where all balls passively lose health over time, but gain a massive lifesteal boost. It forces aggressive gameplay as hiding will result in death.",
+      "allowed_paths": [
+        "src/arena/vampiric_arena_mutator.py",
+        "src/arena/vampiric_arena_mutator.gd",
+        "tests/test_vampiric_arena_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1539",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Capture the Flag Elements in Battle Royale",
+      "description": "Spawn flags in neutral capture zones. If a player captures the flag and brings it to the center zone, they gain massive stat boosts for the duration of the match.",
+      "allowed_paths": [
+        "src/ai/capture_the_flag_elements_in_battle_royale.py",
+        "src/ai/capture_the_flag_elements_in_battle_royale.gd",
+        "tests/test_capture_the_flag_elements_in_battle_royale.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1540",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mercenary Outposts",
+      "description": "Players can capture mercenary outposts across the map. Once fully captured, friendly AI balls spawn periodically and help defend the capturing player.",
+      "allowed_paths": [
+        "src/ai/mercenary_outposts.py",
+        "src/ai/mercenary_outposts.gd",
+        "tests/test_mercenary_outposts.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

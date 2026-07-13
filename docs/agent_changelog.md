@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-962] Guild Headquarters Cosmetics — *2026-07-13 23:35:49 UTC*
+
+Allow guilds to spend their Guild XP on aesthetic upgrades for their Headquarters that are visible when checking their profile, such as new flags, backgrounds, or custom announcer voices for guild members.
+
+---
+
 ## [idea-936] Capture Points — *2026-07-13 23:15:16 UTC*
 
 Add capture points to Battle Royale that give zone advantage or reveal enemy positions.
