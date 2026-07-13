@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-951] Magnetic Mine — *2026-07-13 22:16:26 UTC*
+
+A deployable hazard that sticks to the first ball that approaches it, ticking down before exploding. Passing close to another ball transfers the mine.
+
+---
+
 ## [idea-944] Seasonal Boss Rotations — *2026-07-13 21:51:58 UTC*
 
 Introduce bosses that are seasonally locked, such as a 'Blizzard Boss' that only spawns during winter (or when the arena has a snow biome active) and a 'Heatwave Boss' that only spawns in desert maps.
