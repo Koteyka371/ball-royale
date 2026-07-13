@@ -1099,6 +1099,32 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "repulsor_active", False):
+            rep_timer = getattr(self.ball, "repulsor_timer", 0.0) - delta
+            if rep_timer <= 0:
+                self.ball.repulsor_active = False
+                self.ball.repulsor_timer = 0.0
+            else:
+                self.ball.repulsor_timer = rep_timer
+                # Push enemies away
+                repel_radius = getattr(self.ball, "repulsor_radius", 150.0)
+                repel_force = getattr(self.ball, "repulsor_force", 800.0)
+                import math
+
+                all_balls = getattr(self.world, "balls", [])
+                my_team = getattr(self.ball, "team", None)
+                my_id = getattr(self.ball, "id", None)
+
+                enemies = [b for b in all_balls if getattr(b, "alive", True) and getattr(b, "team", None) != my_team and getattr(b, "id", None) != my_id]
+                for enemy in enemies:
+                    dist = math.hypot(enemy.x - self.ball.x, enemy.y - self.ball.y)
+                    if 0 < dist < repel_radius:
+                        push_power = repel_force * (1.0 - dist / repel_radius) * delta
+                        dx = (enemy.x - self.ball.x) / dist
+                        dy = (enemy.y - self.ball.y) / dist
+                        enemy.x += dx * push_power
+                        enemy.y += dy * push_power
+
         if getattr(self.ball, "is_ricochet_laser", False):
             self.ball.duration -= delta
             if self.ball.duration <= 0 or getattr(self.ball, "bounces_left", 0) <= 0:
@@ -8799,6 +8825,9 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "repulsor_booster":
+                    self.ball.repulsor_active = True
+                    self.ball.repulsor_timer = 5.0
                 elif getattr(nearest, "kind", None) == "sticky_mine_booster":
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         try:

@@ -15901,6 +15901,13 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx >= 0:
                         self.world.boosters.remove_at(idx)
+elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "repulsor_booster":
+                if typeof(ball) == TYPE_DICTIONARY:
+                    ball["repulsor_active"] = true
+                    ball["repulsor_timer"] = 5.0
+                else:
+                    ball.set_meta("repulsor_active", true)
+                    ball.set_meta("repulsor_timer", 5.0)
             elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "sticky_mine_booster":
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var mine = null
@@ -15977,6 +15984,13 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx >= 0:
                         self.world.boosters.remove_at(idx)
+elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "repulsor_booster":
+                if typeof(ball) == TYPE_DICTIONARY:
+                    ball["repulsor_active"] = true
+                    ball["repulsor_timer"] = 5.0
+                else:
+                    ball.set_meta("repulsor_active", true)
+                    ball.set_meta("repulsor_timer", 5.0)
             elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "sticky_mine_booster":
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var mine = {}
