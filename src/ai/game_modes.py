@@ -10871,7 +10871,7 @@ class MeteorCrashEventMode(GameMode):
             self.event_timer += delta
 
         if not self.event_active and self.event_timer > 20.0:
-            if random.random() < 0.2:  # 20% chance every 20 seconds to trigger
+            if random.random() < 0.2 * delta:  # 20% chance every 20 seconds to trigger
                 self.event_active = True
                 self.event_timer = 0.0
                 self.meteors = []
@@ -16226,7 +16226,64 @@ class BountyTagMode(GameMode):
 
         return None
 
+
+class SolarEclipseEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Solar Eclipse Event"
+        self.description = "A rare mid-day event where the sun goes dark abruptly, swapping all day/night buffs globally for 30 seconds and turning indestructible walls destructible."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+        self.modified_walls = []
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 30.0:
+            if random.random() < 0.2:
+                self.event_active = True
+                self.event_duration = 30.0
+                self.event_timer = 0.0
+                self.modified_walls = []
+                if hasattr(world, "add_event"):
+                    world.add_event("solar_eclipse_warning", {"type": "weather_warning", "message": "A SOLAR ECLIPSE HAS BEGUN!"})
+                    world.add_event("visual_effect", {"type": "solar_eclipse", "duration": 30.0})
+
+                if hasattr(world, "arena"):
+                    world.arena.is_night = True
+                    world.arena.is_solar_eclipse = True
+                    if hasattr(world.arena, "hazards"):
+                        for h in world.arena.hazards:
+                            if getattr(h, "kind", "") == "indestructible_wall":
+                                h.kind = "breakable_wall"
+                                self.modified_walls.append(h)
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            if hasattr(world, "arena"):
+                world.arena.is_night = True
+                world.arena.is_solar_eclipse = True
+
+            if self.event_duration <= 0:
+                self.event_active = False
+                if hasattr(world, "arena"):
+                    world.arena.is_night = False
+                    world.arena.is_solar_eclipse = False
+                    if hasattr(world.arena, "hazards"):
+                        for h in self.modified_walls:
+                            if h in world.arena.hazards and getattr(h, "kind", "") == "breakable_wall":
+                                h.kind = "indestructible_wall"
+                self.modified_walls = []
+                if hasattr(world, "add_event"):
+                    world.add_event("solar_eclipse_end", {"type": "weather_warning", "message": "The solar eclipse has ended."})
+
 GAME_MODES = {
+
     'scorching_sun': ScorchingSunMode(),
     "bounty_tag": BountyTagMode(),
     "cosmic_storm": CosmicStormMode(),
@@ -16304,6 +16361,7 @@ GAME_MODES = {
     "weather_chaos": WeatherChaosMode(),
     "prestige_weather_mutator": PrestigeWeatherMutatorMode(),
     "lunar_eclipse_event": LunarEclipseEventMode(),
+    "solar_eclipse_event": SolarEclipseEventMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
     "sweeping_black_hole": SweepingBlackHoleMode(),
