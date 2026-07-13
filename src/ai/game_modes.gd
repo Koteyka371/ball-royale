@@ -13951,8 +13951,6 @@ class DayNightMode extends GameMode:
 	var active_sunlight_beams = []
 	var moonlight_shadow_timer = 0.0
 	var active_moonlight_shadows = []
-	var moonlight_shadow_timer = 0.0
-	var active_moonlight_shadows = []
 
 	func _init():
 		super._init()
@@ -14209,81 +14207,6 @@ class DayNightMode extends GameMode:
 											b.set("hp", hp - actual_damage)
 											if b.get("hp", 100.0) <= 0:
 												b.set("alive", false)
-
-			if is_night:
-				var active_shadows = []
-				for i in range(active_moonlight_shadows.size()):
-					var shadow = active_moonlight_shadows[i]
-					shadow["duration"] -= delta
-					if shadow["duration"] > 0:
-						active_shadows.append(shadow)
-				active_moonlight_shadows = active_shadows
-
-				for b in balls:
-					var balive = false
-					if typeof(b) == TYPE_DICTIONARY:
-						balive = b.get("alive", false)
-					else:
-						balive = b.get("alive") if "alive" in b else false
-
-					var btype = ""
-					if typeof(b) == TYPE_DICTIONARY:
-						btype = str(b.get("ball_type", ""))
-					else:
-						btype = str(b.get("ball_type", "")) if "ball_type" in b else ""
-
-					if not balive or btype == "spectator":
-						continue
-
-					var bx = 0.0
-					var by = 0.0
-					if typeof(b) == TYPE_DICTIONARY:
-						bx = b.get("x", 0.0)
-						by = b.get("y", 0.0)
-					else:
-						bx = b.get("x", 0.0) if "x" in b else 0.0
-						by = b.get("y", 0.0) if "y" in b else 0.0
-
-					var is_safe = false
-					if active_moonlight_shadows.size() > 0:
-						for shadow in active_moonlight_shadows:
-							var sx = shadow["x"]
-							var sy = shadow["y"]
-							var sr = shadow["radius"]
-							var dist_sq = (bx - sx)*(bx - sx) + (by - sy)*(by - sy)
-							if dist_sq <= sr * sr:
-								is_safe = true
-								break
-					else:
-						is_safe = true
-
-					if not is_safe:
-						if typeof(b) == TYPE_DICTIONARY:
-							if b.has("stamina"):
-								b["stamina"] = max(0.0, b["stamina"] - 10.0 * delta)
-						else:
-							if "stamina" in b:
-								b.stamina = max(0.0, b.stamina - 10.0 * delta)
-								if b.has_method("set_meta"):
-									b.set_meta("stamina", b.stamina)
-
-				moonlight_shadow_timer += delta
-				if moonlight_shadow_timer >= 3.0:
-					moonlight_shadow_timer = 0.0
-
-					var arena_w = 1000.0
-					var arena_h = 1000.0
-					if "width" in world.arena: arena_w = world.arena.width
-					if "height" in world.arena: arena_h = world.arena.height
-
-					var fx = randf_range(50.0, arena_w - 50.0)
-					var fy = randf_range(50.0, arena_h - 50.0)
-					var shadow_radius = 200.0
-
-					active_moonlight_shadows.append({"x": fx, "y": fy, "radius": shadow_radius, "duration": 4.0})
-
-					if world.has_method("add_event"):
-						world.add_event("visual_effect", {"type": "moonlight_shadow", "x": fx, "y": fy, "radius": shadow_radius, "duration": 4.0})
 
 			if is_night:
 				var active_shadows = []
