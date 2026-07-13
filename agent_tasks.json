@@ -15329,7 +15329,7 @@
     },
     {
       "id": "idea-892",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Moonlight Shadow Event",
@@ -25952,6 +25952,40 @@
         "src/ai/king_of_the_hill_dynamic_capture_zones.py",
         "src/ai/king_of_the_hill_dynamic_capture_zones.gd",
         "tests/test_king_of_the_hill_dynamic_capture_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1516",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Paths",
+      "description": "Instead of bubbles, narrow snaking paths are the only safe zones. They slowly constrict and vanish while new ones appear.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_paths.py",
+        "src/ai/shrinking_safe_paths.gd",
+        "tests/test_shrinking_safe_paths.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1517",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Bubbles",
+      "description": "The entire map is safe, but expanding hazard bubbles randomly spawn. Players must avoid the growing hazard zones.",
+      "allowed_paths": [
+        "src/ai/reverse_bubbles.py",
+        "src/ai/reverse_bubbles.gd",
+        "tests/test_reverse_bubbles.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

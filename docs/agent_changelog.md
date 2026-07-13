@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-892] Moonlight Shadow Event — *2026-07-13 18:10:01 UTC*
+
+During the night cycle in Day/Night mode, occasional moonlight shadow events spawn safe zones. Balls remaining outside these zones slowly lose stamina, forcing engagements in key areas.
+
+---
+
 ## [idea-926] Shrinking Safe Zones Array — *2026-07-13 17:41:24 UTC*
 
 Instead of one large shrinking circle, the arena has multiple smaller safe zones that randomly collapse, forcing players to constantly migrate between different safe bubbles to survive.
