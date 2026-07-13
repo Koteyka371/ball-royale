@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Accumulator Traps",
+  "description": "Traps that absorb projectile damage directed at them, converting it into stored kinetic energy. When an enemy steps on the trap, it releases a massive explosion scaling with the absorbed damage."
+}

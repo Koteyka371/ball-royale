@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Resonance Shield",
+  "description": "A shield that doesn't reflect damage but instead absorbs it. When broken, it teleports the player to a random safe location and applies the absorbed damage as an AoE heal to nearby allies."
+}

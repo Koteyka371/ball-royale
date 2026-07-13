@@ -4,6 +4,9 @@ from unittest.mock import Mock
 
 def test_reflect_shield_skill():
     ball = MockBall(x=100, y=100)
+    ball.id = 2
+    ball.alive = True
+    ball.team = 1
     world = MockWorld()
 
     ball.skill = "reflect_shield"
@@ -24,20 +27,16 @@ def test_reflect_shield_skill():
     # Test taking damage
     attacker = MockEntity(x=150, y=100, ball_type="enemy")
     attacker.damage = 100.0
+    attacker.id = 1
+    attacker.alive = True
+    attacker.team = 2
 
     damage_dealt_to_attacker = []
     def mock_deal_damage(dmg_target, dmg_attacker):
-        # target of the damage is the attacker, who is receiving the reflected damage
-        # from the dmg_attacker (which is the ball with the shield)
         if dmg_target == attacker and dmg_attacker == ball:
             damage_dealt_to_attacker.append(True)
-        # Note: actually _attempt_damage in reflect_shield calls self.world._deal_damage(target, attacker)
-        # wait! Target is the ball taking damage, attacker is the one dealing it.
-        # It calls `self.world._deal_damage(target, attacker)` where `target` is the ball and `attacker` is the enemy.
-        # So dmg_target == ball, dmg_attacker == attacker!
-        if dmg_target == ball and dmg_attacker == attacker:
-            damage_dealt_to_attacker.append(True)
     world._deal_damage = mock_deal_damage
+    world.balls = [attacker, ball]
 
     action._attempt_damage(attacker, ball)
 

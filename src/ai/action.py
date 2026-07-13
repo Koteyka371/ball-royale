@@ -151,49 +151,56 @@ class Action:
 
 
     def _handle_reflect_bounce(self, original_attacker, initial_target, damage: float, bounce_chance: float = 0.5, max_bounces: int = 3, bounce_range: float = 120.0) -> None:
-        import random
         import math
-
-        if random.random() > bounce_chance:
-            return
-
         if not hasattr(self.world, "balls"):
             return
 
-        current_source = original_attacker
-        hit_targets = {getattr(original_attacker, "id", None), getattr(initial_target, "id", None)}
+        # Determine true attacker and shield user
+        if getattr(original_attacker, "reflect_shield_active", False) or getattr(original_attacker, "reflect_shield_capacity", 0) > 0:
+            shield_user = original_attacker
+            actual_attacker = initial_target
+        else:
+            shield_user = initial_target
+            actual_attacker = original_attacker
 
-        for _ in range(max_bounces):
-            closest_dist = bounce_range + 1
-            next_target = None
+        targets = []
+        if getattr(actual_attacker, "alive", True) and getattr(actual_attacker, "id", None) is not None:
+            targets.append(actual_attacker)
 
-            for other in self.world.balls:
-                other_id = getattr(other, "id", None)
-                if getattr(other, "alive", False) and other_id not in hit_targets and getattr(other, "team", None) == getattr(original_attacker, "team", None) and other_id != getattr(original_attacker, "id", None):
-                    dx = getattr(other, "x", 0) - getattr(current_source, "x", 0)
-                    dy = getattr(other, "y", 0) - getattr(current_source, "y", 0)
+        for other in self.world.balls:
+            if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(actual_attacker, "id", None) and getattr(other, "id", None) != getattr(shield_user, "id", None):
+                # Target enemies of the shield user
+                s_team = getattr(shield_user, "team", getattr(shield_user, "ball_type", ""))
+                o_team = getattr(other, "team", getattr(other, "ball_type", ""))
+                if s_team != o_team or s_team == -1:
+                    dx = getattr(other, "x", 0) - getattr(shield_user, "x", 0)
+                    dy = getattr(other, "y", 0) - getattr(shield_user, "y", 0)
                     dist = math.sqrt(dx*dx + dy*dy)
-                    if dist <= bounce_range and dist < closest_dist:
-                        closest_dist = dist
-                        next_target = other
+                    if dist <= bounce_range:
+                        targets.append(other)
 
-            if next_target:
-                hit_targets.add(getattr(next_target, "id", None))
-                if hasattr(self, "_spawn_directed_particles"):
-                    self._spawn_directed_particles(next_target, current_source, "chain_lightning")
+        if not targets:
+            return
 
-                if hasattr(self.world, "_deal_damage"):
-                    old_dmg = getattr(initial_target, "damage", damage)
-                    initial_target.damage = damage * 0.75 # Lose 25% damage per bounce
-                    self.world._deal_damage(next_target, initial_target)
-                    initial_target.damage = old_dmg
-                elif hasattr(next_target, "take_damage"):
-                    next_target.take_damage(damage * 0.75)
-
-                damage *= 0.75
-                current_source = next_target
-            else:
-                break
+        split_damage = damage / len(targets)
+        for t in targets:
+            if hasattr(self, "_spawn_directed_particles"):
+                self._spawn_directed_particles(t, shield_user, "reflect_pulse")
+            if hasattr(self.world, "_deal_damage"):
+                old_dmg = getattr(shield_user, "damage", 10.0)
+                try:
+                    shield_user.damage = split_damage
+                except AttributeError:
+                    setattr(shield_user, "damage", split_damage)
+                self.world._deal_damage(t, shield_user)
+                try:
+                    shield_user.damage = old_dmg
+                except AttributeError:
+                    setattr(shield_user, "damage", old_dmg)
+            elif hasattr(t, "take_damage"):
+                t.take_damage(split_damage)
+            elif hasattr(t, "hp"):
+                t.hp -= split_damage
 
     def _attempt_damage(self, attacker, target) -> None:
         if getattr(target, "intangible", False) or getattr(target, "intangible_timer", 0.0) > 0.0:
@@ -629,12 +636,6 @@ class Action:
                     # For now we'll just temporarily adjust attacker damage or similar,
                     # but it seems _deal_damage uses attacker.damage.
 
-                    # We temporarily set the attacker's damage to the reflected amount
-                    old_dmg = getattr(attacker, "damage", original_damage)
-                    attacker.damage = damage_to_reflect
-                    self.world._deal_damage(target, attacker)
-                    attacker.damage = old_dmg
-
                     self._handle_reflect_bounce(attacker, target, damage_to_reflect)
 
                 # If the shield broke, the remainder of the damage applies to the target
@@ -940,11 +941,6 @@ class Action:
                             if hasattr(self, "_spawn_directed_particles"):
                                 self._spawn_directed_particles(next_entity, attacker, "reflect_pulse")
                             if hasattr(self.world, "_deal_damage"):
-                                old_dmg = getattr(attacker, "damage", current_damage)
-                                attacker.damage = damage_to_reflect
-                                self.world._deal_damage(next_entity, attacker)
-                                attacker.damage = old_dmg
-
                                 self._handle_reflect_bounce(attacker, next_entity, damage_to_reflect)
 
                             if capacity < 0:
@@ -4261,13 +4257,8 @@ class Action:
                                                     # the target takes the reflected damage, _deal_damage args are (target, attacker)
                                                     # wait, _deal_damage(self.ball, b) means b takes damage from self.ball.
                                                     # We need b to take damage_to_reflect. We could set self.ball.damage temporarily.
-                                                    old_ball_dmg = getattr(self.ball, "damage", 10.0)
-                                                    self.ball.damage = damage_to_reflect
-                                                    self.world._deal_damage(self.ball, b)
-                                                    self.ball.damage = old_ball_dmg
                                                     self._handle_reflect_bounce(self.ball, b, damage_to_reflect)
                                                 elif hasattr(b, "take_damage"):
-                                                    b.take_damage(damage_to_reflect)
                                                     self._handle_reflect_bounce(self.ball, b, damage_to_reflect)
                                                 break
 

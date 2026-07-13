@@ -251,65 +251,74 @@ func _award_xp(ball, amount: float, world=null) -> void:
 
 
 func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bounce_chance: float = 0.5, max_bounces: int = 3, bounce_range: float = 120.0) -> void:
-	if randf() > bounce_chance:
-		return
-
 	if self.world == null or not "balls" in self.world:
 		return
 
-	var current_source = original_attacker
-	var hit_targets = []
-	if "id" in original_attacker:
-		hit_targets.append(original_attacker.id)
-	if "id" in initial_target:
-		hit_targets.append(initial_target.id)
+	var shield_user = null
+	var actual_attacker = null
 
-	for i in range(max_bounces):
-		var closest_dist = bounce_range + 1
-		var next_target = null
+	if ("reflect_shield_active" in original_attacker and original_attacker.reflect_shield_active) or ("reflect_shield_capacity" in original_attacker and original_attacker.reflect_shield_capacity > 0):
+		shield_user = original_attacker
+		actual_attacker = initial_target
+	else:
+		shield_user = initial_target
+		actual_attacker = original_attacker
 
-		for other in self.world.balls:
-			if not ("alive" in other and other.alive):
-				continue
-			var other_id = other.id if "id" in other else null
-			var original_team = original_attacker.team if "team" in original_attacker else null
-			var other_team = other.team if "team" in other else null
-			var original_id = original_attacker.id if "id" in original_attacker else null
+	var targets = []
+	if "alive" in actual_attacker and actual_attacker.alive and "id" in actual_attacker and actual_attacker.id != null:
+		targets.append(actual_attacker)
 
-			if other_id != null and not (other_id in hit_targets) and other_team == original_team and other_id != original_id:
-				var dx = (other.x if "x" in other else 0.0) - (current_source.x if "x" in current_source else 0.0)
-				var dy = (other.y if "y" in other else 0.0) - (current_source.y if "y" in current_source else 0.0)
+	for other in self.world.balls:
+		var other_alive = false
+		if "alive" in other: other_alive = other.alive
+		elif other.has_method("get_meta") and other.has_meta("alive"): other_alive = other.get_meta("alive")
+
+		var other_id = null
+		if "id" in other: other_id = other.id
+		var attacker_id = null
+		if "id" in actual_attacker: attacker_id = actual_attacker.id
+		var shield_id = null
+		if "id" in shield_user: shield_id = shield_user.id
+
+		if other_alive and other_id != null and other_id != attacker_id and other_id != shield_id:
+			var s_team = null
+			if "team" in shield_user: s_team = shield_user.team
+			elif "ball_type" in shield_user: s_team = shield_user.ball_type
+
+			var o_team = null
+			if "team" in other: o_team = other.team
+			elif "ball_type" in other: o_team = other.ball_type
+
+			if s_team != o_team or str(s_team) == "-1":
+				var dx = (other.x if "x" in other else 0.0) - (shield_user.x if "x" in shield_user else 0.0)
+				var dy = (other.y if "y" in other else 0.0) - (shield_user.y if "y" in shield_user else 0.0)
 				var dist = sqrt(dx*dx + dy*dy)
-				if dist <= bounce_range and dist < closest_dist:
-					closest_dist = dist
-					next_target = other
+				if dist <= bounce_range:
+					targets.append(other)
 
-		if next_target != null:
-			if "id" in next_target:
-				hit_targets.append(next_target.id)
-			if self.has_method("_spawn_directed_particles"):
-				self._spawn_directed_particles(next_target, current_source, "chain_lightning")
+	if targets.size() == 0:
+		return
 
-			if self.world != null and self.world.has_method("_deal_damage"):
-				var old_dmg = initial_target.damage if "damage" in initial_target else damage
-				if "damage" in initial_target:
-					initial_target.damage = damage * 0.75
-				elif initial_target.has_method("set_meta"):
-					initial_target.set_meta("damage", damage * 0.75)
+	var split_damage = damage / targets.size()
+	for t in targets:
+		if self.has_method("_spawn_directed_particles"):
+			self._spawn_directed_particles(t, shield_user, "reflect_pulse")
 
-				self.world._deal_damage(next_target, initial_target)
+		if self.world != null and self.world.has_method("_deal_damage"):
+			var old_dmg = 10.0
+			if "damage" in shield_user: old_dmg = shield_user.damage
 
-				if "damage" in initial_target:
-					initial_target.damage = old_dmg
-				elif initial_target.has_method("set_meta"):
-					initial_target.set_meta("damage", old_dmg)
-			elif next_target.has_method("take_damage"):
-				next_target.take_damage(damage * 0.75)
+			if "damage" in shield_user: shield_user.damage = split_damage
+			elif shield_user.has_method("set_meta"): shield_user.set_meta("damage", split_damage)
 
-			damage *= 0.75
-			current_source = next_target
-		else:
-			break
+			self.world._deal_damage(t, shield_user)
+
+			if "damage" in shield_user: shield_user.damage = old_dmg
+			elif shield_user.has_method("set_meta"): shield_user.set_meta("damage", old_dmg)
+		elif t.has_method("take_damage"):
+			t.take_damage(split_damage)
+		elif "hp" in t:
+			t.hp -= split_damage
 
 func _attempt_damage(attacker, target) -> void:
     var t_intangible = false
@@ -1132,14 +1141,6 @@ func _attempt_damage(attacker, target) -> void:
 			if self.has_method("_spawn_directed_particles"):
 				self._spawn_directed_particles(target, attacker, "reflect_pulse")
 			if self.world != null and self.world.has_method("_deal_damage"):
-				var old_dmg = original_damage
-				if "damage" in attacker:
-					old_dmg = attacker.damage
-					attacker.damage = damage_to_reflect
-				self.world._deal_damage(target, attacker)
-				if "damage" in attacker:
-					attacker.damage = old_dmg
-
 				self._handle_reflect_bounce(attacker, target, damage_to_reflect)
 
 			if capacity < 0 and max_layers <= 1:
@@ -1634,14 +1635,6 @@ func _attempt_damage(attacker, target) -> void:
 						if self.has_method("_spawn_directed_particles"):
 							self._spawn_directed_particles(next_entity, attacker, "reflect_pulse")
 						if self.world != null and self.world.has_method("_deal_damage"):
-							var old_dmg = current_damage
-							if "damage" in attacker:
-								old_dmg = attacker.damage
-								attacker.damage = damage_to_reflect
-							self.world._deal_damage(next_entity, attacker)
-							if "damage" in attacker:
-								attacker.damage = old_dmg
-
 							self._handle_reflect_bounce(attacker, next_entity, damage_to_reflect)
 
 						if capacity < 0:
