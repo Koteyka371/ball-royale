@@ -16062,7 +16062,7 @@
     },
     {
       "id": "idea-935",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive HQ Mini-games",
@@ -25986,6 +25986,40 @@
         "src/ai/reverse_bubbles.py",
         "src/ai/reverse_bubbles.gd",
         "tests/test_reverse_bubbles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1518",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Mine Hazard",
+      "description": "A new type of deployable hazard or natural arena element that slowly pulls all nearby projectiles (both friendly and enemy) towards its center. Upon absorbing a certain amount of damage, it explodes in a massive AoE blast.",
+      "allowed_paths": [
+        "src/arena/magnetic_mine.py",
+        "src/arena/magnetic_mine.gd",
+        "tests/test_magnetic_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1519",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Power-up",
+      "description": "A new booster that allows the player to swap places with the nearest enemy when they press the action button or automatically upon dropping to low HP. This causes confusion and can completely turn the tide of an engagement or save the player from being cornered.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_power_up.py",
+        "src/ai/quantum_swap_power_up.gd",
+        "tests/test_quantum_swap_power_up.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-935] Interactive HQ Mini-games — *2026-07-13 19:03:19 UTC*
+
+Add interactive mini-games within the Guild HQ, such as an obstacle course or a shooting gallery, allowing members to compete for high scores on a dedicated HQ leaderboard.
+
+---
+
 ## [idea-760] Ghost Mode Booster — *2026-07-13 18:42:44 UTC*
 
 A temporary power-up that makes the ball phase through walls and become immune to non-energy projectiles for 5 seconds. However, attacking breaks the ghost mode early, creating a strategic choice for positioning versus offense.
