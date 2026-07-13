@@ -5332,6 +5332,20 @@ func execute(strategy: String, delta: float):
 						hazard.duration = 0.0
 				if "x" in hazard and "vx" in hazard: hazard.x += hazard.vx * delta
 				if "y" in hazard and "vy" in hazard: hazard.y += hazard.vy * delta
+
+				# Bounce off arena walls
+				if "arena" in world and world.arena.has_method("clamp_position"):
+					var h_rad = hazard.radius if "radius" in hazard else 5.0
+					var clamp_res = world.arena.clamp_position(hazard.x, hazard.y, h_rad)
+					var cx = clamp_res[0]
+					var cy = clamp_res[1]
+					if hazard.x != cx:
+						hazard.vx = -hazard.vx if "vx" in hazard else 0.0
+					if hazard.y != cy:
+						hazard.vy = -hazard.vy if "vy" in hazard else 0.0
+					hazard.x = cx
+					hazard.y = cy
+
 				if "vx" in hazard: hazard.vx *= (1.0 - 2.0 * delta)
 				if "vy" in hazard: hazard.vy *= (1.0 - 2.0 * delta)
 
