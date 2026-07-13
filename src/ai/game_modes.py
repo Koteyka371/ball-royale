@@ -7073,6 +7073,21 @@ class ShrinkingDangerZoneMode(GameMode):
                 # If the distance to center is greater than the safe zone radius, inflict damage
                 if distance_to_center > self.zone_radius:
                     b.hp -= damage_this_tick
+                    # Randomly apply debuff
+                    if random.random() < 0.2 * delta: # ~20% chance per second
+                        debuff = random.choice(["slow", "poison", "confusion", "blindness", "stun", "freeze"])
+                        if debuff == "slow":
+                            b.slow_timer = max(getattr(b, "slow_timer", 0.0), 2.0)
+                        elif debuff == "poison":
+                            b.poison_timer = max(getattr(b, "poison_timer", 0.0), 3.0)
+                        elif debuff == "confusion":
+                            b.confusion_timer = max(getattr(b, "confusion_timer", 0.0), 2.0)
+                        elif debuff == "blindness":
+                            b.blindness_timer = max(getattr(b, "blindness_timer", 0.0), 2.0)
+                        elif debuff == "stun":
+                            b.stun_timer = max(getattr(b, "stun_timer", 0.0), 1.0)
+                        elif debuff == "freeze":
+                            b.frozen_timer = max(getattr(b, "frozen_timer", 0.0), 1.0)
                     if b.hp <= 0:
                         b.alive = False
                         b.hp = 0
@@ -7623,6 +7638,21 @@ class SafeZoneMode(GameMode):
                 # If the distance to center is greater than the safe zone radius, inflict damage
                 if distance_to_center > self.zone_radius:
                     b.hp -= damage_this_tick
+                    # Randomly apply debuff
+                    if random.random() < 0.2 * delta: # ~20% chance per second
+                        debuff = random.choice(["slow", "poison", "confusion", "blindness", "stun", "freeze"])
+                        if debuff == "slow":
+                            b.slow_timer = max(getattr(b, "slow_timer", 0.0), 2.0)
+                        elif debuff == "poison":
+                            b.poison_timer = max(getattr(b, "poison_timer", 0.0), 3.0)
+                        elif debuff == "confusion":
+                            b.confusion_timer = max(getattr(b, "confusion_timer", 0.0), 2.0)
+                        elif debuff == "blindness":
+                            b.blindness_timer = max(getattr(b, "blindness_timer", 0.0), 2.0)
+                        elif debuff == "stun":
+                            b.stun_timer = max(getattr(b, "stun_timer", 0.0), 1.0)
+                        elif debuff == "freeze":
+                            b.frozen_timer = max(getattr(b, "frozen_timer", 0.0), 1.0)
                     if b.hp <= 0:
                         b.alive = False
                         b.hp = 0
