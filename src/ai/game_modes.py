@@ -17231,6 +17231,85 @@ class SacrificeAltarMode(GameMode):
                         if hasattr(world, "add_event"):
                             world.add_event("sacrifice_altar_used", {"ball": b, "altar": altar})
 
+
+class MassiveBlackHoleEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Massive Black Hole Event"
+        self.description = "A random event where a massive black hole spawns in the center of the arena, slowly pulling all balls towards it. Balls closer to the center take increasing damage, encouraging players to fight on the edges or use speed boosters to escape."
+        self.active = False
+        self.timer = 0.0
+        self.pull_strength = 200.0
+        self.base_damage = 50.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random, math
+
+        if not self.active:
+            if random.random() < 0.02 * delta:
+                self.active = True
+                self.timer = 15.0
+                if hasattr(world, "add_event"):
+                    world.add_event("massive_black_hole", {"message": "A massive black hole has appeared in the center!"})
+        else:
+            self.timer -= delta
+            if self.timer <= 0:
+                self.active = False
+                if hasattr(world, "add_event"):
+                    world.add_event("massive_black_hole_end", {"message": "The black hole has vanished."})
+                return
+
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+            cx = arena_width / 2.0
+            cy = arena_height / 2.0
+            max_dist = math.hypot(cx, cy)
+
+            for b in balls:
+                w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+                is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+                if not getattr(b, "alive", False): continue
+                if getattr(b, "ball_type", "") == "spectator": continue
+                if is_immune: continue
+
+                dx = cx - getattr(b, "x", 0)
+                dy = cy - getattr(b, "y", 0)
+                dist = math.hypot(dx, dy)
+
+                if dist > 0:
+                    pull_factor = 1.0 - (dist / max_dist)
+                    pull_factor = max(0.1, min(1.0, pull_factor))
+
+                    b.x += (dx / dist) * self.pull_strength * pull_factor * delta
+                    b.y += (dy / dist) * self.pull_strength * pull_factor * delta
+
+                    safe_dist = max_dist * 0.7
+                    if dist < safe_dist:
+                        damage_factor = 1.0 - (dist / safe_dist)
+                        damage = self.base_damage * damage_factor * delta
+
+                        if hasattr(world, "_deal_damage"):
+                            # The attacker is None or environment, but _deal_damage expects 2 args: victim, attacker
+                            # To simulate environment damage, we can just subtract HP directly or use a dummy.
+                            b.hp -= damage
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                                if not hasattr(world, "dead_balls"): world.dead_balls = []
+                                if hasattr(b, "id") and b.id not in world.dead_balls:
+                                    world.dead_balls.append(b.id)
+                        else:
+                            b.hp -= damage
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                                if not hasattr(world, "dead_balls"): world.dead_balls = []
+                                if hasattr(b, "id") and b.id not in world.dead_balls:
+                                    world.dead_balls.append(b.id)
+
+
 GAME_MODES = {
     "stationary_turrets": StationaryTurretsMode(),
 
@@ -19915,3 +19994,5 @@ class WatchtowerMode(GameMode):
                         b.projectile_speed = b._watchtower_orig_proj_speed
 
 GAME_MODES['watchtower'] = WatchtowerMode()
+
+GAME_MODES['massive_black_hole_event'] = MassiveBlackHoleEventMode()
