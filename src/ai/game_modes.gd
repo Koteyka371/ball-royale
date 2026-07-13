@@ -26574,6 +26574,7 @@ class BountyTagMode extends GameMode:
 class CollapsingBubblesMode extends GameMode:
 	var bubbles = []
 	var bubble_spawn_timer = 0.0
+	var max_bubbles = 8
 
 	func _init():
 		name = "Collapsing Bubbles"
@@ -26592,7 +26593,8 @@ class CollapsingBubblesMode extends GameMode:
 
 		bubble_spawn_timer -= delta
 		if bubble_spawn_timer <= 0:
-			_spawn_bubble(world)
+			if bubbles.size() < max_bubbles:
+				_spawn_bubble(world)
 			bubble_spawn_timer = randf_range(3.0, 6.0)
 
 		var active_bubbles = []
@@ -26636,7 +26638,7 @@ class CollapsingBubblesMode extends GameMode:
 					break
 
 			if not in_bubble:
-				var damage = 20.0 * delta
+				var damage = 25.0 * delta
 				var hp = ball["hp"] if typeof(ball) == TYPE_DICTIONARY else ball.get("hp")
 				hp -= damage
 				if hp <= 0:
