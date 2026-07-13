@@ -16096,7 +16096,7 @@
     },
     {
       "id": "idea-937",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sniper's Nest Mode",
@@ -26241,6 +26241,40 @@
         "src/ai/sticky_mine.py",
         "src/ai/sticky_mine.gd",
         "tests/test_sticky_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1533",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Double Juggernaut Mode",
+      "description": "Two players spawn as Juggernauts. When one is killed, they drop a massive heal, but the remaining Juggernaut gets an enrage buff.",
+      "allowed_paths": [
+        "src/ai/double_juggernaut.py",
+        "src/ai/double_juggernaut.gd",
+        "tests/test_double_juggernaut.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1534",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Juggernaut Roulette Mode",
+      "description": "Every 30 seconds, a new player is randomly selected as the Juggernaut regardless of who killed them, shifting alliances dynamically.",
+      "allowed_paths": [
+        "src/ai/juggernaut_roulette.py",
+        "src/ai/juggernaut_roulette.gd",
+        "tests/test_juggernaut_roulette.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

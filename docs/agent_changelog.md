@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-937] Sniper's Nest Mode — *2026-07-13 22:45:48 UTC*
+
+Periodically, tall towers rise from the ground. Balls that climb them gain massively increased line of sight and projectile speed, but are immobile while on top.
+
+---
+
 ## [idea-949] Juggernaut Game Mode — *2026-07-13 22:23:07 UTC*
 
 One player is randomly chosen as the Juggernaut, receiving massive HP, damage, and size buffs. All other players are teamed up to take down the Juggernaut. If the Juggernaut is killed, the player who dealt the finishing blow becomes the next Juggernaut, and their health is restored.
