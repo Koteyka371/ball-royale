@@ -107,6 +107,21 @@ class GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		if not "dead_balls" in world:
 			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
@@ -591,6 +606,21 @@ class GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 		if typeof(world) == TYPE_DICTIONARY:
 			match_time = world.get("match_time", 0.0) + delta
 			world["match_time"] = match_time
@@ -978,6 +1008,21 @@ class DraftRoyaleMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		phase = "drafting"
@@ -1270,6 +1315,21 @@ class BattleRoyaleMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -3570,6 +3630,21 @@ class TeamDeathmatchMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -3713,6 +3788,21 @@ class ZombieInfectionMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -3911,6 +4001,21 @@ class GuildBossFightMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -4136,6 +4241,21 @@ class BossFightMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -4331,6 +4451,21 @@ class VIPDefenseMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -4480,6 +4615,21 @@ class SurvivalMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -4726,6 +4876,21 @@ class DualPayloadMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -5083,6 +5248,21 @@ class EscortMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -5488,6 +5668,21 @@ class CaptureTheFlagMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -5642,6 +5837,21 @@ class EvolutionarySimulationMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -5849,6 +6059,21 @@ class MassiveGravityWellMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -6151,6 +6376,21 @@ class KingOfTheHillMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -6348,6 +6588,21 @@ class SweepingBlackHoleMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
@@ -6659,6 +6914,21 @@ class WeatherChaosMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -7521,6 +7791,21 @@ class DominationMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -7748,6 +8033,21 @@ class MovingZoneMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -7985,6 +8285,21 @@ class MemoryTrapsMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -8170,6 +8485,21 @@ class CustomMatchMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -8460,6 +8790,21 @@ class EcholocationMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		flash_timer = 0.0
@@ -8655,6 +9000,21 @@ class PitchBlackMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if world != null and "arena" in world and world.arena != null:
@@ -8823,6 +9183,21 @@ class VisionReducedMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -9126,6 +9501,21 @@ class PortalNodeMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		team_scores.clear()
@@ -9307,6 +9697,21 @@ class MovingSafeZoneMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -9643,6 +10048,21 @@ class ShrinkingDangerZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		collapse_triggered = false
@@ -9917,6 +10337,21 @@ class ModifierSafeZoneMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -10234,6 +10669,21 @@ class ModifierZonesSafeZoneMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -10596,6 +11046,21 @@ class SafeZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		collapse_triggered = false
@@ -10866,6 +11331,21 @@ class InverseMirrorArenaMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 
@@ -11049,6 +11529,21 @@ class MirrorMatchMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 
@@ -11190,6 +11685,21 @@ class VolatileClonesMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -11506,6 +12016,21 @@ class CloneChaosMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		for b in balls:
@@ -11667,6 +12192,21 @@ class SumoKnockoutMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -11849,6 +12389,21 @@ class PacifistKnockoutMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		for b in balls:
 			b.damage = 0.0
@@ -12001,6 +12556,21 @@ class BumperBallsMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		if not "dead_balls" in world:
@@ -12253,6 +12823,21 @@ class ToxicEnvironmentMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "boosters" in world:
@@ -12482,6 +13067,21 @@ class ModifierZonesMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 
@@ -12708,6 +13308,21 @@ class WindstormMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -13045,6 +13660,21 @@ class BlackoutMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		timer = 0.0
@@ -13227,6 +13857,21 @@ class BountyHuntMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -13517,6 +14162,21 @@ class ShiftingMazeMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -14055,6 +14715,21 @@ class DayNightMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -14658,6 +15333,21 @@ class MagneticCollisionsMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 
@@ -15104,6 +15794,21 @@ class PinballMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if "arena" in world and world.arena != null:
@@ -15510,6 +16215,21 @@ class InvisibleWallsMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
@@ -15914,6 +16634,21 @@ class BodySwapMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		if not "dead_balls" in world:
 			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
@@ -16087,6 +16822,21 @@ class TugOfWarMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -17052,6 +17802,21 @@ class StaminaSpeedMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		for b in balls:
@@ -17255,6 +18020,21 @@ class HazardBilliardsMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -17718,6 +18498,21 @@ class InverseSafeZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		var arena_width = 1000.0
@@ -17982,6 +18777,21 @@ class DynamicSafeZoneMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -18265,6 +19075,21 @@ class PrestigeWeatherMutatorMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		var prestige = 0
@@ -18416,6 +19241,21 @@ class DailyMutatorMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -18617,6 +19457,21 @@ class BlackMarketMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -19388,6 +20243,21 @@ class SoulLinkMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
 
@@ -19632,6 +20502,21 @@ class CursedBuffZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "hazards" in world.arena or world.arena.hazards == null:
@@ -19857,6 +20742,21 @@ class RhythmPanelsMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -20159,6 +21059,21 @@ class PolarityShiftMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -20912,6 +21827,21 @@ class ArtifactUpgraderMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -21315,6 +22245,21 @@ class SweepingPaddlesMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if "arena" in world and world.arena != null:
@@ -21616,6 +22561,21 @@ class MazeSafeZoneMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -22004,6 +22964,21 @@ class InvisibleDecoysMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -22437,6 +23412,21 @@ class JuggernautMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if not "dead_balls" in world:
@@ -22706,6 +23696,21 @@ class ReverseTugOfWarMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -22988,6 +23993,21 @@ class HexGridRoyaleMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		tiles = []
@@ -23219,6 +24239,21 @@ class TickingPayloadMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -23489,6 +24524,21 @@ class BlackoutEventMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		timer = 0.0
@@ -23642,6 +24692,21 @@ class WeaponCollectionMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -24222,6 +25287,21 @@ class ShrinkingBoundaryMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		var arena_width = 1000.0
@@ -24390,6 +25470,21 @@ class EntanglementMutatorMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
@@ -24972,6 +26067,21 @@ class LavaRoyaleMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -26919,6 +28029,21 @@ class CrossfireMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
 		var arena_width = 1000.0
@@ -27123,6 +28248,21 @@ class TagTeamMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
@@ -27396,6 +28536,21 @@ class TeleporterHubMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
@@ -27918,6 +29073,21 @@ class IllusionWallMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		if world == null or not ("arena" in world) or world.arena == null:
@@ -28254,6 +29424,21 @@ class UndergroundTunnelMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)

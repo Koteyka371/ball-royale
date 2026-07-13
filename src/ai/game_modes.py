@@ -67,6 +67,14 @@ class GameMode:
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -671,6 +679,14 @@ class DraftRoyaleMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.teams = ["Team A", "Team B"]
@@ -870,6 +886,14 @@ class BattleRoyaleMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -2669,6 +2693,14 @@ class TeamDeathmatchMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -2735,6 +2767,14 @@ class ZombieInfectionMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -2850,6 +2890,14 @@ class GuildBossFightMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -2976,6 +3024,14 @@ class BossFightMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -3093,6 +3149,14 @@ class DualPayloadMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -3306,6 +3370,14 @@ class EscortMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -3556,6 +3628,14 @@ class VIPDefenseMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -3629,6 +3709,14 @@ class SurvivalMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -3774,6 +3862,14 @@ class CaptureTheFlagMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -3863,6 +3959,14 @@ class EvolutionarySimulationMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -3993,6 +4097,14 @@ class MassiveGravityWellMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -4165,6 +4277,14 @@ class KingOfTheHillMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -4295,6 +4415,14 @@ class SweepingBlackHoleMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -4519,6 +4647,14 @@ class WeatherChaosMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -5310,6 +5446,14 @@ class DominationMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -5570,6 +5714,14 @@ class MemoryTrapsMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -5684,6 +5836,14 @@ class CustomMatchMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -5908,6 +6068,14 @@ class EcholocationMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.world = world
@@ -6026,6 +6194,14 @@ class PitchBlackMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if hasattr(world, "arena"):
@@ -6128,6 +6304,14 @@ class VisionReducedMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -6242,6 +6426,14 @@ class EMPBurstMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -6324,6 +6516,14 @@ class DynamicHazardsMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -7468,6 +7668,14 @@ class MirrorMatchMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.world = world
@@ -7545,6 +7753,14 @@ class VolatileClonesMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -7734,6 +7950,14 @@ class CloneChaosMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -7943,6 +8167,14 @@ class BumperBallsMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         if not hasattr(world, "dead_balls"):
@@ -8184,6 +8416,14 @@ class ModifierZonesMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -8351,6 +8591,14 @@ class WindstormMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -8626,6 +8874,14 @@ class BountyHuntMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -8908,6 +9164,14 @@ class GravityWellMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -9615,6 +9879,14 @@ class MagneticCollisionsMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.swap_timer = 0.0
@@ -9908,6 +10180,14 @@ class PinballMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -11130,6 +11410,14 @@ class StaminaSpeedMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         for b in balls:
@@ -11243,6 +11531,14 @@ class HazardBilliardsMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -11853,6 +12149,14 @@ class DailyMutatorMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -11958,6 +12262,14 @@ class BlackMarketMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -12302,6 +12614,14 @@ class BlizzardMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -12438,6 +12758,14 @@ class MeteorShowerMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -12605,6 +12933,14 @@ class CursedBuffZoneMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -12724,6 +13060,14 @@ class RhythmPanelsMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -13206,6 +13550,14 @@ class ArtifactUpgraderMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -13390,6 +13742,14 @@ class SweepingPaddlesMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -13836,6 +14196,14 @@ class InvisibleDecoysMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         import random
@@ -14251,6 +14619,14 @@ class JuggernautMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -14615,6 +14991,14 @@ class TickingPayloadMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world, "dead_balls"):
@@ -14838,6 +15222,14 @@ class WeaponCollectionMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -14952,6 +15344,14 @@ class CenterBlackHoleMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -16513,6 +16913,14 @@ class RollingBouldersMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -16749,6 +17157,14 @@ class SoulLinkMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -16999,6 +17415,14 @@ class TagTeamMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.swap_timer = 0.0
@@ -17125,6 +17549,14 @@ class CrossfireMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         import random
@@ -17224,6 +17656,14 @@ class TeleporterHubMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -17939,6 +18379,14 @@ class FreezeTagMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    # Elementalist in sandstorm gains a passive shield/defense boost
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
