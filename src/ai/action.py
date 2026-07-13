@@ -2589,6 +2589,18 @@ class Action:
 
                     hazard.x += getattr(hazard, "vx", 0) * delta
                     hazard.y += getattr(hazard, "vy", 0) * delta
+
+                    # Bounce off arena walls
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                        clamp_res = self.world.arena.clamp_position(hazard.x, hazard.y, getattr(hazard, "radius", 5.0))
+                        cx, cy = clamp_res[0], clamp_res[1]
+                        if hazard.x != cx:
+                            hazard.vx = -getattr(hazard, "vx", 0)
+                        if hazard.y != cy:
+                            hazard.vy = -getattr(hazard, "vy", 0)
+                        hazard.x = cx
+                        hazard.y = cy
+
                     hazard.vx *= (1.0 - 2.0 * delta)
                     hazard.vy *= (1.0 - 2.0 * delta)
 
