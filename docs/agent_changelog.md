@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-760] Ghost Mode Booster — *2026-07-13 18:42:44 UTC*
+
+A temporary power-up that makes the ball phase through walls and become immune to non-energy projectiles for 5 seconds. However, attacking breaks the ghost mode early, creating a strategic choice for positioning versus offense.
+
+---
+
 ## [idea-931] Weather-Based Stat Bonuses — *2026-07-13 18:42:39 UTC*
 
 Certain elemental ball types gain passive stat boosts when a specific weather mode matches their element, e.g., elementalist in sandstorm.
