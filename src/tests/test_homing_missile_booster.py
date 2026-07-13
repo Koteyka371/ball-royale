@@ -106,7 +106,7 @@ def test_homing_missile_movement_and_damage():
     assert m not in world.arena.hazards
 
 if __name__ == "__main__":
-    pytest.main(["-v", "src/ai/test_homing_missile_booster.py"])
+    pytest.main(["-v", "test_homing_missile_booster.py"])
 
 def test_dummy_1():
     pass

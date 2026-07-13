@@ -197,7 +197,15 @@ class Action:
 
     def _attempt_damage(self, attacker, target) -> None:
         if getattr(target, "intangible", False) or getattr(target, "intangible_timer", 0.0) > 0.0:
-            return
+            if getattr(target, "ghost_mode_active", False):
+                is_proj = getattr(attacker, "ball_type", getattr(attacker, "kind", "")) in ["projectile", "spell"] or getattr(attacker, "is_projectile", False) or getattr(attacker, "is_spell", False)
+                is_energy = getattr(attacker, "is_energy", False) or getattr(attacker, "damage_type", "") == "energy"
+                if is_proj and not is_energy:
+                    return # Immune to non-energy projectiles
+                elif not is_proj:
+                    return # Intangible dodges physical melee/collisions
+            else:
+                return
         if getattr(attacker, "intangible", False) or getattr(attacker, "intangible_timer", 0.0) > 0.0:
             return
         if getattr(target, "quantum_state_timer", 0.0) > 0.0:
@@ -1067,6 +1075,14 @@ class Action:
                                 "mimic_strategy": strategy
                             }
                         })
+
+        if getattr(self.ball, "ghost_mode_timer", 0.0) > 0.0:
+            self.ball.ghost_mode_timer -= delta
+            if self.ball.ghost_mode_timer <= 0.0:
+                self.ball.ghost_mode_timer = 0.0
+                if getattr(self.ball, "ghost_mode_active", False):
+                    self.ball.intangible = False
+                    self.ball.ghost_mode_active = False
 
         if getattr(self.ball, "amnesia_timer", 0.0) > 0:
             self.ball.amnesia_timer -= delta
@@ -7115,6 +7131,7 @@ class Action:
 
 
     def _get_enemies(self) -> list:
+
         if getattr(self.ball, "amnesia_timer", 0.0) > 0:
             import random
             if random.random() < 0.5:
@@ -7946,6 +7963,11 @@ class Action:
         self.ball.y += comb_ny * step
 
     def _attack(self, delta: float) -> None:
+        if getattr(self.ball, "ghost_mode_timer", 0.0) > 0.0:
+            self.ball.ghost_mode_timer = 0.0
+            if getattr(self.ball, "ghost_mode_active", False):
+                self.ball.intangible = False
+                self.ball.ghost_mode_active = False
         enemies = self._get_enemies()
         if enemies:
             target = self._get_target(enemies)
@@ -8404,6 +8426,15 @@ class Action:
                     self.ball.kinetic_shield_active = True
                     self.ball.kinetic_shield_timer = 10.0
                     self.ball.kinetic_shield_stored_damage = 0.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "ghost_mode_booster":
+                    self.ball.ghost_mode_timer = 5.0
+                    self.ball.intangible = True
+                    self.ball.ghost_mode_active = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
