@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-867] Bounty Hunter Tag — *2026-07-13 13:02:01 UTC*
+
+A new game mode where one player is designated as the 'Bounty'. This player gains enhanced health, vision, and damage, but their exact location is periodically pinged on the minimap for all other players. The player who successfully takes down the Bounty steals the tag and inherits the buffs. The player holding the tag the longest at the end of the match wins.
+
+---
+
 ## [idea-913] Reflect Overload Mechanic — *2026-07-13 00:17:01 UTC*
 
 If a reflect shield takes damage exceeding its maximum capacity by more than 50% in a single hit, it shatters violently, dealing AoE damage to all nearby entities (including the shielded ball's allies) but inflicting a massive stun to the attacker.
