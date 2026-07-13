@@ -783,6 +783,12 @@ class GameMode:
 				if self.has_method("calculate_bounty_reward"):
 					reward = self.calculate_bounty_reward(target_kb)
 
+				var has_cursed = false
+				if typeof(killer) == TYPE_DICTIONARY and killer.has("has_cursed_perk"): has_cursed = killer.has_cursed_perk
+				elif typeof(killer) == TYPE_OBJECT and killer.has_method("get_meta") and killer.has_meta("has_cursed_perk"): has_cursed = killer.get_meta("has_cursed_perk")
+				elif "has_cursed_perk" in killer: has_cursed = killer.has_cursed_perk
+				if has_cursed:
+					reward = int(reward * 1.5)
 				pm.add_skill_points(reward)
 				if world.has_method("add_event"):
 					var killer_id = str(killer.id)
@@ -1381,6 +1387,16 @@ class BattleRoyaleMode extends GameMode:
 							b.set_meta("base_max_hp", float(b.get_meta("base_max_hp")) * 1.1)
 							b.set("max_hp", b.get_meta("base_max_hp"))
 							b.set("hp", b.get("max_hp"))
+						elif perk == "Cursed":
+							var b_max_hp = float(b.get("max_hp")) if b.get("max_hp") != null else 100.0
+							if not b.has_meta("base_max_hp"):
+								b.set_meta("base_max_hp", b_max_hp)
+							b.set_meta("base_max_hp", float(b.get_meta("base_max_hp")) * 0.9) # Reduce max HP by 10%
+							b.set("max_hp", b.get_meta("base_max_hp"))
+							b.set("hp", b.get("max_hp"))
+							if typeof(b) == TYPE_DICTIONARY: b["has_cursed_perk"] = true
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("has_cursed_perk", true)
+							elif "has_cursed_perk" in b: b.has_cursed_perk = true
 						elif perk == "Nimble":
 							var b_speed = float(b.get("speed")) if b.get("speed") != null else 100.0
 							if not b.has_meta("base_speed"):

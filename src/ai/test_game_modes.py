@@ -1386,3 +1386,103 @@ def test_day_night_mode_moonlight_shadows():
     # b1 should not lose stamina, b2 should lose 10.0
     assert b1.stamina == 100.0
     assert b2.stamina == 90.0
+
+def test_cursed_perk_in_battle_royale():
+    from ai.game_modes import BattleRoyaleMode
+
+    class MockLobby:
+        def get_perks(self, bid):
+            return ["Cursed"]
+        def get_traits(self, bid):
+            return []
+
+    import sys
+    sys.modules['system'] = type('sys', (), {'lobby': type('lobby', (), {'lobby': MockLobby()})()})()
+    sys.modules['system.lobby'] = type('system.lobby', (), {'lobby': MockLobby()})
+
+    class MockWorld:
+        def __init__(self):
+            self.dead_balls = []
+
+    class MockBall:
+        def __init__(self, bid):
+            self.id = bid
+            self.alive = True
+            self.ball_type = "player"
+            self.max_hp = 100.0
+            self.hp = 100.0
+            self.speed = 100.0
+            self.damage = 10.0
+            self.perception_radius = 250.0
+
+    mode = BattleRoyaleMode()
+    world = MockWorld()
+    b = MockBall("p1")
+    balls = [b]
+
+    mode.setup(world, balls)
+    assert b.max_hp == 90.0
+    assert b.hp == 90.0
+
+    del sys.modules['system']
+    del sys.modules['system.lobby']
+
+
+def test_cursed_perk_reward():
+    from ai.game_modes import BattleRoyaleMode
+
+    class MockProfileManager:
+        def __init__(self):
+            self.points = 0
+            self.bounties = {}
+        def add_skill_points(self, amount):
+            self.points += amount
+        def get_player_bounties(self):
+            return self.bounties
+
+    class MockLobby:
+        def get_perks(self, bid):
+            return ["Cursed"]
+        def get_traits(self, bid):
+            return []
+
+    import sys
+    sys.modules['system'] = type('sys', (), {'lobby': type('lobby', (), {'lobby': MockLobby()})()})()
+    sys.modules['system.lobby'] = type('system.lobby', (), {'lobby': MockLobby()})
+
+    class MockWorld:
+        def __init__(self):
+            self.dead_balls = []
+            self.profile_manager = MockProfileManager()
+        def add_event(self, a, b): pass
+
+    class MockBall:
+        def __init__(self, bid):
+            self.id = bid
+            self.alive = True
+            self.ball_type = "player"
+            self.max_hp = 100.0
+            self.hp = 100.0
+            self.speed = 100.0
+            self.damage = 10.0
+            self.perception_radius = 250.0
+            self.kill_bounty = 1
+
+    mode = BattleRoyaleMode()
+    world = MockWorld()
+    killer = MockBall("p1")
+    victim = MockBall("p2")
+    balls = [killer, victim]
+
+    mode.setup(world, balls)
+    assert getattr(killer, "has_cursed_perk", False) == True
+
+    # We simulate a kill using on_ball_died
+    victim.alive = False
+    mode.on_ball_died(world, victim, killer)
+
+    # 15 * 1.5 = 22 or 27? Wait, 15 * 1.2 = 18. 18 * 1.5 = 27
+    assert world.profile_manager.points == 27
+
+    del sys.modules['system']
+    del sys.modules['system.lobby']
