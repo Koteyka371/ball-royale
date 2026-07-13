@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-919] Eclipse Anomaly Event — *2026-07-13 16:16:46 UTC*
+
+A rare mid-day event where the sun goes dark abruptly, swapping all day/night buffs globally for 30 seconds. During this time, indestructible walls become destructible, allowing strong balls to break enemy cover points before the sun returns.
+
+---
+
 ## [idea-867] Bounty Hunter Tag — *2026-07-13 13:02:01 UTC*
 
 A new game mode where one player is designated as the 'Bounty'. This player gains enhanced health, vision, and damage, but their exact location is periodically pinged on the minimap for all other players. The player who successfully takes down the Bounty steals the tag and inherits the buffs. The player holding the tag the longest at the end of the match wins.
