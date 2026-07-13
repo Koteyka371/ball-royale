@@ -23494,33 +23494,75 @@ class JuggernautMode extends GameMode:
 
 			for i in range(1, valid_balls.size()):
 				valid_balls[i].team = "Hunters"
-				if "max_hp" in valid_balls[i]:
-					valid_balls[i].max_hp *= 0.8
-					valid_balls[i].hp = valid_balls[i].max_hp
+				if typeof(valid_balls[i]) == TYPE_DICTIONARY:
+					if not valid_balls[i].has("base_max_hp"):
+						valid_balls[i]["base_max_hp"] = float(valid_balls[i].get("max_hp", 100.0))
+					valid_balls[i]["max_hp"] = valid_balls[i]["base_max_hp"] * 0.8
+					valid_balls[i]["hp"] = valid_balls[i]["max_hp"]
+				else:
+					if not valid_balls[i].has_meta("base_max_hp"):
+						valid_balls[i].set_meta("base_max_hp", valid_balls[i].max_hp if "max_hp" in valid_balls[i] else 100.0)
+					if "max_hp" in valid_balls[i]:
+						valid_balls[i].max_hp = valid_balls[i].get_meta("base_max_hp") * 0.8
+						valid_balls[i].hp = valid_balls[i].max_hp
 
 	func _make_juggernaut(world, b) -> void:
 		b.team = "Juggernaut"
-		if "max_hp" in b:
-			b.max_hp *= 10.0
-			b.hp = b.max_hp
-		if "damage" in b:
-			b.damage *= 2.0
-		if "radius" in b:
-			b.radius *= 3.0
-		elif b.has_method("has_meta") and b.has_meta("radius"):
-			b.set_meta("radius", b.get_meta("radius") * 3.0)
+		if typeof(b) == TYPE_DICTIONARY:
+			if not b.has("base_max_hp"):
+				b["base_max_hp"] = float(b.get("max_hp", 100.0))
+			b["max_hp"] = b["base_max_hp"] * 10.0
+			b["hp"] = b["max_hp"]
+
+			if not b.has("base_damage"):
+				b["base_damage"] = float(b.get("damage", 10.0))
+			b["damage"] = b["base_damage"] * 2.0
+
+			if not b.has("base_radius"):
+				b["base_radius"] = float(b.get("radius", 10.0))
+			b["radius"] = b["base_radius"] * 3.0
+
+			if b.has("base_speed"):
+				b["base_speed"] = float(b["base_speed"]) * 0.6
+
+			if not b.has("base_mass"):
+				b["base_mass"] = float(b.get("mass", 1.0))
+			b["mass"] = b["base_mass"] * 5.0
 		else:
-			b.set_meta("radius", 30.0) if b.has_method("set_meta") else null
+			if not b.has_meta("base_max_hp"):
+				b.set_meta("base_max_hp", b.max_hp if "max_hp" in b else 100.0)
+			if "max_hp" in b:
+				b.max_hp = b.get_meta("base_max_hp") * 10.0
+				if "hp" in b:
+					b.hp = b.max_hp
 
-		if "base_speed" in b:
-			b.base_speed *= 0.6
-		elif b.has_method("has_meta") and b.has_meta("base_speed"):
-			b.set_meta("base_speed", b.get_meta("base_speed") * 0.6)
+			if not b.has_meta("base_damage"):
+				b.set_meta("base_damage", b.damage if "damage" in b else 10.0)
+			if "damage" in b:
+				b.damage = b.get_meta("base_damage") * 2.0
 
-		if "mass" in b:
-			b.mass *= 5.0
-		elif b.has_method("has_meta") and b.has_meta("mass"):
-			b.set_meta("mass", b.get_meta("mass") * 5.0)
+			if not b.has_meta("base_radius"):
+				var cur_r = b.radius if "radius" in b else (b.get_meta("radius") if b.has_method("has_meta") and b.has_meta("radius") else 10.0)
+				b.set_meta("base_radius", cur_r)
+			if "radius" in b:
+				b.radius = b.get_meta("base_radius") * 3.0
+			elif b.has_method("has_meta") and b.has_meta("radius"):
+				b.set_meta("radius", b.get_meta("base_radius") * 3.0)
+			elif b.has_method("set_meta"):
+				b.set_meta("radius", b.get_meta("base_radius") * 3.0)
+
+			if "base_speed" in b:
+				b.base_speed *= 0.6
+			elif b.has_method("has_meta") and b.has_meta("base_speed"):
+				b.set_meta("base_speed", b.get_meta("base_speed") * 0.6)
+
+			if not b.has_meta("base_mass"):
+				var cur_m = b.mass if "mass" in b else (b.get_meta("mass") if b.has_method("has_meta") and b.has_meta("mass") else 1.0)
+				b.set_meta("base_mass", cur_m)
+			if "mass" in b:
+				b.mass = b.get_meta("base_mass") * 5.0
+			elif b.has_method("has_meta") and b.has_meta("mass"):
+				b.set_meta("mass", b.get_meta("base_mass") * 5.0)
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		super.tick(world, balls, delta)
