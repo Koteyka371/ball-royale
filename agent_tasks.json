@@ -26382,6 +26382,41 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1541",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Headquarters Music Player",
+      "description": "Allow guilds to spend their Guild XP on unlocking different ambient background music tracks for their HQ, allowing members to personalize the vibe of their headquarters lobby.",
+      "allowed_paths": [
+        "src/ui/guild_headquarters_music_player.py",
+        "src/ui/guild_headquarters_music_player.gd",
+        "src/ai/guild_headquarters_music_player.py",
+        "tests/test_guild_headquarters_music_player.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1542",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Headquarters Interactive Pets",
+      "description": "Introduce interactive AI pets that roam around the guild headquarters. Guilds can purchase them with Guild XP and members can interact with them (petting or feeding them) for small temporary luck buffs.",
+      "allowed_paths": [
+        "src/ai/headquarters_interactive_pets.py",
+        "src/ai/headquarters_interactive_pets.gd",
+        "tests/test_headquarters_interactive_pets.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
