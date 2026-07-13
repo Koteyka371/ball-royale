@@ -24622,15 +24622,20 @@ class EntanglementMutatorMode extends GameMode:
 
 class MultipleSafeZonesMode extends GameMode:
 	var zones = []
-	var split_timer = 0.0
-	var min_zone_radius = 50.0
+	var spawn_timer = 0.0
 
 	func _init():
 		name = "Multiple Safe Zones"
-		description = "Instead of one big safe zone, multiple tiny safe zones spawn randomly across the map, shrinking and splitting over time."
+		description = "Multiple safe zones spawn randomly across the map and collapse over time, forcing players to migrate."
 
 	func setup(world, balls: Array):
 		super.setup(world, balls)
+		zones.clear()
+		spawn_timer = 0.0
+		for i in range(3):
+			_spawn_zone(world)
+
+	func _spawn_zone(world):
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if world.has("arena") and world.arena != null:
@@ -24641,55 +24646,33 @@ class MultipleSafeZonesMode extends GameMode:
 				arena_width = float(world.arena.get("width"))
 				arena_height = float(world.arena.get("height"))
 
-		zones.clear()
-		var init_radius = min(arena_width, arena_height) / 2.0
+		var r = randf_range(150.0, 300.0)
 		zones.append({
-			"x": arena_width / 2.0,
-			"y": arena_height / 2.0,
-			"radius": init_radius,
-			"target_radius": init_radius,
-			"target_x": arena_width / 2.0,
-			"target_y": arena_height / 2.0
+			"x": randf_range(r, arena_width - r),
+			"y": randf_range(r, arena_height - r),
+			"radius": r,
+			"collapse_rate": randf_range(5.0, 15.0)
 		})
-		split_timer = randf_range(10.0, 20.0)
 
 	func tick(world, balls: Array, delta: float = 0.016):
 		if not world.has("dead_balls"):
 			world["dead_balls"] = []
 
-		split_timer -= delta
-		if split_timer <= 0.0:
-			split_timer = randf_range(15.0, 25.0)
-			_split_zones(world)
+		spawn_timer -= delta
+		if spawn_timer <= 0.0:
+			spawn_timer = randf_range(5.0, 10.0)
+			_spawn_zone(world)
 
-		var arena_width = 1000.0
-		var arena_height = 1000.0
-		if world.has("arena") and world.arena != null:
-			if typeof(world.arena) == TYPE_DICTIONARY:
-				arena_width = float(world.arena.get("width", 1000.0))
-				arena_height = float(world.arena.get("height", 1000.0))
-			elif world.arena.has_method("get"):
-				arena_width = float(world.arena.get("width"))
-				arena_height = float(world.arena.get("height"))
-
+		var new_zones = []
 		for i in range(zones.size()):
 			var zone = zones[i]
-			zone["radius"] -= 5.0 * delta
-			if zone["radius"] < min_zone_radius:
-				zone["radius"] = min_zone_radius
+			zone["radius"] -= zone.get("collapse_rate", 10.0) * delta
+			if zone["radius"] > 0:
+				new_zones.append(zone)
+		zones = new_zones
 
-			var dx = zone["target_x"] - zone["x"]
-			var dy = zone["target_y"] - zone["y"]
-			var dist = sqrt(dx*dx + dy*dy)
-			var speed = 20.0 * delta
-			if dist > speed:
-				zone["x"] += (dx/dist) * speed
-				zone["y"] += (dy/dist) * speed
-			else:
-				zone["x"] = zone["target_x"]
-				zone["y"] = zone["target_y"]
-				zone["target_x"] = randf_range(200.0, arena_width - 200.0)
-				zone["target_y"] = randf_range(200.0, arena_height - 200.0)
+		if zones.size() == 0:
+			_spawn_zone(world)
 
 		for b in balls:
 			var w_timer = 0.0
@@ -24734,55 +24717,6 @@ class MultipleSafeZonesMode extends GameMode:
 					b["hp"] = hp
 				else:
 					b.set("hp", hp)
-
-	func _split_zones(world):
-		var arena_width = 1000.0
-		var arena_height = 1000.0
-		if world.has("arena") and world.arena != null:
-			if typeof(world.arena) == TYPE_DICTIONARY:
-				arena_width = float(world.arena.get("width", 1000.0))
-				arena_height = float(world.arena.get("height", 1000.0))
-			elif world.arena.has_method("get"):
-				arena_width = float(world.arena.get("width"))
-				arena_height = float(world.arena.get("height"))
-
-		var new_zones = []
-		for zone in zones:
-			if zone["radius"] < min_zone_radius * 2:
-				new_zones.append(zone)
-				continue
-
-			var r1 = zone["radius"] * 0.7
-			var r2 = zone["radius"] * 0.7
-
-			var angle1 = randf_range(0.0, 2 * PI)
-			var angle2 = angle1 + PI
-
-			var dist = zone["radius"] * 0.5
-
-			var x1 = zone["x"] + cos(angle1) * dist
-			var y1 = zone["y"] + sin(angle1) * dist
-
-			var x2 = zone["x"] + cos(angle2) * dist
-			var y2 = zone["y"] + sin(angle2) * dist
-
-			x1 = max(r1, min(arena_width - r1, x1))
-			y1 = max(r1, min(arena_height - r1, y1))
-			x2 = max(r2, min(arena_width - r2, x2))
-			y2 = max(r2, min(arena_height - r2, y2))
-
-			new_zones.append({
-				"x": x1, "y": y1, "radius": r1, "target_radius": r1,
-				"target_x": randf_range(r1, arena_width - r1),
-				"target_y": randf_range(r1, arena_height - r1)
-			})
-			new_zones.append({
-				"x": x2, "y": y2, "radius": r2, "target_radius": r2,
-				"target_x": randf_range(r2, arena_width - r2),
-				"target_y": randf_range(r2, arena_height - r2)
-			})
-
-		zones = new_zones
 
 
 class FallingPanelsMode extends GameMode:
