@@ -24833,6 +24833,123 @@ class WeaponCollectionMode extends GameMode:
 							world.add_event("weapon_collected", {"ball_id": b_id, "ability": selected_ability})
 
 
+class CenterVortexMode extends GameMode:
+	var vortex_id = 888888
+	var pull_strength = 150.0
+	var max_damage = 50.0
+	var vortex_radius = 400.0
+
+	func _init():
+		super()
+		name = "Center Vortex"
+		description = "A slow-moving vortex appears in the center of the arena. It constantly pulls nearby entities towards it, dealing increasing continuous damage the closer they are to its core."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var cx = world.arena.width / 2.0
+		var cy = world.arena.height / 2.0
+
+		var existing = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "vortex" and h.get("id", null) == vortex_id:
+					existing = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "vortex" and h.get("id") == vortex_id:
+					existing = h
+					break
+
+		if not existing:
+			world.arena.hazards.append({
+				"id": vortex_id,
+				"x": cx,
+				"y": cy,
+				"radius": vortex_radius,
+				"kind": "vortex",
+				"damage": 0.0,
+				"active": true
+			})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if not "hazards" in world.arena:
+			return
+
+		var vx = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "vortex" and h.get("id", null) == vortex_id:
+					vx = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "vortex" and h.get("id") == vortex_id:
+					vx = h
+					break
+
+		if vx == null:
+			return
+
+		var current_tick = 0
+		if typeof(world) == TYPE_DICTIONARY and world.has("tick"):
+			current_tick = world["tick"]
+		elif typeof(world) == TYPE_OBJECT and "tick" in world:
+			current_tick = world.get("tick")
+
+		if typeof(vx) == TYPE_DICTIONARY:
+			vx["x"] += sin(current_tick * 0.01) * 10.0 * delta
+			vx["y"] += cos(current_tick * 0.013) * 10.0 * delta
+		elif typeof(vx) == TYPE_OBJECT:
+			vx.set("x", vx.get("x") + sin(current_tick * 0.01) * 10.0 * delta)
+			vx.set("y", vx.get("y") + cos(current_tick * 0.013) * 10.0 * delta)
+
+		var vx_x = vx.get("x") if typeof(vx) == TYPE_OBJECT else vx["x"]
+		var vx_y = vx.get("y") if typeof(vx) == TYPE_OBJECT else vx["y"]
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
+
+			if not is_alive:
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_OBJECT else b["x"]
+			var by = b.get("y") if typeof(b) == TYPE_OBJECT else b["y"]
+
+			var dx = vx_x - bx
+			var dy = vx_y - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > 0 and dist < vortex_radius:
+				var pull_factor = 1.0 - (dist / vortex_radius)
+				var pull_x = (dx / dist) * pull_strength * pull_factor * delta
+				var pull_y = (dy / dist) * pull_strength * pull_factor * delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					if "vx" in b and "vy" in b:
+						b["vx"] += pull_x
+						b["vy"] += pull_y
+
+					var damage_amount = max_damage * pull_factor * delta
+					if damage_amount > 0 and "hp" in b:
+						b["hp"] -= damage_amount
+
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_method("get") and b.get("vx") != null and b.get("vy") != null:
+						b.set("vx", b.get("vx") + pull_x)
+						b.set("vy", b.get("vy") + pull_y)
+
+					var damage_amount = max_damage * pull_factor * delta
+					if damage_amount > 0 and b.has_method("get") and b.get("hp") != null:
+						b.set("hp", b.get("hp") - damage_amount)
+
+
 class CenterBlackHoleMode extends GameMode:
 	var bh_id = 999999
 	var growth_rate = 5.0
@@ -27812,6 +27929,7 @@ var GAME_MODES = {
 	"spiked_walls": SpikedWallsMode.new(),
 	"blackout_event": BlackoutEventMode.new(),
 	"solar_flare": SolarFlareMode.new(),
+	"center_vortex": CenterVortexMode.new(),
 	"center_black_hole": CenterBlackHoleMode.new(),
 	"extreme_weather": ExtremeWeatherMode.new(),
 	"weather_station": WeatherStationMode.new(),
