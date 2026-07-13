@@ -471,6 +471,12 @@ class Action:
         if getattr(target, "takes_double_damage", False):
             original_damage *= 2.0
 
+        if getattr(attacker, "has_sniper_stance", False) and is_ranged:
+            a_vx = getattr(attacker, "vx", 0.0)
+            a_vy = getattr(attacker, "vy", 0.0)
+            if a_vx * a_vx + a_vy * a_vy > 10.0:  # Attacker is moving
+                original_damage *= 1.5
+
         if hasattr(target, "weakness"):
             b_type = getattr(attacker, "ball_type", "").lower()
             traits = getattr(attacker, "traits", [])

@@ -970,6 +970,7 @@ class BattleRoyaleMode(GameMode):
                                 b.base_speed = getattr(b, "speed", 100.0)
                             b.base_speed *= 1.1
                             b.speed = b.base_speed
+                            b.has_nimble_perk = True
                         elif perk == "Heavy Hitter":
                             if not hasattr(b, "base_damage"):
                                 b.base_damage = getattr(b, "damage", 10.0)
@@ -980,8 +981,11 @@ class BattleRoyaleMode(GameMode):
                                 b.base_perception_radius = getattr(b, "perception_radius", 250.0)
                             b.base_perception_radius *= 1.1
                             b.perception_radius = b.base_perception_radius
+                            b.has_eagle_eye_perk = True
                 except (ImportError, AttributeError):
                     pass
+                if getattr(b, "has_nimble_perk", False) and getattr(b, "has_eagle_eye_perk", False):
+                    b.has_sniper_stance = True
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
