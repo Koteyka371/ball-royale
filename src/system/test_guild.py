@@ -180,6 +180,41 @@ def test_hq_customization(temp_guild_file):
     assert "golden_ball" in hq_status["statues"]
     assert hq_status["training_arena_unlocked"] == True
 
+def test_hq_mini_games(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("MiniGameGuild", "player1")
+
+    # Need resources
+    assert gm.unlock_hq_feature("MiniGameGuild", "mini_games", "obstacle_course", 100) == False
+
+    gm.donate_resources("MiniGameGuild", 500)
+
+    # Unlock mini game
+    assert gm.unlock_hq_feature("MiniGameGuild", "mini_games", "obstacle_course", 100) == True
+    # Already unlocked
+    assert gm.unlock_hq_feature("MiniGameGuild", "mini_games", "obstacle_course", 100) == False
+
+    hq_status = gm.get_hq_status("MiniGameGuild")
+    assert "obstacle_course" in hq_status["mini_games"]
+    assert hq_status["mini_games"]["obstacle_course"] == {"high_scores": {}}
+
+    # Record scores
+    assert gm.record_mini_game_score("MiniGameGuild", "obstacle_course", "player1", 1500) == True
+    assert gm.record_mini_game_score("MiniGameGuild", "obstacle_course", "player2", 2000) == True
+
+    # Try updating with a lower score
+    assert gm.record_mini_game_score("MiniGameGuild", "obstacle_course", "player1", 1000) == False
+
+    # Get leaderboard
+    leaderboard = gm.get_mini_game_leaderboard("MiniGameGuild", "obstacle_course")
+    assert len(leaderboard) == 2
+    assert leaderboard[0] == {"player_id": "player2", "score": 2000}
+    assert leaderboard[1] == {"player_id": "player1", "score": 1500}
+
+    # Unknown mini game
+    assert gm.record_mini_game_score("MiniGameGuild", "unknown_game", "player1", 100) == False
+    assert gm.get_mini_game_leaderboard("MiniGameGuild", "unknown_game") == []
+
 def test_guild_perk_progression(temp_guild_file):
     gm = GuildManager(temp_guild_file)
     gm.create_guild("PerkGuild", "p1")
