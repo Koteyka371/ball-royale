@@ -792,6 +792,28 @@ func _attempt_damage(attacker, target) -> void:
 			attacker.kinetic_shield_active = false
 			attacker.kinetic_shield_stored_damage = 0.0
 
+	var target_weakness = ""
+	if typeof(target) == TYPE_DICTIONARY:
+		if target.has("weakness"): target_weakness = str(target["weakness"])
+	else:
+		if "weakness" in target: target_weakness = str(target.weakness)
+		elif target.has_method("has_meta") and target.has_meta("weakness"): target_weakness = str(target.get_meta("weakness"))
+
+	if target_weakness != "":
+		var b_type = ""
+		var traits = []
+		if typeof(attacker) == TYPE_DICTIONARY:
+			if attacker.has("ball_type"): b_type = str(attacker["ball_type"]).to_lower()
+			if attacker.has("traits"): traits = attacker["traits"]
+		else:
+			if "ball_type" in attacker: b_type = str(attacker.ball_type).to_lower()
+			elif attacker.has_method("has_meta") and attacker.has_meta("ball_type"): b_type = str(attacker.get_meta("ball_type")).to_lower()
+			if "traits" in attacker: traits = attacker.traits
+			elif attacker.has_method("has_meta") and attacker.has_meta("traits"): traits = attacker.get_meta("traits")
+
+		if b_type.find(target_weakness) != -1 or traits.has(target_weakness):
+			original_damage *= 1.5
+
 	if "attack_accuracy" in attacker:
 		attack_accuracy = float(attacker.attack_accuracy)
 	elif attacker.has_method("get_meta") and attacker.has_meta("attack_accuracy"):

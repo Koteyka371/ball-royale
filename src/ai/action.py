@@ -471,6 +471,13 @@ class Action:
         if getattr(target, "takes_double_damage", False):
             original_damage *= 2.0
 
+        if hasattr(target, "weakness"):
+            b_type = getattr(attacker, "ball_type", "").lower()
+            traits = getattr(attacker, "traits", [])
+            w = target.weakness
+            if w in b_type or w in traits:
+                original_damage *= 1.5
+
         if random.random() > attack_accuracy:
             return
 
