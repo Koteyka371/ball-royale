@@ -2996,6 +2996,8 @@ class Action:
                 detonate = True
 
             if detonate:
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("mimic_clone_explosion")
                 self.ball.alive = False
                 self.ball.hp = 0
                 if hasattr(self.world, "balls"):
