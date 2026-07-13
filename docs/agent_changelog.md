@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-936] Capture Points — *2026-07-13 23:15:16 UTC*
+
+Add capture points to Battle Royale that give zone advantage or reveal enemy positions.
+
+---
+
 ## [idea-906] Vampiric Leech Balls — *2026-07-13 23:15:10 UTC*
 
 A new ball class 'Leech' that deals very low base damage but heals itself for 200% of the damage it deals. Its special ability is a short-range tether that slows the target and continuously drains HP over time. It forces enemies to break line of sight or outrange the tether to survive.
