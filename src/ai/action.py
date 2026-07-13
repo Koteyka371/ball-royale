@@ -1268,7 +1268,7 @@ class Action:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 disabled_any = False
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "kind", "") in ["bumper", "breakable_wall"]:
+                    if getattr(hazard, "kind", "") in ["bumper", "electric_bumper", "breakable_wall"]:
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist = math.hypot(dx, dy)
@@ -6258,6 +6258,48 @@ class Action:
 
                                 self.ball.vx = nx * 3000.0
                                 self.ball.vy = ny * 3000.0
+                        elif hazard.kind == "electric_bumper":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist2 = dx*dx + dy*dy
+                            dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
+
+                            b_rad = getattr(self.ball, "radius", 10.0)
+
+                            if dist < (b_rad + getattr(hazard, "radius", 10.0)):
+                                # Calculate bounce direction
+                                nx = dx / dist
+                                ny = dy / dist
+
+                                # Apply bounce
+                                bounce_strength = 1500.0 * delta
+                                self.ball.x += nx * bounce_strength
+                                self.ball.y += ny * bounce_strength
+                                self.ball.vx = nx * 3000.0
+                                self.ball.vy = ny * 3000.0
+
+                                # Apply stun and damage
+                                if not getattr(self.ball, "is_stunned", False):
+                                    self.ball.is_stunned = True
+                                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 2.0)
+
+                                    # Deal damage if possible
+                                    if hasattr(self.world, "_deal_damage"):
+                                        self.world._deal_damage(self.ball, hazard)
+                                        if not hasattr(self.world, "_deal_damage_result") or not getattr(self.world, "_deal_damage_result", True):
+                                            self.ball.hp = getattr(self.ball, "hp", 100.0) - 20.0
+                                    elif hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(20.0)
+                                    else:
+                                        self.ball.hp = getattr(self.ball, "hp", 100.0) - 20.0
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+
+                                    # Create electrical visual effect
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y}})
+
+                                continue
                         elif hazard.kind == "bumper":
 
                             dx = self.ball.x - hazard.x
