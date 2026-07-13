@@ -319,7 +319,52 @@ func _attempt_damage(attacker, target) -> void:
     if typeof(target) == TYPE_OBJECT and "intangible_timer" in target: t_timer = target.intangible_timer
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible_timer"): t_timer = target.get_meta("intangible_timer")
     if t_intangible or t_timer > 0.0:
-        return
+        var is_ghost = false
+        if typeof(target) == TYPE_OBJECT and "ghost_mode_active" in target: is_ghost = target.ghost_mode_active
+        elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("ghost_mode_active"): is_ghost = target.get_meta("ghost_mode_active")
+        elif typeof(target) == TYPE_DICTIONARY and target.has("ghost_mode_active"): is_ghost = target["ghost_mode_active"]
+
+        if is_ghost:
+            var a_type = ""
+            var is_proj_flag = false
+            var is_spell = false
+
+            if typeof(attacker) == TYPE_OBJECT:
+                if "ball_type" in attacker: a_type = attacker.ball_type
+                elif "kind" in attacker: a_type = attacker.kind
+                elif attacker.has_method("has_meta"):
+                    if attacker.has_meta("ball_type"): a_type = attacker.get_meta("ball_type")
+                    elif attacker.has_meta("kind"): a_type = attacker.get_meta("kind")
+                if "is_projectile" in attacker: is_proj_flag = attacker.is_projectile
+                elif attacker.has_method("has_meta") and attacker.has_meta("is_projectile"): is_proj_flag = attacker.get_meta("is_projectile")
+                if "is_spell" in attacker: is_spell = attacker.is_spell
+                elif attacker.has_method("has_meta") and attacker.has_meta("is_spell"): is_spell = attacker.get_meta("is_spell")
+            elif typeof(attacker) == TYPE_DICTIONARY:
+                if attacker.has("ball_type"): a_type = attacker["ball_type"]
+                elif attacker.has("kind"): a_type = attacker["kind"]
+                if attacker.has("is_projectile"): is_proj_flag = attacker["is_projectile"]
+                if attacker.has("is_spell"): is_spell = attacker["is_spell"]
+
+            var is_proj = a_type == "projectile" or a_type == "spell" or a_type == "homing_missile" or is_proj_flag or is_spell
+
+            var is_energy = false
+            if typeof(attacker) == TYPE_OBJECT:
+                if "is_energy" in attacker: is_energy = attacker.is_energy
+                elif attacker.has_method("has_meta") and attacker.has_meta("is_energy"): is_energy = attacker.get_meta("is_energy")
+                var dmg_type = ""
+                if "damage_type" in attacker: dmg_type = attacker.damage_type
+                elif attacker.has_method("has_meta") and attacker.has_meta("damage_type"): dmg_type = attacker.get_meta("damage_type")
+                if dmg_type == "energy": is_energy = true
+            elif typeof(attacker) == TYPE_DICTIONARY:
+                if attacker.has("is_energy"): is_energy = attacker["is_energy"]
+                if attacker.has("damage_type") and attacker["damage_type"] == "energy": is_energy = true
+
+            if is_proj and not is_energy:
+                return # Immune
+            elif not is_proj:
+                return # Immune to melee
+        else:
+            return
 
     var a_intangible = false
     if typeof(attacker) == TYPE_OBJECT and "intangible" in attacker: a_intangible = attacker.intangible
@@ -15284,6 +15329,48 @@ func _collect_booster(delta: float):
                 else:
                     self.ball.set_meta("reverse_gravity_booster_timer", 5.0)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var h_idx = self.world.arena.hazards.find(nearest)
+                    if h_idx >= 0:
+                        self.world.arena.hazards.remove_at(h_idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx >= 0:
+                        self.world.boosters.remove_at(idx)
+            elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "ghost_mode_booster":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["ghost_mode_timer"] = 5.0
+                    self.ball["intangible"] = true
+                    self.ball["ghost_mode_active"] = true
+                else:
+                    self.ball.set_meta("ghost_mode_timer", 5.0)
+                    if "ghost_mode_timer" in self.ball: self.ball.ghost_mode_timer = 5.0
+                    self.ball.set_meta("intangible", true)
+                    if "intangible" in self.ball: self.ball.intangible = true
+                    self.ball.set_meta("ghost_mode_active", true)
+                    if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = true
+
+                if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                    var h_idx = self.world.arena.hazards.find(nearest)
+                    if h_idx >= 0:
+                        self.world.arena.hazards.remove_at(h_idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx >= 0:
+                        self.world.boosters.remove_at(idx)
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "ghost_mode_booster":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["ghost_mode_timer"] = 5.0
+                    self.ball["intangible"] = true
+                    self.ball["ghost_mode_active"] = true
+                else:
+                    self.ball.set_meta("ghost_mode_timer", 5.0)
+                    if "ghost_mode_timer" in self.ball: self.ball.ghost_mode_timer = 5.0
+                    self.ball.set_meta("intangible", true)
+                    if "intangible" in self.ball: self.ball.intangible = true
+                    self.ball.set_meta("ghost_mode_active", true)
+                    if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = true
+
+                if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
                     var h_idx = self.world.arena.hazards.find(nearest)
                     if h_idx >= 0:
                         self.world.arena.hazards.remove_at(h_idx)
