@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-950] Black Hole Mutator — *2026-07-13 23:35:56 UTC*
+
+A random event where a massive black hole spawns in the center of the arena, slowly pulling all balls towards it. Balls closer to the center take increasing damage, encouraging players to fight on the edges or use speed boosters to escape.
+
+---
+
 ## [idea-954] Mimic Clone Explosion Visual Effect Upgrade — *2026-07-13 23:35:53 UTC*
 
 Add a distinct visual explosion particle effect specifically for the mimic clone detonation to differentiate it from normal bomber explosions or elemental traps, giving players a clear visual cue.
