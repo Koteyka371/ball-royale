@@ -18811,6 +18811,7 @@ class CollapsingBubblesMode(GameMode):
         self.description = "Instead of one large shrinking circle, the arena has multiple smaller safe zones that randomly collapse, forcing players to constantly migrate between different safe bubbles to survive."
         self.bubbles = []
         self.bubble_spawn_timer = 0.0
+        self.max_bubbles = 8
 
     def setup(self, world, balls):
         super().setup(world, balls)
@@ -18829,7 +18830,8 @@ class CollapsingBubblesMode(GameMode):
 
         self.bubble_spawn_timer -= delta
         if self.bubble_spawn_timer <= 0:
-            self._spawn_bubble(world)
+            if len(self.bubbles) < self.max_bubbles:
+                self._spawn_bubble(world)
             self.bubble_spawn_timer = random.uniform(3.0, 6.0)
 
         active_bubbles = []
@@ -18865,7 +18867,7 @@ class CollapsingBubblesMode(GameMode):
                     break
 
             if not in_bubble:
-                damage = 20.0 * delta
+                damage = 25.0 * delta
                 if hasattr(ball, "take_damage"):
                     ball.take_damage(damage)
                 else:
