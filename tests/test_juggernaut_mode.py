@@ -9,25 +9,44 @@ def test_juggernaut_mode():
 
     world.leaderboard_manager.data.get.return_value = 1
 
-    b1 = MagicMock()
+    class RealMock:
+        pass
 
+    b1 = RealMock()
+    b1.id = "b1"
     b1.ball_type = "warrior"
     b1.alive = True
     b1.max_hp = 100
     b1.hp = 100
+    b1.damage = 10
+    b1.radius = 10
+    b1.speed = 100
+    b1.base_speed = 100
+    b1.mass = 1
 
-    b2 = MagicMock()
+    b2 = RealMock()
+    b2.id = "b2"
     b2.ball_type = "warrior"
     b2.alive = True
     b2.max_hp = 100
     b2.hp = 100
-    b2.id = "b2"
+    b2.damage = 10
+    b2.radius = 10
+    b2.speed = 100
+    b2.base_speed = 100
+    b2.mass = 1
 
-    b3 = MagicMock()
+    b3 = RealMock()
+    b3.id = "b3"
     b3.ball_type = "warrior"
     b3.alive = True
     b3.max_hp = 100
     b3.hp = 100
+    b3.damage = 10
+    b3.radius = 10
+    b3.speed = 100
+    b3.base_speed = 100
+    b3.mass = 1
 
     balls = [b1, b2, b3]
 
@@ -49,8 +68,8 @@ def test_juggernaut_mode():
 
     assert b1.team == "Dead"
     assert b2.team == "Juggernaut"
-    assert b2.max_hp == 800  # 100 * 0.8 * 10.0
-    assert b2.hp == 800
+    assert b2.max_hp == 1000  # 100 * 10.0 (uses base_max_hp now)
+    assert b2.hp == 1000
 
     # Check Winner
     b1.team = "Dead"
