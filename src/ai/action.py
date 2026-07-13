@@ -530,13 +530,34 @@ class Action:
             elif has_reflect_shield:
                 # Shield consumes on use and reflects damage
                 capacity = getattr(target, "reflect_shield_capacity", 50.0)
+                initial_cap_val = getattr(target, "reflect_shield_initial_capacity", capacity)
+                max_layers = getattr(target, "reflect_shield_max_layers", 1)
 
-                # Reflect only the damage that the shield can absorb
-                damage_to_reflect = min(capacity, original_damage)
+                if max_layers > 1:
+                    current_layers = getattr(target, "reflect_shield_current_layers", max_layers)
+                    layer_capacity = initial_cap_val / float(max_layers)
 
-                capacity -= original_damage
+                    damage_to_reflect = min(layer_capacity, original_damage)
+                    current_layers -= 1
+                    target.reflect_shield_current_layers = current_layers
+                    target.reflect_shield_capacity = current_layers * layer_capacity
 
-                if capacity <= 0:
+                    original_damage = 0.0 # blocks the instance of damage
+
+                    if current_layers <= 0:
+                        target.reflect_shield_active = False
+                        target.reflect_shield_capacity = 0.0
+                        target.reflect_shield_timer = 0.0
+                        capacity = 0.0 # for downstream check
+                    else:
+                        capacity = target.reflect_shield_capacity # prevent explosion logic
+
+                else:
+                    # Reflect only the damage that the shield can absorb
+                    damage_to_reflect = min(capacity, original_damage)
+                    capacity -= original_damage
+
+                if capacity <= 0 and max_layers <= 1:
                     target.reflect_shield_active = False
                     target.reflect_shield_capacity = 0.0
                     target.reflect_shield_timer = 0.0
@@ -589,7 +610,7 @@ class Action:
                                             b.take_damage(initial * 0.5)
                                         elif hasattr(b, "hp"):
                                             b.hp -= initial * 0.5
-                else:
+                elif max_layers <= 1:
                     target.reflect_shield_capacity = capacity
 
                 # Spawn a pulse particle effect towards the attacker
@@ -8967,6 +8988,18 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "layer_reflect_shield_booster":
+                    self.ball.reflect_shield_active = True
+                    self.ball.reflect_shield_timer = 5.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
+                    self.ball.reflect_shield_capacity = 100.0 + getattr(self.ball, "bonus_reflect_shield_capacity", 0.0)
+                    self.ball.reflect_shield_initial_capacity = self.ball.reflect_shield_capacity
+                    self.ball.reflect_shield_max_layers = 3
+                    self.ball.reflect_shield_current_layers = 3
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "time_stop_booster":
                     # Time Stop Relic logic
                     entities = getattr(self.world, "entities", getattr(self.world, "balls", []))
@@ -13268,7 +13301,8 @@ class Action:
                 self.ball.reflect_shield_active = False
 
                 # Shield timer expired explosion
-                if hasattr(self.ball, "reflect_shield_capacity") and hasattr(self.ball, "reflect_shield_initial_capacity"):
+                max_l = getattr(self.ball, "reflect_shield_max_layers", 1)
+                if max_l <= 1 and hasattr(self.ball, "reflect_shield_capacity") and hasattr(self.ball, "reflect_shield_initial_capacity"):
                     capacity = getattr(self.ball, "reflect_shield_capacity", 0)
                     initial = getattr(self.ball, "reflect_shield_initial_capacity", 0)
                     absorbed = initial - capacity
