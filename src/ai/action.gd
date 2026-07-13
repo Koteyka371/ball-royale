@@ -1828,6 +1828,274 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var is_laser = false
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_ricochet_laser") and self.ball.is_ricochet_laser:
+        is_laser = true
+    elif typeof(self.ball) == TYPE_OBJECT and "is_ricochet_laser" in self.ball and self.ball.is_ricochet_laser:
+        is_laser = true
+
+    if is_laser:
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["duration"] -= delta
+            if self.ball["duration"] <= 0 or self.ball["bounces_left"] <= 0:
+                self.ball["alive"] = false
+                return
+
+            self.ball["x"] += self.ball["vx"] * delta
+            self.ball["y"] += self.ball["vy"] * delta
+
+            var bounces = self.ball["bounces_left"]
+            var bounced = false
+            var r = self.ball["radius"]
+
+            var w = 1000
+            var h = 1000
+            if world != null:
+                if typeof(world) == TYPE_DICTIONARY and world.has("width"):
+                    w = world["width"]
+                    h = world["height"]
+                elif typeof(world) == TYPE_OBJECT and "width" in world:
+                    w = world.width
+                    h = world.height
+                if typeof(world) == TYPE_OBJECT and world.has_method("get_arena") and world.get_arena() != null:
+                    w = world.get_arena().width
+                    h = world.get_arena().height
+
+            if self.ball["x"] < r:
+                self.ball["x"] = r
+                self.ball["vx"] *= -1
+                bounced = true
+            elif self.ball["x"] > w - r:
+                self.ball["x"] = w - r
+                self.ball["vx"] *= -1
+                bounced = true
+
+            if self.ball["y"] < r:
+                self.ball["y"] = r
+                self.ball["vy"] *= -1
+                bounced = true
+            elif self.ball["y"] > h - r:
+                self.ball["y"] = h - r
+                self.ball["vy"] *= -1
+                bounced = true
+
+            if bounced:
+                bounces -= 1
+                self.ball["bounces_left"] = bounces
+
+            if bounces > 0 and world != null:
+                var balls_arr = []
+                if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                    balls_arr = world.balls
+                elif typeof(world) == TYPE_OBJECT and "balls" in world:
+                    balls_arr = world.balls
+
+                var owner_id = self.ball.get("owner_id", -1)
+                for other in balls_arr:
+                    var o_alive = true
+                    if typeof(other) == TYPE_DICTIONARY and other.has("alive"): o_alive = other.alive
+                    elif typeof(other) == TYPE_OBJECT and "alive" in other: o_alive = other.alive
+                    if not o_alive: continue
+
+                    var o_id = -1
+                    if typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other.id
+                    elif typeof(other) == TYPE_OBJECT and "id" in other: o_id = other.id
+
+                    if o_id == self.ball["id"] or o_id == owner_id:
+                        continue
+
+                    var o_x = 0
+                    var o_y = 0
+                    var o_r = 15.0
+                    if typeof(other) == TYPE_DICTIONARY:
+                        o_x = other.get("x", 0)
+                        o_y = other.get("y", 0)
+                        o_r = other.get("radius", 15.0)
+                    else:
+                        o_x = other.x if "x" in other else 0
+                        o_y = other.y if "y" in other else 0
+                        o_r = other.radius if "radius" in other else 15.0
+
+                    var dist_sq = (self.ball["x"] - o_x) * (self.ball["x"] - o_x) + (self.ball["y"] - o_y) * (self.ball["y"] - o_y)
+                    var r_sum = r + o_r
+
+                    if dist_sq < r_sum * r_sum:
+                        var last_hit = self.ball.get("last_hit_id", -1)
+                        var base_dmg = self.ball.get("base_damage", 10.0)
+                        var dmg = base_dmg
+                        if o_id == last_hit:
+                            dmg = self.ball.get("damage", base_dmg) * 2.0
+
+                        self.ball["damage"] = dmg
+                        self.ball["last_hit_id"] = o_id
+
+                        if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+                            world._deal_damage(self.ball, other, dmg)
+                        elif typeof(other) == TYPE_OBJECT and other.has_method("take_damage"):
+                            other.take_damage(dmg)
+                        else:
+                            if typeof(other) == TYPE_DICTIONARY and other.has("hp"):
+                                other["hp"] -= dmg
+                            elif typeof(other) == TYPE_OBJECT and "hp" in other:
+                                other.hp -= dmg
+
+                        if typeof(other) == TYPE_DICTIONARY:
+                            other["slow_timer"] = other.get("slow_timer", 0.0) + 1.0
+                        elif typeof(other) == TYPE_OBJECT:
+                            if "slow_timer" in other:
+                                other.slow_timer += 1.0
+                            else:
+                                other.set_meta("slow_timer", 1.0)
+
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.0001:
+                            var nx = (self.ball["x"] - o_x) / dist
+                            var ny = (self.ball["y"] - o_y) / dist
+                            var dot = self.ball["vx"] * nx + self.ball["vy"] * ny
+                            if dot < 0:
+                                self.ball["vx"] = self.ball["vx"] - 2 * dot * nx
+                                self.ball["vy"] = self.ball["vy"] - 2 * dot * ny
+                        else:
+                            self.ball["vx"] *= -1
+                            self.ball["vy"] *= -1
+
+                        bounces -= 1
+                        self.ball["bounces_left"] = bounces
+                        break
+            if bounces <= 0:
+                self.ball["alive"] = false
+            return
+        elif typeof(self.ball) == TYPE_OBJECT:
+            self.ball.duration -= delta
+            if self.ball.duration <= 0 or self.ball.bounces_left <= 0:
+                self.ball.alive = false
+                return
+
+            self.ball.x += self.ball.vx * delta
+            self.ball.y += self.ball.vy * delta
+
+            var bounces = self.ball.bounces_left
+            var bounced = false
+            var r = self.ball.radius if "radius" in self.ball else 5.0
+
+            var w = 1000
+            var h = 1000
+            if world != null:
+                if typeof(world) == TYPE_DICTIONARY and world.has("width"):
+                    w = world["width"]
+                    h = world["height"]
+                elif typeof(world) == TYPE_OBJECT and "width" in world:
+                    w = world.width
+                    h = world.height
+                if typeof(world) == TYPE_OBJECT and world.has_method("get_arena") and world.get_arena() != null:
+                    w = world.get_arena().width
+                    h = world.get_arena().height
+
+            if self.ball.x < r:
+                self.ball.x = r
+                self.ball.vx *= -1
+                bounced = true
+            elif self.ball.x > w - r:
+                self.ball.x = w - r
+                self.ball.vx *= -1
+                bounced = true
+
+            if self.ball.y < r:
+                self.ball.y = r
+                self.ball.vy *= -1
+                bounced = true
+            elif self.ball.y > h - r:
+                self.ball.y = h - r
+                self.ball.vy *= -1
+                bounced = true
+
+            if bounced:
+                bounces -= 1
+                self.ball.bounces_left = bounces
+
+            if bounces > 0 and world != null:
+                var balls_arr = []
+                if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                    balls_arr = world.balls
+                elif typeof(world) == TYPE_OBJECT and "balls" in world:
+                    balls_arr = world.balls
+
+                var owner_id = self.ball.owner_id if "owner_id" in self.ball else -1
+                for other in balls_arr:
+                    var o_alive = true
+                    if typeof(other) == TYPE_DICTIONARY and other.has("alive"): o_alive = other.alive
+                    elif typeof(other) == TYPE_OBJECT and "alive" in other: o_alive = other.alive
+                    if not o_alive: continue
+
+                    var o_id = -1
+                    if typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other.id
+                    elif typeof(other) == TYPE_OBJECT and "id" in other: o_id = other.id
+
+                    if o_id == self.ball.id or o_id == owner_id:
+                        continue
+
+                    var o_x = 0
+                    var o_y = 0
+                    var o_r = 15.0
+                    if typeof(other) == TYPE_DICTIONARY:
+                        o_x = other.get("x", 0)
+                        o_y = other.get("y", 0)
+                        o_r = other.get("radius", 15.0)
+                    else:
+                        o_x = other.x if "x" in other else 0
+                        o_y = other.y if "y" in other else 0
+                        o_r = other.radius if "radius" in other else 15.0
+
+                    var dist_sq = (self.ball.x - o_x) * (self.ball.x - o_x) + (self.ball.y - o_y) * (self.ball.y - o_y)
+                    var r_sum = r + o_r
+
+                    if dist_sq < r_sum * r_sum:
+                        var last_hit = self.ball.last_hit_id if "last_hit_id" in self.ball else -1
+                        var base_dmg = self.ball.base_damage if "base_damage" in self.ball else 10.0
+                        var dmg = base_dmg
+                        if o_id == last_hit:
+                            dmg = (self.ball.damage if "damage" in self.ball else base_dmg) * 2.0
+
+                        self.ball.damage = dmg
+                        self.ball.last_hit_id = o_id
+
+                        if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+                            world._deal_damage(self.ball, other, dmg)
+                        elif typeof(other) == TYPE_OBJECT and other.has_method("take_damage"):
+                            other.take_damage(dmg)
+                        else:
+                            if typeof(other) == TYPE_DICTIONARY and other.has("hp"):
+                                other["hp"] -= dmg
+                            elif typeof(other) == TYPE_OBJECT and "hp" in other:
+                                other.hp -= dmg
+
+                        if typeof(other) == TYPE_DICTIONARY:
+                            other["slow_timer"] = other.get("slow_timer", 0.0) + 1.0
+                        elif typeof(other) == TYPE_OBJECT:
+                            if "slow_timer" in other:
+                                other.slow_timer += 1.0
+                            else:
+                                other.set_meta("slow_timer", 1.0)
+
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.0001:
+                            var nx = (self.ball.x - o_x) / dist
+                            var ny = (self.ball.y - o_y) / dist
+                            var dot = self.ball.vx * nx + self.ball.vy * ny
+                            if dot < 0:
+                                self.ball.vx = self.ball.vx - 2 * dot * nx
+                                self.ball.vy = self.ball.vy - 2 * dot * ny
+                        else:
+                            self.ball.vx *= -1
+                            self.ball.vy *= -1
+
+                        bounces -= 1
+                        self.ball.bounces_left = bounces
+                        break
+            if bounces <= 0:
+                self.ball.alive = false
+            return
+
     var b_type = ""
     if typeof(self.ball) == TYPE_OBJECT:
         if "ball_type" in self.ball:
@@ -10324,6 +10592,40 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "ricochet":
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
+
+                                var laser = {}
+                                laser["id"] = world.next_id if "next_id" in world else 99999 + randi() % 10000
+                                if "next_id" in world:
+                                    world.next_id += 1
+                                laser["ball_type"] = "projectile"
+                                laser["is_ricochet_laser"] = true
+                                laser["owner_id"] = hazard.get_meta("owner_id") if hazard.has_method("has_meta") and hazard.has_meta("owner_id") else (hazard.owner_id if "owner_id" in hazard else -1)
+                                laser["team"] = hazard.get_meta("owner_team") if hazard.has_method("has_meta") and hazard.has_meta("owner_team") else (hazard.owner_team if "owner_team" in hazard else "")
+                                var dmg = hazard.get_meta("damage") if hazard.has_method("has_meta") and hazard.has_meta("damage") else (hazard.damage if "damage" in hazard else 10.0)
+                                laser["damage"] = dmg
+                                laser["base_damage"] = dmg
+                                laser["bounces_left"] = 5
+                                laser["last_hit_id"] = -1
+                                laser["duration"] = 10.0
+                                laser["alive"] = true
+                                laser["x"] = hazard.x
+                                laser["y"] = hazard.y
+                                laser["radius"] = 5.0
+                                var dx = self.ball.x - hazard.x
+                                var dy = self.ball.y - hazard.y
+                                var dist = sqrt(dx*dx + dy*dy)
+                                if dist > 0.0001:
+                                    laser["vx"] = (dx/dist) * 500.0
+                                    laser["vy"] = (dy/dist) * 500.0
+                                else:
+                                    laser["vx"] = 500.0
+                                    laser["vy"] = 0.0
+                                world.balls.append(laser)
                             elif trap_variant == "chain_lightning":
                                 var current_damage = 25.0
                                 if "damage" in hazard and hazard.damage > 0:
