@@ -15215,6 +15215,123 @@ class BlackoutEventMode(GameMode):
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)
 
 
+class BlacksmithBossMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Blacksmith Boss"
+        self.description = "Players collect scattered anvil pieces to summon a powerful blacksmith boss that drops legendary loot."
+        self.anvil_pieces_spawned = False
+        self.anvil_pieces_collected = 0
+        self.boss_spawned = False
+        self.boss_summon_effect = False
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "boosters"):
+            world.boosters = []
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        self.anvil_pieces_spawned = False
+        self.anvil_pieces_collected = 0
+        self.boss_spawned = False
+        self.boss_summon_effect = False
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+
+        # Spawn anvil pieces at the beginning
+        if not self.anvil_pieces_spawned:
+            self.anvil_pieces_spawned = True
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+            # Spawn 3 anvil pieces
+            for i in range(3):
+                x = random.uniform(100, getattr(world.arena, "width", 1000) - 100)
+                y = random.uniform(100, getattr(world.arena, "height", 1000) - 100)
+                anvil = Hazard(id=len(world.arena.hazards) + 9000 + i, x=x, y=y, radius=15.0, kind="anvil_piece", damage=0.0)
+                anvil.active = True
+                world.arena.hazards.append(anvil)
+                world.boosters.append(anvil)
+
+        # Check if boss should be summoned
+        if self.anvil_pieces_collected >= 3 and not self.boss_spawned:
+            self.boss_spawned = True
+
+            boss_id = 9999
+
+            try:
+                from system.item_manager import MockBall
+                boss = MockBall(boss_id, getattr(world.arena, "width", 1000) / 2, getattr(world.arena, "height", 1000) / 2)
+            except ImportError:
+                class GenericBoss:
+                    pass
+                boss = GenericBoss()
+                boss.id = boss_id
+                boss.x = getattr(world.arena, "width", 1000) / 2
+                boss.y = getattr(world.arena, "height", 1000) / 2
+
+            boss.ball_type = "blacksmith"
+            boss.name = "Blacksmith Boss"
+            boss.is_world_boss = True
+            boss.team = "boss"
+            boss.max_hp = 2000.0
+            boss.hp = boss.max_hp
+            boss.damage = 30.0
+            boss.base_damage = 30.0
+            boss.speed = 80.0
+            boss.base_speed = 80.0
+            boss.radius = 40.0
+            boss.alive = True
+            boss.drop_booster = "legendary_loot"
+            boss.traits = ["fire", "metal"]
+
+            world.balls.append(boss)
+            if hasattr(world, "add_event"):
+                world.add_event("world_boss_spawned", {"boss_id": boss_id, "boss_type": "blacksmith", "message": "The Blacksmith Boss has been summoned!"})
+
+        # Handle boss death
+        if self.boss_spawned:
+            boss = next((b for b in world.balls if getattr(b, "ball_type", "") == "blacksmith"), None)
+            if boss and not getattr(boss, "alive", True) and not getattr(boss, "_loot_dropped", False):
+                boss._loot_dropped = True
+                if hasattr(world, "boosters"):
+                    try:
+                        from ai.game_modes import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+
+                    x = getattr(boss, "x", getattr(world.arena, "width", 1000) / 2)
+                    y = getattr(boss, "y", getattr(world.arena, "height", 1000) / 2)
+                    loot = Hazard(id=len(world.arena.hazards) + 9500, x=x, y=y, radius=20.0, kind="legendary_loot", damage=0.0)
+                    loot.active = True
+                    world.arena.hazards.append(loot)
+                    world.boosters.append(loot)
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("boss_defeated", {"message": "The Blacksmith Boss was defeated! Legendary loot dropped!"})
+
+
 class WeaponCollectionMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -17165,7 +17282,8 @@ GAME_MODES = {
     "time_rewind": TimeRewindMode(),
     "rhythm_panels": RhythmPanelsMode(),
     "cursed_buff_zone": CursedBuffZoneMode(),
-    "weapon_collection": WeaponCollectionMode()
+    "weapon_collection": WeaponCollectionMode(),
+    "blacksmith_boss": BlacksmithBossMode()
 }
 
 try:

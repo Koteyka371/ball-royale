@@ -24680,6 +24680,154 @@ class BlackoutEventMode extends GameMode:
 						b.perception_radius = base_perc
 
 
+class BlacksmithBossMode extends GameMode:
+	var anvil_pieces_spawned = false
+	var anvil_pieces_collected = 0
+	var boss_spawned = false
+
+	func _init():
+		name = "Blacksmith Boss"
+		description = "Players collect scattered anvil pieces to summon a powerful blacksmith boss that drops legendary loot."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		anvil_pieces_spawned = false
+		anvil_pieces_collected = 0
+		boss_spawned = false
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var world_dict = typeof(world) == TYPE_DICTIONARY
+		var arena = world.get("arena", {}) if world_dict else world.arena if "arena" in world else {}
+		var width = arena.get("width", 1000) if typeof(arena) == TYPE_DICTIONARY else arena.width if "width" in arena else 1000
+		var height = arena.get("height", 1000) if typeof(arena) == TYPE_DICTIONARY else arena.height if "height" in arena else 1000
+		var hazards = arena.get("hazards", []) if typeof(arena) == TYPE_DICTIONARY else arena.hazards if "hazards" in arena else []
+		var boosters = world.get("boosters", []) if world_dict else world.boosters if "boosters" in world else []
+
+		if not anvil_pieces_spawned:
+			anvil_pieces_spawned = true
+			for i in range(3):
+				var x = randf_range(100, width - 100)
+				var y = randf_range(100, height - 100)
+				var anvil_id = hazards.size() + 9000 + i
+
+				var anvil_piece = {
+					"id": anvil_id,
+					"x": x,
+					"y": y,
+					"radius": 15.0,
+					"kind": "anvil_piece",
+					"damage": 0.0,
+					"active": true
+				}
+
+				if typeof(arena) == TYPE_OBJECT:
+					var h = load("res://src/ai/game_modes.gd").Hazard.new(anvil_id, x, y, 15.0, "anvil_piece", 0.0)
+					h.set_meta("active", true)
+					hazards.append(h)
+					boosters.append(h)
+				else:
+					hazards.append(anvil_piece)
+					boosters.append(anvil_piece)
+
+		if anvil_pieces_collected >= 3 and not boss_spawned:
+			boss_spawned = true
+			var boss_id = 9999
+
+			if typeof(world) == TYPE_DICTIONARY:
+				var boss = {
+					"id": boss_id,
+					"x": width / 2.0,
+					"y": height / 2.0,
+					"ball_type": "blacksmith",
+					"name": "Blacksmith Boss",
+					"is_world_boss": true,
+					"team": "boss",
+					"max_hp": 2000.0,
+					"hp": 2000.0,
+					"damage": 30.0,
+					"base_damage": 30.0,
+					"speed": 80.0,
+					"base_speed": 80.0,
+					"radius": 40.0,
+					"alive": true,
+					"drop_booster": "legendary_loot",
+					"traits": ["fire", "metal"]
+				}
+				balls.append(boss)
+				if world.has("events"):
+					world.events.append({"type": "world_boss_spawned", "data": {"boss_id": boss_id, "boss_type": "blacksmith", "message": "The Blacksmith Boss has been summoned!"}})
+			elif typeof(world) == TYPE_OBJECT:
+				var boss = load("res://src/system/item_manager.gd").MockBall.new(boss_id, width / 2.0, height / 2.0) if ResourceLoader.exists("res://src/system/item_manager.gd") else null
+				if boss != null:
+					boss.set_meta("ball_type", "blacksmith")
+					boss.set_meta("name", "Blacksmith Boss")
+					boss.set_meta("is_world_boss", true)
+					boss.set_meta("team", "boss")
+					boss.set_meta("max_hp", 2000.0)
+					boss.set_meta("hp", 2000.0)
+					boss.set_meta("damage", 30.0)
+					boss.set_meta("base_damage", 30.0)
+					boss.set_meta("speed", 80.0)
+					boss.set_meta("base_speed", 80.0)
+					boss.set_meta("radius", 40.0)
+					boss.set_meta("alive", true)
+					boss.set_meta("drop_booster", "legendary_loot")
+					boss.set_meta("traits", ["fire", "metal"])
+					balls.append(boss)
+					if "events" in world:
+						world.events.append({"type": "world_boss_spawned", "data": {"boss_id": boss_id, "boss_type": "blacksmith", "message": "The Blacksmith Boss has been summoned!"}})
+				else:
+					# Fallback for dict when node script doesn't exist
+					pass
+
+		if boss_spawned:
+			var boss = null
+			for b in balls:
+				var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("ball_type") else ""
+				if b_type == "blacksmith":
+					boss = b
+					break
+
+			if boss != null:
+				var is_alive = boss.get("alive", true) if typeof(boss) == TYPE_DICTIONARY else boss.get_meta("alive") if typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("alive") else boss.alive if "alive" in boss else true
+				var loot_dropped = boss.get("_loot_dropped", false) if typeof(boss) == TYPE_DICTIONARY else boss.get_meta("_loot_dropped") if typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("_loot_dropped") else false
+
+				if not is_alive and not loot_dropped:
+					if typeof(boss) == TYPE_DICTIONARY:
+						boss["_loot_dropped"] = true
+					elif typeof(boss) == TYPE_OBJECT and boss.has_method("set_meta"):
+						boss.set_meta("_loot_dropped", true)
+
+					var bx = boss.get("x", width / 2.0) if typeof(boss) == TYPE_DICTIONARY else boss.get_meta("x") if typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("x") else boss.x if "x" in boss else width / 2.0
+					var by = boss.get("y", height / 2.0) if typeof(boss) == TYPE_DICTIONARY else boss.get_meta("y") if typeof(boss) == TYPE_OBJECT and boss.has_method("get_meta") and boss.has_meta("y") else boss.y if "y" in boss else height / 2.0
+					var loot_id = hazards.size() + 9500
+
+					if typeof(arena) == TYPE_DICTIONARY:
+						var loot = {
+							"id": loot_id,
+							"x": bx,
+							"y": by,
+							"radius": 20.0,
+							"kind": "legendary_loot",
+							"damage": 0.0,
+							"active": true
+						}
+						hazards.append(loot)
+						boosters.append(loot)
+					else:
+						var h = load("res://src/ai/game_modes.gd").Hazard.new(loot_id, bx, by, 20.0, "legendary_loot", 0.0)
+						h.set_meta("active", true)
+						hazards.append(h)
+						boosters.append(h)
+
+					if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+						world.events.append({"type": "boss_defeated", "data": {"message": "The Blacksmith Boss was defeated! Legendary loot dropped!"}})
+					elif typeof(world) == TYPE_OBJECT and "events" in world:
+						world.events.append({"type": "boss_defeated", "data": {"message": "The Blacksmith Boss was defeated! Legendary loot dropped!"}})
+
+
 class WeaponCollectionMode extends GameMode:
 	var weapon_spawn_timer = 0.0
 
@@ -28421,6 +28569,7 @@ var GAME_MODES = {
 	"rhythm_panels": RhythmPanelsMode.new(),
 	"cursed_buff_zone": CursedBuffZoneMode.new(),
 	"weapon_collection": WeaponCollectionMode.new(),
+	"blacksmith_boss": BlacksmithBossMode.new(),
 	"soul_link": SoulLinkMode.new(),
 	"clan_tournament": ClanTournamentMode.new(),
 	"tag_team": TagTeamMode.new(),
