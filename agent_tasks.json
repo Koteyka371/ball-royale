@@ -25821,6 +25821,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1508",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shatter Mine",
+      "description": "A deployable hazard that mimics a reflect shield visually but shatters immediately upon contact, stunning all nearby enemies without dealing damage.",
+      "allowed_paths": [
+        "src/ai/shatter_mine.py",
+        "src/ai/shatter_mine.gd",
+        "tests/test_shatter_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1509",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Reflect",
+      "description": "A new reflect shield variant that stores absorbed damage and converts it into healing over time for the user, rather than reflecting it back.",
+      "allowed_paths": [
+        "src/ai/quantum_reflect.py",
+        "src/ai/quantum_reflect.gd",
+        "tests/test_quantum_reflect.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
