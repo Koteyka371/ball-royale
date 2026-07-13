@@ -101,3 +101,56 @@ def test_guild_boss_fight_mode_end_match():
     mode.end_match(world, balls)
 
     assert gm.recorded_damage == 1000.0
+
+def test_guild_boss_weakness_assignment():
+    mode = GuildBossFightMode(week_id="week_1")
+    world = MockWorld()
+    boss = MockBallGuildBoss(1, 0, 0)
+    mode.setup(world, [boss])
+
+    assert hasattr(boss, "weakness")
+    assert boss.weakness in ["fire", "water", "earth", "electric", "ice", "wind"]
+
+from ai.action import Action
+class MockAttacker:
+    def __init__(self, ball_type, damage):
+        self.ball_type = ball_type
+        self.damage = damage
+        self.x = 0
+        self.y = 0
+
+class MockActionWorld:
+    def _deal_damage(self, attacker, target):
+        if hasattr(target, "take_damage"):
+            target.take_damage(attacker.damage)
+        else:
+            target.hp -= attacker.damage
+
+class MockTarget:
+    def __init__(self, hp, weakness):
+        self.hp = hp
+        self.max_hp = hp
+        self.weakness = weakness
+        self.x = 10
+        self.y = 10
+        self.team = "Boss"
+
+def test_guild_boss_weakness_damage_multiplier():
+    action = Action(MockAttacker('water', 10.0), MockActionWorld())
+    action.world = MockActionWorld()
+
+    target = MockTarget(100.0, "fire")
+    attacker_normal = MockAttacker("water", 10.0)
+    attacker_normal.team = "Hunters"
+
+    # Test normal damage
+    action._attempt_damage(attacker_normal, target)
+    assert target.hp == 90.0
+
+    target.hp = 100.0
+    attacker_fire = MockAttacker("fire", 10.0)
+    attacker_fire.team = "Hunters"
+
+    # Test weakness damage (should deal 10 * 1.5 = 15 damage)
+    action._attempt_damage(attacker_fire, target)
+    assert target.hp == 85.0

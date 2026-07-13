@@ -3964,6 +3964,24 @@ class GuildBossFightMode extends GameMode:
 			elif boss.has_meta("mass"):
 				boss.set_meta("mass", boss.get_meta("mass") * 10.0)
 
+				var elements = ["fire", "water", "earth", "electric", "ice", "wind"]
+				var ctx = HashingContext.new()
+				ctx.start(HashingContext.HASH_MD5)
+				ctx.update(week_id.to_utf8_buffer())
+				var res = ctx.finish()
+				var hex_str = res.hex_encode()
+				# GDScript doesn't have a direct large hex to int, let's take a substring for modulo
+				var h_int = hex_str.substr(0, 8).hex_to_int()
+				var boss_weakness = elements[h_int % elements.size()]
+
+				if typeof(boss) == TYPE_DICTIONARY:
+					boss["weakness"] = boss_weakness
+				else:
+					if "weakness" in boss:
+						boss.weakness = boss_weakness
+					elif boss.has_method("set_meta"):
+						boss.set_meta("weakness", boss_weakness)
+
 			for i in range(1, valid_balls.size()):
 				var b = valid_balls[i]
 				b.team = "Hunters"

@@ -2882,6 +2882,13 @@ class GuildBossFightMode(GameMode):
         boss.x = arena_width / 2.0
         boss.y = arena_height / 2.0
 
+        # Weekly weakness
+        elements = ["fire", "water", "earth", "electric", "ice", "wind"]
+        import hashlib
+        week_hash = hashlib.md5(self.week_id.encode('utf-8')).hexdigest()
+        h_int = int(week_hash[:8], 16)
+        boss.weakness = elements[h_int % len(elements)]
+
         # The rest are hunters
         for b in valid_balls[1:]:
             b.team = "Hunters"
