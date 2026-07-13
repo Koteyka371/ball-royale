@@ -28278,7 +28278,119 @@ class SacrificeAltarMode extends GameMode:
 							if world.has_method("add_event"):
 								world.call("add_event", "sacrifice_altar_used", {"ball": b, "altar": altar})
 
+
+class WatchtowerMode extends GameMode:
+	var towers: Array = []
+	var tower_spawn_timer: float = 0.0
+
+	func _init():
+		super._init()
+		name = "Watchtower"
+		description = "Periodically, tall towers rise from the ground. Balls that climb them gain massively increased line of sight and projectile speed, but are immobile while on top."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		towers.clear()
+		tower_spawn_timer = 5.0
+
+	func tick(world, balls, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		tower_spawn_timer -= delta
+		if tower_spawn_timer <= 0:
+			tower_spawn_timer = randf_range(15.0, 30.0)
+			var aw = 1000.0
+			var ah = 1000.0
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					aw = world.arena.get("width", 1000.0)
+					ah = world.arena.get("height", 1000.0)
+				else:
+					aw = world.arena.width
+					ah = world.arena.height
+			elif typeof(world) == TYPE_OBJECT and 'arena' in world and world.arena:
+				aw = world.arena.width
+				ah = world.arena.height
+
+			towers.append({
+				"x": randf_range(100.0, aw - 100.0),
+				"y": randf_range(100.0, ah - 100.0),
+				"radius": 60.0,
+				"duration": randf_range(20.0, 40.0)
+			})
+			if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+				pass
+			elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("tower_spawn", {"message": "A watchtower has risen!"})
+
+		var active_towers = []
+		for t in towers:
+			t["duration"] -= delta
+			if t["duration"] > 0:
+				active_towers.append(t)
+		towers = active_towers
+
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+			else:
+				alive = b.alive if 'alive' in b else false
+
+			if not alive:
+				continue
+
+			var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+
+			var on_tower = false
+			for t in towers:
+				var dist = sqrt(pow(bx - t["x"], 2) + pow(by - t["y"], 2))
+				if dist <= t["radius"]:
+					on_tower = true
+					break
+
+			var currently_on_tower = false
+			if typeof(b) == TYPE_DICTIONARY:
+				currently_on_tower = b.get("_on_watchtower", false)
+			else:
+				currently_on_tower = b.get_meta("_on_watchtower") if b.has_meta("_on_watchtower") else false
+
+			if on_tower:
+				if not currently_on_tower:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["_on_watchtower"] = true
+						b["_watchtower_orig_speed"] = b.get("speed", 100.0)
+						b["_watchtower_orig_vision"] = b.get("vision_radius", 500.0)
+						b["_watchtower_orig_proj_speed"] = b.get("projectile_speed", 300.0)
+						b["speed"] = 0.0
+						b["vision_radius"] = b.get("vision_radius", 500.0) * 3.0
+						b["projectile_speed"] = b.get("projectile_speed", 300.0) * 2.0
+					else:
+						b.set_meta("_on_watchtower", true)
+						b.set_meta("_watchtower_orig_speed", b.speed if 'speed' in b else 100.0)
+						b.set_meta("_watchtower_orig_vision", b.vision_radius if 'vision_radius' in b else 500.0)
+						b.set_meta("_watchtower_orig_proj_speed", b.projectile_speed if 'projectile_speed' in b else 300.0)
+						if 'speed' in b: b.speed = 0.0
+						if 'vision_radius' in b: b.vision_radius = (b.vision_radius if 'vision_radius' in b else 500.0) * 3.0
+						if 'projectile_speed' in b: b.projectile_speed = (b.projectile_speed if 'projectile_speed' in b else 300.0) * 2.0
+			else:
+				if currently_on_tower:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["_on_watchtower"] = false
+						if b.has("_watchtower_orig_speed"): b["speed"] = b["_watchtower_orig_speed"]
+						if b.has("_watchtower_orig_vision"): b["vision_radius"] = b["_watchtower_orig_vision"]
+						if b.has("_watchtower_orig_proj_speed"): b["projectile_speed"] = b["_watchtower_orig_proj_speed"]
+					else:
+						b.set_meta("_on_watchtower", false)
+						if b.has_meta("_watchtower_orig_speed"): b.speed = b.get_meta("_watchtower_orig_speed")
+						if b.has_meta("_watchtower_orig_vision"): b.vision_radius = b.get_meta("_watchtower_orig_vision")
+						if b.has_meta("_watchtower_orig_proj_speed"): b.projectile_speed = b.get_meta("_watchtower_orig_proj_speed")
+
+
 var GAME_MODES = {
+	"watchtower": WatchtowerMode.new(),
+
 	"stationary_turrets": StationaryTurretsMode.new(),
 
 	"scorching_sun": ScorchingSunMode.new(),

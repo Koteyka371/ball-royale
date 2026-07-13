@@ -29,6 +29,8 @@ class MockBall:
             self.alive = False
 
 def test_sector_collapse_mode():
+    import random
+    random.seed(42)
     mode = GAME_MODES["sector_collapse"]
     world = MockWorld()
     b1 = MockBall(1)
