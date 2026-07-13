@@ -1810,10 +1810,18 @@ class BattleRoyaleMode extends GameMode:
 		if self.get("zone_radius") <= 250.0 and not self.get("final_boss_spawned"):
 			self.set("final_boss_spawned", true)
 
+			var season_num = 1
+			if "leaderboard_manager" in world and world.leaderboard_manager != null:
+				season_num = world.leaderboard_manager.data.get("current_season", 1)
+			elif "profile_manager" in world and world.profile_manager != null:
+				if "leaderboard_manager" in world.profile_manager and world.profile_manager.leaderboard_manager != null:
+					season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+			var season_index = ((season_num - 1) % 4) + 1
+
 			var boss_type = "juggernaut"
-			if weather in ["snow", "blizzard"]:
+			if season_index == 4 or weather in ["snow", "blizzard"]:
 				boss_type = "yeti"
-			elif weather == "sandstorm" and not is_imm:
+			elif season_index == 2 or (weather in ["heatwave", "sandstorm"] and not is_imm):
 				boss_type = "sandworm"
 
 			var new_boss = {}

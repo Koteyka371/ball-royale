@@ -1297,10 +1297,17 @@ class BattleRoyaleMode(GameMode):
         if self.zone_radius <= 250.0 and not getattr(self, "final_boss_spawned", False):
             self.final_boss_spawned = True
 
+            season_num = 1
+            if hasattr(world, "leaderboard_manager"):
+                season_num = world.leaderboard_manager.data.get("current_season", 1)
+            elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
+                season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
+            season_index = ((season_num - 1) % 4) + 1
+
             boss_type = "juggernaut"
-            if self.weather in ["snow", "blizzard"]:
+            if season_index == 4 or self.weather in ["snow", "blizzard"]:
                 boss_type = "yeti"
-            elif self.weather == "sandstorm":
+            elif season_index == 2 or self.weather in ["heatwave", "sandstorm"]:
                 boss_type = "sandworm"
 
             class FinalBoss:
