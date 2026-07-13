@@ -15838,6 +15838,31 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx >= 0:
                         self.world.boosters.remove_at(idx)
+            elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "sticky_mine_booster":
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var mine = null
+                    if load("res://src/arena/procedural_arena.gd") != null:
+                        mine = load("res://src/arena/procedural_arena.gd").Hazard.new()
+
+                    if mine != null:
+                        mine.id = self.world.arena.hazards.size() + 50000
+                        mine.x = self.ball.x if "x" in self.ball else (self.ball.get_meta("x") if self.ball.has_method("get_meta") and self.ball.has_meta("x") else 0.0)
+                        mine.y = self.ball.y if "y" in self.ball else (self.ball.get_meta("y") if self.ball.has_method("get_meta") and self.ball.has_meta("y") else 0.0)
+                        mine.radius = 20.0
+                        mine.kind = "sticky_mine"
+                        mine.set_meta("duration", 10.0)
+                        var bid = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if self.ball.has_method("get_meta") and self.ball.has_meta("id") else null)
+                        mine.set_meta("owner_id", bid)
+                        mine.set_meta("attached_id", null)
+                        self.world.arena.hazards.append(mine)
+
+                    var h_idx = self.world.arena.hazards.find(nearest)
+                    if h_idx != -1:
+                        self.world.arena.hazards.remove_at(h_idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx >= 0:
+                        self.world.boosters.remove_at(idx)
             elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "ghost_mode_booster":
                 if typeof(self.ball) == TYPE_DICTIONARY:
                     self.ball["ghost_mode_timer"] = 5.0
@@ -15884,6 +15909,27 @@ func _collect_booster(delta: float):
                 if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
                     var h_idx = self.world.arena.hazards.find(nearest)
                     if h_idx >= 0:
+                        self.world.arena.hazards.remove_at(h_idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx >= 0:
+                        self.world.boosters.remove_at(idx)
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "sticky_mine_booster":
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var mine = {}
+                    mine["id"] = self.world.arena.hazards.size() + 50000
+                    mine["x"] = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.x if "x" in self.ball else 0.0)
+                    mine["y"] = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.y if "y" in self.ball else 0.0)
+                    mine["radius"] = 20.0
+                    mine["kind"] = "sticky_mine"
+                    mine["duration"] = 10.0
+                    var bid = self.ball.get("id", null) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.id if "id" in self.ball else null)
+                    mine["owner_id"] = bid
+                    mine["attached_id"] = null
+                    self.world.arena.hazards.append(mine)
+
+                    var h_idx = self.world.arena.hazards.find(nearest)
+                    if h_idx != -1:
                         self.world.arena.hazards.remove_at(h_idx)
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
@@ -23739,6 +23785,154 @@ func _update_skill_timer(delta: float):
                 var h_kind = ""
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+
+
+                if h_kind == "sticky_mine":
+                    var h_duration = hazard.duration if "duration" in hazard else (hazard.get_meta("duration") if hazard.has_method("get_meta") and hazard.has_meta("duration") else 0.0)
+                    if h_duration > 0:
+                        h_duration -= delta
+                        if hazard.has_method("set_meta") and hazard.has_meta("duration"):
+                            hazard.set_meta("duration", h_duration)
+                        elif "duration" in hazard:
+                            hazard.duration = h_duration
+
+                        if h_duration <= 0:
+                            if hazard.has_method("set_meta") and hazard.has_meta("duration"): hazard.set_meta("duration", 0.0)
+                            elif "duration" in hazard: hazard.duration = 0.0
+
+                            var h_idx = self.world.arena.hazards.find(hazard)
+                            if h_idx != -1:
+                                self.world.arena.hazards.remove_at(h_idx)
+
+                            var explosion_radius = 80.0
+                            var explosion_damage = 50.0
+                            if self.world != null and "balls" in self.world:
+                                for b in self.world.balls:
+                                    var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        b_alive = b.get("alive", false)
+
+                                    if b_alive:
+                                        var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+                                        var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            bx = b.get("x", 0.0)
+                                            by = b.get("y", 0.0)
+                                        var hx = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
+                                        var hy = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
+                                        if typeof(hazard) == TYPE_DICTIONARY:
+                                            hx = hazard.get("x", 0.0)
+                                            hy = hazard.get("y", 0.0)
+
+                                        var dx = hx - bx
+                                        var dy = hy - by
+                                        if dx * dx + dy * dy <= explosion_radius * explosion_radius:
+                                            if b.has_method("take_damage"):
+                                                b.take_damage(explosion_damage)
+                                            elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+                                                b["hp"] -= explosion_damage
+                                                if b["hp"] <= 0:
+                                                    b["alive"] = false
+                                                    b["killer"] = hazard.owner_id if "owner_id" in hazard else (hazard.get_meta("owner_id") if hazard.has_method("get_meta") and hazard.has_meta("owner_id") else null)
+                                            elif "hp" in b:
+                                                b.hp -= explosion_damage
+                                                if b.hp <= 0:
+                                                    b.alive = false
+                                                    if "killer" in b: b.killer = hazard.owner_id if "owner_id" in hazard else (hazard.get_meta("owner_id") if hazard.has_method("get_meta") and hazard.has_meta("owner_id") else null)
+
+                            if self.world != null and "events" in self.world:
+                                var hx = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
+                                var hy = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hx = hazard.get("x", 0.0)
+                                    hy = hazard.get("y", 0.0)
+                                self.world.events.append({"type": "explosion", "data": {"x": hx, "y": hy, "radius": explosion_radius}})
+                        else:
+                            var attached_id = hazard.attached_id if "attached_id" in hazard else (hazard.get_meta("attached_id") if hazard.has_method("get_meta") and hazard.has_meta("attached_id") else null)
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                attached_id = hazard.get("attached_id", null)
+
+                            if attached_id == null:
+                                if self.world != null and "balls" in self.world:
+                                    for b in self.world.balls:
+                                        var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            b_alive = b.get("alive", false)
+                                        if b_alive:
+                                            var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+                                            var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                bx = b.get("x", 0.0)
+                                                by = b.get("y", 0.0)
+                                            var hx = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
+                                            var hy = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
+                                            if typeof(hazard) == TYPE_DICTIONARY:
+                                                hx = hazard.get("x", 0.0)
+                                                hy = hazard.get("y", 0.0)
+                                            var dist_sq = (hx - bx)*(hx - bx) + (hy - by)*(hy - by)
+                                            if dist_sq < 30.0 * 30.0:
+                                                var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+                                                if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
+                                                if typeof(hazard) == TYPE_DICTIONARY: hazard["attached_id"] = bid
+                                                elif hazard.has_method("set_meta"): hazard.set_meta("attached_id", bid)
+                                                elif "attached_id" in hazard: hazard.attached_id = bid
+                                                break
+                            else:
+                                var current_attached = null
+                                if self.world != null and "balls" in self.world:
+                                    for b in self.world.balls:
+                                        var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+                                        if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
+                                        if bid == attached_id:
+                                            current_attached = b
+                                            break
+                                var ca_alive = false
+                                if current_attached != null:
+                                    ca_alive = current_attached.alive if "alive" in current_attached else (current_attached.get_meta("alive") if current_attached.has_method("get_meta") and current_attached.has_meta("alive") else false)
+                                    if typeof(current_attached) == TYPE_DICTIONARY: ca_alive = current_attached.get("alive", false)
+                                if current_attached != null and ca_alive:
+                                    var cax = current_attached.x if "x" in current_attached else (current_attached.get_meta("x") if current_attached.has_method("get_meta") and current_attached.has_meta("x") else 0.0)
+                                    var cay = current_attached.y if "y" in current_attached else (current_attached.get_meta("y") if current_attached.has_method("get_meta") and current_attached.has_meta("y") else 0.0)
+                                    if typeof(current_attached) == TYPE_DICTIONARY:
+                                        cax = current_attached.get("x", 0.0)
+                                        cay = current_attached.get("y", 0.0)
+                                    if typeof(hazard) == TYPE_DICTIONARY:
+                                        hazard["x"] = cax
+                                        hazard["y"] = cay
+                                    elif hazard.has_method("set_meta") and hazard.has_meta("x"):
+                                        hazard.set_meta("x", cax)
+                                        hazard.set_meta("y", cay)
+                                    elif "x" in hazard:
+                                        hazard.x = cax
+                                        hazard.y = cay
+
+                                    if self.world != null and "balls" in self.world:
+                                        for b in self.world.balls:
+                                            var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+                                            if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
+                                            var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
+                                            if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+                                            if b_alive and bid != attached_id:
+                                                var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+                                                var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+                                                if typeof(b) == TYPE_DICTIONARY:
+                                                    bx = b.get("x", 0.0)
+                                                    by = b.get("y", 0.0)
+                                                var hx = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
+                                                var hy = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
+                                                if typeof(hazard) == TYPE_DICTIONARY:
+                                                    hx = hazard.get("x", 0.0)
+                                                    hy = hazard.get("y", 0.0)
+                                                var dist_sq = (hx - bx)*(hx - bx) + (hy - by)*(hy - by)
+                                                if dist_sq < 40.0 * 40.0:
+                                                    if typeof(hazard) == TYPE_DICTIONARY: hazard["attached_id"] = bid
+                                                    elif hazard.has_method("set_meta"): hazard.set_meta("attached_id", bid)
+                                                    elif "attached_id" in hazard: hazard.attached_id = bid
+                                                    break
+                                else:
+                                    if typeof(hazard) == TYPE_DICTIONARY: hazard["attached_id"] = null
+                                    elif hazard.has_method("set_meta"): hazard.set_meta("attached_id", null)
+                                    elif "attached_id" in hazard: hazard.attached_id = null
 
                 if h_kind == "siphon_latch" and (hazard.target_id if "target_id" in hazard else (hazard.get_meta("target_id") if hazard.has_method("get_meta") and hazard.has_meta("target_id") else -1)) == (self.ball.id if "id" in self.ball else self.ball.get_meta("id")):
                     var h_owner_id = hazard.get_meta("owner_id") if hazard.has_method("get_meta") and hazard.has_meta("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)
