@@ -28076,7 +28076,126 @@ class StationaryTurretsMode extends GameMode:
 								world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": ne_x, "target_y": ne_y})
 
 
+
+class BlackHoleMutatorMode extends GameMode:
+	var bh_id = 999998
+	var pull_strength = 15000.0
+	var max_damage = 50.0
+
+	func _init():
+		super()
+		name = "Black Hole Mutator"
+		description = "A massive black hole spawns in the center, pulling balls and dealing increasing damage the closer they are to the center."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var cx = world.arena.width / 2.0
+		var cy = world.arena.height / 2.0
+
+		var existing = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "massive_black_hole" and h.get("id", null) == bh_id:
+					existing = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "massive_black_hole" and h.get("id") == bh_id:
+					existing = h
+					break
+
+		if not existing:
+			world.arena.hazards.append({
+				"id": bh_id,
+				"x": cx,
+				"y": cy,
+				"radius": 80.0,
+				"kind": "massive_black_hole",
+				"damage": 0.0,
+				"active": true
+			})
+
+		if world.has_method("add_event"):
+			world.add_event("massive_black_hole_spawn", {"message": "A massive black hole spawns in the center!"})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if not "hazards" in world.arena:
+			return
+
+		var bh = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "massive_black_hole" and h.get("id", null) == bh_id:
+					bh = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "massive_black_hole" and h.get("id") == bh_id:
+					bh = h
+					break
+
+		if bh == null:
+			return
+
+		var cx = world.arena.width / 2.0
+		var cy = world.arena.height / 2.0
+		var max_dist = sqrt(cx*cx + cy*cy)
+
+		var bh_x = bh.get("x") if typeof(bh) == TYPE_OBJECT else bh["x"]
+		var bh_y = bh.get("y") if typeof(bh) == TYPE_OBJECT else bh["y"]
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
+
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_OBJECT else b["x"]
+			var by = b.get("y") if typeof(b) == TYPE_OBJECT else b["y"]
+
+			var dx = bh_x - bx
+			var dy = bh_y - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > 0:
+				var force = pull_strength / max(10.0, dist)
+				var pull_x = (dx / dist) * force * delta
+				var pull_y = (dy / dist) * force * delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					if "vx" in b and "vy" in b:
+						b["vx"] += pull_x
+						b["vy"] += pull_y
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_method("get") and b.get("vx") != null and b.get("vy") != null:
+						b.set("vx", b.get("vx") + pull_x)
+						b.set("vy", b.get("vy") + pull_y)
+
+				if dist < max_dist:
+					var damage_multiplier = max(0.0, 1.0 - (dist / max_dist))
+					var damage_amount = max_damage * (damage_multiplier * damage_multiplier) * delta
+					if damage_amount > 0:
+						if typeof(b) == TYPE_DICTIONARY:
+							if "hp" in b:
+								b["hp"] -= damage_amount
+								if b["hp"] <= 0:
+									b["alive"] = false
+						elif typeof(b) == TYPE_OBJECT:
+							if b.has_method("get") and b.get("hp") != null:
+								var new_hp = b.get("hp") - damage_amount
+								b.set("hp", new_hp)
+								if new_hp <= 0:
+									b.set("alive", false)
+
 var GAME_MODES = {
+	"black_hole_mutator": BlackHoleMutatorMode.new(),
 	"stationary_turrets": StationaryTurretsMode.new(),
 
 	"scorching_sun": ScorchingSunMode.new(),

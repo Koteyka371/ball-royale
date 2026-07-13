@@ -16926,7 +16926,91 @@ class StationaryTurretsMode(GameMode):
                         if hasattr(world, "events"):
                             world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": getattr(nearest_enemy, "x", 0.0), "target_y": getattr(nearest_enemy, "y", 0.0)})
 
+
+class BlackHoleMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Black Hole Mutator"
+        self.description = "A massive black hole spawns in the center, pulling balls and dealing increasing damage the closer they are to the center."
+        self.bh_id = 999998
+        self.pull_strength = 15000.0
+        self.max_damage = 50.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        cx = world.arena.width / 2.0
+        cy = world.arena.height / 2.0
+
+        existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "massive_black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not existing:
+            try:
+                from arena.procedural_arena import Hazard
+                bh = Hazard(
+                    id=self.bh_id,
+                    x=cx,
+                    y=cy,
+                    radius=80.0,
+                    kind="massive_black_hole",
+                    damage=0.0
+                )
+            except ImportError:
+                class DummyHazard:
+                    pass
+                bh = DummyHazard()
+                bh.id = self.bh_id
+                bh.x = cx
+                bh.y = cy
+                bh.radius = 80.0
+                bh.kind = "massive_black_hole"
+                bh.damage = 0.0
+                bh.active = True
+            world.arena.hazards.append(bh)
+
+        if hasattr(world, "add_event"):
+            world.add_event("massive_black_hole_spawn", {"message": "A massive black hole spawns in the center!"})
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if not hasattr(world.arena, "hazards"):
+            return
+
+        bh = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "massive_black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not bh:
+            return
+
+        import math
+        cx = world.arena.width / 2.0
+        cy = world.arena.height / 2.0
+        max_dist = math.sqrt(cx*cx + cy*cy)
+
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dx = bh.x - b.x
+            dy = bh.y - b.y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > 0:
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    force = self.pull_strength / max(10.0, dist)
+                    b.vx += (dx / dist) * force * delta
+                    b.vy += (dy / dist) * force * delta
+
+                if dist < max_dist:
+                    damage_multiplier = max(0.0, 1.0 - (dist / max_dist))
+                    damage_amount = self.max_damage * (damage_multiplier * damage_multiplier) * delta
+                    if damage_amount > 0:
+                        if hasattr(b, "hp"):
+                            b.hp -= damage_amount
+                            if b.hp <= 0:
+                                b.alive = False
+
 GAME_MODES = {
+    "black_hole_mutator": BlackHoleMutatorMode(),
     "stationary_turrets": StationaryTurretsMode(),
 
     'scorching_sun': ScorchingSunMode(),
