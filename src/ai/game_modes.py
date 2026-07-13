@@ -570,6 +570,8 @@ class GameMode:
                     reward = self.calculate_bounty_reward(target_bounty)
                 else:
                     reward = int(base_reward * target_bounty * multiplier)
+                if getattr(killer, "has_cursed_perk", False):
+                    reward = int(reward * 1.5)  # 50% more skill points reward
                 pm.add_skill_points(reward)
                 if hasattr(world, "add_event"):
                     world.add_event("bounty_claimed", {
@@ -956,6 +958,13 @@ class BattleRoyaleMode(GameMode):
                             b.base_max_hp *= 1.1
                             b.max_hp = b.base_max_hp
                             b.hp = b.max_hp
+                        elif perk == "Cursed":
+                            if not hasattr(b, "base_max_hp"):
+                                b.base_max_hp = getattr(b, "max_hp", 100.0)
+                            b.base_max_hp *= 0.9  # Reduce max HP by 10%
+                            b.max_hp = b.base_max_hp
+                            b.hp = b.max_hp
+                            b.has_cursed_perk = True
                         elif perk == "Nimble":
                             if not hasattr(b, "base_speed"):
                                 b.base_speed = getattr(b, "speed", 100.0)
