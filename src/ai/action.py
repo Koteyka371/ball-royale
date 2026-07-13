@@ -2942,7 +2942,7 @@ class Action:
                                     if b.hp <= 0:
                                         b.alive = False
                 if hasattr(self.world, "events"):
-                    self.world.events.append({'type': 'explosion', 'data': {'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0}})
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'mimic_clone_explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0}})
 
             self._clamp_position()
             return

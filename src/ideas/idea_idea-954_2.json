@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Explosions",
+  "description": "Add an elemental interaction where explosions triggered near specific environmental hazards (e.g. poison clouds) deal enhanced damage over a larger area, encouraging strategic positioning of skills like 'explosion' or 'nemesis_explosion'."
+}

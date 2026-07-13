@@ -4385,9 +4385,9 @@ func execute(strategy: String, delta: float):
 				if "y" in self.ball: my = self.ball.y
 				elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my = self.ball.get_meta("y")
 				if world != null and "events" in world:
-					world.events.append({"type": "explosion", "data": {"x": mx, "y": my, "radius": 60.0}})
+					world.events.append({"type": "visual_effect", "data": {"type": "mimic_clone_explosion", "x": mx, "y": my, "radius": 60.0}})
 				elif world != null and world.has_method("add_event"):
-					world.add_event("explosion", {"x": mx, "y": my, "radius": 60.0})
+					world.add_event("visual_effect", {"type": "mimic_clone_explosion", "x": mx, "y": my, "radius": 60.0})
 		self._clamp_position()
 		return
 
@@ -21914,6 +21914,14 @@ func _spawn_skill_particles(skill_name: String = ""):
             particles.initial_velocity_min = 200.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.initial_velocity_max = 250.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.color = Color(1.0, 0.0, 1.0, 1.0) # Nemesis purple/pink explosion
+            particles.lifetime = 0.5 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.explosiveness = 1.0
+        elif skill_name == "mimic_clone_explosion":
+            particles.amount = int(70 * tier_multiplier)
+            particles.spread = 360.0
+            particles.initial_velocity_min = 180.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.initial_velocity_max = 220.0 * (1.0 + (tier_multiplier - 1.0) * 0.2)
+            particles.color = Color(0.1, 0.9, 0.5, 1.0) # Distinct teal/green explosion for mimic clone
             particles.lifetime = 0.5 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 1.0
         elif skill_name == "explosion":

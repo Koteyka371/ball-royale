@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Confusion Mechanic",
+  "description": "Introduce a small probability for normal AI logic (e.g. tracking closest enemy) to occasionally lock onto mimic clones and other decoys instead of players for a short duration, enhancing the deceptive utility of clones in busy combat scenarios."
+}
