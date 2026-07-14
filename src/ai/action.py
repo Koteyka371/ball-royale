@@ -735,6 +735,11 @@ class Action:
 
         new_hp = getattr(target, "hp", 0.0)
 
+        damage_dealt_general = max(0, old_hp - new_hp)
+        if damage_dealt_general > 0 and getattr(attacker, "has_vampiric_aura", False):
+            heal_amount = damage_dealt_general * 0.5
+            attacker.hp = min(getattr(attacker, 'hp', 100.0) + heal_amount, getattr(attacker, 'max_hp', 100.0))
+
         if b_type_attacker == 'leech':
             damage_dealt = max(0, old_hp - new_hp)
             if damage_dealt > 0:
@@ -8900,6 +8905,13 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "vampiric_aura_booster":
+                    self.ball.vampiric_aura_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "blood_magic_booster":
                     self.ball.blood_magic_timer = getattr(self.ball, "blood_magic_timer", 0.0) + 15.0
                     self.ball._prev_skill_timer = getattr(self.ball, "skill_timer", 0.0)
@@ -12673,6 +12685,18 @@ class Action:
 
         is_cursed_aura = getattr(self.ball, "cursed_aura_event_active", False)
 
+        # Check for vampiric aura
+        has_vampiric_aura = False
+        if getattr(self.ball, "vampiric_aura_timer", 0.0) > 0:
+            self.ball.vampiric_aura_timer -= delta
+            has_vampiric_aura = True
+        else:
+            for f in nearby_friendlies:
+                if getattr(f, "vampiric_aura_timer", 0.0) > 0:
+                    has_vampiric_aura = True
+                    break
+        self.ball.has_vampiric_aura = has_vampiric_aura
+
         # Apply buffs based on stack count
         if is_cursed_aura and stack_count >= 1:
             # Under cursed aura event, stacking penalizes with scaling damage
@@ -12685,7 +12709,7 @@ class Action:
                 if self.ball.hp <= 0:
                     self.ball.hp = 0
                     self.ball.alive = False
-        elif stack_count >= 1:
+        elif stack_count >= 1 and not has_vampiric_aura:
             # 1 extra type: HP regen
             self.ball.hp = min(getattr(self.ball, "hp", 100.0) + (2.0 * aura_multiplier) * delta, getattr(self.ball, "max_hp", 100.0))
 
@@ -12703,7 +12727,7 @@ class Action:
                     speed_penalty = 0.2
                 self.ball.speed = base_s * speed_penalty
             else:
-                if stack_count >= 2:
+                if stack_count >= 2 and not has_vampiric_aura:
                     # 2 extra types: Speed boost
                     self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier)
                 else:
@@ -12714,7 +12738,7 @@ class Action:
                 # Normal damage, no buff
                 self.ball.damage = base_d
             else:
-                if stack_count >= 3:
+                if stack_count >= 3 and not has_vampiric_aura:
                     # 3 extra types: Damage boost
                     self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier)
                 else:
@@ -12728,9 +12752,9 @@ class Action:
                 # Day max buff: 1.2x speed, 1.5x damage (Paladin/Guardian)
                 # Combined: 1.5x speed, 2.0x damage for ALL classes
 
-                if stack_count >= 2: self.ball.speed = base_s * 1.5 * 1.1
+                if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.5 * 1.1
                 else: self.ball.speed = base_s * 1.5
-                if stack_count >= 3: self.ball.damage = base_d * 2.0 * 1.2
+                if stack_count >= 3 and not has_vampiric_aura: self.ball.damage = base_d * 2.0 * 1.2
                 else: self.ball.damage = base_d * 2.0
             elif is_night:
                 if ball_type == "vampire":
@@ -12739,9 +12763,9 @@ class Action:
                         self.ball.speed = base_s * 1.5 * speed_penalty
                         self.ball.damage = base_d * 1.5
                     else:
-                        if stack_count >= 2: self.ball.speed = base_s * 1.5 * 1.1
+                        if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.5 * 1.1
                         else: self.ball.speed = base_s * 1.5
-                        if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
+                        if stack_count >= 3 and not has_vampiric_aura: self.ball.damage = base_d * 1.5 * 1.2
                         else: self.ball.damage = base_d * 1.5
                 elif ball_type in ["assassin", "phantom"]:
                     if is_cursed_aura and stack_count >= 1:
@@ -12749,12 +12773,12 @@ class Action:
                         self.ball.speed = base_s * 1.2 * speed_penalty
                         self.ball.damage = base_d * 1.5
                     else:
-                        if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
+                        if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.2 * 1.1
                         else: self.ball.speed = base_s * 1.2
-                        if stack_count >= 3: self.ball.damage = base_d * 1.5 * 1.2
+                        if stack_count >= 3 and not has_vampiric_aura: self.ball.damage = base_d * 1.5 * 1.2
                         else: self.ball.damage = base_d * 1.5
                 else:
-                    if stack_count < 3: self.ball.damage = base_d
+                    if stack_count < 3 or has_vampiric_aura: self.ball.damage = base_d
             else:
                 # normal mode - in execute it says: self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.2 during day
                 # So we must add 1.2 here for regular day damage bump for all balls if not stacked 3 times. If stacked 3 times, we multiply the base * 1.2 day bump * 1.2 stack bump
@@ -12768,13 +12792,13 @@ class Action:
                         speed_penalty = max(0.2, 1.0 - (0.1 * stack_count))
                         self.ball.speed = base_s * 1.2 * speed_penalty
                     else:
-                        if stack_count >= 2: self.ball.speed = base_s * 1.2 * 1.1
+                        if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.2 * 1.1
                         else: self.ball.speed = base_s * 1.2
 
                 if is_cursed_aura and stack_count >= 1:
                     self.ball.damage = base_d * day_multiplier
                 else:
-                    if stack_count >= 3:
+                    if stack_count >= 3 and not has_vampiric_aura:
                         self.ball.damage = base_d * day_multiplier * 1.2
                     else:
                         self.ball.damage = base_d * day_multiplier
@@ -13081,7 +13105,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

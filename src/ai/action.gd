@@ -21706,7 +21706,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster", "anvil_piece", "legendary_loot"]:
+                    if not kind in ["vampiric_aura_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster", "anvil_piece", "legendary_loot"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -23073,6 +23073,38 @@ func _apply_friendly_aura(delta: float):
         if "cursed_aura_event_active" in self.ball:
             is_cursed_aura = self.ball.cursed_aura_event_active
 
+    var has_vampiric_aura = false
+    var v_timer = 0.0
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vampiric_aura_timer"):
+        v_timer = self.ball.vampiric_aura_timer
+    elif typeof(self.ball) == TYPE_OBJECT and "vampiric_aura_timer" in self.ball:
+        v_timer = self.ball.vampiric_aura_timer
+
+    if v_timer > 0:
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball.vampiric_aura_timer = max(0.0, self.ball.vampiric_aura_timer - delta)
+        elif typeof(self.ball) == TYPE_OBJECT:
+            self.ball.vampiric_aura_timer = max(0.0, self.ball.vampiric_aura_timer - delta)
+        has_vampiric_aura = true
+    else:
+        for f in nearby_friendlies:
+            var f_v_timer = 0.0
+            if typeof(f) == TYPE_DICTIONARY and f.has("vampiric_aura_timer"):
+                f_v_timer = f.vampiric_aura_timer
+            elif typeof(f) == TYPE_OBJECT and "vampiric_aura_timer" in f:
+                f_v_timer = f.vampiric_aura_timer
+            if f_v_timer > 0:
+                has_vampiric_aura = true
+                break
+
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        self.ball["has_vampiric_aura"] = has_vampiric_aura
+    elif typeof(self.ball) == TYPE_OBJECT:
+        if self.ball.has_method("set_meta"):
+            self.ball.set_meta("has_vampiric_aura", has_vampiric_aura)
+        if "has_vampiric_aura" in self.ball:
+            self.ball.has_vampiric_aura = has_vampiric_aura
+
     # Apply buffs based on stack count
     if is_cursed_aura and stack_count >= 1:
         var damage = (2.0 * stack_count) * delta
@@ -23087,7 +23119,7 @@ func _apply_friendly_aura(delta: float):
                 if self.ball.hp <= 0:
                     self.ball.hp = 0
                     self.ball.alive = false
-    elif stack_count >= 1:
+    elif stack_count >= 1 and not has_vampiric_aura:
         # 1 extra type: HP regen
         var max_hp = 100.0
         if "max_hp" in self.ball:
@@ -23122,7 +23154,7 @@ func _apply_friendly_aura(delta: float):
             if "speed" in self.ball:
                 self.ball.speed = base_s * speed_penalty
         else:
-            if stack_count >= 2:
+            if stack_count >= 2 and not has_vampiric_aura:
                 if "speed" in self.ball:
                     self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier)
             else:
@@ -23133,7 +23165,7 @@ func _apply_friendly_aura(delta: float):
             if "damage" in self.ball:
                 self.ball.damage = base_d
         else:
-            if stack_count >= 3:
+            if stack_count >= 3 and not has_vampiric_aura:
                 if "damage" in self.ball:
                     self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier)
             else:
@@ -23151,11 +23183,11 @@ func _apply_friendly_aura(delta: float):
                 if "speed" in self.ball: self.ball.speed = base_s * 1.5 * speed_penalty
                 if "damage" in self.ball: self.ball.damage = base_d * 2.0
             else:
-                if stack_count >= 2:
+                if stack_count >= 2 and not has_vampiric_aura:
                     if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier)
                 else:
                     if "speed" in self.ball: self.ball.speed = base_s * 1.5
-                if stack_count >= 3:
+                if stack_count >= 3 and not has_vampiric_aura:
                     if "damage" in self.ball: self.ball.damage = base_d * 2.0 * (1.0 + 0.2 * aura_multiplier)
                 else:
                     if "damage" in self.ball: self.ball.damage = base_d * 2.0
@@ -23167,11 +23199,11 @@ func _apply_friendly_aura(delta: float):
                     if "speed" in self.ball: self.ball.speed = base_s * 1.5 * speed_penalty
                     if "damage" in self.ball: self.ball.damage = base_d * 1.5
                 else:
-                    if stack_count >= 2:
+                    if stack_count >= 2 and not has_vampiric_aura:
                         if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier)
                     else:
                         if "speed" in self.ball: self.ball.speed = base_s * 1.5
-                    if stack_count >= 3:
+                    if stack_count >= 3 and not has_vampiric_aura:
                         if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier)
                     else:
                         if "damage" in self.ball: self.ball.damage = base_d * 1.5
@@ -23182,16 +23214,16 @@ func _apply_friendly_aura(delta: float):
                     if "speed" in self.ball: self.ball.speed = base_s * 1.2 * speed_penalty
                     if "damage" in self.ball: self.ball.damage = base_d * 1.5
                 else:
-                    if stack_count >= 2:
+                    if stack_count >= 2 and not has_vampiric_aura:
                         if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier)
                     else:
                         if "speed" in self.ball: self.ball.speed = base_s * 1.2
-                    if stack_count >= 3:
+                    if stack_count >= 3 and not has_vampiric_aura:
                         if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier)
                     else:
                         if "damage" in self.ball: self.ball.damage = base_d * 1.5
             else:
-                if stack_count < 3:
+                if stack_count < 3 or has_vampiric_aura:
                     if "damage" in self.ball: self.ball.damage = base_d
         else:
             var day_mult = 1.0
@@ -23209,7 +23241,7 @@ func _apply_friendly_aura(delta: float):
                         if speed_penalty < 0.2: speed_penalty = 0.2
                         if "speed" in self.ball: self.ball.speed = base_s * 1.2 * speed_penalty
                     else:
-                        if stack_count >= 2:
+                        if stack_count >= 2 and not has_vampiric_aura:
                             if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier)
                         else:
                             if "speed" in self.ball: self.ball.speed = base_s * 1.2
@@ -23217,7 +23249,7 @@ func _apply_friendly_aura(delta: float):
             if is_cursed_aura and stack_count >= 1:
                 if "damage" in self.ball: self.ball.damage = base_d * day_mult
             else:
-                if stack_count >= 3:
+                if stack_count >= 3 and not has_vampiric_aura:
                     if "damage" in self.ball: self.ball.damage = base_d * day_mult * (1.0 + 0.2 * aura_multiplier)
                 else:
                     if "damage" in self.ball: self.ball.damage = base_d * day_mult
@@ -23953,7 +23985,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot"]
+                var pullable = ["vampiric_aura_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
