@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-933] Reverse Gravity Mode — *2026-07-14 16:44:36 UTC*
+
+Periodically inverts gravity causing balls to fall upwards, requiring them to use ceilings instead of floors.
+
+---
+
 ## [idea-946] Overcharge Game Mode — *2026-07-14 16:44:29 UTC*
 
 A mode where all stats (speed, health, damage) start at 200% but slowly decay down to 50% over the course of the match. Healing items become rare, forcing players to play aggressively early on to secure a lead.
