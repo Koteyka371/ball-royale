@@ -15837,6 +15837,148 @@ class ShrinkingBoundaryMode(GameMode):
 
 
 
+class EntangledArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Entangled Arena"
+        self.description = "An arena mode where random pairs of players become 'entangled'. Damage taken by one is partially shared with the other, but they also share healing and buffs. They can choose to cooperate to take down enemies together or risk hurting themselves by attacking their entangled partner."
+        self.prev_state = {}
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+
+    class BallState:
+        def __init__(self, hp, vx, vy):
+            self.hp = hp
+            self.vx = vx
+            self.vy = vy
+
+    def _init_prev_state(self, b):
+        state = self.BallState(getattr(b, "hp", 100.0), getattr(b, "vx", 0.0), getattr(b, "vy", 0.0))
+        for eff in self.status_effects:
+            setattr(state, eff, getattr(b, eff, 0.0))
+        self.prev_state[b.id] = state
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        random.shuffle(alive_balls)
+
+        for i in range(0, len(alive_balls) - 1, 2):
+            b1 = alive_balls[i]
+            b2 = alive_balls[i+1]
+            b1.random_entangled_with = b2
+            b2.random_entangled_with = b1
+
+        if len(alive_balls) % 2 != 0:
+            alive_balls[-1].random_entangled_with = None
+
+        self.prev_state = {}
+        for b in balls:
+            self._init_prev_state(b)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if getattr(b, "id", None) not in self.prev_state:
+                self._init_prev_state(b)
+
+            state = self.prev_state[b.id]
+            target = getattr(b, "random_entangled_with", None)
+
+            if target and getattr(target, "alive", False):
+                if getattr(target, "id", None) not in self.prev_state:
+                    self._init_prev_state(target)
+                target_state = self.prev_state[target.id]
+
+                # Check HP loss or heal
+                curr_hp = getattr(b, "hp", 100.0)
+                if curr_hp < state.hp:
+                    damage = (state.hp - curr_hp) * 0.5
+                    target_curr_hp = getattr(target, "hp", 100.0)
+                    if target_curr_hp > 0:
+                        if hasattr(target, "take_damage"):
+                            target.take_damage(damage)
+                        else:
+                            target.hp = target_curr_hp - damage
+                            if target.hp <= 0:
+                                target.hp = 0
+                                target.alive = False
+                                if hasattr(b, "killer"):
+                                    target.killer = getattr(b, "killer", None)
+
+                        target_state.hp -= damage
+                        if target_state.hp < 0:
+                            target_state.hp = 0
+
+                        if hasattr(world, "events"):
+                            world.events.append({
+                                'type': 'visual_effect',
+                                'data': {
+                                    'type': 'entangle_damage',
+                                    'x1': getattr(b, "x", 0),
+                                    'y1': getattr(b, "y", 0),
+                                    'x2': getattr(target, "x", 0),
+                                    'y2': getattr(target, "y", 0)
+                                }
+                            })
+
+                elif curr_hp > state.hp:
+                    healing = curr_hp - state.hp
+                    target_curr_hp = getattr(target, "hp", 100.0)
+                    target_max_hp = getattr(target, "max_hp", 100.0)
+                    if target_curr_hp > 0 and target_curr_hp < target_max_hp:
+                        if hasattr(target, "heal"):
+                            target.heal(healing)
+                        else:
+                            target.hp = min(target_curr_hp + healing, target_max_hp)
+
+                        target_state.hp += healing
+                        if target_state.hp > target_max_hp:
+                            target_state.hp = target_max_hp
+
+                        if hasattr(world, "events"):
+                            world.events.append({
+                                'type': 'visual_effect',
+                                'data': {
+                                    'type': 'entangle_heal',
+                                    'x1': getattr(b, "x", 0),
+                                    'y1': getattr(b, "y", 0),
+                                    'x2': getattr(target, "x", 0),
+                                    'y2': getattr(target, "y", 0)
+                                }
+                            })
+
+                # Check knockback
+                curr_vx = getattr(b, "vx", 0.0)
+                curr_vy = getattr(b, "vy", 0.0)
+                if abs(curr_vx - state.vx) > 5.0 or abs(curr_vy - state.vy) > 5.0:
+                    delta_vx = curr_vx - state.vx
+                    delta_vy = curr_vy - state.vy
+
+                    target.vx = getattr(target, "vx", 0.0) + delta_vx
+                    target.vy = getattr(target, "vy", 0.0) + delta_vy
+
+                    target_state.vx += delta_vx
+                    target_state.vy += delta_vy
+
+                # Check status effects
+                for eff in self.status_effects:
+                    curr_eff = getattr(b, eff, 0.0)
+                    state_eff = getattr(state, eff, 0.0)
+                    if curr_eff > state_eff:
+                        delta_eff = curr_eff - state_eff
+                        setattr(target, eff, getattr(target, eff, 0.0) + delta_eff)
+                        setattr(target_state, eff, getattr(target_state, eff, 0.0) + delta_eff)
+
+            self._init_prev_state(b)
+
+
+
+
 class EntanglementMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -17344,6 +17486,7 @@ GAME_MODES = {
     'sticky_arena': StickyArenaMode(),
     "falling_panels": FallingPanelsMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
+    "entangled_arena": EntangledArenaMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
     "spiked_walls": SpikedWallsMode(),
     "center_vortex": CenterVortexMode(),
