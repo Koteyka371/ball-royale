@@ -18756,6 +18756,10 @@ class TagTeamMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
 
+        for b in balls:
+            if getattr(b, "tag_recent_hit_timer", 0.0) > 0.0:
+                b.tag_recent_hit_timer -= delta
+
         teams = {}
         for b in balls:
             tid = getattr(b, "tag_team_id", None)
@@ -18841,6 +18845,28 @@ class TagTeamMode(GameMode):
                     inactive.team = getattr(inactive, "tag_original_team", "players")
                     inactive.x, inactive.y = active.x, active.y
                     inactive.vx, inactive.vy = getattr(active, "vx", 0.0), getattr(active, "vy", 0.0)
+
+                    # Check for combo
+                    if getattr(active, "tag_recent_hit_timer", 0.0) > 0.0:
+                        if hasattr(world, "events"):
+                            world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': active.x, 'y': active.y, 'radius': 200.0}})
+                        if hasattr(world, "add_event"):
+                            world.add_event("tag_combo", {"type": "tag_combo", "message": "TAG COMBO UNLEASHED!"})
+                        # Apply AOE damage
+                        import math
+                        for b_enemy in balls:
+                            if getattr(b_enemy, "alive", True) and getattr(b_enemy, "team", "") != getattr(active, "team", "") and getattr(b_enemy, "ball_type", "") != "spectator":
+                                dist = math.hypot(b_enemy.x - active.x, b_enemy.y - active.y)
+                                if dist <= 200.0:
+                                    if hasattr(world, "_deal_damage"):
+                                        old_dmg = getattr(active, "damage", 10.0)
+                                        active.damage = 50.0
+                                        world._deal_damage(b_enemy, active)
+                                        active.damage = old_dmg
+                                    elif hasattr(b_enemy, "take_damage"):
+                                        b_enemy.take_damage(50.0)
+                                    elif hasattr(b_enemy, "hp"):
+                                        b_enemy.hp -= 50.0
 
                     # Active becomes inactive
                     active.ball_type = "spectator"

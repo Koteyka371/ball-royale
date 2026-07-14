@@ -486,6 +486,15 @@ func _attempt_damage(attacker, target) -> void:
 								a.hp -= original_dmg
 							return
 
+		var a_tid = attacker.get("tag_team_id") if typeof(attacker) == TYPE_DICTIONARY else (attacker.get_meta("tag_team_id") if attacker.has_method("has_meta") and attacker.has_meta("tag_team_id") else (attacker.tag_team_id if "tag_team_id" in attacker else null))
+		if a_tid != null:
+			if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"):
+				attacker.set_meta("tag_recent_hit_timer", 2.0)
+			elif typeof(attacker) == TYPE_DICTIONARY:
+				attacker["tag_recent_hit_timer"] = 2.0
+			elif typeof(attacker) == TYPE_OBJECT and "tag_recent_hit_timer" in attacker:
+				attacker.tag_recent_hit_timer = 2.0
+
 	var is_ranged_attack = false
 	var a_rad2 = 10.0
 	if "radius" in attacker: a_rad2 = float(attacker.radius)
