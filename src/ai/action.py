@@ -10346,6 +10346,12 @@ class Action:
                         self.ball.poison_timer = 0.0
 
                     self.ball.state_history = []
+            elif skill_name == "lightning_tether":
+                enemies = self._get_enemies()
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    self.ball.lightning_tether_target = target
+                    self.ball.lightning_tether_timer = 5.0
             elif skill_name == "leech_tether":
                 enemies = self._get_enemies()
                 if enemies:
@@ -13613,6 +13619,37 @@ class Action:
                     target.hp -= damage_per_tick
 
             self.ball.tether_hook_timer -= delta
+
+        lightning_tether_timer = getattr(self.ball, "lightning_tether_timer", 0.0)
+        if lightning_tether_timer > 0:
+            target = getattr(self.ball, "lightning_tether_target", None)
+            if target and getattr(target, "alive", True):
+                import math
+                dist_sq = (target.x - self.ball.x)**2 + (target.y - self.ball.y)**2
+                if dist_sq <= 40000.0:  # 200 range
+                    drain_amount = 15.0 * delta
+                    if hasattr(target, "hp"):
+                        target.hp -= drain_amount
+
+                    if hasattr(self, "_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, target, "lightning")
+
+                    enemies = self._get_enemies()
+                    chained = 0
+                    for enemy in enemies:
+                        if enemy == target: continue
+                        edist_sq = (enemy.x - target.x)**2 + (enemy.y - target.y)**2
+                        if edist_sq <= 22500.0: # 150 range from primary target
+                            if hasattr(enemy, "hp"):
+                                enemy.hp -= drain_amount * 0.5
+                            if hasattr(self, "_spawn_directed_particles"):
+                                self._spawn_directed_particles(target, enemy, "chain_lightning")
+                            chained += 1
+                            if chained >= 3:
+                                break
+                else:
+                    self.ball.lightning_tether_timer = 0.0
+            self.ball.lightning_tether_timer = max(0.0, getattr(self.ball, "lightning_tether_timer", 0.0) - delta)
 
         leech_tether_timer = getattr(self.ball, "leech_tether_timer", 0.0)
         if leech_tether_timer > 0:
