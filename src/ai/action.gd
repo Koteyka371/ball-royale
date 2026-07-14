@@ -5343,6 +5343,38 @@ func execute(strategy: String, delta: float):
 	if world != null and "arena" in world and "hazards" in world.arena:
 		for hazard in world.arena.hazards:
 			if hazard.get("kind") == "shrapnel":
+				if not hazard.get("_merged", false):
+					for other in world.arena.hazards:
+						if other != hazard and other.get("kind") == "shrapnel" and not other.get("_merged", false):
+							var h_rad = hazard.get("radius", 5.0)
+							var o_rad = other.get("radius", 5.0)
+							var dx = hazard.get("x", 0.0) - other.get("x", 0.0)
+							var dy = hazard.get("y", 0.0) - other.get("y", 0.0)
+							if sqrt(dx*dx + dy*dy) <= h_rad + o_rad:
+								if typeof(other) == TYPE_DICTIONARY:
+									other["_merged"] = true
+									other["duration"] = 0.0
+									other["radius"] = 0.0
+								else:
+									other._merged = true
+									other.duration = 0.0
+									other.radius = 0.0
+
+								if typeof(hazard) == TYPE_DICTIONARY:
+									hazard["radius"] = min(h_rad + o_rad * 0.5, 20.0)
+									hazard["damage"] = hazard.get("damage", 10.0) + other.get("damage", 10.0) * 0.5
+									hazard["duration"] = max(hazard.get("duration", 5.0), other.get("duration", 5.0)) + 2.0
+								else:
+									hazard.radius = min(h_rad + o_rad * 0.5, 20.0)
+									hazard.damage = hazard.get("damage", 10.0) + other.get("damage", 10.0) * 0.5
+									hazard.duration = max(hazard.get("duration", 5.0), other.get("duration", 5.0)) + 2.0
+
+				if hazard.get("_merged", false):
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hazard["duration"] = 0.0
+					else:
+						hazard.duration = 0.0
+
 				if "duration" in hazard and hazard.duration > 0:
 					hazard.duration -= delta
 					if hazard.duration <= 0:

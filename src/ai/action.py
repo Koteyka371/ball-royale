@@ -2649,7 +2649,27 @@ class Action:
                             hazard.vy *= (1.0 - 2.0 * delta)
 
                 elif getattr(hazard, "kind", "") == "shrapnel":
-                    if getattr(hazard, "duration", 0.0) > 0:
+                    if not getattr(hazard, "_merged", False):
+                        for other in getattr(self.world.arena, "hazards", []):
+                            if other is not hazard and getattr(other, "kind", "") == "shrapnel" and not getattr(other, "_merged", False):
+                                dx = hazard.x - getattr(other, "x", 0.0)
+                                dy = hazard.y - getattr(other, "y", 0.0)
+                                dist = (dx**2 + dy**2)**0.5
+                                h_rad = getattr(hazard, "radius", 5.0)
+                                o_rad = getattr(other, "radius", 5.0)
+                                if dist <= h_rad + o_rad:
+                                    other._merged = True
+                                    other.duration = 0.0
+                                    other.radius = 0.0
+                                    hazard.radius = min(h_rad + o_rad * 0.5, 20.0)
+                                    hazard.damage = getattr(hazard, "damage", 10.0) + getattr(other, "damage", 10.0) * 0.5
+                                    hazard.duration = max(getattr(hazard, "duration", 5.0), getattr(other, "duration", 5.0)) + 2.0
+
+                    # Cleanup merged objects right away
+                    if getattr(hazard, "_merged", False):
+                        hazard.duration = 0.0
+
+                    if getattr(hazard, "duration", 1.0) > 0:
                         hazard.duration -= delta
                         if hazard.duration <= 0:
                             hazard.duration = 0.0

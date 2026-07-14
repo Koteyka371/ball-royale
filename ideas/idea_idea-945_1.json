@@ -1,0 +1,4 @@
+{
+  "title": "Bouncing Laser Hazard",
+  "description": "A hazard that continuously fires a short laser beam which reflects off arena walls and other hazards, dealing high burst damage to anything it intersects."
+}
