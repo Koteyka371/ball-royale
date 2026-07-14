@@ -21040,3 +21040,66 @@ class GridLockdownMode(GameMode):
                         world.add_event("ball_died", {"id": getattr(b, "id", None), "killer_id": -1, "reason": "grid_lockdown_damage"})
 
 GAME_MODES['grid_lockdown'] = GridLockdownMode()
+
+class InversionFieldMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Inversion Field"
+        self.description = "A temporary hazard that spawns and inverses the movement controls for all players or AI entities caught within its radius."
+        self.spawn_timer = 0.0
+        self.spawn_interval = 15.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.spawn_timer += delta
+
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+            x = random.uniform(100, arena_width - 100)
+            y = random.uniform(100, arena_height - 100)
+
+            try:
+                from arena.procedural_arena import Hazard
+                h_obj = Hazard(id=f"inversion_field_{random.randint(1000, 9999)}", x=x, y=y, radius=250.0, kind="inversion_field", damage=0.0)
+            except ImportError:
+                h_obj = type("Hazard", (), {"id": f"inversion_field_{random.randint(1000, 9999)}", "x": x, "y": y, "radius": 250.0, "kind": "inversion_field", "damage": 0.0, "active": True})
+
+            setattr(h_obj, "duration", 8.0)
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards.append(h_obj)
+            if hasattr(world, "add_event"):
+                world.add_event("inversion_field_spawned", {"message": "An inversion field has appeared!"})
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "inversion_field":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            hazards_to_remove.append(h)
+
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            dist = math.hypot(getattr(b, "x", 0.0) - h.x, getattr(b, "y", 0.0) - h.y)
+                            if dist <= getattr(h, "radius", 250.0):
+                                vx = getattr(b, "vx", 0.0)
+                                vy = getattr(b, "vy", 0.0)
+                                b.x -= vx * delta * 2
+                                b.y -= vy * delta * 2
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
+GAME_MODES['inversion_field'] = InversionFieldMode()

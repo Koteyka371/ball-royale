@@ -32964,4 +32964,137 @@ class GridLockdownMode extends GameMode:
 						b.hp = 0
 						b.alive = false
 
+
+class InversionFieldMode extends GameMode:
+	var spawn_timer = 0.0
+	var spawn_interval = 15.0
+
+	func _init() -> void:
+		name = "Inversion Field"
+		description = "A temporary hazard that spawns and inverses the movement controls for all players or AI entities caught within its radius."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		spawn_timer = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		spawn_timer += delta
+
+		if spawn_timer >= spawn_interval:
+			spawn_timer = 0.0
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+
+			var x = randf_range(100.0, max(100.0, arena_width - 100.0))
+			var y = randf_range(100.0, max(100.0, arena_height - 100.0))
+
+			var h_obj = null
+			var HazardClass = null
+			if Engine.has_meta("HazardClass"):
+				HazardClass = Engine.get_meta("HazardClass")
+			else:
+				if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+					var procedural_arena = load("res://src/arena/procedural_arena.gd")
+					if procedural_arena and procedural_arena.has_script_class("Hazard"):
+						HazardClass = procedural_arena.Hazard
+
+			if HazardClass != null:
+				h_obj = HazardClass.new(randi() % 10000 + 1000, x, y, 250.0, "inversion_field", 0.0)
+				if h_obj.has_method("set_meta"):
+					h_obj.set_meta("duration", 8.0)
+				else:
+					h_obj.duration = 8.0
+			else:
+				h_obj = {
+					"id": randi() % 10000 + 1000,
+					"x": x,
+					"y": y,
+					"radius": 250.0,
+					"kind": "inversion_field",
+					"damage": 0.0,
+					"duration": 8.0,
+					"active": true
+				}
+
+			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+				world.arena.hazards.append(h_obj)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("inversion_field_spawned", {"message": "An inversion field has appeared!"})
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+			var hazards_to_remove = []
+			for h in world.arena.hazards:
+				var kind = ""
+				if typeof(h) == TYPE_OBJECT:
+					kind = h.kind if "kind" in h else ""
+				elif typeof(h) == TYPE_DICTIONARY:
+					kind = h.get("kind", "")
+
+				if kind == "inversion_field":
+					var duration = 0.0
+					if typeof(h) == TYPE_OBJECT:
+						if h.has_method("has_meta") and h.has_meta("duration"):
+							duration = h.get_meta("duration")
+						elif "duration" in h:
+							duration = h.duration
+					elif typeof(h) == TYPE_DICTIONARY:
+						duration = h.get("duration", 0.0)
+
+					duration -= delta
+
+					if typeof(h) == TYPE_OBJECT:
+						if h.has_method("set_meta"):
+							h.set_meta("duration", duration)
+						elif "duration" in h:
+							h.duration = duration
+					elif typeof(h) == TYPE_DICTIONARY:
+						h["duration"] = duration
+
+					if duration <= 0.0:
+						hazards_to_remove.append(h)
+
+					var h_x = h.x if typeof(h) == TYPE_OBJECT else h.get("x", 0.0)
+					var h_y = h.y if typeof(h) == TYPE_OBJECT else h.get("y", 0.0)
+					var h_radius = h.radius if typeof(h) == TYPE_OBJECT else h.get("radius", 250.0)
+
+					for b in balls:
+						var alive = false
+						if "alive" in b: alive = b.alive
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+
+						if alive:
+							var b_x = b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x") else (b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0))
+							var b_y = b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y") else (b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0))
+							var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+
+							if dist <= h_radius:
+								var vx = 0.0
+								var vy = 0.0
+								if "vx" in b: vx = b.vx
+								elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): vx = b.get_meta("vx")
+								elif typeof(b) == TYPE_DICTIONARY and b.has("vx"): vx = b.vx
+
+								if "vy" in b: vy = b.vy
+								elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vy"): vy = b.get_meta("vy")
+								elif typeof(b) == TYPE_DICTIONARY and b.has("vy"): vy = b.vy
+
+								if "x" in b: b.x -= vx * delta * 2
+								elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("x", b_x - vx * delta * 2)
+								elif typeof(b) == TYPE_DICTIONARY: b["x"] -= vx * delta * 2
+
+								if "y" in b: b.y -= vy * delta * 2
+								elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("y", b_y - vy * delta * 2)
+								elif typeof(b) == TYPE_DICTIONARY: b["y"] -= vy * delta * 2
+
+			for h in hazards_to_remove:
+				world.arena.hazards.erase(h)
+
 GAME_MODES["grid_lockdown"] = GridLockdownMode.new()
+GAME_MODES["inversion_field"] = InversionFieldMode.new()

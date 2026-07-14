@@ -1,0 +1,4 @@
+{
+  "title": "Time Loop Mode",
+  "description": "Every 30 seconds, the entire game state (positions, HP, and cooldowns) rewinds back 10 seconds. However, any hazard placed during the 'undone' time remains active, slowly filling the arena with overlapping timelines of traps and attacks."
+}
