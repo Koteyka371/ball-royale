@@ -28683,6 +28683,281 @@ class WatchtowerMode extends GameMode:
 
 
 
+
+class TickingBombMode extends GameMode:
+	var spawn_timer: float = 0.0
+	var bomb_interval: float = 10.0
+
+	func _init().():
+		name = "Ticking Bomb Mode"
+		description = "Bombs periodically spawn around the map, ticking down until they explode in a massive radius."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		spawn_timer += delta
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_w = world.arena.get("width", 1000.0)
+			arena_h = world.arena.get("height", 1000.0)
+		elif world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_w = world.arena.get("width", 1000.0)
+				arena_h = world.arena.get("height", 1000.0)
+			else:
+				if "width" in world.arena: arena_w = world.arena.width
+				if "height" in world.arena: arena_h = world.arena.height
+
+		if spawn_timer >= bomb_interval:
+			spawn_timer = 0.0
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				var rng = RandomNumberGenerator.new()
+				rng.randomize()
+				var bx = rng.randf_range(100.0, arena_w - 100.0)
+				var by = rng.randf_range(100.0, arena_h - 100.0)
+
+				var bomb = {
+					"id": rng.randi_range(100000, 999999),
+					"x": bx,
+					"y": by,
+					"radius": 30.0,
+					"kind": "ticking_bomb",
+					"duration": 5.0,
+					"damage": 0.0,
+					"active": true
+				}
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("hazards"): world.arena.hazards.append(bomb)
+				else:
+					if "hazards" in world.arena: world.arena.hazards.append(bomb)
+
+		if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+			var hazards_to_remove = []
+			var new_explosions = []
+
+			var hazards = []
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				hazards = world.arena.hazards
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				hazards = world.arena.hazards
+
+			for h in hazards:
+				var h_kind = ""
+				var h_active = true
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.has("kind"): h_kind = h.kind
+					if h.has("active"): h_active = h.active
+				elif typeof(h) == TYPE_OBJECT:
+					if "kind" in h: h_kind = h.kind
+					elif h.has_method("has_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+					if "active" in h: h_active = h.active
+					elif h.has_method("has_meta") and h.has_meta("active"): h_active = h.get_meta("active")
+
+				if h_kind == "explosion":
+					if typeof(h) == TYPE_DICTIONARY and h.has("duration"):
+						h.duration -= delta
+						if h.duration <= 0:
+							hazards_to_remove.append(h)
+					elif typeof(h) == TYPE_OBJECT:
+						var dur = 0.0
+						if "duration" in h: dur = h.duration
+						elif h.has_method("has_meta") and h.has_meta("duration"): dur = h.get_meta("duration")
+
+						dur -= delta
+						if "duration" in h: h.duration = dur
+						elif h.has_method("set_meta"): h.set_meta("duration", dur)
+
+						if dur <= 0:
+							hazards_to_remove.append(h)
+				elif h_kind == "ticking_bomb" and h_active:
+					if typeof(h) == TYPE_DICTIONARY and h.has("duration"):
+						h.duration -= delta
+						if h.duration <= 0:
+							h.active = false
+							hazards_to_remove.append(h)
+
+							var explosion_radius = 250.0
+							var explosion_damage = 50.0
+							var rng = RandomNumberGenerator.new()
+							rng.randomize()
+
+							var exp = {
+								"id": rng.randi_range(100000, 999999),
+								"x": h.get("x", 0.0),
+								"y": h.get("y", 0.0),
+								"radius": explosion_radius,
+								"kind": "explosion",
+								"duration": 0.5,
+								"damage": 0.0,
+								"active": true
+							}
+							new_explosions.append(exp)
+
+							for b in balls:
+								var b_alive = false
+								if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+								else: b_alive = b.get("alive") if "alive" in b else false
+
+								if b_alive:
+									var bx = 0.0
+									var by = 0.0
+									if typeof(b) == TYPE_DICTIONARY:
+										bx = b.get("x", 0.0)
+										by = b.get("y", 0.0)
+									else:
+										if "x" in b: bx = b.x
+										elif b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
+										if "y" in b: by = b.y
+										elif b.has_method("has_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+									var dx = bx - h.get("x", 0.0)
+									var dy = by - h.get("y", 0.0)
+									var dist = sqrt(dx*dx + dy*dy)
+									if dist <= explosion_radius:
+										if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+											b.take_damage(explosion_damage)
+										else:
+											var hp = 100.0
+											if typeof(b) == TYPE_DICTIONARY and b.has("hp"): hp = b.hp
+											elif typeof(b) == TYPE_OBJECT and "hp" in b: hp = b.hp
+											elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"): hp = b.get_meta("hp")
+
+											hp -= explosion_damage
+											if hp <= 0:
+												hp = 0
+												if typeof(b) == TYPE_DICTIONARY: b["alive"] = false
+												elif typeof(b) == TYPE_OBJECT:
+													if "alive" in b: b.alive = false
+													elif b.has_method("set_meta"): b.set_meta("alive", false)
+
+												if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+													var b_id = 0
+													if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+													elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+													elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+													world.add_event("ball_died", {"id": b_id, "killer_id": -1, "reason": "ticking_bomb_explosion"})
+
+												if world != null and typeof(world) == TYPE_OBJECT and "dead_balls" in world:
+													var b_id = 0
+													if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+													elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+													elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+													if not world.dead_balls.has(b_id): world.dead_balls.append(b_id)
+
+											if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp
+											elif typeof(b) == TYPE_OBJECT:
+												if "hp" in b: b.hp = hp
+												elif b.has_method("set_meta"): b.set_meta("hp", hp)
+					elif typeof(h) == TYPE_OBJECT:
+						var dur = 0.0
+						if "duration" in h: dur = h.duration
+						elif h.has_method("has_meta") and h.has_meta("duration"): dur = h.get_meta("duration")
+
+						dur -= delta
+						if "duration" in h: h.duration = dur
+						elif h.has_method("set_meta"): h.set_meta("duration", dur)
+
+						if dur <= 0:
+							if "active" in h: h.active = false
+							elif h.has_method("set_meta"): h.set_meta("active", false)
+							hazards_to_remove.append(h)
+
+							var explosion_radius = 250.0
+							var explosion_damage = 50.0
+							var rng = RandomNumberGenerator.new()
+							rng.randomize()
+
+							var hx = 0.0
+							var hy = 0.0
+							if "x" in h: hx = h.x
+							elif h.has_method("has_meta") and h.has_meta("x"): hx = h.get_meta("x")
+							if "y" in h: hy = h.y
+							elif h.has_method("has_meta") and h.has_meta("y"): hy = h.get_meta("y")
+
+							var exp = {
+								"id": rng.randi_range(100000, 999999),
+								"x": hx,
+								"y": hy,
+								"radius": explosion_radius,
+								"kind": "explosion",
+								"duration": 0.5,
+								"damage": 0.0,
+								"active": true
+							}
+							new_explosions.append(exp)
+
+							for b in balls:
+								var b_alive = false
+								if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+								else: b_alive = b.get("alive") if "alive" in b else false
+
+								if b_alive:
+									var bx = 0.0
+									var by = 0.0
+									if typeof(b) == TYPE_DICTIONARY:
+										bx = b.get("x", 0.0)
+										by = b.get("y", 0.0)
+									else:
+										if "x" in b: bx = b.x
+										elif b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
+										if "y" in b: by = b.y
+										elif b.has_method("has_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+									var dx = bx - hx
+									var dy = by - hy
+									var dist = sqrt(dx*dx + dy*dy)
+									if dist <= explosion_radius:
+										if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+											b.take_damage(explosion_damage)
+										else:
+											var hp = 100.0
+											if typeof(b) == TYPE_DICTIONARY and b.has("hp"): hp = b.hp
+											elif typeof(b) == TYPE_OBJECT and "hp" in b: hp = b.hp
+											elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"): hp = b.get_meta("hp")
+
+											hp -= explosion_damage
+											if hp <= 0:
+												hp = 0
+												if typeof(b) == TYPE_DICTIONARY: b["alive"] = false
+												elif typeof(b) == TYPE_OBJECT:
+													if "alive" in b: b.alive = false
+													elif b.has_method("set_meta"): b.set_meta("alive", false)
+
+												if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+													var b_id = 0
+													if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+													elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+													elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+													world.add_event("ball_died", {"id": b_id, "killer_id": -1, "reason": "ticking_bomb_explosion"})
+
+												if world != null and typeof(world) == TYPE_OBJECT and "dead_balls" in world:
+													var b_id = 0
+													if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+													elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+													elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+													if not world.dead_balls.has(b_id): world.dead_balls.append(b_id)
+
+											if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp
+											elif typeof(b) == TYPE_OBJECT:
+												if "hp" in b: b.hp = hp
+												elif b.has_method("set_meta"): b.set_meta("hp", hp)
+
+			for h in hazards_to_remove:
+				if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+					var idx = world.arena.hazards.find(h)
+					if idx >= 0: world.arena.hazards.remove_at(idx)
+				elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+					var idx = world.arena.hazards.find(h)
+					if idx >= 0: world.arena.hazards.remove_at(idx)
+
+			for exp in new_explosions:
+				if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+					world.arena.hazards.append(exp)
+				elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+					world.arena.hazards.append(exp)
+
+
 class MassiveBlackHoleEventMode extends GameMode:
 	var active = false
 	var timer = 0.0
@@ -28964,6 +29239,7 @@ var GAME_MODES = {
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new(),
 	"underground_tunnels": UndergroundTunnelMode.new(),
 	"massive_black_hole_event": MassiveBlackHoleEventMode.new(),
+	"ticking_bomb": TickingBombMode.new(),
 }
 
 
