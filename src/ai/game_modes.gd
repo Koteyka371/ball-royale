@@ -30663,6 +30663,16 @@ class TagTeamMode extends GameMode:
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		.tick(world, balls, delta)
 
+			for b in balls:
+				var rt = b.get("tag_recent_hit_timer") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("tag_recent_hit_timer") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("tag_recent_hit_timer") else (b.tag_recent_hit_timer if typeof(b) == TYPE_OBJECT and "tag_recent_hit_timer" in b else 0.0))
+				if rt > 0.0:
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("tag_recent_hit_timer", rt - delta)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["tag_recent_hit_timer"] = rt - delta
+					elif typeof(b) == TYPE_OBJECT and "tag_recent_hit_timer" in b:
+						b.tag_recent_hit_timer = rt - delta
+
 		var teams = {}
 		for b in balls:
 			var tid = null
@@ -30897,6 +30907,50 @@ class TagTeamMode extends GameMode:
 						inactive["y"] = a_y
 						inactive["vx"] = a_vx
 						inactive["vy"] = a_vy
+
+						var active_rt = active.get("tag_recent_hit_timer") if typeof(active) == TYPE_DICTIONARY else (active.get_meta("tag_recent_hit_timer") if typeof(active) == TYPE_OBJECT and active.has_method("has_meta") and active.has_meta("tag_recent_hit_timer") else (active.tag_recent_hit_timer if typeof(active) == TYPE_OBJECT and "tag_recent_hit_timer" in active else 0.0))
+						if active_rt > 0.0:
+							if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+								world["events"].append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': a_x, 'y': a_y, 'radius': 200.0}})
+							elif typeof(world) == TYPE_OBJECT and "events" in world:
+								world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': a_x, 'y': a_y, 'radius': 200.0}})
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("tag_combo", {"type": "tag_combo", "message": "TAG COMBO UNLEASHED!"})
+
+							var a_team = active.get("team") if typeof(active) == TYPE_DICTIONARY else (active.get("team") if "team" in active else "players")
+
+							for b_enemy in balls:
+								var e_alive = b_enemy.get("alive") if typeof(b_enemy) == TYPE_DICTIONARY else (b_enemy.get("alive") if "alive" in b_enemy else false)
+								var e_team = b_enemy.get("team") if typeof(b_enemy) == TYPE_DICTIONARY else (b_enemy.get("team") if "team" in b_enemy else "")
+								var e_type = b_enemy.get("ball_type") if typeof(b_enemy) == TYPE_DICTIONARY else (b_enemy.get("ball_type") if "ball_type" in b_enemy else "")
+
+								if e_alive and e_team != a_team and e_type != "spectator":
+									var ex = b_enemy.get("x") if typeof(b_enemy) == TYPE_DICTIONARY else (b_enemy.get("x") if "x" in b_enemy else 0.0)
+									var ey = b_enemy.get("y") if typeof(b_enemy) == TYPE_DICTIONARY else (b_enemy.get("y") if "y" in b_enemy else 0.0)
+									var dist = sqrt((ex - a_x) * (ex - a_x) + (ey - a_y) * (ey - a_y))
+									if dist <= 200.0:
+										if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+											var old_dmg = 10.0
+											if typeof(active) == TYPE_OBJECT and "damage" in active:
+												old_dmg = active.damage
+												active.damage = 50.0
+											elif typeof(active) == TYPE_DICTIONARY and active.has("damage"):
+												old_dmg = active["damage"]
+												active["damage"] = 50.0
+
+											world._deal_damage(b_enemy, active)
+
+											if typeof(active) == TYPE_OBJECT and "damage" in active:
+												active.damage = old_dmg
+											elif typeof(active) == TYPE_DICTIONARY and active.has("damage"):
+												active["damage"] = old_dmg
+										elif typeof(b_enemy) == TYPE_OBJECT and b_enemy.has_method("take_damage"):
+											b_enemy.take_damage(50.0)
+										elif typeof(b_enemy) == TYPE_OBJECT and "hp" in b_enemy:
+											b_enemy.hp -= 50.0
+										elif typeof(b_enemy) == TYPE_DICTIONARY and b_enemy.has("hp"):
+											b_enemy["hp"] -= 50.0
 
 
 

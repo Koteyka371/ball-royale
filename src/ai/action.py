@@ -487,6 +487,9 @@ class Action:
         if random.random() > attack_accuracy:
             return
 
+        if hasattr(attacker, "tag_team_id") or getattr(attacker, "ball_type", "") == "spectator":
+            attacker.tag_recent_hit_timer = 2.0
+
         if is_ranged:
             # Apply slight knockback/recoil to the attacker for evasive movement
             recoil_force = original_damage * 10.0
