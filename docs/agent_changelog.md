@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-946] Overcharge Game Mode — *2026-07-14 16:44:29 UTC*
+
+A mode where all stats (speed, health, damage) start at 200% but slowly decay down to 50% over the course of the match. Healing items become rare, forcing players to play aggressively early on to secure a lead.
+
+---
+
 ## [idea-961] New Hazard: Time Bomb — *2026-07-14 13:11:49 UTC*
 
 A hazard that spawns on the map and slowly ticks down. When it reaches 0, it explodes in a massive radius, damaging anyone caught inside.
