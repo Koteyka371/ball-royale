@@ -16642,7 +16642,7 @@
     },
     {
       "id": "idea-969",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chrono-Stutter Hazard",
@@ -26856,6 +26856,74 @@
         "src/arena/time_loop_trap.py",
         "src/arena/time_loop_trap.gd",
         "tests/test_time_loop_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1569",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blackout Ghost Mode",
+      "description": "The arena is completely pitch black. Balls only become briefly visible when they bounce off walls, take damage, or attack. Attacks are skill shots that temporarily illuminate a small area.",
+      "allowed_paths": [
+        "src/ai/blackout_ghost.py",
+        "src/ai/blackout_ghost.gd",
+        "tests/test_blackout_ghost.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1570",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromantic Area Denial",
+      "description": "A new skill that turns dead enemy remains into volatile poison clouds. The clouds expand over time before detonating, creating strategic choke points.",
+      "allowed_paths": [
+        "src/ai/necromantic_area_denial.py",
+        "src/ai/necromantic_area_denial.gd",
+        "tests/test_necromantic_area_denial.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1571",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Neon Lightcycles Mode",
+      "description": "Balls cannot stop moving and leave a permanent solid light trail behind them. Crossing any trail (including your own) instantly eliminates the ball. The last ball remaining wins.",
+      "allowed_paths": [
+        "src/ai/neon_lightcycles.py",
+        "src/ai/neon_lightcycles.gd",
+        "tests/test_neon_lightcycles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1572",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Leap Traps",
+      "description": "Placeable traps that don't deal damage but randomly teleport the victim across the arena while simultaneously scrambling their controls for a few seconds.",
+      "allowed_paths": [
+        "src/arena/quantum_leap_traps.py",
+        "src/arena/quantum_leap_traps.gd",
+        "tests/test_quantum_leap_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

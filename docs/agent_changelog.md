@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-969] Chrono-Stutter Hazard — *2026-07-14 21:13:36 UTC*
+
+A hazard that periodically saves the position, velocity, and health of any entity that enters it. Every 5 seconds, all affected entities are forcefully rewound back to their saved state, creating a localized 'time stutter' effect that disrupts momentum and strategies.
+
+---
+
 ## [idea-968] Paintball Mode — *2026-07-14 19:39:36 UTC*
 
 A new game mode where attacks do not deal conventional damage. Instead, balls shoot paint splatters that cover the arena floor and other balls. Balls regenerate health rapidly when rolling over their own team's color, and slowly lose health while standing on enemy colors. Walls that are bounced off of also take on the color, creating speed boosts for the owning team.
