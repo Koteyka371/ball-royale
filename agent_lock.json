@@ -83,9 +83,9 @@
     "agent-10": {
       "name": "Jules Worker 10",
       "area": "meta",
-      "task_id": "idea-922",
-      "status": "assigned",
-      "started_at": "2026-07-14T18:12:54.971842+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 1
     },
     "agent-11": {
@@ -179,9 +179,9 @@
     "agent-22": {
       "name": "Jules Worker 22",
       "area": "behaviors",
-      "status": "assigned",
-      "task_id": "idea-970",
-      "started_at": "2026-07-14T18:07:51.673026+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-23": {
