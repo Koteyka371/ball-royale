@@ -29933,6 +29933,171 @@ class ElementalWandererMode extends GameMode:
 					b.speed = base_spd * 1.5
 
 
+
+
+class ChickenCurseMode extends GameMode:
+	var hazard_id_counter: int = 770000
+
+	func _init().():
+		name = "Chicken Curse"
+		description = "A new arena hazard that doesn't deal damage but instead transforms any ball that touches it into a harmless, slow-moving 'chicken' ball for 5 seconds. During this time, the ball cannot use skills or attack, making it highly vulnerable to grouped enemies."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+
+		var arena = world.get("arena") if typeof(world) == TYPE_OBJECT else world.get("arena", null)
+		if arena == null:
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				arena = world["arena"]
+			else:
+				return
+
+		var hazards = []
+		if typeof(arena) == TYPE_DICTIONARY:
+			if not arena.has("hazards"): arena["hazards"] = []
+			hazards = arena["hazards"]
+		elif typeof(arena) == TYPE_OBJECT:
+			if not "hazards" in arena: arena.set("hazards", [])
+			hazards = arena.get("hazards")
+
+		var rng = RandomNumberGenerator.new()
+		rng.randomize()
+
+		for i in range(3):
+			var hx = rng.randf_range(200.0, 800.0)
+			var hy = rng.randf_range(200.0, 800.0)
+			hazard_id_counter += 1
+
+			var hazard_dict = {
+				"id": hazard_id_counter,
+				"x": hx,
+				"y": hy,
+				"radius": 40.0,
+				"kind": "chicken_curse_field",
+				"damage": 0.0,
+				"duration": -1.0,
+				"life": 9999
+			}
+
+			if typeof(hazards) == TYPE_ARRAY:
+				hazards.append(hazard_dict)
+
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				b["chicken_timer"] = 0.0
+				if not b.has("original_base_speed"):
+					b["original_base_speed"] = b.get("base_speed", 100.0)
+				if not b.has("original_base_damage"):
+					b["original_base_damage"] = b.get("base_damage", 10.0)
+			elif typeof(b) == TYPE_OBJECT:
+				b.set_meta("chicken_timer", 0.0)
+				if not b.has_meta("original_base_speed"):
+					b.set_meta("original_base_speed", b.get("base_speed") if "base_speed" in b else 100.0)
+				if not b.has_meta("original_base_damage"):
+					b.set_meta("original_base_damage", b.get("base_damage") if "base_damage" in b else 10.0)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		var arena = world.get("arena") if typeof(world) == TYPE_OBJECT else world.get("arena", null)
+		if arena == null:
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				arena = world["arena"]
+			else:
+				return
+
+		var hazards = []
+		if typeof(arena) == TYPE_DICTIONARY:
+			hazards = arena.get("hazards", [])
+		elif typeof(arena) == TYPE_OBJECT:
+			hazards = arena.get("hazards") if "hazards" in arena else []
+
+		var chicken_hazards = []
+		if typeof(hazards) == TYPE_ARRAY:
+			for h in hazards:
+				var kind = ""
+				if typeof(h) == TYPE_DICTIONARY: kind = h.get("kind", "")
+				elif typeof(h) == TYPE_OBJECT: kind = h.get("kind") if "kind" in h else ""
+				if kind == "chicken_curse_field":
+					chicken_hazards.append(h)
+
+		for b in balls:
+			var active = true
+			if typeof(b) == TYPE_DICTIONARY: active = b.get("active", true)
+			elif typeof(b) == TYPE_OBJECT: active = b.get("active") if "active" in b else true
+			if not active:
+				continue
+
+			var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+			var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+			var b_r = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.get("radius") if "radius" in b else 15.0)
+
+			var in_hazard = false
+			for h in chicken_hazards:
+				var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.get("x") if "x" in h else 0.0)
+				var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.get("y") if "y" in h else 0.0)
+				var h_r = h.get("radius", 40.0) if typeof(h) == TYPE_DICTIONARY else (h.get("radius") if "radius" in h else 40.0)
+
+				var dx = b_x - h_x
+				var dy = b_y - h_y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist < h_r + b_r:
+					in_hazard = true
+					break
+
+			var current_timer = 0.0
+			if typeof(b) == TYPE_DICTIONARY: current_timer = b.get("chicken_timer", 0.0)
+			elif typeof(b) == TYPE_OBJECT: current_timer = b.get_meta("chicken_timer") if b.has_meta("chicken_timer") else 0.0
+
+			if in_hazard:
+				if current_timer <= 0.0:
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.get("id") if "id" in b else 0)
+						world.add_event("chicken_curse", {"ball_id": b_id, "message": "turned into a chicken!"})
+				current_timer = 5.0
+
+			if current_timer > 0.0:
+				current_timer -= delta
+				var orig_speed = b.get("original_base_speed", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("original_base_speed") if b.has_meta("original_base_speed") else 100.0)
+				var orig_dmg = b.get("original_base_damage", 10.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("original_base_damage") if b.has_meta("original_base_damage") else 10.0)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["chicken_timer"] = current_timer
+					b["base_speed"] = orig_speed * 0.3
+					b["speed"] = b["base_speed"]
+					b["base_damage"] = 0.0
+					b["damage"] = 0.0
+					b["can_use_skills"] = false
+					b["can_attack"] = false
+				elif typeof(b) == TYPE_OBJECT:
+					b.set_meta("chicken_timer", current_timer)
+					b.set("base_speed", orig_speed * 0.3)
+					b.set("speed", orig_speed * 0.3)
+					b.set("base_damage", 0.0)
+					b.set("damage", 0.0)
+					b.set("can_use_skills", false)
+					b.set("can_attack", false)
+
+				if current_timer <= 0.0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["base_speed"] = orig_speed
+						b["speed"] = orig_speed
+						b["base_damage"] = orig_dmg
+						b["damage"] = orig_dmg
+						b["can_use_skills"] = true
+						b["can_attack"] = true
+						b["chicken_timer"] = 0.0
+					elif typeof(b) == TYPE_OBJECT:
+						b.set("base_speed", orig_speed)
+						b.set("speed", orig_speed)
+						b.set("base_damage", orig_dmg)
+						b.set("damage", orig_dmg)
+						b.set("can_use_skills", true)
+						b.set("can_attack", true)
+						b.set_meta("chicken_timer", 0.0)
+
+
+
 var GAME_MODES = {
 	"stats_decay": StatsDecayMode.new(),
 	"watchtower": WatchtowerMode.new(),
@@ -33498,3 +33663,4 @@ class PhantomJuggernautMode extends GameMode:
 		return ""
 GAME_MODES["grid_lockdown"] = GridLockdownMode.new()
 GAME_MODES["phantom_juggernaut"] = PhantomJuggernautMode.new()
+GAME_MODES["chicken_curse"] = ChickenCurseMode.new()

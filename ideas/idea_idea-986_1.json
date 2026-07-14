@@ -1,0 +1,4 @@
+{
+  "title": "Shrink Ray Arena",
+  "description": "A game mode where lasers sweep the arena. Any ball hit by a laser permanently shrinks by 10% and loses max HP, but gains speed. Getting hit too many times turns you into a tiny fragile speedster."
+}

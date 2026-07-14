@@ -17859,6 +17859,112 @@ class ElementalWandererMode(GameMode):
                 b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.5
 
 
+
+
+class ChickenCurseMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chicken Curse"
+        self.description = "A new arena hazard that doesn't deal damage but instead transforms any ball that touches it into a harmless, slow-moving 'chicken' ball for 5 seconds. During this time, the ball cannot use skills or attack, making it highly vulnerable to grouped enemies."
+        self.spawn_timer = 0.0
+        self.hazard_id_counter = 770000
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "arena") or not world.arena:
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        # Spawn some chicken curse fields
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.duration = -1.0
+                    self.life = 9999
+
+        for _ in range(3):
+            hx = random.uniform(200, 800)
+            hy = random.uniform(200, 800)
+            self.hazard_id_counter += 1
+            hazard = Hazard(self.hazard_id_counter, hx, hy, 40.0, "chicken_curse_field", 0.0)
+            world.arena.hazards.append(hazard)
+
+        for b in balls:
+            b.chicken_timer = 0.0
+            if not hasattr(b, "original_base_speed"):
+                b.original_base_speed = getattr(b, "base_speed", 100.0)
+            if not hasattr(b, "original_base_damage"):
+                b.original_base_damage = getattr(b, "base_damage", 10.0)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        # Hazard logic is often in action.py, but we can do collision checks here
+        # to apply the chicken curse
+        if not hasattr(world, "arena") or not world.arena:
+            return
+
+        chicken_hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "chicken_curse_field"]
+
+        for b in balls:
+            if not getattr(b, "active", True):
+                continue
+
+            in_hazard = False
+            import math
+            for h in chicken_hazards:
+                dist = math.hypot(b.x - h.x, b.y - h.y)
+                if dist < h.radius + getattr(b, "radius", 15.0):
+                    in_hazard = True
+                    break
+
+            if in_hazard:
+                if getattr(b, "chicken_timer", 0.0) <= 0.0:
+                    # Just transformed
+                    if hasattr(world, "add_event"):
+                        world.add_event("chicken_curse", {"ball_id": b.id, "message": "turned into a chicken!"})
+
+                b.chicken_timer = 5.0
+
+            # Apply or update chicken state
+            current_timer = getattr(b, "chicken_timer", 0.0)
+            if current_timer > 0.0:
+                b.chicken_timer = current_timer - delta
+
+                # Apply slow and harmless
+                b.base_speed = getattr(b, "original_base_speed", 100.0) * 0.3
+                b.speed = b.base_speed
+                b.base_damage = 0.0
+                b.damage = 0.0
+
+                # Prevent skills and attacks
+                # The prompt says "cannot use skills or attack"
+                b.can_use_skills = False
+                b.can_attack = False
+
+                if b.chicken_timer <= 0.0:
+                    # Restore
+                    b.base_speed = getattr(b, "original_base_speed", 100.0)
+                    b.speed = b.base_speed
+                    b.base_damage = getattr(b, "original_base_damage", 10.0)
+                    b.damage = b.base_damage
+                    b.can_use_skills = True
+                    b.can_attack = True
+                    b.chicken_timer = 0.0
+
+
+
+
 GAME_MODES = {
     "stationary_turrets": StationaryTurretsMode(),
 
@@ -21285,3 +21391,5 @@ class PhantomJuggernautMode(GameMode):
 
 GAME_MODES['grid_lockdown'] = GridLockdownMode()
 GAME_MODES['phantom_juggernaut'] = PhantomJuggernautMode()
+
+GAME_MODES["chicken_curse"] = ChickenCurseMode()
