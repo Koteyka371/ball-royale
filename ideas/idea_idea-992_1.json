@@ -1,0 +1,4 @@
+{
+  "title": "Downed Bleed-out Timer",
+  "description": "When a player is downed in Tag Team mode, instead of staying downed indefinitely, they should slowly bleed out (lose max HP) over time until they are fully eliminated. This would force the active player to attempt a revive quickly instead of stalling the game."
+}

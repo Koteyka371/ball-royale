@@ -9,6 +9,7 @@ class MockBall:
         self.vx = 0.0
         self.vy = 0.0
         self.hp = 100.0
+        self.max_hp = 100.0
         self.alive = True
         self.ball_type = "player"
         self.team = "players"
@@ -106,3 +107,56 @@ def test_tag_team_mode():
     assert active.y == -1000.0
 
     assert len(world.events) > 0
+
+def test_tag_team_downed_state_and_revive():
+    mode = GAME_MODES["tag_team"]
+
+    world = MockWorld()
+    b1 = MockBall(1, 10.0, 10.0)
+    b2 = MockBall(2, 20.0, 20.0)
+
+    balls = [b1, b2]
+    mode.setup(world, balls)
+
+    # Identify who is active and who is inactive (spectator)
+    if b1.ball_type == "player":
+        active = b1
+        inactive = b2
+    else:
+        active = b2
+        inactive = b1
+
+    world.dead_balls.append(active.id) # active dies initially in physics tick
+
+    # Simulate taking damage and going to 0 HP
+    active.hp = 0.0
+
+    # Tick the game mode
+    mode.tick(world, balls, delta=0.1)
+
+    # Active should become downed and spectator
+    assert getattr(active, "is_downed", False) == True
+    assert active.hp == 1.0
+    assert active.alive == True
+    assert active.ball_type == "spectator"
+    assert active.id not in world.dead_balls
+
+    # Inactive should be swapped in
+    assert inactive.ball_type == "player"
+    assert inactive.x == active.x + 20.0
+    assert inactive.y == active.y + 20.0
+
+    # Move active (now downed) close to inactive (now active)
+    active.x = inactive.x
+    active.y = inactive.y
+
+    # Revive tick for 2.8 seconds
+    mode.tick(world, balls, delta=2.8)
+    assert getattr(active, "is_downed", False) == True # still downed
+
+    # Revive tick for 0.2 seconds
+    mode.tick(world, balls, delta=0.2)
+    assert getattr(active, "is_downed", False) == False # revived
+    assert active.hp == 50.0
+    assert active.ball_type == "spectator" # stays spectator, inactive is playing
+    assert active.x == -1000.0

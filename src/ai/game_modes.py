@@ -18589,23 +18589,73 @@ class TagTeamMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
 
+        teams = {}
+        for b in balls:
+            tid = getattr(b, "tag_team_id", None)
+            if tid is not None:
+                if tid not in teams:
+                    teams[tid] = []
+                teams[tid].append(b)
+
+        for tid, members in teams.items():
+            if len(members) == 2:
+                for b in members:
+                    if getattr(b, "hp", 100) <= 0 and not getattr(b, "is_downed", False):
+                        other = members[0] if members[1] == b else members[1]
+                        if getattr(other, "is_downed", False) or not getattr(other, "alive", True):
+                            pass
+                        else:
+                            b.is_downed = True
+                            b.alive = True
+                            b.hp = 1.0
+                            b.vx, b.vy = 0.0, 0.0
+                            b.downed_prev_team = getattr(b, "team", "players")
+                            b.team = "spectator"
+                            b.ball_type = "spectator"
+
+                            if hasattr(world, "dead_balls") and getattr(b, "id", -1) in world.dead_balls:
+                                world.dead_balls.remove(b.id)
+
+                            # b's ball_type was just set to spectator, check its PREVIOUS type by checking if other is spectator
+                            if getattr(other, "ball_type", "") == "spectator":
+                                other.ball_type = getattr(other, "tag_original_ball_type", "player")
+                                other.team = getattr(other, "tag_original_team", "players")
+                                other.x, other.y = getattr(b, "x", 0.0) + 20.0, getattr(b, "y", 0.0) + 20.0
+                                other.vx, other.vy = 0.0, 0.0
+                                if hasattr(world, "add_event"):
+                                    world.add_event("tag_swap", {"type": "tag_swap", "message": "Partner Down! Emergency Swap!"})
+
+                downed = next((m for m in members if getattr(m, "is_downed", False)), None)
+                active = next((m for m in members if not getattr(m, "is_downed", False) and getattr(m, "ball_type", "") != "spectator"), None)
+                if downed and active and getattr(active, "alive", False):
+                    downed.vx, downed.vy = 0.0, 0.0
+                    downed.hp = 1.0
+                    downed.alive = True
+                    dist_sq = (getattr(active, "x", 0.0) - getattr(downed, "x", 0.0))**2 + (getattr(active, "y", 0.0) - getattr(downed, "y", 0.0))**2
+                    if dist_sq < 3600.0:
+                        downed.revive_progress = getattr(downed, "revive_progress", 0.0) + delta
+                        if downed.revive_progress >= 3.0:
+                            downed.is_downed = False
+                            downed.revive_progress = 0.0
+                            downed.hp = getattr(downed, "max_hp", 100.0) * 0.5
+                            downed.ball_type = "spectator"
+                            downed.team = "spectator"
+                            downed.x, downed.y = -1000.0, -1000.0
+                            if hasattr(world, "add_event"):
+                                world.add_event("tag_revive", {"type": "tag_revive", "message": "Teammate revived!"})
+                    else:
+                        downed.revive_progress = 0.0
+
         self.swap_timer += delta
         if self.swap_timer >= self.swap_interval:
             self.swap_timer = 0.0
 
-            # Group by team
-            teams = {}
-            for b in balls:
-                if not getattr(b, "alive", False):
-                    continue
-                tid = getattr(b, "tag_team_id", None)
-                if tid is not None:
-                    if tid not in teams:
-                        teams[tid] = []
-                    teams[tid].append(b)
-
             for tid, members in teams.items():
                 if len(members) == 2:
+                    if any(getattr(m, "is_downed", False) for m in members):
+                        continue
+                    if any(not getattr(m, "alive", False) for m in members):
+                        continue
                     b1, b2 = members
                     # Figure out who is active and who is inactive
                     b1_is_spec = getattr(b1, "ball_type", "") == "spectator"
