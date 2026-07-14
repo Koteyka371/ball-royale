@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-964] New Weapon: Repulsor Ray — *2026-07-14 19:05:36 UTC*
+
+A new weapon that pushes enemies away from the user, giving them breathing room and control over positioning.
+
+---
+
 ## [idea-941] Unstable core overload — *2026-07-14 19:05:31 UTC*
 
 If too many entities are sucked into a single unstable portal, it overloads early and the blast radius and damage are significantly multiplied based on capacity.
