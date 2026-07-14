@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-955] Mirror Mirage — *2026-07-14 18:50:07 UTC*
+
+A new ball skill that creates a perfect mirror image clone that mirrors the player's inputs exactly but across the center axis of the arena.
+
+---
+
 ## [idea-956] Laser Gates — *2026-07-14 18:34:26 UTC*
 
 Rotating lasers that slice across the arena.

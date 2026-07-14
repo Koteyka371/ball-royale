@@ -16402,7 +16402,7 @@
     },
     {
       "id": "idea-955",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Mirage",
@@ -26754,6 +26754,40 @@
         "src/ai/dynamic_mutators.py",
         "src/ai/dynamic_mutators.gd",
         "tests/test_dynamic_mutators.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1563",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Grid Survival Mode",
+      "description": "An intense game mode where a grid of static lasers slowly moves across the arena, forcing players to find safe pockets and navigate the grid while fighting enemies.",
+      "allowed_paths": [
+        "src/ai/laser_grid_survival.py",
+        "src/ai/laser_grid_survival.gd",
+        "tests/test_laser_grid_survival.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1564",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Laser Shield Trait",
+      "description": "A new ball trait that absorbs damage from laser hazards and uses it to charge up a devastating focused laser beam attack of its own.",
+      "allowed_paths": [
+        "src/ai/mirror_laser_shield_trait.py",
+        "src/ai/mirror_laser_shield_trait.gd",
+        "tests/test_mirror_laser_shield_trait.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
