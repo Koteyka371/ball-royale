@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-968] Paintball Mode — *2026-07-14 19:39:36 UTC*
+
+A new game mode where attacks do not deal conventional damage. Instead, balls shoot paint splatters that cover the arena floor and other balls. Balls regenerate health rapidly when rolling over their own team's color, and slowly lose health while standing on enemy colors. Walls that are bounced off of also take on the color, creating speed boosts for the owning team.
+
+---
+
 ## [idea-977] Chain Lightning Tether — *2026-07-14 19:39:30 UTC*
 
 A new skill or booster item that shoots a tether of lightning to an enemy. As long as the player stays within range, it continuously deals damage and also chains to nearby enemies for reduced damage.
