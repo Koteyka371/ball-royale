@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone Roulette",
+  "description": "Instead of a single safe zone, multiple small safe zones appear across the map as the overall danger zone shrinks. Periodically, these safe zones 'blink' and randomly deactivate, forcing players to scramble to the remaining ones. Surviving a deactivated safe zone grants a massive temporary speed boost to help escape."
+}

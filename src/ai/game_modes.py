@@ -20188,4 +20188,126 @@ class StatsDecayMode(GameMode):
                             b.active = False
                         b._decay_checked = True
 
+
+class ElementalWandererMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Elemental Wanderer"
+        self.description = "A wandering NPC absorbs elemental hazards to grant powerful buffs to all players!"
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        import random
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        class ElementalNPCBall:
+            def __init__(self):
+                self.x = arena_width / 2.0
+                self.y = arena_height / 2.0
+                self.vx = random.uniform(-50, 50)
+                self.vy = random.uniform(-50, 50)
+                self.radius = 35.0
+                self.max_hp = 1000.0
+                self.hp = 1000.0
+                self.alive = True
+                self.team = "Neutral"
+                self.ball_type = "elemental_wanderer_npc"
+                self.is_invulnerable = True
+                self.current_element = None
+                self.element_timer = 0.0
+
+        self.npc = ElementalNPCBall()
+
+        if not hasattr(world, "arena"):
+            class MockArena:
+                pass
+            world.arena = MockArena()
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        class ElementalHazard:
+            def __init__(self, kind):
+                self.x = random.uniform(100, arena_width - 100)
+                self.y = random.uniform(100, arena_height - 100)
+                self.radius = 60.0
+                self.kind = kind
+                self.active = True
+
+        for kind in ["fire_zone", "ice_zone", "lightning_zone"]:
+            world.arena.hazards.append(ElementalHazard(kind))
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        if not getattr(self.npc, "alive", False):
+            return
+
+        import math
+        import random
+
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        # Move NPC
+        self.npc.x += getattr(self.npc, "vx", 0.0) * delta
+        self.npc.y += getattr(self.npc, "vy", 0.0) * delta
+
+        margin = getattr(self.npc, "radius", 35.0)
+        if self.npc.x < margin or self.npc.x > arena_w - margin:
+            self.npc.vx = -getattr(self.npc, "vx", 0.0)
+            self.npc.x = max(margin, min(self.npc.x, arena_w - margin))
+        if self.npc.y < margin or self.npc.y > arena_h - margin:
+            self.npc.vy = -getattr(self.npc, "vy", 0.0)
+            self.npc.y = max(margin, min(self.npc.y, arena_h - margin))
+
+        # Check element timer
+        if getattr(self.npc, "current_element", None) is not None:
+            self.npc.element_timer -= delta
+            if self.npc.element_timer <= 0:
+                self.npc.current_element = None
+
+        # Check hazards collision
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                kind = getattr(h, "kind", "")
+                if kind in ["fire_zone", "ice_zone", "lightning_zone"]:
+                    dx = self.npc.x - getattr(h, "x", 0.0)
+                    dy = self.npc.y - getattr(h, "y", 0.0)
+                    dist = math.hypot(dx, dy)
+                    if dist <= getattr(self.npc, "radius", 35.0) + getattr(h, "radius", 60.0):
+                        if self.npc.current_element != kind:
+                            self.npc.current_element = kind
+                            self.npc.element_timer = 10.0
+                            if hasattr(world, "events"):
+                                world.events.append({"type": "elemental_npc_absorb", "element": kind})
+
+                            # Apply buff to all alive balls
+                            for b in balls:
+                                if getattr(b, "alive", False):
+                                    if kind == "fire_zone":
+                                        b.damage = getattr(b, "damage", 10.0) * 1.5
+                                        if hasattr(world, "events"):
+                                            world.events.append({"type": "buff", "target_id": getattr(b, "id", None), "buff": "fire_damage"})
+                                    elif kind == "ice_zone":
+                                        b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.5
+                                        if hasattr(world, "events"):
+                                            world.events.append({"type": "buff", "target_id": getattr(b, "id", None), "buff": "ice_armor"})
+                                    elif kind == "lightning_zone":
+                                        b.speed = getattr(b, "speed", 100.0) * 1.5
+                                        if hasattr(world, "events"):
+                                            world.events.append({"type": "buff", "target_id": getattr(b, "id", None), "buff": "lightning_speed"})
+
+                        # Move the hazard so it can be absorbed again somewhere else
+                        h.x = random.uniform(100, arena_w - 100)
+                        h.y = random.uniform(100, arena_h - 100)
+                        break
+
+
 GAME_MODES['stats_decay'] = StatsDecayMode()
+GAME_MODES['elemental_wanderer'] = ElementalWandererMode()

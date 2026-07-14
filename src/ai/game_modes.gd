@@ -29063,6 +29063,7 @@ class MassiveBlackHoleEventMode extends GameMode:
 
 var GAME_MODES = {
 	"stats_decay": StatsDecayMode.new(),
+	"elemental_wanderer": ElementalWandererMode.new(),
 	"watchtower": WatchtowerMode.new(),
 
 	"stationary_turrets": StationaryTurretsMode.new(),
@@ -31732,3 +31733,203 @@ class StatsDecayMode extends GameMode:
 					else:
 						if b is Object:
 							b.set_meta("_decay_checked", true)
+
+
+class ElementalWandererMode extends GameMode:
+	var npc = null
+
+	func _init():
+		super._init()
+		self.name = "Elemental Wanderer"
+		self.description = "A wandering NPC absorbs elemental hazards to grant powerful buffs to all players!"
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if typeof(world) == TYPE_DICTIONARY:
+			if not world.has("dead_balls"):
+				world["dead_balls"] = []
+		elif typeof(world) == TYPE_OBJECT:
+			if not "dead_balls" in world:
+				world.dead_balls = []
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		var arena = null
+
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena = world["arena"]
+		elif typeof(world) == TYPE_OBJECT and "arena" in world:
+			arena = world.arena
+
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				if arena.has("width"): arena_width = arena["width"]
+				if arena.has("height"): arena_height = arena["height"]
+			else:
+				if "width" in arena: arena_width = arena.width
+				if "height" in arena: arena_height = arena.height
+
+		npc = {
+			"x": arena_width / 2.0,
+			"y": arena_height / 2.0,
+			"vx": randf_range(-50.0, 50.0),
+			"vy": randf_range(-50.0, 50.0),
+			"radius": 35.0,
+			"max_hp": 1000.0,
+			"hp": 1000.0,
+			"alive": true,
+			"team": "Neutral",
+			"ball_type": "elemental_wanderer_npc",
+			"is_invulnerable": true,
+			"current_element": null,
+			"element_timer": 0.0
+		}
+
+		var hazards = null
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				if not arena.has("hazards"):
+					arena["hazards"] = []
+				hazards = arena["hazards"]
+			else:
+				if not "hazards" in arena:
+					arena.hazards = []
+				hazards = arena.hazards
+
+		if hazards != null:
+			var kinds = ["fire_zone", "ice_zone", "lightning_zone"]
+			for kind in kinds:
+				hazards.append({
+					"x": randf_range(100.0, arena_width - 100.0),
+					"y": randf_range(100.0, arena_height - 100.0),
+					"radius": 60.0,
+					"kind": kind,
+					"active": true
+				})
+
+	func tick(world, balls, delta = 0.016):
+		if typeof(world) == TYPE_DICTIONARY:
+			if not world.has("dead_balls"): world["dead_balls"] = []
+		elif typeof(world) == TYPE_OBJECT:
+			if not "dead_balls" in world: world.dead_balls = []
+
+		if npc == null or not npc.get("alive", false):
+			return
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		var arena = null
+		var events = null
+
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena"): arena = world["arena"]
+			if world.has("events"): events = world["events"]
+		elif typeof(world) == TYPE_OBJECT:
+			if "arena" in world: arena = world.arena
+			if "events" in world: events = world.events
+
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				if arena.has("width"): arena_w = arena["width"]
+				if arena.has("height"): arena_h = arena["height"]
+			else:
+				if "width" in arena: arena_w = arena.width
+				if "height" in arena: arena_h = arena.height
+
+		# Move NPC
+		npc["x"] += npc.get("vx", 0.0) * delta
+		npc["y"] += npc.get("vy", 0.0) * delta
+
+		var margin = npc.get("radius", 35.0)
+		if npc["x"] < margin or npc["x"] > arena_w - margin:
+			npc["vx"] = -npc.get("vx", 0.0)
+			npc["x"] = max(margin, min(npc["x"], arena_w - margin))
+		if npc["y"] < margin or npc["y"] > arena_h - margin:
+			npc["vy"] = -npc.get("vy", 0.0)
+			npc["y"] = max(margin, min(npc["y"], arena_h - margin))
+
+		# Check element timer
+		if npc.get("current_element") != null:
+			npc["element_timer"] -= delta
+			if npc["element_timer"] <= 0:
+				npc["current_element"] = null
+
+		# Check hazards collision
+		var hazards = null
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
+				hazards = arena["hazards"]
+			elif typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+				hazards = arena.hazards
+
+		if hazards != null:
+			for h in hazards:
+				var kind = ""
+				var hx = 0.0
+				var hy = 0.0
+				var hrad = 60.0
+
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.has("kind"): kind = h["kind"]
+					if h.has("x"): hx = h["x"]
+					if h.has("y"): hy = h["y"]
+					if h.has("radius"): hrad = h["radius"]
+				else:
+					if "kind" in h: kind = h.kind
+					if "x" in h: hx = h.x
+					if "y" in h: hy = h.y
+					if "radius" in h: hrad = h.radius
+
+				if kind == "fire_zone" or kind == "ice_zone" or kind == "lightning_zone":
+					var dx = npc["x"] - hx
+					var dy = npc["y"] - hy
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist <= npc.get("radius", 35.0) + hrad:
+						if npc.get("current_element") != kind:
+							npc["current_element"] = kind
+							npc["element_timer"] = 10.0
+							if events != null:
+								events.append({"type": "elemental_npc_absorb", "element": kind})
+
+							for b in balls:
+								var is_alive = false
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.has("alive"): is_alive = b["alive"]
+								else:
+									if "alive" in b: is_alive = b.alive
+
+								if is_alive:
+									var bid = null
+									if typeof(b) == TYPE_DICTIONARY and b.has("id"): bid = b["id"]
+									elif typeof(b) == TYPE_OBJECT and "id" in b: bid = b.id
+
+									if kind == "fire_zone":
+										if typeof(b) == TYPE_DICTIONARY:
+											if b.has("damage"): b["damage"] = b["damage"] * 1.5
+										else:
+											if "damage" in b: b.damage = b.damage * 1.5
+										if events != null:
+											events.append({"type": "buff", "target_id": bid, "buff": "fire_damage"})
+									elif kind == "ice_zone":
+										if typeof(b) == TYPE_DICTIONARY:
+											if b.has("defense_multiplier"): b["defense_multiplier"] = b["defense_multiplier"] * 0.5
+										else:
+											if "defense_multiplier" in b: b.defense_multiplier = b.defense_multiplier * 0.5
+										if events != null:
+											events.append({"type": "buff", "target_id": bid, "buff": "ice_armor"})
+									elif kind == "lightning_zone":
+										if typeof(b) == TYPE_DICTIONARY:
+											if b.has("speed"): b["speed"] = b["speed"] * 1.5
+										else:
+											if "speed" in b: b.speed = b.speed * 1.5
+										if events != null:
+											events.append({"type": "buff", "target_id": bid, "buff": "lightning_speed"})
+
+						if typeof(h) == TYPE_DICTIONARY:
+							h["x"] = randf_range(100.0, arena_w - 100.0)
+							h["y"] = randf_range(100.0, arena_h - 100.0)
+						else:
+							h.x = randf_range(100.0, arena_w - 100.0)
+							h.y = randf_range(100.0, arena_h - 100.0)
+						break
