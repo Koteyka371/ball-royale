@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-972] Clan Wars and Territory Control — *2026-07-14 17:28:22 UTC*
+
+Introduce a meta-game layer where clans can compete for control over specific arenas or map regions. Controlling a territory grants clan members passive bonuses (e.g., increased resource drops, reduced damage from environmental hazards) within that arena. Territory control can be contested through scheduled Clan War matches where teams from rival clans battle in specialized objective-based modes.
+
+---
+
 ## [idea-952] Blacksmith Ball — *2026-07-14 16:54:31 UTC*
 
 A new ball class that permanently increases its own damage and max health based on the total number of materials it collects during a match.

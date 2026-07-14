@@ -16693,7 +16693,7 @@
     },
     {
       "id": "idea-972",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Wars and Territory Control",
@@ -26565,6 +26565,23 @@
         "src/ai/sticky_ceilings.py",
         "src/ai/sticky_ceilings.gd",
         "tests/test_sticky_ceilings.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1552",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Bomb",
+      "description": "A new deployable hazard that arms after 2 seconds. When triggered, it swaps the positions of the closest ally and the closest enemy within a massive radius, potentially throwing an enemy into a hazard while pulling an ally to safety.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_bomb.py",
+        "src/ai/quantum_swap_bomb.gd",
+        "tests/test_quantum_swap_bomb.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
