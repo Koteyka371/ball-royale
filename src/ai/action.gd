@@ -20311,7 +20311,7 @@ func _use_skill():
                 self.ball.skill_timer = 10.0
 
             var push_radius = 200.0
-            var push_force = 400.0
+            var push_force = 500.0 # Increased force for better breathing room
             if "boosters" in self.world:
                 for b in self.world.boosters:
                     var b_x = 0.0

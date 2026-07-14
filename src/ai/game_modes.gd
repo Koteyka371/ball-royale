@@ -25377,7 +25377,8 @@ class WeaponCollectionMode extends GameMode:
 							"mind_control",
 							"ground_pound",
 							"orbital_shield",
-							"phase_through"
+							"phase_through",
+							"repel_burst"
 						]
 						var selected_ability = abilities[randi() % abilities.size()]
 						if typeof(b) == TYPE_DICTIONARY:

@@ -82,5 +82,6 @@ def test_weapon_collection_pickup():
         "mind_control",
         "ground_pound",
         "orbital_shield",
-        "phase_through"
+        "phase_through",
+        "repel_burst"
     ]
