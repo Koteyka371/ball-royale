@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-984] Laser Grid Sweepers — *2026-07-14 22:29:50 UTC*
+
+Similar to Sweeping Paddles, but instead of physical bouncing paddles, they are solid beam lasers that deal high continuous damage if players touch them, creating intense dodging gameplay.
+
+---
+
 ## [idea-965] Phantom Juggernaut Mode — *2026-07-14 22:13:05 UTC*
 
 A game mode where one player is selected as the Phantom Juggernaut. They have highly increased stats but are permanently invisible. They can only be tracked by the trail of environmental destruction they leave behind or through echolocation skills.

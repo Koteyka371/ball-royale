@@ -16897,7 +16897,7 @@
     },
     {
       "id": "idea-984",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Grid Sweepers",
@@ -26941,6 +26941,40 @@
         "src/ai/kinetic_reversal_zone.py",
         "src/ai/kinetic_reversal_zone.gd",
         "tests/test_kinetic_reversal_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1574",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Juggernaut Mode",
+      "description": "Similar to Juggernaut mode, but the Juggernaut's stats slowly decay over time, pushing players to stay aggressive and preventing endless stalling.",
+      "allowed_paths": [
+        "src/ai/shrinking_juggernaut.py",
+        "src/ai/shrinking_juggernaut.gd",
+        "tests/test_shrinking_juggernaut.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1575",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echolocation Only Mode",
+      "description": "Players cannot see the arena except for a tiny radius. Every few seconds, players emit a sound pulse that reveals enemies and walls momentarily.",
+      "allowed_paths": [
+        "src/ai/echolocation_only.py",
+        "src/ai/echolocation_only.gd",
+        "tests/test_echolocation_only.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
