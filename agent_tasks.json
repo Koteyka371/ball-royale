@@ -16164,7 +16164,7 @@
     },
     {
       "id": "idea-941",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Unstable core overload",
