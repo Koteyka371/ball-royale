@@ -20025,4 +20025,99 @@ class WatchtowerMode(GameMode):
 
 GAME_MODES['watchtower'] = WatchtowerMode()
 
+
+class TickingBombMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Ticking Bomb Mode"
+        self.description = "Bombs periodically spawn around the map, ticking down until they explode in a massive radius."
+        self.spawn_timer = 0.0
+        self.bomb_interval = 10.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import random
+        import math
+        self.spawn_timer += delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        # Spawn logic
+        if self.spawn_timer >= self.bomb_interval:
+            self.spawn_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                class _TickingBombHazard:
+                    def __init__(self, x, y):
+                        self.id = random.randint(100000, 999999)
+                        self.x = x
+                        self.y = y
+                        self.radius = 30.0
+                        self.kind = "ticking_bomb"
+                        self.duration = 5.0
+                        self.damage = 0.0
+                        self.active = True
+
+                bx = random.uniform(100, arena_width - 100)
+                by = random.uniform(100, arena_height - 100)
+                world.arena.hazards.append(_TickingBombHazard(bx, by))
+
+        # Processing ticking bomb hazards
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            new_explosions = []
+
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "explosion":
+                    h.duration -= delta
+                    if h.duration <= 0:
+                        hazards_to_remove.append(h)
+                elif getattr(h, "kind", "") == "ticking_bomb" and getattr(h, "active", True):
+                    h.duration -= delta
+                    if h.duration <= 0:
+                        h.active = False
+                        hazards_to_remove.append(h)
+
+                        # Apply explosion damage
+                        explosion_radius = 250.0
+                        explosion_damage = 50.0
+
+                        # Add a visual explosion effect
+                        class _ExplosionVisual:
+                            def __init__(self, x, y):
+                                self.id = random.randint(100000, 999999)
+                                self.x = x
+                                self.y = y
+                                self.radius = explosion_radius
+                                self.kind = "explosion"
+                                self.duration = 0.5
+                                self.damage = 0.0
+                                self.active = True
+                        new_explosions.append(_ExplosionVisual(h.x, h.y))
+
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                dx = b.x - h.x
+                                dy = b.y - h.y
+                                dist = math.sqrt(dx*dx + dy*dy)
+                                if dist <= explosion_radius:
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(explosion_damage)
+                                    else:
+                                        b.hp -= explosion_damage
+                                        if b.hp <= 0:
+                                            b.hp = 0
+                                            b.alive = False
+                                            if hasattr(world, "add_event"):
+                                                world.add_event("ball_died", {"id": b.id, "killer_id": -1, "reason": "ticking_bomb_explosion"})
+                                            if hasattr(b, "id") and hasattr(world, "dead_balls") and b.id not in world.dead_balls:
+                                                world.dead_balls.append(b.id)
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
+            for exp in new_explosions:
+                world.arena.hazards.append(exp)
+
 GAME_MODES['massive_black_hole_event'] = MassiveBlackHoleEventMode()
+GAME_MODES['ticking_bomb'] = TickingBombMode()
