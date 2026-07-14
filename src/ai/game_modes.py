@@ -20121,3 +20121,104 @@ class TickingBombMode(GameMode):
 
 GAME_MODES['massive_black_hole_event'] = MassiveBlackHoleEventMode()
 GAME_MODES['ticking_bomb'] = TickingBombMode()
+
+
+class PolarityHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Polarity Hazard"
+        self.description = "A new hazard that toggles the polarity of nearby balls. Balls with same polarity repel each other, while balls with opposite polarity attract, adding chaotic physics interactions."
+        self.spawn_timer = 0.0
+        self.hazard_interval = 8.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import random
+        import math
+        self.spawn_timer += delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        if self.spawn_timer >= self.hazard_interval:
+            self.spawn_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                class _PolarityHazard:
+                    def __init__(self, x, y):
+                        self.id = random.randint(100000, 999999)
+                        self.x = x
+                        self.y = y
+                        self.radius = 40.0
+                        self.kind = "polarity_hazard"
+                        self.duration = 10.0
+                        self.active = True
+
+                bx = random.uniform(100, arena_width - 100)
+                by = random.uniform(100, arena_height - 100)
+                world.arena.hazards.append(_PolarityHazard(bx, by))
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "polarity_hazard" and getattr(h, "active", True):
+                    h.duration -= delta
+                    if h.duration <= 0:
+                        h.active = False
+                        hazards_to_remove.append(h)
+                    else:
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                dx = b.x - h.x
+                                dy = b.y - h.y
+                                dist = math.sqrt(dx*dx + dy*dy)
+                                if dist <= h.radius + getattr(b, "radius", 15.0):
+                                    if not hasattr(b, "polarity_cooldown") or b.polarity_cooldown <= 0:
+                                        current_polarity = getattr(b, "polarity", 1)
+                                        b.polarity = -current_polarity
+                                        b.polarity_cooldown = 1.0
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
+        # Apply physics
+        for i, b in enumerate(balls):
+            if not getattr(b, "alive", False): continue
+
+            if hasattr(b, "polarity_cooldown") and b.polarity_cooldown > 0:
+                b.polarity_cooldown -= delta
+
+            if not hasattr(b, "polarity"):
+                b.polarity = 1
+
+            for j in range(i + 1, len(balls)):
+                b2 = balls[j]
+                if not getattr(b2, "alive", False): continue
+                if getattr(b2, "intangible", False) or getattr(b, "intangible", False): continue
+
+                if not hasattr(b2, "polarity"):
+                    b2.polarity = 1
+
+                dx = b2.x - b.x
+                dy = b2.y - b.y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if 0 < dist < 300.0:
+                    force = 5000.0 / (dist * dist)
+                    force = min(force, 100.0)
+
+                    if b.polarity == b2.polarity:
+                        # Repel
+                        fx = -(dx / dist) * force * delta
+                        fy = -(dy / dist) * force * delta
+                    else:
+                        # Attract
+                        fx = (dx / dist) * force * delta
+                        fy = (dy / dist) * force * delta
+
+                    b.vx += fx
+                    b.vy += fy
+                    b2.vx -= fx
+                    b2.vy -= fy
+
+GAME_MODES['polarity_hazard'] = PolarityHazardMode()

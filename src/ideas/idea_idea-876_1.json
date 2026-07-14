@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A hazard that entangles two random balls. Damage taken by one is partially reflected to the other, and their movements are slightly tethered together until the entanglement duration expires."
+}

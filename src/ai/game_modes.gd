@@ -29080,6 +29080,209 @@ class MassiveBlackHoleEventMode extends GameMode:
 											world["dead_balls"].append(b.id)
 
 
+
+class PolarityHazardMode extends GameMode:
+	var spawn_timer: float = 0.0
+	var hazard_interval: float = 8.0
+
+	func _init():
+		name = "Polarity Hazard"
+		description = "A new hazard that toggles the polarity of nearby balls. Balls with same polarity repel each other, while balls with opposite polarity attract, adding chaotic physics interactions."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		spawn_timer += delta
+
+		var arena_width: float = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world["arena"].has("width"):
+			arena_width = world["arena"]["width"]
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and "width" in world.arena:
+			arena_width = world.arena.width
+
+		var arena_height: float = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world["arena"].has("height"):
+			arena_height = world["arena"]["height"]
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and "height" in world.arena:
+			arena_height = world.arena.height
+
+		var hazards = []
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world["arena"].has("hazards"):
+			hazards = world["arena"]["hazards"]
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+			hazards = world.arena.hazards
+
+		if spawn_timer >= hazard_interval:
+			spawn_timer = 0.0
+			var h_x = randf_range(100.0, arena_width - 100.0)
+			var h_y = randf_range(100.0, arena_height - 100.0)
+
+			var new_hazard = {
+				"id": randi() % 900000 + 100000,
+				"x": h_x,
+				"y": h_y,
+				"radius": 40.0,
+				"kind": "polarity_hazard",
+				"duration": 10.0,
+				"active": true
+			}
+			hazards.append(new_hazard)
+
+		var hazards_to_remove = []
+
+		for h in hazards:
+			var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind if "kind" in h else ""
+			var active = h.get("active", true) if typeof(h) == TYPE_DICTIONARY else h.active if "active" in h else true
+
+			if kind == "polarity_hazard" and active:
+				var h_duration = h.get("duration", 0.0) if typeof(h) == TYPE_DICTIONARY else h.duration if "duration" in h else 0.0
+				h_duration -= delta
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["duration"] = h_duration
+				else:
+					h.duration = h_duration
+
+				if h_duration <= 0:
+					if typeof(h) == TYPE_DICTIONARY:
+						h["active"] = false
+					else:
+						h.active = false
+					hazards_to_remove.append(h)
+				else:
+					var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x if "x" in h else 0.0
+					var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y if "y" in h else 0.0
+					var h_radius = h.get("radius", 40.0) if typeof(h) == TYPE_DICTIONARY else h.radius if "radius" in h else 40.0
+
+					for b in balls:
+						var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive if "alive" in b else false
+						if not alive: continue
+
+						var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x if "x" in b else 0.0
+						var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y if "y" in b else 0.0
+						var b_radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.radius if "radius" in b else 15.0
+
+						var dx = b_x - h_x
+						var dy = b_y - h_y
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist <= h_radius + b_radius:
+							var p_cool = b.get("polarity_cooldown", 0.0) if typeof(b) == TYPE_DICTIONARY else b.polarity_cooldown if "polarity_cooldown" in b else 0.0
+							if p_cool <= 0:
+								var current_polarity = b.get("polarity", 1) if typeof(b) == TYPE_DICTIONARY else b.polarity if "polarity" in b else 1
+
+								if typeof(b) == TYPE_DICTIONARY:
+									b["polarity"] = -current_polarity
+									b["polarity_cooldown"] = 1.0
+								else:
+									b.polarity = -current_polarity
+									b.polarity_cooldown = 1.0
+
+		for h in hazards_to_remove:
+			hazards.erase(h)
+
+		for i in range(balls.size()):
+			var b = balls[i]
+			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive if "alive" in b else false
+			if not alive: continue
+
+			var p_cool = b.get("polarity_cooldown", 0.0) if typeof(b) == TYPE_DICTIONARY else b.polarity_cooldown if "polarity_cooldown" in b else 0.0
+			if p_cool > 0:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["polarity_cooldown"] = p_cool - delta
+				else:
+					b.polarity_cooldown = p_cool - delta
+
+			var has_polarity = false
+			if typeof(b) == TYPE_DICTIONARY:
+				has_polarity = b.has("polarity")
+			else:
+				has_polarity = "polarity" in b
+
+			if not has_polarity:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["polarity"] = 1
+				else:
+					b.polarity = 1
+
+			var intangible = false
+			if typeof(b) == TYPE_DICTIONARY:
+				intangible = b.get("intangible", false)
+			else:
+				intangible = b.intangible if "intangible" in b else false
+
+			if intangible: continue
+
+			for j in range(i + 1, balls.size()):
+				var b2 = balls[j]
+				var alive2 = b2.get("alive", false) if typeof(b2) == TYPE_DICTIONARY else b2.alive if "alive" in b2 else false
+				if not alive2: continue
+
+				var intangible2 = false
+				if typeof(b2) == TYPE_DICTIONARY:
+					intangible2 = b2.get("intangible", false)
+				else:
+					intangible2 = b2.intangible if "intangible" in b2 else false
+
+				if intangible2: continue
+
+				var has_polarity2 = false
+				if typeof(b2) == TYPE_DICTIONARY:
+					has_polarity2 = b2.has("polarity")
+				else:
+					has_polarity2 = "polarity" in b2
+
+				if not has_polarity2:
+					if typeof(b2) == TYPE_DICTIONARY:
+						b2["polarity"] = 1
+					else:
+						b2.polarity = 1
+
+				var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x if "x" in b else 0.0
+				var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y if "y" in b else 0.0
+				var b2_x = b2.get("x", 0.0) if typeof(b2) == TYPE_DICTIONARY else b2.x if "x" in b2 else 0.0
+				var b2_y = b2.get("y", 0.0) if typeof(b2) == TYPE_DICTIONARY else b2.y if "y" in b2 else 0.0
+
+				var dx = b2_x - b_x
+				var dy = b2_y - b_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 0 and dist < 300.0:
+					var force = 5000.0 / (dist * dist)
+					force = min(force, 100.0)
+
+					var p1 = b.get("polarity", 1) if typeof(b) == TYPE_DICTIONARY else b.polarity if "polarity" in b else 1
+					var p2 = b2.get("polarity", 1) if typeof(b2) == TYPE_DICTIONARY else b2.polarity if "polarity" in b2 else 1
+
+					var fx = 0.0
+					var fy = 0.0
+
+					if p1 == p2:
+						# Repel
+						fx = -(dx / dist) * force * delta
+						fy = -(dy / dist) * force * delta
+					else:
+						# Attract
+						fx = (dx / dist) * force * delta
+						fy = (dy / dist) * force * delta
+
+					var vx1 = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else b.vx if "vx" in b else 0.0
+					var vy1 = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else b.vy if "vy" in b else 0.0
+					var vx2 = b2.get("vx", 0.0) if typeof(b2) == TYPE_DICTIONARY else b2.vx if "vx" in b2 else 0.0
+					var vy2 = b2.get("vy", 0.0) if typeof(b2) == TYPE_DICTIONARY else b2.vy if "vy" in b2 else 0.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["vx"] = vx1 + fx
+						b["vy"] = vy1 + fy
+					else:
+						b.vx = vx1 + fx
+						b.vy = vy1 + fy
+
+					if typeof(b2) == TYPE_DICTIONARY:
+						b2["vx"] = vx2 - fx
+						b2["vy"] = vy2 - fy
+					else:
+						b2.vx = vx2 - fx
+						b2.vy = vy2 - fy
+
 var GAME_MODES = {
 	"watchtower": WatchtowerMode.new(),
 
@@ -29240,6 +29443,7 @@ var GAME_MODES = {
 	"underground_tunnels": UndergroundTunnelMode.new(),
 	"massive_black_hole_event": MassiveBlackHoleEventMode.new(),
 	"ticking_bomb": TickingBombMode.new(),
+	"polarity_hazard": PolarityHazardMode.new(),
 }
 
 
