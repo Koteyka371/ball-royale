@@ -17340,7 +17340,80 @@ class MassiveBlackHoleEventMode(GameMode):
                                     world.dead_balls.append(b.id)
 
 
+
+class RotatingLasersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rotating Lasers"
+        self.description = "Rotating lasers slice across the arena, damaging players caught in the beams."
+        self.lasers = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+        cx = arena_width / 2.0
+        cy = arena_height / 2.0
+
+        # Two lasers rotating around the center
+        self.lasers = [
+            {"x": cx, "y": cy, "length": 800.0, "angle": 0.0, "angular_velocity": 45.0, "damage": 50.0},
+            {"x": cx, "y": cy, "length": 800.0, "angle": 180.0, "angular_velocity": 45.0, "damage": 50.0}
+        ]
+
+    def _dist_to_segment(self, px: float, py: float, x1: float, y1: float, x2: float, y2: float) -> float:
+        import math
+        line_dx = x2 - x1
+        line_dy = y2 - y1
+        line_len_sq = line_dx * line_dx + line_dy * line_dy
+        if line_len_sq == 0:
+            return math.hypot(px - x1, py - y1)
+
+        t = max(0.0, min(1.0, ((px - x1) * line_dx + (py - y1) * line_dy) / line_len_sq))
+        proj_x = x1 + t * line_dx
+        proj_y = y1 + t * line_dy
+        return math.hypot(px - proj_x, py - proj_y)
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        import math
+
+        # update lasers
+        for laser in self.lasers:
+            laser["angle"] = (laser["angle"] + laser["angular_velocity"] * delta) % 360.0
+
+            # endpoints
+            rad = math.radians(laser["angle"])
+            x1 = laser["x"]
+            y1 = laser["y"]
+            x2 = x1 + laser["length"] * math.cos(rad)
+            y2 = y1 + laser["length"] * math.sin(rad)
+
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+
+                b_x = getattr(b, "x", 0.0)
+                b_y = getattr(b, "y", 0.0)
+                radius = getattr(b, "radius", 20.0)
+
+                dist = self._dist_to_segment(b_x, b_y, x1, y1, x2, y2)
+                # if the ball intersects with the laser beam (let's assume beam has a thickness of ~10)
+                if dist <= radius + 5.0:
+                    dmg = laser["damage"] * delta
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(dmg)
+                    else:
+                        b.hp = getattr(b, "hp", 100) - dmg
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {
+                            "type": "laser_burn",
+                            "x": b_x,
+                            "y": b_y
+                        })
+
 GAME_MODES = {
+    "rotating_lasers": RotatingLasersMode(),
     "stationary_turrets": StationaryTurretsMode(),
 
     'scorching_sun': ScorchingSunMode(),

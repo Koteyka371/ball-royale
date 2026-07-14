@@ -29080,7 +29080,100 @@ class MassiveBlackHoleEventMode extends GameMode:
 											world["dead_balls"].append(b.id)
 
 
+
+class RotatingLasersMode extends GameMode:
+	var lasers: Array = []
+
+	func _init() -> void:
+		name = "Rotating Lasers"
+		description = "Rotating lasers slice across the arena, damaging players caught in the beams."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena:
+			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+
+		var cx = arena_width / 2.0
+		var cy = arena_height / 2.0
+
+		lasers = [
+			{"x": cx, "y": cy, "length": 800.0, "angle": 0.0, "angular_velocity": 45.0, "damage": 50.0},
+			{"x": cx, "y": cy, "length": 800.0, "angle": 180.0, "angular_velocity": 45.0, "damage": 50.0}
+		]
+
+	func _dist_to_segment(px: float, py: float, x1: float, y1: float, x2: float, y2: float) -> float:
+		var line_dx = x2 - x1
+		var line_dy = y2 - y1
+		var line_len_sq = line_dx * line_dx + line_dy * line_dy
+		if line_len_sq == 0.0:
+			var dx = px - x1
+			var dy = py - y1
+			return sqrt(dx * dx + dy * dy)
+
+		var t = ((px - x1) * line_dx + (py - y1) * line_dy) / line_len_sq
+		t = max(0.0, min(1.0, t))
+		var proj_x = x1 + t * line_dx
+		var proj_y = y1 + t * line_dy
+		var pdx = px - proj_x
+		var pdy = py - proj_y
+		return sqrt(pdx * pdx + pdy * pdy)
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for i in range(lasers.size()):
+			var laser = lasers[i]
+			laser["angle"] = fmod(laser["angle"] + laser["angular_velocity"] * delta, 360.0)
+
+			var rad = deg_to_rad(laser["angle"])
+			var x1 = laser["x"]
+			var y1 = laser["y"]
+			var x2 = x1 + laser["length"] * cos(rad)
+			var y2 = y1 + laser["length"] * sin(rad)
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+
+				if not is_alive:
+					continue
+
+				var b_x = 0.0
+				var b_y = 0.0
+				var radius = 20.0
+				var hp = 0.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b_x = b.get("x", 0.0)
+					b_y = b.get("y", 0.0)
+					radius = b.get("radius", 20.0)
+					hp = b.get("hp", 100.0)
+				else:
+					b_x = b.get("x") if "x" in b else 0.0
+					b_y = b.get("y") if "y" in b else 0.0
+					radius = b.get("radius") if "radius" in b else 20.0
+					hp = b.get("hp") if "hp" in b else 100.0
+
+				var dist = _dist_to_segment(b_x, b_y, x1, y1, x2, y2)
+				if dist <= radius + 5.0:
+					var dmg = laser["damage"] * delta
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = hp - dmg
+					else:
+						if b.has_method("take_damage"):
+							b.take_damage(dmg)
+						else:
+							b.set("hp", hp - dmg)
+
 var GAME_MODES = {
+	"rotating_lasers": RotatingLasersMode.new(),
 	"watchtower": WatchtowerMode.new(),
 
 	"stationary_turrets": StationaryTurretsMode.new(),
