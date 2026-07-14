@@ -25831,6 +25831,297 @@ class ShrinkingBoundaryMode extends GameMode:
 						b.set("killer", "Shrinking Boundary")
 
 
+class EntangledArenaMode extends GameMode:
+	var prev_state: Dictionary = {}
+	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+
+	func _init().():
+		name = "Entangled Arena"
+		description = "An arena mode where random pairs of players become 'entangled'. Damage taken by one is partially shared with the other, but they also share healing and buffs. They can choose to cooperate to take down enemies together or risk hurting themselves by attacking their entangled partner."
+
+	func _init_prev_state(b) -> void:
+		var state = {
+			"hp": b.hp if "hp" in b else 100.0,
+			"vx": b.vx if "vx" in b else 0.0,
+			"vy": b.vy if "vy" in b else 0.0
+		}
+		for eff in status_effects:
+			if eff in b:
+				state[eff] = b[eff]
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta(eff):
+				state[eff] = b.get_meta(eff)
+			else:
+				state[eff] = 0.0
+		if "id" in b:
+			prev_state[b.id] = state
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var traits = []
+			var b_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				traits = b.get("traits", [])
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "traits" in b:
+					traits = b.traits
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			var weather_cond = ""
+			if "weather" in self:
+				weather_cond = self.weather
+			if weather_cond == "" and world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						weather_cond = arena.get("weather", "")
+					elif arena != null and "weather" in arena:
+						weather_cond = arena.weather
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						weather_cond = world.arena.get("weather", "")
+					elif "weather" in world.arena:
+						weather_cond = world.arena.weather
+
+			var arena_name = "unknown"
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_name = str(arena.get("name", "")).to_lower()
+					elif arena != null and "name" in arena:
+						arena_name = str(arena.name).to_lower()
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_name = str(world.arena.get("name", "")).to_lower()
+					elif "name" in world.arena:
+						arena_name = str(world.arena.name).to_lower()
+
+			# Trait: Fire
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire:
+				if weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 1.2
+						b["damage"] = base_d * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 1.2
+						if "damage" in b: b.damage = base_d * 1.2
+				elif weather_cond == "rain" or weather_cond == "blizzard":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_d = b.get("base_damage", b.get("damage", 10.0))
+						b["speed"] = base_s * 0.8
+						b["damage"] = base_d * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
+						if "speed" in b: b.speed = base_s * 0.8
+						if "damage" in b: b.damage = base_d * 0.8
+
+			# Trait: Earth
+			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
+			if is_earth:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+
+				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = 0.8
+					else:
+						if "defense_multiplier" in b:
+							b.defense_multiplier = 0.8
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Elementalist
+			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
+			if is_elemental:
+				if weather_cond == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
+						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.15
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		var alive_balls = []
+		for b in balls:
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if b_type != "spectator":
+				alive_balls.append(b)
+
+		alive_balls.shuffle()
+		var i = 0
+		while i < alive_balls.size() - 1:
+			var b1 = alive_balls[i]
+			var b2 = alive_balls[i+1]
+
+			if b1 is Object and b1.has_method("set_meta"):
+				b1.set_meta("random_entangled_with", b2)
+			else:
+				b1["random_entangled_with"] = b2
+
+			if b2 is Object and b2.has_method("set_meta"):
+				b2.set_meta("random_entangled_with", b1)
+			else:
+				b2["random_entangled_with"] = b1
+			i += 2
+
+		if alive_balls.size() % 2 != 0:
+			var last_ball = alive_balls[alive_balls.size() - 1]
+			if last_ball is Object and last_ball.has_method("set_meta"):
+				last_ball.set_meta("random_entangled_with", null)
+			else:
+				last_ball["random_entangled_with"] = null
+
+		prev_state.clear()
+		for b in balls:
+			_init_prev_state(b)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			if not is_alive:
+				continue
+
+			var b_id = b.id if "id" in b else null
+			if b_id == null:
+				continue
+
+			if not prev_state.has(b_id):
+				_init_prev_state(b)
+
+			var state = prev_state[b_id]
+			var target = null
+			if b is Object and b.has_method("has_meta") and b.has_meta("random_entangled_with"):
+				target = b.get_meta("random_entangled_with")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("random_entangled_with"):
+				target = b["random_entangled_with"]
+
+			var target_alive = target.alive if (target != null and "alive" in target) else false
+
+			if target != null and target_alive:
+				var target_id = target.id if "id" in target else null
+				if target_id != null:
+					if not prev_state.has(target_id):
+						_init_prev_state(target)
+
+					var target_state = prev_state[target_id]
+
+					# Check HP
+					var curr_hp = b.hp if "hp" in b else 100.0
+					if curr_hp < state.hp:
+						var damage = (state.hp - curr_hp) * 0.5
+						var target_curr_hp = target.hp if "hp" in target else 100.0
+						if target_curr_hp > 0:
+							if target is Object and target.has_method("take_damage"):
+								target.take_damage(damage)
+							else:
+								target.hp = target_curr_hp - damage
+								if target.hp <= 0:
+									target.hp = 0
+									target.alive = false
+									if "killer" in b: target.killer = b.killer
+
+							target_state.hp -= damage
+							if target_state.hp < 0:
+								target_state.hp = 0
+
+							if world.has_method("add_event"):
+								var bx = b.x if "x" in b else 0
+								var by = b.y if "y" in b else 0
+								var tx = target.x if "x" in target else 0
+								var ty = target.y if "y" in target else 0
+								world.add_event({"type": "visual_effect", "data": {"type": "entangle_damage", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+
+					elif curr_hp > state.hp:
+						var healing = curr_hp - state.hp
+						var target_curr_hp = target.hp if "hp" in target else 100.0
+						var target_max_hp = target.max_hp if "max_hp" in target else 100.0
+						if target_curr_hp > 0 and target_curr_hp < target_max_hp:
+							if target is Object and target.has_method("heal"):
+								target.heal(healing)
+							else:
+								target.hp = min(target_curr_hp + healing, target_max_hp)
+
+							target_state.hp += healing
+							if target_state.hp > target_max_hp:
+								target_state.hp = target_max_hp
+
+							if world.has_method("add_event"):
+								var bx = b.x if "x" in b else 0
+								var by = b.y if "y" in b else 0
+								var tx = target.x if "x" in target else 0
+								var ty = target.y if "y" in target else 0
+								world.add_event({"type": "visual_effect", "data": {"type": "entangle_heal", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+
+					# Check knockback
+					var curr_vx = b.vx if "vx" in b else 0.0
+					var curr_vy = b.vy if "vy" in b else 0.0
+					if abs(curr_vx - state.vx) > 5.0 or abs(curr_vy - state.vy) > 5.0:
+						var delta_vx = curr_vx - state.vx
+						var delta_vy = curr_vy - state.vy
+
+						var target_vx = target.vx if "vx" in target else 0.0
+						var target_vy = target.vy if "vy" in target else 0.0
+						target.vx = target_vx + delta_vx
+						target.vy = target_vy + delta_vy
+
+						target_state.vx += delta_vx
+						target_state.vy += delta_vy
+
+					# Check status effects
+					for eff in status_effects:
+						var curr_eff = 0.0
+						if eff in b: curr_eff = b[eff]
+						elif b is Object and b.has_method("has_meta") and b.has_meta(eff): curr_eff = b.get_meta(eff)
+
+						var state_eff = state[eff] if state.has(eff) else 0.0
+						if curr_eff > state_eff:
+							var delta_eff = curr_eff - state_eff
+
+							var target_eff = 0.0
+							if eff in target: target_eff = target[eff]
+							elif target is Object and target.has_method("has_meta") and target.has_meta(eff): target_eff = target.get_meta(eff)
+
+							if eff in target: target[eff] = target_eff + delta_eff
+							elif target is Object and target.has_method("set_meta"): target.set_meta(eff, target_eff + delta_eff)
+
+							target_state[eff] += delta_eff
+
+			_init_prev_state(b)
+
+
+
+
 class EntanglementMutatorMode extends GameMode:
 	var prev_state: Dictionary = {}
 	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
@@ -29085,6 +29376,7 @@ var GAME_MODES = {
 	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"collapsing_bubbles": CollapsingBubblesMode.new(),
+	"entangled_arena": EntangledArenaMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
