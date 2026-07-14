@@ -18858,6 +18858,71 @@ class InverseSafeZoneMode extends GameMode:
 
 		return null
 
+
+class MicroSafeZonesMode extends SafeZoneMode:
+	var micro_zones: Array = []
+	var micro_zone_timer: float = 0.0
+
+	func _init() -> void:
+		super._init()
+		name = "Micro Safe Zones"
+		description = "In the late game, instead of the primary safe zone just shrinking steadily, micro safe zones start appearing inside it, while the rest of the primary safe zone gets flooded with toxic gas."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		micro_zones = []
+		micro_zone_timer = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		# Late game condition: primary zone is small enough
+		if zone_radius <= 300.0:
+			micro_zone_timer -= delta
+			if micro_zone_timer <= 0:
+				micro_zone_timer = 3.0 # spawn a new micro zone every 3s
+				var angle = randf() * 2.0 * PI
+				var dist = randf_range(0.0, max(0.0, zone_radius - 20.0))
+				var mx = zone_x + cos(angle) * dist
+				var my = zone_y + sin(angle) * dist
+				micro_zones.append({"x": mx, "y": my, "radius": 50.0, "duration": 8.0})
+
+			# update micro zones
+			var active_mz = []
+			for mz in micro_zones:
+				mz["duration"] -= delta
+				if mz["duration"] > 0:
+					active_mz.append(mz)
+			micro_zones = active_mz
+
+			var gas_damage = 25.0 * delta # toxic gas damage
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var dx = b.x - zone_x
+					var dy = b.y - zone_y
+					var dist_to_center = sqrt(dx*dx + dy*dy)
+
+					if dist_to_center <= zone_radius:
+						# Player is inside the primary safe zone
+						var in_micro = false
+						for mz in micro_zones:
+							var mdx = b.x - mz["x"]
+							var mdy = b.y - mz["y"]
+							if mdx*mdx + mdy*mdy <= mz["radius"] * mz["radius"]:
+								in_micro = true
+								break
+
+						if not in_micro:
+							# Not in a micro safe zone, take toxic gas damage
+							b.hp -= gas_damage
+							# Randomly apply poison
+							if randf() < 0.3 * delta:
+								b.poison_timer = max(b.get("poison_timer") if b.get("poison_timer") != null else 0.0, 3.0)
+
+							if b.hp <= 0:
+								b.alive = false
+								b.hp = 0
+
 class DynamicSafeZoneMode extends GameMode:
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -29479,6 +29544,7 @@ var GAME_MODES = {
 	"shrinking_boundary": ShrinkingBoundaryMode.new(),
 	"inverse_safe_zone": InverseSafeZoneMode.new(),
 	"safe_zone": SafeZoneMode.new(),
+	"micro_safe_zones": MicroSafeZonesMode.new(),
 	"hex_grid_royale": HexGridRoyaleMode.new(),
 	"minefield_safe_zone": MinefieldSafeZoneMode.new(),
 	"dynamic_safe_zone": DynamicSafeZoneMode.new(),
