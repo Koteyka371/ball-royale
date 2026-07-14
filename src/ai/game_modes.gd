@@ -32876,3 +32876,92 @@ GAME_MODES['paint_splatter'] = PaintSplatterMode.new()
 
 GAME_MODES["rotating_lasers"] = RotatingLasersMode.new()
 GAME_MODES["elemental_wanderer"] = ElementalWandererMode.new()
+
+class GridLockdownMode extends GameMode:
+	var grid_size = 5
+	var lockdown_interval = 5.0
+	var timer = 0.0
+	var locked_cells = []
+	var damage_rate = 100.0
+
+	func _init() -> void:
+		super()
+		self.name = "Grid Lockdown"
+		self.description = "The arena is divided into a grid. Random cells periodically lock down, dealing immense damage to anyone inside."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		self.timer = self.lockdown_interval
+		self.locked_cells = []
+		_pick_new_cells()
+
+	func _pick_new_cells():
+		self.locked_cells = []
+		var num_cells = randi_range(3, 8)
+		for i in range(num_cells):
+			var cell_x = randi_range(0, self.grid_size - 1)
+			var cell_y = randi_range(0, self.grid_size - 1)
+			var cell = Vector2(cell_x, cell_y)
+			if not self.locked_cells.has(cell):
+				self.locked_cells.append(cell)
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+		self.timer -= delta
+		if self.timer <= 0.0:
+			self.timer = self.lockdown_interval
+			_pick_new_cells()
+
+		var width = 1000.0
+		var height = 1000.0
+		if world.has("arena"):
+			width = world["arena"].get("width", width)
+			height = world["arena"].get("height", height)
+
+		var cell_w = width / self.grid_size
+		var cell_h = height / self.grid_size
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			else:
+				bx = b.x if "x" in b else 0.0
+				by = b.y if "y" in b else 0.0
+
+			var cx = int(bx / cell_w)
+			var cy = int(by / cell_h)
+
+			cx = max(0, min(cx, self.grid_size - 1))
+			cy = max(0, min(cy, self.grid_size - 1))
+
+			var cell = Vector2(cx, cy)
+			if self.locked_cells.has(cell):
+				var cur_hp = 100.0
+				if typeof(b) == TYPE_DICTIONARY:
+					cur_hp = b.get("hp", 100.0)
+					b["hp"] = cur_hp - (self.damage_rate * delta)
+					if b["hp"] <= 0:
+						b["hp"] = 0
+						b["alive"] = false
+				else:
+					cur_hp = b.hp if "hp" in b else 100.0
+					b.hp = cur_hp - (self.damage_rate * delta)
+					if b.hp <= 0:
+						b.hp = 0
+						b.alive = false
+
+GAME_MODES["grid_lockdown"] = GridLockdownMode.new()
