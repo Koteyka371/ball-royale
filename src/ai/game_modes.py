@@ -21233,5 +21233,145 @@ class PhantomJuggernautMode(GameMode):
             return "Phantom Juggernaut"
         return None
 
+class PhantomReplayHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Phantom Replay Hazard"
+        self.description = "A hazard that intermittently records positions of entities, then replays phantom clones that deal damage."
+        self.timer = 0.0
+        self.record_duration = 3.0
+        self.delay_duration = 1.0
+        self.replay_duration = 3.0
+        self.cooldown_duration = 2.0
+        self.hazard_x = 500.0
+        self.hazard_y = 500.0
+        self.hazard_radius = 200.0
+        self.recordings = {}
+        self.phantoms = []
+        self.phase = "record"
+        self.dummy_hazard_id = 1000
+
+    class PhantomClone:
+        def __init__(self, target_id, path):
+            self.target_id = target_id
+            self.path = path
+            self.timer = 0.0
+            self.x = path[0][1] if path else 0.0
+            self.y = path[0][2] if path else 0.0
+            self.radius = 15.0
+            self.damage = 5.0
+            self.base_damage = 5.0
+            self.alive = True
+            self.kind = "phantom_clone"
+            self.duration = 9999.0
+
+        def update(self, delta):
+            self.timer += delta
+            if not self.path:
+                self.alive = False
+                self.duration = 0.0
+                return
+            if self.timer >= self.path[-1][0]:
+                self.x = self.path[-1][1]
+                self.y = self.path[-1][2]
+                self.alive = False
+                self.duration = 0.0
+                return
+            for i in range(len(self.path) - 1):
+                t1, x1, y1 = self.path[i]
+                t2, x2, y2 = self.path[i+1]
+                if t1 <= self.timer <= t2:
+                    if t2 == t1:
+                        self.x, self.y = x1, y1
+                    else:
+                        ratio = (self.timer - t1) / (t2 - t1)
+                        self.x = x1 + (x2 - x1) * ratio
+                        self.y = y1 + (y2 - y1) * ratio
+                    break
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.timer = 0.0
+        self.recordings.clear()
+        self.phantoms.clear()
+        self.phase = "record"
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from ai.game_modes import GameMode
+                # try to find a hazard class or fallback to dict if not possible, but actually we can just append an object with to_dict or just properties
+                class SimpleHazard:
+                    def __init__(self):
+                        self.id = 1000
+                        self.x = 500.0
+                        self.y = 500.0
+                        self.radius = 200.0
+                        self.duration = 9999.0
+                        self.kind = "phantom_replay_zone"
+                        self.damage = 0.0
+                        self.base_damage = 0.0
+                        self.owner_id = -1
+                h = SimpleHazard()
+                world.arena.hazards.append(h)
+            except Exception:
+                pass
+
+    def tick(self, world, balls, delta):
+        import math
+        super().tick(world, balls, delta)
+        self.timer += delta
+
+        if self.phase == "record":
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                dist = math.hypot(b.x - self.hazard_x, b.y - self.hazard_y)
+                if dist <= self.hazard_radius:
+                    if b.id not in self.recordings:
+                        self.recordings[b.id] = []
+                    self.recordings[b.id].append((self.timer, b.x, b.y))
+
+            if self.timer >= self.record_duration:
+                self.phase = "delay"
+                self.timer = 0.0
+
+        elif self.phase == "delay":
+            if self.timer >= self.delay_duration:
+                self.phase = "replay"
+                self.timer = 0.0
+                self.phantoms.clear()
+                for b_id, path in self.recordings.items():
+                    if path:
+                        clone = self.PhantomClone(b_id, path)
+                        self.phantoms.append(clone)
+                        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                            world.arena.hazards.append(clone)
+                self.recordings.clear()
+
+        elif self.phase == "replay":
+            for p in self.phantoms:
+                if p.alive:
+                    p.update(delta)
+                    for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+                        dist = math.hypot(b.x - p.x, b.y - p.y)
+                        if dist <= getattr(b, "radius", 0) + p.radius:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(p.damage * delta, "phantom_clone")
+
+            if self.timer >= self.replay_duration:
+                self.phase = "cooldown"
+                self.timer = 0.0
+                for p in self.phantoms:
+                    p.duration = 0.0
+                    p.alive = False
+                self.phantoms.clear()
+
+        elif self.phase == "cooldown":
+            if self.timer >= self.cooldown_duration:
+                self.phase = "record"
+                self.timer = 0.0
+
+GAME_MODES['phantom_replay_hazard'] = PhantomReplayHazardMode()
 GAME_MODES['grid_lockdown'] = GridLockdownMode()
 GAME_MODES['phantom_juggernaut'] = PhantomJuggernautMode()

@@ -33362,5 +33362,190 @@ class PhantomJuggernautMode extends GameMode:
 		if not hunters_alive:
 			return "Phantom Juggernaut"
 		return ""
+class PhantomReplayHazardMode extends GameMode:
+	var timer: float = 0.0
+	var record_duration: float = 3.0
+	var delay_duration: float = 1.0
+	var replay_duration: float = 3.0
+	var cooldown_duration: float = 2.0
+
+	var hazard_x: float = 500.0
+	var hazard_y: float = 500.0
+	var hazard_radius: float = 200.0
+
+	var recordings: Dictionary = {}
+	var phantoms: Array = []
+	var phase: String = "record"
+
+	class PhantomClone:
+		var target_id: int
+		var path: Array
+		var timer: float = 0.0
+		var x: float = 0.0
+		var y: float = 0.0
+		var radius: float = 15.0
+		var damage: float = 5.0
+		var base_damage: float = 5.0
+		var alive: bool = true
+		var duration: float = 9999.0
+		var kind: String = "phantom_clone"
+
+		func _init(id: int, p_path: Array):
+			target_id = id
+			path = p_path
+			if path.size() > 0:
+				x = path[0][1]
+				y = path[0][2]
+
+		func update(delta: float):
+			timer += delta
+			if path.size() == 0:
+				alive = false
+				duration = 0.0
+				return
+
+			if timer >= path[path.size() - 1][0]:
+				x = path[path.size() - 1][1]
+				y = path[path.size() - 1][2]
+				alive = false
+				duration = 0.0
+				return
+
+			for i in range(path.size() - 1):
+				var t1 = path[i][0]
+				var x1 = path[i][1]
+				var y1 = path[i][2]
+
+				var t2 = path[i+1][0]
+				var x2 = path[i+1][1]
+				var y2 = path[i+1][2]
+
+				if timer >= t1 and timer <= t2:
+					if t2 == t1:
+						x = x1
+						y = y1
+					else:
+						var ratio = (timer - t1) / (t2 - t1)
+						x = x1 + (x2 - x1) * ratio
+						y = y1 + (y2 - y1) * ratio
+					break
+
+	func _init() -> void:
+		name = "Phantom Replay Hazard"
+		description = "A hazard that intermittently records positions of entities, then replays phantom clones that deal damage."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		timer = 0.0
+		recordings.clear()
+		phantoms.clear()
+		phase = "record"
+
+		if "arena" in world and "hazards" in world.arena:
+			var dict_hazard = {
+				"x": hazard_x,
+				"y": hazard_y,
+				"radius": hazard_radius,
+				"duration": 9999.0,
+				"kind": "phantom_replay_zone",
+				"damage": 0.0,
+				"base_damage": 0.0,
+				"owner_id": -1
+			}
+			world.arena.hazards.append(dict_hazard)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		timer += delta
+
+		if phase == "record":
+			for b in balls:
+				if typeof(b) == TYPE_DICTIONARY:
+					if not b.get("alive", false): continue
+					var dist = sqrt((b.get("x", 0) - hazard_x)*(b.get("x", 0) - hazard_x) + (b.get("y", 0) - hazard_y)*(b.get("y", 0) - hazard_y))
+					if dist <= hazard_radius:
+						var bid = b.get("id", -1)
+						if not recordings.has(bid):
+							recordings[bid] = []
+						recordings[bid].append([timer, b.get("x", 0), b.get("y", 0)])
+				else:
+					var is_alive = false
+					if b.has_method("get_meta"):
+						is_alive = b.alive if "alive" in b else false
+					if not is_alive: continue
+					var dx = b.x - hazard_x
+					var dy = b.y - hazard_y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= hazard_radius:
+						var bid = b.id if "id" in b else -1
+						if not recordings.has(bid):
+							recordings[bid] = []
+						recordings[bid].append([timer, b.x, b.y])
+			if timer >= record_duration:
+				phase = "delay"
+				timer = 0.0
+
+		elif phase == "delay":
+			if timer >= delay_duration:
+				phase = "replay"
+				timer = 0.0
+				phantoms.clear()
+				for bid in recordings.keys():
+					var p_path = recordings[bid]
+					if p_path.size() > 0:
+						var clone = PhantomClone.new(bid, p_path)
+						phantoms.append(clone)
+						if "arena" in world and "hazards" in world.arena:
+							world.arena.hazards.append(clone)
+				recordings.clear()
+
+		elif phase == "replay":
+			for p in phantoms:
+				if p.alive:
+					p.update(delta)
+					for b in balls:
+						var is_alive = false
+						var bx = 0.0
+						var by = 0.0
+						var bradius = 0.0
+
+						if typeof(b) == TYPE_DICTIONARY:
+							is_alive = b.get("alive", false)
+							bx = b.get("x", 0)
+							by = b.get("y", 0)
+							bradius = b.get("radius", 0)
+						else:
+							if b.has_method("get_meta"):
+								is_alive = b.alive if "alive" in b else false
+							bx = b.x if "x" in b else 0.0
+							by = b.y if "y" in b else 0.0
+							bradius = b.radius if "radius" in b else 0.0
+
+						if not is_alive: continue
+						var dist = sqrt((bx - p.x)*(bx - p.x) + (by - p.y)*(by - p.y))
+						if dist <= bradius + p.radius:
+							if typeof(b) == TYPE_DICTIONARY:
+								var hp = b.get("hp", 0)
+								b["hp"] = max(0, hp - p.damage * delta)
+								if b["hp"] == 0:
+									b["alive"] = false
+							else:
+								if b.has_method("take_damage"):
+									b.take_damage(p.damage * delta, "phantom_clone")
+
+			if timer >= replay_duration:
+				phase = "cooldown"
+				timer = 0.0
+				for p in phantoms:
+					p.duration = 0.0
+					p.alive = false
+				phantoms.clear()
+
+		elif phase == "cooldown":
+			if timer >= cooldown_duration:
+				phase = "record"
+				timer = 0.0
+
+GAME_MODES["phantom_replay_hazard"] = PhantomReplayHazardMode.new()
 GAME_MODES["grid_lockdown"] = GridLockdownMode.new()
 GAME_MODES["phantom_juggernaut"] = PhantomJuggernautMode.new()
