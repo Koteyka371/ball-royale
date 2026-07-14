@@ -20865,6 +20865,112 @@ class ClanWarMode(GameMode):
                 cm = ClanManager()
                 cm.capture_territory(winner_clan, "Arena_1")
 
+
+
+class TimeStutterHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Stutter Hazard"
+        self.description = "A hazard that periodically saves state of entities inside. Every 5 seconds, affected entities are forcefully rewound back to their saved state."
+        self.timer = 0.0
+        self.hazard_x = 500.0
+        self.hazard_y = 500.0
+        self.hazard_radius = 150.0
+        self.history = {}
+        self.last_cycle = 0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.timer = 0.0
+        self.last_cycle = 0
+        self.history.clear()
+
+        # Add visual indicator for the hazard if supported by world
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                # Try to find a Hazard class we can instantiate
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.duration = 9999.0
+                        self.active = True
+
+                import random
+                h = FallbackHazard(id=random.randint(40000, 49999), x=self.hazard_x, y=self.hazard_y, radius=self.hazard_radius, kind="time_stutter_zone", damage=0.0)
+                world.arena.hazards.append(h)
+            except Exception:
+                pass
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        # Increment timer
+        old_timer = self.timer
+        self.timer += delta
+
+        current_cycle = int(self.timer / 5.0)
+
+        # Save state every cycle at 0 seconds or immediately when cycle changes
+        if current_cycle > self.last_cycle or old_timer == 0.0:
+
+            # If we crossed a 5s boundary, we need to rewind FIRST before saving the new state!
+            if current_cycle > self.last_cycle:
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+
+                    b_id = getattr(b, "id", str(id(b)))
+
+                    # If they were recorded in the history for this cycle, revert them
+                    if b_id in self.history:
+                        saved_state = self.history[b_id]
+                        b.x = saved_state["x"]
+                        b.y = saved_state["y"]
+                        if hasattr(b, "vx"):
+                            b.vx = saved_state["vx"]
+                        if hasattr(b, "vy"):
+                            b.vy = saved_state["vy"]
+                        b.hp = saved_state["hp"]
+
+                        # Trigger a stutter effect to disrupt momentum
+                        if hasattr(b, "stutter_timer"):
+                            b.stutter_timer = getattr(b, "stutter_timer", 0.0) + 0.5
+
+                # Clear history after rewind
+                self.history.clear()
+                self.last_cycle = current_cycle
+
+            # Now save the state for the new cycle
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+
+                dx = b.x - self.hazard_x
+                dy = b.y - self.hazard_y
+                dist_sq = dx*dx + dy*dy
+
+                if dist_sq <= self.hazard_radius * self.hazard_radius:
+                    b_id = getattr(b, "id", str(id(b)))
+
+                    # Ensure velocity attributes exist
+                    vx = getattr(b, "vx", 0.0)
+                    vy = getattr(b, "vy", 0.0)
+                    hp = getattr(b, "hp", 100.0)
+
+                    self.history[b_id] = {
+                        "x": b.x,
+                        "y": b.y,
+                        "vx": vx,
+                        "vy": vy,
+                        "hp": hp
+                    }
+
+GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode()
 GAME_MODES['clan_war'] = ClanWarMode()
 
 GAME_MODES['rotating_lasers'] = RotatingLasersMode()

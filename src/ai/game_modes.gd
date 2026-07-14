@@ -32745,6 +32745,132 @@ class PaintSplatterMode extends GameMode:
 					b["hp"] = 0
 					b["alive"] = false
 
+
+
+class TimeStutterHazardMode extends GameMode:
+	var timer: float = 0.0
+	var hazard_x: float = 500.0
+	var hazard_y: float = 500.0
+	var hazard_radius: float = 150.0
+	var history: Dictionary = {}
+	var last_cycle: int = 0
+
+	func _init() -> void:
+		name = "Time Stutter Hazard"
+		description = "A hazard that periodically saves state of entities inside. Every 5 seconds, affected entities are forcefully rewound back to their saved state."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		timer = 0.0
+		last_cycle = 0
+		history.clear()
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var old_timer = timer
+		timer += delta
+		var current_cycle = int(timer / 5.0)
+
+		if current_cycle > last_cycle or old_timer == 0.0:
+
+			if current_cycle > last_cycle:
+				for b in balls:
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+					elif b.has_method("get_meta"):
+						is_alive = b.alive if "alive" in b else false
+
+					var ball_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						ball_type = b.get("ball_type", "")
+					elif "ball_type" in b:
+						ball_type = b.ball_type
+
+					if not is_alive or ball_type == "spectator":
+						continue
+
+					var b_id = str(b.id) if "id" in b else (str(b.get_instance_id()) if b.has_method("get_instance_id") else str(b))
+
+					if history.has(b_id):
+						var saved_state = history[b_id]
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = saved_state["x"]
+							b["y"] = saved_state["y"]
+							b["vx"] = saved_state["vx"]
+							b["vy"] = saved_state["vy"]
+							b["hp"] = saved_state["hp"]
+						else:
+							if "x" in b: b.x = saved_state["x"]
+							if "y" in b: b.y = saved_state["y"]
+							if "vx" in b: b.vx = saved_state["vx"]
+							if "vy" in b: b.vy = saved_state["vy"]
+							if "hp" in b: b.hp = saved_state["hp"]
+							if "stutter_timer" in b:
+								b.stutter_timer = b.stutter_timer + 0.5
+							elif b.has_method("get_meta") and b.has_meta("stutter_timer"):
+								b.set_meta("stutter_timer", b.get_meta("stutter_timer") + 0.5)
+
+				history.clear()
+				last_cycle = current_cycle
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				elif b.has_method("get_meta"):
+					is_alive = b.alive if "alive" in b else false
+
+				var ball_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					ball_type = b.get("ball_type", "")
+				elif "ball_type" in b:
+					ball_type = b.ball_type
+
+				if not is_alive or ball_type == "spectator":
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				elif "x" in b and "y" in b:
+					bx = b.x
+					by = b.y
+
+				var dx = bx - hazard_x
+				var dy = by - hazard_y
+				var dist_sq = dx*dx + dy*dy
+
+				if dist_sq <= hazard_radius * hazard_radius:
+					var b_id = str(b.id) if "id" in b else (str(b.get_instance_id()) if b.has_method("get_instance_id") else str(b))
+
+					var vx = 0.0
+					var vy = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						vx = b.get("vx", 0.0)
+						vy = b.get("vy", 0.0)
+					elif "vx" in b and "vy" in b:
+						vx = b.vx
+						vy = b.vy
+
+					var hp = 100.0
+					if typeof(b) == TYPE_DICTIONARY:
+						hp = b.get("hp", 100.0)
+					elif "hp" in b:
+						hp = b.hp
+
+					history[b_id] = {
+						"x": bx,
+						"y": by,
+						"vx": vx,
+						"vy": vy,
+						"hp": hp
+					}
+
+GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode.new()
 GAME_MODES['clan_war'] = ClanWarMode.new()
 GAME_MODES['paint_splatter'] = PaintSplatterMode.new()
 
