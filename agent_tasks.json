@@ -16419,7 +16419,7 @@
     },
     {
       "id": "idea-956",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Gates",
@@ -26719,6 +26719,41 @@
         "src/ai/mirror_illusion.py",
         "src/ai/mirror_illusion.gd",
         "tests/test_mirror_illusion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1561",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Wars Base Building",
+      "description": "Allow guilds to customize their 'HQ' visually and mechanically. Add a 'Guild War' game mode where guilds build defenses (turrets, walls, traps) using their resources, and other guilds can attack their HQ asynchronously or synchronously. This gives more utility to guild resources and territories.",
+      "allowed_paths": [
+        "src/ui/guild_wars_base_building.py",
+        "src/ui/guild_wars_base_building.gd",
+        "src/ai/guild_wars_base_building.py",
+        "tests/test_guild_wars_base_building.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1562",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Weather Mutators",
+      "description": "Introduce dynamic weather systems (e.g., thunderstorms, blizzards, sandstorms) that rotate during matches and affect gameplay. Thunderstorms could periodically strike random locations with lightning, blizzards could slow movement speed globally, and sandstorms could reduce perception radius for all AI.",
+      "allowed_paths": [
+        "src/ai/dynamic_mutators.py",
+        "src/ai/dynamic_mutators.gd",
+        "tests/test_dynamic_mutators.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
