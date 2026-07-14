@@ -6,7 +6,7 @@ from ai.game_modes import (
     BossFightMode, VIPDefenseMode, SurvivalMode, MemoryTrapsMode
 )
 
-from ai.game_modes import ExplodingDecoysMode
+from ai.game_modes import ExplodingDecoysMode, AcidRainMode
 class MockBall:
     def __init__(self, id, ball_type="warrior", alive=True):
         self.x = 0.0
@@ -1645,3 +1645,66 @@ def test_grid_lockdown_mode():
     # b2 is in safe cell, should have 100 hp and be alive
     assert b2.hp == 100.0
     assert b2.alive
+
+
+def test_acid_rain_mode():
+    class TestMockWorld:
+        def __init__(self):
+            class Arena:
+                def __init__(self):
+                    self.width = 1000
+                    self.height = 1000
+                    self.weather = "clear"
+            self.arena = Arena()
+            self.events = []
+
+        def add_event(self, type, data):
+            self.events.append({"type": type, "data": data})
+
+    class TestMockEntity:
+        def __init__(self, id, btype="metal_ball", traits=None):
+            self.id = id
+            self.x = 500
+            self.y = 500
+            self.ball_type = btype
+            self.traits = traits or []
+            self.alive = True
+            self.team = "A"
+            self.max_hp = 100.0
+            self.hp = 100.0
+            self.defense_multiplier = 1.0
+
+    mode = AcidRainMode()
+    world = TestMockWorld()
+    b1 = TestMockEntity(1, btype="metal_ball")
+    b2 = TestMockEntity(2, btype="normal_ball")
+
+    balls = [b1, b2]
+    mode.setup(world, balls)
+
+    assert world.arena.weather == "acid_rain"
+    assert getattr(b1, "base_max_hp", None) == 100.0
+
+    # Tick to degrade armor and max hp of metal ball
+    mode.tick(world, balls, delta=1.0)
+
+    # Metal ball should be degraded
+    assert b1.defense_multiplier > 1.0
+    assert b1.max_hp < 100.0
+
+    # Normal ball should not be degraded
+    assert b2.defense_multiplier == 1.0
+    assert b2.max_hp == 100.0
+
+    # Force a puddle to spawn exactly where b1 is
+    mode.puddles = [{"x": 500, "y": 500, "radius": 50, "duration": 10.0}]
+
+    prev_hp = b1.max_hp
+    prev_def = b1.defense_multiplier
+
+    mode.tick(world, balls, delta=1.0)
+
+    # Inside puddle: should get weather_immunity_timer, defense should decrease (improve)
+    assert getattr(b1, "weather_immunity_timer", 0.0) >= 5.0
+    assert b1.defense_multiplier < prev_def
+    assert b1.max_hp == prev_hp  # Immune, so shouldn't degrade further

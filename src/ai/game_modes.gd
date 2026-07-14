@@ -33363,4 +33363,161 @@ class PhantomJuggernautMode extends GameMode:
 			return "Phantom Juggernaut"
 		return ""
 GAME_MODES["grid_lockdown"] = GridLockdownMode.new()
+class AcidRainMode extends GameMode:
+	var puddle_spawn_timer: float = 0.0
+	var puddles: Array = []
+
+	func _init():
+		name = "Acid Rain"
+		description = "Acid rain slowly degrades the armor and max HP of metallic/armored balls. Find neutralizing puddles to wash it off."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		puddles = []
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			world.arena.weather = "acid_rain"
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				world.arena["weather"] = "acid_rain"
+			else:
+				world.arena.weather = "acid_rain"
+
+		for b in balls:
+			var max_hp = 100.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("max_hp"): max_hp = b.get("max_hp")
+				if not b.has("base_max_hp"): b["base_max_hp"] = max_hp
+			else:
+				if "max_hp" in b: max_hp = b.max_hp
+				if not b.has_meta("base_max_hp"): b.set_meta("base_max_hp", max_hp)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		puddle_spawn_timer -= delta
+		if puddle_spawn_timer <= 0:
+			puddle_spawn_timer = randf_range(10.0, 20.0)
+			var aw = 1000.0
+			var ah = 1000.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				if "width" in world.arena: aw = world.arena.width
+				if "height" in world.arena: ah = world.arena.height
+			elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("width"): aw = world.arena.get("width")
+					if world.arena.has("height"): ah = world.arena.get("height")
+				else:
+					if "width" in world.arena: aw = world.arena.width
+					if "height" in world.arena: ah = world.arena.height
+
+			puddles.append({
+				"x": randf_range(100, aw - 100),
+				"y": randf_range(100, ah - 100),
+				"radius": 80.0,
+				"duration": randf_range(15.0, 25.0)
+			})
+
+		var active_puddles = []
+		for p in puddles:
+			p["duration"] -= delta
+			if p["duration"] > 0:
+				active_puddles.append(p)
+		puddles = active_puddles
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				b_type = str(b.ball_type).to_lower() if "ball_type" in b else ""
+
+			if b_type == "spectator":
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			else:
+				bx = b.x if "x" in b else 0.0
+				by = b.y if "y" in b else 0.0
+
+			var in_puddle = false
+			for p in puddles:
+				var dx = bx - p["x"]
+				var dy = by - p["y"]
+				if dx*dx + dy*dy <= p["radius"] * p["radius"]:
+					in_puddle = true
+					break
+
+			if in_puddle:
+				var w_t = 0.0
+				var curr_def = 1.0
+				if typeof(b) == TYPE_DICTIONARY:
+					w_t = b.get("weather_immunity_timer", 0.0)
+					b["weather_immunity_timer"] = max(w_t, 5.0)
+					curr_def = b.get("defense_multiplier", 1.0)
+					if curr_def > 1.0:
+						b["defense_multiplier"] = max(1.0, curr_def - (0.1 * delta))
+				else:
+					w_t = b.weather_immunity_timer if "weather_immunity_timer" in b else 0.0
+					if "weather_immunity_timer" in b: b.weather_immunity_timer = max(w_t, 5.0)
+					elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", max(w_t, 5.0))
+
+					curr_def = b.defense_multiplier if "defense_multiplier" in b else 1.0
+					if curr_def > 1.0:
+						if "defense_multiplier" in b: b.defense_multiplier = max(1.0, curr_def - (0.1 * delta))
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", max(1.0, curr_def - (0.1 * delta)))
+
+			var w_t2 = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				w_t2 = b.get("weather_immunity_timer", 0.0)
+			else:
+				w_t2 = b.weather_immunity_timer if "weather_immunity_timer" in b else 0.0
+
+			var is_immune = w_t2 > 0.0
+
+			if not is_immune:
+				var traits = []
+				if typeof(b) == TYPE_DICTIONARY:
+					traits = b.get("traits", [])
+				else:
+					traits = b.traits if "traits" in b else []
+
+				var is_metallic = b_type.find("metal") != -1 or b_type.find("metallic") != -1 or traits.has("metal")
+				var is_armored = b_type.find("armored") != -1 or traits.has("armor")
+
+				if is_metallic or is_armored:
+					if typeof(b) == TYPE_DICTIONARY:
+						var c_def = b.get("defense_multiplier", 1.0)
+						b["defense_multiplier"] = c_def + (0.02 * delta)
+						var m_hp = b.get("max_hp", 100.0)
+						b["max_hp"] = max(1.0, m_hp - (1.0 * delta))
+						if b.get("hp", 0.0) > b.get("max_hp", 0.0):
+							b["hp"] = b.get("max_hp", 0.0)
+					else:
+						var c_def = b.defense_multiplier if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = c_def + (0.02 * delta)
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", c_def + (0.02 * delta))
+
+						var m_hp = b.max_hp if "max_hp" in b else 100.0
+						var n_hp = max(1.0, m_hp - (1.0 * delta))
+						if "max_hp" in b: b.max_hp = n_hp
+
+						var c_hp = b.hp if "hp" in b else 0.0
+						if c_hp > n_hp:
+							if "hp" in b: b.hp = n_hp
+
+
 GAME_MODES["phantom_juggernaut"] = PhantomJuggernautMode.new()
+GAME_MODES["acid_rain_mode"] = AcidRainMode.new()

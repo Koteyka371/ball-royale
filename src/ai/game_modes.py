@@ -19775,6 +19775,86 @@ class WeatherClashMode(GameMode):
                     b.damage = base_damage
 
 
+
+class AcidRainMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Acid Rain"
+        self.description = "Acid rain slowly degrades the armor and max HP of metallic/armored balls. Find neutralizing puddles to wash it off."
+        self.weather = "acid_rain"
+        self.puddle_spawn_timer = 0.0
+        self.puddles = []
+        import random
+        self.random = random
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.weather = self.weather
+
+        for b in balls:
+            if not hasattr(b, "base_max_hp"):
+                b.base_max_hp = getattr(b, "max_hp", 100.0)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.puddle_spawn_timer -= delta
+        if self.puddle_spawn_timer <= 0:
+            self.puddle_spawn_timer = self.random.uniform(10.0, 20.0)
+            aw = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+            ah = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+            self.puddles.append({
+                "x": self.random.uniform(100, aw - 100),
+                "y": self.random.uniform(100, ah - 100),
+                "radius": 80.0,
+                "duration": self.random.uniform(15.0, 25.0)
+            })
+            if hasattr(world, "add_event"):
+                world.add_event("neutralizing_puddle_spawn", {"message": "A neutralizing puddle has appeared!"})
+
+        active_puddles = []
+        for p in self.puddles:
+            p["duration"] -= delta
+            if p["duration"] > 0:
+                active_puddles.append(p)
+        self.puddles = active_puddles
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            in_puddle = False
+            for p in self.puddles:
+                if (b.x - p["x"])**2 + (b.y - p["y"])**2 <= p["radius"]**2:
+                    in_puddle = True
+                    break
+
+            if in_puddle:
+                b.weather_immunity_timer = max(getattr(b, "weather_immunity_timer", 0.0), 5.0)
+                # Recover defense_multiplier back towards 1.0
+                curr_def = getattr(b, "defense_multiplier", 1.0)
+                if curr_def > 1.0:
+                    b.defense_multiplier = max(1.0, curr_def - (0.1 * delta))
+
+            w_timer = getattr(b, "weather_immunity_timer", 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+
+            if not is_immune:
+                b_type = getattr(b, "ball_type", "").lower()
+                traits = getattr(b, "traits", [])
+
+                is_metallic = "metal" in b_type or "metallic" in b_type or "metal" in traits
+                is_armored = "armored" in b_type or "armor" in traits
+
+                if is_metallic or is_armored:
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) + (0.02 * delta)
+                    if hasattr(b, "max_hp"):
+                        b.max_hp = max(1.0, b.max_hp - (1.0 * delta))
+                        if getattr(b, "hp", 0) > b.max_hp:
+                            b.hp = b.max_hp
+
+
 GAME_MODES['freeze_tag'] = FreezeTagMode()
 GAME_MODES['vortex_orbit'] = VortexOrbitMode()
 GAME_MODES['weather_clash'] = WeatherClashMode()
@@ -21235,3 +21315,4 @@ class PhantomJuggernautMode(GameMode):
 
 GAME_MODES['grid_lockdown'] = GridLockdownMode()
 GAME_MODES['phantom_juggernaut'] = PhantomJuggernautMode()
+GAME_MODES['acid_rain_mode'] = AcidRainMode()
