@@ -20189,3 +20189,84 @@ class StatsDecayMode(GameMode):
                         b._decay_checked = True
 
 GAME_MODES['stats_decay'] = StatsDecayMode()
+
+
+class ClanWarMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Clan War"
+        self.description = "Rival clans battle for territory control. Controlling a territory grants passive bonuses (e.g. reduced hazard damage, increased speed) within that arena. Teams capture control points to win."
+        self.territory_captured = False
+        self.control_points = []
+        self.score = {}
+        self.target_score = 1000
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.territory_captured = False
+        self.score = {}
+        self.control_points = [
+            {"x": 250, "y": 250, "radius": 150, "owner": None, "capture_progress": 0.0},
+            {"x": 750, "y": 750, "radius": 150, "owner": None, "capture_progress": 0.0}
+        ]
+
+        # Determine clan bonuses
+        from system.clan import ClanManager
+        cm = ClanManager()
+
+        owner = cm.get_territory_owner("Arena_1")
+
+        for ball in balls:
+            team_clan = getattr(ball, "clan", None)
+            if team_clan and team_clan == owner:
+                # Apply territory bonus
+                ball.speed_multiplier = getattr(ball, "speed_multiplier", 1.0) * 1.2
+                ball.defense_multiplier = getattr(ball, "defense_multiplier", 1.0) * 1.5
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        if self.territory_captured:
+            return
+
+        # Update control points
+        for cp in self.control_points:
+            balls_in_cp = [b for b in balls if ((b.x - cp["x"])**2 + (b.y - cp["y"])**2)**0.5 < cp["radius"] and b.hp > 0]
+            if not balls_in_cp:
+                continue
+
+            teams_present = list(set([b.team for b in balls_in_cp]))
+            if len(teams_present) == 1:
+                capturing_team = teams_present[0]
+                if cp["owner"] != capturing_team:
+                    cp["capture_progress"] += delta * 10
+                    if cp["capture_progress"] >= 100:
+                        cp["owner"] = capturing_team
+                        cp["capture_progress"] = 0
+            else:
+                cp["capture_progress"] = max(0, cp["capture_progress"] - delta * 5)
+
+            if cp["owner"]:
+                self.score[cp["owner"]] = self.score.get(cp["owner"], 0) + delta * 2
+
+        # Check for win
+        winner_team = None
+        for team, score in self.score.items():
+            if score >= self.target_score:
+                winner_team = team
+                break
+
+        if winner_team is not None:
+            self.territory_captured = True
+            winner_clan = None
+            for b in balls:
+                if b.team == winner_team and getattr(b, "clan", None):
+                    winner_clan = b.clan
+                    break
+
+            if winner_clan:
+                from system.clan import ClanManager
+                cm = ClanManager()
+                cm.capture_territory(winner_clan, "Arena_1")
+
+GAME_MODES['clan_war'] = ClanWarMode()
