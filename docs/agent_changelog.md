@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-965] Phantom Juggernaut Mode — *2026-07-14 22:13:05 UTC*
+
+A game mode where one player is selected as the Phantom Juggernaut. They have highly increased stats but are permanently invisible. They can only be tracked by the trail of environmental destruction they leave behind or through echolocation skills.
+
+---
+
 ## [idea-974] Clan Headquarters Customization — *2026-07-14 21:57:15 UTC*
 
 Clans can unlock and decorate a shared hub. Decorations can provide passive buffs or simply show off prestige, with unique furniture earned from clan tournaments.
