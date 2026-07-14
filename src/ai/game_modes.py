@@ -17474,6 +17474,61 @@ class MassiveBlackHoleEventMode(GameMode):
                                     world.dead_balls.append(b.id)
 
 
+
+class RotatingLasersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rotating Lasers"
+        self.description = "Multiple rotating lasers slice across the arena. Players must carefully time their movements to avoid being sliced."
+        self.lasers_spawned = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.lasers_spawned = False
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena"): return
+
+        if not self.lasers_spawned:
+            self.lasers_spawned = True
+            aw = getattr(world.arena, "width", 1000.0)
+            ah = getattr(world.arena, "height", 1000.0)
+
+            positions = [
+                (aw * 0.25, ah * 0.25),
+                (aw * 0.75, ah * 0.25),
+                (aw * 0.25, ah * 0.75),
+                (aw * 0.75, ah * 0.75),
+                (aw * 0.5, ah * 0.5)
+            ]
+
+            import math
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            for i, (x, y) in enumerate(positions):
+                h_id = f"rot_laser_{i}"
+                h = Hazard(id=h_id, x=x, y=y, radius=300.0, kind="spinning_laser", damage=50.0)
+                h.angle = (i * math.pi / 2.0)
+                h.duration = 9999.0 # Permanent for the mode
+                world.arena.hazards.append(h)
+
 GAME_MODES = {
     "stationary_turrets": StationaryTurretsMode(),
 
@@ -20413,3 +20468,5 @@ class ClanWarMode(GameMode):
                 cm.capture_territory(winner_clan, "Arena_1")
 
 GAME_MODES['clan_war'] = ClanWarMode()
+
+GAME_MODES['rotating_lasers'] = RotatingLasersMode()

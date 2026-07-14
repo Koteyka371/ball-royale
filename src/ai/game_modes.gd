@@ -29352,6 +29352,77 @@ class MassiveBlackHoleEventMode extends GameMode:
 											world["dead_balls"].append(b.id)
 
 
+
+class RotatingLasersMode extends GameMode:
+	var lasers_spawned = false
+
+	func _init():
+		super()
+		name = "Rotating Lasers"
+		description = "Multiple rotating lasers slice across the arena. Players must carefully time their movements to avoid being sliced."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		lasers_spawned = false
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		if not "arena" in world or not world.arena:
+			return
+
+		if not lasers_spawned:
+			lasers_spawned = true
+			var aw = 1000.0
+			if "width" in world.arena: aw = world.arena.width
+			elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"): aw = world.arena["width"]
+
+			var ah = 1000.0
+			if "height" in world.arena: ah = world.arena.height
+			elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"): ah = world.arena["height"]
+
+			var positions = [
+				Vector2(aw * 0.25, ah * 0.25),
+				Vector2(aw * 0.75, ah * 0.25),
+				Vector2(aw * 0.25, ah * 0.75),
+				Vector2(aw * 0.75, ah * 0.75),
+				Vector2(aw * 0.5, ah * 0.5)
+			]
+
+			var arena_ref = world.arena
+			var has_hazards = false
+			if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("hazards"): has_hazards = true
+			elif typeof(arena_ref) == TYPE_OBJECT and "hazards" in arena_ref: has_hazards = true
+
+			if not has_hazards:
+				if typeof(arena_ref) == TYPE_DICTIONARY:
+					arena_ref["hazards"] = []
+				else:
+					arena_ref.hazards = []
+
+			var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+			for i in range(positions.size()):
+				var pos = positions[i]
+				var h_id = "rot_laser_" + str(i)
+				var h = null
+				if ProceduralArenaScript != null:
+					h = ProceduralArenaScript.Hazard.new(h_id, pos.x, pos.y, 300.0, "spinning_laser", 50.0)
+					h.set_meta("angle", i * PI / 2.0)
+					h.set_meta("duration", 9999.0)
+				else:
+					h = {
+						"id": h_id,
+						"x": pos.x,
+						"y": pos.y,
+						"radius": 300.0,
+						"kind": "spinning_laser",
+						"damage": 50.0,
+						"active": true
+					}
+				if typeof(arena_ref) == TYPE_DICTIONARY:
+					arena_ref["hazards"].append(h)
+				else:
+					arena_ref.hazards.append(h)
+
 var GAME_MODES = {
 	"stats_decay": StatsDecayMode.new(),
 	"watchtower": WatchtowerMode.new(),
@@ -32124,3 +32195,5 @@ class ClanWarMode extends GameMode:
 				cm.capture_territory(winner_clan, "Arena_1")
 
 GAME_MODES['clan_war'] = ClanWarMode.new()
+
+GAME_MODES["rotating_lasers"] = RotatingLasersMode.new()
