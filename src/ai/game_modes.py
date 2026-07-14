@@ -11089,10 +11089,22 @@ class UnstablePortalsEventMode(GameMode):
                             if hasattr(b, "visible"):
                                 b.visible = False
 
+                capacity = len(p.get("sucked_balls", []))
+                if capacity >= 3:
+                    p["charge_timer"] = 2.0  # Overload early
+
                 if p["charge_timer"] >= 2.0:
                     p["active"] = False
+
+                    capacity = len(p.get("sucked_balls", []))
+                    mult = 1.0
+                    if capacity >= 3:
+                        mult = 1.0 + (capacity - 2) * 0.5  # 3->1.5, 4->2.0, etc.
+
                     if hasattr(world, "add_event"):
                         world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
+                        if capacity >= 3:
+                            world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": 150.0 * mult, "damage": 30.0 * mult})
 
                     # Blast sucked players out
                     for b in balls:
@@ -11104,16 +11116,40 @@ class UnstablePortalsEventMode(GameMode):
                             import random
                             import math
                             angle = random.uniform(0, 2 * math.pi)
-                            blast_speed = 1000.0
+                            blast_speed = 1000.0 * mult
                             b.x += math.cos(angle) * blast_speed * delta
                             b.y += math.sin(angle) * blast_speed * delta
                             b.x = max(0.0, min(arena_w, b.x))
                             b.y = max(0.0, min(arena_h, b.y))
 
+                            damage_to_take = 20.0 * mult
                             if hasattr(b, "take_damage"):
-                                b.take_damage(20.0)
+                                b.take_damage(damage_to_take)
                             elif hasattr(b, "hp"):
-                                b.hp -= 20.0
+                                b.hp -= damage_to_take
+
+                        elif capacity >= 3:
+                            # Apply AoE explosion damage to nearby non-sucked balls
+                            if not getattr(b, "alive", False):
+                                continue
+
+                            import math
+                            dx = b.x - p["x"]
+                            dy = b.y - p["y"]
+                            dist = math.hypot(dx, dy)
+                            if dist < 150.0 * mult:
+                                dmg = 30.0 * mult
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(dmg)
+                                elif hasattr(b, "hp"):
+                                    b.hp -= dmg
+
+                                if dist > 0.0001:
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    knockback = 500.0 * mult * (1.0 - dist / (150.0 * mult))
+                                    b.x = max(0.0, min(arena_w, b.x + nx * knockback * delta))
+                                    b.y = max(0.0, min(arena_h, b.y + ny * knockback * delta))
 
                     p["sucked_balls"] = []
             else:
