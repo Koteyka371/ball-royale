@@ -21041,4 +21041,127 @@ class GridLockdownMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("ball_died", {"id": getattr(b, "id", None), "killer_id": -1, "reason": "grid_lockdown_damage"})
 
+
+class PhantomJuggernautMode(GameMode):
+    class PhantomTrailHazard:
+        def __init__(self, x, y):
+            self.id = "phantom_trail_" + str(x) + "_" + str(y)
+            self.x = x
+            self.y = y
+            self.radius = 15.0
+            self.kind = "phantom_trail"
+            self.active = True
+            self.duration = 5.0
+
+    def __init__(self):
+        super().__init__()
+        self.name = "Phantom Juggernaut"
+        self.description = "One player is the invisible Phantom Juggernaut with high stats. Track them by the trail they leave!"
+        self.trail_timer = 0.0
+        self.trail_interval = 0.5
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        if not valid_balls:
+            return
+
+        boss = valid_balls[0]
+        self._make_juggernaut(world, boss)
+
+        for b in valid_balls:
+            if b == boss:
+                continue
+            b.team = "Hunters"
+            if not hasattr(b, "base_max_hp"):
+                b.base_max_hp = getattr(b, "max_hp", 100.0)
+            b.max_hp = b.base_max_hp * 0.8
+            b.hp = b.max_hp
+
+    def _make_juggernaut(self, world: 'Any', b: 'Any') -> None:
+        b.team = "Phantom Juggernaut"
+        if not hasattr(b, "base_max_hp"):
+            b.base_max_hp = getattr(b, "max_hp", 100.0)
+        b.max_hp = b.base_max_hp * 8.0
+        b.hp = b.max_hp
+
+        if not hasattr(b, "base_damage"):
+            b.base_damage = getattr(b, "damage", 10.0)
+        b.damage = b.base_damage * 2.5
+
+        if not hasattr(b, "base_radius"):
+            b.base_radius = getattr(b, "radius", 10.0)
+        b.radius = b.base_radius * 2.0
+
+        b.base_speed = float(getattr(b, "base_speed", getattr(b, "speed", 100.0))) * 1.1
+        b.speed = b.base_speed
+
+        if not hasattr(b, "base_mass"):
+            b.base_mass = getattr(b, "mass", 1.0)
+        b.mass = b.base_mass * 3.0
+
+        b.is_invisible = True
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        dead_juggernauts = [b for b in balls if getattr(b, "team", "") == "Phantom Juggernaut" and not getattr(b, "alive", False)]
+        for dead_jug in dead_juggernauts:
+            killer_id = getattr(dead_jug, "killer", None)
+            if killer_id is not None:
+                killer = next((b for b in balls if getattr(b, "id", None) == killer_id), None)
+                if killer and getattr(killer, "alive", False):
+                    self._make_juggernaut(world, killer)
+                    if hasattr(world, "add_event"):
+                        world.add_event("juggernaut_change", {"message": "A new Phantom Juggernaut has emerged!"})
+            dead_jug.team = "Dead"
+            dead_jug.is_invisible = False
+
+        self.trail_timer += delta
+        spawn_trail = False
+        if self.trail_timer >= self.trail_interval:
+            self.trail_timer = 0.0
+            spawn_trail = True
+
+        for b in balls:
+            if getattr(b, "team", "") == "Phantom Juggernaut" and getattr(b, "alive", False):
+                b.hp = min(b.hp + 5.0 * delta, getattr(b, "max_hp", 1000.0))
+                # Re-apply invis in case it gets removed by a buff/debuff
+                b.is_invisible = True
+
+                if spawn_trail and hasattr(world, "arena"):
+                    if not hasattr(world.arena, "hazards"):
+                        world.arena.hazards = []
+                    trail = self.PhantomTrailHazard(b.x, b.y)
+                    world.arena.hazards.append(trail)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            active_hazards = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "phantom_trail":
+                    h.duration -= delta
+                    if h.duration > 0:
+                        active_hazards.append(h)
+                else:
+                    active_hazards.append(h)
+            world.arena.hazards = active_hazards
+
+    def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            return "Draw"
+
+        juggernaut_alive = any(getattr(b, "team", "") == "Phantom Juggernaut" for b in alive)
+        hunters_alive = any(getattr(b, "team", "") == "Hunters" for b in alive)
+
+        if not juggernaut_alive:
+            return "Hunters"
+        if not hunters_alive:
+            return "Phantom Juggernaut"
+        return None
+
 GAME_MODES['grid_lockdown'] = GridLockdownMode()
+GAME_MODES['phantom_juggernaut'] = PhantomJuggernautMode()

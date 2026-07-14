@@ -32966,4 +32966,306 @@ class GridLockdownMode extends GameMode:
 						b.hp = 0
 						b.alive = false
 
+
+class PhantomJuggernautMode extends GameMode:
+	var trail_timer = 0.0
+	var trail_interval = 0.5
+
+	class PhantomTrailHazard:
+		var id: String
+		var x: float
+		var y: float
+		var radius: float = 15.0
+		var kind: String = "phantom_trail"
+		var active: bool = true
+		var duration: float = 5.0
+
+		func _init(px: float, py: float):
+			id = "phantom_trail_" + str(px) + "_" + str(py)
+			x = px
+			y = py
+
+	func _init() -> void:
+		name = "Phantom Juggernaut"
+		description = "One player is the invisible Phantom Juggernaut with high stats. Track them by the trail they leave!"
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var valid_balls = []
+		for b in balls:
+			var is_spec = false
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type", "") == "spectator":
+					is_spec = true
+			else:
+				if "ball_type" in b and b.ball_type == "spectator":
+					is_spec = true
+			if not is_spec:
+				valid_balls.append(b)
+
+		if valid_balls.size() == 0:
+			return
+
+		var boss = valid_balls[0]
+		_make_juggernaut(world, boss)
+
+		for b in valid_balls:
+			if b == boss:
+				continue
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["team"] = "Hunters"
+				var b_max_hp = b.get("max_hp", 100.0)
+				if not b.has("base_max_hp"):
+					b["base_max_hp"] = b_max_hp
+				b["max_hp"] = b["base_max_hp"] * 0.8
+				b["hp"] = b["max_hp"]
+			else:
+				b.team = "Hunters"
+				if not "base_max_hp" in b:
+					if "max_hp" in b:
+						b.base_max_hp = b.max_hp
+					else:
+						b.base_max_hp = 100.0
+				b.max_hp = b.base_max_hp * 0.8
+				if "hp" in b:
+					b.hp = b.max_hp
+
+	func _make_juggernaut(world, b) -> void:
+		if typeof(b) == TYPE_DICTIONARY:
+			b["team"] = "Phantom Juggernaut"
+			var b_max_hp = b.get("max_hp", 100.0)
+			if not b.has("base_max_hp"):
+				b["base_max_hp"] = b_max_hp
+			b["max_hp"] = b["base_max_hp"] * 8.0
+			b["hp"] = b["max_hp"]
+
+			var b_dmg = b.get("damage", 10.0)
+			if not b.has("base_damage"):
+				b["base_damage"] = b_dmg
+			b["damage"] = b["base_damage"] * 2.5
+
+			var b_rad = b.get("radius", 10.0)
+			if not b.has("base_radius"):
+				b["base_radius"] = b_rad
+			b["radius"] = b["base_radius"] * 2.0
+
+			var b_spd = b.get("speed", 100.0)
+			if not b.has("base_speed"):
+				b["base_speed"] = b_spd
+			b["base_speed"] = float(b["base_speed"]) * 1.1
+			b["speed"] = b["base_speed"]
+
+			var b_mass = b.get("mass", 1.0)
+			if not b.has("base_mass"):
+				b["base_mass"] = b_mass
+			b["mass"] = b["base_mass"] * 3.0
+
+			b["is_invisible"] = true
+		else:
+			b.team = "Phantom Juggernaut"
+			if not "base_max_hp" in b:
+				if "max_hp" in b: b.base_max_hp = b.max_hp
+				else: b.base_max_hp = 100.0
+			b.max_hp = b.base_max_hp * 8.0
+			if "hp" in b: b.hp = b.max_hp
+
+			if not "base_damage" in b:
+				if "damage" in b: b.base_damage = b.damage
+				else: b.base_damage = 10.0
+			b.damage = b.base_damage * 2.5
+
+			if not "base_radius" in b:
+				if "radius" in b: b.base_radius = b.radius
+				else: b.base_radius = 10.0
+			b.radius = b.base_radius * 2.0
+
+			if not "base_speed" in b:
+				if "speed" in b: b.base_speed = b.speed
+				else: b.base_speed = 100.0
+			b.base_speed = float(b.base_speed) * 1.1
+			b.speed = b.base_speed
+
+			if not "base_mass" in b:
+				if "mass" in b: b.base_mass = b.mass
+				else: b.base_mass = 1.0
+			b.mass = b.base_mass * 3.0
+
+			if "is_invisible" in b:
+				b.is_invisible = true
+			elif b.has_method("set_meta"):
+				b.set_meta("is_invisible", true)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var dead_juggernauts = []
+		for b in balls:
+			var t = ""
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				t = b.get("team", "")
+				alive = b.get("alive", false)
+			else:
+				t = b.team if "team" in b else ""
+				alive = b.alive if "alive" in b else false
+
+			if t == "Phantom Juggernaut" and not alive:
+				dead_juggernauts.append(b)
+
+		for dead_jug in dead_juggernauts:
+			var killer_id = null
+			if typeof(dead_jug) == TYPE_DICTIONARY:
+				killer_id = dead_jug.get("killer", null)
+				dead_jug["team"] = "Dead"
+				dead_jug["is_invisible"] = false
+			else:
+				killer_id = dead_jug.killer if "killer" in dead_jug else null
+				dead_jug.team = "Dead"
+				if "is_invisible" in dead_jug:
+					dead_jug.is_invisible = false
+				elif dead_jug.has_method("set_meta"):
+					dead_jug.set_meta("is_invisible", false)
+
+			if killer_id != null:
+				var killer = null
+				for b in balls:
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+					if b_id == killer_id:
+						killer = b
+						break
+
+				if killer != null:
+					var k_alive = killer.get("alive", false) if typeof(killer) == TYPE_DICTIONARY else (killer.alive if "alive" in killer else false)
+					if k_alive:
+						_make_juggernaut(world, killer)
+						if typeof(world) == TYPE_DICTIONARY:
+							if world.has("events"):
+								world.events.append({"type": "juggernaut_change", "message": "A new Phantom Juggernaut has emerged!"})
+						else:
+							if world.has_method("add_event"):
+								world.add_event("juggernaut_change", {"message": "A new Phantom Juggernaut has emerged!"})
+
+		self.trail_timer += delta
+		var spawn_trail = false
+		if self.trail_timer >= self.trail_interval:
+			self.trail_timer = 0.0
+			spawn_trail = true
+
+		for b in balls:
+			var t = ""
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				t = b.get("team", "")
+				alive = b.get("alive", false)
+			else:
+				t = b.team if "team" in b else ""
+				alive = b.alive if "alive" in b else false
+
+			if t == "Phantom Juggernaut" and alive:
+				var b_x = 0.0
+				var b_y = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					var m = b.get("max_hp", 1000.0)
+					var cur = b.get("hp", 0.0)
+					b["hp"] = min(cur + 5.0 * delta, m)
+					b["is_invisible"] = true
+					b_x = b.get("x", 0.0)
+					b_y = b.get("y", 0.0)
+				else:
+					var m = b.max_hp if "max_hp" in b else 1000.0
+					if "hp" in b:
+						b.hp = min(b.hp + 5.0 * delta, m)
+					if "is_invisible" in b:
+						b.is_invisible = true
+					elif b.has_method("set_meta"):
+						b.set_meta("is_invisible", true)
+					if "x" in b: b_x = b.x
+					if "y" in b: b_y = b.y
+
+				if spawn_trail:
+					if typeof(world) == TYPE_DICTIONARY:
+						if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+							if not world.arena.has("hazards"):
+								world.arena["hazards"] = []
+							world.arena.hazards.append(PhantomTrailHazard.new(b_x, b_y))
+					else:
+						if "arena" in world and world.arena != null:
+							if not "hazards" in world.arena or world.arena.hazards == null:
+								world.arena.hazards = []
+							world.arena.hazards.append(PhantomTrailHazard.new(b_x, b_y))
+
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				var active = []
+				for h in world.arena.hazards:
+					var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+					if kind == "phantom_trail":
+						var d = h.get("duration", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.duration if "duration" in h else 0.0)
+						d -= delta
+						if typeof(h) == TYPE_DICTIONARY:
+							h["duration"] = d
+						else:
+							if "duration" in h: h.duration = d
+						if d > 0:
+							active.append(h)
+					else:
+						active.append(h)
+				world.arena["hazards"] = active
+		else:
+			if "arena" in world and world.arena != null and "hazards" in world.arena and world.arena.hazards != null:
+				var active = []
+				for h in world.arena.hazards:
+					var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+					if kind == "phantom_trail":
+						var d = h.get("duration", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.duration if "duration" in h else 0.0)
+						d -= delta
+						if typeof(h) == TYPE_DICTIONARY:
+							h["duration"] = d
+						else:
+							if "duration" in h: h.duration = d
+						if d > 0:
+							active.append(h)
+					else:
+						active.append(h)
+				world.arena.hazards = active
+
+	func check_winner(world, balls: Array) -> String:
+		var alive = []
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", "")
+			else:
+				is_alive = b.alive if "alive" in b else false
+				b_type = b.ball_type if "ball_type" in b else ""
+			if is_alive and b_type != "spectator" and b_type != "shadow_monster":
+				alive.append(b)
+
+		if alive.size() == 0:
+			return "Draw"
+
+		var juggernaut_alive = false
+		var hunters_alive = false
+
+		for b in alive:
+			var t = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				t = b.get("team", "")
+			else:
+				t = b.team if "team" in b else ""
+			if t == "Phantom Juggernaut":
+				juggernaut_alive = true
+			if t == "Hunters":
+				hunters_alive = true
+
+		if not juggernaut_alive:
+			return "Hunters"
+		if not hunters_alive:
+			return "Phantom Juggernaut"
+		return ""
 GAME_MODES["grid_lockdown"] = GridLockdownMode.new()
+GAME_MODES["phantom_juggernaut"] = PhantomJuggernautMode.new()
