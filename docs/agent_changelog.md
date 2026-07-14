@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-810] Vampiric Aura Booster — *2026-07-14 05:25:56 UTC*
+
+A rare booster that temporarily transforms a ball's friendly aura into a vampiric aura. Allies within the radius don't gain standard stacking buffs but instead heal for a percentage of the damage they deal to enemies. This encourages aggressive group plays.
+
+---
+
 ## [idea-945] Shrapnel Aggregation Mechanic — *2026-07-14 00:37:45 UTC*
 
 If two or more shrapnel hazards collide or stop moving very close to each other, they merge into a larger, higher-damage shrapnel pile that lasts longer.
