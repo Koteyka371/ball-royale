@@ -9124,6 +9124,69 @@ class BountyHuntMode(GameMode):
             return list(teams_alive)[0]
         return None
 
+
+class DynamicBountyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Bounty"
+        self.description = "The player with the most kills is marked as a bounty for everyone to see. Defeating them grants special buffs and loadout fragments."
+        self.vfx_timer = 0.0
+        self.current_bounty_id = None
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.0) -> None:
+        super().tick(world, balls, delta)
+
+        highest_kills = -1
+        bounty_candidates = []
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                kills = getattr(b, "kills", 0)
+                if kills > highest_kills:
+                    highest_kills = kills
+                    bounty_candidates = [b]
+                elif kills == highest_kills and highest_kills > 0:
+                    bounty_candidates.append(b)
+
+        # Only assign bounty if someone has at least 1 kill
+        new_bounty_id = None
+        if highest_kills > 0 and bounty_candidates:
+            # If multiple people have the same highest kills, pick the first one (or keep the existing if tied)
+            selected = bounty_candidates[0]
+            if self.current_bounty_id is not None:
+                for b in bounty_candidates:
+                    if getattr(b, "id", None) == self.current_bounty_id:
+                        selected = b
+                        break
+            new_bounty_id = getattr(selected, "id", None)
+
+        # Update markers
+        for b in balls:
+            if getattr(b, "alive", False):
+                b_id = getattr(b, "id", None)
+                if b_id == new_bounty_id and new_bounty_id is not None:
+                    b.is_dynamic_bounty = True
+                else:
+                    b.is_dynamic_bounty = False
+
+        self.current_bounty_id = new_bounty_id
+
+        # Emit visual effect periodically for the marked player
+        self.vfx_timer += delta
+        if self.vfx_timer >= 1.0:
+            self.vfx_timer = 0.0
+            if new_bounty_id is not None and hasattr(world, "add_event"):
+                for b in balls:
+                    if getattr(b, "id", None) == new_bounty_id and getattr(b, "alive", False):
+                        world.add_event("visual_effect", {
+                            "type": "bounty_mark",
+                            "x": getattr(b, "x", 0.0),
+                            "y": getattr(b, "y", 0.0),
+                            "radius": 50.0,
+                            "color": "red"
+                        })
+                        break
+
 class EarthquakeMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -18080,6 +18143,7 @@ GAME_MODES = {
     "moving_safe_zone": MovingSafeZoneMode(),
     "poison_gas_zone": PoisonGasZoneMode(),
     "bounty_hunt": BountyHuntMode(),
+    "dynamic_bounty": DynamicBountyMode(),
     "earthquake": EarthquakeMode(),
     "inverse_mirror_arena": InverseMirrorArenaMode(),
     "mirror_match": MirrorMatchMode(),

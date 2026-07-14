@@ -1392,6 +1392,35 @@ func _attempt_damage(attacker, target) -> void:
 					base_xp *= 2.0
 			self._award_xp(attacker, base_xp, self.world)
 	if new_hp <= 0 and old_hp > 0:
+		var target_is_dynamic_bounty = false
+		if typeof(target) == TYPE_DICTIONARY:
+			target_is_dynamic_bounty = target.get("is_dynamic_bounty", false)
+		elif target.has_method("get_meta") and target.has_meta("is_dynamic_bounty"):
+			target_is_dynamic_bounty = target.get_meta("is_dynamic_bounty")
+		elif "is_dynamic_bounty" in target:
+			target_is_dynamic_bounty = target.is_dynamic_bounty
+
+		if target_is_dynamic_bounty:
+			if "damage" in attacker:
+				attacker.damage = float(attacker.damage) * 1.5
+			if "base_damage" in attacker:
+				attacker.base_damage = float(attacker.base_damage) * 1.5
+
+			if "max_hp" in attacker:
+				var mhp = float(attacker.max_hp) * 1.5
+				attacker.max_hp = mhp
+				if "hp" in attacker:
+					attacker.hp = min(float(attacker.hp) + (mhp - mhp / 1.5), mhp)
+
+			if "loadout_fragments" in attacker:
+				attacker.loadout_fragments += 1
+			elif attacker.has_method("set_meta"):
+				var lf = attacker.get_meta("loadout_fragments") if attacker.has_meta("loadout_fragments") else 0
+				attacker.set_meta("loadout_fragments", lf + 1)
+
+			if self.world != null and self.world.has_method("add_event"):
+				self.world.add_event("dynamic_bounty_claimed", {"message": "Dynamic Bounty claimed!"})
+
 		if pm != null and pm.has_method("add_kill"):
 			pm.add_kill(attacker_type, target_type)
 			if pm.is_nemesis(target_type, attacker_type):
