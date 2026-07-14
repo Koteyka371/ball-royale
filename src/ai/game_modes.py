@@ -18384,6 +18384,8 @@ class ClanTournamentMode(GameMode):
             total_points = 500 + int(self.survival_points[winner_clan] * 0.1) + (self.elimination_points[winner_clan] * 50)
             cm.add_clan_points(winner_clan, total_points)
             cm.unlock_cosmetic(winner_clan, "Tournament_Champion_Banner")
+            if hasattr(cm, "unlock_decoration"):
+                cm.unlock_decoration(winner_clan, "Champion_Trophy")
             if hasattr(cm, "unlock_buff"):
                 cm.unlock_buff(winner_clan, "Guild_Wide_Passive_Buff")
         except ImportError:

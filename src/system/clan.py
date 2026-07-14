@@ -14,6 +14,10 @@ class ClanManager:
                 for clan in data["clans"].values():
                     if "perks" not in clan:
                         clan["perks"] = []
+                    if "decorations" not in clan:
+                        clan["decorations"] = []
+                    if "hub" not in clan:
+                        clan["hub"] = []
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"clans": {}}
@@ -33,7 +37,9 @@ class ClanManager:
             "quests": [],
             "points": 0,
             "territories": [],
-            "perks": []
+            "perks": [],
+            "decorations": [],
+            "hub": []
         }
         self.save()
         return True
@@ -231,3 +237,52 @@ class ClanManager:
         if clan_name in self.data["clans"]:
             return self.data["clans"][clan_name].get("perks", [])
         return []
+
+    def unlock_decoration(self, clan_name, decoration_name):
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if "decorations" not in clan:
+                clan["decorations"] = []
+            if decoration_name not in clan["decorations"]:
+                clan["decorations"].append(decoration_name)
+                self.save()
+                return True
+        return False
+
+    def place_decoration(self, clan_name, decoration_name, x, y):
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if decoration_name in clan.get("decorations", []):
+                if "hub" not in clan:
+                    clan["hub"] = []
+                # Remove existing at this position
+                clan["hub"] = [d for d in clan["hub"] if d.get("x") != x or d.get("y") != y]
+                clan["hub"].append({"decoration": decoration_name, "x": x, "y": y})
+                self.save()
+                return True
+        return False
+
+    def remove_decoration(self, clan_name, x, y):
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if "hub" in clan:
+                initial_len = len(clan["hub"])
+                clan["hub"] = [d for d in clan["hub"] if d.get("x") != x or d.get("y") != y]
+                if len(clan["hub"]) < initial_len:
+                    self.save()
+                    return True
+        return False
+
+    def get_hub_buffs(self, clan_name):
+        buffs = []
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            for d in clan.get("hub", []):
+                dec_name = d.get("decoration", "")
+                if dec_name == "Champion_Trophy":
+                    buffs.append("Tournament_Champion_Aura")
+                elif dec_name == "Speed_Statue":
+                    buffs.append("Hub_Speed_Boost")
+                elif dec_name == "Health_Fountain":
+                    buffs.append("Hub_Health_Regen")
+        return list(set(buffs))

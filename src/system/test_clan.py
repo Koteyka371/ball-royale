@@ -162,3 +162,35 @@ def test_clan_perks(temp_clan_file):
     assert cm.unlock_perk("PerkClan", "hp_boost_2", 10, required_perk="hp_boost_1") == True
     assert "hp_boost_2" in cm.get_clan_perks("PerkClan")
     assert cm.data["clans"]["PerkClan"]["points"] == 40
+
+def test_clan_hub_decorations(temp_clan_file):
+    cm = ClanManager(temp_clan_file)
+    cm.create_clan("DecoClan", "p1")
+
+    # Unlock a decoration
+    assert cm.unlock_decoration("DecoClan", "Champion_Trophy") == True
+    assert "Champion_Trophy" in cm.data["clans"]["DecoClan"]["decorations"]
+
+    # Unlock duplicate shouldn't duplicate
+    assert cm.unlock_decoration("DecoClan", "Champion_Trophy") == False
+    assert len(cm.data["clans"]["DecoClan"]["decorations"]) == 1
+
+    # Cannot place unowned decoration
+    assert cm.place_decoration("DecoClan", "Speed_Statue", 10, 20) == False
+
+    # Place owned decoration
+    assert cm.place_decoration("DecoClan", "Champion_Trophy", 10, 20) == True
+    assert len(cm.data["clans"]["DecoClan"]["hub"]) == 1
+    assert cm.data["clans"]["DecoClan"]["hub"][0]["decoration"] == "Champion_Trophy"
+
+    # Placing it again elsewhere moves it (or overwrites at that pos, our implementation replaces at same pos but doesn't limit qty, but let's just place another)
+    assert cm.place_decoration("DecoClan", "Champion_Trophy", 30, 40) == True
+    assert len(cm.data["clans"]["DecoClan"]["hub"]) == 2
+
+    # Remove decoration
+    assert cm.remove_decoration("DecoClan", 10, 20) == True
+    assert len(cm.data["clans"]["DecoClan"]["hub"]) == 1
+
+    # Check buffs
+    buffs = cm.get_hub_buffs("DecoClan")
+    assert "Tournament_Champion_Aura" in buffs
