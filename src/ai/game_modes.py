@@ -14231,7 +14231,7 @@ class ReverseGravityEventMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Reverse Gravity Event"
-        self.description = "A random arena event that periodically reverses gravity, sending all balls bouncing towards the center instead of outwards."
+        self.description = "A random arena event that periodically inverts gravity, causing balls to fall upwards, requiring them to use ceilings instead of floors."
         self.event_timer = 0.0
         self.event_active = False
         self.event_duration = 0.0
@@ -14260,26 +14260,16 @@ class ReverseGravityEventMode(GameMode):
                     world.add_event("reverse_gravity", {"active": False})
 
         if hasattr(world, "arena"):
-            arena_width = getattr(world.arena, "width", 1000.0)
-            arena_height = getattr(world.arena, "height", 1000.0)
-            cx = arena_width / 2.0
-            cy = arena_height / 2.0
-
             force_mag = 400.0 * delta
-            # Inwards if event_active, outwards if not active
-            direction_mult = 1.0 if self.event_active else -1.0
+            # Fall downwards normally, upwards when event active
+            direction_mult = -1.0 if self.event_active else 1.0
 
-            import math
             for b in balls:
                 if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
-                    bx = getattr(b, "x", cx)
-                    by = getattr(b, "y", cy)
-                    dx = cx - bx
-                    dy = cy - by
-                    dist = math.sqrt(dx*dx + dy*dy)
-                    if dist > 0:
-                        b.x += (dx / dist) * force_mag * direction_mult
-                        b.y += (dy / dist) * force_mag * direction_mult
+                    if hasattr(b, "vy"):
+                        b.vy += force_mag * direction_mult
+                    else:
+                        b.y += force_mag * direction_mult
 
 
 class InvisibleDecoysMode(GameMode):

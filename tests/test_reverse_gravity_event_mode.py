@@ -29,9 +29,9 @@ def test_reverse_gravity_event_mode():
     # Tick without event
     mode.tick(world, [b1], delta=1.0)
 
-    # Outward gravity should push it to the right (x > 600)
-    assert b1.x > 600.0
-    b1_x_outward = b1.x
+    # Normal gravity should push it down (y > 500)
+    assert b1.y > 500.0
+    b1_y_downward = b1.y
 
     # Trigger event
     mode.event_active = True
@@ -40,8 +40,8 @@ def test_reverse_gravity_event_mode():
     # Tick with event
     mode.tick(world, [b1], delta=1.0)
 
-    # Inward gravity should pull it left (x < b1_x_outward)
-    assert b1.x < b1_x_outward
+    # Inward gravity should pull it up (y < b1_y_downward)
+    assert b1.y < b1_y_downward
 
 def test_reverse_gravity_event_mode_trigger():
     mode = GAME_MODES["reverse_gravity_event"]
