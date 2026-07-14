@@ -6635,6 +6635,28 @@ func execute(strategy: String, delta: float):
                         var radius = 30.0
                         my_ball.x = owner.x + cos(orbit_angle) * radius
                         my_ball.y = owner.y + sin(orbit_angle) * radius
+                    elif my_ball.get("is_perfect_mirror") == true or (my_ball.has_method("get_meta") and my_ball.get_meta("is_perfect_mirror") == true):
+                        var arena_w = 1000.0
+                        var arena_h = 1000.0
+                        if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT:
+                            if "width" in self.world.arena: arena_w = self.world.arena.width
+                            if "height" in self.world.arena: arena_h = self.world.arena.height
+                        elif typeof(self.world) == TYPE_DICTIONARY:
+                            if self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY:
+                                if self.world.arena.has("width"): arena_w = self.world.arena.width
+                                if self.world.arena.has("height"): arena_h = self.world.arena.height
+                            else:
+                                if self.world.has("width"): arena_w = self.world.width
+                                if self.world.has("height"): arena_h = self.world.height
+                        elif typeof(self.world) == TYPE_OBJECT:
+                            if "width" in self.world: arena_w = self.world.width
+                            if "height" in self.world: arena_h = self.world.height
+
+                        my_ball.x = arena_w - owner.x
+                        my_ball.y = arena_h - owner.y
+                        if "vx" in my_ball and "vx" in owner: my_ball.vx = -owner.vx
+                        if "vy" in my_ball and "vy" in owner: my_ball.vy = -owner.vy
+
                     elif is_mirroring:
                         var mx = null
                         var my = null
@@ -18743,6 +18765,56 @@ func _use_skill():
                 self.ball.skill_timer = self.ball.skill_cooldown
             else:
                 self.ball.skill_timer = 5.0
+        elif skill_name == "perfect_mirror":
+            var clone = self.ball.duplicate()
+            var next_id = randi() % 90000 + 10000
+            if "next_id" in self.world:
+                next_id = self.world.next_id
+                self.world.next_id += 1
+            clone.id = next_id
+
+            if "hp" in self.ball: clone.hp = self.ball.hp
+            if "max_hp" in self.ball: clone.max_hp = self.ball.max_hp
+            if clone.has_method("set_meta"):
+                clone.set_meta("is_perfect_mirror", true)
+                clone.set_meta("owner_id", self.ball.id)
+            clone.owner_id = self.ball.id
+            clone["is_perfect_mirror"] = true
+            clone.alive = true
+            if "damage" in self.ball: clone.damage = self.ball.damage
+
+            if "skill_timer" in clone: clone.skill_timer = 9999.0
+            if "skill" in clone: clone.skill = ""
+            if clone.has_method("set_meta"):
+                clone.set_meta("skill", "")
+
+            var arena_w = 1000.0
+            var arena_h = 1000.0
+            if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT:
+                if "width" in self.world.arena: arena_w = self.world.arena.width
+                if "height" in self.world.arena: arena_h = self.world.arena.height
+            elif typeof(self.world) == TYPE_DICTIONARY:
+                if self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY:
+                    if self.world.arena.has("width"): arena_w = self.world.arena.width
+                    if self.world.arena.has("height"): arena_h = self.world.arena.height
+                else:
+                    if self.world.has("width"): arena_w = self.world.width
+                    if self.world.has("height"): arena_h = self.world.height
+            elif typeof(self.world) == TYPE_OBJECT:
+                if "width" in self.world: arena_w = self.world.width
+                if "height" in self.world: arena_h = self.world.height
+
+            if "x" in clone and "x" in self.ball: clone.x = arena_w - self.ball.x
+            if "y" in clone and "y" in self.ball: clone.y = arena_h - self.ball.y
+
+            if "balls" in self.world:
+                self.world.balls.append(clone)
+
+            if "skill_cooldown" in self.ball:
+                self.ball.skill_timer = self.ball.skill_cooldown
+            else:
+                self.ball.skill_timer = 10.0
+
         elif skill_name == "clone":
             var num_clones = randi() % 3 + 2 # 2 to 4 clones
             for i in range(num_clones):
