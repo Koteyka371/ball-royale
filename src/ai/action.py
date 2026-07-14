@@ -5724,6 +5724,23 @@ class Action:
                                         bh.duration = 3.0 # Short duration
                                         self.world.arena.hazards.append(bh)
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "tar":
+                                    # Tar trap: heavily slow down the ball and create a tar puddle
+                                    if hasattr(self.ball, "speed_multiplier"):
+                                        self.ball.speed_multiplier *= 0.2
+                                    if hasattr(self.ball, "slow_timer"):
+                                        self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 5.0)
+                                    else:
+                                        self.ball.slow_timer = 5.0
+
+                                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                        from arena.procedural_arena import Hazard
+                                        tar_puddle_id = len(self.world.arena.hazards) + 9000
+                                        tar_puddle = Hazard(tar_puddle_id, hazard.x, hazard.y, 40.0, "tar_puddle", 0.0)
+                                        tar_puddle.duration = 10.0
+                                        self.world.arena.hazards.append(tar_puddle)
+
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "ricochet":
                                     hazard.duration = 0.0 # Destroy trap
 
@@ -6760,6 +6777,13 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
+                        elif hazard.kind == "tar_puddle":
+                            if hasattr(self.ball, "slow_timer"):
+                                self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 3.0)
+                            else:
+                                self.ball.slow_timer = 3.0
+                            if hasattr(self.ball, "speed_multiplier"):
+                                self.ball.speed_multiplier = min(getattr(self.ball, "speed_multiplier", 1.0), 0.2)
                         elif hazard.kind == "tall_grass":
                             if hasattr(self.ball, "take_damage"):
                                 self.ball.take_damage(hazard.damage * delta)
