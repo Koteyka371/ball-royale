@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-961] New Hazard: Time Bomb — *2026-07-14 13:11:49 UTC*
+
+A hazard that spawns on the map and slowly ticks down. When it reaches 0, it explodes in a massive radius, damaging anyone caught inside.
+
+---
+
 ## [idea-810] Vampiric Aura Booster — *2026-07-14 05:25:56 UTC*
 
 A rare booster that temporarily transforms a ball's friendly aura into a vampiric aura. Allies within the radius don't gain standard stacking buffs but instead heal for a percentage of the damage they deal to enemies. This encourages aggressive group plays.
