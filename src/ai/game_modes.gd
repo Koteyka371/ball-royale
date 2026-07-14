@@ -22986,7 +22986,7 @@ class ReverseGravityEventMode extends GameMode:
 
 	func _init() -> void:
 		name = "Reverse Gravity Event"
-		description = "A random arena event that periodically reverses gravity, sending all balls bouncing towards the center instead of outwards."
+		description = "A random arena event that periodically inverts gravity, causing balls to fall upwards, requiring them to use ceilings instead of floors."
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not event_active:
@@ -23011,15 +23011,8 @@ class ReverseGravityEventMode extends GameMode:
 					world.add_event("reverse_gravity", {"active": false})
 
 		if "arena" in world and world.arena != null:
-			var arena_width = 1000.0
-			var arena_height = 1000.0
-			if "width" in world.arena: arena_width = world.arena.width
-			if "height" in world.arena: arena_height = world.arena.height
-			var cx = arena_width / 2.0
-			var cy = arena_height / 2.0
-
 			var force_mag = 400.0 * delta
-			var direction_mult = 1.0 if event_active else -1.0
+			var direction_mult = -1.0 if event_active else 1.0
 
 			for b in balls:
 				if b.alive:
@@ -23034,28 +23027,16 @@ class ReverseGravityEventMode extends GameMode:
 						b_type = b.BALL_TYPE
 
 					if str(b_type).to_lower() != "spectator":
-						var bx = cx
-						var by = cy
 						if typeof(b) == TYPE_DICTIONARY:
-							if b.has("x"): bx = b.x
-							if b.has("y"): by = b.y
-						else:
-							if "x" in b: bx = b.x
-							if "y" in b: by = b.y
-
-						var dx = cx - bx
-						var dy = cy - by
-						var dist = sqrt(dx*dx + dy*dy)
-						if dist > 0:
-							var move_x = (dx / dist) * force_mag * direction_mult
-							var move_y = (dy / dist) * force_mag * direction_mult
-
-							if typeof(b) == TYPE_DICTIONARY:
-								b.x += move_x
-								b.y += move_y
+							if b.has("vy"):
+								b.vy += force_mag * direction_mult
 							else:
-								b.x += move_x
-								b.y += move_y
+								b.y += force_mag * direction_mult
+						else:
+							if "vy" in b:
+								b.vy += force_mag * direction_mult
+							else:
+								b.y += force_mag * direction_mult
 
 
 class InvisibleDecoysMode extends GameMode:
