@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-992] Tag-Team Resuscitation — *2026-07-14 23:04:31 UTC*
+
+Instead of immediately eliminating a tag-team partner when their HP hits zero, they enter a 'downed' state. The active partner can stand in a small aura around the downed player for a specific duration to revive them with a portion of their HP.
+
+---
+
 ## [idea-984] Laser Grid Sweepers — *2026-07-14 22:29:50 UTC*
 
 Similar to Sweeping Paddles, but instead of physical bouncing paddles, they are solid beam lasers that deal high continuous damage if players touch them, creating intense dodging gameplay.

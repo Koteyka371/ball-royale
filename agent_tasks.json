@@ -17033,7 +17033,7 @@
     },
     {
       "id": "idea-992",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tag-Team Resuscitation",
@@ -26975,6 +26975,23 @@
         "src/ai/echolocation_only.py",
         "src/ai/echolocation_only.gd",
         "tests/test_echolocation_only.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1576",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Laser Core",
+      "description": "A single indestructible laser core spawns in the center of the map. It fires two continuous solid beam lasers in opposite directions and slowly rotates. Over time, the core bounces around the arena like a paddle ball, randomly changing direction when hitting a wall, making dodging extremely unpredictable.",
+      "allowed_paths": [
+        "src/ai/bouncing_laser_core.py",
+        "src/ai/bouncing_laser_core.gd",
+        "tests/test_bouncing_laser_core.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
