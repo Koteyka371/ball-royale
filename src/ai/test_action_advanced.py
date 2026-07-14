@@ -370,11 +370,15 @@ def test_reflect_shield_capacity():
     # Wait, `_attempt_damage` takes `attacker` and `target`
     attacker = MockEntity(x=150, y=100, ball_type="enemy")
     attacker.damage = 20.0
+    attacker.team = "B"
 
     target = MockEntity(x=100, y=100, ball_type="ally")
     target.hp = 100.0
+    target.team = "A"
     target.reflect_shield_active = True
     target.reflect_shield_capacity = 50.0
+
+    world.balls = [attacker, target]
 
 
     # Keep track of dealt damage
@@ -857,7 +861,7 @@ def test_deploy_decoy_multiple_swaps():
     assert ball.skill_timer > 0.0
 
 
-def test_reflect_bounce_chain():
+def test_reflect_split():
     ball = MockBall(x=100, y=100)
     world = MockWorld()
     action = Action(ball, world)
@@ -903,11 +907,10 @@ def test_reflect_bounce_chain():
         assert target.reflect_shield_capacity == 30.0
         assert target.reflect_shield_active is True
 
-        # We expect: target reflects to attacker, and bounce logic deals damage to enemy2
-        # `_attempt_damage` handles reflection internally using `world._deal_damage(target, attacker)` where target = the shielded ball
-        assert (1, 2) in damage_dealt or (2, 1) in damage_dealt # The test might be tracking the order of arguments differently. Let's just check the ids.
-        # Check if enemy2 got hit by the bounce (source would be target)
-        assert (3, 2) in damage_dealt or (2, 3) in damage_dealt
+        # We expect: target reflects and splits damage to attacker and enemy2 (both are enemies of target)
+        # _deal_damage(target, enemy)
+        assert (2, 1) in damage_dealt or (1, 2) in damage_dealt
+        assert (2, 3) in damage_dealt or (3, 2) in damage_dealt
     finally:
         random.random = original_random
 

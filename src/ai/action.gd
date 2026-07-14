@@ -1151,11 +1151,43 @@ func _attempt_damage(attacker, target) -> void:
 				if "damage" in attacker:
 					old_dmg = attacker.damage
 					attacker.damage = damage_to_reflect
-				self.world._deal_damage(target, attacker)
+
+				var explosion_radius = 150.0
+				if "reflect_explosion_radius" in target:
+					explosion_radius = float(target.reflect_explosion_radius)
+				elif target.has_method("get_meta") and target.has_meta("reflect_explosion_radius"):
+					explosion_radius = float(target.get_meta("reflect_explosion_radius"))
+
+				var targets_to_hit = []
+				if self.world != null and "balls" in self.world:
+					for other in self.world.balls:
+						var is_alive = other.get("alive", false) if typeof(other) == TYPE_DICTIONARY else other.alive
+						if is_alive:
+							var other_team = other.team if "team" in other else (other.ball_type if "ball_type" in other else "")
+							var target_team = target.team if "team" in target else (target.ball_type if "ball_type" in target else "")
+							if str(other_team) != str(target_team):
+								var dx = (other.x if "x" in other else 0.0) - (target.x if "x" in target else 0.0)
+								var dy = (other.y if "y" in other else 0.0) - (target.y if "y" in target else 0.0)
+								var dist = sqrt(dx*dx + dy*dy)
+								if dist <= explosion_radius:
+									targets_to_hit.append(other)
+
+				if targets_to_hit.size() > 0:
+					var split_dmg = damage_to_reflect / float(targets_to_hit.size())
+					for e in targets_to_hit:
+						var target_old_dmg = target.damage if "damage" in target else 10.0
+						if "damage" in target:
+							target.damage = split_dmg
+						elif target.has_method("set_meta"):
+							target.set_meta("damage", split_dmg)
+						self.world._deal_damage(target, e)
+						if "damage" in target:
+							target.damage = target_old_dmg
+						elif target.has_method("set_meta"):
+							target.set_meta("damage", target_old_dmg)
+
 				if "damage" in attacker:
 					attacker.damage = old_dmg
-
-				self._handle_reflect_bounce(attacker, target, damage_to_reflect)
 
 			if capacity < 0 and max_layers <= 1:
 				var remainder_damage = -capacity
