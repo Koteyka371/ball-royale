@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-959] Elemental Crafter NPC — *2026-07-14 19:35:24 UTC*
+
+A wandering NPC that grants elemental buffs (fire, ice, lightning) depending on which hazard it passes through.
+
+---
+
 ## [idea-980] Black Hole Paddle Mode — *2026-07-14 19:15:48 UTC*
 
 Combine black holes and paddles: The sweeping paddles pull players in with gravity while moving, forcing players to fight immense suction before getting launched at high speeds upon contact.
