@@ -6617,6 +6617,14 @@ class Action:
                             dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
                             b_rad = getattr(self.ball, "radius", 10.0)
 
+                            # Immense suction gravity pull
+                            if dist < 800.0 and getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                pull_nx = -dx / dist
+                                pull_ny = -dy / dist
+                                pull_strength = (getattr(hazard, "radius", 150.0) * 3.0 / max(10.0, dist)) * 80.0 * delta
+                                self.ball.x += pull_nx * pull_strength
+                                self.ball.y += pull_ny * pull_strength
+
                             if dist < (b_rad + getattr(hazard, "radius", 150.0)):
                                 nx = dx / dist
                                 ny = dy / dist

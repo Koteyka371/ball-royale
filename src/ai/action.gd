@@ -11840,6 +11840,21 @@ func execute(strategy: String, delta: float):
                         if "radius" in self.ball:
                             b_rad = self.ball.radius
 
+                        # Immense suction gravity pull
+                        var anchor_timer_paddle = 0.0
+                        if "anchor_booster_timer" in self.ball: anchor_timer_paddle = float(self.ball.anchor_booster_timer)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer_paddle = float(self.ball.get_meta("anchor_booster_timer"))
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): anchor_timer_paddle = float(self.ball["anchor_booster_timer"])
+
+                        if d < 800.0 and anchor_timer_paddle <= 0:
+                            var pull_nx = -dx / d
+                            var pull_ny = -dy / d
+                            var max_dist = 10.0
+                            if d > max_dist: max_dist = d
+                            var pull_strength = (hazard.radius * 3.0 / max_dist) * 80.0 * delta
+                            self.ball.x += pull_nx * pull_strength
+                            self.ball.y += pull_ny * pull_strength
+
                         if d < (b_rad + hazard.radius):
                             var bvx = 0.0
                             if "vx" in self.ball:
