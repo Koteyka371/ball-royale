@@ -10687,6 +10687,34 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "tar":
+                                if "speed_multiplier" in self.ball:
+                                    self.ball.speed_multiplier *= 0.2
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("speed_multiplier", self.ball.get_meta("speed_multiplier") * 0.2 if self.ball.has_meta("speed_multiplier") else 0.2)
+
+                                var current_slow = 0.0
+                                if "slow_timer" in self.ball: current_slow = self.ball.slow_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("slow_timer"): current_slow = self.ball.get_meta("slow_timer")
+
+                                if "slow_timer" in self.ball: self.ball.slow_timer = max(current_slow, 5.0)
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", max(current_slow, 5.0))
+
+                                if world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
+                                    var tar_puddle = null
+                                    if load("res://src/arena/procedural_arena.gd") != null:
+                                        tar_puddle = load("res://src/arena/procedural_arena.gd").Hazard.new(world.get_arena().hazards.size() + 9000, hazard.x, hazard.y, 40.0, "tar_puddle", 0.0)
+                                    else:
+                                        tar_puddle = {"id": world.get_arena().hazards.size() + 9000, "x": hazard.x, "y": hazard.y, "radius": 40.0, "kind": "tar_puddle", "damage": 0.0, "active": true, "duration": 10.0}
+
+                                    if typeof(tar_puddle) == TYPE_OBJECT and tar_puddle.has_method("set_meta"):
+                                        tar_puddle.set_meta("duration", 10.0)
+                                    world.get_arena().hazards.append(tar_puddle)
+
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "ricochet":
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
@@ -12231,6 +12259,20 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp <= 0 and "alive" in self.ball:
                                 self.ball.alive = false
                         continue
+                elif hazard.kind == "tar_puddle":
+                    var current_slow = 0.0
+                    if "slow_timer" in self.ball: current_slow = self.ball.slow_timer
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("slow_timer"): current_slow = self.ball.get_meta("slow_timer")
+
+                    if "slow_timer" in self.ball: self.ball.slow_timer = max(current_slow, 3.0)
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", max(current_slow, 3.0))
+
+                    if "speed_multiplier" in self.ball:
+                        self.ball.speed_multiplier = min(self.ball.speed_multiplier, 0.2)
+                    elif self.ball.has_method("set_meta"):
+                        var current_mult = 1.0
+                        if self.ball.has_meta("speed_multiplier"): current_mult = self.ball.get_meta("speed_multiplier")
+                        self.ball.set_meta("speed_multiplier", min(current_mult, 0.2))
                     elif hazard.kind == "tall_grass":
                         if self.ball.has_method("take_damage"):
                             self.ball.take_damage(hazard.damage * delta)
