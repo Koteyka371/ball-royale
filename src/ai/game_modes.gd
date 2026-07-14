@@ -32609,7 +32609,144 @@ class ClanWarMode extends GameMode:
 				var cm = load("res://src/system/clan.gd").new()
 				cm.capture_territory(winner_clan, "Arena_1")
 
+
+class PaintSplatterMode extends GameMode:
+	var splats: Array = []
+	var wall_colors: Dictionary = {}
+	var game_duration: float = 0.0
+
+	func _init() -> void:
+		super()
+		name = "Paint Splatter"
+		description = "Attacks do not deal conventional damage. Instead, balls shoot paint splatters that cover the arena floor and other balls. Balls regenerate health rapidly when rolling over their own team's color, and slowly lose health while standing on enemy colors. Walls that are bounced off of also take on the color, creating speed boosts for the owning team."
+		splats = []
+		wall_colors = {}
+		game_duration = 0.0
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		super.setup(world, balls)
+		splats = []
+		wall_colors = {"top": null, "bottom": null, "left": null, "right": null}
+
+		for b in balls:
+			b["base_damage"] = 0.0
+			b["damage"] = 0.0
+
+	func tick(world: Dictionary, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		if world.has("attacks") and typeof(world["attacks"]) == TYPE_ARRAY and world["attacks"].size() > 0:
+			for i in range(world["attacks"].size()):
+				var attack_entry = world["attacks"][i]
+				if typeof(attack_entry) == TYPE_ARRAY and attack_entry.size() >= 2:
+					var atk = attack_entry[0]
+					var victim = attack_entry[1]
+					var atk_team = "Neutral"
+					if typeof(atk) == TYPE_DICTIONARY and atk.has("team"):
+						atk_team = atk["team"]
+					elif typeof(atk) == TYPE_OBJECT and atk.get("team") != null:
+						atk_team = atk.get("team")
+
+					var vx = 0.0
+					var vy = 0.0
+					if typeof(victim) == TYPE_DICTIONARY:
+						vx = victim.get("x", 0.0)
+						vy = victim.get("y", 0.0)
+					elif typeof(victim) == TYPE_OBJECT:
+						vx = victim.get("x", 0.0)
+						vy = victim.get("y", 0.0)
+
+					splats.append({"x": vx, "y": vy, "team": atk_team, "radius": 40.0})
+			world["attacks"].clear()
+
+		var width: float = 1000.0
+		var height: float = 1000.0
+		if world.has("arena"):
+			width = world["arena"].get("width", width)
+			height = world["arena"].get("height", height)
+
+		for b in balls:
+			if not b.get("alive", false):
+				continue
+
+			b["damage"] = 0.0
+			b["base_damage"] = 0.0
+
+			var b_team: String = b.get("team", "Neutral")
+			var b_radius: float = b.get("radius", 10.0)
+
+			var hit_left: bool = b.get("x", 0.0) <= b_radius * 1.5
+			var hit_right: bool = b.get("x", 0.0) >= width - b_radius * 1.5
+			var hit_top: bool = b.get("y", 0.0) <= b_radius * 1.5
+			var hit_bottom: bool = b.get("y", 0.0) >= height - b_radius * 1.5
+
+			if hit_left: wall_colors["left"] = b_team
+			if hit_right: wall_colors["right"] = b_team
+			if hit_top: wall_colors["top"] = b_team
+			if hit_bottom: wall_colors["bottom"] = b_team
+
+			var near_wall: bool = false
+			var wall_team = null
+
+			if b.get("x", 0.0) <= b_radius * 2.0:
+				near_wall = true
+				wall_team = wall_colors["left"]
+			elif b.get("x", 0.0) >= width - b_radius * 2.0:
+				near_wall = true
+				wall_team = wall_colors["right"]
+			elif b.get("y", 0.0) <= b_radius * 2.0:
+				near_wall = true
+				wall_team = wall_colors["top"]
+			elif b.get("y", 0.0) >= height - b_radius * 2.0:
+				near_wall = true
+				wall_team = wall_colors["bottom"]
+
+			if near_wall and wall_team != null and wall_team == b_team:
+				if not b.has("base_speed"):
+					b["base_speed"] = b.get("speed", 100.0)
+				b["speed"] = b["base_speed"] * 1.5
+			else:
+				if b.has("base_speed"):
+					b["speed"] = b["base_speed"]
+
+			if not b.has("_paint_cd"):
+				b["_paint_cd"] = 0.0
+
+			b["_paint_cd"] -= delta
+			if b["_paint_cd"] <= 0.0:
+				var sx: float = b.get("x", 0.0) + randf_range(-50, 50)
+				var sy: float = b.get("y", 0.0) + randf_range(-50, 50)
+				splats.append({"x": sx, "y": sy, "team": b_team, "radius": 40.0})
+				b["_paint_cd"] = randf_range(0.5, 1.5)
+
+			if splats.size() > 100:
+				splats.pop_front()
+
+			var on_own: bool = false
+			var on_enemy: bool = false
+
+			for splat in splats:
+				var dx: float = b.get("x", 0.0) - splat["x"]
+				var dy: float = b.get("y", 0.0) - splat["y"]
+				var dist_sq: float = dx*dx + dy*dy
+				var r_sum: float = b_radius + splat["radius"]
+				if dist_sq < r_sum * r_sum:
+					if splat["team"] == b_team:
+						on_own = true
+					elif splat["team"] != "Neutral":
+						on_enemy = true
+
+			if on_own:
+				var max_hp = b.get("max_hp", 100.0)
+				b["hp"] = min(max_hp, b.get("hp", 100.0) + 20.0 * delta)
+			elif on_enemy:
+				b["hp"] -= 10.0 * delta
+				if b["hp"] <= 0:
+					b["hp"] = 0
+					b["alive"] = false
+
 GAME_MODES['clan_war'] = ClanWarMode.new()
+GAME_MODES['paint_splatter'] = PaintSplatterMode.new()
 
 GAME_MODES["rotating_lasers"] = RotatingLasersMode.new()
 GAME_MODES["elemental_wanderer"] = ElementalWandererMode.new()
