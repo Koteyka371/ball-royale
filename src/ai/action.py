@@ -8757,6 +8757,9 @@ class Action:
 
             ball_radius = getattr(self.ball, "radius", 10.0)
 
+            booster_count_before = len(getattr(self.world, "boosters", []))
+            hazard_count_before = len(getattr(self.world.arena, "hazards", [])) if hasattr(self.world, "arena") else 0
+
             if dist <= ball_radius + 10:
                 if getattr(nearest, "kind", None) == "anvil_piece":
                     if hasattr(self.world, "mode") and getattr(self.world.mode, "name", "") == "Blacksmith Boss":
@@ -9868,6 +9871,19 @@ class Action:
                 else:
                     if hasattr(self.world, "_collect_booster"):
                         self.world._collect_booster(self.ball, nearest)
+
+            booster_count_after = len(getattr(self.world, "boosters", []))
+            hazard_count_after = len(getattr(self.world.arena, "hazards", [])) if hasattr(self.world, "arena") else 0
+
+            if booster_count_after < booster_count_before or hazard_count_after < hazard_count_before:
+                if getattr(self.ball, "ball_type", "") == "scavenger":
+                    self.ball.materials_collected = getattr(self.ball, "materials_collected", 0) + 1
+                    self.ball.max_hp = getattr(self.ball, "max_hp", 100.0) + 5.0
+                    self.ball.hp += 5.0
+                    self.ball.damage = float(getattr(self.ball, "damage", 10.0)) + 1.0
+                    if hasattr(self.ball, "base_damage"): self.ball.base_damage = float(self.ball.base_damage) + 1.0
+                    if hasattr(self.ball, "base_max_hp"): self.ball.base_max_hp = float(self.ball.base_max_hp) + 5.0
+
         else:
             self._idle(delta)
 

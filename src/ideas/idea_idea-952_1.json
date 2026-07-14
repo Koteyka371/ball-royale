@@ -1,0 +1,4 @@
+{
+    "title": "Magnetic Mine",
+    "description": "A deployable hazard that initially stays dormant, but when an enemy approaches within a certain radius, it slowly pulls them in before detonating."
+}
