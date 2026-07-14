@@ -16710,7 +16710,7 @@
     },
     {
       "id": "idea-973",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Perks and Upgrades",
@@ -26582,6 +26582,74 @@
         "src/ai/quantum_swap_bomb.py",
         "src/ai/quantum_swap_bomb.gd",
         "tests/test_quantum_swap_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1553",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Emissary System",
+      "description": "Allow clan leaders to designate 'Emissaries'. In Battle Royale modes, if an Emissary survives to the top 3, they claim bonus territory points or resources for their clan. This paints a target on their back during matches, creating emergent 'bounty' gameplay dynamics where other players can earn rewards for eliminating an Emissary.",
+      "allowed_paths": [
+        "src/ai/clan_emissary.py",
+        "src/ai/clan_emissary.gd",
+        "tests/test_clan_emissary.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1554",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Map Hazards Based on Territory Ownership",
+      "description": "If a clan owns a specific territory, not only do they get passive bonuses, but the map itself alters to favor them. For instance, specific environmental hazards like lava geysers or poison traps could become 'friendly' to the controlling clan (not damaging their members) while remaining dangerous to rival clans or unaligned players.",
+      "allowed_paths": [
+        "src/arena/dynamic_map_hazards_based_on_territory_ownership.py",
+        "src/arena/dynamic_map_hazards_based_on_territory_ownership.gd",
+        "tests/test_dynamic_map_hazards_based_on_territory_ownership.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1555",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tag Team Arena",
+      "description": "Players can swap places with a partner at will but share a cooldown on the ability.",
+      "allowed_paths": [
+        "src/arena/tag_team_arena.py",
+        "src/arena/tag_team_arena.gd",
+        "tests/test_tag_team_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1556",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Castle Mode",
+      "description": "The arena is super bouncy and balls bounce higher and further when hitting edges.",
+      "allowed_paths": [
+        "src/ai/bouncy_castle.py",
+        "src/ai/bouncy_castle.gd",
+        "tests/test_bouncy_castle.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

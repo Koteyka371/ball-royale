@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-973] Clan Perks and Upgrades — *2026-07-14 18:13:17 UTC*
+
+Allow clans to spend accumulated 'Clan Points' (earned from quests and matches) to unlock global perks for all members. Perks could include increased inventory space, a small chance to not consume a consumable item, or access to exclusive clan-only cosmetic auras. These upgrades would provide a tangible long-term progression system for clans.
+
+---
+
 ## [idea-971] Quantum Entanglement Arena — *2026-07-14 17:28:26 UTC*
 
 An arena mode where random pairs of players become 'entangled'. Damage taken by one is partially shared with the other, but they also share healing and buffs. They can choose to cooperate to take down enemies together or risk hurting themselves by attacking their entangled partner.
