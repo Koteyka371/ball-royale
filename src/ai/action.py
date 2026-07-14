@@ -7272,6 +7272,13 @@ class Action:
                         setattr(self.ball, "is_bleeding", True)
 
                     # Apply additional damage based on velocity if the ball was recently knocked back
+                    if getattr(self.ball, "stun_explosion_armed", False) and speed > 500:
+                        setattr(self.ball, "stun_explosion_armed", False)
+                        setattr(self.ball, "_knockback_timer", 0.0)
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("stun", {"id": getattr(self.ball, "id", None), "duration": 2.0})
+                            self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 80.0, "damage": 20.0})
+
                     if getattr(self.ball, "_knockback_timer", 0.0) > 0.0:
                         # Wall combo logic
                         combo = getattr(self.ball, "_wall_knockback_combo", 0) + 1
@@ -12170,6 +12177,18 @@ class Action:
                         if dist <= explosion_radius:
                             if hasattr(enemy, "take_damage"):
                                 enemy.take_damage(explosion_damage)
+                                if getattr(enemy, "alive", True):
+                                    mass = getattr(enemy, "mass", 1.0)
+                                    kb_force = 5000.0
+                                    e_dx = getattr(enemy, "x", 0) - self.ball.x
+                                    e_dy = getattr(enemy, "y", 0) - self.ball.y
+                                    e_dist = math.sqrt(e_dx*e_dx + e_dy*e_dy)
+                                    if e_dist > 0.0001:
+                                        nx, ny = e_dx/e_dist, e_dy/e_dist
+                                        enemy.vx = getattr(enemy, "vx", 0.0) + nx * (kb_force / mass)
+                                        enemy.vy = getattr(enemy, "vy", 0.0) + ny * (kb_force / mass)
+                                        setattr(enemy, "stun_explosion_armed", True)
+                                        setattr(enemy, "_knockback_timer", 1.0)
                                 # Apply elemental effects if secondary explosion occurred
                                 if elemental_effect == "fire_aura":
                                     enemy.burn_timer = getattr(enemy, "burn_timer", 0) + 5.0
@@ -12588,6 +12607,22 @@ class Action:
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
+
+                # Secondary stun explosion on collision
+                speed_self = math.sqrt(getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2)
+                speed_other = math.sqrt(getattr(other, "vx", 0.0)**2 + getattr(other, "vy", 0.0)**2)
+                if getattr(self.ball, "stun_explosion_armed", False) or getattr(other, "stun_explosion_armed", False):
+                    if speed_self > 300 or speed_other > 300:
+                        setattr(self.ball, "stun_explosion_armed", False)
+                        setattr(other, "stun_explosion_armed", False)
+                        setattr(self.ball, "_knockback_timer", 0.0)
+                        setattr(other, "_knockback_timer", 0.0)
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("stun", {"id": getattr(self.ball, "id", None), "duration": 2.0})
+                            self.world.add_event("stun", {"id": getattr(other, "id", None), "duration": 2.0})
+                            exp_x = (self.ball.x + other.x) / 2.0
+                            exp_y = (self.ball.y + other.y) / 2.0
+                            self.world.add_event("explosion", {"x": exp_x, "y": exp_y, "radius": 80.0, "damage": 20.0})
 
                 # Chain lightning power-up logic on collision
                 # If we have the power-up, and we hit an enemy, trigger it
@@ -13416,6 +13451,8 @@ class Action:
                                                 b.vx += nx * (kb_force / mass)
                                                 b.vy += ny * (kb_force / mass)
 
+                                                setattr(b, "stun_explosion_armed", True)
+                                                setattr(b, "_knockback_timer", 1.0)
                                                 if hasattr(self.world, "_deal_damage"):
                                                     # Apply minor HP damage
                                                     class DummyAttacker:
