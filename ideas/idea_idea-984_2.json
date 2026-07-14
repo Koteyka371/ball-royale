@@ -1,0 +1,4 @@
+{
+  "title": "Bouncing Laser Core",
+  "description": "A single indestructible laser core spawns in the center of the map. It fires two continuous solid beam lasers in opposite directions and slowly rotates. Over time, the core bounces around the arena like a paddle ball, randomly changing direction when hitting a wall, making dodging extremely unpredictable."
+}

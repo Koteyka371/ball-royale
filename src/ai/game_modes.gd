@@ -22809,6 +22809,100 @@ class SweepingPaddlesMode extends GameMode:
 						h.x = center_x + sin(sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
 
 
+class SweepingLasersMode extends GameMode:
+	var sweep_timer: float = 0.0
+	var laser_damage_per_second: float = 500.0
+
+	func _init() -> void:
+		name = "Sweeping Lasers"
+		description = "Solid beam lasers sweep across the arena, dealing high continuous damage if players touch them."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		pass
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if not "hazards" in world.arena:
+					world.arena.hazards = []
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if not "hazards" in world.arena:
+					world.arena.hazards = []
+
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+			sweep_timer = 0.0
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+
+			var laser_top = ProceduralArena.Hazard.new(15003, arena_width / 2.0, 50.0, 150.0, "sweeping_laser", 0.0)
+			world.arena.hazards.append(laser_top)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		sweep_timer += delta
+		var arena_width = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and world.arena != null:
+				arena_width = world.arena.get("width", 1000.0)
+		else:
+			if world.get("arena") != null:
+				arena_width = world.arena.width
+		var center_x = arena_width / 2.0
+
+		if "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
+				if kind == "sweeping_laser":
+					if typeof(h) == TYPE_DICTIONARY:
+						h["x"] = center_x + sin(sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
+					else:
+						h.x = center_x + sin(sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
+
+		if "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
+				if kind == "sweeping_laser":
+					var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
+					var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
+					var h_r = h.get("radius", 150.0) if typeof(h) == TYPE_DICTIONARY else h.radius
+
+					for b in balls:
+						var alive = false
+						if "alive" in b: alive = b.alive
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+
+						if alive:
+							var b_x = 0.0
+							var b_y = 0.0
+							if "x" in b: b_x = b.x
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+							elif typeof(b) == TYPE_DICTIONARY and b.has("x"): b_x = b.x
+
+							if "y" in b: b_y = b.y
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+							elif typeof(b) == TYPE_DICTIONARY and b.has("y"): b_y = b.y
+
+							var dist = abs(b_x - h_x)
+							if dist < h_r:
+								var dmg = laser_damage_per_second * delta
+								if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+									b.take_damage(dmg)
+								else:
+									if "hp" in b:
+										b.hp -= dmg
+									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta") and b.has_meta("hp"):
+										b.set_meta("hp", b.get_meta("hp") - dmg)
+									elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+										b["hp"] -= dmg
+
+
+
 class ReversedInputMode extends GameMode:
 	var timer = 0.0
 	var is_reversed = false
@@ -29876,6 +29970,7 @@ var GAME_MODES = {
 	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
 	"sweeping_paddles": SweepingPaddlesMode.new(),
+	"sweeping_lasers": SweepingLasersMode.new(),
 	"artifact_upgrader": ArtifactUpgraderMode.new(),
 	"meteor_shower": MeteorShowerMode.new(),
 	"rolling_boulders": RollingBouldersMode.new(),
