@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-863] Nemesis Drone — *2026-07-14 18:13:22 UTC*
+
+A consumable item that spawns a tiny invincible drone that slowly flies toward your Nemesis and damages them if they touch it.
+
+---
+
 ## [idea-973] Clan Perks and Upgrades — *2026-07-14 18:13:17 UTC*
 
 Allow clans to spend accumulated 'Clan Points' (earned from quests and matches) to unlock global perks for all members. Perks could include increased inventory space, a small chance to not consume a consumable item, or access to exclusive clan-only cosmetic auras. These upgrades would provide a tangible long-term progression system for clans.
