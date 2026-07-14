@@ -837,6 +837,121 @@ class GameMode:
 			if "arena" in world and "hazards" in world.arena:
 				world.arena.hazards.append(soul)
 
+		if "arena" in world and "hazards" in world.arena:
+			var drones = []
+			for h in world.arena.hazards:
+				var kind = ""
+				if "kind" in h: kind = h.kind
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+				elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+				if kind == "nemesis_drone": drones.append(h)
+			for d in drones:
+				var d_owner_id = null
+				if "owner_id" in d: d_owner_id = d.owner_id
+				elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("owner_id"): d_owner_id = d.get_meta("owner_id")
+				elif typeof(d) == TYPE_DICTIONARY and d.has("owner_id"): d_owner_id = d["owner_id"]
+				var owner_ball = null
+				for b in balls:
+					var b_id = null
+					if "id" in b: b_id = b.id
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("id") != null: b_id = b.get("id")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+					if b_id != null and b_id == d_owner_id:
+						owner_ball = b
+						break
+				if owner_ball != null:
+					var pm = null
+					if typeof(world) == TYPE_OBJECT and "profile_manager" in world: pm = world.profile_manager
+					elif typeof(world) == TYPE_DICTIONARY and world.has("profile_manager"): pm = world["profile_manager"]
+					if pm != null and typeof(pm) == TYPE_OBJECT and pm.has_method("is_nemesis"):
+						var nemesis = null
+						var min_dist_sq = 999999.0
+						var owner_type = ""
+						if "ball_type" in owner_ball: owner_type = owner_ball.ball_type
+						elif typeof(owner_ball) == TYPE_OBJECT and owner_ball.has_method("get") and owner_ball.get("ball_type") != null: owner_type = owner_ball.get("ball_type")
+						elif typeof(owner_ball) == TYPE_DICTIONARY and owner_ball.has("ball_type"): owner_type = owner_ball["ball_type"]
+						if owner_type != "":
+							for b in balls:
+								var b_alive = false
+								if "alive" in b: b_alive = b.alive
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null: b_alive = b.get("alive")
+								elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+								if not b_alive: continue
+								var b_id = null
+								if "id" in b: b_id = b.id
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("id") != null: b_id = b.get("id")
+								elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+								if b_id == d_owner_id: continue
+								var b_type = ""
+								if "ball_type" in b: b_type = b.ball_type
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("ball_type") != null: b_type = b.get("ball_type")
+								elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+								if b_type != "" and pm.is_nemesis(owner_type, b_type):
+									var bx = 0.0
+									var by = 0.0
+									if "x" in b: bx = b.x
+									elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("x") != null: bx = b.get("x")
+									elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b["x"]
+									if "y" in b: by = b.y
+									elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("y") != null: by = b.get("y")
+									elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b["y"]
+									var dx = 0.0
+									var dy = 0.0
+									if "x" in d: dx = d.x
+									elif typeof(d) == TYPE_DICTIONARY and d.has("x"): dx = d["x"]
+									if "y" in d: dy = d.y
+									elif typeof(d) == TYPE_DICTIONARY and d.has("y"): dy = d["y"]
+									var dist_sq = (bx - dx)*(bx - dx) + (by - dy)*(by - dy)
+									if dist_sq < min_dist_sq:
+										min_dist_sq = dist_sq
+										nemesis = b
+						if nemesis != null:
+							var nx = 0.0
+							var ny = 0.0
+							if "x" in nemesis: nx = nemesis.x
+							elif typeof(nemesis) == TYPE_OBJECT and nemesis.has_method("get") and nemesis.get("x") != null: nx = nemesis.get("x")
+							elif typeof(nemesis) == TYPE_DICTIONARY and nemesis.has("x"): nx = nemesis["x"]
+							if "y" in nemesis: ny = nemesis.y
+							elif typeof(nemesis) == TYPE_OBJECT and nemesis.has_method("get") and nemesis.get("y") != null: ny = nemesis.get("y")
+							elif typeof(nemesis) == TYPE_DICTIONARY and nemesis.has("y"): ny = nemesis["y"]
+							var dx = 0.0
+							var dy = 0.0
+							if "x" in d: dx = d.x
+							elif typeof(d) == TYPE_DICTIONARY and d.has("x"): dx = d["x"]
+							if "y" in d: dy = d.y
+							elif typeof(d) == TYPE_DICTIONARY and d.has("y"): dy = d["y"]
+							var vx = nx - dx
+							var vy = ny - dy
+							var dist = sqrt(vx*vx + vy*vy)
+							if dist > 0.0001:
+								var speed = 80.0 * delta
+								if "x" in d: d.x += (vx/dist) * speed
+								elif typeof(d) == TYPE_DICTIONARY and d.has("x"): d["x"] += (vx/dist) * speed
+								if "y" in d: d.y += (vy/dist) * speed
+								elif typeof(d) == TYPE_DICTIONARY and d.has("y"): d["y"] += (vy/dist) * speed
+								var r_nem = 10.0
+								if "radius" in nemesis: r_nem = nemesis.radius
+								elif typeof(nemesis) == TYPE_OBJECT and nemesis.has_method("get") and nemesis.get("radius") != null: r_nem = nemesis.get("radius")
+								elif typeof(nemesis) == TYPE_DICTIONARY and nemesis.has("radius"): r_nem = nemesis["radius"]
+								var r_d = 8.0
+								if "radius" in d: r_d = d.radius
+								elif typeof(d) == TYPE_DICTIONARY and d.has("radius"): r_d = d["radius"]
+								if dist < r_nem + r_d:
+									var d_dmg = 15.0
+									if "damage" in d: d_dmg = d.damage
+									elif typeof(d) == TYPE_DICTIONARY and d.has("damage"): d_dmg = d["damage"]
+									if typeof(nemesis) == TYPE_OBJECT and nemesis.has_method("take_damage"):
+										nemesis.take_damage(d_dmg)
+									else:
+										var nhp = 100.0
+										if "hp" in nemesis: nhp = nemesis.hp
+										elif typeof(nemesis) == TYPE_OBJECT and nemesis.has_method("get") and nemesis.get("hp") != null: nhp = nemesis.get("hp")
+										elif typeof(nemesis) == TYPE_DICTIONARY and nemesis.has("hp"): nhp = nemesis["hp"]
+										if "hp" in nemesis: nemesis.hp = nhp - d_dmg
+										elif typeof(nemesis) == TYPE_OBJECT and nemesis.has_method("set"): nemesis.set("hp", nhp - d_dmg)
+										elif typeof(nemesis) == TYPE_DICTIONARY and nemesis.has("hp"): nemesis["hp"] = nhp - d_dmg
+									var idx = world.arena.hazards.find(d)
+									if idx != -1: world.arena.hazards.remove_at(idx)
 		# Necromancer death logic
 		var b_type = ""
 		if "ball_type" in ball: b_type = ball.ball_type
@@ -2293,7 +2408,7 @@ class BattleRoyaleMode extends GameMode:
 					if "height" in world.arena: arena_height = world.arena.height
 
 				rng.randomize()
-				var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster"]
+				var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
 				var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
 				var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
 				var b_x = rng.randf_range(100, arena_width - 100)
@@ -3075,7 +3190,7 @@ class BattleRoyaleMode extends GameMode:
 						boosters_array = world.boosters
 
 					if boosters_array != null:
-						var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster"]
+						var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
 						for i in range(3):
 							var b_id = 9100 + boosters_array.size() + rng.randi() % 1000
 							var b_x = bx + rng.randf_range(-30, 30)
@@ -14603,7 +14718,7 @@ class SupernovaMode extends GameMode:
 					boosters_array = world.boosters
 
 				if boosters_array != null:
-					var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster"]
+					var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
 					var rng = RandomNumberGenerator.new()
 					rng.randomize()
 					for i in range(10):
@@ -23749,7 +23864,7 @@ class SolarFlareMode extends GameMode:
 	var flare_interval: float = 20.0
 	var flare_duration: float = 5.0
 	var is_flaring: bool = false
-	var excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
+	var excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
 
 	func _init():
 		super()
@@ -30468,7 +30583,7 @@ class ItemMorphMode extends GameMode:
 	var morph_timer: float = 0.0
 	var morph_interval: float = 10.0
 	var rng = RandomNumberGenerator.new()
-	var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster"]
+	var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
 
 	func _init().():
 		name = "Item Morph"

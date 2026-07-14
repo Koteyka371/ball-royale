@@ -309,6 +309,36 @@ class GameMode:
 
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            drones = [h for h in world.arena.hazards if getattr(h, "kind", "") == "nemesis_drone"]
+            for d in drones:
+                owner = next((b for b in balls if getattr(b, "id", None) == getattr(d, "owner_id", None)), None)
+                if owner:
+                    pm = getattr(world, "profile_manager", None)
+                    if pm and hasattr(pm, "is_nemesis"):
+                        nemesis = None
+                        min_dist_sq = 999999.0
+                        for b in balls:
+                            if getattr(b, "alive", False) and getattr(b, "id", None) != getattr(owner, "id", None):
+                                if getattr(b, "ball_type", None) and getattr(owner, "ball_type", None) and pm.is_nemesis(owner.ball_type, b.ball_type):
+                                    bx, by = getattr(b, "x", 0), getattr(b, "y", 0)
+                                    dist_sq = (bx - getattr(d, "x", 0))**2 + (by - getattr(d, "y", 0))**2
+                                    if dist_sq < min_dist_sq:
+                                        min_dist_sq, nemesis = dist_sq, b
+                        if nemesis:
+                            nx, ny = getattr(nemesis, "x", 0), getattr(nemesis, "y", 0)
+                            dx, dy = nx - getattr(d, "x", 0), ny - getattr(d, "y", 0)
+                            dist = (dx**2 + dy**2)**0.5
+                            if dist > 0.0001:
+                                speed = 80.0 * delta
+                                if isinstance(d, dict):
+                                    d["x"] = d.get("x", 0) + (dx / dist) * speed
+                                    d["y"] = d.get("y", 0) + (dy / dist) * speed
+                                else:
+                                    d.x, d.y = getattr(d, "x", 0) + (dx / dist) * speed, getattr(d, "y", 0) + (dy / dist) * speed
+                                if dist < getattr(nemesis, "radius", 10.0) + getattr(d, "radius", 8.0):
+                                    if hasattr(nemesis, "take_damage"): nemesis.take_damage(getattr(d, "damage", 15.0))
+                                    else: nemesis.hp = getattr(nemesis, "hp", 100) - getattr(d, "damage", 15.0)
+                                    if d in world.arena.hazards: world.arena.hazards.remove(d)
             missiles = [h for h in world.arena.hazards if getattr(h, "kind", "") == "homing_missile"]
             for m in missiles:
                 target_x = getattr(world.arena, "safe_zone_x", getattr(world.arena, "width", 1000) / 2)
@@ -1618,7 +1648,7 @@ class BattleRoyaleMode(GameMode):
                         self.ball_type = "booster"
                         self.active = True
 
-                booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster"]
+                booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
                 chosen_kind = rnd.choice(booster_kinds)
                 b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
                 b_x = rnd.uniform(100, arena_width - 100)
@@ -2342,7 +2372,7 @@ class BattleRoyaleMode(GameMode):
                 if b.hp <= 0:
                     b.alive = False
                     if hasattr(world, "boosters"):
-                        booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster"]
+                        booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
                         for i in range(3):
                             class DroppedBooster:
                                 def __init__(self, id, x, y, kind):
@@ -9410,7 +9440,7 @@ class SupernovaMode(GameMode):
 
                 # Scatter rare boosters upon explosion
                 if hasattr(world, "boosters"):
-                    booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster"]
+                    booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
                     import random
                     class DroppedBooster:
                         def __init__(self, id, x, y, kind):
@@ -18718,7 +18748,7 @@ class ItemMorphMode(GameMode):
         super().__init__()
         self.morph_timer = 0.0
         self.morph_interval = 10.0
-        self.booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster"]
+        self.booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
         import random
         self.random = random
 
@@ -18936,7 +18966,7 @@ class SolarFlareMode(GameMode):
         self.flare_interval = 20.0
         self.flare_duration = 5.0
         self.is_flaring = False
-        self.excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
+        self.excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)

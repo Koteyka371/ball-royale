@@ -9765,6 +9765,19 @@ class Action:
                     self.ball.shield_booster_active = True
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "nemesis_drone_booster":
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            import random
+                            d = Hazard(id=999000 + len(self.world.arena.hazards) + random.randint(0,10000), x=self.ball.x, y=self.ball.y, radius=8.0, kind="nemesis_drone", damage=15.0)
+                            d.owner_id = self.ball.id
+                            d.duration = 9999.0
+                            self.world.arena.hazards.append(d)
+                        except:
+                            self.world.arena.hazards.append({"id":999000 + len(self.world.arena.hazards), "x":self.ball.x, "y":self.ball.y, "radius":8.0, "kind":"nemesis_drone", "damage":15.0, "owner_id":self.ball.id, "duration":9999.0})
+                        if nearest in self.world.arena.hazards: self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters: self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "homing_missile_booster":
                     self.ball.homing_missile_booster_timer = 5.0
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
@@ -13136,7 +13149,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "placeable_trap_booster", "nemesis_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
