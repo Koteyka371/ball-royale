@@ -6610,6 +6610,20 @@ class Action:
                                     if dot < 0:
                                         self.ball.vx = bvx - 2 * dot * nx
                                         self.ball.vy = bvy - 2 * dot * ny
+                        elif hazard.kind == "sweeping_laser":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist2 = dx*dx + dy*dy
+                            dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
+                            b_rad = getattr(self.ball, "radius", 10.0)
+
+                            if dist < (b_rad + getattr(hazard, "radius", 150.0)):
+                                # High continuous damage
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(200.0 * delta)
+                                else:
+                                    self.ball.hp -= 200.0 * delta
+
                         elif hazard.kind == "sweeping_paddle":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y

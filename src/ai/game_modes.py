@@ -13973,6 +13973,106 @@ class ArtifactUpgraderMode(GameMode):
 
 
 
+class SweepingLasersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sweeping Lasers"
+        self.description = "Solid beam lasers sweep across the arena, dealing high continuous damage if players touch them."
+        self.sweep_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+
+        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+            b_type = getattr(b, "ball_type", "").lower()
+
+            # Trait: Fire
+            is_fire = "fire" in b_type or "fire" in traits
+            if is_fire:
+                if weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 1.2
+                    b.damage = base_d * 1.2
+                elif weather in ["rain", "blizzard", "heavy_rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+                    b.speed = base_s * 0.8
+                    b.damage = base_d * 0.8
+
+            # Trait: Earth
+            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
+            if is_earth:
+                if weather == "sandstorm":
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+
+                if "dirt" in arena_type or "earth" in arena_type:
+                    b.defense_multiplier = 0.8
+
+            # Trait: Elementalist
+            is_elemental = "elemental" in b_type or "elemental" in traits
+            if is_elemental:
+                if weather in ["sandstorm"]:
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            try:
+                from arena.procedural_arena import Hazard
+                def create_hazard(hid, hx, hy, r, k):
+                    h = Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
+                    h.active = True
+                    return h
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, hid, hx, hy, r, k):
+                        self.id = hid
+                        self.x = hx
+                        self.y = hy
+                        self.radius = r
+                        self.kind = k
+                        self.damage = 0.0
+                        self.active = True
+                def create_hazard(hid, hx, hy, r, k):
+                    return FallbackHazard(hid, hx, hy, r, k)
+
+            self.sweep_timer = 0.0
+            laser_top = create_hazard(15101, arena_width / 2.0, 50, 150.0, "sweeping_laser")
+            laser_bottom = create_hazard(15102, arena_width / 2.0, arena_height - 50, 150.0, "sweeping_laser")
+
+            world.arena.hazards.append(laser_top)
+            world.arena.hazards.append(laser_bottom)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        self.sweep_timer += delta
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        center_x = arena_width / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "sweeping_laser":
+                    # Sweep left and right
+                    h.x = center_x + math.sin(self.sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
+
 class SweepingPaddlesMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -17810,6 +17910,7 @@ GAME_MODES = {
     "extreme_weather": ExtremeWeatherMode(),
     "weather_station": WeatherStationMode(),
     "invisible_decoys": InvisibleDecoysMode(),
+    "sweeping_lasers": SweepingLasersMode(),
     "sweeping_paddles": SweepingPaddlesMode(),
     "artifact_upgrader": ArtifactUpgraderMode(),
     "meteor_shower": MeteorShowerMode(),

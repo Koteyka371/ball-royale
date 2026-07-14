@@ -11830,6 +11830,22 @@ func execute(strategy: String, delta: float):
                                     else:
                                         self.ball.vx = bvx - 2 * dot * nx
                                         self.ball.vy = bvy - 2 * dot * ny
+                    elif hazard.kind == "sweeping_laser":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        if d < 0.0001: d = 0.0001
+
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+
+                        if d < (b_rad + hazard.radius):
+                            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("take_damage"):
+                                self.ball.take_damage(200.0 * delta)
+                            else:
+                                self.ball.hp -= 200.0 * delta
+
                     elif hazard.kind == "sweeping_paddle":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y

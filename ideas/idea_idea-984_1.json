@@ -1,0 +1,4 @@
+{
+  "title": "Laser Grid Mode",
+  "description": "A game mode where static lasers form a grid that periodically turns on and off. Players must navigate the safe squares to avoid taking damage when the grid activates."
+}
