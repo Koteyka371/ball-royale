@@ -1459,6 +1459,38 @@ class BattleRoyaleMode extends GameMode:
 						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("has_sniper_stance", true)
 						elif "has_sniper_stance" in b: b.has_sniper_stance = true
 
+	func deploy_guild_ability(world, ability_name: String, team_name: String) -> void:
+		var balls = []
+		if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+			balls = world["balls"]
+		elif typeof(world) == TYPE_OBJECT and "balls" in world:
+			balls = world.balls
+
+		if ability_name == "Mass Heal":
+			for b in balls:
+				var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else b.team
+				var b_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+				if b_team == team_name and b_alive:
+					var b_max_hp = b.get("max_hp") if typeof(b) == TYPE_DICTIONARY else b.max_hp
+					var b_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp
+					var new_hp = min(b_hp + b_max_hp * 0.5, b_max_hp)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = new_hp
+					else:
+						b.hp = new_hp
+		elif ability_name == "Global Speed Boost":
+			for b in balls:
+				var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else b.team
+				var b_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+				if b_team == team_name and b_alive:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["speed_boost_timer"] = b.get("speed_boost_timer", 0.0) + 10.0
+					else:
+						if "speed_boost_timer" in b:
+							b.speed_boost_timer += 10.0
+						else:
+							b.speed_boost_timer = 10.0
+
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		# Evaluate crowd system

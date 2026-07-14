@@ -38,6 +38,8 @@ func load_guilds():
                     data["guilds"][g_name]["guild_xp"] = 0
                 if not data["guilds"][g_name].has("perks"):
                     data["guilds"][g_name]["perks"] = []
+                if not data["guilds"][g_name].has("active_abilities"):
+                    data["guilds"][g_name]["active_abilities"] = []
                 if not data["guilds"][g_name].has("active_bounties"):
                     data["guilds"][g_name]["active_bounties"] = {}
                 if not data["guilds"][g_name].has("prestige_pool"):
@@ -80,6 +82,7 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
         "gvg_points": 0,
         "guild_xp": 0,
         "perks": [],
+        "active_abilities": [],
         "active_bounties": {},
         "chat_history": [],
         "vault": [],
@@ -361,12 +364,43 @@ func unlock_perk(guild_name: String, perk_name: String, cost: int, required_perk
         if guild["guild_xp"] >= cost:
             if not guild.has("perks"):
                 guild["perks"] = []
+            if not guild.has("active_abilities"):
+                guild["active_abilities"] = []
             if not guild["perks"].has(perk_name):
                 if required_perk == "" or guild["perks"].has(required_perk):
                     guild["guild_xp"] -= cost
                     guild["perks"].append(perk_name)
                     save_guilds()
                     return true
+    return false
+
+func buy_active_ability(guild_name: String, ability_name: String, cost: int, currency: String = "resources") -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has(currency) and guild[currency] >= cost:
+            if not guild.has("active_abilities"):
+                guild["active_abilities"] = []
+            if not guild["active_abilities"].has(ability_name):
+                guild[currency] -= cost
+                guild["active_abilities"].append(ability_name)
+                save_guilds()
+                return true
+    return false
+
+func get_active_abilities(guild_name: String) -> Array:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("active_abilities"):
+            return guild["active_abilities"]
+    return []
+
+func deploy_active_ability(guild_name: String, ability_name: String) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("active_abilities") and guild["active_abilities"].has(ability_name):
+            guild["active_abilities"].erase(ability_name)
+            save_guilds()
+            return true
     return false
 
 func get_guild_perks(guild_name: String) -> Array:

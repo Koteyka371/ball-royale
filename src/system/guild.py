@@ -32,6 +32,8 @@ class GuildManager:
                         guild["guild_xp"] = 0
                     if "perks" not in guild:
                         guild["perks"] = []
+                    if "active_abilities" not in guild:
+                        guild["active_abilities"] = []
                     if "active_bounties" not in guild:
                         guild["active_bounties"] = {}
                     if "prestige_pool" not in guild:
@@ -73,6 +75,7 @@ class GuildManager:
             "gvg_points": 0,
             "guild_xp": 0,
             "perks": [],
+            "active_abilities": [],
             "active_bounties": {},
             "chat_history": [],
             "vault": [],
@@ -282,6 +285,31 @@ class GuildManager:
                         guild.setdefault("perks", []).append(perk_name)
                         self.save()
                         return True
+        return False
+
+    def buy_active_ability(self, guild_name, ability_name, cost, currency="resources"):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if currency in guild and guild[currency] >= cost:
+                if ability_name not in guild.get("active_abilities", []):
+                    guild[currency] -= cost
+                    guild.setdefault("active_abilities", []).append(ability_name)
+                    self.save()
+                    return True
+        return False
+
+    def get_active_abilities(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("active_abilities", [])
+        return []
+
+    def deploy_active_ability(self, guild_name, ability_name):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if ability_name in guild.get("active_abilities", []):
+                guild["active_abilities"].remove(ability_name)
+                self.save()
+                return True
         return False
 
     def get_guild_perks(self, guild_name):
