@@ -1601,3 +1601,47 @@ def test_cursed_perk_reward():
 
     del sys.modules['system']
     del sys.modules['system.lobby']
+def test_grid_lockdown_mode():
+    from ai.game_modes import GridLockdownMode
+    class MockArena:
+        def __init__(self):
+            self.width = 1000.0
+            self.height = 1000.0
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.events = []
+        def add_event(self, type, data):
+            self.events.append({"type": type, "data": data})
+    class MockBall:
+        def __init__(self, id, x, y):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.hp = 100.0
+            self.alive = True
+
+    mode = GridLockdownMode()
+    world = MockWorld()
+
+    # Cell size is 200x200
+    # Place b1 in cell (0, 0), b2 in cell (4, 4)
+    b1 = MockBall(1, 100, 100)
+    b2 = MockBall(2, 900, 900)
+    balls = [b1, b2]
+
+    mode.setup(world, balls)
+
+    # Force lock cell (0, 0) only
+    mode.locked_cells = [(0, 0)]
+
+    # Tick for 1 second
+    mode.tick(world, balls, delta=1.0)
+
+    # b1 is in locked cell, should take 100 damage and die
+    assert b1.hp == 0.0
+    assert not b1.alive
+
+    # b2 is in safe cell, should have 100 hp and be alive
+    assert b2.hp == 100.0
+    assert b2.alive

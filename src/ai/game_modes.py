@@ -20869,3 +20869,68 @@ GAME_MODES['clan_war'] = ClanWarMode()
 
 GAME_MODES['rotating_lasers'] = RotatingLasersMode()
 GAME_MODES['elemental_wanderer'] = ElementalWandererMode()
+
+class GridLockdownMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Grid Lockdown"
+        self.description = "The arena is divided into a grid. Random cells periodically lock down, dealing immense damage to anyone inside."
+        self.grid_size = 5
+        self.lockdown_interval = 5.0
+        self.timer = 0.0
+        self.locked_cells = []
+        self.damage_rate = 100.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.timer = self.lockdown_interval
+        self.locked_cells = []
+        self._pick_new_cells()
+
+    def _pick_new_cells(self):
+        import random
+        self.locked_cells = []
+        num_cells = random.randint(3, 8)
+        for _ in range(num_cells):
+            cell_x = random.randint(0, self.grid_size - 1)
+            cell_y = random.randint(0, self.grid_size - 1)
+            if (cell_x, cell_y) not in self.locked_cells:
+                self.locked_cells.append((cell_x, cell_y))
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        self.timer -= delta
+        if self.timer <= 0.0:
+            self.timer = self.lockdown_interval
+            self._pick_new_cells()
+
+        width = getattr(getattr(world, "arena", None), "width", 1000.0)
+        height = getattr(getattr(world, "arena", None), "height", 1000.0)
+
+        cell_w = width / self.grid_size
+        cell_h = height / self.grid_size
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+
+            cx = int(bx / cell_w)
+            cy = int(by / cell_h)
+
+            # clamp to grid size just in case they go slightly out of bounds
+            cx = max(0, min(cx, self.grid_size - 1))
+            cy = max(0, min(cy, self.grid_size - 1))
+
+            if (cx, cy) in self.locked_cells:
+                b.hp = getattr(b, "hp", 100.0) - (self.damage_rate * delta)
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("ball_died", {"id": getattr(b, "id", None), "killer_id": -1, "reason": "grid_lockdown_damage"})
+
+GAME_MODES['grid_lockdown'] = GridLockdownMode()
