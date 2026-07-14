@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-943] Eclipse Events during DayNightMode — *2026-07-14 23:29:35 UTC*
+
+A rare Eclipse event occurs when day transitions into night or vice versa. During the Eclipse, all balls temporarily gain both nocturnal and diurnal abilities (if their class has them), and hazards become entirely invisible.
+
+---
+
 ## [idea-986] Polymorph Trap — *2026-07-14 23:04:35 UTC*
 
 A new arena hazard that doesn't deal damage but instead transforms any ball that touches it into a harmless, slow-moving 'chicken' ball for 5 seconds. During this time, the ball cannot use skills or attack, making it highly vulnerable to grouped enemies.

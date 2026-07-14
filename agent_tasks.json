@@ -16198,7 +16198,7 @@
     },
     {
       "id": "idea-943",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Eclipse Events during DayNightMode",
@@ -26992,6 +26992,74 @@
         "src/ai/bouncing_laser_core.py",
         "src/ai/bouncing_laser_core.gd",
         "tests/test_bouncing_laser_core.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1577",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Revival Disruption Aura",
+      "description": "During the reviving process, the downed player emits an aura that slightly slows down enemies or disrupts their abilities, providing a small tactical window of safety for the active player trying to pull off the revive.",
+      "allowed_paths": [
+        "src/ai/revival_disruption_aura.py",
+        "src/ai/revival_disruption_aura.gd",
+        "tests/test_revival_disruption_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1578",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnet Ball Modifier",
+      "description": "An arena hazard that occasionally magnetizes players with positive or negative charges. Opposite charges attract and same charges repel, forcing players to navigate unpredictable physics when fighting near each other.",
+      "allowed_paths": [
+        "src/ai/magnet_ball.py",
+        "src/ai/magnet_ball.gd",
+        "tests/test_magnet_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1579",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrink Ray Arena",
+      "description": "A game mode where lasers sweep the arena. Any ball hit by a laser permanently shrinks by 10% and loses max HP, but gains speed. Getting hit too many times turns you into a tiny fragile speedster.",
+      "allowed_paths": [
+        "src/arena/shrink_ray_arena.py",
+        "src/arena/shrink_ray_arena.gd",
+        "tests/test_shrink_ray_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1580",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Downed Bleed-out Timer",
+      "description": "When a player is downed in Tag Team mode, instead of staying downed indefinitely, they should slowly bleed out (lose max HP) over time until they are fully eliminated. This would force the active player to attempt a revive quickly instead of stalling the game.",
+      "allowed_paths": [
+        "src/ai/downed_bleed_out_timer.py",
+        "src/ai/downed_bleed_out_timer.gd",
+        "tests/test_downed_bleed_out_timer.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
