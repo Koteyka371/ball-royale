@@ -3215,6 +3215,25 @@ class Action:
                     partner.y += dy * 0.5
                     partner._is_entangle_syncing = False
 
+
+        if getattr(self.ball, "trap_link_timer", 0.0) > 0:
+            self.ball.trap_link_timer -= delta
+            if self.ball.trap_link_timer <= 0:
+                self.ball.trap_link_timer = 0
+
+            trap_link_target = getattr(self.ball, "trap_link_target", None)
+            if trap_link_target and getattr(trap_link_target, "alive", False) and not getattr(self.ball, "_is_trap_link_syncing", False):
+                prev_hp_for_link = getattr(self.ball, "prev_hp", self.ball.hp)
+                hp_diff = prev_hp_for_link - self.ball.hp
+                if hp_diff > 0:
+                    self.ball._is_trap_link_syncing = True
+                    trap_link_target._is_trap_link_syncing = True
+                    if hasattr(trap_link_target, "take_damage"):
+                        trap_link_target.take_damage(hp_diff)
+                    else:
+                        trap_link_target.hp -= hp_diff
+                    trap_link_target._is_trap_link_syncing = False
+                    self.ball._is_trap_link_syncing = False
         self.ball.prev_hp = getattr(self.ball, "hp", 0)
         self.ball.prev_x = getattr(self.ball, "x", 0)
         self.ball.prev_y = getattr(self.ball, "y", 0)
@@ -5737,6 +5756,22 @@ class Action:
                                             bh = Hazard(bh_id, hazard.x, hazard.y, 100.0, "black_hole", 0.0)
                                         bh.duration = 3.0 # Short duration
                                         self.world.arena.hazards.append(bh)
+                                    hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "link":
+                                    import random
+                                    enemy = None
+                                    enemies = []
+                                    if hasattr(self.world, "balls"):
+                                        for b in self.world.balls:
+                                            if b != self.ball and getattr(b, "alive", True):
+                                                a_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                                                b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                                if a_team != b_team or a_team == -1 or b_team == -1:
+                                                    enemies.append(b)
+                                    if enemies:
+                                        enemy = random.choice(enemies)
+                                        self.ball.trap_link_target = enemy
+                                        self.ball.trap_link_timer = 10.0
                                     hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "tar":
                                     # Tar trap: heavily slow down the ball and create a tar puddle

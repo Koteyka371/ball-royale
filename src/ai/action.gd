@@ -5880,6 +5880,44 @@ func execute(strategy: String, delta: float):
                         partner.set_meta("_is_entangle_syncing", false)
 
     if my_ball.has_method("set_meta"):
+
+        var trap_link_timer = 0.0
+        if my_ball.has_meta("trap_link_timer"):
+            trap_link_timer = my_ball.get_meta("trap_link_timer")
+
+        if trap_link_timer > 0.0:
+            trap_link_timer -= delta
+            if trap_link_timer < 0:
+                trap_link_timer = 0.0
+            my_ball.set_meta("trap_link_timer", trap_link_timer)
+
+            if my_ball.has_meta("trap_link_target"):
+                var trap_link_target = my_ball.get_meta("trap_link_target")
+                var target_alive = false
+                if typeof(trap_link_target) == TYPE_OBJECT and trap_link_target.get("alive") != false: target_alive = true
+                elif typeof(trap_link_target) == TYPE_DICTIONARY and trap_link_target.get("alive", true) != false: target_alive = true
+
+                var is_syncing = false
+                if my_ball.has_meta("_is_trap_link_syncing"):
+                    is_syncing = my_ball.get_meta("_is_trap_link_syncing")
+
+                if target_alive and not is_syncing:
+                    var prev_hp_for_link = my_ball.get("hp")
+                    if my_ball.has_meta("prev_hp"):
+                        prev_hp_for_link = my_ball.get_meta("prev_hp")
+
+                    var hp_diff = prev_hp_for_link - my_ball.get("hp")
+                    if hp_diff > 0:
+                        my_ball.set_meta("_is_trap_link_syncing", true)
+                        if typeof(trap_link_target) == TYPE_OBJECT:
+                            if trap_link_target.has_method("take_damage"):
+                                trap_link_target.take_damage(hp_diff)
+                            else:
+                                trap_link_target.hp -= hp_diff
+                        elif typeof(trap_link_target) == TYPE_DICTIONARY:
+                            trap_link_target["hp"] -= hp_diff
+                        my_ball.set_meta("_is_trap_link_syncing", false)
+
         my_ball.set_meta("prev_hp", my_ball.get("hp"))
         my_ball.set_meta("prev_x", my_ball.get("x"))
         my_ball.set_meta("prev_y", my_ball.get("y"))
@@ -10709,6 +10747,25 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "link":
+                                var enemies = []
+                                if typeof(world) == TYPE_OBJECT and "balls" in world:
+                                    for b in world.balls:
+                                        if b != self.ball and (typeof(b) == TYPE_OBJECT and b.get("alive") != false or typeof(b) == TYPE_DICTIONARY and b.get("alive") != false):
+                                            var a_team = self.ball.get("team")
+                                            if a_team == null: a_team = self.ball.get("ball_type")
+                                            var b_team = b.get("team")
+                                            if b_team == null: b_team = b.get("ball_type")
+                                            if a_team != b_team or str(a_team) == "-1" or str(b_team) == "-1":
+                                                enemies.append(b)
+                                if enemies.size() > 0:
+                                    var enemy = enemies[randi() % enemies.size()]
+                                    self.ball.set_meta("trap_link_target", enemy)
+                                    self.ball.set_meta("trap_link_timer", 10.0)
+                                if typeof(hazard) == TYPE_OBJECT:
+                                    hazard.duration = 0.0
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
                             elif trap_variant == "tar":
                                 if "speed_multiplier" in self.ball:
                                     self.ball.speed_multiplier *= 0.2
