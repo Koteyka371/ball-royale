@@ -6128,10 +6128,12 @@ func execute(strategy: String, delta: float):
         if self.world != null and "arena" in self.world:
             if "is_night" in self.world.arena:
                 is_night = self.world.arena.is_night
-            if "is_lunar_eclipse" in self.world.arena:
-                is_lunar = self.world.arena.is_lunar_eclipse
+            if "is_lunar_eclipse" in self.world.arena and self.world.arena.is_lunar_eclipse:
+                is_lunar = true
+            elif "is_eclipse" in self.world.arena and self.world.arena.is_eclipse:
+                is_lunar = true
 
-        if self.world != null and "arena" in self.world and ("is_night" in self.world.arena or "is_lunar_eclipse" in self.world.arena):
+        if self.world != null and "arena" in self.world and ("is_night" in self.world.arena or "is_lunar_eclipse" in self.world.arena or "is_eclipse" in self.world.arena):
             var b_type_action = ""
             if "ball_type" in my_ball:
                 b_type_action = str(my_ball.ball_type).to_lower()
@@ -23408,8 +23410,11 @@ func _apply_friendly_aura(delta: float):
                     self.ball.damage = base_d
 
         var is_lunar = false
-        if world != null and "arena" in world and "is_lunar_eclipse" in world.arena:
-            is_lunar = world.arena.is_lunar_eclipse
+        if world != null and "arena" in world:
+            if "is_lunar_eclipse" in world.arena and world.arena.is_lunar_eclipse:
+                is_lunar = true
+            elif "is_eclipse" in world.arena and world.arena.is_eclipse:
+                is_lunar = true
 
         if is_lunar:
             if is_cursed_aura and stack_count >= 1:
