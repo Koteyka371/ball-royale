@@ -20575,6 +20575,95 @@ class ClanWarMode(GameMode):
                 cm = ClanManager()
                 cm.capture_territory(winner_clan, "Arena_1")
 
+
+
+class TimeDilationZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Dilation Zone"
+        self.description = "An anomalous zone in the arena where the flow of time slows down drastically. Entities, projectiles, and status effects within the field move and expire at half their normal rate. Players can use this defensively to dodge attacks or offensively to trap opponents in slow motion."
+        self.zone_x = 400.0
+        self.zone_y = 300.0
+        self.zone_radius = 200.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena:
+            aw = getattr(world.arena, "width", 800.0)
+            ah = getattr(world.arena, "height", 600.0)
+            self.zone_x = aw / 2.0
+            self.zone_y = ah / 2.0
+
+            zone = {
+                "id": 800100,
+                "x": self.zone_x,
+                "y": self.zone_y,
+                "radius": self.zone_radius,
+                "kind": "time_dilation_zone",
+                "damage": 0.0,
+                "duration": 9999.0,
+                "base_damage": 0.0
+            }
+
+            if hasattr(world.arena, "hazards") and len(world.arena.hazards) > 0:
+                HazardCls = type(world.arena.hazards[0])
+                if not isinstance(world.arena.hazards[0], dict):
+                    h = HazardCls()
+                    for k, v in zone.items():
+                        setattr(h, k, v)
+                    zone = h
+            else:
+                class FallbackHazard:
+                    def __init__(self, **kwargs):
+                        for k, v in kwargs.items():
+                            setattr(self, k, v)
+                zone = FallbackHazard(**zone)
+
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+            world.arena.hazards.append(zone)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+            br = getattr(b, "radius", 10.0)
+            dist_sq = (bx - self.zone_x)**2 + (by - self.zone_y)**2
+            if dist_sq <= (self.zone_radius + br)**2:
+                # Store original speed multiplier if not tracked yet for this tick cycle?
+                # Better: action.py uses 'time_bubble_active' and modifies speed.
+                # Let's set a flag on the ball and just adjust speed_multiplier.
+                # Projectiles don't have speed_multiplier, they have 'speed' but not 'base_speed'.
+                # Actually, the simplest fix is saving original speed safely.
+                is_proj = getattr(b, "ball_type", "") == "projectile" or getattr(b, "is_projectile", False)
+                if not hasattr(b, "_td_original_speed"):
+                    b._td_original_speed = getattr(b, "speed", 100.0)
+
+                # We force it to half of original.
+                b.speed = b._td_original_speed * 0.5
+
+                if isinstance(b, dict):
+                    attrs = list(b.keys())
+                else:
+                    attrs = dir(b)
+
+                for attr in attrs:
+                    if isinstance(attr, str) and attr.endswith("_timer"):
+                        val = getattr(b, attr, 0.0) if not isinstance(b, dict) else b.get(attr, 0.0)
+                        if isinstance(val, (int, float)) and val > 0.0:
+                            if isinstance(b, dict):
+                                b[attr] = val + delta * 0.5
+                            else:
+                                setattr(b, attr, val + delta * 0.5)
+            else:
+                if hasattr(b, "_td_original_speed"):
+                    b.speed = b._td_original_speed
+                    del b._td_original_speed
+
 GAME_MODES['clan_war'] = ClanWarMode()
+GAME_MODES['time_dilation_zone'] = TimeDilationZoneMode()
 
 GAME_MODES['rotating_lasers'] = RotatingLasersMode()

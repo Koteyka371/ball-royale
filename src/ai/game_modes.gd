@@ -32407,6 +32407,102 @@ class ClanWarMode extends GameMode:
 				var cm = load("res://src/system/clan.gd").new()
 				cm.capture_territory(winner_clan, "Arena_1")
 
+
+
+class TimeDilationZoneMode extends GameMode:
+	var zone_x: float = 400.0
+	var zone_y: float = 300.0
+	var zone_radius: float = 200.0
+
+	func _init() -> void:
+		name = "Time Dilation Zone"
+		description = "An anomalous zone in the arena where the flow of time slows down drastically. Entities, projectiles, and status effects within the field move and expire at half their normal rate. Players can use this defensively to dodge attacks or offensively to trap opponents in slow motion."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_OBJECT and world != null and world.has_method("get") or ("arena" in world and world.arena != null):
+			var arena = world.arena if "arena" in world else null
+			if arena:
+				var aw = arena.width if "width" in arena else 800.0
+				var ah = arena.height if "height" in arena else 600.0
+				zone_x = aw / 2.0
+				zone_y = ah / 2.0
+
+				var zone = {}
+				zone["id"] = 800100
+				zone["x"] = zone_x
+				zone["y"] = zone_y
+				zone["radius"] = zone_radius
+				zone["kind"] = "time_dilation_zone"
+				zone["damage"] = 0.0
+				zone["duration"] = 9999.0
+				zone["base_damage"] = 0.0
+
+				if not ("hazards" in arena):
+					arena.hazards = []
+				arena.hazards.append(zone)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			elif b.has_method("get_meta"):
+				is_alive = b.alive if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			var br = 10.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+				br = b.get("radius", 10.0)
+			else:
+				bx = b.x if "x" in b else 0.0
+				by = b.y if "y" in b else 0.0
+				br = b.radius if "radius" in b else 10.0
+
+			var dist_sq = (bx - zone_x) * (bx - zone_x) + (by - zone_y) * (by - zone_y)
+			if dist_sq <= (zone_radius + br) * (zone_radius + br):
+				if typeof(b) == TYPE_DICTIONARY:
+					if not "_td_original_speed" in b:
+						b["_td_original_speed"] = b.get("speed", 100.0)
+					b["speed"] = b["_td_original_speed"] * 0.5
+
+					for attr in b.keys():
+						if typeof(attr) == TYPE_STRING and attr.ends_with("_timer"):
+							var val = b[attr]
+							if typeof(val) in [TYPE_INT, TYPE_FLOAT] and val > 0.0:
+								b[attr] = val + delta * 0.5
+				else:
+					if not ("_td_original_speed" in b):
+						var s = b.speed if "speed" in b else 100.0
+						b.set("_td_original_speed", s)
+
+					b.speed = b.get("_td_original_speed") * 0.5
+
+					var props = b.get_property_list()
+					for p in props:
+						var attr = p.name
+						if typeof(attr) == TYPE_STRING and attr.ends_with("_timer"):
+							var val = b.get(attr)
+							if typeof(val) in [TYPE_INT, TYPE_FLOAT] and val > 0.0:
+								b.set(attr, val + delta * 0.5)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					if "_td_original_speed" in b:
+						b["speed"] = b["_td_original_speed"]
+						b.erase("_td_original_speed")
+				else:
+					if "_td_original_speed" in b:
+						b.speed = b.get("_td_original_speed")
+
 GAME_MODES['clan_war'] = ClanWarMode.new()
+GAME_MODES['time_dilation_zone'] = TimeDilationZoneMode.new()
 
 GAME_MODES["rotating_lasers"] = RotatingLasersMode.new()

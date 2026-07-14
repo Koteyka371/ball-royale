@@ -1,8 +1,8 @@
-1. Create `src/ai/ball_types_leech.py` with Leech class: base dmg low, heals for 200% of damage dealt, skill 'leech_tether'.
-2. Create `src/ai/ball_types_leech.gd` matching the Python version.
-3. Update `_deal_damage` (actually in `_attack` or general damage processing logic) in `action.py` to allow Leech to heal 200% of dealt damage. Wait, `action.py` has a `target.hp -= damage` spot. If `attacker.ball_type == 'leech'` and `attacker.hp < attacker.max_hp`: `attacker.hp = min(attacker.max_hp, attacker.hp + damage * 2.0)`. Update both `action.py` and `action.gd`.
-4. Update `action.py` and `action.gd` to handle the `leech_tether` skill. When used, the Leech tethers to the nearest enemy.
-   - Skill logic (`elif skill_name == "leech_tether":`): find nearest enemy. Set `attacker.leech_tether_target = target`, `attacker.leech_tether_timer = 3.0` (or some duration).
-   - Tick logic: if `leech_tether_timer > 0`, reduce timer, if target is alive and in range (e.g. `dist < 200`), deal drain damage per tick (e.g., `drain_damage = 5.0 * delta * 60`), heal attacker by `drain_damage`, slow the target (e.g. `target.speed_multiplier = 0.5` or modify speed directly like in tether hook). Wait, tether hook uses a specific implementation. I will look at how `magnet_tether` is implemented.
-5. Create tests in `test_leech_ball.py`.
-6. Add new ideas to JSON files.
+1. We need to implement `TimeDilationZoneMode` in `src/ai/game_modes.py` and `src/ai/game_modes.gd`.
+2. The mode should spawn a zone in the arena. In this zone, entities, projectiles, and status effects move and expire at half their normal rate.
+3. To implement this, we should add a `TimeDilationZoneMode` inheriting from `GameMode`.
+4. In `setup`, create a hazard named "time_dilation_zone" with `damage = 0.0` in the center of the arena (or random). Wait, the prompt says "An anomalous zone in the arena". We'll create one hazard of kind "time_dilation_zone".
+5. In `tick`, we find this zone. For every ball inside, we cut its speed in half.
+6. To slow down projectiles and status effects at half rate, we need to inspect what `Action` does, or we can just apply a buff to balls inside the zone, or handle it in `TimeDilationZoneMode.tick`. Wait, if we just reduce `speed` to half, that covers entities. What about projectiles?
+7. Projectiles are often treated as balls with `ball_type == "projectile"` or in `world.projectiles` or spawned by hazards. Wait, `world.projectiles`? There is no `world.projectiles`, usually it's `balls` with `ball_type == "projectile"`. Let's check how projectiles are tracked in the codebase.
+8. Status effects: `b.frozen_timer`, `b.burn_timer`, `b.speed_boost_timer`, etc. We can find all timers in `b` and increment them by `delta / 2` (because they normally decrement by `delta` every tick in Action or other places, so we effectively slow them down by refunding half the delta).
