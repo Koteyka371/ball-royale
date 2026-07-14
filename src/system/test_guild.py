@@ -215,6 +215,26 @@ def test_hq_mini_games(temp_guild_file):
     assert gm.record_mini_game_score("MiniGameGuild", "unknown_game", "player1", 100) == False
     assert gm.get_mini_game_leaderboard("MiniGameGuild", "unknown_game") == []
 
+def test_guild_active_abilities(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("AbilityGuild", "p1")
+    gm.donate_resources("AbilityGuild", 200)
+
+    assert gm.buy_active_ability("AbilityGuild", "Mass Heal", 100) == True
+    assert gm.buy_active_ability("AbilityGuild", "Global Speed Boost", 100) == True
+    assert gm.buy_active_ability("AbilityGuild", "Mass Heal", 100) == False
+
+    abilities = gm.get_active_abilities("AbilityGuild")
+    assert "Mass Heal" in abilities
+    assert "Global Speed Boost" in abilities
+
+    assert gm.deploy_active_ability("AbilityGuild", "Mass Heal") == True
+    assert gm.deploy_active_ability("AbilityGuild", "Mass Heal") == False
+
+    abilities = gm.get_active_abilities("AbilityGuild")
+    assert "Mass Heal" not in abilities
+    assert "Global Speed Boost" in abilities
+
 def test_guild_perk_progression(temp_guild_file):
     gm = GuildManager(temp_guild_file)
     gm.create_guild("PerkGuild", "p1")

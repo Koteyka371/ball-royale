@@ -67,6 +67,44 @@ def test_memory_traps_mode():
     # the exact behavior depends on order. In our logic, cooldown reduces, then if deleted, it damages.
     assert b1.hp == 60.0
 
+def test_battle_royale_guild_abilities():
+    mode = BattleRoyaleMode()
+    world = MockWorld()
+    class TestMockEntity:
+        def __init__(self):
+            self.team = ""
+            self.alive = True
+            self.hp = 0.0
+            self.max_hp = 0.0
+            self.speed_boost_timer = 0.0
+    b1 = TestMockEntity()
+    b1.team = "TeamA"
+    b1.hp = 50.0
+    b1.max_hp = 100.0
+
+    b2 = TestMockEntity()
+    b2.team = "TeamA"
+    b2.hp = 20.0
+    b2.max_hp = 100.0
+
+    b3 = TestMockEntity()
+    b3.team = "TeamB"
+    b3.hp = 50.0
+    b3.max_hp = 100.0
+    b3.speed_boost_timer = 0.0
+
+    world.balls = [b1, b2, b3]
+
+    mode.deploy_guild_ability(world, "Mass Heal", "TeamA")
+    assert b1.hp == 100.0
+    assert b2.hp == 70.0
+    assert b3.hp == 50.0
+
+    mode.deploy_guild_ability(world, "Global Speed Boost", "TeamB")
+    assert getattr(b1, "speed_boost_timer", 0.0) == 0.0
+    assert getattr(b2, "speed_boost_timer", 0.0) == 0.0
+    assert b3.speed_boost_timer == 10.0
+
 def test_battle_royale_mode():
 
     mode = BattleRoyaleMode()

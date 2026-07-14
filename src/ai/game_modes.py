@@ -1037,6 +1037,17 @@ class BattleRoyaleMode(GameMode):
                     pass
                 if getattr(b, "has_nimble_perk", False) and getattr(b, "has_eagle_eye_perk", False):
                     b.has_sniper_stance = True
+    def deploy_guild_ability(self, world, ability_name, team_name):
+        if ability_name == "Mass Heal":
+            for b in world.balls:
+                if getattr(b, "team", "") == team_name and getattr(b, "alive", True):
+                    max_hp = getattr(b, "max_hp", 100.0)
+                    b.hp = min(b.hp + max_hp * 0.5, max_hp)
+        elif ability_name == "Global Speed Boost":
+            for b in world.balls:
+                if getattr(b, "team", "") == team_name and getattr(b, "alive", True):
+                    b.speed_boost_timer = getattr(b, "speed_boost_timer", 0.0) + 10.0
+
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
