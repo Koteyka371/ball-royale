@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-971] Quantum Entanglement Arena — *2026-07-14 17:28:26 UTC*
+
+An arena mode where random pairs of players become 'entangled'. Damage taken by one is partially shared with the other, but they also share healing and buffs. They can choose to cooperate to take down enemies together or risk hurting themselves by attacking their entangled partner.
+
+---
+
 ## [idea-972] Clan Wars and Territory Control — *2026-07-14 17:28:22 UTC*
 
 Introduce a meta-game layer where clans can compete for control over specific arenas or map regions. Controlling a territory grants clan members passive bonuses (e.g., increased resource drops, reduced damage from environmental hazards) within that arena. Territory control can be contested through scheduled Clan War matches where teams from rival clans battle in specialized objective-based modes.
