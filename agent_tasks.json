@@ -26451,6 +26451,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1545",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Shrapnel Mode",
+      "description": "A game mode where shrapnel hazards progressively split into smaller, faster projectiles over time, eventually dissolving into a fine mist that slightly obscures vision.",
+      "allowed_paths": [
+        "src/ai/shrinking_shrapnel.py",
+        "src/ai/shrinking_shrapnel.gd",
+        "tests/test_shrinking_shrapnel.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

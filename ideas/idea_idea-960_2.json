@@ -1,4 +1,0 @@
-{
-  "title": "Boomerang Projectile",
-  "description": "A new skill where the player throws a projectile that deals damage on its way out, pauses, and then returns to the player. It can hit enemies twice (outgoing and returning)."
-}
