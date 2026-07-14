@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-980] Black Hole Paddle Mode — *2026-07-14 19:15:48 UTC*
+
+Combine black holes and paddles: The sweeping paddles pull players in with gravity while moving, forcing players to fight immense suction before getting launched at high speeds upon contact.
+
+---
+
 ## [idea-964] New Weapon: Repulsor Ray — *2026-07-14 19:05:36 UTC*
 
 A new weapon that pushes enemies away from the user, giving them breathing room and control over positioning.

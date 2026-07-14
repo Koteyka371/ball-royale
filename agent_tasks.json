@@ -16829,7 +16829,7 @@
     },
     {
       "id": "idea-980",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Paddle Mode",
@@ -26805,6 +26805,57 @@
         "src/ai/echo_strike_passive.py",
         "src/ai/echo_strike_passive.gd",
         "tests/test_echo_strike_passive.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1566",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Anomaly",
+      "description": "Periodically, a massive gravity well appears that sucks in projecticles and items, changing weapon trajectories and creating a dangerous pull effect.",
+      "allowed_paths": [
+        "src/ai/black_hole_anomaly.py",
+        "src/ai/black_hole_anomaly.gd",
+        "tests/test_black_hole_anomaly.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1567",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ricochet Mode",
+      "description": "All projectiles bounce off walls infinitely until they hit a target or their duration expires, making positioning extremely important.",
+      "allowed_paths": [
+        "src/ai/ricochet.py",
+        "src/ai/ricochet.gd",
+        "tests/test_ricochet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1568",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Loop Trap",
+      "description": "A trap that records the triggering ball's position and HP over 3 seconds. After 3 seconds, the ball is teleported back to its recorded position and its HP is restored to what it was, essentially 'rewinding' them.",
+      "allowed_paths": [
+        "src/arena/time_loop_trap.py",
+        "src/arena/time_loop_trap.gd",
+        "tests/test_time_loop_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
