@@ -14946,6 +14946,8 @@ class DayNightMode extends GameMode:
 	var active_sunlight_beams = []
 	var moonlight_shadow_timer = 0.0
 	var active_moonlight_shadows = []
+	var eclipse_timer = 0.0
+	var is_eclipse_active = false
 
 	func _init():
 		super._init()
@@ -15106,6 +15108,33 @@ class DayNightMode extends GameMode:
 					world.arena.is_night = true
 				sunlight_beam_timer = 0.0
 				active_sunlight_beams.clear()
+				if randf() < 0.1:
+					eclipse_timer = 5.0
+					is_eclipse_active = true
+
+			if is_eclipse_active:
+				eclipse_timer -= delta
+				if eclipse_timer <= 0.0:
+					is_eclipse_active = false
+					world.arena.is_lunar_eclipse = false
+					world.arena.is_eclipse = false
+					if "hazards" in world.arena:
+						for h in world.arena.hazards:
+							if typeof(h) == TYPE_DICTIONARY:
+								h["invisible"] = false
+							else:
+								if "invisible" in h: h.invisible = false
+								elif h.has_method("set_meta"): h.set_meta("invisible", false)
+				else:
+					world.arena.is_lunar_eclipse = true
+					world.arena.is_eclipse = true
+					if "hazards" in world.arena:
+						for h in world.arena.hazards:
+							if typeof(h) == TYPE_DICTIONARY:
+								h["invisible"] = true
+							else:
+								if "invisible" in h: h.invisible = true
+								elif h.has_method("set_meta"): h.set_meta("invisible", true)
 
 			var is_night = false
 			if "is_night" in world.arena:

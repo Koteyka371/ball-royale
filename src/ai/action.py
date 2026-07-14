@@ -3492,9 +3492,9 @@ class Action:
                 self.ball.is_dashing = True
                 self.ball.speed = self.ball.base_speed * 2.0
 
-        if hasattr(self.world, "arena") and (getattr(self.world.arena, "is_night", None) is not None or getattr(self.world.arena, "is_lunar_eclipse", False)):
+        if hasattr(self.world, "arena") and (getattr(self.world.arena, "is_night", None) is not None or getattr(self.world.arena, "is_lunar_eclipse", False) or getattr(self.world.arena, "is_eclipse", False)):
             b_type = getattr(self.ball, "ball_type", "").lower()
-            is_lunar = getattr(self.world.arena, "is_lunar_eclipse", False)
+            is_lunar = getattr(self.world.arena, "is_lunar_eclipse", False) or getattr(self.world.arena, "is_eclipse", False)
             is_night = getattr(self.world.arena, "is_night", False)
 
             if is_lunar:
@@ -12910,7 +12910,7 @@ class Action:
                     self.ball.damage = base_d
 
             # Re-apply night mode base buffs if needed (just for vampire/normal)
-            is_lunar = hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False)
+            is_lunar = hasattr(self.world, "arena") and (getattr(self.world.arena, "is_lunar_eclipse", False) or getattr(self.world.arena, "is_eclipse", False))
             if is_lunar:
                 # In Lunar Eclipse, ALL classes receive the maximum possible day AND night buffs:
                 # Night max buff: 1.5x speed, 1.5x damage (Vampire)

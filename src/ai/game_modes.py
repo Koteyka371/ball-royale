@@ -9628,6 +9628,8 @@ class DayNightMode(GameMode):
         self.active_sunlight_beams = []
         self.moonlight_shadow_timer = 0.0
         self.active_moonlight_shadows = []
+        self.eclipse_timer = 0.0
+        self.is_eclipse_active = False
 
     def _line_intersects_circle(self, p1, p2, circle_center, radius):
         # Math calculation to see if a line segment intersects a circle
@@ -9671,6 +9673,28 @@ class DayNightMode(GameMode):
                 self.active_sunlight_beams = [] # clear beams on phase change
                 self.moonlight_shadow_timer = 0.0
                 self.active_moonlight_shadows = []
+                import random
+                if random.random() < 0.1:
+                    self.eclipse_timer = 5.0
+                    self.is_eclipse_active = True
+
+            if getattr(self, "is_eclipse_active", False):
+                self.eclipse_timer -= delta
+                if self.eclipse_timer <= 0.0:
+                    self.is_eclipse_active = False
+                    world.arena.is_lunar_eclipse = False
+                    world.arena.is_eclipse = False
+                    if hasattr(world.arena, "hazards"):
+                        for h in world.arena.hazards:
+                            h.invisible = False
+                            if hasattr(h, "set_meta"): h.set_meta("invisible", False)
+                else:
+                    world.arena.is_lunar_eclipse = True
+                    world.arena.is_eclipse = True
+                    if hasattr(world.arena, "hazards"):
+                        for h in world.arena.hazards:
+                            h.invisible = True
+                            if hasattr(h, "set_meta"): h.set_meta("invisible", True)
 
             is_night = getattr(world.arena, "is_night", False)
             world.arena.night_ratio = (self.timer / max(0.1, self.phase_duration)) if is_night else 0.0
