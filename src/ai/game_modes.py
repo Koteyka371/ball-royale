@@ -17636,6 +17636,123 @@ class RotatingLasersMode(GameMode):
                 h.duration = 9999.0 # Permanent for the mode
                 world.arena.hazards.append(h)
 
+class ElementalWandererMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Elemental Wanderer"
+        self.description = "A wandering NPC that grants elemental buffs (fire, ice, lightning) depending on which hazard it passes through."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        import random
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        class ElementalNPCBall:
+            def __init__(self):
+                self.x = arena_width / 2.0
+                self.y = arena_height / 2.0
+                self.vx = random.uniform(-50, 50)
+                self.vy = random.uniform(-50, 50)
+                self.radius = 30.0
+                self.max_hp = 500.0
+                self.hp = 500.0
+                self.alive = True
+                self.team = "Neutral"
+                self.ball_type = "elemental_npc"
+                self.is_invulnerable = False
+                self.current_element = None
+
+        self.npc = ElementalNPCBall()
+
+        if not hasattr(world, "arena"):
+            class MockArena:
+                pass
+            world.arena = MockArena()
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        class ElementHazard:
+            def __init__(self, kind):
+                self.x = random.uniform(100, arena_width - 100)
+                self.y = random.uniform(100, arena_height - 100)
+                self.radius = 50.0
+                self.damage = 0.0
+                self.kind = kind
+
+        world.arena.hazards.append(ElementHazard("fire_zone"))
+        world.arena.hazards.append(ElementHazard("ice_zone"))
+        world.arena.hazards.append(ElementHazard("lightning_zone"))
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.elemental_buff = None
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if getattr(self, "npc", None) and getattr(self.npc, "alive", False):
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+            self.npc.x += getattr(self.npc, "vx", 0) * delta
+            self.npc.y += getattr(self.npc, "vy", 0) * delta
+
+            if self.npc.x - self.npc.radius < 0:
+                self.npc.x = self.npc.radius
+                if hasattr(self.npc, "vx"): self.npc.vx *= -1
+            elif self.npc.x + self.npc.radius > arena_width:
+                self.npc.x = arena_width - self.npc.radius
+                if hasattr(self.npc, "vx"): self.npc.vx *= -1
+
+            if self.npc.y - self.npc.radius < 0:
+                self.npc.y = self.npc.radius
+                if hasattr(self.npc, "vy"): self.npc.vy *= -1
+            elif self.npc.y + self.npc.radius > arena_height:
+                self.npc.y = arena_height - self.npc.radius
+                if hasattr(self.npc, "vy"): self.npc.vy *= -1
+
+            import math
+            for hz in getattr(getattr(world, "arena", None), "hazards", []):
+                hx = getattr(hz, "x", 0)
+                hy = getattr(hz, "y", 0)
+                hr = getattr(hz, "radius", 0)
+                hk = getattr(hz, "kind", "")
+
+                dist = math.hypot(self.npc.x - hx, self.npc.y - hy)
+                if dist < self.npc.radius + hr:
+                    if "fire" in hk:
+                        self.npc.current_element = "fire"
+                    elif "ice" in hk:
+                        self.npc.current_element = "ice"
+                    elif "lightning" in hk:
+                        self.npc.current_element = "lightning"
+
+            if self.npc.alive and getattr(self.npc, "current_element", None):
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                        dist = math.hypot(getattr(b, "x", 0) - self.npc.x, getattr(b, "y", 0) - self.npc.y)
+                        if dist < 100.0:
+                            b.elemental_buff = self.npc.current_element
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            buff = getattr(b, "elemental_buff", None)
+            if buff == "fire":
+                b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 1.5
+            elif buff == "ice":
+                b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.5
+            elif buff == "lightning":
+                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.5
+
+
 GAME_MODES = {
     "stationary_turrets": StationaryTurretsMode(),
 
@@ -20578,3 +20695,4 @@ class ClanWarMode(GameMode):
 GAME_MODES['clan_war'] = ClanWarMode()
 
 GAME_MODES['rotating_lasers'] = RotatingLasersMode()
+GAME_MODES['elemental_wanderer'] = ElementalWandererMode()

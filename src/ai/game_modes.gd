@@ -29635,6 +29635,207 @@ class RotatingLasersMode extends GameMode:
 				else:
 					arena_ref.hazards.append(h)
 
+class ElementalWandererMode extends GameMode:
+	var npc = null
+
+	func _init() -> void:
+		name = "Elemental Wanderer"
+		description = "A wandering NPC that grants elemental buffs (fire, ice, lightning) depending on which hazard it passes through."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					arena_width = world.arena.get("width", 1000.0)
+					arena_height = world.arena.get("height", 1000.0)
+				else:
+					arena_width = world.arena.width if "width" in world.arena else 1000.0
+					arena_height = world.arena.height if "height" in world.arena else 1000.0
+		else:
+			if "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					arena_width = world.arena.get("width", 1000.0)
+					arena_height = world.arena.get("height", 1000.0)
+				else:
+					arena_width = world.arena.width if "width" in world.arena else 1000.0
+					arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+		npc = {
+			"x": arena_width / 2.0,
+			"y": arena_height / 2.0,
+			"vx": randf_range(-50.0, 50.0),
+			"vy": randf_range(-50.0, 50.0),
+			"radius": 30.0,
+			"max_hp": 500.0,
+			"hp": 500.0,
+			"alive": true,
+			"team": "Neutral",
+			"ball_type": "elemental_npc",
+			"is_invulnerable": false,
+			"current_element": null
+		}
+
+		if typeof(world) == TYPE_DICTIONARY:
+			if not world.has("arena") or world.arena == null:
+				world.arena = {"hazards": []}
+			if typeof(world.arena) == TYPE_DICTIONARY and not world.arena.has("hazards"):
+				world.arena.hazards = []
+			elif typeof(world.arena) != TYPE_DICTIONARY and not "hazards" in world.arena:
+				world.arena.hazards = []
+		else:
+			if not "arena" in world or world.arena == null:
+				world.arena = {"hazards": []}
+			if typeof(world.arena) == TYPE_DICTIONARY and not world.arena.has("hazards"):
+				world.arena.hazards = []
+			elif typeof(world.arena) != TYPE_DICTIONARY and not "hazards" in world.arena:
+				world.arena.hazards = []
+
+		var hazards = []
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			hazards = world.arena.hazards
+		else:
+			hazards = world.arena.hazards
+
+		hazards.append({
+			"x": randf_range(100.0, arena_width - 100.0),
+			"y": randf_range(100.0, arena_height - 100.0),
+			"radius": 50.0,
+			"damage": 0.0,
+			"kind": "fire_zone"
+		})
+		hazards.append({
+			"x": randf_range(100.0, arena_width - 100.0),
+			"y": randf_range(100.0, arena_height - 100.0),
+			"radius": 50.0,
+			"damage": 0.0,
+			"kind": "ice_zone"
+		})
+		hazards.append({
+			"x": randf_range(100.0, arena_width - 100.0),
+			"y": randf_range(100.0, arena_height - 100.0),
+			"radius": 50.0,
+			"damage": 0.0,
+			"kind": "lightning_zone"
+		})
+
+		for b in balls:
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+			if b_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					b.elemental_buff = null
+				else:
+					b.elemental_buff = null
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if npc != null and npc.get("alive", false):
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.has("arena") and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_width = world.arena.get("width", 1000.0)
+						arena_height = world.arena.get("height", 1000.0)
+					else:
+						arena_width = world.arena.width if "width" in world.arena else 1000.0
+						arena_height = world.arena.height if "height" in world.arena else 1000.0
+			else:
+				if "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_width = world.arena.get("width", 1000.0)
+						arena_height = world.arena.get("height", 1000.0)
+					else:
+						arena_width = world.arena.width if "width" in world.arena else 1000.0
+						arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+			npc.x += npc.vx * delta
+			npc.y += npc.vy * delta
+
+			if npc.x - npc.radius < 0:
+				npc.x = npc.radius
+				npc.vx *= -1
+			elif npc.x + npc.radius > arena_width:
+				npc.x = arena_width - npc.radius
+				npc.vx *= -1
+
+			if npc.y - npc.radius < 0:
+				npc.y = npc.radius
+				npc.vy *= -1
+			elif npc.y + npc.radius > arena_height:
+				npc.y = arena_height - npc.radius
+				npc.vy *= -1
+
+			var hazards = []
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				hazards = world.arena.hazards
+			else:
+				hazards = world.arena.hazards
+
+			for hz in hazards:
+				var hx = hz.get("x", 0.0) if typeof(hz) == TYPE_DICTIONARY else (hz.x if "x" in hz else 0.0)
+				var hy = hz.get("y", 0.0) if typeof(hz) == TYPE_DICTIONARY else (hz.y if "y" in hz else 0.0)
+				var hr = hz.get("radius", 0.0) if typeof(hz) == TYPE_DICTIONARY else (hz.radius if "radius" in hz else 0.0)
+				var hk = hz.get("kind", "") if typeof(hz) == TYPE_DICTIONARY else (hz.kind if "kind" in hz else "")
+
+				var dist = sqrt(pow(npc.x - hx, 2) + pow(npc.y - hy, 2))
+				if dist < npc.radius + hr:
+					if "fire" in hk:
+						npc.current_element = "fire"
+					elif "ice" in hk:
+						npc.current_element = "ice"
+					elif "lightning" in hk:
+						npc.current_element = "lightning"
+
+			if npc.alive and npc.current_element != null:
+				for b in balls:
+					var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+					var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+					if is_alive and b_type != "spectator":
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+						var dist = sqrt(pow(bx - npc.x, 2) + pow(by - npc.y, 2))
+						if dist < 100.0:
+							if typeof(b) == TYPE_DICTIONARY:
+								b.elemental_buff = npc.current_element
+							else:
+								b.elemental_buff = npc.current_element
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+		for b in balls:
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			if not is_alive:
+				continue
+
+			var buff = b.get("elemental_buff", null) if typeof(b) == TYPE_DICTIONARY else (b.elemental_buff if "elemental_buff" in b else null)
+			if buff == "fire":
+				var base_dmg = 10.0
+				if typeof(b) == TYPE_DICTIONARY:
+					base_dmg = b.get("base_damage", b.get("damage", 10.0))
+					b.damage = base_dmg * 1.5
+				else:
+					base_dmg = b.base_damage if "base_damage" in b else (b.damage if "damage" in b else 10.0)
+					b.damage = base_dmg * 1.5
+			elif buff == "ice":
+				if typeof(b) == TYPE_DICTIONARY:
+					var def_mult = b.get("defense_multiplier", 1.0)
+					b.defense_multiplier = def_mult * 0.5
+				else:
+					var def_mult = b.defense_multiplier if "defense_multiplier" in b else 1.0
+					b.defense_multiplier = def_mult * 0.5
+			elif buff == "lightning":
+				var base_spd = 100.0
+				if typeof(b) == TYPE_DICTIONARY:
+					base_spd = b.get("base_speed", b.get("speed", 100.0))
+					b.speed = base_spd * 1.5
+				else:
+					base_spd = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+					b.speed = base_spd * 1.5
+
+
 var GAME_MODES = {
 	"stats_decay": StatsDecayMode.new(),
 	"watchtower": WatchtowerMode.new(),
@@ -32410,3 +32611,4 @@ class ClanWarMode extends GameMode:
 GAME_MODES['clan_war'] = ClanWarMode.new()
 
 GAME_MODES["rotating_lasers"] = RotatingLasersMode.new()
+GAME_MODES["elemental_wanderer"] = ElementalWandererMode.new()
