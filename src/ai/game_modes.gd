@@ -17288,10 +17288,25 @@ class UnstablePortalsEventMode extends GameMode:
 								elif "visible" in b:
 									b.visible = false
 
-					if p["charge_timer"] >= 2.0:
+					var sucked_count = 0
+					if p.has("sucked_balls"):
+						sucked_count = p["sucked_balls"].size()
+					var capacity = 3
+
+					if p["charge_timer"] >= 2.0 or sucked_count >= capacity:
 						p["active"] = false
 						if world != null and world.has_method("add_event"):
 							world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
+
+						var blast_radius = 150.0
+						var blast_damage = 20.0
+
+						if sucked_count >= capacity:
+							blast_radius *= sucked_count
+							blast_damage *= sucked_count
+
+						if world != null and world.has_method("add_event"):
+							world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": blast_radius, "damage": blast_damage})
 
 						var other_portals = []
 						for op in portals:
@@ -17316,13 +17331,20 @@ class UnstablePortalsEventMode extends GameMode:
 							elif b.has_method("get_meta") and b.has_meta("id"):
 								b_id = b.get_meta("id")
 
-							if b_id in p["sucked_balls"]:
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+							else:
+								bx = b.x
+								by = b.y
+
+							if p.has("sucked_balls") and b_id in p["sucked_balls"]:
 								if typeof(b) != TYPE_DICTIONARY and "visible" in b:
 									b.visible = true
 
 								var angle = randf() * 2.0 * PI
-								var bx = 0.0
-								var by = 0.0
 
 								if other_portals.size() > 0 and randf() < 0.75:
 									var exit_p = other_portals[randi() % other_portals.size()]
@@ -17344,12 +17366,36 @@ class UnstablePortalsEventMode extends GameMode:
 								if typeof(b) == TYPE_DICTIONARY:
 									b["x"] = bx
 									b["y"] = by
-									if b.has("hp"): b["hp"] -= 20.0
+									if b.has("hp"): b["hp"] -= blast_damage
 								else:
 									b.x = bx
 									b.y = by
-									if b.has_method("take_damage"): b.take_damage(20.0)
-									elif "hp" in b: b.hp -= 20.0
+									if b.has_method("take_damage"): b.take_damage(blast_damage)
+									elif "hp" in b: b.hp -= blast_damage
+							else:
+								var dx = bx - p["x"]
+								var dy = by - p["y"]
+								var dist = sqrt(dx * dx + dy * dy)
+								if dist < blast_radius:
+									if typeof(b) == TYPE_DICTIONARY:
+										if b.has("hp"): b["hp"] -= blast_damage
+									else:
+										if b.has_method("take_damage"): b.take_damage(blast_damage)
+										elif "hp" in b: b.hp -= blast_damage
+
+									if dist > 0.0001:
+										var nx = dx / dist
+										var ny = dy / dist
+										var knockback = 500.0 * (1.0 - dist / blast_radius)
+										bx = max(0.0, min(arena_w, bx + nx * knockback * delta))
+										by = max(0.0, min(arena_h, by + ny * knockback * delta))
+
+										if typeof(b) == TYPE_DICTIONARY:
+											b["x"] = bx
+											b["y"] = by
+										else:
+											b.x = bx
+											b.y = by
 
 						p["sucked_balls"] = []
 

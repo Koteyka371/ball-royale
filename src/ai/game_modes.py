@@ -11048,13 +11048,27 @@ class UnstablePortalsEventMode(GameMode):
                             if hasattr(b, "visible"):
                                 b.visible = False
 
-                if p["charge_timer"] >= 2.0:
+                sucked_count = len(p.get("sucked_balls", []))
+                capacity = 3
+                if p["charge_timer"] >= 2.0 or sucked_count >= capacity:
                     p["active"] = False
                     if hasattr(world, "add_event"):
                         world.add_event("portal_blast", {"message": "A portal blasted!", "x": p["x"], "y": p["y"]})
 
+                    blast_radius = 150.0
+                    blast_damage = 20.0
+                    if sucked_count >= capacity:
+                        blast_radius *= sucked_count
+                        blast_damage *= sucked_count
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("explosion", {"x": p["x"], "y": p["y"], "radius": blast_radius, "damage": blast_damage})
+
                     # Blast sucked players out
                     for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+
                         b_id = getattr(b, "id", None)
                         if b_id in p.get("sucked_balls", []):
                             if hasattr(b, "visible"):
@@ -11070,9 +11084,26 @@ class UnstablePortalsEventMode(GameMode):
                             b.y = max(0.0, min(arena_h, b.y))
 
                             if hasattr(b, "take_damage"):
-                                b.take_damage(20.0)
+                                b.take_damage(blast_damage)
                             elif hasattr(b, "hp"):
-                                b.hp -= 20.0
+                                b.hp -= blast_damage
+                        else:
+                            import math
+                            dx = b.x - p["x"]
+                            dy = b.y - p["y"]
+                            dist = math.hypot(dx, dy)
+                            if dist < blast_radius:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(blast_damage)
+                                elif hasattr(b, "hp"):
+                                    b.hp -= blast_damage
+
+                                if dist > 0.0001:
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    knockback = 500.0 * (1.0 - dist / blast_radius)
+                                    b.x = max(0.0, min(arena_w, b.x + nx * knockback * delta))
+                                    b.y = max(0.0, min(arena_h, b.y + ny * knockback * delta))
 
                     p["sucked_balls"] = []
             else:

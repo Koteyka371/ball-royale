@@ -1,55 +1,85 @@
 import pytest
+import math
+import random
+from unittest.mock import MagicMock
 from ai.game_modes import UnstablePortalsEventMode
 
-class DummyWorld:
+class MockArena:
     def __init__(self):
+        self.width = 800
+        self.height = 600
+
+class MockWorld:
+    def __init__(self):
+        self.arena = MockArena()
         self.events = []
-        self.arena = type('Arena', (), {'width': 800, 'height': 600})()
 
-    def add_event(self, kind, data):
-        self.events.append((kind, data))
+    def add_event(self, event_type, event_data):
+        self.events.append((event_type, event_data))
 
-class DummyBall:
-    def __init__(self, x, y, id=1):
+class MockBall:
+    def __init__(self, id, x, y):
         self.id = id
         self.x = x
         self.y = y
+        self.hp = 100.0
         self.alive = True
-        self.hp = 100
-        self.radius = 10
-        self.damage_taken = 0
+        self.visible = True
 
-    def take_damage(self, amount):
-        self.hp -= amount
-        self.damage_taken += amount
+    def take_damage(self, damage):
+        self.hp -= damage
 
-def test_unstable_portals():
+def test_unstable_portal_overload():
     mode = UnstablePortalsEventMode()
-    world = DummyWorld()
-    balls = [DummyBall(150, 150)]
+    world = MockWorld()
 
-    # Tick to spawn a portal
-    for _ in range(100):
-        mode.tick(world, balls, delta=1.0)
-        if mode.portals:
-            break
-
-    assert len(mode.portals) > 0
-
+    # Spawn a portal
+    mode.portals.append({
+        "x": 400.0,
+        "y": 300.0,
+        "timer": 5.0,
+        "active": True,
+        "charging": False,
+        "charge_timer": 0.0,
+        "sucked_balls": []
+    })
     portal = mode.portals[0]
-    px, py = portal["x"], portal["y"]
 
-    # Move ball near the portal
-    balls[0].x = px + 10
-    balls[0].y = py + 10
+    # Create 3 balls near portal
+    b1 = MockBall(1, 400.0, 305.0)
+    b2 = MockBall(2, 400.0, 295.0)
+    b3 = MockBall(3, 405.0, 300.0)
+    balls = [b1, b2, b3]
 
-    # Wait for collapse
-    for _ in range(200):
+    # Tick to suck balls in
+    mode.tick(world, balls, delta=0.1)
+
+    # The first ball enters, starts charging, other balls pulled/sucked next tick
+    for i in range(10):
         mode.tick(world, balls, delta=0.1)
-        if not mode.portals:
+
+    # The portal shouldn't wait full 2.0s if overloaded
+    # Wait, we need them all inside. In our logic, as soon as a ball enters, it's sucked.
+    # The overloaded condition is sucked_count >= 3
+    # When it overloads, the blast happens with multiplied damage (20 * 3 = 60)
+    assert not portal["active"]
+
+    # Find explosion event
+    explosion = None
+    for event_type, event_data in world.events:
+        if event_type == "explosion":
+            explosion = event_data
             break
 
-    assert len(mode.portals) == 0
-    assert balls[0].damage_taken > 0
-    # # assert "explosion" in [e[0] for e in world.events]
-    assert "portal_blast" in [e[0] for e in world.events]
+    assert explosion is not None
+    assert explosion["radius"] == 450.0  # 150 * 3
+    assert explosion["damage"] == 60.0   # 20 * 3
+
+    # Check ball damage
+    assert b1.hp <= 40.0
+    assert b2.hp <= 40.0
+    assert b3.hp <= 40.0
+
+if __name__ == "__main__":
+    test_unstable_portal_overload()
+    print("Test passed")

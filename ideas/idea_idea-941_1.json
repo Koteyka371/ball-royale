@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Entanglement Hazard",
+    "description": "A hazard that entangles two or more players. Damage taken by one entangled player is partially shared with the others, but healing is also shared. Entanglement breaks when players move far enough apart or after a duration."
+}
