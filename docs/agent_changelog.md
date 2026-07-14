@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-986] Polymorph Trap — *2026-07-14 23:04:35 UTC*
+
+A new arena hazard that doesn't deal damage but instead transforms any ball that touches it into a harmless, slow-moving 'chicken' ball for 5 seconds. During this time, the ball cannot use skills or attack, making it highly vulnerable to grouped enemies.
+
+---
+
 ## [idea-992] Tag-Team Resuscitation — *2026-07-14 23:04:31 UTC*
 
 Instead of immediately eliminating a tag-team partner when their HP hits zero, they enter a 'downed' state. The active partner can stand in a small aura around the downed player for a specific duration to revive them with a portion of their HP.
