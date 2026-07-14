@@ -9431,7 +9431,7 @@ class EMPBurstMode extends GameMode:
 	var spawn_timer: float = 0.0
 
 	func _init():
-		super._init()
+		super()
 		name = "EMP Burst"
 		description = "Periodic EMP bursts scramble AI targeting!"
 
@@ -10054,7 +10054,7 @@ class PoisonGasZoneMode extends MovingSafeZoneMode:
 	var tick_timer: float = 0.0
 
 	func _init() -> void:
-		super._init()
+		super()
 		name = "Poison Gas Zone"
 		description = "A dynamic battle royale where a deadly poison gas engulfs the arena. The safe zone moves randomly and shrinks, forcing players together. Severe DoT damage outside."
 		outside_damage_per_second = 30.0
@@ -11956,7 +11956,7 @@ class CloneTrailMode extends GameMode:
 	var trail_timer = 0.0
 
 	func _init():
-		super._init()
+		super()
 		name = "Clone Trail"
 		description = "Every few seconds, a trail of static clones is left behind every ball. If an enemy touches a clone, it detonates and deals damage."
 
@@ -14248,7 +14248,7 @@ class ShiftingMazeMode extends GameMode:
 	var wall_damage_per_second: float = 50.0
 
 	func _init() -> void:
-		super._init()
+		super()
 		name = "Shifting Maze"
 		description = "The arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage."
 
@@ -14696,7 +14696,7 @@ class ScorchingSunMode extends GameMode:
 	var timer = 0.0
 
 	func _init():
-		super._init()
+		super()
 		name = "Scorching Sun"
 		description = "The sun gets progressively hotter, causing a slowly shrinking safe zone of shade. Balls outside the shade take continuous damage and have their stamina drained."
 
@@ -14801,7 +14801,7 @@ class DayNightMode extends GameMode:
 	var active_moonlight_shadows = []
 
 	func _init():
-		super._init()
+		super()
 		name = "Day/Night Cycle"
 		description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear."
 
@@ -16490,7 +16490,7 @@ class InvisibleWallsMode extends GameMode:
 
 class MirrorWallsMode extends GameMode:
 	func _init():
-		super._init()
+		super()
 		name = "Mirror Walls"
 		description = "An arena event where all projectiles are reflected infinitely across mirror walls."
 
@@ -16516,7 +16516,7 @@ class GeometricZoneMode extends GameMode:
 	var rng = RandomNumberGenerator.new()
 
 	func _init():
-		super._init()
+		super()
 		rng.randomize()
 		name = "Geometric Zone"
 		description = "The safe zone shrinks into varied geometric shapes or splits temporarily to disrupt camping."
@@ -17467,7 +17467,7 @@ class ChainLightningStormMode extends GameMode:
 	var weather: String = "thunderstorm"
 
 	func _init():
-		super._init()
+		super()
 		name = "Chain Lightning Storm"
 		description = "A massive electrical storm periodically targets players. When struck, balls release chain lightning that damages and repels nearby entities. Keep your distance!"
 
@@ -17590,7 +17590,7 @@ class LightningStrikeEventMode extends GameMode:
 	var strikes: Array = []
 
 	func _init():
-		super._init()
+		super()
 		name = "Lightning Strike Event"
 		description = "Lightning strikes the arena periodically. Balls caught in the blast radius are stunned and take damage. A visual warning appears briefly before the strike."
 
@@ -17698,7 +17698,7 @@ class MeteorCrashEventMode extends GameMode:
 	var craters: Array = []
 
 	func _init():
-		super._init()
+		super()
 		name = "Meteor Crash Event"
 		description = "Meteors crash into the arena, creating hazardous craters that yield rare materials when destroyed."
 
@@ -18068,7 +18068,7 @@ class StaminaSpeedMode extends GameMode:
 
 class FactoryMode extends GameMode:
 	func _init():
-		super._init()
+		super()
 		self.name = "Factory"
 		self.description = "Conveyor belts push you around!"
 		self.points_for_kill = 10
@@ -18515,13 +18515,141 @@ class HazardBilliardsMode extends GameMode:
 
 
 
+class ToxicMicroSafeZoneMode extends SafeZoneMode:
+	var toxic_phase_active: bool = false
+	var micro_zones: Array = []
+	var micro_zone_spawn_timer: float = 0.0
+	var toxic_damage_per_second: float = 25.0
+	var late_game_threshold: float = 300.0
+	var micro_zone_shrink_rate: float = 15.0
+
+	func _init() -> void:
+		super()
+		name = "Toxic Micro Safe Zone"
+		description = "In the late game, the main safe zone stops shrinking but gets flooded with toxic gas. Micro safe zones appear inside it, and entities must bounce between them to survive."
+		toxic_phase_active = false
+		micro_zones = []
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		toxic_phase_active = false
+		micro_zones.clear()
+		micro_zone_spawn_timer = 2.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not toxic_phase_active:
+			super.tick(world, balls, delta)
+			if zone_radius <= late_game_threshold:
+				toxic_phase_active = true
+				shrink_rate = 0.0
+				if world.has_method("add_event"):
+					world.add_event("toxic_phase_start", {"type": "toxic_phase", "message": "TOXIC PHASE! The safe zone is flooded with gas, find the micro zones!"})
+		else:
+			super.tick(world, balls, delta)
+			# Listen for micro_zone_spawn events from the server instead of generating them locally
+			if world != null and "events" in world:
+				var evts = []
+				if typeof(world) == TYPE_DICTIONARY:
+					evts = world.get("events", [])
+				else:
+					evts = world.events if "events" in world else []
+
+				for e in evts:
+					var event_type = ""
+					var event_data = {}
+
+					if typeof(e) == TYPE_DICTIONARY:
+						event_type = e.get("type", "")
+						event_data = e
+					elif typeof(e) == TYPE_ARRAY and e.size() >= 2:
+						event_type = e[0]
+						event_data = e[1]
+
+					if event_type == "micro_zone_spawn" or (typeof(event_data) == TYPE_DICTIONARY and event_data.get("type", "") == "micro_zone"):
+						var data_dict = event_data
+						if typeof(event_data) == TYPE_DICTIONARY and "data" in event_data:
+							data_dict = event_data.get("data", event_data)
+
+						# Check if we already have this zone by comparing x/y (roughly)
+						var already_exists = false
+						for mz in micro_zones:
+							if abs(mz["x"] - data_dict.get("x", 0.0)) < 1.0 and abs(mz["y"] - data_dict.get("y", 0.0)) < 1.0:
+								already_exists = true
+								break
+
+						if not already_exists and "x" in data_dict and "y" in data_dict and "radius" in data_dict:
+							micro_zones.append({
+								"x": data_dict["x"],
+								"y": data_dict["y"],
+								"radius": data_dict["radius"]
+							})
+
+
+			var i = micro_zones.size() - 1
+			while i >= 0:
+				micro_zones[i]["radius"] -= micro_zone_shrink_rate * delta
+				if micro_zones[i]["radius"] <= 0:
+					micro_zones.remove_at(i)
+				i -= 1
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+
+				var b_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					b_type = str(b.get("ball_type", ""))
+				else:
+					b_type = str(b.ball_type) if "ball_type" in b else ""
+
+				if not is_alive or b_type == "spectator":
+					continue
+
+				var b_x = 0.0
+				var b_y = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					b_x = b.get("position").x if b.get("position") != null else b.get("x")
+					b_y = b.get("position").y if b.get("position") != null else b.get("y")
+				else:
+					b_x = b.get("position").x if b.get("position") != null else b.get("x")
+					b_y = b.get("position").y if b.get("position") != null else b.get("y")
+
+				var dx = b_x - zone_x
+				var dy = b_y - zone_y
+				var dist_main = sqrt(dx*dx + dy*dy)
+
+				if dist_main <= zone_radius:
+					var in_micro_zone = false
+					for mz in micro_zones:
+						var mdx = b_x - mz["x"]
+						var mdy = b_y - mz["y"]
+						if sqrt(mdx*mdx + mdy*mdy) <= mz["radius"]:
+							in_micro_zone = true
+							break
+
+					if not in_micro_zone:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = b.get("hp", 100.0) - toxic_damage_per_second * delta
+							var p_timer = b.get("poison_timer", 0.0)
+							b["poison_timer"] = max(p_timer, 3.0)
+						else:
+							if "hp" in b:
+								b.hp -= toxic_damage_per_second * delta
+							if "poison_timer" in b:
+								var p_timer = b.poison_timer if b.poison_timer != null else 0.0
+								b.poison_timer = max(p_timer, 3.0)
+
+
 class MinefieldSafeZoneMode extends SafeZoneMode:
 	var mine_spawn_timer: float = 0.0
 	var base_mine_spawn_interval: float = 2.0
 	var mines_spawned: int = 0
 
 	func _init() -> void:
-		super._init()
+		super()
 		name = "Minefield Safe Zone"
 		description = "The safe zone shrinks over time, and the shrinking border leaves behind an increasing density of explosive landmines."
 
@@ -19146,7 +19274,7 @@ class ExplodingDecoysMode extends GameMode:
 	var mutators: Array = ["exploding_decoys"]
 
 	func _init():
-		super._init()
+		super()
 		mode_name = "exploding_decoys"
 		description = "A mutator where decoys explode upon expiration or death, dealing area-of-effect damage to nearby enemies."
 
@@ -19552,7 +19680,7 @@ class BlackMarketMode extends GameMode:
 	var currency_spawn_timer = 0.0
 
 	func _init():
-		super._init()
+		super()
 		self.name = "Black Market"
 		self.description = "Collect currency to buy upgrades from wandering Black Markets."
 
@@ -19926,7 +20054,7 @@ class FloorIsLavaMode extends GameMode:
 	var bounce_pads: Array = []
 
 	func _init():
-		super._init()
+		super()
 		name = "Floor Is Lava"
 		description = "The center of the map becomes lava first and expands outwards, forcing players to eventually fight on the very edges of the arena. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement."
 
@@ -20837,7 +20965,7 @@ class RhythmPanelsMode extends GameMode:
 	var rng = RandomNumberGenerator.new()
 
 	func _init() -> void:
-		super._init()
+		super()
 		name = "Rhythm Panels"
 		description = "Floor panels light up to the beat. Stay on lit panels for buffs; unlit panels will debuff and damage you."
 
@@ -22656,7 +22784,7 @@ class MazeSafeZoneMode extends GameMode:
 	var outside_damage_per_second: float = 20.0
 
 	func _init() -> void:
-		super._init()
+		super()
 		name = "Maze Safe Zone"
 		description = "Navigate a shifting maze while the safe area gets smaller."
 
@@ -25399,7 +25527,7 @@ class CenterBlackHoleMode extends GameMode:
 
 class SpikedWallsMode extends GameMode:
 	func _init():
-		super._init()
+		super()
 		self.name = "Spiked Walls"
 		self.description = "The arena walls are lined with spikes. Hitting a wall doesn't just do damage, but also applies a bleeding effect that drains HP slowly over time until the player stops moving."
 
@@ -26579,7 +26707,7 @@ class MultipleSafeZonesMode extends GameMode:
 
 class FallingPanelsMode extends GameMode:
 	func _init():
-		super._init()
+		super()
 		self.name = "Falling Panels"
 		self.description = "The arena slowly breaks away, falling into a void."
 		self.id = "falling_panels"
@@ -26629,7 +26757,7 @@ class PhysicsAnomalyEventMode extends GameMode:
 	var cy = 500.0
 
 	func _init():
-		super._init()
+		super()
 		self.name = "Physics Anomaly Event"
 		self.description = "A random event that alters the physics of the arena. Projectiles curve, movement speed is affected depending on the direction of travel relative to the anomaly's center."
 
@@ -26993,7 +27121,7 @@ class WeatherStationMode extends GameMode:
 	var controlling_team = null
 
 	func _init():
-		super._init()
+		super()
 		self.name = "Weather Station"
 		self.description = "A neutral capture point occasionally spawns. Capturing it grants control over the weather to attack enemies."
 
@@ -27270,7 +27398,7 @@ class DynamicWeatherTransitionsMode extends GameMode:
 
 class StickyArenaMode extends GameMode:
 	func _init():
-		super._init()
+		super()
 		name = "Sticky Arena"
 		description = "An arena with glue patches and sticky walls that slow down players and heavily dampen bouncing physics, forcing close-quarters combat."
 
@@ -28496,7 +28624,7 @@ class SolarEclipseEventMode extends GameMode:
 	var modified_walls = []
 
 	func _init():
-		super._init()
+		super()
 		name = "Solar Eclipse Event"
 		description = "A rare mid-day event where the sun goes dark abruptly, swapping all day/night buffs globally for 30 seconds and turning indestructible walls destructible."
 
@@ -28695,7 +28823,7 @@ class StationaryTurretsMode extends GameMode:
 
 class SacrificeAltarMode extends GameMode:
 	func _init():
-		super._init()
+		super()
 		self.name = "Sacrifice Altar"
 		self.description = "Hazards where balls can deliberately sacrifice a portion of their max HP to gain permanent buffs or a rare booster drop."
 
@@ -28850,7 +28978,7 @@ class WatchtowerMode extends GameMode:
 	var tower_spawn_timer: float = 0.0
 
 	func _init():
-		super._init()
+		super()
 		name = "Watchtower"
 		description = "Periodically, tall towers rise from the ground. Balls that climb them gain massively increased line of sight and projectile speed, but are immobile while on top."
 
@@ -29481,6 +29609,7 @@ var GAME_MODES = {
 	"safe_zone": SafeZoneMode.new(),
 	"hex_grid_royale": HexGridRoyaleMode.new(),
 	"minefield_safe_zone": MinefieldSafeZoneMode.new(),
+	"toxic_micro_safe_zone": ToxicMicroSafeZoneMode.new(),
 	"dynamic_safe_zone": DynamicSafeZoneMode.new(),
 	"moving_safe_zone": MovingSafeZoneMode.new(),
 	"poison_gas_zone": PoisonGasZoneMode.new(),
@@ -31163,7 +31292,7 @@ class ColorTrailMode extends GameMode:
 	var timer = 0.0
 
 	func _init():
-		super._init()
+		super()
 		self.name = "Color Trail"
 		self.description = "Leave a trail of your team's color. Stepping on your own color gives a speed and regen buff, while stepping on enemy colors causes slowdown and damage. Teams win by controlling the most territory."
 
@@ -32033,7 +32162,7 @@ class ClanWarMode extends GameMode:
 	var target_score = 1000
 
 	func _init():
-		super._init()
+		super()
 		self.name = "Clan War"
 		self.description = "Rival clans battle for territory control. Controlling a territory grants passive bonuses (e.g. reduced hazard damage, increased speed) within that arena. Teams capture control points to win."
 

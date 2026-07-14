@@ -11859,6 +11859,91 @@ class _MinefieldHazard:
         self.duration = duration
         self.active = True
 
+class ToxicMicroSafeZoneMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Toxic Micro Safe Zone"
+        self.description = "In the late game, the main safe zone stops shrinking but gets flooded with toxic gas. Micro safe zones appear inside it, and entities must bounce between them to survive."
+        self.toxic_phase_active = False
+        self.micro_zones = []
+        self.micro_zone_spawn_timer = 0.0
+        self.toxic_damage_per_second = 25.0
+        self.late_game_threshold = 300.0
+        self.micro_zone_shrink_rate = 15.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.toxic_phase_active = False
+        self.micro_zones = []
+        self.micro_zone_spawn_timer = 2.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        # If not yet in late game, just run normal safe zone logic
+        if not self.toxic_phase_active:
+            super().tick(world, balls, delta)
+            if self.zone_radius <= self.late_game_threshold:
+                self.toxic_phase_active = True
+                self.shrink_rate = 0.0 # Stop the main zone from shrinking further
+                if hasattr(world, "add_event"):
+                    world.add_event("toxic_phase_start", {"type": "toxic_phase", "message": "TOXIC PHASE! The safe zone is flooded with gas, find the micro zones!"})
+        else:
+            # Main safe zone is now toxic. It doesn't shrink, it just deals damage if you are not in a micro zone.
+            # We still need to call super to move the safe zone (it still drifts) and process outside damage
+            super().tick(world, balls, delta)
+
+            self.micro_zone_spawn_timer -= delta
+            if self.micro_zone_spawn_timer <= 0.0:
+                self.micro_zone_spawn_timer = random.uniform(3.0, 6.0)
+                # Spawn a new micro zone inside the main safe zone
+                angle = random.uniform(0, math.pi * 2)
+                # Don't spawn exactly on the edge
+                dist = random.uniform(0, max(0, self.zone_radius - 60.0))
+                mx = self.zone_x + math.cos(angle) * dist
+                my = self.zone_y + math.sin(angle) * dist
+                self.micro_zones.append({
+                    "x": mx,
+                    "y": my,
+                    "radius": random.uniform(60.0, 100.0)
+                })
+                if hasattr(world, "add_event"):
+                    world.add_event("micro_zone_spawn", {"type": "micro_zone", "x": mx, "y": my, "radius": self.micro_zones[-1]["radius"]})
+
+            # Shrink micro zones
+            for mz in self.micro_zones:
+                mz["radius"] -= self.micro_zone_shrink_rate * delta
+
+            self.micro_zones = [mz for mz in self.micro_zones if mz["radius"] > 0]
+
+            # Apply toxic gas damage to balls inside the main zone but outside micro zones
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+
+                # Check if in main zone
+                dx = b.x - self.zone_x
+                dy = b.y - self.zone_y
+                dist_main = math.sqrt(dx*dx + dy*dy)
+
+                if dist_main <= self.zone_radius:
+                    # They are inside the main zone, which is now flooded with gas
+                    # Check if they are in ANY micro zone
+                    in_micro_zone = False
+                    for mz in self.micro_zones:
+                        mdx = b.x - mz["x"]
+                        mdy = b.y - mz["y"]
+                        if math.sqrt(mdx*mdx + mdy*mdy) <= mz["radius"]:
+                            in_micro_zone = True
+                            break
+
+                    if not in_micro_zone:
+                        b.hp -= self.toxic_damage_per_second * delta
+                        # Apply poison debuff
+                        b.poison_timer = max(getattr(b, "poison_timer", 0.0), 3.0)
+
+
 class MinefieldSafeZoneMode(SafeZoneMode):
     def __init__(self):
         super().__init__()
@@ -17583,6 +17668,7 @@ GAME_MODES = {
     "safe_zone": SafeZoneMode(),
     "hex_grid_royale": HexGridRoyaleMode(),
     "minefield_safe_zone": MinefieldSafeZoneMode(),
+    "toxic_micro_safe_zone": ToxicMicroSafeZoneMode(),
     "dynamic_safe_zone": DynamicSafeZoneMode(),
     "moving_safe_zone": MovingSafeZoneMode(),
     "poison_gas_zone": PoisonGasZoneMode(),
