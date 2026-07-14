@@ -1119,6 +1119,20 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if getattr(self.ball, "is_perfect_mirror", False):
+            owner_id = getattr(self.ball, "owner_id", None)
+            if owner_id is not None and hasattr(self.world, "balls"):
+                owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
+                if owner:
+                    arena_w = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") else getattr(self.world, "width", 1000)
+                    arena_h = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") else getattr(self.world, "height", 1000)
+                    self.ball.x = arena_w - owner.x
+                    self.ball.y = arena_h - owner.y
+                    self.ball.vx = -getattr(owner, "vx", 0.0)
+                    self.ball.vy = -getattr(owner, "vy", 0.0)
+            return
+
         if getattr(self.ball, "is_ricochet_laser", False):
             self.ball.duration -= delta
             if self.ball.duration <= 0 or getattr(self.ball, "bounces_left", 0) <= 0:
@@ -10386,6 +10400,40 @@ class Action:
                     self.world.balls.append(clone)
 
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+            elif skill_name == "perfect_mirror":
+                import copy
+                import random
+                if hasattr(self.world, "balls"):
+                    clone = copy.copy(self.ball)
+                    clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    clone.hp = getattr(self.ball, "hp", 100)
+                    clone.max_hp = getattr(self.ball, "max_hp", 100)
+                    clone.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "")))
+                    clone.is_perfect_mirror = True
+                    clone.owner_id = self.ball.id
+                    clone.alive = True
+                    clone.damage = getattr(self.ball, "damage", 10)
+
+                    clone.skill_timer = 9999 # no skills
+                    clone.skill = None
+                    if hasattr(clone, "SKILL"):
+                        clone.SKILL = None
+                    if hasattr(clone, "active_skill"):
+                        clone.active_skill = None
+
+                    # Initialize to exact mirrored position
+                    arena_w = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") else getattr(self.world, "width", 1000)
+                    arena_h = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") else getattr(self.world, "height", 1000)
+                    clone.x = arena_w - self.ball.x
+                    clone.y = arena_h - self.ball.y
+
+                    self.world.balls.append(clone)
+
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 10.0)
+
             elif skill_name == "clone":
                 import copy
                 import random
