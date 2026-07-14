@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-982] Voodoo Doll Trap — *2026-07-14 19:05:28 UTC*
+
+A trap that links the triggering ball's HP to a random enemy for 10 seconds. Any damage taken by the triggerer is also dealt to the linked enemy.
+
+---
+
 ## [idea-955] Mirror Mirage — *2026-07-14 18:50:07 UTC*
 
 A new ball skill that creates a perfect mirror image clone that mirrors the player's inputs exactly but across the center axis of the arena.

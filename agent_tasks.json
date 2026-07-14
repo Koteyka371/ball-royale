@@ -16863,7 +16863,7 @@
     },
     {
       "id": "idea-982",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Voodoo Doll Trap",
@@ -26788,6 +26788,23 @@
         "src/ai/mirror_laser_shield_trait.py",
         "src/ai/mirror_laser_shield_trait.gd",
         "tests/test_mirror_laser_shield_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1565",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Strike Passive",
+      "description": "A passive ability that causes every third basic attack to echo, dealing an additional 50% damage in a small area of effect around the target, adding a rhythm-based combo mechanic to combat.",
+      "allowed_paths": [
+        "src/ai/echo_strike_passive.py",
+        "src/ai/echo_strike_passive.gd",
+        "tests/test_echo_strike_passive.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
