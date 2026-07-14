@@ -3051,10 +3051,10 @@ class BattleRoyaleMode extends GameMode:
 				new_goblin.id = 95000 + rng.randi() % 10000
 				var arena_width = 1000.0
 				var arena_height = 1000.0
-				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+				if "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
 					if world.arena.has("width"): arena_width = world.arena.width
 					if world.arena.has("height"): arena_height = world.arena.height
-				elif world.has("arena") and typeof(world.arena) == TYPE_OBJECT:
+				elif "arena" in world and typeof(world.arena) == TYPE_OBJECT:
 					if "width" in world.arena: arena_width = world.arena.width
 					if "height" in world.arena: arena_height = world.arena.height
 
@@ -3081,10 +3081,10 @@ class BattleRoyaleMode extends GameMode:
 			elif event_type == "low_gravity_zone":
 				var arena_width = 1000.0
 				var arena_height = 1000.0
-				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+				if "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
 					if world.arena.has("width"): arena_width = world.arena.width
 					if world.arena.has("height"): arena_height = world.arena.height
-				elif world.has("arena") and typeof(world.arena) == TYPE_OBJECT:
+				elif "arena" in world and typeof(world.arena) == TYPE_OBJECT:
 					if "width" in world.arena: arena_width = world.arena.width
 					if "height" in world.arena: arena_height = world.arena.height
 				var cx = arena_width / 2.0
@@ -3101,7 +3101,7 @@ class BattleRoyaleMode extends GameMode:
 					"damage": 0.0,
 					"duration": 15.0
 				}
-				if world.has("arena"):
+				if "arena" in world:
 					var arena = world.arena
 					if typeof(arena) == TYPE_DICTIONARY and arena.has("hazards") and typeof(arena.hazards) == TYPE_ARRAY:
 						arena.hazards.append(low_grav)
@@ -18678,7 +18678,7 @@ class MinefieldSafeZoneMode extends SafeZoneMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if "arena" in world and world.arena != null:
 				if typeof(world.arena) == TYPE_DICTIONARY:
 					if world.arena.has("width"): arena_width = float(world.arena.width)
 					if world.arena.has("height"): arena_height = float(world.arena.height)
@@ -18702,9 +18702,9 @@ class MinefieldSafeZoneMode extends SafeZoneMode:
 
 			var arena_hazards = null
 			if typeof(world) == TYPE_DICTIONARY:
-				if world.has("arena") and world.arena != null:
+				if "arena" in world and world.arena != null:
 					if typeof(world.arena) == TYPE_DICTIONARY:
-						if world.arena.has("hazards"): arena_hazards = world.arena.hazards
+						if "hazards" in world.arena: arena_hazards = world.arena.hazards
 					else:
 						if "hazards" in world.arena: arena_hazards = world.arena.hazards
 			else:
@@ -20147,7 +20147,7 @@ class FloorIsLavaMode extends GameMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if "arena" in world and world.arena != null:
 				arena_width = world.arena.get("width", 1000.0)
 				arena_height = world.arena.get("height", 1000.0)
 		else:
@@ -20166,7 +20166,7 @@ class FloorIsLavaMode extends GameMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if "arena" in world and world.arena != null:
 				arena_width = world.arena.get("width", 1000.0)
 				arena_height = world.arena.get("height", 1000.0)
 		else:
@@ -20202,7 +20202,7 @@ class FloorIsLavaMode extends GameMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if "arena" in world and world.arena != null:
 				arena_width = world.arena.get("width", 1000.0)
 				arena_height = world.arena.get("height", 1000.0)
 		else:
@@ -20238,8 +20238,8 @@ class FloorIsLavaMode extends GameMode:
 
 		var hazards_array = null
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null and typeof(world.arena) == TYPE_DICTIONARY:
-				if world.arena.has("hazards"):
+			if "arena" in world and world.arena != null and typeof(world.arena) == TYPE_DICTIONARY:
+				if "hazards" in world.arena:
 					hazards_array = world.arena.hazards
 		else:
 			if world.get("arena") != null:
@@ -22792,7 +22792,7 @@ class SweepingPaddlesMode extends GameMode:
 		sweep_timer += delta
 		var arena_width = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if "arena" in world and world.arena != null:
 				arena_width = world.arena.get("width", 1000.0)
 		else:
 			if world.get("arena") != null:
@@ -24448,7 +24448,7 @@ class HexGridRoyaleMode extends GameMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if "arena" in world and world.arena != null:
 				if typeof(world.arena) == TYPE_DICTIONARY:
 					if world.arena.has("width"): arena_width = float(world.arena.width)
 					if world.arena.has("height"): arena_height = float(world.arena.height)
@@ -26640,7 +26640,7 @@ class MultipleSafeZonesMode extends GameMode:
 		super.setup(world, balls)
 		var arena_width = 1000.0
 		var arena_height = 1000.0
-		if world.has("arena") and world.arena != null:
+		if "arena" in world and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY:
 				arena_width = float(world.arena.get("width", 1000.0))
 				arena_height = float(world.arena.get("height", 1000.0))
@@ -26671,7 +26671,7 @@ class MultipleSafeZonesMode extends GameMode:
 
 		var arena_width = 1000.0
 		var arena_height = 1000.0
-		if world.has("arena") and world.arena != null:
+		if "arena" in world and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY:
 				arena_width = float(world.arena.get("width", 1000.0))
 				arena_height = float(world.arena.get("height", 1000.0))
@@ -26745,7 +26745,7 @@ class MultipleSafeZonesMode extends GameMode:
 	func _split_zones(world):
 		var arena_width = 1000.0
 		var arena_height = 1000.0
-		if world.has("arena") and world.arena != null:
+		if "arena" in world and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY:
 				arena_width = float(world.arena.get("width", 1000.0))
 				arena_height = float(world.arena.get("height", 1000.0))
@@ -28684,7 +28684,7 @@ class CollapsingBubblesMode extends GameMode:
 	func _spawn_bubble(world):
 		var arena_width = 1000.0
 		var arena_height = 1000.0
-		if world.has("arena") and world.arena != null:
+		if "arena" in world and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY:
 				arena_width = float(world.arena.get("width", 1000.0))
 				arena_height = float(world.arena.get("height", 1000.0))
@@ -28778,7 +28778,7 @@ class StationaryTurretsMode extends GameMode:
 			var arena_w = 1000.0
 			var arena_h = 1000.0
 			if typeof(world) == TYPE_DICTIONARY:
-				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+				if "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
 					arena_w = world.arena.get("width", 1000.0)
 					arena_h = world.arena.get("height", 1000.0)
 			else:
@@ -28809,8 +28809,8 @@ class StationaryTurretsMode extends GameMode:
 			turrets.append(new_turret)
 
 			if typeof(world) == TYPE_DICTIONARY:
-				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
-					if world.arena.has("hazards"):
+				if "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+					if "hazards" in world.arena:
 						world.arena.hazards.append(new_turret)
 			else:
 				if "arena" in world and "hazards" in world.arena:
@@ -29215,7 +29215,7 @@ class TickingBombMode extends GameMode:
 					"active": true
 				}
 				if typeof(world.arena) == TYPE_DICTIONARY:
-					if world.arena.has("hazards"): world.arena.hazards.append(bomb)
+					if "hazards" in world.arena: world.arena.hazards.append(bomb)
 				else:
 					if "hazards" in world.arena: world.arena.hazards.append(bomb)
 
@@ -29650,7 +29650,7 @@ class ElementalWandererMode extends GameMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if "arena" in world and world.arena != null:
 				if typeof(world.arena) == TYPE_DICTIONARY:
 					arena_width = world.arena.get("width", 1000.0)
 					arena_height = world.arena.get("height", 1000.0)
@@ -29738,7 +29738,7 @@ class ElementalWandererMode extends GameMode:
 			var arena_width = 1000.0
 			var arena_height = 1000.0
 			if typeof(world) == TYPE_DICTIONARY:
-				if world.has("arena") and world.arena != null:
+				if "arena" in world and world.arena != null:
 					if typeof(world.arena) == TYPE_DICTIONARY:
 						arena_width = world.arena.get("width", 1000.0)
 						arena_height = world.arena.get("height", 1000.0)
@@ -29839,6 +29839,84 @@ class ElementalWandererMode extends GameMode:
 					b.speed = base_spd * 1.5
 
 
+
+class TimeDilationZoneMode extends GameMode:
+	var zone_x = 500.0
+	var zone_y = 500.0
+	var zone_radius = 200.0
+	var time_scale = 0.5
+	var active = true
+
+	func _init():
+		super()
+		name = "Time Dilation Zone"
+		description = "An anomalous zone in the arena where the flow of time slows down drastically. Entities, projectiles, and status effects within the field move and expire at half their normal rate."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if "arena" in world and world.arena != null:
+			zone_x = world.arena.get("width") / 2.0
+			zone_y = world.arena.get("height") / 2.0
+		else:
+			zone_x = 500.0
+			zone_y = 500.0
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+		if world.has_method("add_event"):
+			world.add_event("visual_effect", {
+				"type": "time_dilation_zone",
+				"x": zone_x,
+				"y": zone_y,
+				"radius": zone_radius
+			})
+
+		for b in balls:
+			if not b.get("alive", false):
+				continue
+
+			var bx = b.get("x", 0.0)
+			var by = b.get("y", 0.0)
+			var dx = bx - zone_x
+			var dy = by - zone_y
+			var dist_sq = dx*dx + dy*dy
+
+			if dist_sq <= zone_radius * zone_radius:
+				var vx = b.get("vx", 0.0)
+				var vy = b.get("vy", 0.0)
+
+				b.set("x", bx - vx * delta * (1.0 - time_scale))
+				b.set("y", by - vy * delta * (1.0 - time_scale))
+
+				var timers = [
+					"slow_timer", "poison_timer", "burn_timer", "stun_timer",
+					"silence_timer", "blind_timer", "root_timer", "fear_timer"
+				]
+				for t in timers:
+					if (typeof(b) == TYPE_DICTIONARY and b.has(t)) or (typeof(b) == TYPE_OBJECT and t in b):
+						var val = b.get(t)
+						if val != null and typeof(val) in [TYPE_INT, TYPE_FLOAT] and val > 0:
+							b.set(t, val + delta * (1.0 - time_scale))
+
+		if "arena" in world and world.arena != null and world.arena.has("hazards"):
+			for h in world.arena.hazards:
+				if h.get("active", false):
+					var hx = h.get("x", 0.0)
+					var hy = h.get("y", 0.0)
+					var hdx = hx - zone_x
+					var hdy = hy - zone_y
+					if hdx*hdx + hdy*hdy <= zone_radius * zone_radius:
+						var hvx = h.get("vx", 0.0)
+						var hvy = h.get("vy", 0.0)
+						h.set("x", hx - hvx * delta * (1.0 - time_scale))
+						h.set("y", hy - hvy * delta * (1.0 - time_scale))
+
+						if "duration" in h:
+							var dur = h.get("duration")
+							if typeof(dur) in [TYPE_INT, TYPE_FLOAT] and dur > 0:
+								h.set("duration", dur + delta * (1.0 - time_scale))
+
 var GAME_MODES = {
 	"stats_decay": StatsDecayMode.new(),
 	"watchtower": WatchtowerMode.new(),
@@ -29860,6 +29938,7 @@ var GAME_MODES = {
 	"heavy_rain_mutator": HeavyRainMode.new(),
 
 	"sticky_arena": StickyArenaMode.new(),
+	"time_dilation_zone": TimeDilationZoneMode.new(),
 	"falling_panels": FallingPanelsMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"collapsing_bubbles": CollapsingBubblesMode.new(),
@@ -32272,7 +32351,7 @@ class BermudaTriangleMode extends GameMode:
 				var pylon = HazardObj.new("bermuda_pylon_" + str(i), px, py, 20.0, "magnetic_pylon", 0.0)
 
 				if typeof(world.arena) == TYPE_DICTIONARY:
-					if world.arena.has("hazards"):
+					if "hazards" in world.arena:
 						world.arena.hazards.append(pylon)
 				else:
 					if "hazards" in world.arena:
@@ -32663,7 +32742,7 @@ class PaintSplatterMode extends GameMode:
 
 		var width: float = 1000.0
 		var height: float = 1000.0
-		if world.has("arena"):
+		if "arena" in world:
 			width = world["arena"].get("width", width)
 			height = world["arena"].get("height", height)
 
@@ -32917,7 +32996,7 @@ class GridLockdownMode extends GameMode:
 
 		var width = 1000.0
 		var height = 1000.0
-		if world.has("arena"):
+		if "arena" in world:
 			width = world["arena"].get("width", width)
 			height = world["arena"].get("height", height)
 

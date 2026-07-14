@@ -17790,6 +17790,94 @@ class ElementalWandererMode(GameMode):
                 b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.5
 
 
+
+class TimeDilationZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Dilation Zone"
+        self.description = "An anomalous zone in the arena where the flow of time slows down drastically. Entities, projectiles, and status effects within the field move and expire at half their normal rate."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 200.0
+        self.time_scale = 0.5
+        self.active = True
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            self.zone_x = getattr(world.arena, "width", 1000.0) / 2
+            self.zone_y = getattr(world.arena, "height", 1000.0) / 2
+        else:
+            self.zone_x = 500.0
+            self.zone_y = 500.0
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        # Draw visual effect for the zone using an event
+        if hasattr(world, "add_event"):
+            # Don't flood events, emit occasionally or emit a persisting aura event
+            world.add_event("visual_effect", {
+                "type": "time_dilation_zone",
+                "x": self.zone_x,
+                "y": self.zone_y,
+                "radius": self.zone_radius
+            })
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            dx = b.x - self.zone_x
+            dy = b.y - self.zone_y
+            dist_sq = dx*dx + dy*dy
+
+            if dist_sq <= self.zone_radius * self.zone_radius:
+                # Apply time dilation effect by reducing velocity and extending timers
+                # Since tick processes movement by adding velocity * delta, we can effectively halve the speed
+                # for this tick by subtracting half the movement that the engine will apply/has applied.
+                # Actually, modifying vx/vy temporarily or applying a force is better.
+                # Easiest way to simulate "time slow" for movement without affecting base stats is to undo half the movement.
+                # Or we can just multiply vx and vy by self.time_scale if this is a persistent area effect.
+
+                # To make it fair and affect both entities and projectiles:
+                vx = getattr(b, "vx", 0.0)
+                vy = getattr(b, "vy", 0.0)
+
+                # We revert half of the distance they would travel this tick
+                b.x -= vx * delta * (1.0 - self.time_scale)
+                b.y -= vy * delta * (1.0 - self.time_scale)
+
+                # Also slow down status effects by adding back some time to their timers
+                # (since they are decreased by 'delta' elsewhere, adding 'delta * (1-timescale)' halves the reduction rate)
+                timers = [
+                    "slow_timer", "poison_timer", "burn_timer", "stun_timer",
+                    "silence_timer", "blind_timer", "root_timer", "fear_timer"
+                ]
+                for t in timers:
+                    if hasattr(b, t):
+                        val = getattr(b, t)
+                        if val > 0:
+                            setattr(b, t, val + delta * (1.0 - self.time_scale))
+
+        # Also affect hazards (projectiles)
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "active", False):
+                    hx = getattr(h, "x", 0.0)
+                    hy = getattr(h, "y", 0.0)
+                    hdx = hx - self.zone_x
+                    hdy = hy - self.zone_y
+                    if hdx*hdx + hdy*hdy <= self.zone_radius * self.zone_radius:
+                        hvx = getattr(h, "vx", 0.0)
+                        hvy = getattr(h, "vy", 0.0)
+                        h.x -= hvx * delta * (1.0 - self.time_scale)
+                        h.y -= hvy * delta * (1.0 - self.time_scale)
+
+                        # Slow down hazard expiration
+                        if hasattr(h, "duration") and h.duration > 0:
+                            h.duration += delta * (1.0 - self.time_scale)
+
 GAME_MODES = {
     "stationary_turrets": StationaryTurretsMode(),
 
@@ -17800,6 +17888,7 @@ GAME_MODES = {
     "heavy_rain_mutator": HeavyRainMode(),
 
     'sticky_arena': StickyArenaMode(),
+    'time_dilation_zone': TimeDilationZoneMode(),
     "falling_panels": FallingPanelsMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entangled_arena": EntangledArenaMode(),
