@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-912] Prismatic Reflect Shield — *2026-07-14 16:54:27 UTC*
+
+An upgraded version of the reflect shield that splits the reflected damage among all enemies within a certain radius, rather than just returning it to the attacker or bouncing it to a single target.
+
+---
+
 ## [idea-933] Reverse Gravity Mode — *2026-07-14 16:44:36 UTC*
 
 Periodically inverts gravity causing balls to fall upwards, requiring them to use ceilings instead of floors.

@@ -15669,7 +15669,7 @@
     },
     {
       "id": "idea-912",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Prismatic Reflect Shield",
@@ -26497,6 +26497,74 @@
         "src/ai/jumper_booster.py",
         "src/ai/jumper_booster.gd",
         "tests/test_jumper_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1548",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Boots Active Item",
+      "description": "An active item that players can pick up and activate to individually reverse their own gravity for a short time. Useful for dodging floor-based hazards like lava or spikes, or escaping a dense group of enemies.",
+      "allowed_paths": [
+        "src/ai/gravity_boots_active_item.py",
+        "src/ai/gravity_boots_active_item.gd",
+        "tests/test_gravity_boots_active_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1549",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shared Health Pool Mode",
+      "description": "Teams share a single massive health pool. Taking damage drains from the collective pool. When it reaches 0, the entire team is eliminated simultaneously. Promotes extreme teamwork and protective strategies.",
+      "allowed_paths": [
+        "src/ai/shared_health_pool.py",
+        "src/ai/shared_health_pool.gd",
+        "tests/test_shared_health_pool.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1550",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Time Penalty Mode",
+      "description": "Every 60 seconds, all balls are forcefully rewound to their positions 10 seconds ago. However, their health and cooldowns remain at current levels, leading to unpredictable resets and repositioning plays.",
+      "allowed_paths": [
+        "src/ai/reverse_time_penalty.py",
+        "src/ai/reverse_time_penalty.gd",
+        "tests/test_reverse_time_penalty.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1551",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Ceilings Modifier",
+      "description": "An environmental hazard mutator where certain areas of the ceiling become extremely sticky during reverse gravity events, slowing down any ball that gets stuck to them and requiring a dash or explosive knockback to break free.",
+      "allowed_paths": [
+        "src/ai/sticky_ceilings.py",
+        "src/ai/sticky_ceilings.gd",
+        "tests/test_sticky_ceilings.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
