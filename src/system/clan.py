@@ -11,6 +11,9 @@ class ClanManager:
                 data = json.load(f)
                 if "clans" not in data:
                     data["clans"] = {}
+                for clan in data["clans"].values():
+                    if "perks" not in clan:
+                        clan["perks"] = []
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {"clans": {}}
@@ -29,7 +32,8 @@ class ClanManager:
             "stash": {},
             "quests": [],
             "points": 0,
-            "territories": []
+            "territories": [],
+            "perks": []
         }
         self.save()
         return True
@@ -210,3 +214,20 @@ class ClanManager:
             })
         clans.sort(key=lambda x: x["points"], reverse=True)
         return clans
+
+    def unlock_perk(self, clan_name, perk_name, cost, required_perk=None):
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if clan.get("points", 0) >= cost:
+                if perk_name not in clan.get("perks", []):
+                    if required_perk is None or required_perk in clan.get("perks", []):
+                        clan["points"] -= cost
+                        clan.setdefault("perks", []).append(perk_name)
+                        self.save()
+                        return True
+        return False
+
+    def get_clan_perks(self, clan_name):
+        if clan_name in self.data["clans"]:
+            return self.data["clans"][clan_name].get("perks", [])
+        return []

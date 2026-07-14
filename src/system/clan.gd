@@ -17,6 +17,10 @@ func load_clans():
             data = json.get_data()
             if not data.has("clans"):
                 data["clans"] = {}
+            for clan_name in data["clans"].keys():
+                var clan = data["clans"][clan_name]
+                if not clan.has("perks"):
+                    clan["perks"] = []
             return
 
     data = {"clans": {}}
@@ -36,7 +40,8 @@ func create_clan(clan_name: String, creator_id: String) -> bool:
 		"stash": {},
 		"quests": [],
 		"points": 0,
-		"territories": []
+		"territories": [],
+		"perks": []
 	}
     save_clans()
     return true
@@ -234,3 +239,29 @@ func get_clan_leaderboard() -> Array:
         })
     clans_list.sort_custom(func(a, b): return a["points"] > b["points"])
     return clans_list
+
+func unlock_perk(clan_name: String, perk_name: String, cost: int, required_perk: String = "") -> bool:
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        var current_points = 0
+        if clan.has("points"):
+            current_points = clan["points"]
+
+        if current_points >= cost:
+            if not clan.has("perks"):
+                clan["perks"] = []
+
+            if not clan["perks"].has(perk_name):
+                if required_perk == "" or clan["perks"].has(required_perk):
+                    clan["points"] -= cost
+                    clan["perks"].append(perk_name)
+                    save_clans()
+                    return true
+    return false
+
+func get_clan_perks(clan_name: String) -> Array:
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if clan.has("perks"):
+            return clan["perks"]
+    return []
