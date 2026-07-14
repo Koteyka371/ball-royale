@@ -31732,3 +31732,103 @@ class StatsDecayMode extends GameMode:
 					else:
 						if b is Object:
 							b.set_meta("_decay_checked", true)
+
+
+class ClanWarMode extends GameMode:
+	var territory_captured = false
+	var control_points = []
+	var score = {}
+	var target_score = 1000
+
+	func _init():
+		super._init()
+		self.name = "Clan War"
+		self.description = "Rival clans battle for territory control. Controlling a territory grants passive bonuses (e.g. reduced hazard damage, increased speed) within that arena. Teams capture control points to win."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		self.territory_captured = false
+		self.score = {}
+		self.control_points = [
+			{"x": 250, "y": 250, "radius": 150, "owner": null, "capture_progress": 0.0},
+			{"x": 750, "y": 750, "radius": 150, "owner": null, "capture_progress": 0.0}
+		]
+
+		var cm = load("res://src/system/clan.gd").new()
+		var owner = cm.get_territory_owner("Arena_1")
+
+		for ball in balls:
+			var team_clan = null
+			if "clan" in ball:
+				team_clan = ball.clan
+			elif ball.has_method("get_clan"):
+				team_clan = ball.get_clan()
+
+			if team_clan and team_clan == owner:
+				if "speed_multiplier" in ball:
+					ball.speed_multiplier *= 1.2
+				else:
+					ball.speed_multiplier = 1.2
+
+				if "defense_multiplier" in ball:
+					ball.defense_multiplier *= 1.5
+				else:
+					ball.defense_multiplier = 1.5
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+		if self.territory_captured:
+			return
+
+		for cp in self.control_points:
+			var balls_in_cp = []
+			for b in balls:
+				if b.hp > 0:
+					var dist = sqrt(pow(b.x - cp["x"], 2) + pow(b.y - cp["y"], 2))
+					if dist < cp["radius"]:
+						balls_in_cp.append(b)
+
+			if balls_in_cp.size() == 0:
+				continue
+
+			var teams_present = []
+			for b in balls_in_cp:
+				if not teams_present.has(b.team):
+					teams_present.append(b.team)
+
+			if teams_present.size() == 1:
+				var capturing_team = teams_present[0]
+				if cp["owner"] != capturing_team:
+					cp["capture_progress"] += delta * 10
+					if cp["capture_progress"] >= 100:
+						cp["owner"] = capturing_team
+						cp["capture_progress"] = 0
+			else:
+				cp["capture_progress"] = max(0, cp["capture_progress"] - delta * 5)
+
+			if cp["owner"] != null:
+				if not self.score.has(cp["owner"]):
+					self.score[cp["owner"]] = 0
+				self.score[cp["owner"]] += delta * 2
+
+		var winner_team = null
+		for team in self.score.keys():
+			if self.score[team] >= self.target_score:
+				winner_team = team
+				break
+
+		if winner_team != null:
+			self.territory_captured = true
+			var winner_clan = null
+			for b in balls:
+				if b.team == winner_team:
+					if "clan" in b and b.clan != null:
+						winner_clan = b.clan
+						break
+
+			if winner_clan != null:
+				var cm = load("res://src/system/clan.gd").new()
+				cm.capture_territory(winner_clan, "Arena_1")
+
+GAME_MODES['clan_war'] = ClanWarMode.new()

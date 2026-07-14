@@ -32,11 +32,12 @@ func create_clan(clan_name: String, creator_id: String) -> bool:
 
     data["clans"][clan_name] = {
         "members": [creator_id],
-        "roles": {creator_id: "leader"},
-        "stash": {},
-        "quests": [],
-        "points": 0
-    }
+		"roles": {creator_id: "leader"},
+		"stash": {},
+		"quests": [],
+		"points": 0,
+		"territories": []
+	}
     save_clans()
     return true
 
@@ -188,6 +189,37 @@ func unlock_buff(clan_name: String, buff_name: String) -> bool:
             save_clans()
             return true
     return false
+
+
+func capture_territory(clan_name: String, territory_name: String) -> bool:
+	if data["clans"].has(clan_name):
+		for c_name in data["clans"].keys():
+			var c_data = data["clans"][c_name]
+			if c_data.has("territories") and c_data["territories"].has(territory_name):
+				c_data["territories"].erase(territory_name)
+
+		if not data["clans"][clan_name].has("territories"):
+			data["clans"][clan_name]["territories"] = []
+
+		if not data["clans"][clan_name]["territories"].has(territory_name):
+			data["clans"][clan_name]["territories"].append(territory_name)
+			save_clans()
+			return true
+	return false
+
+func get_clan_territories(clan_name: String) -> Array:
+	if data["clans"].has(clan_name):
+		var clan = data["clans"][clan_name]
+		if clan.has("territories"):
+			return clan["territories"]
+	return []
+
+func get_territory_owner(territory_name: String):
+	for clan_name in data["clans"].keys():
+		var clan_data = data["clans"][clan_name]
+		if clan_data.has("territories") and clan_data["territories"].has(territory_name):
+			return clan_name
+	return null
 
 func get_clan_leaderboard() -> Array:
     var clans_list = []

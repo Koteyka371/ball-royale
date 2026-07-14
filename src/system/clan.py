@@ -28,7 +28,8 @@ class ClanManager:
             "roles": {creator_id: "leader"},
             "stash": {},
             "quests": [],
-            "points": 0
+            "points": 0,
+            "territories": []
         }
         self.save()
         return True
@@ -171,6 +172,34 @@ class ClanManager:
                 self.save()
                 return True
         return False
+
+
+    def capture_territory(self, clan_name, territory_name):
+        if clan_name in self.data["clans"]:
+            # Remove territory from old owner if any
+            for c_name, c_data in self.data["clans"].items():
+                if "territories" in c_data and territory_name in c_data["territories"]:
+                    c_data["territories"].remove(territory_name)
+
+            if "territories" not in self.data["clans"][clan_name]:
+                self.data["clans"][clan_name]["territories"] = []
+
+            if territory_name not in self.data["clans"][clan_name]["territories"]:
+                self.data["clans"][clan_name]["territories"].append(territory_name)
+                self.save()
+                return True
+        return False
+
+    def get_clan_territories(self, clan_name):
+        if clan_name in self.data["clans"]:
+            return self.data["clans"][clan_name].get("territories", [])
+        return []
+
+    def get_territory_owner(self, territory_name):
+        for clan_name, clan_data in self.data["clans"].items():
+            if territory_name in clan_data.get("territories", []):
+                return clan_name
+        return None
 
     def get_clan_leaderboard(self):
         clans = []
