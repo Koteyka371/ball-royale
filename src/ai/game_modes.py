@@ -14164,6 +14164,75 @@ class SweepingPaddlesMode(GameMode):
 
 
 
+
+class SweepingLasersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sweeping Lasers"
+        self.description = "Solid beam lasers sweep across the arena, dealing high continuous damage if players touch them."
+        self.sweep_timer = 0.0
+        self.laser_damage_per_second = 500.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        pass
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            try:
+                from arena.procedural_arena import Hazard
+                def create_hazard(hid, hx, hy, r, k):
+                    return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, hid, hx, hy, r, k):
+                        self.id = hid
+                        self.x = hx
+                        self.y = hy
+                        self.radius = r
+                        self.kind = k
+                        self.damage = 0.0
+                def create_hazard(hid, hx, hy, r, k):
+                    return FallbackHazard(hid, hx, hy, r, k)
+
+            self.sweep_timer = 0.0
+            laser_top = create_hazard(15003, arena_width / 2.0, 50, 150.0, "sweeping_laser")
+            world.arena.hazards.append(laser_top)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        self.sweep_timer += delta
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        center_x = arena_width / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "sweeping_laser":
+                    # Sweep left and right
+                    h.x = center_x + math.sin(self.sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "sweeping_laser":
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            dist = abs(b.x - h.x)
+                            if dist < getattr(h, "radius", 150.0):
+                                dmg = self.laser_damage_per_second * delta
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(dmg)
+                                else:
+                                    b.hp = getattr(b, "hp", 100) - dmg
+
+
 class MazeSafeZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -17811,6 +17880,7 @@ GAME_MODES = {
     "weather_station": WeatherStationMode(),
     "invisible_decoys": InvisibleDecoysMode(),
     "sweeping_paddles": SweepingPaddlesMode(),
+    "sweeping_lasers": SweepingLasersMode(),
     "artifact_upgrader": ArtifactUpgraderMode(),
     "meteor_shower": MeteorShowerMode(),
     "blizzard_mode": BlizzardMode(),
