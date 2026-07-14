@@ -17965,7 +17965,44 @@ class ChickenCurseMode(GameMode):
 
 
 
+
+class SniperOnlyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sniper Only"
+        self.description = "All players are forced into a sniper ball class with drastically reduced movement speed, but extremely high bullet velocity and range, encouraging stealth and long-range tactical play."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "team", "") == "spectator":
+                continue
+
+            # Force sniper class stats
+            b.ball_type = "sniper"
+            b.max_hp = 70.0
+            if getattr(b, "hp", 100.0) > 70.0:
+                b.hp = 70.0
+
+            b.speed = 3.0
+            if hasattr(b, "base_speed"):
+                b.base_speed = 3.0
+
+            b.damage = 30.0
+            if hasattr(b, "base_damage"):
+                b.base_damage = 30.0
+
+            b.attack_range = 150.0
+            b.perception_radius = 500.0
+
+            # Ensure skill cooldowns and other attributes match
+            b.skill_cooldown = 6.0
+
+            if hasattr(b, "traits") and "sniper" not in getattr(b, "traits", []):
+                b.traits.append("sniper")
+
 GAME_MODES = {
+    'sniper_only': SniperOnlyMode(),
     "stationary_turrets": StationaryTurretsMode(),
 
     'scorching_sun': ScorchingSunMode(),
