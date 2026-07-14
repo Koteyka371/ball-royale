@@ -17084,7 +17084,7 @@
     },
     {
       "id": "idea-995",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Double Tap Combo Ability",
@@ -27060,6 +27060,74 @@
         "src/ai/downed_bleed_out_timer.py",
         "src/ai/downed_bleed_out_timer.gd",
         "tests/test_downed_bleed_out_timer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1581",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Idea 1: Solar Flare Mode",
+      "description": "Occasionally a solar flare strikes the arena, disabling all electronics (e.g. traps, drone hazards) and temporarily shrinking perception radius.",
+      "allowed_paths": [
+        "src/ai/idea_1_solar_flare.py",
+        "src/ai/idea_1_solar_flare.gd",
+        "tests/test_idea_1_solar_flare.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1582",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sniper's Nest Deployable",
+      "description": "An item that players can drop to create a small zone. Any ball inside the zone gains a massive boost to bullet velocity and attack range, but takes double damage from incoming attacks.",
+      "allowed_paths": [
+        "src/ai/snipers_nest_deployable.py",
+        "src/ai/snipers_nest_deployable.gd",
+        "tests/test_snipers_nest_deployable.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1583",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Acoustic Disruption Field",
+      "description": "A new hazard that temporarily disables the 'perception_radius' of any ball inside it, rendering them effectively blind and unable to target enemies, but still able to move freely.",
+      "allowed_paths": [
+        "src/ai/acoustic_disruption_field.py",
+        "src/ai/acoustic_disruption_field.gd",
+        "tests/test_acoustic_disruption_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1584",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Idea 2: Gravity Pulse Mine",
+      "description": "A rare drop hazard that periodically pulsates, pushing away enemies in a large radius but pulling in allies.",
+      "allowed_paths": [
+        "src/ai/idea_2_gravity_pulse_mine.py",
+        "src/ai/idea_2_gravity_pulse_mine.gd",
+        "tests/test_idea_2_gravity_pulse_mine.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

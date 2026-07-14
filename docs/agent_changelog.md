@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-995] Double Tap Combo Ability — *2026-07-14 23:46:43 UTC*
+
+Introduce a new game mechanic where active tag-team partners can unleash a powerful combination ability if they swap rapidly within 2 seconds of successfully hitting an enemy.
+
+---
+
 ## [idea-996] Echoes of the Past Hazard — *2026-07-14 23:29:46 UTC*
 
 A hazard that intermittently records the positions of all entities in its radius. After a brief delay, it replays phantom clones that repeat the recorded movements and deal minor damage on contact.
