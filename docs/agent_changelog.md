@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-952] Blacksmith Ball — *2026-07-14 16:54:31 UTC*
+
+A new ball class that permanently increases its own damage and max health based on the total number of materials it collects during a match.
+
+---
+
 ## [idea-912] Prismatic Reflect Shield — *2026-07-14 16:54:27 UTC*
 
 An upgraded version of the reflect shield that splits the reflected damage among all enemies within a certain radius, rather than just returning it to the attacker or bouncing it to a single target.
