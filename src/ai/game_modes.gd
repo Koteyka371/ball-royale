@@ -30498,35 +30498,169 @@ class TagTeamMode extends GameMode:
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		.tick(world, balls, delta)
 
+		var teams = {}
+		for b in balls:
+			var tid = null
+			if typeof(b) == TYPE_OBJECT and b.has_meta("tag_team_id"):
+				tid = b.get_meta("tag_team_id")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("tag_team_id"):
+				tid = b["tag_team_id"]
+
+			if tid != null:
+				if not teams.has(tid):
+					teams[tid] = []
+				teams[tid].append(b)
+
+		for tid in teams:
+			var members = teams[tid]
+			if members.size() == 2:
+				for i in range(2):
+					var m = members[i]
+					var other = members[1 - i]
+
+					var m_hp = m.get("hp") if typeof(m) == TYPE_OBJECT else m.get("hp", 0.0)
+					var m_is_downed = m.get_meta("is_downed") if (typeof(m) == TYPE_OBJECT and m.has_meta("is_downed")) else (m.get("is_downed", false) if typeof(m) == TYPE_DICTIONARY else false)
+
+					if m_hp <= 0 and not m_is_downed:
+						var other_is_downed = other.get_meta("is_downed") if (typeof(other) == TYPE_OBJECT and other.has_meta("is_downed")) else (other.get("is_downed", false) if typeof(other) == TYPE_DICTIONARY else false)
+						var other_alive = true
+						if typeof(other) == TYPE_OBJECT:
+							other_alive = other.get("alive") if "alive" in other else true
+						else:
+							other_alive = other.get("alive", true)
+
+						if other_is_downed or not other_alive:
+							pass
+						else:
+							if typeof(m) == TYPE_OBJECT:
+								m.set_meta("is_downed", true)
+								m.set("alive", true)
+								m.set("hp", 1.0)
+								m.set("vx", 0.0)
+								m.set("vy", 0.0)
+								m.set_meta("downed_prev_team", m.get("team") if "team" in m else "players")
+								m.set("team", "spectator")
+								m.set("ball_type", "spectator")
+							else:
+								m["is_downed"] = true
+								m["alive"] = true
+								m["hp"] = 1.0
+								m["vx"] = 0.0
+								m["vy"] = 0.0
+								m["downed_prev_team"] = m.get("team", "players")
+								m["team"] = "spectator"
+								m["ball_type"] = "spectator"
+
+							var world_is_dict = typeof(world) == TYPE_DICTIONARY
+							if world_is_dict and world.has("dead_balls"):
+								var mid = m.get("id") if typeof(m) == TYPE_DICTIONARY else m.get("id")
+								if mid in world["dead_balls"]:
+									world["dead_balls"].erase(mid)
+							elif not world_is_dict and "dead_balls" in world:
+								var mid = m.get("id") if typeof(m) == TYPE_DICTIONARY else (m.id if "id" in m else null)
+								if mid != null and world.dead_balls.has(mid):
+									world.dead_balls.erase(mid)
+
+							var o_type = other.get("ball_type") if typeof(other) == TYPE_DICTIONARY else other.get("ball_type")
+							if o_type == "spectator":
+								var m_x = m.get("x") if typeof(m) == TYPE_DICTIONARY else (m.get("x") if "x" in m else 0.0)
+								var m_y = m.get("y") if typeof(m) == TYPE_DICTIONARY else (m.get("y") if "y" in m else 0.0)
+								if typeof(other) == TYPE_OBJECT:
+									other.set("ball_type", other.get_meta("tag_original_ball_type") if other.has_meta("tag_original_ball_type") else "player")
+									other.set("team", other.get_meta("tag_original_team") if other.has_meta("tag_original_team") else "players")
+									other.set("x", m_x + 20.0)
+									other.set("y", m_y + 20.0)
+									other.set("vx", 0.0)
+									other.set("vy", 0.0)
+								else:
+									other["ball_type"] = other.get("tag_original_ball_type", "player")
+									other["team"] = other.get("tag_original_team", "players")
+									other["x"] = m_x + 20.0
+									other["y"] = m_y + 20.0
+									other["vx"] = 0.0
+									other["vy"] = 0.0
+
+				var downed = null
+				var active = null
+				for m in members:
+					var m_is_downed = m.get_meta("is_downed") if (typeof(m) == TYPE_OBJECT and m.has_meta("is_downed")) else (m.get("is_downed", false) if typeof(m) == TYPE_DICTIONARY else false)
+					var m_type = m.get("ball_type") if typeof(m) == TYPE_DICTIONARY else m.get("ball_type")
+					if m_is_downed:
+						downed = m
+					elif m_type != "spectator":
+						active = m
+
+				if downed != null and active != null:
+					var a_alive = active.get("alive") if typeof(active) == TYPE_DICTIONARY else (active.get("alive") if "alive" in active else false)
+					if a_alive:
+						if typeof(downed) == TYPE_OBJECT:
+							downed.set("vx", 0.0)
+							downed.set("vy", 0.0)
+							downed.set("hp", 1.0)
+							downed.set("alive", true)
+						else:
+							downed["vx"] = 0.0
+							downed["vy"] = 0.0
+							downed["hp"] = 1.0
+							downed["alive"] = true
+
+						var ax = active.get("x") if typeof(active) == TYPE_DICTIONARY else (active.get("x") if "x" in active else 0.0)
+						var ay = active.get("y") if typeof(active) == TYPE_DICTIONARY else (active.get("y") if "y" in active else 0.0)
+						var dx = downed.get("x") if typeof(downed) == TYPE_DICTIONARY else (downed.get("x") if "x" in downed else 0.0)
+						var dy = downed.get("y") if typeof(downed) == TYPE_DICTIONARY else (downed.get("y") if "y" in downed else 0.0)
+
+						var dist_sq = (ax - dx) * (ax - dx) + (ay - dy) * (ay - dy)
+						if dist_sq < 3600.0:
+							if typeof(downed) == TYPE_OBJECT:
+								var rp = downed.get_meta("revive_progress") if downed.has_meta("revive_progress") else 0.0
+								rp += delta
+								if rp >= 3.0:
+									downed.set_meta("is_downed", false)
+									downed.set_meta("revive_progress", 0.0)
+									var mx_hp = downed.get("max_hp") if "max_hp" in downed else 100.0
+									downed.set("hp", mx_hp * 0.5)
+									downed.set("ball_type", "spectator")
+									downed.set("team", "spectator")
+									downed.set("x", -1000.0)
+									downed.set("y", -1000.0)
+								else:
+									downed.set_meta("revive_progress", rp)
+							else:
+								var rp = downed.get("revive_progress", 0.0)
+								rp += delta
+								if rp >= 3.0:
+									downed["is_downed"] = false
+									downed["revive_progress"] = 0.0
+									var mx_hp = downed.get("max_hp", 100.0)
+									downed["hp"] = mx_hp * 0.5
+									downed["ball_type"] = "spectator"
+									downed["team"] = "spectator"
+									downed["x"] = -1000.0
+									downed["y"] = -1000.0
+								else:
+									downed["revive_progress"] = rp
+						else:
+							if typeof(downed) == TYPE_OBJECT:
+								downed.set_meta("revive_progress", 0.0)
+							else:
+								downed["revive_progress"] = 0.0
+
 		swap_timer += delta
 		if swap_timer >= swap_interval:
 			swap_timer = 0.0
 
-			var teams = {}
-			for b in balls:
-				var is_alive = false
-				if typeof(b) == TYPE_OBJECT and b.get("alive"):
-					is_alive = true
-				elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"]:
-					is_alive = true
-
-				if not is_alive:
-					continue
-
-				var tid = null
-				if typeof(b) == TYPE_OBJECT and b.has_meta("tag_team_id"):
-					tid = b.get_meta("tag_team_id")
-				elif typeof(b) == TYPE_DICTIONARY and b.has("tag_team_id"):
-					tid = b["tag_team_id"]
-
-				if tid != null:
-					if not teams.has(tid):
-						teams[tid] = []
-					teams[tid].append(b)
-
 			for tid in teams:
 				var members = teams[tid]
 				if members.size() == 2:
+					var skip = false
+					for m in members:
+						var m_is_downed = m.get_meta("is_downed") if (typeof(m) == TYPE_OBJECT and m.has_meta("is_downed")) else (m.get("is_downed", false) if typeof(m) == TYPE_DICTIONARY else false)
+						var m_alive = m.get("alive") if typeof(m) == TYPE_DICTIONARY else (m.get("alive") if "alive" in m else false)
+						if m_is_downed or not m_alive:
+							skip = true
+					if skip:
+						continue
+
 					var b1 = members[0]
 					var b2 = members[1]
 
