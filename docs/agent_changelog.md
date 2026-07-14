@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-990] Grid Lockdown Mode — *2026-07-14 21:31:54 UTC*
+
+A game mode where the arena is divided into a grid, and specific grid cells are randomly locked down, dealing immense damage to players who enter them. The locked cells change every few seconds, requiring constant repositioning.
+
+---
+
 ## [idea-969] Chrono-Stutter Hazard — *2026-07-14 21:13:36 UTC*
 
 A hazard that periodically saves the position, velocity, and health of any entity that enters it. Every 5 seconds, all affected entities are forcefully rewound back to their saved state, creating a localized 'time stutter' effect that disrupts momentum and strategies.

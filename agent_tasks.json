@@ -16999,7 +16999,7 @@
     },
     {
       "id": "idea-990",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grid Lockdown Mode",
@@ -26924,6 +26924,23 @@
         "src/arena/quantum_leap_traps.py",
         "src/arena/quantum_leap_traps.gd",
         "tests/test_quantum_leap_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1573",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Reversal Zone",
+      "description": "A special arena hazard zone that acts like a mirror to momentum. Any entity entering the zone immediately has their velocity vectors flipped by 180 degrees, bouncing them directly backward without applying any damage. Great for defensive placements.",
+      "allowed_paths": [
+        "src/ai/kinetic_reversal_zone.py",
+        "src/ai/kinetic_reversal_zone.gd",
+        "tests/test_kinetic_reversal_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
