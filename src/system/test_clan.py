@@ -135,3 +135,30 @@ def test_unlock_buff(temp_clan_file):
     # unlock again shouldn't duplicate
     assert cm.unlock_buff("BuffClan", "Guild_Wide_Passive_Buff") == False
     assert len(cm.data["clans"]["BuffClan"]["buffs"]) == 1
+
+def test_clan_perks(temp_clan_file):
+    cm = ClanManager(temp_clan_file)
+    cm.create_clan("PerkClan", "p1")
+
+    # Add points
+    cm.add_clan_points("PerkClan", 100)
+
+    # Test unlocking without points (fails)
+    assert cm.unlock_perk("PerkClan", "hp_boost_1", 150) == False
+
+    # Test unlocking with enough points
+    assert cm.unlock_perk("PerkClan", "hp_boost_1", 50) == True
+    assert cm.data["clans"]["PerkClan"]["points"] == 50
+    assert "hp_boost_1" in cm.get_clan_perks("PerkClan")
+
+    # Test duplicate unlock (fails)
+    assert cm.unlock_perk("PerkClan", "hp_boost_1", 10) == False
+    assert cm.data["clans"]["PerkClan"]["points"] == 50
+
+    # Test unlocking with missing requirement (fails)
+    assert cm.unlock_perk("PerkClan", "hp_boost_3", 10, required_perk="hp_boost_2") == False
+
+    # Test unlocking with met requirement
+    assert cm.unlock_perk("PerkClan", "hp_boost_2", 10, required_perk="hp_boost_1") == True
+    assert "hp_boost_2" in cm.get_clan_perks("PerkClan")
+    assert cm.data["clans"]["PerkClan"]["points"] == 40
