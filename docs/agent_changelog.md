@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-887] Sticky Tar Trap — *2026-07-14 18:25:08 UTC*
+
+A placeable trap that creates a puddle of tar, heavily slowing down any balls that roll through it for a few seconds.
+
+---
+
 ## [idea-975] Shrinking Safe Zones within Safe Zones — *2026-07-14 18:17:13 UTC*
 
 In the late game, instead of the primary safe zone just shrinking steadily, micro safe zones start appearing inside it, while the rest of the primary safe zone gets flooded with toxic gas. Entities must bounce between these micro zones to survive.
