@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-998] Sniper Only Mode — *2026-07-14 23:29:41 UTC*
+
+All players are forced into a sniper ball class with drastically reduced movement speed, but extremely high bullet velocity and range, encouraging stealth and long-range tactical play.
+
+---
+
 ## [idea-943] Eclipse Events during DayNightMode — *2026-07-14 23:29:35 UTC*
 
 A rare Eclipse event occurs when day transitions into night or vice versa. During the Eclipse, all balls temporarily gain both nocturnal and diurnal abilities (if their class has them), and hazards become entirely invisible.
