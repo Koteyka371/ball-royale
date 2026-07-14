@@ -20417,7 +20417,143 @@ class TickingBombMode(GameMode):
             for exp in new_explosions:
                 world.arena.hazards.append(exp)
 
+
+class PaintSplatterMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Paint Splatter"
+        self.description = "Attacks do not deal conventional damage. Instead, balls shoot paint splatters that cover the arena floor and other balls. Balls regenerate health rapidly when rolling over their own team's color, and slowly lose health while standing on enemy colors. Walls that are bounced off of also take on the color, creating speed boosts for the owning team."
+        self.splats = []
+        self.wall_colors = {}
+        self.game_duration = 0.0
+
+    class Splat:
+        def __init__(self, x, y, team, radius=40.0):
+            self.x = x
+            self.y = y
+            self.team = team
+            self.radius = radius
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.splats = []
+        self.wall_colors = {"top": None, "bottom": None, "left": None, "right": None}
+
+        for b in balls:
+            b.base_damage = 0.0
+            b.damage = 0.0
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            b._paint_cd = 0.0
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        width = getattr(world, "width", 1000.0)
+        height = getattr(world, "height", 1000.0)
+        if hasattr(world, "arena"):
+            width = getattr(world.arena, "width", width)
+            height = getattr(world.arena, "height", height)
+
+        # Handle attacks and convert them to splats
+        if hasattr(world, "attacks") and world.attacks:
+            for atk, victim in list(world.attacks):
+                atk_team = getattr(atk, "team", "Neutral")
+                # Drop splat where the attack hit
+                self.splats.append(self.Splat(victim.x, victim.y, atk_team))
+            # Clear attacks so they don't do damage later if they are deferred
+            world.attacks.clear()
+
+        # Override damage to ensure no conventional damage
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            b.damage = 0.0
+            b.base_damage = 0.0
+
+            # Record previous position to detect wall bounces
+            if not hasattr(b, "_prev_x_paint"):
+                b._prev_x_paint = b.x
+                b._prev_y_paint = b.y
+
+            b_team = getattr(b, "team", "Neutral")
+
+            # Did they hit a wall?
+            hit_left = b.x <= getattr(b, "radius", 10.0) * 1.5
+            hit_right = b.x >= width - getattr(b, "radius", 10.0) * 1.5
+            hit_top = b.y <= getattr(b, "radius", 10.0) * 1.5
+            hit_bottom = b.y >= height - getattr(b, "radius", 10.0) * 1.5
+
+            # Color the walls
+            if hit_left: self.wall_colors["left"] = b_team
+            if hit_right: self.wall_colors["right"] = b_team
+            if hit_top: self.wall_colors["top"] = b_team
+            if hit_bottom: self.wall_colors["bottom"] = b_team
+
+            # Apply wall speed boosts
+            near_wall = False
+            wall_team = None
+            if b.x <= getattr(b, "radius", 10.0) * 2.0:
+                near_wall, wall_team = True, self.wall_colors["left"]
+            elif b.x >= width - getattr(b, "radius", 10.0) * 2.0:
+                near_wall, wall_team = True, self.wall_colors["right"]
+            elif b.y <= getattr(b, "radius", 10.0) * 2.0:
+                near_wall, wall_team = True, self.wall_colors["top"]
+            elif b.y >= height - getattr(b, "radius", 10.0) * 2.0:
+                near_wall, wall_team = True, self.wall_colors["bottom"]
+
+            if near_wall and wall_team == b_team and wall_team is not None:
+                b.speed = getattr(b, "base_speed", 100.0) * 1.5
+            else:
+                b.speed = getattr(b, "base_speed", 100.0)
+
+            # Simulate attacks by occasionally dropping splats when they move or attack
+            if not hasattr(b, "_paint_cd"):
+                b._paint_cd = 0.0
+
+            b._paint_cd -= delta
+            if b._paint_cd <= 0.0:
+                import random
+                # Drop a splat near the ball to simulate shooting paint
+                sx = b.x + random.uniform(-50, 50)
+                sy = b.y + random.uniform(-50, 50)
+                self.splats.append(self.Splat(sx, sy, b_team))
+                b._paint_cd = random.uniform(0.5, 1.5)
+
+            # Keep splat count reasonable
+            if len(self.splats) > 100:
+                self.splats.pop(0)
+
+            # Apply splat effects
+            on_own = False
+            on_enemy = False
+
+            for splat in self.splats:
+                dx = b.x - splat.x
+                dy = b.y - splat.y
+                dist_sq = dx*dx + dy*dy
+                if dist_sq < (getattr(b, "radius", 10.0) + splat.radius)**2:
+                    if splat.team == b_team:
+                        on_own = True
+                    elif splat.team != "Neutral":
+                        on_enemy = True
+
+            if on_own:
+                b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 20.0 * delta)
+            elif on_enemy:
+                b.hp -= 10.0 * delta
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("ball_died", {"id": getattr(b, "id", None), "killer_id": -1, "reason": "paint_damage"})
+
+            b._prev_x_paint = b.x
+            b._prev_y_paint = b.y
+
 GAME_MODES['massive_black_hole_event'] = MassiveBlackHoleEventMode()
+GAME_MODES['paint_splatter'] = PaintSplatterMode()
 GAME_MODES['ticking_bomb'] = TickingBombMode()
 
 
