@@ -26468,6 +26468,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1546",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Fence Mode",
+      "description": "Hazard lines periodically spawn and move across the arena, damaging anyone caught.",
+      "allowed_paths": [
+        "src/ai/laser_fence.py",
+        "src/ai/laser_fence.gd",
+        "tests/test_laser_fence.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1547",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Jumper Booster",
+      "description": "A booster that gives the user temporary invulnerability to ground hazards like ticking bombs.",
+      "allowed_paths": [
+        "src/ai/jumper_booster.py",
+        "src/ai/jumper_booster.gd",
+        "tests/test_jumper_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
