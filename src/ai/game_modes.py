@@ -12037,6 +12037,72 @@ class InverseSafeZoneMode(GameMode):
         return None
 
 
+
+class MicroSafeZonesMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Micro Safe Zones"
+        self.description = "In the late game, instead of the primary safe zone just shrinking steadily, micro safe zones start appearing inside it, while the rest of the primary safe zone gets flooded with toxic gas."
+        self.micro_zones = []
+        self.micro_zone_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.micro_zones = []
+        self.micro_zone_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math, random
+
+        # Late game condition: primary zone is small enough
+        if self.zone_radius <= 300.0:
+            self.micro_zone_timer -= delta
+            if self.micro_zone_timer <= 0:
+                self.micro_zone_timer = 3.0 # spawn a new micro zone every 3s
+                angle = random.uniform(0, 2 * math.pi)
+                dist = random.uniform(0, max(0, self.zone_radius - 20.0))
+                mx = self.zone_x + math.cos(angle) * dist
+                my = self.zone_y + math.sin(angle) * dist
+                self.micro_zones.append({"x": mx, "y": my, "radius": 50.0, "duration": 8.0})
+
+            # update micro zones
+            active_mz = []
+            for mz in self.micro_zones:
+                mz["duration"] -= delta
+                if mz["duration"] > 0:
+                    active_mz.append(mz)
+            self.micro_zones = active_mz
+
+            gas_damage = 25.0 * delta # toxic gas damage
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    dx = b.x - self.zone_x
+                    dy = b.y - self.zone_y
+                    dist_to_center = math.sqrt(dx*dx + dy*dy)
+
+                    if dist_to_center <= self.zone_radius:
+                        # Player is inside the primary safe zone
+                        in_micro = False
+                        for mz in self.micro_zones:
+                            mdx = b.x - mz["x"]
+                            mdy = b.y - mz["y"]
+                            if mdx*mdx + mdy*mdy <= mz["radius"] * mz["radius"]:
+                                in_micro = True
+                                break
+
+                        if not in_micro:
+                            # Not in a micro safe zone, take toxic gas damage
+                            b.hp -= gas_damage
+                            # Randomly apply poison
+                            if random.random() < 0.3 * delta:
+                                b.poison_timer = max(getattr(b, "poison_timer", 0.0), 3.0)
+
+                            if b.hp <= 0:
+                                b.alive = False
+                                b.hp = 0
+
+
 class DynamicSafeZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -17611,6 +17677,7 @@ GAME_MODES = {
     "shrinking_boundary": ShrinkingBoundaryMode(),
     "inverse_safe_zone": InverseSafeZoneMode(),
     "safe_zone": SafeZoneMode(),
+    "micro_safe_zones": MicroSafeZonesMode(),
     "hex_grid_royale": HexGridRoyaleMode(),
     "minefield_safe_zone": MinefieldSafeZoneMode(),
     "dynamic_safe_zone": DynamicSafeZoneMode(),
