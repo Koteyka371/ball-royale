@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-977] Chain Lightning Tether — *2026-07-14 19:39:30 UTC*
+
+A new skill or booster item that shoots a tether of lightning to an enemy. As long as the player stays within range, it continuously deals damage and also chains to nearby enemies for reduced damage.
+
+---
+
 ## [idea-959] Elemental Crafter NPC — *2026-07-14 19:35:24 UTC*
 
 A wandering NPC that grants elemental buffs (fire, ice, lightning) depending on which hazard it passes through.
