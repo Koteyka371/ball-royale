@@ -638,10 +638,25 @@ class Action:
                     # We temporarily set the attacker's damage to the reflected amount
                     old_dmg = getattr(attacker, "damage", original_damage)
                     attacker.damage = damage_to_reflect
-                    self.world._deal_damage(target, attacker)
-                    attacker.damage = old_dmg
 
-                    self._handle_reflect_bounce(attacker, target, damage_to_reflect)
+                    import math
+                    explosion_radius = getattr(target, "reflect_explosion_radius", 150.0)
+                    targets_to_hit = []
+                    if hasattr(self.world, "balls"):
+                        for other in self.world.balls:
+                            if getattr(other, "alive", False) and getattr(other, "team", getattr(other, "ball_type", "")) != getattr(target, "team", getattr(target, "ball_type", "")):
+                                dist = math.hypot(getattr(other, "x", 0) - getattr(target, "x", 0), getattr(other, "y", 0) - getattr(target, "y", 0))
+                                if dist <= explosion_radius:
+                                    targets_to_hit.append(other)
+                    if targets_to_hit:
+                        split_dmg = damage_to_reflect / len(targets_to_hit)
+                        for e in targets_to_hit:
+                            target_old_dmg = getattr(target, "damage", 10.0)
+                            target.damage = split_dmg
+                            self.world._deal_damage(target, e)
+                            target.damage = target_old_dmg
+
+                    attacker.damage = old_dmg
 
                 # If the shield broke, the remainder of the damage applies to the target
                 if capacity < 0:
@@ -5455,7 +5470,7 @@ class Action:
 
             if hasattr(self.world.arena, "hazards"):
                 # Cleanup dead traps before checking collisions
-                self.world.arena.hazards = [h for h in self.world.arena.hazards if getattr(h, "duration", 1.0) > 0]
+                self.world.arena.hazards = [h for h in self.world.arena.hazards if not hasattr(h, "duration") or (isinstance(getattr(h, "duration", 1.0), (int, float)) and getattr(h, "duration", 1.0) > 0)]
             if hasattr(self.world.arena, "hazards") and ball_type != "spectator":
                 for hazard in self.world.arena.hazards:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)

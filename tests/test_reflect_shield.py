@@ -24,6 +24,10 @@ def test_reflect_shield_skill():
     # Test taking damage
     attacker = MockEntity(x=150, y=100, ball_type="enemy")
     attacker.damage = 100.0
+    attacker.team = "B"
+    ball.team = "A"
+
+    world.balls = [attacker, ball]
 
     damage_dealt_to_attacker = []
     def mock_deal_damage(dmg_target, dmg_attacker):
