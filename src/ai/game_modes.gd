@@ -30127,7 +30127,107 @@ class ChickenCurseMode extends GameMode:
 
 
 
+
+class SniperOnlyMode extends GameMode:
+	func _init() -> void:
+		name = "Sniper Only"
+		description = "All players are forced into a sniper ball class with drastically reduced movement speed, but extremely high bullet velocity and range, encouraging stealth and long-range tactical play."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			var team = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				team = b.get("team", "")
+			else:
+				team = b.get("team") if "team" in b else ""
+
+			if not is_alive or team == "spectator":
+				continue
+
+			# Apply sniper stats
+			if typeof(b) == TYPE_DICTIONARY:
+				b["ball_type"] = "sniper"
+				b["max_hp"] = 70.0
+				var current_hp = b.get("hp", 100.0)
+				if current_hp > 70.0:
+					b["hp"] = 70.0
+
+				b["speed"] = 3.0
+				if b.has("base_speed"):
+					b["base_speed"] = 3.0
+
+				b["damage"] = 30.0
+				if b.has("base_damage"):
+					b["base_damage"] = 30.0
+
+				b["attack_range"] = 150.0
+				b["perception_radius"] = 500.0
+				b["skill_cooldown"] = 6.0
+
+				var traits_list = b.get("traits", [])
+				if typeof(traits_list) == TYPE_ARRAY and traits_list.find("sniper") == -1:
+					traits_list.append("sniper")
+					b["traits"] = traits_list
+			else:
+				if "ball_type" in b: b.ball_type = "sniper"
+				elif b.has_method("set_meta"): b.set_meta("ball_type", "sniper")
+
+				if "max_hp" in b: b.max_hp = 70.0
+				elif b.has_method("set_meta"): b.set_meta("max_hp", 70.0)
+
+				var current_hp = 100.0
+				if "hp" in b: current_hp = float(b.hp)
+				elif b.has_method("get_meta") and b.has_meta("hp"): current_hp = float(b.get_meta("hp"))
+
+				if current_hp > 70.0:
+					if "hp" in b: b.hp = 70.0
+					elif b.has_method("set_meta"): b.set_meta("hp", 70.0)
+
+				if "speed" in b: b.speed = 3.0
+				elif b.has_method("set_meta"): b.set_meta("speed", 3.0)
+
+				if "base_speed" in b: b.base_speed = 3.0
+				elif b.has_method("set_meta"): b.set_meta("base_speed", 3.0)
+
+				if "damage" in b: b.damage = 30.0
+				elif b.has_method("set_meta"): b.set_meta("damage", 30.0)
+
+				if "base_damage" in b: b.base_damage = 30.0
+				elif b.has_method("set_meta"): b.set_meta("base_damage", 30.0)
+
+				if "attack_range" in b: b.attack_range = 150.0
+				elif b.has_method("set_meta"): b.set_meta("attack_range", 150.0)
+
+				if "perception_radius" in b: b.perception_radius = 500.0
+				elif b.has_method("set_meta"): b.set_meta("perception_radius", 500.0)
+
+				if "skill_cooldown" in b: b.skill_cooldown = 6.0
+				elif b.has_method("set_meta"): b.set_meta("skill_cooldown", 6.0)
+
+				var traits_arr = []
+				if typeof(b) == TYPE_OBJECT and "traits" in b and typeof(b.traits) == TYPE_ARRAY:
+					traits_arr = b.traits
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("traits"):
+					var meta_tr = b.get_meta("traits")
+					if typeof(meta_tr) == TYPE_ARRAY:
+						traits_arr = meta_tr
+
+				if traits_arr.find("sniper") == -1:
+					traits_arr.append("sniper")
+					if "traits" in b:
+						b.traits = traits_arr
+					elif b.has_method("set_meta"):
+						b.set_meta("traits", traits_arr)
+
 var GAME_MODES = {
+	"sniper_only": SniperOnlyMode.new(),
 	"stats_decay": StatsDecayMode.new(),
 	"watchtower": WatchtowerMode.new(),
 
