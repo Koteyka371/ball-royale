@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-974] Clan Headquarters Customization — *2026-07-14 21:57:15 UTC*
+
+Clans can unlock and decorate a shared hub. Decorations can provide passive buffs or simply show off prestige, with unique furniture earned from clan tournaments.
+
+---
+
 ## [idea-990] Grid Lockdown Mode — *2026-07-14 21:31:54 UTC*
 
 A game mode where the arena is divided into a grid, and specific grid cells are randomly locked down, dealing immense damage to players who enter them. The locked cells change every few seconds, requiring constant repositioning.
