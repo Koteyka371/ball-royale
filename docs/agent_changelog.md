@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-975] Shrinking Safe Zones within Safe Zones — *2026-07-14 18:17:13 UTC*
+
+In the late game, instead of the primary safe zone just shrinking steadily, micro safe zones start appearing inside it, while the rest of the primary safe zone gets flooded with toxic gas. Entities must bounce between these micro zones to survive.
+
+---
+
 ## [idea-863] Nemesis Drone — *2026-07-14 18:13:22 UTC*
 
 A consumable item that spawns a tiny invincible drone that slowly flies toward your Nemesis and damages them if they touch it.

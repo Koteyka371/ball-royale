@@ -16744,7 +16744,7 @@
     },
     {
       "id": "idea-975",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zones within Safe Zones",
@@ -26650,6 +26650,58 @@
         "src/ai/bouncy_castle.py",
         "src/ai/bouncy_castle.gd",
         "tests/test_bouncy_castle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1557",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Tractor Beam",
+      "description": "An activated ability that slowly pulls your Nemesis towards you while slowing them down.",
+      "allowed_paths": [
+        "src/ai/nemesis_tractor_beam.py",
+        "src/ai/nemesis_tractor_beam.gd",
+        "tests/test_nemesis_tractor_beam.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1558",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Shield Booster",
+      "description": "A booster that gives the player a shield only against damage taken from their Nemesis.",
+      "allowed_paths": [
+        "src/ai/nemesis_shield_booster.py",
+        "src/ai/nemesis_shield_booster.gd",
+        "tests/test_nemesis_shield_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1559",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Emissary Quests",
+      "description": "Introduces a new NPC in the main menu called the 'Clan Emissary'. Players can talk to the emissary to receive weekly clan-specific quests (e.g., 'Have 5 clan members achieve a triple kill'). Completing these quests rewards unique 'Emissary Tokens' that can be spent in an exclusive shop for clan-themed items like banners, icons, or temporary stat boosters for the whole clan.",
+      "allowed_paths": [
+        "src/ui/clan_emissary_quests.py",
+        "src/ui/clan_emissary_quests.gd",
+        "src/ai/clan_emissary_quests.py",
+        "tests/test_clan_emissary_quests.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
