@@ -135,3 +135,31 @@ def test_unlock_buff(temp_clan_file):
     # unlock again shouldn't duplicate
     assert cm.unlock_buff("BuffClan", "Guild_Wide_Passive_Buff") == False
     assert len(cm.data["clans"]["BuffClan"]["buffs"]) == 1
+
+def test_purchase_clan_perk(temp_clan_file):
+    cm = ClanManager(temp_clan_file)
+    cm.create_clan("PerkClan", "leader1")
+    cm.join_clan("PerkClan", "member1")
+
+    # Needs points
+    assert cm.purchase_clan_perk("PerkClan", "leader1", "Inventory Expansion", 100) == False
+
+    cm.add_clan_points("PerkClan", 150)
+
+    # Member cannot purchase
+    assert cm.purchase_clan_perk("PerkClan", "member1", "Inventory Expansion", 100) == False
+
+    # Leader can purchase
+    assert cm.purchase_clan_perk("PerkClan", "leader1", "Inventory Expansion", 100) == True
+    assert cm.data["clans"]["PerkClan"]["points"] == 50
+    assert "Inventory Expansion" in cm.data["clans"]["PerkClan"]["buffs"]
+
+    # Cannot purchase again
+    assert cm.purchase_clan_perk("PerkClan", "leader1", "Inventory Expansion", 50) == False
+
+    cm.add_clan_points("PerkClan", 100)
+
+    # Purchase cosmetic
+    assert cm.purchase_clan_perk("PerkClan", "leader1", "Exclusive Aura", 50, perk_type="cosmetic") == True
+    assert cm.data["clans"]["PerkClan"]["points"] == 100
+    assert "Exclusive Aura" in cm.data["clans"]["PerkClan"]["cosmetics"]

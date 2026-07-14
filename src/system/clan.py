@@ -172,6 +172,40 @@ class ClanManager:
                 return True
         return False
 
+    def purchase_clan_perk(self, clan_name, player_id, perk_name, cost, perk_type="buff"):
+        if cost <= 0:
+            return False
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if player_id in clan["members"]:
+                if "roles" not in clan:
+                    clan["roles"] = {m: "member" for m in clan["members"]}
+                    if clan["members"]:
+                        clan["roles"][clan["members"][0]] = "leader"
+                role = clan["roles"].get(player_id, "member")
+                if role in ["leader", "officer"]:
+                    if clan.get("points", 0) >= cost:
+                        if perk_type == "buff":
+                            if "buffs" not in clan:
+                                clan["buffs"] = []
+                            if perk_name in clan["buffs"]:
+                                return False
+                            clan["points"] -= cost
+                            clan["buffs"].append(perk_name)
+                            self.save()
+                            return True
+                        elif perk_type == "cosmetic":
+                            if "cosmetics" not in clan:
+                                clan["cosmetics"] = []
+                            if perk_name in clan["cosmetics"]:
+                                return False
+                            clan["points"] -= cost
+                            clan["cosmetics"].append(perk_name)
+                            self.save()
+                            return True
+        return False
+
+
     def get_clan_leaderboard(self):
         clans = []
         for name, info in self.data["clans"].items():

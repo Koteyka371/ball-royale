@@ -180,14 +180,55 @@ func unlock_cosmetic(clan_name: String, cosmetic: String) -> bool:
 
 
 func unlock_buff(clan_name: String, buff_name: String) -> bool:
-    if data["clans"].has(clan_name):
-        if not data["clans"][clan_name].has("buffs"):
-            data["clans"][clan_name]["buffs"] = []
-        if not data["clans"][clan_name]["buffs"].has(buff_name):
-            data["clans"][clan_name]["buffs"].append(buff_name)
-            save_clans()
-            return true
-    return false
+	if data["clans"].has(clan_name):
+		if not data["clans"][clan_name].has("buffs"):
+			data["clans"][clan_name]["buffs"] = []
+		if not data["clans"][clan_name]["buffs"].has(buff_name):
+			data["clans"][clan_name]["buffs"].append(buff_name)
+			save_clans()
+			return true
+	return false
+
+func purchase_clan_perk(clan_name: String, player_id: String, perk_name: String, cost: int, perk_type: String = "buff") -> bool:
+	if cost <= 0:
+		return false
+	if data["clans"].has(clan_name):
+		var clan = data["clans"][clan_name]
+		if clan["members"].has(player_id):
+			if not clan.has("roles"):
+				clan["roles"] = {}
+				for m in clan["members"]:
+					clan["roles"][m] = "member"
+				if clan["members"].size() > 0:
+					clan["roles"][clan["members"][0]] = "leader"
+			var role = "member"
+			if clan["roles"].has(player_id):
+				role = clan["roles"][player_id]
+			if role == "leader" or role == "officer":
+				var points = 0
+				if clan.has("points"):
+					points = clan["points"]
+				if points >= cost:
+					if perk_type == "buff":
+						if not clan.has("buffs"):
+							clan["buffs"] = []
+						if clan["buffs"].has(perk_name):
+							return false
+						clan["points"] = points - cost
+						clan["buffs"].append(perk_name)
+						save_clans()
+						return true
+					elif perk_type == "cosmetic":
+						if not clan.has("cosmetics"):
+							clan["cosmetics"] = []
+						if clan["cosmetics"].has(perk_name):
+							return false
+						clan["points"] = points - cost
+						clan["cosmetics"].append(perk_name)
+						save_clans()
+						return true
+	return false
+
 
 func get_clan_leaderboard() -> Array:
     var clans_list = []
