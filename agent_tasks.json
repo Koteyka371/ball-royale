@@ -16232,7 +16232,7 @@
     },
     {
       "id": "idea-945",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrapnel Aggregation Mechanic",
@@ -26412,6 +26412,40 @@
         "src/ai/headquarters_interactive_pets.py",
         "src/ai/headquarters_interactive_pets.gd",
         "tests/test_headquarters_interactive_pets.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1543",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Powerup",
+      "description": "A powerup that targets a random enemy within a certain radius. When collected, the player instantly swaps positions with that enemy, gaining a brief moment of invulnerability while disorienting the opponent.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_powerup.py",
+        "src/ai/quantum_swap_powerup.gd",
+        "tests/test_quantum_swap_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1544",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Boomerang Projectile",
+      "description": "A new skill where the player throws a projectile that deals damage on its way out, pauses, and then returns to the player. It can hit enemies twice (outgoing and returning).",
+      "allowed_paths": [
+        "src/ai/boomerang_projectile.py",
+        "src/ai/boomerang_projectile.gd",
+        "tests/test_boomerang_projectile.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

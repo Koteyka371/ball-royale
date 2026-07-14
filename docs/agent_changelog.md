@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-945] Shrapnel Aggregation Mechanic — *2026-07-14 00:37:45 UTC*
+
+If two or more shrapnel hazards collide or stop moving very close to each other, they merge into a larger, higher-damage shrapnel pile that lasts longer.
+
+---
+
 ## [idea-960] Decoy Clone Powerup — *2026-07-13 23:55:27 UTC*
 
 A powerup that instantly spawns 2 visually identical AI-controlled clones of the player. They deal no damage but confuse enemies and absorb hits until destroyed.
