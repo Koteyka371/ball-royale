@@ -18718,6 +18718,23 @@ func _use_skill():
 
                     if "state_history" in my_ball: my_ball.state_history = []
                     elif my_ball.has_method("set_meta"): my_ball.set_meta("state_history", [])
+        elif skill_name == "lightning_tether":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = enemies[0]
+                var min_dist = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
+                for i in range(1, enemies.size()):
+                    var e = enemies[i]
+                    var dist = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist < min_dist:
+                        min_dist = dist
+                        target = e
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("lightning_tether_target", target)
+                    self.ball.set_meta("lightning_tether_timer", 5.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball.lightning_tether_target = target
+                    self.ball.lightning_tether_timer = 5.0
         elif skill_name == "leech_tether":
             var enemies = _get_enemies()
             if enemies.size() > 0:
@@ -23892,6 +23909,62 @@ func _update_skill_timer(delta: float):
         if "tether_hook_timer" in self.ball: self.ball.tether_hook_timer = tether_hook_timer
         elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("tether_hook_timer", tether_hook_timer)
 
+
+    var lit_tether_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("lightning_tether_timer"):
+        lit_tether_timer = self.ball.get_meta("lightning_tether_timer")
+    elif "lightning_tether_timer" in self.ball:
+        lit_tether_timer = self.ball.lightning_tether_timer
+
+    if lit_tether_timer > 0:
+        var target = null
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("lightning_tether_target"):
+            target = self.ball.get_meta("lightning_tether_target")
+        elif "lightning_tether_target" in self.ball:
+            target = self.ball.lightning_tether_target
+
+        var is_target_alive = true
+        if target:
+            if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("alive"): is_target_alive = target.get_meta("alive")
+            elif "alive" in target: is_target_alive = target.alive
+
+        if target != null and is_target_alive:
+            var dist_sq = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
+            if dist_sq <= 40000.0:
+                var drain_amount = 15.0 * delta
+                var target_hp = 100.0
+                if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("hp"): target_hp = float(target.get_meta("hp"))
+                elif "hp" in target: target_hp = float(target.hp)
+
+                target_hp -= drain_amount
+
+                if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("hp", target_hp)
+                elif "hp" in target: target.hp = target_hp
+
+                self._spawn_directed_particles(self.ball, target, "lightning")
+
+                var enemies = _get_enemies()
+                var chained = 0
+                for e in enemies:
+                    if e == target: continue
+                    var edist_sq = pow(e.x - target.x, 2) + pow(e.y - target.y, 2)
+                    if edist_sq <= 22500.0:
+                        var ehp = 100.0
+                        if typeof(e) != TYPE_DICTIONARY and e.has_method("has_meta") and e.has_meta("hp"): ehp = float(e.get_meta("hp"))
+                        elif "hp" in e: ehp = float(e.hp)
+                        ehp -= drain_amount * 0.5
+                        if typeof(e) != TYPE_DICTIONARY and e.has_method("set_meta"): e.set_meta("hp", ehp)
+                        elif "hp" in e: e.hp = ehp
+                        self._spawn_directed_particles(target, e, "chain_lightning")
+                        chained += 1
+                        if chained >= 3:
+                            break
+            else:
+                lit_tether_timer = 0.0
+
+        lit_tether_timer = max(0.0, lit_tether_timer - delta)
+        if "lightning_tether_timer" in self.ball: self.ball.lightning_tether_timer = lit_tether_timer
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("lightning_tether_timer", lit_tether_timer)
 
     var l_tether_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("leech_tether_timer"):
