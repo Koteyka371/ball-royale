@@ -21,6 +21,10 @@ func load_clans():
                 var clan = data["clans"][clan_name]
                 if not clan.has("perks"):
                     clan["perks"] = []
+                if not clan.has("decorations"):
+                    clan["decorations"] = []
+                if not clan.has("hub"):
+                    clan["hub"] = []
             return
 
     data = {"clans": {}}
@@ -41,7 +45,9 @@ func create_clan(clan_name: String, creator_id: String) -> bool:
 		"quests": [],
 		"points": 0,
 		"territories": [],
-		"perks": []
+		"perks": [],
+		"decorations": [],
+		"hub": []
 	}
     save_clans()
     return true
@@ -265,3 +271,68 @@ func get_clan_perks(clan_name: String) -> Array:
         if clan.has("perks"):
             return clan["perks"]
     return []
+
+func unlock_decoration(clan_name: String, decoration_name: String) -> bool:
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if not clan.has("decorations"):
+            clan["decorations"] = []
+        if not clan["decorations"].has(decoration_name):
+            clan["decorations"].append(decoration_name)
+            save_clans()
+            return true
+    return false
+
+func place_decoration(clan_name: String, decoration_name: String, x: float, y: float) -> bool:
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if clan.has("decorations") and clan["decorations"].has(decoration_name):
+            if not clan.has("hub"):
+                clan["hub"] = []
+
+            var new_hub = []
+            for d in clan["hub"]:
+                if d.has("x") and d.has("y"):
+                    if d["x"] != x or d["y"] != y:
+                        new_hub.append(d)
+
+            new_hub.append({"decoration": decoration_name, "x": x, "y": y})
+            clan["hub"] = new_hub
+            save_clans()
+            return true
+    return false
+
+func remove_decoration(clan_name: String, x: float, y: float) -> bool:
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if clan.has("hub"):
+            var initial_len = clan["hub"].size()
+            var new_hub = []
+            for d in clan["hub"]:
+                if d.has("x") and d.has("y"):
+                    if d["x"] != x or d["y"] != y:
+                        new_hub.append(d)
+            clan["hub"] = new_hub
+            if clan["hub"].size() < initial_len:
+                save_clans()
+                return true
+    return false
+
+func get_hub_buffs(clan_name: String) -> Array:
+    var buffs = []
+    if data["clans"].has(clan_name):
+        var clan = data["clans"][clan_name]
+        if clan.has("hub"):
+            for d in clan["hub"]:
+                if d.has("decoration"):
+                    var dec_name = d["decoration"]
+                    if dec_name == "Champion_Trophy":
+                        if not buffs.has("Tournament_Champion_Aura"):
+                            buffs.append("Tournament_Champion_Aura")
+                    elif dec_name == "Speed_Statue":
+                        if not buffs.has("Hub_Speed_Boost"):
+                            buffs.append("Hub_Speed_Boost")
+                    elif dec_name == "Health_Fountain":
+                        if not buffs.has("Hub_Health_Regen"):
+                            buffs.append("Hub_Health_Regen")
+    return buffs

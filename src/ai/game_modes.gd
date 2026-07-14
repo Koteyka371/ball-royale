@@ -22545,6 +22545,8 @@ class ClanTournamentMode extends GameMode:
 				cm.add_clan_points(w_clan, total_points)
 			if cm.has_method("unlock_cosmetic"):
 				cm.unlock_cosmetic(w_clan, "Tournament_Champion_Banner")
+			if cm.has_method("unlock_decoration"):
+				cm.unlock_decoration(w_clan, "Champion_Trophy")
 			if cm.has_method("unlock_buff"):
 				cm.unlock_buff(w_clan, "Guild_Wide_Passive_Buff")
 
