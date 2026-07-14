@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-963] Guild Perks: Active Abilities — *2026-07-14 18:29:00 UTC*
+
+Expand the perk system to include single-use 'Active Abilities' (e.g. Mass Heal, Global Speed Boost) that guild members can purchase before a match and deploy once during the Battle Royale to turn the tide.
+
+---
+
 ## [idea-887] Sticky Tar Trap — *2026-07-14 18:25:08 UTC*
 
 A placeable trap that creates a puddle of tar, heavily slowing down any balls that roll through it for a few seconds.
