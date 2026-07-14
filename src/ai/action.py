@@ -11249,7 +11249,7 @@ class Action:
             elif skill_name == "repel_burst":
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
                 push_radius = 200.0
-                push_force = 400.0
+                push_force = 500.0 # Increased force for better breathing room
                 if hasattr(self.world, "boosters"):
                     for b in self.world.boosters:
                         dx = b.x - self.ball.x

@@ -15637,7 +15637,8 @@ class WeaponCollectionMode(GameMode):
                             "mind_control",
                             "ground_pound",
                             "orbital_shield",
-                            "phase_through"
+                            "phase_through",
+                            "repel_burst"
                         ]
                         b.active_skill = random.choice(abilities)
                         b.skill_cooldown = 5.0
