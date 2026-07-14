@@ -17636,6 +17636,50 @@ class RotatingLasersMode(GameMode):
                 h.duration = 9999.0 # Permanent for the mode
                 world.arena.hazards.append(h)
 
+
+class InverseMovementZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Inverse Movement Zone"
+        self.description = "Periodically spawns a zone that inverses movement of all entities inside it."
+        self.spawn_timer = 0.0
+        self.spawn_interval = 15.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        self.spawn_timer += delta
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+                import random
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+                x = random.uniform(100, arena_width - 100)
+                y = random.uniform(100, arena_height - 100)
+                zone = Hazard(id=16000 + len(world.arena.hazards) + random.randint(1000, 9999), x=x, y=y, radius=150.0, kind="inverse_movement_zone", damage=0.0)
+                world.arena.hazards.append(zone)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for hazard in list(world.arena.hazards):
+                if getattr(hazard, "kind", "") == "inverse_movement_zone":
+                    import math
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            dx = b.x - hazard.x
+                            dy = b.y - hazard.y
+                            if dx*dx + dy*dy <= hazard.radius * hazard.radius:
+                                b.x -= getattr(b, "vx", 0.0) * delta * 2
+                                b.y -= getattr(b, "vy", 0.0) * delta * 2
+
 GAME_MODES = {
     "stationary_turrets": StationaryTurretsMode(),
 
@@ -18271,6 +18315,7 @@ GAME_MODES["rolling_boulders"] = RollingBouldersMode()
 GAME_MODES["soul_link"] = SoulLinkMode()
 GAME_MODES["clan_tournament"] = ClanTournamentMode()
 GAME_MODES["reversed_input"] = ReversedInputMode()
+GAME_MODES["inverse_movement_zone"] = InverseMovementZoneMode()
 GAME_MODES["scrambler_drones"] = ScramblerDroneMode()
 
 

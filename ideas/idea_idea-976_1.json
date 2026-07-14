@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Entanglement Tether",
+    "description": "Two randomly selected balls are tethered via quantum entanglement. If one takes damage or gets healed, the other experiences a percentage of the same effect. The tether breaks if they move too far apart or if one dies."
+}

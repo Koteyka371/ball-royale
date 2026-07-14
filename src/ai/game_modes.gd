@@ -29635,6 +29635,114 @@ class RotatingLasersMode extends GameMode:
 				else:
 					arena_ref.hazards.append(h)
 
+
+class InverseMovementZoneMode extends GameMode:
+	var spawn_timer = 0.0
+	var spawn_interval = 15.0
+
+	func _init() -> void:
+		name = "Inverse Movement Zone"
+		description = "Periodically spawns a zone that inverses movement of all entities inside it."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		spawn_timer += delta
+		if spawn_timer >= spawn_interval:
+			spawn_timer = 0.0
+			if typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and world.has_meta("arena"):
+				pass # Usually hazards generated on server via action.py/events for sync
+			elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena.has("hazards"):
+				var arena = world.arena
+				var arena_width = 1000
+				if arena.has("width"): arena_width = arena.width
+				var arena_height = 1000
+				if arena.has("height"): arena_height = arena.height
+				var h_x = 100 + randf() * (arena_width - 200)
+				var h_y = 100 + randf() * (arena_height - 200)
+				var h_id = 16000 + arena.hazards.size() + (randi() % 9000 + 1000)
+
+				var zone = {
+					"id": h_id,
+					"x": h_x,
+					"y": h_y,
+					"radius": 150.0,
+					"kind": "inverse_movement_zone",
+					"damage": 0.0,
+					"active": true
+				}
+				arena.hazards.append(zone)
+
+		var hazards = []
+		if typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and world.has_meta("arena"):
+			var arena = world.get_meta("arena")
+			if typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
+				hazards = arena.hazards
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			hazards = world.arena.hazards
+
+		for hazard in hazards:
+			var kind = ""
+			if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"):
+				kind = hazard.kind
+			elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("kind"):
+				kind = hazard.get_meta("kind")
+
+			if kind == "inverse_movement_zone":
+				var hx = 0.0
+				var hy = 0.0
+				var hrad = 0.0
+
+				if typeof(hazard) == TYPE_DICTIONARY:
+					if hazard.has("x"): hx = hazard.x
+					if hazard.has("y"): hy = hazard.y
+					if hazard.has("radius"): hrad = hazard.radius
+				elif typeof(hazard) == TYPE_OBJECT:
+					if hazard.has_method("has_meta"):
+						if hazard.has_meta("x"): hx = hazard.get_meta("x")
+						if hazard.has_meta("y"): hy = hazard.get_meta("y")
+						if hazard.has_meta("radius"): hrad = hazard.get_meta("radius")
+
+				for b in balls:
+					var alive = false
+					if "alive" in b: alive = b.alive
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+
+					if alive:
+						var bx = 0.0
+						var by = 0.0
+						if "x" in b: bx = b.x
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b.x
+
+						if "y" in b: by = b.y
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y"): by = b.get_meta("y")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b.y
+
+						var dx = bx - hx
+						var dy = by - hy
+						if dx*dx + dy*dy <= hrad * hrad:
+							var bvx = 0.0
+							var bvy = 0.0
+							if "vx" in b: bvx = b.vx
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): bvx = b.get_meta("vx")
+							elif typeof(b) == TYPE_DICTIONARY and b.has("vx"): bvx = b.vx
+
+							if "vy" in b: bvy = b.vy
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vy"): bvy = b.get_meta("vy")
+							elif typeof(b) == TYPE_DICTIONARY and b.has("vy"): bvy = b.vy
+
+							if "x" in b: b.x -= bvx * delta * 2
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta"):
+								b.set_meta("x", bx - bvx * delta * 2)
+							elif typeof(b) == TYPE_DICTIONARY and b.has("x"):
+								b.x -= bvx * delta * 2
+
+							if "y" in b: b.y -= bvy * delta * 2
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta"):
+								b.set_meta("y", by - bvy * delta * 2)
+							elif typeof(b) == TYPE_DICTIONARY and b.has("y"):
+								b.y -= bvy * delta * 2
+
 var GAME_MODES = {
 	"stats_decay": StatsDecayMode.new(),
 	"watchtower": WatchtowerMode.new(),
@@ -29671,6 +29779,7 @@ var GAME_MODES = {
 	"weather_station": WeatherStationMode.new(),
 	"invisible_decoys": InvisibleDecoysMode.new(),
 	"reversed_input": ReversedInputMode.new(),
+	"inverse_movement_zone": InverseMovementZoneMode.new(),
 	"sweeping_paddles": SweepingPaddlesMode.new(),
 	"artifact_upgrader": ArtifactUpgraderMode.new(),
 	"meteor_shower": MeteorShowerMode.new(),
