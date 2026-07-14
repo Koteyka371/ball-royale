@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-996] Echoes of the Past Hazard — *2026-07-14 23:29:46 UTC*
+
+A hazard that intermittently records the positions of all entities in its radius. After a brief delay, it replays phantom clones that repeat the recorded movements and deal minor damage on contact.
+
+---
+
 ## [idea-998] Sniper Only Mode — *2026-07-14 23:29:41 UTC*
 
 All players are forced into a sniper ball class with drastically reduced movement speed, but extremely high bullet velocity and range, encouraging stealth and long-range tactical play.
