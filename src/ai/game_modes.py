@@ -76,6 +76,7 @@ class GameMode:
                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        self.total_match_time = 0.0
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -8306,6 +8307,7 @@ class BumperBallsMode(GameMode):
                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
     def setup(self, world: Any, balls: List[Any]) -> None:
+        self.total_match_time = 0.0
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         for b in balls:
@@ -20121,3 +20123,79 @@ class TickingBombMode(GameMode):
 
 GAME_MODES['massive_black_hole_event'] = MassiveBlackHoleEventMode()
 GAME_MODES['ticking_bomb'] = TickingBombMode()
+
+
+class StatsDecayMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Stats Decay Mode"
+        self.description = "All stats start at 200% but decay to 50% over time. Healing items are rare."
+        self.total_match_time = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        self.total_match_time = 0.0
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        for b in balls:
+            if hasattr(b, "sponsor"):
+                if b.sponsor == "aggressor":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 0.8
+                    b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+                elif b.sponsor == "juggernaut":
+                    b.speed = getattr(b, "speed", 100.0) * 0.8
+                    if hasattr(b, "base_speed"):
+                        b.base_speed *= 0.8
+                elif b.sponsor == "vampiric":
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 0.9
+                    b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+
+            b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+            b.speed = b.base_speed
+
+            b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+            b.damage = b.base_damage
+
+            b.max_hp = getattr(b, "max_hp", 100.0) * 2.0
+            b.hp = getattr(b, "hp", 100.0) * 2.0
+
+            b._original_decay_speed = b.base_speed
+            b._original_decay_damage = b.base_damage
+            b._original_decay_max_hp = b.max_hp
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        self.total_match_time += delta
+        progress = min(1.0, self.total_match_time / 60.0)
+
+        # 1.0 down to 0.25 scaling of the 2x original stats (effectively 200% down to 50% of the true base)
+        scale_factor = 1.0 - (0.75 * progress)
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if hasattr(b, "_original_decay_speed"):
+                b.base_speed = getattr(b, "_original_decay_speed") * scale_factor
+                b.speed = b.base_speed
+            if hasattr(b, "_original_decay_damage"):
+                b.base_damage = getattr(b, "_original_decay_damage") * scale_factor
+                b.damage = b.base_damage
+            if hasattr(b, "_original_decay_max_hp"):
+                new_max = max(1.0, getattr(b, "_original_decay_max_hp") * scale_factor)
+                b.max_hp = new_max
+                if getattr(b, "hp", 100.0) > new_max:
+                    b.hp = new_max
+
+        if hasattr(world, "boosters"):
+            import random
+            for b in world.boosters:
+                if getattr(b, "active", False) and not getattr(b, "_decay_checked", False):
+                    kind = getattr(b, "kind", "")
+                    if kind in ["health_pack", "hp_booster", "cleanse_booster"]:
+                        if random.random() < 0.8:
+                            b.active = False
+                        b._decay_checked = True
+
+GAME_MODES['stats_decay'] = StatsDecayMode()

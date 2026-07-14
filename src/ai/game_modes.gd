@@ -29081,6 +29081,7 @@ class MassiveBlackHoleEventMode extends GameMode:
 
 
 var GAME_MODES = {
+	"stats_decay": StatsDecayMode.new(),
 	"watchtower": WatchtowerMode.new(),
 
 	"stationary_turrets": StationaryTurretsMode.new(),
@@ -31592,3 +31593,161 @@ class BermudaTriangleMode extends GameMode:
 					elif b.has_method("set_meta"): b.set_meta("vx", 0.0)
 					if "vy" in b: b.vy = 0.0
 					elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
+
+
+class StatsDecayMode extends GameMode:
+	var total_match_time = 0.0
+
+	func _init():
+		name = "Stats Decay"
+		description = "All stats start at 200% but decay to 50% over time. Healing items are rare."
+
+	func setup(world, balls):
+		total_match_time = 0.0
+		if not world.has("dead_balls"):
+			world["dead_balls"] = []
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("sponsor") and b["sponsor"] == "aggressor":
+					b["max_hp"] = b.get("max_hp", 100.0) * 0.8
+					b["hp"] = min(b.get("hp", 100.0), b["max_hp"])
+				elif b.has("sponsor") and b["sponsor"] == "juggernaut":
+					b["speed"] = b.get("speed", 100.0) * 0.8
+					if b.has("base_speed"):
+						b["base_speed"] *= 0.8
+				elif b.has("sponsor") and b["sponsor"] == "vampiric":
+					b["max_hp"] = b.get("max_hp", 100.0) * 0.9
+					b["hp"] = min(b.get("hp", 100.0), b["max_hp"])
+
+				# Multiply base stats by 2
+				b["base_speed"] = b.get("base_speed", b.get("speed", 100.0)) * 2.0
+				b["speed"] = b["base_speed"]
+
+				b["base_damage"] = b.get("base_damage", b.get("damage", 10.0)) * 2.0
+				b["damage"] = b["base_damage"]
+
+				b["max_hp"] = b.get("max_hp", 100.0) * 2.0
+				b["hp"] = b.get("hp", 100.0) * 2.0
+
+				b["_original_decay_speed"] = b["base_speed"]
+				b["_original_decay_damage"] = b["base_damage"]
+				b["_original_decay_max_hp"] = b["max_hp"]
+			else:
+				if b.has_meta("sponsor") and b.get_meta("sponsor") == "aggressor" or ("sponsor" in b and b.sponsor == "aggressor"):
+					var cur_max = b.max_hp if "max_hp" in b else 100.0
+					b.max_hp = cur_max * 0.8
+					b.hp = min(b.hp if "hp" in b else 100.0, b.max_hp)
+				elif b.has_meta("sponsor") and b.get_meta("sponsor") == "juggernaut" or ("sponsor" in b and b.sponsor == "juggernaut"):
+					b.speed = (b.speed if "speed" in b else 100.0) * 0.8
+					if "base_speed" in b:
+						b.base_speed *= 0.8
+				elif b.has_meta("sponsor") and b.get_meta("sponsor") == "vampiric" or ("sponsor" in b and b.sponsor == "vampiric"):
+					var cur_max = b.max_hp if "max_hp" in b else 100.0
+					b.max_hp = cur_max * 0.9
+					b.hp = min(b.hp if "hp" in b else 100.0, b.max_hp)
+
+				# Multiply base stats by 2
+				var b_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+				b.base_speed = b_speed * 2.0
+				b.speed = b.base_speed
+
+				var b_dmg = b.base_damage if "base_damage" in b else (b.damage if "damage" in b else 10.0)
+				b.base_damage = b_dmg * 2.0
+				b.damage = b.base_damage
+
+				b.max_hp = (b.max_hp if "max_hp" in b else 100.0) * 2.0
+				b.hp = (b.hp if "hp" in b else 100.0) * 2.0
+
+				if b is Object:
+					b.set_meta("_original_decay_speed", b.base_speed)
+					b.set_meta("_original_decay_damage", b.base_damage)
+					b.set_meta("_original_decay_max_hp", b.max_hp)
+
+	func tick(world, balls, delta):
+		if not world.has("dead_balls"):
+			world["dead_balls"] = []
+
+		# We need to manually calculate match_time since it might not be reliably accessible in all contexts
+		if not world.has("match_time"):
+			world["match_time"] = 0.0
+
+		var mt = world["match_time"]
+		if typeof(mt) == TYPE_INT or typeof(mt) == TYPE_REAL:
+			mt += delta
+		else:
+			mt = delta
+		world["match_time"] = mt
+
+		total_match_time += delta
+		var progress = min(1.0, total_match_time / 60.0) # decay fully over 60 seconds
+		# 2.0 (initial) to 0.5 (final) means a scale factor from 1.0 down to 0.25 based on the original 2x stats
+		var scale_factor = 1.0 - (0.75 * progress)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("_original_decay_speed"):
+					b["base_speed"] = b["_original_decay_speed"] * scale_factor
+					b["speed"] = b["base_speed"]
+				if b.has("_original_decay_damage"):
+					b["base_damage"] = b["_original_decay_damage"] * scale_factor
+					b["damage"] = b["base_damage"]
+				if b.has("_original_decay_max_hp"):
+					var old_max = b["max_hp"]
+					b["max_hp"] = max(1.0, b["_original_decay_max_hp"] * scale_factor)
+					if b["hp"] > b["max_hp"]:
+						b["hp"] = b["max_hp"]
+			else:
+				if b is Object and b.has_meta("_original_decay_speed"):
+					b.base_speed = b.get_meta("_original_decay_speed") * scale_factor
+					b.speed = b.base_speed
+				if b is Object and b.has_meta("_original_decay_damage"):
+					b.base_damage = b.get_meta("_original_decay_damage") * scale_factor
+					b.damage = b.base_damage
+				if b is Object and b.has_meta("_original_decay_max_hp"):
+					var old_max = b.max_hp if "max_hp" in b else 100.0
+					var new_max = max(1.0, b.get_meta("_original_decay_max_hp") * scale_factor)
+					b.max_hp = new_max
+					var cur_hp = b.hp if "hp" in b else 100.0
+					if cur_hp > new_max:
+						b.hp = new_max
+
+		# Healing items become rare
+		if world.has("boosters"):
+			var boosters = world["boosters"]
+			for b in boosters:
+				var kind = ""
+				var active = false
+				var has_checked = false
+
+				if typeof(b) == TYPE_DICTIONARY:
+					kind = b.get("kind", "")
+					active = b.get("active", false)
+					has_checked = b.get("_decay_checked", false)
+				else:
+					kind = b.kind if "kind" in b else ""
+					active = b.active if "active" in b else false
+					if b is Object:
+						has_checked = b.has_meta("_decay_checked") and b.get_meta("_decay_checked")
+
+				if active and not has_checked and (kind == "health_pack" or kind == "hp_booster" or kind == "cleanse_booster"):
+					var r = randf()
+					if r < 0.8: # 80% chance to remove healing items
+						if typeof(b) == TYPE_DICTIONARY:
+							b["active"] = false
+						else:
+							b.active = false
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["_decay_checked"] = true
+					else:
+						if b is Object:
+							b.set_meta("_decay_checked", true)
