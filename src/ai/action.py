@@ -1132,6 +1132,8 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if hasattr(self.ball, "polarity_cooldown") and self.ball.polarity_cooldown > 0:
+            self.ball.polarity_cooldown = max(0, self.ball.polarity_cooldown - delta)
 
         if getattr(self.ball, "is_perfect_mirror", False):
             owner_id = getattr(self.ball, "owner_id", None)
@@ -13320,6 +13322,28 @@ class Action:
                                     if hasattr(item, "x"): item.x += nx * pull_strength
                                     if hasattr(item, "y"): item.y += ny * pull_strength
 
+        # Global polarity physics
+        if getattr(self.ball, "polarity", 0) != 0 and hasattr(self.world, "balls"):
+            import math
+            for other in self.world.balls:
+                if getattr(other, "alive", True) and getattr(other, "id", None) != getattr(self.ball, "id", None):
+                    other_polarity = getattr(other, "polarity", 0)
+                    if other_polarity != 0:
+                        dx = other.x - self.ball.x
+                        dy = other.y - self.ball.y
+                        dist2 = dx*dx + dy*dy
+                        if dist2 < 10000.0 and dist2 > 0:
+                            dist = math.sqrt(dist2)
+                            nx = dx / dist
+                            ny = dy / dist
+                            force = 200.0 * delta * (1.0 - dist/100.0)
+                            if self.ball.polarity == other_polarity:
+                                self.ball.x -= nx * force
+                                self.ball.y -= ny * force
+                            else:
+                                self.ball.x += nx * force
+                                self.ball.y += ny * force
+
         if hasattr(self.ball, "pull_booster_timer") and self.ball.pull_booster_timer > 0:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -13617,6 +13641,21 @@ class Action:
                             elif effect == "stun":
                                 self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 3.0)
                             hazard.duration = 0.0
+                if getattr(hazard, "kind", "") == "polarity_inverter":
+                    dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                    if dist_sq < getattr(hazard, "radius", 50.0)**2:
+                        import math
+                        current_polarity = getattr(self.ball, "polarity", 0)
+                        if not hasattr(self.ball, "polarity_cooldown") or self.ball.polarity_cooldown <= 0:
+                            if current_polarity == 0:
+                                self.ball.polarity = 1
+                            elif current_polarity == 1:
+                                self.ball.polarity = -1
+                            else:
+                                self.ball.polarity = 1
+                            self.ball.polarity_cooldown = 1.0
+
+
         bumper_booster_timer = getattr(self.ball, "bumper_booster_timer", 0.0)
         if bumper_booster_timer > 0:
             self.ball.bumper_booster_timer -= delta
