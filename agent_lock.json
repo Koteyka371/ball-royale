@@ -235,10 +235,10 @@
     "agent-29": {
       "name": "Jules Worker 29",
       "area": "behaviors",
-      "status": "working",
-      "task_id": "idea-1012",
-      "started_at": "2026-07-15T16:44:59.324834+00:00",
-      "cycles_today": 4
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 3
     },
     "agent-30": {
       "name": "Jules Worker 30",
