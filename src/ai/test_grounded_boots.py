@@ -13,6 +13,7 @@ def test_grounded_boots():
             self.team = 1
             self.hp = 100
             self.speed = 2.0
+            self.polarity_cooldown = 0
             self.skill = "dash"
     class MockHazard:
         def __init__(self, x, y, kind):
@@ -39,6 +40,8 @@ def test_grounded_boots():
 
     action_b1 = Action(world, b1)
     action_b2 = Action(world, b2)
+    action_b1.ball.polarity_cooldown = 0
+    action_b2.ball.polarity_cooldown = 0
 
     # Tick to process pull
     action_b1.execute("flee", 1.0)

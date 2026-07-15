@@ -336,3 +336,58 @@ func get_hub_buffs(clan_name: String) -> Array:
                         if not buffs.has("Hub_Health_Regen"):
                             buffs.append("Hub_Health_Regen")
     return buffs
+
+func start_weekly_tournament() -> bool:
+    data["tournament_active"] = true
+    data["tournament_scores"] = {}
+    for clan_name in data["clans"].keys():
+        data["tournament_scores"][clan_name] = 0
+    save_clans()
+    return true
+
+func add_tournament_points(clan_name: String, points: int) -> bool:
+    if data.has("tournament_active") and data["tournament_active"]:
+        if not data.has("tournament_scores"):
+            data["tournament_scores"] = {}
+        if data["clans"].has(clan_name):
+            if not data["tournament_scores"].has(clan_name):
+                data["tournament_scores"][clan_name] = 0
+            data["tournament_scores"][clan_name] += points
+            save_clans()
+            return true
+    return false
+
+func end_weekly_tournament() -> bool:
+    if not (data.has("tournament_active") and data["tournament_active"]):
+        return false
+
+    var scores = {}
+    if data.has("tournament_scores"):
+        scores = data["tournament_scores"]
+
+    var ranked_clans = []
+    for clan_name in scores.keys():
+        ranked_clans.append({"name": clan_name, "score": scores[clan_name]})
+
+    ranked_clans.sort_custom(func(a, b): return a["score"] > b["score"])
+
+    for i in range(ranked_clans.size()):
+        var clan_name = ranked_clans[i]["name"]
+        if not data["clans"].has(clan_name):
+            continue
+
+        if i == 0:
+            add_clan_points(clan_name, 5000)
+            unlock_cosmetic(clan_name, "Weekly_Champion_Aura")
+            unlock_buff(clan_name, "Currency_Boost_Tier3")
+        elif i == 1:
+            add_clan_points(clan_name, 3000)
+            unlock_buff(clan_name, "Currency_Boost_Tier2")
+        elif i == 2:
+            add_clan_points(clan_name, 2000)
+            unlock_buff(clan_name, "Currency_Boost_Tier1")
+
+    data["tournament_active"] = false
+    data["tournament_scores"] = {}
+    save_clans()
+    return true
