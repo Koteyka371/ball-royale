@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1010] Orbital Strike Coordinator — *2026-07-15 16:46:30 UTC*
+
+A new hazard or booster that links to turrets. When collected by an Engineer, all active turrets fire a simultaneous laser blast at the nearest enemy with infinite range.
+
+---
+
 ## [idea-970] Slingshot Hazard — *2026-07-15 16:36:03 UTC*
 
 A hazard zone that functions as a powerful, omni-directional elastic band. Balls that enter the zone are grabbed, stretched backward towards the center over a short duration based on their momentum, and then violently launched back out in the opposite direction they entered from with significantly increased speed.

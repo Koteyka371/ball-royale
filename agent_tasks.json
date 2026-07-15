@@ -17339,7 +17339,7 @@
     },
     {
       "id": "idea-1010",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Strike Coordinator",
@@ -27434,6 +27434,23 @@
         "src/ai/unstable_payload.py",
         "src/ai/unstable_payload.gd",
         "tests/test_unstable_payload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1603",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Energy Battery Mode",
+      "description": "A mode where balls don't do damage directly. Instead, moving fast and bouncing off walls charges up their personal kinetic battery. Once fully charged, they can unleash a massive, instantaneous shockwave that damages all nearby enemies.",
+      "allowed_paths": [
+        "src/ai/kinetic_energy_battery.py",
+        "src/ai/kinetic_energy_battery.gd",
+        "tests/test_kinetic_energy_battery.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
