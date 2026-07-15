@@ -14612,7 +14612,9 @@ class ShiftingMazeMode extends GameMode:
 						"width": cell_size,
 						"height": 20.0,
 						"dx": randf_range(-10.0, 10.0),
-						"dy": randf_range(-10.0, 10.0)
+						"dy": randf_range(-10.0, 10.0),
+						"is_ghostly": false,
+						"ghost_timer": randf_range(5.0, 15.0)
 					})
 				else:
 					walls.append({
@@ -14621,7 +14623,9 @@ class ShiftingMazeMode extends GameMode:
 						"width": 20.0,
 						"height": cell_size,
 						"dx": randf_range(-10.0, 10.0),
-						"dy": randf_range(-10.0, 10.0)
+						"dy": randf_range(-10.0, 10.0),
+						"is_ghostly": false,
+						"ghost_timer": randf_range(5.0, 15.0)
 					})
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -23216,7 +23220,9 @@ class MazeSafeZoneMode extends GameMode:
 						"width": cell_size,
 						"height": 20.0,
 						"dx": randf_range(-10.0, 10.0),
-						"dy": randf_range(-10.0, 10.0)
+						"dy": randf_range(-10.0, 10.0),
+						"is_ghostly": false,
+						"ghost_timer": randf_range(5.0, 15.0)
 					})
 				else:
 					walls.append({
@@ -23225,7 +23231,9 @@ class MazeSafeZoneMode extends GameMode:
 						"width": 20.0,
 						"height": cell_size,
 						"dx": randf_range(-10.0, 10.0),
-						"dy": randf_range(-10.0, 10.0)
+						"dy": randf_range(-10.0, 10.0),
+						"is_ghostly": false,
+						"ghost_timer": randf_range(5.0, 15.0)
 					})
 
 		var valid_balls = []
@@ -23314,6 +23322,19 @@ class MazeSafeZoneMode extends GameMode:
 			w["x"] += w["dx"] * delta
 			w["y"] += w["dy"] * delta
 
+			if not "ghost_timer" in w:
+				w["ghost_timer"] = randf_range(5.0, 15.0)
+				w["is_ghostly"] = false
+
+			w["ghost_timer"] -= delta
+			if w["ghost_timer"] <= 0:
+				if "is_ghostly" in w and w["is_ghostly"]:
+					w["is_ghostly"] = false
+					w["ghost_timer"] = randf_range(5.0, 15.0)
+				else:
+					w["is_ghostly"] = true
+					w["ghost_timer"] = randf_range(2.0, 5.0)
+
 		# Apply damage and wall collisions
 		var max_arena_dim = max(arena_width, arena_height)
 		var shrink_ratio = max(0.0, min(1.0, 1.0 - (zone_radius / max_arena_dim)))
@@ -23343,6 +23364,8 @@ class MazeSafeZoneMode extends GameMode:
 				if b.alive:
 					var touching_wall = false
 					for w in walls:
+						if "is_ghostly" in w and w["is_ghostly"]:
+							continue
 						var nearest_x = clamp(bx, w["x"], w["x"] + w["width"])
 						var nearest_y = clamp(by, w["y"], w["y"] + w["height"])
 						var dist_sq = (bx - nearest_x)*(bx - nearest_x) + (by - nearest_y)*(by - nearest_y)
