@@ -17169,7 +17169,7 @@
     },
     {
       "id": "idea-1000",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Unstable Quantum Storm Event",
@@ -27519,6 +27519,23 @@
         "src/ai/mobile_turret_platform.py",
         "src/ai/mobile_turret_platform.gd",
         "tests/test_mobile_turret_platform.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1608",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Inverter",
+      "description": "A consumable item that inverts gravity in an area.",
+      "allowed_paths": [
+        "src/ai/gravity_inverter.py",
+        "src/ai/gravity_inverter.gd",
+        "tests/test_gravity_inverter.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
