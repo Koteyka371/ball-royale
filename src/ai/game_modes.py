@@ -18284,6 +18284,62 @@ class QuantumInstabilityEventMode(GameMode):
                         h.target_x = random.uniform(100, arena_w - 100)
                         h.target_y = random.uniform(100, arena_h - 100)
 
+
+class FloodingArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Flooding Arena"
+        self.description = "The arena slowly floods from the edges inward. Only players with aquatic traits or floaters survive the flood."
+        self.flood_radius = 1000.0
+        self.min_flood_radius = 50.0
+        self.flood_rate = 15.0
+        self.damage_per_second = 25.0
+        self.center_x = 500.0
+        self.center_y = 500.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.center_x = arena_width / 2.0
+        self.center_y = arena_height / 2.0
+        self.flood_radius = max(arena_width, arena_height) / 1.5
+
+    def update(self, world, balls, delta=0.016):
+        import math
+
+        if self.flood_radius > self.min_flood_radius:
+            self.flood_radius -= self.flood_rate * delta
+            if self.flood_radius < self.min_flood_radius:
+                self.flood_radius = self.min_flood_radius
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dx = b.x - self.center_x
+            dy = b.y - self.center_y
+            distance_to_center = math.sqrt(dx*dx + dy*dy)
+
+            # If outside the dry center, ball is in the flood
+            if distance_to_center > self.flood_radius:
+                b_type = getattr(b, "ball_type", "").lower()
+                traits = getattr(b, "traits", [])
+
+                # Check for aquatic trait
+                is_aquatic = "water" in b_type or "swamp" in b_type or "hover" in b_type or "floating" in b_type or "aquatic" in b_type or any(t.lower() in ["water", "swamp", "hover", "floating", "aquatic"] for t in [str(t) for t in traits])
+
+                if not is_aquatic:
+                    b.hp -= self.damage_per_second * delta
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5  # Slow non-aquatics in flood
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.hp = 0
+                        b.killer = "Flood"
+                else:
+                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.2  # Speed boost for aquatics in flood
+
 GAME_MODES = {
     'time_loop_field': TimeLoopFieldMode(),
     "magnetic_bumpers": MagneticBumpersMode(),
@@ -22571,3 +22627,5 @@ class EdgeSlingshotsMode(GameMode):
 
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
+
+GAME_MODES['flooding_arena'] = FloodingArenaMode()

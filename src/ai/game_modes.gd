@@ -30622,6 +30622,129 @@ class GrappleNodeMode extends GameMode:
 						var n_id = randi() % 5000 + 10000 + world.arena.hazards.size()
 						var new_node = HazardType.new(n_id, nx, ny, 15.0, "grapple_node", 0.0)
 						world.arena.hazards.append(new_node)
+
+class FloodingArenaMode extends GameMode:
+	var flood_radius: float = 1000.0
+	var min_flood_radius: float = 50.0
+	var flood_rate: float = 15.0
+	var damage_per_second: float = 25.0
+	var center_x: float = 500.0
+	var center_y: float = 500.0
+
+	func _init() -> void:
+		name = "Flooding Arena"
+		description = "The arena slowly floods from the edges inward. Only players with aquatic traits or floaters survive the flood."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena = null
+		if typeof(world) == TYPE_DICTIONARY:
+			arena = world.get("arena")
+		else:
+			arena = world.arena if "arena" in world else null
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = arena.get("width", 1000.0)
+				arena_height = arena.get("height", 1000.0)
+			else:
+				arena_width = arena.width if "width" in arena else 1000.0
+				arena_height = arena.height if "height" in arena else 1000.0
+
+		center_x = arena_width / 2.0
+		center_y = arena_height / 2.0
+		flood_radius = max(arena_width, arena_height) / 1.5
+
+	func update(world, balls: Array, delta: float) -> void:
+		if flood_radius > min_flood_radius:
+			flood_radius -= flood_rate * delta
+			if flood_radius < min_flood_radius:
+				flood_radius = min_flood_radius
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive if "alive" in b else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			else:
+				b_type = b.ball_type if "ball_type" in b else ""
+
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			else:
+				bx = b.x if "x" in b else 0.0
+				by = b.y if "y" in b else 0.0
+
+			var dx = bx - center_x
+			var dy = by - center_y
+			var distance_to_center = sqrt(dx*dx + dy*dy)
+
+			if distance_to_center > flood_radius:
+				var bt = b_type.to_lower()
+				var traits = []
+				if typeof(b) == TYPE_DICTIONARY:
+					traits = b.get("traits", [])
+				else:
+					traits = b.traits if "traits" in b else []
+
+				var ts = []
+				for t in traits:
+					ts.append(str(t).to_lower())
+
+				var is_aquatic = false
+				if "water" in bt or "swamp" in bt or "hover" in bt or "floating" in bt or "aquatic" in bt:
+					is_aquatic = true
+				if "water" in ts or "swamp" in ts or "hover" in ts or "floating" in ts or "aquatic" in ts:
+					is_aquatic = true
+
+				if not is_aquatic:
+					var hp = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						hp = b.get("hp", 100.0) - (damage_per_second * delta)
+						b["hp"] = hp
+					else:
+						hp = b.hp - (damage_per_second * delta) if "hp" in b else -1.0
+						if "hp" in b: b.hp = hp
+
+					var base_speed = 100.0
+					if typeof(b) == TYPE_DICTIONARY:
+						base_speed = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_speed * 0.5
+					else:
+						base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_speed * 0.5
+
+					if hp <= 0.0:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["alive"] = false
+							b["hp"] = 0.0
+							b["killer"] = "Flood"
+						else:
+							if "alive" in b: b.alive = false
+							if "hp" in b: b.hp = 0.0
+							if "killer" in b: b.killer = "Flood"
+				else:
+					var base_speed = 100.0
+					if typeof(b) == TYPE_DICTIONARY:
+						base_speed = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_speed * 1.2
+					else:
+						base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_speed * 1.2
+
 GAME_MODES = {
 	'time_loop_field': TimeLoopFieldMode.new(),
 	"sniper_only": SniperOnlyMode.new(),
@@ -35334,3 +35457,5 @@ class EdgeSlingshotsMode:
 
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
+
+GAME_MODES['flooding_arena'] = FloodingArenaMode.new()
