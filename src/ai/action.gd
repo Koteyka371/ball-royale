@@ -12736,6 +12736,27 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp <= 0 and "alive" in self.ball:
                                 self.ball.alive = false
                         continue
+                    elif hazard.kind == "neutralizing_puddle":
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            if self.ball.has("base_max_hp"):
+                                if self.ball.get("max_hp", 100.0) < self.ball["base_max_hp"]:
+                                    self.ball["max_hp"] = min(self.ball["base_max_hp"], self.ball["max_hp"] + 20.0 * delta)
+                            if self.ball.has("defense_multiplier"):
+                                if self.ball["defense_multiplier"] < 1.0:
+                                    self.ball["defense_multiplier"] = min(1.0, self.ball["defense_multiplier"] + 0.5 * delta)
+                        else:
+                            if self.ball.has_meta("base_max_hp"):
+                                var base_hp = self.ball.get_meta("base_max_hp")
+                                if self.ball.max_hp < base_hp:
+                                    self.ball.max_hp = min(base_hp, self.ball.max_hp + 20.0 * delta)
+                            if "defense_multiplier" in self.ball:
+                                if self.ball.defense_multiplier < 1.0:
+                                    self.ball.defense_multiplier = min(1.0, self.ball.defense_multiplier + 0.5 * delta)
+                            elif self.ball.has_meta("defense_multiplier"):
+                                var cur_def = self.ball.get_meta("defense_multiplier")
+                                if cur_def < 1.0:
+                                    self.ball.set_meta("defense_multiplier", min(1.0, cur_def + 0.5 * delta))
+                        continue
                 elif hazard.kind == "tar_puddle":
                     var current_slow = 0.0
                     if "slow_timer" in self.ball: current_slow = self.ball.slow_timer
