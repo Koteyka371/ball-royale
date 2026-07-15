@@ -1,6 +1,6 @@
 import pytest
-from src.ai.game_modes import GAME_MODES
-from src.ai.action import Action
+from ai.game_modes import GAME_MODES
+from ai.action import Action
 import math
 
 class MockWorld:

@@ -6370,6 +6370,7 @@ class Action:
                             if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
                             radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
                             pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 200.0 * delta
+                            if getattr(self.world, 'is_gravity_reversed', False): pull_strength *= -1.0
                             nx, ny = dx / max(0.1, dist), dy / max(0.1, dist)
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength
@@ -6635,6 +6636,7 @@ class Action:
                                 pull_nx = -dx / dist
                                 pull_ny = -dy / dist
                                 pull_strength = (getattr(hazard, "radius", 150.0) * 3.0 / max(10.0, dist)) * 80.0 * delta
+                                if getattr(self.world, 'is_gravity_reversed', False): pull_strength *= -1.0
                                 self.ball.x += pull_nx * pull_strength
                                 self.ball.y += pull_ny * pull_strength
 
@@ -13307,6 +13309,7 @@ class Action:
                             if dist > 0.0001:
                                 nx, ny = (self.ball.x - item_x) / dist, (self.ball.y - item_y) / dist
                                 pull_strength = 200.0 * delta
+                                if getattr(self.world, 'is_gravity_reversed', False): pull_strength *= -1.0
                                 if isinstance(item, dict):
                                     item["x"] = item_x + nx * pull_strength
                                     item["y"] = item_y + ny * pull_strength
@@ -13326,6 +13329,7 @@ class Action:
                             if dist > 0.0001:
                                 nx, ny = (self.ball.x - hazard.x) / dist, (self.ball.y - hazard.y) / dist
                                 pull_strength = 150.0 * delta
+                                if getattr(self.world, 'is_gravity_reversed', False): pull_strength *= -1.0
                                 if hasattr(hazard, "x"): hazard.x += nx * pull_strength
                                 if hasattr(hazard, "y"): hazard.y += ny * pull_strength
 
@@ -13341,6 +13345,7 @@ class Action:
                             if dist > 0.0001:
                                 nx, ny = (self.ball.x - b.x) / dist, (self.ball.y - b.y) / dist
                                 pull_strength = 100.0 * delta
+                                if getattr(self.world, 'is_gravity_reversed', False): pull_strength *= -1.0
                                 # Weak pull towards the center
                                 b.x += nx * pull_strength
                                 b.y += ny * pull_strength
@@ -13541,6 +13546,7 @@ class Action:
                             if dist > 0.0001:
                                 nx, ny = (hazard.x - self.ball.x) / dist, (hazard.y - self.ball.y) / dist
                                 pull_strength = 100.0 * delta
+                                if getattr(self.world, 'is_gravity_reversed', False): pull_strength *= -1.0
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     self.ball.x += nx * pull_strength
                                     self.ball.y += ny * pull_strength
@@ -13650,6 +13656,7 @@ class Action:
                 import math
                 # Pull them together over time
                 pull_strength = 300.0 * delta
+                if getattr(self.world, 'is_gravity_reversed', False): pull_strength *= -1.0
                 dx = target.x - self.ball.x
                 dy = target.y - self.ball.y
                 dist = math.sqrt(dx**2 + dy**2)

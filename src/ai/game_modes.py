@@ -4720,6 +4720,7 @@ class BlackHoleMode(GameMode):
 
                     # Cap max pull to avoid crazy speeds, but scale the cap too
                     pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+                    if getattr(world, 'is_gravity_reversed', False): pull_strength *= -1.0
 
                     b.x += (dx / dist) * pull_strength * delta
                     b.y += (dy / dist) * pull_strength * delta
@@ -12140,7 +12141,8 @@ class InverseSafeZoneMode(GameMode):
 
                 # Push players away from the center
                 if dist > 0.1:
-                    push_strength = 2000.0 * (1.0 - min(1.0, dist / self.max_danger_radius)) # Stronger push closer to center
+                    push_strength = 2000.0 * (1.0 - min(1.0, dist / self.max_danger_radius))
+                    if getattr(world, 'is_gravity_reversed', False): push_strength *= -1.0
                     if not hasattr(b, "vx"): b.vx = 0.0
                     if not hasattr(b, "vy"): b.vy = 0.0
                     b.vx += (dx / dist) * push_strength * delta
@@ -16041,8 +16043,9 @@ class CenterBlackHoleMode(GameMode):
                 # pull_factor = self.pull_strength / max(100.0, dist)
 
                 if hasattr(b, "vx") and hasattr(b, "vy"):
-                    b.vx += (dx / dist) * self.pull_strength * delta
-                    b.vy += (dy / dist) * self.pull_strength * delta
+                    mod_pull = -self.pull_strength if getattr(world, 'is_gravity_reversed', False) else self.pull_strength
+                    b.vx += (dx / dist) * mod_pull * delta
+                    b.vy += (dy / dist) * mod_pull * delta
 
 
 
@@ -18088,6 +18091,25 @@ class SniperOnlyMode(GameMode):
             if hasattr(b, "traits") and "sniper" not in getattr(b, "traits", []):
                 b.traits.append("sniper")
 
+
+class GravityReversalMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Gravity Reversal Mutator"
+        self.description = "A mutator that intermittently reverses the gravitational pull of hazards and game modes."
+        self.gravity_reverse_timer = 0.0
+        self.is_gravity_reversed = False
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.gravity_reverse_timer -= delta
+        if self.gravity_reverse_timer <= 0:
+            self.gravity_reverse_timer = 10.0
+            self.is_gravity_reversed = not self.is_gravity_reversed
+            setattr(world, "is_gravity_reversed", self.is_gravity_reversed)
+            if hasattr(world, "add_event"):
+                world.add_event("gravity_reversal_state_change", {"active": self.is_gravity_reversed})
+
 GAME_MODES = {
     'sniper_only': SniperOnlyMode(),
     "stationary_turrets": StationaryTurretsMode(),
@@ -18147,6 +18169,7 @@ GAME_MODES = {
     "ticking_payload": TickingPayloadMode(),
     "reverse_tug_of_war": ReverseTugOfWarMode(),
     "reverse_gravity_event": ReverseGravityEventMode(),
+    "gravity_reversal_mutator": GravityReversalMutatorMode(),
     "physics_anomaly_event": PhysicsAnomalyEventMode(),
     "escort": EscortMode(),
     "tournament": TournamentMode(),

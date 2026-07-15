@@ -7078,6 +7078,12 @@ class BlackHoleMode extends GameMode:
 
 					# Cap max pull to avoid crazy speeds
 					pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+					var is_rev = false
+					if typeof(world) == TYPE_DICTIONARY:
+						is_rev = world.get("is_gravity_reversed", false)
+					else:
+						is_rev = world.is_gravity_reversed if "is_gravity_reversed" in world else false
+					if is_rev: pull_strength *= -1.0
 
 					b.x += (dx / dist) * pull_strength * delta
 					b.y += (dy / dist) * pull_strength * delta
@@ -19042,6 +19048,12 @@ class InverseSafeZoneMode extends GameMode:
 
 				if dist > 0.1:
 					var push_strength = 2000.0 * (1.0 - min(1.0, dist / max_danger_radius))
+					var is_rev = false
+					if typeof(world) == TYPE_DICTIONARY:
+						is_rev = world.get("is_gravity_reversed", false)
+					else:
+						is_rev = world.is_gravity_reversed if "is_gravity_reversed" in world else false
+					if is_rev: push_strength *= -1.0
 					if typeof(b) == TYPE_DICTIONARY:
 						if not ("vx" in b): b["vx"] = 0.0
 						if not ("vy" in b): b["vy"] = 0.0
@@ -25797,8 +25809,14 @@ class CenterBlackHoleMode extends GameMode:
 			var dist = sqrt(dx*dx + dy*dy)
 
 			if dist > 0:
-				var pull_x = (dx / dist) * pull_strength * delta
-				var pull_y = (dy / dist) * pull_strength * delta
+				var is_rev = false
+				if typeof(world) == TYPE_DICTIONARY:
+					is_rev = world.get("is_gravity_reversed", false)
+				else:
+					is_rev = world.is_gravity_reversed if "is_gravity_reversed" in world else false
+				var mod_pull = -pull_strength if is_rev else pull_strength
+				var pull_x = (dx / dist) * mod_pull * delta
+				var pull_y = (dy / dist) * mod_pull * delta
 
 				if typeof(b) == TYPE_DICTIONARY:
 					if "vx" in b and "vy" in b:
@@ -30301,6 +30319,28 @@ class SniperOnlyMode extends GameMode:
 					elif b.has_method("set_meta"):
 						b.set_meta("traits", traits_arr)
 
+
+class GravityReversalMutatorMode extends GameMode:
+	var gravity_reverse_timer: float = 0.0
+	var is_gravity_reversed: bool = false
+
+	func _init() -> void:
+		name = "Gravity Reversal Mutator"
+		description = "A mutator that intermittently reverses the gravitational pull of hazards and game modes."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		gravity_reverse_timer -= delta
+		if gravity_reverse_timer <= 0:
+			gravity_reverse_timer = 10.0
+			is_gravity_reversed = not is_gravity_reversed
+			if typeof(world) == TYPE_DICTIONARY:
+				world["is_gravity_reversed"] = is_gravity_reversed
+			else:
+				world.is_gravity_reversed = is_gravity_reversed
+			if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+				world.add_event("gravity_reversal_state_change", {"active": is_gravity_reversed})
+
 var GAME_MODES = {
 	"sniper_only": SniperOnlyMode.new(),
 	"stats_decay": StatsDecayMode.new(),
@@ -30373,6 +30413,7 @@ var GAME_MODES = {
 	"ticking_payload": TickingPayloadMode.new(),
 	"reverse_tug_of_war": ReverseTugOfWarMode.new(),
 	"reverse_gravity_event": ReverseGravityEventMode.new(),
+	"gravity_reversal_mutator": GravityReversalMutatorMode.new(),
 	"physics_anomaly_event": PhysicsAnomalyEventMode.new(),
 	"escort": EscortMode.new(),
 	"windstorm": WindstormMode.new(),
