@@ -17067,7 +17067,7 @@
     },
     {
       "id": "idea-994",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter Mode Modifier",
@@ -27128,6 +27128,40 @@
         "src/ai/idea_2_gravity_pulse_mine.py",
         "src/ai/idea_2_gravity_pulse_mine.gd",
         "tests/test_idea_2_gravity_pulse_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1585",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tag Team Ultimate Synergy Mode",
+      "description": "If tag team partners swap continuously without breaking their combo chains, they unlock a shared ultimate ability that merges their traits for 10 seconds, creating an ultra-ball.",
+      "allowed_paths": [
+        "src/ai/tag_team_ultimate_synergy.py",
+        "src/ai/tag_team_ultimate_synergy.gd",
+        "tests/test_tag_team_ultimate_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1586",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Assisting Spectator Actions",
+      "description": "Allow the inactive, spectator tag team partner to briefly drop small hazard traps or boosters for their active teammate, adding an interactive dimension to being sidelined.",
+      "allowed_paths": [
+        "src/ai/assisting_spectator_actions.py",
+        "src/ai/assisting_spectator_actions.gd",
+        "tests/test_assisting_spectator_actions.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

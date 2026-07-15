@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-994] Bounty Hunter Mode Modifier — *2026-07-15 00:06:49 UTC*
+
+Add a dynamic bounty system during matches where the player with the most kills is marked for all to see. Defeating the marked player grants special buffs or permanent loadout fragments, incentivizing high-risk engagements.
+
+---
+
 ## [idea-995] Double Tap Combo Ability — *2026-07-14 23:46:43 UTC*
 
 Introduce a new game mechanic where active tag-team partners can unleash a powerful combination ability if they swap rapidly within 2 seconds of successfully hitting an enemy.
