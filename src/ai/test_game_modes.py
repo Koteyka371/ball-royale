@@ -1645,3 +1645,61 @@ def test_grid_lockdown_mode():
     # b2 is in safe cell, should have 100 hp and be alive
     assert b2.hp == 100.0
     assert b2.alive
+
+def test_perfect_reflector_mode():
+    from ai.game_modes import PerfectReflectorHazardMode
+
+    class MockArena:
+        def __init__(self):
+            self.width = 1000.0
+            self.height = 1000.0
+            self.hazards = []
+            self.name = 'mock_arena'
+            self.weather = 'clear'
+
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.next_id = 9999
+
+    class MockEntity:
+        def __init__(self, x, y, vx, vy):
+            self.x = x
+            self.y = y
+            self.vx = vx
+            self.vy = vy
+            self.speed = 100.0
+            self.base_speed = 100.0
+            self.damage = 10.0
+            self.base_damage = 10.0
+            self.alive = True
+            self.ball_type = 'basic'
+            self.id = 1
+
+    world = MockWorld()
+    mode = PerfectReflectorHazardMode()
+    mode.setup(world, [])
+
+    # hazard will be at 500, 500. radius will start at 10.0.
+    # In one tick (delta=1.0 for simplicity), it expands by 30.0 -> radius = 40.0.
+    mode.tick(world, [], delta=1.0)
+
+    # Place a ball right at the boundary (e.g. at 540, 500), moving inwards (vx = -10, vy = 0)
+    ball = MockEntity(540.0, 500.0, -10.0, 0.0)
+
+    # The normal vector n = (1, 0)
+    # v = (-10, 0)
+    # n dot v = -10
+    # v_reflected = v - 2(n dot v)n = (-10, 0) - 2(-10)(1, 0) = (-10, 0) + (20, 0) = (10, 0)
+    # Then velocity is doubled -> (20, 0)
+
+    mode.tick(world, [ball], delta=0.0) # Delta 0 to not change radius
+
+    assert ball.vx == 20.0
+    assert ball.vy == 0.0
+    assert ball.speed == 200.0
+    assert ball.base_speed == 200.0
+    assert ball.damage == 15.0
+    assert ball.base_damage == 15.0
+    assert hasattr(ball, "reflector_cooldown")
+    assert ball.reflector_cooldown == 1.0

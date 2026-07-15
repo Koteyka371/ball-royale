@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone With Damage Multiplier",
+  "description": "Like a standard safe zone, but instead of straight damage out of bounds, the further out you are, the higher the damage multiplier gets when hit by enemies."
+}

@@ -22174,3 +22174,109 @@ class GrappleNodeMode(GameMode):
                     world.arena.hazards.append(GrappleNode(n_id, nx, ny))
 
 GAME_MODES["grapple_node"] = GrappleNodeMode()
+
+class PerfectReflectorHazardMode(GameMode):
+    """
+    A dynamic hazard that spawns and expands across the arena. Any projectile or moving entity
+    that hits its boundary gets reflected perfectly but with 2x velocity and increased damage potential.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Perfect Reflector Hazard"
+        self.description = "An expanding hazard that reflects balls and doubles their velocity upon hitting its boundary."
+        self.hazard_x = 500.0
+        self.hazard_y = 500.0
+        self.hazard_radius = 10.0
+        self.expansion_rate = 30.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        self.hazard_x = arena_width / 2.0
+        self.hazard_y = arena_height / 2.0
+        self.hazard_radius = 10.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            self.hazard_obj = hazard_class("perfect_reflector_zone", self.hazard_x, self.hazard_y, self.hazard_radius, "perfect_reflector", 0.0)
+            if not hasattr(self.hazard_obj, "active"):
+                self.hazard_obj.active = True
+            world.arena.hazards.append(self.hazard_obj)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        self.hazard_radius += self.expansion_rate * delta
+
+        if hasattr(self, "hazard_obj"):
+            self.hazard_obj.radius = self.hazard_radius
+
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", True):
+                continue
+
+            if hasattr(b, "reflector_cooldown"):
+                b.reflector_cooldown -= delta
+                if b.reflector_cooldown <= 0:
+                    delattr(b, "reflector_cooldown")
+
+            if hasattr(b, "reflector_cooldown"):
+                continue
+
+            dx = b.x - self.hazard_x
+            dy = b.y - self.hazard_y
+            dist = math.hypot(dx, dy)
+
+            # Check if ball hits the boundary (within a 15px thickness threshold)
+            if abs(dist - self.hazard_radius) < 15.0:
+                # Normal vector from center to boundary
+                nx, ny = 0.0, 0.0
+                if dist > 0.001:
+                    nx = dx / dist
+                    ny = dy / dist
+
+                vx = getattr(b, "vx", 0.0)
+                vy = getattr(b, "vy", 0.0)
+
+                # Perfect reflection: v' = v - 2(v \cdot n)n
+                dot_product = vx * nx + vy * ny
+                # Only reflect if it's moving towards the boundary (from inside out or outside in)
+                # Actually, we reflect regardless, or maybe only if it's hitting the boundary.
+                # Let's just do perfect reflection if dot_product isn't 0.
+
+                new_vx = vx - 2 * dot_product * nx
+                new_vy = vy - 2 * dot_product * ny
+
+                # Double velocity
+                new_vx *= 2.0
+                new_vy *= 2.0
+
+                b.vx = new_vx
+                b.vy = new_vy
+
+                # Double speed
+                if hasattr(b, "speed"):
+                    b.speed *= 2.0
+                if hasattr(b, "base_speed"):
+                    b.base_speed *= 2.0
+
+                # Increase base damage potential
+                if hasattr(b, "base_damage"):
+                    b.base_damage *= 1.5
+                if hasattr(b, "damage"):
+                    b.damage *= 1.5
+
+                # Set cooldown to avoid multiple reflections in subsequent ticks
+                b.reflector_cooldown = 1.0
+
+GAME_MODES["perfect_reflector"] = PerfectReflectorHazardMode()
