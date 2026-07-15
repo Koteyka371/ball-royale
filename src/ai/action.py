@@ -2383,8 +2383,8 @@ class Action:
 
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for h in self.world.arena.hazards:
-                    # Large environmental hazard
-                    if getattr(h, "radius", 0) >= 30.0:
+                    # Large environmental hazard or grapple_node
+                    if getattr(h, "radius", 0) >= 30.0 or getattr(h, "kind", "") == "grapple_node":
                         dist_sq = (h.x - self.ball.x)**2 + (h.y - self.ball.y)**2
                         grapple_targets.append({"target": h, "type": "hazard", "dist_sq": dist_sq, "x": h.x, "y": h.y})
 
@@ -2422,6 +2422,15 @@ class Action:
                         target_b = closest_target_data["target"]
                         target_b.x -= (dx / dist) * pull_dist
                         target_b.y -= (dy / dist) * pull_dist
+                    elif closest_target_data["type"] == "hazard" and getattr(closest_target_data["target"], "kind", "") == "grapple_node":
+                        target_h = closest_target_data["target"]
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and target_h in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(target_h)
+                            new_id = getattr(self.world, "next_id", 9999) + getattr(self, "random", __import__("random")).randint(1, 1000)
+                            mat_type = getattr(self, "random", __import__("random")).choice(["Scrap Metal", "Energy Core", "Nanotubes", "Iron Ore"])
+                            mat = {"id": f"mat_{new_id}", "x": getattr(target_h, "x", 0), "y": getattr(target_h, "y", 0), "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": True}
+                            if hasattr(self.world, "items"):
+                                self.world.items.append(mat)
             else:
                 # Grapple to wall
                 if closest_wall == "left":
@@ -11644,6 +11653,15 @@ class Action:
                         # Pull ball towards target
                         self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
                         self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+
+                        if getattr(closest_target, "kind", "") == "grapple_node":
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and closest_target in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(closest_target)
+                                new_id = getattr(self.world, "next_id", 9999) + getattr(self, "random", __import__("random")).randint(1, 1000)
+                                mat_type = getattr(self, "random", __import__("random")).choice(["Scrap Metal", "Energy Core", "Nanotubes", "Iron Ore"])
+                                mat = {"id": f"mat_{new_id}", "x": getattr(closest_target, "x", 0), "y": getattr(closest_target, "y", 0), "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": True}
+                                if hasattr(self.world, "items"):
+                                    self.world.items.append(mat)
                 else:
                     # Grapple to wall
                     if closest_wall == "left":
