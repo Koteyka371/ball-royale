@@ -30774,7 +30774,7 @@ class OrbitalMinesMode extends GameMode:
 	func _init():
 		super()
 		name = "Orbital Mines"
-		description = "Orbital mines constantly revolve around the center of the arena."
+		description = "Orbital mines constantly revolve around a massive black hole in the center of the arena, creating a bullet-hell zone."
 		rng.randomize()
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -30793,6 +30793,26 @@ class OrbitalMinesMode extends GameMode:
 		elif "height" in world.arena:
 			cy = world.arena.height / 2.0
 
+		var bhs = []
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_OBJECT and h.get("kind") == "massive_black_hole" and h.has_method("has_meta") and h.has_meta("is_orbital_center"):
+				bhs.append(h)
+			elif typeof(h) == TYPE_DICTIONARY and h.get("kind") == "massive_black_hole" and h.get("is_orbital_center") == true:
+				bhs.append(h)
+
+		if bhs.size() == 0:
+			var HazardObj = load("res://src/arena/procedural_arena.gd")
+			if HazardObj != null:
+				HazardObj = HazardObj.Hazard
+				var bh_id = world.arena.hazards.size() + 50000
+				var bh = HazardObj.new(bh_id, cx, cy, "massive_black_hole", 100.0)
+				if "damage" in bh: bh.damage = 5.0
+				if bh.has_method("set_meta"):
+					bh.set_meta("active", true)
+					bh.set_meta("duration", 9999.0)
+					bh.set_meta("is_orbital_center", true)
+				world.arena.hazards.append(bh)
+
 		var mines = []
 		for h in world.arena.hazards:
 			if typeof(h) == TYPE_OBJECT and h.get("kind") == "orbital_mine":
@@ -30800,21 +30820,21 @@ class OrbitalMinesMode extends GameMode:
 			elif typeof(h) == TYPE_DICTIONARY and h.get("kind") == "orbital_mine":
 				mines.append(h)
 
-		if mines.size() < 5:
+		if mines.size() < 15:
 			var HazardObj = load("res://src/arena/procedural_arena.gd")
 			if HazardObj != null:
 				HazardObj = HazardObj.Hazard
-				var num_to_spawn = 5 - mines.size()
+				var num_to_spawn = 15 - mines.size()
 				for i in range(num_to_spawn):
 					var mine_id = world.arena.hazards.size() + rng.randi_range(10000, 99999)
-					var mine = HazardObj.new(mine_id, cx, cy, "orbital_mine", 20.0)
-					if "damage" in mine: mine.damage = 30.0
+					var mine = HazardObj.new(mine_id, cx, cy, "orbital_mine", 15.0)
+					if "damage" in mine: mine.damage = 25.0
 					if mine.has_method("set_meta"):
 						mine.set_meta("active", true)
 						mine.set_meta("duration", 9999.0)
 						mine.set_meta("angle", rng.randf_range(0, 2 * PI))
-						mine.set_meta("orbit_dist", rng.randf_range(150.0, 450.0))
-						var mult = rng.randf_range(0.8, 1.5)
+						mine.set_meta("orbit_dist", rng.randf_range(100.0, 500.0))
+						var mult = rng.randf_range(0.5, 2.0)
 						if rng.randi() % 2 == 0: mult = -mult
 						mine.set_meta("speed_mult", mult)
 					world.arena.hazards.append(mine)

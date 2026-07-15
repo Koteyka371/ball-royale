@@ -1727,17 +1727,19 @@ def test_orbital_mines_mode():
     # First tick spawns 5 mines
     mode.tick(world, [], 0.1)
 
-    assert len(world.arena.hazards) == 5
+    assert len(world.arena.hazards) >= 15
     for h in world.arena.hazards:
-        assert getattr(h, "kind", "") == "orbital_mine"
+        assert getattr(h, "kind", "") in ["orbital_mine", "massive_black_hole"]
         assert getattr(h, "active", False) == True
-        assert hasattr(h, "angle")
+        if getattr(h, "kind", "") == "orbital_mine":
+            assert hasattr(h, "angle")
 
-    initial_angles = [getattr(h, "angle") for h in world.arena.hazards]
+    initial_angles = [getattr(h, "angle", None) for h in world.arena.hazards]
 
     # Second tick updates angles and positions
     mode.tick(world, [], 0.1)
 
     for i, h in enumerate(world.arena.hazards):
         # Angle should have changed
-        assert getattr(h, "angle") != initial_angles[i]
+        if getattr(h, "kind", "") == "orbital_mine":
+            assert getattr(h, "angle") != initial_angles[i]

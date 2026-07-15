@@ -22179,7 +22179,7 @@ class OrbitalMinesMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Orbital Mines"
-        self.description = "Orbital mines constantly revolve around the center of the arena."
+        self.description = "Orbital mines constantly revolve around a massive black hole in the center of the arena, creating a bullet-hell zone."
         self.id = "orbital_mines"
         self.orbit_speed = 1.0 # radians per second
         self.orbit_distance = 300.0
@@ -22195,23 +22195,37 @@ class OrbitalMinesMode(GameMode):
         cx = getattr(world, 'width', 1000) / 2.0
         cy = getattr(world, 'height', 1000) / 2.0
 
+        # Spawn center black hole if not exists
+        bhs = [h for h in world.arena.hazards if getattr(h, 'kind', '') == 'massive_black_hole' and getattr(h, 'is_orbital_center', False)]
+        if not bhs:
+            try:
+                from arena.procedural_arena import Hazard
+                bh_id = len(world.arena.hazards) + 50000
+                bh = Hazard(bh_id, cx, cy, 100.0, "massive_black_hole", 5.0)
+                setattr(bh, 'active', True)
+                setattr(bh, 'duration', 9999.0)
+                setattr(bh, 'is_orbital_center', True)
+                world.arena.hazards.append(bh)
+            except ImportError:
+                pass
+
         # Count existing orbital mines
         mines = [h for h in world.arena.hazards if getattr(h, 'kind', '') == 'orbital_mine']
 
-        # Spawn mines if fewer than 5
-        if len(mines) < 5:
+        # Spawn mines if fewer than 15 for bullet-hell experience
+        if len(mines) < 15:
             from arena.procedural_arena import Hazard
-            num_to_spawn = 5 - len(mines)
+            num_to_spawn = 15 - len(mines)
             for _ in range(num_to_spawn):
                 mine_id = len(world.arena.hazards) + random.randint(10000, 99999)
-                mine = Hazard(mine_id, cx, cy, 20.0, "orbital_mine", 30.0)
+                mine = Hazard(mine_id, cx, cy, 15.0, "orbital_mine", 25.0)
                 setattr(mine, 'active', True)
                 setattr(mine, 'duration', 9999.0)
                 setattr(mine, 'angle', random.uniform(0, 2 * math.pi))
-                # Add random orbital distance offset per mine
-                setattr(mine, 'orbit_dist', random.uniform(150.0, 450.0))
+                # Add random orbital distance offset per mine to create bands/rings
+                setattr(mine, 'orbit_dist', random.uniform(100.0, 500.0))
                 # Randomize speed slightly per mine
-                setattr(mine, 'speed_mult', random.choice([-1, 1]) * random.uniform(0.8, 1.5))
+                setattr(mine, 'speed_mult', random.choice([-1, 1]) * random.uniform(0.5, 2.0))
                 world.arena.hazards.append(mine)
                 mines.append(mine)
 

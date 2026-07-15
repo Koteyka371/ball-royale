@@ -1,4 +1,4 @@
 {
-    "title": "Black Hole Collapse Event",
-    "description": "An endgame event where orbital mines slowly spiral inward toward the central black hole until the event horizon expands, forcing all remaining players to dodge dense fields of hazards near the center."
+  "title": "Shrinking Safe Zones with Moving Elements",
+  "description": "Instead of one single stationary safe zone, multiple small safe zones appear and randomly drift across the arena. The toxic area deals continuous damage to anyone outside, forcing players to fight for position inside these moving zones."
 }

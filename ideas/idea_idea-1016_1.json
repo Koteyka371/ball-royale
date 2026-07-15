@@ -1,4 +1,4 @@
 {
-    "title": "Orbital Mine Sweeper Power-up",
-    "description": "A new temporary power-up that makes the collecting ball immune to orbital mine damage and allows them to collect orbital mines as ammo or buffs instead."
+  "title": "Quantum Tunnels Game Mode",
+  "description": "A game mode where pairs of connected quantum tunnels spawn across the arena. Entering one tunnel instantly teleports the ball to the other end, but randomizes their stats (speed, damage) temporarily for a short duration after exit."
 }
