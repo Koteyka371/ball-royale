@@ -1,0 +1,4 @@
+{
+  "title": "Pinball Bumper Mutator",
+  "description": "A game mode mutator where colliding with any other ball automatically arms a Stun Explosion on both entities, creating an arena filled with constant bouncing and cascading stun effects."
+}

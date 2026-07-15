@@ -13214,6 +13214,31 @@ func execute(strategy: String, delta: float):
                     if "is_bleeding" in self.ball:
                         self.ball.is_bleeding = true
 
+                var is_armed = false
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("stun_explosion_armed"): is_armed = self.ball["stun_explosion_armed"]
+                elif typeof(self.ball) == TYPE_OBJECT and "stun_explosion_armed" in self.ball: is_armed = self.ball.stun_explosion_armed
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stun_explosion_armed"): is_armed = self.ball.get_meta("stun_explosion_armed")
+
+                if is_armed and speed > 500:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["stun_explosion_armed"] = false
+                        self.ball["_knockback_timer"] = 0.0
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("stun_explosion_armed", false)
+                        self.ball.set_meta("_knockback_timer", 0.0)
+                    elif "stun_explosion_armed" in self.ball:
+                        self.ball.stun_explosion_armed = false
+                        self.ball._knockback_timer = 0.0
+
+                    if self.world != null and self.world.has_method("add_event"):
+                        var b_id = null
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                        self.world.add_event("stun", {"id": b_id, "duration": 2.0})
+                        self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 80.0, "damage": 20.0})
+
                 var was_knocked_back = false
                 if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_knockback_timer") and float(self.ball["_knockback_timer"]) > 0.0:
                     was_knocked_back = true
@@ -20351,6 +20376,37 @@ func _use_skill():
                     if e.has_method("take_damage"):
                         e.take_damage(explosion_damage)
 
+                        var e_alive = true
+                        if "alive" in e: e_alive = e.alive
+                        elif e.has_method("get_meta") and e.has_meta("alive"): e_alive = e.get_meta("alive")
+
+                        if e_alive:
+                            var mass = 1.0
+                            if "mass" in e: mass = e.mass
+                            elif e.has_method("get_meta") and e.has_meta("mass"): mass = e.get_meta("mass")
+
+                            var kb_force = 5000.0
+                            var e_dx = e.x - self.ball.x
+                            var e_dy = e.y - self.ball.y
+                            var e_dist = sqrt(e_dx*e_dx + e_dy*e_dy)
+                            if e_dist > 0.0001:
+                                var nx = e_dx/e_dist
+                                var ny = e_dy/e_dist
+                                if "vx" in e: e.vx += nx * (kb_force / mass)
+                                elif e.has_method("set_meta") and e.has_meta("vx"): e.set_meta("vx", e.get_meta("vx") + nx * (kb_force / mass))
+                                if "vy" in e: e.vy += ny * (kb_force / mass)
+                                elif e.has_method("set_meta") and e.has_meta("vy"): e.set_meta("vy", e.get_meta("vy") + ny * (kb_force / mass))
+
+                                if typeof(e) == TYPE_DICTIONARY:
+                                    e["stun_explosion_armed"] = true
+                                    e["_knockback_timer"] = 1.0
+                                elif e.has_method("set_meta"):
+                                    e.set_meta("stun_explosion_armed", true)
+                                    e.set_meta("_knockback_timer", 1.0)
+                                elif "stun_explosion_armed" in e:
+                                    e.stun_explosion_armed = true
+                                    e._knockback_timer = 1.0
+
                         if elemental_effect == "fire_aura":
                             if e.has_method("set_meta"):
                                 var current_burn = 0.0
@@ -22828,6 +22884,82 @@ func _resolve_collisions() -> bool:
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
 
+            # Secondary stun explosion on collision
+            var b_vx = 0.0
+            var b_vy = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("vx"): b_vx = self.ball["vx"]
+                if self.ball.has("vy"): b_vy = self.ball["vy"]
+            else:
+                if "vx" in self.ball: b_vx = self.ball.vx
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"): b_vx = self.ball.get_meta("vx")
+                if "vy" in self.ball: b_vy = self.ball.vy
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"): b_vy = self.ball.get_meta("vy")
+
+            var o_vx = 0.0
+            var o_vy = 0.0
+            if typeof(other) == TYPE_DICTIONARY:
+                if other.has("vx"): o_vx = other["vx"]
+                if other.has("vy"): o_vy = other["vy"]
+            else:
+                if "vx" in other: o_vx = other.vx
+                elif other.has_method("has_meta") and other.has_meta("vx"): o_vx = other.get_meta("vx")
+                if "vy" in other: o_vy = other.vy
+                elif other.has_method("has_meta") and other.has_meta("vy"): o_vy = other.get_meta("vy")
+
+            var speed_self = sqrt(b_vx * b_vx + b_vy * b_vy)
+            var speed_other = sqrt(o_vx * o_vx + o_vy * o_vy)
+
+            var armed_self = false
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("stun_explosion_armed"): armed_self = self.ball["stun_explosion_armed"]
+            elif typeof(self.ball) == TYPE_OBJECT and "stun_explosion_armed" in self.ball: armed_self = self.ball.stun_explosion_armed
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stun_explosion_armed"): armed_self = self.ball.get_meta("stun_explosion_armed")
+
+            var armed_other = false
+            if typeof(other) == TYPE_DICTIONARY and other.has("stun_explosion_armed"): armed_other = other["stun_explosion_armed"]
+            elif typeof(other) == TYPE_OBJECT and "stun_explosion_armed" in other: armed_other = other.stun_explosion_armed
+            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("stun_explosion_armed"): armed_other = other.get_meta("stun_explosion_armed")
+
+            if armed_self or armed_other:
+                if speed_self > 300 or speed_other > 300:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["stun_explosion_armed"] = false
+                        self.ball["_knockback_timer"] = 0.0
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("stun_explosion_armed", false)
+                        self.ball.set_meta("_knockback_timer", 0.0)
+                    elif "stun_explosion_armed" in self.ball:
+                        self.ball.stun_explosion_armed = false
+                        self.ball._knockback_timer = 0.0
+
+                    if typeof(other) == TYPE_DICTIONARY:
+                        other["stun_explosion_armed"] = false
+                        other["_knockback_timer"] = 0.0
+                    elif other.has_method("set_meta"):
+                        other.set_meta("stun_explosion_armed", false)
+                        other.set_meta("_knockback_timer", 0.0)
+                    elif "stun_explosion_armed" in other:
+                        other.stun_explosion_armed = false
+                        other._knockback_timer = 0.0
+
+                    if self.world != null and self.world.has_method("add_event"):
+                        var self_id = null
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): self_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: self_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                        var other_id = null
+                        if typeof(other) == TYPE_DICTIONARY and other.has("id"): other_id = other.id
+                        elif typeof(other) == TYPE_OBJECT and "id" in other: other_id = other.id
+                        elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("id"): other_id = other.get_meta("id")
+
+                        self.world.add_event("stun", {"id": self_id, "duration": 2.0})
+                        self.world.add_event("stun", {"id": other_id, "duration": 2.0})
+
+                        var exp_x = (self.ball.x + other.x) / 2.0
+                        var exp_y = (self.ball.y + other.y) / 2.0
+                        self.world.add_event("explosion", {"x": exp_x, "y": exp_y, "radius": 80.0, "damage": 20.0})
+
             var has_cl = false
             if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("chain_lightning_timer") and float(self.ball["chain_lightning_timer"]) > 0:
                 has_cl = true
@@ -24697,6 +24829,16 @@ func _update_skill_timer(delta: float):
                                                 elif b.has_method("set_meta") and b.has_meta("vx"): b.set_meta("vx", b.get_meta("vx") + nx * (kb_force / mass))
                                                 if "vy" in b: b.vy += ny * (kb_force / mass)
                                                 elif b.has_method("set_meta") and b.has_meta("vy"): b.set_meta("vy", b.get_meta("vy") + ny * (kb_force / mass))
+
+                                                if typeof(b) == TYPE_DICTIONARY:
+                                                    b["stun_explosion_armed"] = true
+                                                    b["_knockback_timer"] = 1.0
+                                                elif b.has_method("set_meta"):
+                                                    b.set_meta("stun_explosion_armed", true)
+                                                    b.set_meta("_knockback_timer", 1.0)
+                                                elif "stun_explosion_armed" in b:
+                                                    b.stun_explosion_armed = true
+                                                    b._knockback_timer = 1.0
 
                                                 var b_dmg = 5.0
                                                 if "damage" in hazard: b_dmg = hazard.damage
