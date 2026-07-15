@@ -11666,6 +11666,66 @@ class MinefieldEventMode(GameMode):
 
 
 
+
+class MagneticMineZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Magnetic Mine Zone"
+        self.description = "A hazard zone where proximity mines are strongly attracted to nearby moving entities."
+        self.mines = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        import random
+        super().setup(world, balls)
+        self.mines = []
+        for _ in range(10):
+            self.mines.append({
+                "x": random.uniform(100, 700),
+                "y": random.uniform(100, 500),
+                "radius": 15.0,
+                "damage": 50.0,
+                "active": True
+            })
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import math
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            vx = getattr(b, "vx", 0.0)
+            vy = getattr(b, "vy", 0.0)
+            speed = math.hypot(vx, vy)
+
+            for m in self.mines:
+                if not m["active"]:
+                    continue
+
+                dx = b.x - m["x"]
+                dy = b.y - m["y"]
+                dist = math.hypot(dx, dy)
+
+                if dist < b.radius + m["radius"]:
+                    m["active"] = False
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(m["damage"])
+                    elif hasattr(b, "hp"):
+                        b.hp -= m["damage"]
+                    if hasattr(world, "add_event"):
+                        world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
+                    continue
+
+                base_tracking_distance = 50.0
+                max_tracking_distance = 150.0
+
+                normalized_speed = max(0.0, min(1.0, (speed - 50.0) / 100.0))
+                tracking_distance = base_tracking_distance + (max_tracking_distance - base_tracking_distance) * normalized_speed
+
+                if dist < tracking_distance and dist > 0:
+                    pull_force = 150.0 * delta
+                    m["x"] += (dx / dist) * pull_force
+                    m["y"] += (dy / dist) * pull_force
+
 class StaminaSpeedMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -18389,6 +18449,7 @@ GAME_MODES = {
     "shifting_maze": ShiftingMazeMode(),
     "maze_safe_zone": MazeSafeZoneMode(),
     "stamina_speed": StaminaSpeedMode(),
+    "magnetic_mine_zone": MagneticMineZoneMode(),
 
     "blackout": BlackoutMode(),
     "windstorm": WindstormMode(),

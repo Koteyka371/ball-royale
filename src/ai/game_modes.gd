@@ -18150,6 +18150,92 @@ class MinefieldEventMode extends GameMode:
 
 
 
+
+class MagneticMineZoneMode extends GameMode:
+	var mines: Array = []
+
+	func _init() -> void:
+		name = "Magnetic Mine Zone"
+		description = "A hazard zone where proximity mines are strongly attracted to nearby moving entities."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		mines = []
+		for i in range(10):
+			mines.append({
+				"x": 100.0 + randf() * 600.0,
+				"y": 100.0 + randf() * 400.0,
+				"radius": 15.0,
+				"damage": 50.0,
+				"active": true
+			})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			var bvx = 0.0
+			var bvy = 0.0
+			var bradius = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+				bvx = b.get("vx", 0.0)
+				bvy = b.get("vy", 0.0)
+				bradius = b.get("radius", 0.0)
+			else:
+				bx = b.get("x") if "x" in b else 0.0
+				by = b.get("y") if "y" in b else 0.0
+				bvx = b.get("vx") if "vx" in b else 0.0
+				bvy = b.get("vy") if "vy" in b else 0.0
+				bradius = b.get("radius") if "radius" in b else 0.0
+
+			var speed = sqrt(bvx * bvx + bvy * bvy)
+
+			for m in mines:
+				if not m["active"]:
+					continue
+
+				var dx = bx - m["x"]
+				var dy = by - m["y"]
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist < bradius + m["radius"]:
+					m["active"] = false
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("hp"):
+							b["hp"] -= m["damage"]
+					else:
+						if b.has_method("take_damage"):
+							b.take_damage(m["damage"])
+						elif "hp" in b:
+							b.hp -= m["damage"]
+
+					if world != null and world.has_method("add_event"):
+						world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
+					continue
+
+				var base_tracking_distance = 50.0
+				var max_tracking_distance = 150.0
+
+				var normalized_speed = max(0.0, min(1.0, (speed - 50.0) / 100.0))
+				var tracking_distance = base_tracking_distance + (max_tracking_distance - base_tracking_distance) * normalized_speed
+
+				if dist < tracking_distance and dist > 0.0:
+					var pull_force = 150.0 * delta
+					m["x"] += (dx / dist) * pull_force
+					m["y"] += (dy / dist) * pull_force
+
 class StaminaSpeedMode extends GameMode:
 	func _init():
 		name = "Stamina Speed"
@@ -30811,6 +30897,7 @@ GAME_MODES = {
 	"shifting_maze": ShiftingMazeMode.new(),
 	"maze_safe_zone": MazeSafeZoneMode.new(),
 	"stamina_speed": StaminaSpeedMode.new(),
+	"magnetic_mine_zone": MagneticMineZoneMode.new(),
 
 	"blackout": BlackoutMode.new(),
 	"dual_payload": DualPayloadMode.new(),
