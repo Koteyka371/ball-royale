@@ -47,3 +47,14 @@ def test_fuzz_zero_balls():
         sim.run(record=False)
     except Exception as e:
         pytest.fail(f"Fuzzer crashed the simulation with zero balls: {e}")
+
+import collections
+import string
+
+from src.ui.nemesis_screen.nemesis_screen import *
+
+from src.ui.nemesis_screen import nemesis_screen
+
+from src.system import replay
+
+from src.system import crowd_system
