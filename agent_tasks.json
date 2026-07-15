@@ -17492,7 +17492,7 @@
     },
     {
       "id": "idea-1019",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slingshot Arena Hazards",
@@ -27723,6 +27723,40 @@
         "src/ai/ammunition_scavenge.py",
         "src/ai/ammunition_scavenge.gd",
         "tests/test_ammunition_scavenge.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1620",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleporting Safe Zone Mode",
+      "description": "The safe zone does not slowly move; instead, it instantly teleports to a random location every minute, forcing players to scramble across the dangerous zone quickly to find it.",
+      "allowed_paths": [
+        "src/ai/teleporting_safe_zone.py",
+        "src/ai/teleporting_safe_zone.gd",
+        "tests/test_teleporting_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1621",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "False Maze Walls",
+      "description": "Some maze walls look identical to regular walls but are completely breakable with a single dash attack, rewarding players who experiment and enabling sneaky ambushes.",
+      "allowed_paths": [
+        "src/ai/false_maze_walls.py",
+        "src/ai/false_maze_walls.gd",
+        "tests/test_false_maze_walls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
