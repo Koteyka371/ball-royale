@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1004] Bumper Arena Boundaries — *2026-07-15 21:47:54 UTC*
+
+The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging.
+
+---
+
 ## [idea-1019] Slingshot Arena Hazards — *2026-07-15 21:47:50 UTC*
 
 Elastic bands or physical slingshots placed around the edge of the arena. When a ball hits them with high velocity, they get launched back towards the center with massively increased speed, turning them into deadly projectiles for a short duration.
