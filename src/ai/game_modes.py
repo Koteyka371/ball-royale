@@ -9364,7 +9364,7 @@ class GravityWellMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Gravity Well"
-        self.description = "Random gravity wells spawn in the arena, pulling nearby balls towards their center and slightly damaging them over time."
+        self.description = "Instead of a single stationary black hole, smaller temporary gravity wells spawn around the map and collapse after a few seconds, exploding outwards and dealing damage while launching balls that were pulled in."
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
@@ -9423,16 +9423,7 @@ class GravityWellMode(GameMode):
         super().tick(world, balls, delta)
         import random
 
-        # Update gravity well inversions
-        gw_hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "gravity_well"]
-        for gw in gw_hazards:
-            if not hasattr(gw, "invert_timer"):
-                gw.invert_timer = random.uniform(0.0, 5.0)
-                gw.is_inverted = False
-            gw.invert_timer -= delta
-            if gw.invert_timer <= 0:
-                gw.is_inverted = not gw.is_inverted
-                gw.invert_timer = random.uniform(3.0, 5.0)
+
 
         self.spawn_timer += delta
         try:
@@ -9462,6 +9453,8 @@ class GravityWellMode(GameMode):
 
             from arena.procedural_arena import Hazard
             gw = Hazard(id=h_id, x=x, y=y, radius=random.uniform(150.0, 300.0), kind="gravity_well", damage=10.0)
+            setattr(gw, "duration", random.uniform(3.0, 6.0))
+            setattr(gw, "explodes", True)
             world.arena.hazards.append(gw)
 
             # Limit total gravity wells to 5 to avoid overcrowding

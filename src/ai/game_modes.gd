@@ -14707,7 +14707,7 @@ class GravityWellMode extends GameMode:
 
 	func _init():
 		name = "Gravity Well"
-		description = "Random gravity wells spawn in the arena, pulling nearby balls towards their center and slightly damaging them over time."
+		description = "Instead of a single stationary black hole, smaller temporary gravity wells spawn around the map and collapse after a few seconds, exploding outwards and dealing damage while launching balls that were pulled in."
 
 	func setup(world, balls):
 		super.setup(world, balls)
@@ -14718,24 +14718,7 @@ class GravityWellMode extends GameMode:
 	func tick(world, balls, delta = 0.016):
 		super.tick(world, balls, delta)
 
-		# Update gravity well inversions
-		var gw_hazards_all = []
-		if "hazards" in world.arena:
-			for h in world.arena.hazards:
-				if h.kind == "gravity_well":
-					gw_hazards_all.append(h)
 
-		for gw in gw_hazards_all:
-			if not gw.has_meta("invert_timer"):
-				gw.set_meta("invert_timer", randf_range(0.0, 5.0))
-				gw.set_meta("is_inverted", false)
-
-			var t = gw.get_meta("invert_timer")
-			t -= delta
-			if t <= 0:
-				gw.set_meta("is_inverted", not gw.get_meta("is_inverted"))
-				t = randf_range(3.0, 5.0)
-			gw.set_meta("invert_timer", t)
 
 		spawn_timer += delta
 		if spawn_timer >= 5.0:
@@ -14755,6 +14738,8 @@ class GravityWellMode extends GameMode:
 
 			var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
 			var gw = Hazard.new(h_id, x, y, randf_range(150.0, 300.0), "gravity_well", 10.0)
+			gw.set_meta("duration", randf_range(3.0, 6.0))
+			gw.set_meta("explodes", true)
 			world.arena.hazards.append(gw)
 
 			var gw_hazards = []
