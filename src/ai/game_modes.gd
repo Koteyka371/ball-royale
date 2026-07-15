@@ -30301,6 +30301,99 @@ class SniperOnlyMode extends GameMode:
 					elif b.has_method("set_meta"):
 						b.set_meta("traits", traits_arr)
 
+class MagneticBumpersMode extends GameMode:
+	func _init() -> void:
+		name = "Magnetic Bumpers"
+		description = "Bumpers exert a magnetic pull, making it tricky to navigate around them without getting caught in a pinball frenzy."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		pass
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_OBJECT and arena.has_method("get"):
+				if not ("hazards" in arena) and typeof(arena.get("hazards")) == TYPE_NIL:
+					arena.hazards = []
+
+				var arena_width = arena.get("width") if "width" in arena else 1000
+				var arena_height = arena.get("height") if "height" in arena else 1000
+
+				var hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper"]
+				for i in range(15):
+					var x = randf_range(100, arena_width - 100)
+					var y = randf_range(100, arena_height - 100)
+					var r = randf_range(30.0, 60.0)
+					var kind = hazard_kinds[randi() % hazard_kinds.size()]
+					var hazard = {"id": 12000 + i, "x": x, "y": y, "radius": r, "kind": kind, "damage": 0.0}
+					if "hazards" in arena and typeof(arena.hazards) == TYPE_ARRAY:
+						arena.hazards.append(hazard)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		var hazards = []
+		if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_OBJECT and arena.has_method("get") and arena.get("hazards"):
+				var all_hazards = arena.get("hazards")
+				if typeof(all_hazards) == TYPE_ARRAY:
+					for h in all_hazards:
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+							kind = h["kind"]
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get") and h.get("kind") != null:
+							kind = h.get("kind")
+						if kind in ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper"]:
+							hazards.append(h)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+				is_alive = b["alive"]
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null:
+				is_alive = b.get("alive")
+
+			if not is_alive:
+				continue
+
+			var b_x = 0.0
+			var b_y = 0.0
+			if typeof(b) == TYPE_DICTIONARY and b.has("x") and b.has("y"):
+				b_x = b["x"]
+				b_y = b["y"]
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("x") != null and b.get("y") != null:
+				b_x = b.get("x")
+				b_y = b.get("y")
+
+			for h in hazards:
+				var h_x = 0.0
+				var h_y = 0.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("x") and h.has("y"):
+					h_x = h["x"]
+					h_y = h["y"]
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get") and h.get("x") != null and h.get("y") != null:
+					h_x = h.get("x")
+					h_y = h.get("y")
+
+				var dx = h_x - b_x
+				var dy = h_y - b_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 0 and dist < 250.0:
+					var pull_strength = 200.0 * delta * (1.0 - dist / 250.0)
+					var dir_x = dx / dist
+					var dir_y = dy / dist
+					var new_x = b_x + dir_x * pull_strength
+					var new_y = b_y + dir_y * pull_strength
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = new_x
+						b["y"] = new_y
+					elif typeof(b) == TYPE_OBJECT and b.has_method("set"):
+						b.set("x", new_x)
+						b.set("y", new_y)
+
 var GAME_MODES = {
 	"sniper_only": SniperOnlyMode.new(),
 	"stats_decay": StatsDecayMode.new(),
@@ -34199,3 +34292,5 @@ GAME_MODES["invisible_mines"] = InvisibleMinesMode.new()
 
 GAME_MODES["phantom_juggernaut"] = PhantomJuggernautMode.new()
 GAME_MODES["chicken_curse"] = ChickenCurseMode.new()
+
+GAME_MODES["magnetic_bumpers"] = MagneticBumpersMode.new()
