@@ -84,8 +84,8 @@ def test_decoy_explosion_no_confuse():
         random.random = original_random
 
     assert getattr(decoy, "_decoy_exploded", False) is True
-    assert enemy.is_confused is False
-    assert enemy.confusion_timer == 0.0
+    assert getattr(enemy, "is_confused", False) is True  # Now true due to Decoy Scramble Aura
+    assert enemy.confusion_timer > 0.0
 
 def test_decoy_explosion_all_confuse():
     owner = MockBall(x=10, y=10)

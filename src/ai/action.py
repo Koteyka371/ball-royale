@@ -3628,6 +3628,21 @@ class Action:
                             heal_amount = 5.0 * delta
                             b.hp = min(getattr(b, "max_hp", 100), getattr(b, "hp", 100) + heal_amount)
 
+        if getattr(self.ball, "is_decoy", False) or getattr(self.ball, "is_decoy_clone", False):
+            scramble_timer = getattr(self.ball, "scramble_aura_timer", 0.0)
+            scramble_timer -= delta
+            if scramble_timer <= 0:
+                scramble_timer = 2.0
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", "") != getattr(self.ball, "team", ""):
+                            dx = b.x - self.ball.x
+                            dy = b.y - self.ball.y
+                            if dx*dx + dy*dy <= 22500.0:  # 150 radius
+                                b.is_confused = True
+                                b.confusion_timer = 1.5
+            self.ball.scramble_aura_timer = scramble_timer
+
         if getattr(self.ball, "is_decoy", False):
             if getattr(self.ball, "decoy_type", "") == "siren":
                 if not hasattr(self.ball, "siren_ping_timer"):

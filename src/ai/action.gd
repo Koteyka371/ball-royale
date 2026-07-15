@@ -6496,6 +6496,59 @@ func execute(strategy: String, delta: float):
     elif my_ball.has_method("get_meta") and my_ball.has_meta("is_decoy"):
         is_decoy = my_ball.get_meta("is_decoy")
 
+    var is_decoy_or_clone = is_decoy
+    if not is_decoy_or_clone:
+        if "is_decoy_clone" in self.ball: is_decoy_or_clone = self.ball.is_decoy_clone
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_decoy_clone"): is_decoy_or_clone = self.ball.get_meta("is_decoy_clone")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_decoy_clone"): is_decoy_or_clone = self.ball["is_decoy_clone"]
+
+    if is_decoy_or_clone:
+        var scramble_timer = 0.0
+        if "scramble_aura_timer" in self.ball: scramble_timer = self.ball.scramble_aura_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("scramble_aura_timer"): scramble_timer = self.ball.get_meta("scramble_aura_timer")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("scramble_aura_timer"): scramble_timer = self.ball["scramble_aura_timer"]
+
+        scramble_timer -= delta
+        if scramble_timer <= 0:
+            scramble_timer = 2.0
+            if "balls" in self.world:
+                var my_team = ""
+                if "team" in self.ball: my_team = self.ball.team
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball["team"]
+
+                for b in self.world.balls:
+                    var b_id = b.id if "id" in b else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else -1)
+                    var m_id = self.ball.id if "id" in self.ball else (self.ball["id"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id") else -2)
+                    if b_id != m_id:
+                        var b_alive = false
+                        if "alive" in b: b_alive = b.alive
+                        elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+
+                        var b_team = ""
+                        if "team" in b: b_team = b.team
+                        elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+
+                        if b_alive and b_team != my_team:
+                            var b_x = b.x if "x" in b else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else 0.0)
+                            var b_y = b.y if "y" in b else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else 0.0)
+                            var m_x = self.ball.x if "x" in self.ball else (self.ball["x"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x") else 0.0)
+                            var m_y = self.ball.y if "y" in self.ball else (self.ball["y"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y") else 0.0)
+                            var dx = b_x - m_x
+                            var dy = b_y - m_y
+                            if dx*dx + dy*dy <= 22500.0:
+                                if typeof(b) == TYPE_DICTIONARY:
+                                    b["is_confused"] = true
+                                    b["confusion_timer"] = 1.5
+                                elif typeof(b) == TYPE_OBJECT:
+                                    if "is_confused" in b: b.is_confused = true
+                                    elif b.has_method("set_meta"): b.set_meta("is_confused", true)
+                                    if "confusion_timer" in b: b.confusion_timer = 1.5
+                                    elif b.has_method("set_meta"): b.set_meta("confusion_timer", 1.5)
+
+        if "scramble_aura_timer" in self.ball: self.ball.scramble_aura_timer = scramble_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("scramble_aura_timer", scramble_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["scramble_aura_timer"] = scramble_timer
+
     if is_decoy:
         var decoy_type = ""
         if "decoy_type" in my_ball:

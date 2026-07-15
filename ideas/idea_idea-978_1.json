@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Collapse Mutator",
+  "description": "A mutator where the arena slowly shrinks towards the center, pulling all entities inward. Balls must fight for the limited center space to survive, and hazards thrown outside the center deal massive damage."
+}
