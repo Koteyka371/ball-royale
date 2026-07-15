@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-871] Magnetic Boots Cosmetic — *2026-07-15 02:27:53 UTC*
+
+A new cosmetic/item loadout that heavily reduces knockback and pull effects from emp traps, temporal rifts, and black holes, but slightly increases the player's vulnerability to chain lightning bounces by functioning as an implicit lightning rod when within range.
+
+---
+
 ## [idea-876] Magnetic Polarity Shift — *2026-07-15 02:27:49 UTC*
 
 A new hazard that toggles the polarity of nearby balls. Balls with same polarity repel each other, while balls with opposite polarity attract, adding chaotic physics interactions.
