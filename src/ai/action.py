@@ -6433,6 +6433,31 @@ class Action:
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
 
+                        elif hazard.kind == "orbital_mine":
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < (hazard.radius + self.ball.radius) ** 2:
+                                if getattr(hazard, "active", True):
+                                    hazard.active = False
+                                    hazard.duration = 0.0
+
+                                    # Damage
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+
+                                    # Slow
+                                    self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.5
+                                    self.ball.slow_timer = max(getattr(self.ball, 'slow_timer', 0.0), 2.0)
+
+                                    # Visual event
+                                    if hasattr(self.world, "add_event"):
+                                        self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": hazard.radius + 30.0})
+                                continue
                         elif hazard.kind == "hidden_mine":
                             # Detonate on proximity, disable AI abilities and attacks for 5s
                             dx = hazard.x - self.ball.x

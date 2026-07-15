@@ -11542,6 +11542,57 @@ func execute(strategy: String, delta: float):
                             self.ball.hp -= hd
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
+                    elif hazard.kind == "orbital_mine":
+                        var dist_x = hazard.x - self.ball.x
+                        var dist_y = hazard.y - self.ball.y
+                        var dist_sq = dist_x * dist_x + dist_y * dist_y
+                        if dist_sq < (hazard.radius + self.ball.radius) * (hazard.radius + self.ball.radius):
+                            var is_active = true
+                            if hazard.has_meta("active"):
+                                is_active = hazard.get_meta("active")
+                            elif "active" in hazard:
+                                is_active = hazard.active
+                            if is_active:
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("active", false)
+                                    hazard.set_meta("duration", 0.0)
+                                elif "active" in hazard:
+                                    hazard.active = false
+                                    hazard.duration = 0.0
+
+                                var hd = hazard.damage if "damage" in hazard else 30.0
+                                var is_qs = false
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
+                                    is_qs = self.ball.get_meta("is_in_quicksand")
+                                elif "is_in_quicksand" in self.ball:
+                                    is_qs = self.ball.is_in_quicksand
+                                if is_qs:
+                                    hd *= 2.0
+
+                                if self.ball.has_method("take_damage"):
+                                    self.ball.take_damage(hd)
+                                elif "hp" in self.ball:
+                                    self.ball.hp -= hd
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = false
+
+                                var base_spd = 100.0
+                                if "base_speed" in self.ball: base_spd = self.ball.base_speed
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"): base_spd = self.ball.get_meta("base_speed")
+
+                                if "speed" in self.ball: self.ball.speed = base_spd * 0.5
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_spd * 0.5)
+
+                                var current_slow = 0.0
+                                if "slow_timer" in self.ball: current_slow = self.ball.slow_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("slow_timer"): current_slow = self.ball.get_meta("slow_timer")
+
+                                if "slow_timer" in self.ball: self.ball.slow_timer = max(current_slow, 2.0)
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", max(current_slow, 2.0))
+
+                                if world != null and world.has_method("add_event"):
+                                    world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": hazard.radius + 30.0})
+
                     elif hazard.kind == "hidden_mine":
                         var dist_x = hazard.x - self.ball.x
                         var dist_y = hazard.y - self.ball.y
