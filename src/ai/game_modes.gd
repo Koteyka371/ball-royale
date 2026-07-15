@@ -34294,3 +34294,102 @@ GAME_MODES["phantom_juggernaut"] = PhantomJuggernautMode.new()
 GAME_MODES["chicken_curse"] = ChickenCurseMode.new()
 
 GAME_MODES["magnetic_bumpers"] = MagneticBumpersMode.new()
+
+class PeriodicSafeZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 500.0
+	var target_radius: float = 500.0
+	var target_x: float = 500.0
+	var target_y: float = 500.0
+	var start_radius: float = 500.0
+	var start_x: float = 500.0
+	var start_y: float = 500.0
+	var phase: String = "waiting"
+	var phase_timer: float = 0.0
+	var waiting_duration: float = 15.0
+	var shrinking_duration: float = 10.0
+	var shrink_factor: float = 0.65
+	var min_zone_radius: float = 30.0
+	var outside_damage_per_second: float = 10.0
+	var damage_multiplier: float = 1.0
+
+	func _init():
+		super._init()
+		name = "Periodic Safe Zone"
+		description = "A battle royale game mode where the safe zone of the arena periodically shrinks. Entities outside the safe zone take continuous damage. This mode forces encounters, accelerates matches, and creates intense late-game scenarios."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena") != null:
+			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		target_x = zone_x
+		target_y = zone_y
+		start_x = zone_x
+		start_y = zone_y
+
+		zone_radius = max(arena_width, arena_height) * 0.75
+		target_radius = zone_radius
+		start_radius = zone_radius
+
+		phase = "waiting"
+		phase_timer = 0.0
+		damage_multiplier = 1.0
+
+	func tick(world, balls: Array, delta: float) -> void:
+		phase_timer += delta
+
+		if phase == "waiting":
+			if phase_timer >= waiting_duration and zone_radius > min_zone_radius:
+				phase = "shrinking"
+				phase_timer = 0.0
+
+				start_radius = zone_radius
+				start_x = zone_x
+				start_y = zone_y
+
+				target_radius = max(min_zone_radius, zone_radius * shrink_factor)
+
+				var max_offset = max(0.0, zone_radius - target_radius)
+				var angle = randf() * 2.0 * PI
+				var dist = randf() * max_offset
+
+				target_x = zone_x + cos(angle) * dist
+				target_y = zone_y + sin(angle) * dist
+
+				damage_multiplier += 0.5
+
+		elif phase == "shrinking":
+			var t = min(1.0, phase_timer / shrinking_duration)
+			zone_radius = start_radius + (target_radius - start_radius) * t
+			zone_x = start_x + (target_x - start_x) * t
+			zone_y = start_y + (target_y - start_y) * t
+
+			if phase_timer >= shrinking_duration:
+				phase = "waiting"
+				phase_timer = 0.0
+
+		var damage_this_tick = outside_damage_per_second * damage_multiplier * delta
+
+		for b in balls:
+			if not b.get("alive") or b.get("ball_type") == "spectator":
+				continue
+
+			var dist = hypot(b.x - zone_x, b.y - zone_y)
+			if dist > zone_radius:
+				if b.has_method("take_damage"):
+					b.take_damage(damage_this_tick, "periodic_safe_zone")
+				elif "hp" in b:
+					b.hp -= damage_this_tick
+
+	func hypot(dx: float, dy: float) -> float:
+		return sqrt(dx * dx + dy * dy)
+
+GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode.new()
