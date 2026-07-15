@@ -7042,6 +7042,14 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
+                        elif hazard.kind == "neutralizing_puddle":
+                            if hasattr(self.ball, "base_max_hp"):
+                                if getattr(self.ball, "max_hp", 100.0) < self.ball.base_max_hp:
+                                    self.ball.max_hp = min(self.ball.base_max_hp, self.ball.max_hp + 20.0 * delta)
+                            if hasattr(self.ball, "defense_multiplier"):
+                                if self.ball.defense_multiplier < 1.0:
+                                    self.ball.defense_multiplier = min(1.0, self.ball.defense_multiplier + 0.5 * delta)
+                            continue
                         elif hazard.kind == "tar_puddle":
                             if hasattr(self.ball, "slow_timer"):
                                 self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 3.0)
