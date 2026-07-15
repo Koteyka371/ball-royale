@@ -5512,7 +5512,20 @@ class Action:
                                     hazard.vy *= -1
 
                             h_lifetime = getattr(hazard, "lifetime", 0.0)
-                            if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and h_lifetime >= 10.0:
+                            if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and getattr(hazard, "duration", 1.0) > 0.0:
+                                for other in getattr(self.world.arena, "hazards", []):
+                                    if other is not hazard and getattr(other, "kind", "") in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and getattr(other, "duration", 1.0) > 0.0:
+                                        dx = hazard.x - getattr(other, "x", 0.0)
+                                        dy = hazard.y - getattr(other, "y", 0.0)
+                                        dist = math.hypot(dx, dy)
+                                        if dist < getattr(hazard, "radius", 40.0) + getattr(other, "radius", 40.0):
+                                            if getattr(hazard, "radius", 40.0) >= getattr(other, "radius", 40.0):
+                                                hazard.radius = getattr(hazard, "radius", 40.0) + getattr(other, "radius", 40.0) * 0.5
+                                                other.duration = 0.0
+                                                other.radius = 0.0
+
+                            is_supernova = hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and getattr(hazard, "radius", 40.0) >= 150.0
+                            if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and (h_lifetime >= 10.0 or is_supernova):
                                 hazard.duration = 0.0
                                 if hasattr(self.world, "events"):
                                     self.world.events.append({"type": "explosion", "x": hazard.x, "y": hazard.y})
@@ -5521,19 +5534,20 @@ class Action:
                                         bdx = hazard.x - b.x
                                         bdy = hazard.y - b.y
                                         bdist_sq = bdx * bdx + bdy * bdy
-                                        blast_radius = hazard.radius * 6.0
+                                        blast_radius = 10000.0 if is_supernova else hazard.radius * 6.0
                                         if bdist_sq < blast_radius * blast_radius and bdist_sq > 0.0001:
                                             bdist = math.sqrt(bdist_sq)
                                             bnx, bny = bdx / bdist, bdy / bdist
                                             # Deal immense damage
+                                            damage_amount = 5000.0 if is_supernova else 500.0
                                             if hasattr(b, "take_damage"):
-                                                b.take_damage(500.0)
+                                                b.take_damage(damage_amount)
                                             elif hasattr(b, "hp"):
-                                                b.hp -= 500.0
+                                                b.hp -= damage_amount
                                                 if b.hp <= 0:
                                                     b.hp = 0
                                                     b.alive = False
-                                                    b.killer = "black_hole_explosion"
+                                                    b.killer = "supernova_explosion" if is_supernova else "black_hole_explosion"
                                             # Push outward
                                             push_strength = 2000.0
                                             if hasattr(b, "vx") and hasattr(b, "vy"):
