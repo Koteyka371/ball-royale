@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1005] Geyser Hazards — *2026-07-15 16:54:49 UTC*
+
+Add geysers in the arena that build up pressure and eventually erupt. When they erupt, they launch any balls standing on them in a random direction with high velocity, potentially knocking them into other hazards or out of bounds.
+
+---
+
 ## [idea-1007] Clan Wars — *2026-07-15 16:47:43 UTC*
 
 Weekly clan vs clan tournaments where clans compete for a shared pool of points. Top clans receive exclusive cosmetics and currency boosts for the week.

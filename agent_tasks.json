@@ -17254,7 +17254,7 @@
     },
     {
       "id": "idea-1005",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Geyser Hazards",
@@ -27451,6 +27451,74 @@
         "src/ai/kinetic_energy_battery.py",
         "src/ai/kinetic_energy_battery.gd",
         "tests/test_kinetic_energy_battery.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1604",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Mimic Transposition",
+      "description": "A new trickster skill that allows players to instantly swap places with an active mimic clone, transferring all of the player's momentum and current status effects to the clone while leaving the player safely behind at the clone's previous position.",
+      "allowed_paths": [
+        "src/ai/decoy_mimic_transposition.py",
+        "src/ai/decoy_mimic_transposition.gd",
+        "tests/test_decoy_mimic_transposition.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1605",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Turret Overdrive Protocol",
+      "description": "An alternate engineer skill that temporarily boosts the fire rate and damage of all deployed turrets by 50% for 10 seconds, but causes them to explode at the end of the duration.",
+      "allowed_paths": [
+        "src/ai/turret_overdrive_protocol.py",
+        "src/ai/turret_overdrive_protocol.gd",
+        "tests/test_turret_overdrive_protocol.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1606",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Unstable Decoy Overload",
+      "description": "If a decoy clone is hit by a lightning strike event or a static shock booster, it becomes overcharged, increasing its explosion radius and confusing enemies hit for a significantly longer duration before detonating.",
+      "allowed_paths": [
+        "src/ai/unstable_decoy_overload.py",
+        "src/ai/unstable_decoy_overload.gd",
+        "tests/test_unstable_decoy_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1607",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mobile Turret Platform",
+      "description": "A new hazard that acts as a mobile platform. Any turret deployed on it will move around the arena along a predefined path, giving the Engineer a moving defensive point.",
+      "allowed_paths": [
+        "src/ai/mobile_turret_platform.py",
+        "src/ai/mobile_turret_platform.gd",
+        "tests/test_mobile_turret_platform.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
