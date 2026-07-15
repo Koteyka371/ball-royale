@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-876] Magnetic Polarity Shift — *2026-07-15 02:27:49 UTC*
+
+A new hazard that toggles the polarity of nearby balls. Balls with same polarity repel each other, while balls with opposite polarity attract, adding chaotic physics interactions.
+
+---
+
 ## [idea-997] Shrinking Arena Mode — *2026-07-15 00:40:25 UTC*
 
 A battle royale game mode where the safe zone of the arena periodically shrinks. Entities outside the safe zone take continuous damage. This mode forces encounters, accelerates matches, and creates intense late-game scenarios.
