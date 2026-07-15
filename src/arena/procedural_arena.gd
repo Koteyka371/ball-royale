@@ -1019,7 +1019,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                 sx = max(50.0, min(width - 50.0, sx))
                 sy = max(50.0, min(height - 50.0, sy))
 
-                var item_kinds = ["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster", "reverse_gravity_booster", "material_magnet_booster"]
+                var item_kinds = ["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster", "reverse_gravity_booster", "material_magnet_booster", "fire_attachment", "ice_attachment", "pierce_attachment", "spread_attachment"]
                 var item_kind = item_kinds[randi() % item_kinds.size()]
 
                 var item_id = 9000 + hazards.size() + (randi() % 1000)

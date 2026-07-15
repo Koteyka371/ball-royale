@@ -1,0 +1,4 @@
+{
+    "title": "Chain Reaction Status Effects",
+    "description": "Add new synergy effects when an entity with a specific status effect (e.g., burn) is hit by an opposing elemental attack (e.g., freeze). Hitting a burning entity with ice could trigger an AoE steam explosion that slows and damages nearby entities."
+}

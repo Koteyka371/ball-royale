@@ -18519,6 +18519,43 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+
+            elif "kind" in nearest and nearest.kind == "fire_attachment":
+                if self.ball.has_method("set_meta"): self.ball.set_meta("fire_attachment_timer", 15.0)
+                else: self.ball.fire_attachment_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "ice_attachment":
+                if self.ball.has_method("set_meta"): self.ball.set_meta("ice_attachment_timer", 15.0)
+                else: self.ball.ice_attachment_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "pierce_attachment":
+                if self.ball.has_method("set_meta"): self.ball.set_meta("pierce_attachment_timer", 15.0)
+                else: self.ball.pierce_attachment_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "spread_attachment":
+                if self.ball.has_method("set_meta"): self.ball.set_meta("spread_attachment_timer", 15.0)
+                else: self.ball.spread_attachment_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "silencer_attachment":
                 if self.ball.has_method("set_meta"): self.ball.set_meta("silencer_timer", 15.0)
                 else: self.ball.silencer_timer = 15.0

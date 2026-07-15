@@ -459,6 +459,44 @@ class Action:
 
         original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
 
+        # APPLY WEAPON ATTACHMENTS
+        if getattr(attacker, "fire_attachment_timer", 0.0) > 0:
+            target.burn_timer = getattr(target, "burn_timer", 0.0) + 3.0
+            original_damage *= 1.2
+            if hasattr(self, "_spawn_directed_particles"):
+                self._spawn_directed_particles(attacker, target, "fire")
+
+        if getattr(attacker, "ice_attachment_timer", 0.0) > 0:
+            target.freeze_timer = getattr(target, "freeze_timer", 0.0) + 1.0
+            target.slow_timer = getattr(target, "slow_timer", 0.0) + 3.0
+            original_damage *= 1.1
+            if hasattr(self, "_spawn_directed_particles"):
+                self._spawn_directed_particles(attacker, target, "ice")
+
+        if getattr(attacker, "pierce_attachment_timer", 0.0) > 0:
+            if getattr(target, "reflect_shield_active", False) or getattr(target, "kinetic_shield_active", False) or getattr(target, "energy_shield_active", False) or getattr(target, "ricochet_barrier_timer", 0.0) > 0:
+                original_damage *= 2.0
+                if hasattr(self, "_spawn_directed_particles"):
+                    self._spawn_directed_particles(attacker, target, "pierce")
+
+
+
+        if getattr(attacker, "spread_attachment_timer", 0.0) > 0 and is_ranged:
+            # Hit up to 2 other nearby enemies
+            if not getattr(attacker, "_is_resolving_spread", False):
+                attacker._is_resolving_spread = True
+                spread_count = 0
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if b != target and b != attacker and getattr(b, "alive", True) and getattr(b, "team", None) != getattr(attacker, "team", None):
+                            import math
+                            if math.hypot(b.x - target.x, b.y - target.y) <= 200.0:
+                                self._attempt_damage(attacker, b)
+                                spread_count += 1
+                                if spread_count >= 2:
+                                    break
+                attacker._is_resolving_spread = False
+
         if getattr(attacker, "kinetic_shield_stored_damage", 0.0) > 0 and not is_ranged:
             stored_dmg = attacker.kinetic_shield_stored_damage
             original_damage += stored_dmg
@@ -9280,6 +9318,31 @@ class Action:
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = 15.0  # Duration of stealth effect
 
+
+                elif getattr(nearest, "kind", None) == "fire_attachment":
+                    self.ball.fire_attachment_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "ice_attachment":
+                    self.ball.ice_attachment_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "pierce_attachment":
+                    self.ball.pierce_attachment_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "spread_attachment":
+                    self.ball.spread_attachment_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "silencer_attachment":
                     self.ball.silencer_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
@@ -14165,6 +14228,16 @@ class Action:
         elif is_windy:
             cooldown_mult *= 1.2  # Windy speeds up cooldowns slightly
 
+
+        if getattr(self.ball, "fire_attachment_timer", 0.0) > 0:
+            self.ball.fire_attachment_timer -= delta
+        if getattr(self.ball, "ice_attachment_timer", 0.0) > 0:
+            self.ball.ice_attachment_timer -= delta
+        if getattr(self.ball, "pierce_attachment_timer", 0.0) > 0:
+            self.ball.pierce_attachment_timer -= delta
+        if getattr(self.ball, "spread_attachment_timer", 0.0) > 0:
+            self.ball.spread_attachment_timer -= delta
+
         if getattr(self.ball, "extended_mag_timer", 0.0) > 0:
             cooldown_mult *= 2.0
         if getattr(self.ball, "overclock_timer", 0.0) > 0:
@@ -14282,6 +14355,7 @@ class Action:
 
         if getattr(self.ball, "silencer_timer", 0.0) > 0:
             self.ball.silencer_timer -= delta
+
 
         if getattr(self.ball, "extended_mag_timer", 0.0) > 0:
             self.ball.extended_mag_timer -= delta
