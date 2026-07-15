@@ -4094,6 +4094,8 @@ class Action:
             if hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
                     if getattr(hazard, "kind", "") == "void_panel":
+                        if getattr(self.ball, "knockback_booster_timer", 0.0) > 0.0:
+                            continue
                         hx = hazard.x - self.ball.x
                         hy = hazard.y - self.ball.y
                         h_dist = math.sqrt(hx*hx + hy*hy)
@@ -9459,6 +9461,13 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "knockback_booster":
+                    self.ball.knockback_booster_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "emp_immunity_booster":
                     self.ball.emp_immunity_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -12958,6 +12967,15 @@ class Action:
                     self.ball.kinetic_absorbed_energy += overlap
                     self.ball.speed_boost_timer = min(3.0, getattr(self.ball, "speed_boost_timer", 0.0) + (overlap * 0.1))
 
+
+                if getattr(self.ball, "knockback_booster_timer", 0.0) > 0.0:
+                    knockback_multiplier = 0.0
+                    if hasattr(other, "vx"): other.vx += -nx * 2000.0
+                    if hasattr(other, "vy"): other.vy += -ny * 2000.0
+                elif getattr(other, "knockback_booster_timer", 0.0) > 0.0:
+                    if hasattr(self.ball, "vx"): self.ball.vx += nx * 2000.0
+                    if hasattr(self.ball, "vy"): self.ball.vy += ny * 2000.0
+
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
 
@@ -13617,6 +13635,10 @@ class Action:
             self.ball.hazard_immunity_timer -= delta
             if self.ball.hazard_immunity_timer < 0:
                 self.ball.hazard_immunity_timer = 0.0
+        if getattr(self.ball, "knockback_booster_timer", 0.0) > 0.0:
+            self.ball.knockback_booster_timer -= delta
+            if self.ball.knockback_booster_timer < 0:
+                self.ball.knockback_booster_timer = 0.0
         if getattr(self.ball, "emp_immunity_timer", 0.0) > 0:
             self.ball.emp_immunity_timer -= delta
             if self.ball.emp_immunity_timer < 0:

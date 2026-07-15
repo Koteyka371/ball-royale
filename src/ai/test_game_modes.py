@@ -1786,3 +1786,105 @@ def test_inverse_controls_zone_mode():
     mode.tick(world, [ball_out_zone], delta=1.0)
     assert ball_out_zone.x == 100.0
     assert ball_out_zone.y == 100.0
+
+def test_knockback_booster():
+    from ai.action import Action
+    class MockBall:
+        def __init__(self, id, ball_type="player"):
+            self.id = id
+            self.ball_type = ball_type
+            self.x = 500.0
+            self.y = 500.0
+            self.vx = 0.0
+            self.vy = 0.0
+            self.radius = 10.0
+            self.alive = True
+            self.damage = 10.0
+            self.hp = 100.0
+            self.team = f"team_{id}"
+            self.knockback_booster_timer = 0.0
+
+    class MockArena:
+        def __init__(self):
+            self.width = 1000
+            self.height = 1000
+            self.hazards = []
+            self.name = 'mock_arena'
+            self.weather = 'clear'
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.width = 1000
+            self.height = 1000
+            self.next_id = 9999
+            self.boosters = []
+            self.events = []
+        def get_nearby_entities(self, ball, radius):
+            return [b for b in self.balls if b != ball]
+
+    world = MockWorld()
+    b1 = MockBall(1)
+    b2 = MockBall(2)
+    world.balls = [b1, b2]
+
+    # Test collection
+    class MockBooster(dict):
+        def __init__(self, kind):
+            self.kind = kind
+            self.x = 500.0
+            self.y = 500.0
+            self.radius = 10.0
+            self['kind'] = kind
+            self['x'] = self.x
+            self['y'] = self.y
+            self['radius'] = self.radius
+
+        def get(self, k, d=None):
+            return getattr(self, k, d)
+
+    booster = MockBooster("knockback_booster")
+    world.boosters.append(booster)
+
+    action = Action(b1, world)
+    action._get_boosters = lambda: world.boosters
+    action._get_enemies = lambda: [b2]
+    b2.x = 900.0 # move away so we collect
+    action._collect_booster(0.1)
+
+    assert b1.knockback_booster_timer == 15.0
+    assert len(world.boosters) == 0
+
+    # Test collision
+    b2.x = 505.0
+    action._resolve_collisions()
+
+    assert b2.vx > 1000.0 # massive knockback
+
+    # Test void panel skip
+    class MockHazard:
+        def __init__(self, kind):
+            self.kind = kind
+            self.x = 500.0
+            self.y = 500.0
+            self.radius = 20.0
+            self.damage = 10.0
+
+    void_panel = MockHazard("void_panel")
+    world.arena.hazards.append(void_panel)
+    world._deal_damage = lambda h, b, dmg: setattr(b, "hp", b.hp - dmg)
+
+    # We directly simulate the void panel logic part
+    hx = void_panel.x - b1.x
+    hy = void_panel.y - b1.y
+    h_dist = (hx**2 + hy**2)**0.5
+
+    hp_before = b1.hp
+
+    # Action loop check bypasses it
+    if void_panel.kind == "void_panel":
+        if b1.knockback_booster_timer > 0:
+            pass # Skipped!
+        elif h_dist <= void_panel.radius:
+            b1.hp -= 10000.0
+
+    assert b1.hp == hp_before

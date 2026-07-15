@@ -2567,6 +2567,16 @@ func execute(strategy: String, delta: float):
             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("intangible", false)
         if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: self.ball.intangible_timer = timer
         elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", timer)
+
+    var kb_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "knockback_booster_timer" in self.ball: kb_timer = self.ball.knockback_booster_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("knockback_booster_timer"): kb_timer = self.ball.get_meta("knockback_booster_timer")
+    if kb_timer > 0.0:
+        kb_timer -= delta
+        if kb_timer <= 0.0: kb_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and "knockback_booster_timer" in self.ball: self.ball.knockback_booster_timer = kb_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("knockback_booster_timer", kb_timer)
+
     var sus_proj = []
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("suspended_projectiles"):
         sus_proj = self.ball["suspended_projectiles"]
@@ -2893,6 +2903,13 @@ func execute(strategy: String, delta: float):
 								self.ball.speed_multiplier = cur_speed_mult * 0.5
 
 				if kind == "void_panel":
+					var kb_booster_t = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("knockback_booster_timer"): kb_booster_t = self.ball["knockback_booster_timer"]
+					elif typeof(self.ball) == TYPE_OBJECT and "knockback_booster_timer" in self.ball: kb_booster_t = self.ball.knockback_booster_timer
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("knockback_booster_timer"): kb_booster_t = self.ball.get_meta("knockback_booster_timer")
+
+					if kb_booster_t > 0.0:
+						continue
 					var hx = 0.0
 					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]
 					elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: hx = hazard.x
@@ -9702,7 +9719,38 @@ func execute(strategy: String, delta: float):
                             var ny = -dy / dist
                             var push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
 
-                            var cosmetic_val = ""
+
+            var b_kb_timer = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "knockback_booster_timer" in self.ball: b_kb_timer = self.ball.knockback_booster_timer
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("knockback_booster_timer"): b_kb_timer = self.ball.get_meta("knockback_booster_timer")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("knockback_booster_timer"): b_kb_timer = self.ball["knockback_booster_timer"]
+
+            var o_kb_timer = 0.0
+            if typeof(other) == TYPE_OBJECT and "knockback_booster_timer" in other: o_kb_timer = other.knockback_booster_timer
+            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("knockback_booster_timer"): o_kb_timer = other.get_meta("knockback_booster_timer")
+            elif typeof(other) == TYPE_DICTIONARY and other.has("knockback_booster_timer"): o_kb_timer = other["knockback_booster_timer"]
+
+            if b_kb_timer > 0.0:
+                knockback_multiplier = 0.0
+                if typeof(other) == TYPE_DICTIONARY:
+                    if other.has("vx"): other["vx"] += -nx * 2000.0
+                    if other.has("vy"): other["vy"] += -ny * 2000.0
+                elif typeof(other) == TYPE_OBJECT:
+                    if "vx" in other: other.vx += -nx * 2000.0
+                    elif other.has_method("has_meta") and other.has_meta("vx"): other.set_meta("vx", other.get_meta("vx") - nx * 2000.0)
+                    if "vy" in other: other.vy += -ny * 2000.0
+                    elif other.has_method("has_meta") and other.has_meta("vy"): other.set_meta("vy", other.get_meta("vy") - ny * 2000.0)
+            elif o_kb_timer > 0.0:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("vx"): self.ball["vx"] += nx * 2000.0
+                    if self.ball.has("vy"): self.ball["vy"] += ny * 2000.0
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "vx" in self.ball: self.ball.vx += nx * 2000.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"): self.ball.set_meta("vx", self.ball.get_meta("vx") + nx * 2000.0)
+                    if "vy" in self.ball: self.ball.vy += ny * 2000.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"): self.ball.set_meta("vy", self.ball.get_meta("vy") + ny * 2000.0)
+
+            var cosmetic_val = ""
                             if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
                                 cosmetic_val = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
                             elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball:
@@ -9861,7 +9909,38 @@ func execute(strategy: String, delta: float):
                             var ny = -dy / dist
                             var push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
 
-                            var cosmetic_val = ""
+
+            var b_kb_timer = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "knockback_booster_timer" in self.ball: b_kb_timer = self.ball.knockback_booster_timer
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("knockback_booster_timer"): b_kb_timer = self.ball.get_meta("knockback_booster_timer")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("knockback_booster_timer"): b_kb_timer = self.ball["knockback_booster_timer"]
+
+            var o_kb_timer = 0.0
+            if typeof(other) == TYPE_OBJECT and "knockback_booster_timer" in other: o_kb_timer = other.knockback_booster_timer
+            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("knockback_booster_timer"): o_kb_timer = other.get_meta("knockback_booster_timer")
+            elif typeof(other) == TYPE_DICTIONARY and other.has("knockback_booster_timer"): o_kb_timer = other["knockback_booster_timer"]
+
+            if b_kb_timer > 0.0:
+                knockback_multiplier = 0.0
+                if typeof(other) == TYPE_DICTIONARY:
+                    if other.has("vx"): other["vx"] += -nx * 2000.0
+                    if other.has("vy"): other["vy"] += -ny * 2000.0
+                elif typeof(other) == TYPE_OBJECT:
+                    if "vx" in other: other.vx += -nx * 2000.0
+                    elif other.has_method("has_meta") and other.has_meta("vx"): other.set_meta("vx", other.get_meta("vx") - nx * 2000.0)
+                    if "vy" in other: other.vy += -ny * 2000.0
+                    elif other.has_method("has_meta") and other.has_meta("vy"): other.set_meta("vy", other.get_meta("vy") - ny * 2000.0)
+            elif o_kb_timer > 0.0:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("vx"): self.ball["vx"] += nx * 2000.0
+                    if self.ball.has("vy"): self.ball["vy"] += ny * 2000.0
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "vx" in self.ball: self.ball.vx += nx * 2000.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"): self.ball.set_meta("vx", self.ball.get_meta("vx") + nx * 2000.0)
+                    if "vy" in self.ball: self.ball.vy += ny * 2000.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"): self.ball.set_meta("vy", self.ball.get_meta("vy") + ny * 2000.0)
+
+            var cosmetic_val = ""
                             if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
                                 cosmetic_val = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
                             elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball:
@@ -11478,7 +11557,38 @@ func execute(strategy: String, delta: float):
                             var ny = dy / dist
                             var knockback_force = 1000.0 * delta
 
-                            var cosmetic_val = ""
+
+            var b_kb_timer = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "knockback_booster_timer" in self.ball: b_kb_timer = self.ball.knockback_booster_timer
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("knockback_booster_timer"): b_kb_timer = self.ball.get_meta("knockback_booster_timer")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("knockback_booster_timer"): b_kb_timer = self.ball["knockback_booster_timer"]
+
+            var o_kb_timer = 0.0
+            if typeof(other) == TYPE_OBJECT and "knockback_booster_timer" in other: o_kb_timer = other.knockback_booster_timer
+            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("knockback_booster_timer"): o_kb_timer = other.get_meta("knockback_booster_timer")
+            elif typeof(other) == TYPE_DICTIONARY and other.has("knockback_booster_timer"): o_kb_timer = other["knockback_booster_timer"]
+
+            if b_kb_timer > 0.0:
+                knockback_multiplier = 0.0
+                if typeof(other) == TYPE_DICTIONARY:
+                    if other.has("vx"): other["vx"] += -nx * 2000.0
+                    if other.has("vy"): other["vy"] += -ny * 2000.0
+                elif typeof(other) == TYPE_OBJECT:
+                    if "vx" in other: other.vx += -nx * 2000.0
+                    elif other.has_method("has_meta") and other.has_meta("vx"): other.set_meta("vx", other.get_meta("vx") - nx * 2000.0)
+                    if "vy" in other: other.vy += -ny * 2000.0
+                    elif other.has_method("has_meta") and other.has_meta("vy"): other.set_meta("vy", other.get_meta("vy") - ny * 2000.0)
+            elif o_kb_timer > 0.0:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("vx"): self.ball["vx"] += nx * 2000.0
+                    if self.ball.has("vy"): self.ball["vy"] += ny * 2000.0
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "vx" in self.ball: self.ball.vx += nx * 2000.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"): self.ball.set_meta("vx", self.ball.get_meta("vx") + nx * 2000.0)
+                    if "vy" in self.ball: self.ball.vy += ny * 2000.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"): self.ball.set_meta("vy", self.ball.get_meta("vy") + ny * 2000.0)
+
+            var cosmetic_val = ""
                             if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
                                 cosmetic_val = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
                             elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball:
@@ -17249,6 +17359,19 @@ func _collect_booster(delta: float):
                     self.ball.hazard_immunity_timer = 15.0
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("hazard_immunity_timer", 15.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "knockback_booster":
+                if "knockback_booster_timer" in self.ball:
+                    self.ball.knockback_booster_timer = 15.0
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("knockback_booster_timer", 15.0)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -23555,6 +23678,37 @@ func _resolve_collisions() -> bool:
                             if other.hp <= 0:
                                 other.hp = 0
                                 other.alive = false
+
+
+            var b_kb_timer = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "knockback_booster_timer" in self.ball: b_kb_timer = self.ball.knockback_booster_timer
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("knockback_booster_timer"): b_kb_timer = self.ball.get_meta("knockback_booster_timer")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("knockback_booster_timer"): b_kb_timer = self.ball["knockback_booster_timer"]
+
+            var o_kb_timer = 0.0
+            if typeof(other) == TYPE_OBJECT and "knockback_booster_timer" in other: o_kb_timer = other.knockback_booster_timer
+            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("knockback_booster_timer"): o_kb_timer = other.get_meta("knockback_booster_timer")
+            elif typeof(other) == TYPE_DICTIONARY and other.has("knockback_booster_timer"): o_kb_timer = other["knockback_booster_timer"]
+
+            if b_kb_timer > 0.0:
+                knockback_multiplier = 0.0
+                if typeof(other) == TYPE_DICTIONARY:
+                    if other.has("vx"): other["vx"] += -nx * 2000.0
+                    if other.has("vy"): other["vy"] += -ny * 2000.0
+                elif typeof(other) == TYPE_OBJECT:
+                    if "vx" in other: other.vx += -nx * 2000.0
+                    elif other.has_method("has_meta") and other.has_meta("vx"): other.set_meta("vx", other.get_meta("vx") - nx * 2000.0)
+                    if "vy" in other: other.vy += -ny * 2000.0
+                    elif other.has_method("has_meta") and other.has_meta("vy"): other.set_meta("vy", other.get_meta("vy") - ny * 2000.0)
+            elif o_kb_timer > 0.0:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("vx"): self.ball["vx"] += nx * 2000.0
+                    if self.ball.has("vy"): self.ball["vy"] += ny * 2000.0
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "vx" in self.ball: self.ball.vx += nx * 2000.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"): self.ball.set_meta("vx", self.ball.get_meta("vx") + nx * 2000.0)
+                    if "vy" in self.ball: self.ball.vy += ny * 2000.0
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"): self.ball.set_meta("vy", self.ball.get_meta("vy") + ny * 2000.0)
 
             var cosmetic_val = ""
             if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"):
