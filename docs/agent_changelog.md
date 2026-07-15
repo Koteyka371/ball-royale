@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-970] Slingshot Hazard — *2026-07-15 16:36:03 UTC*
+
+A hazard zone that functions as a powerful, omni-directional elastic band. Balls that enter the zone are grabbed, stretched backward towards the center over a short duration based on their momentum, and then violently launched back out in the opposite direction they entered from with significantly increased speed.
+
+---
+
 ## [idea-989] Radioactive Poison Cloud — *2026-07-15 03:08:15 UTC*
 
 Enhancement to the decoy poison cloud. When enemies stand in the cloud, they do not just take DoT but instead accumulate a 'Radiation' debuff that increases the damage they take from all other sources until the debuff fades. Useful for softening tank builds.
