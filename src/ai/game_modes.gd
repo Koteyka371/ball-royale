@@ -28520,6 +28520,11 @@ class JumpPadBoundariesMode extends GameMode:
 		name = "Jump Pad Boundaries"
 		description = "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
 
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if "arena" in world and world.arena != null:
+			world.arena.boundary_states = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
+
 
 class CosmicStormMode extends GameMode:
 	var storm_timer: float = 20.0
