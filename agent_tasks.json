@@ -17203,7 +17203,7 @@
     },
     {
       "id": "idea-1002",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Damage Sharing",
@@ -27672,6 +27672,23 @@
         "src/ai/shrinking_safe_zone_with_damage_multiplier.py",
         "src/ai/shrinking_safe_zone_with_damage_multiplier.gd",
         "tests/test_shrinking_safe_zone_with_damage_multiplier.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1617",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Mine Sweeper Power-up",
+      "description": "A new temporary power-up that makes the collecting ball immune to orbital mine damage and allows them to collect orbital mines as ammo or buffs instead.",
+      "allowed_paths": [
+        "src/ai/orbital_mine_sweeper_power_up.py",
+        "src/ai/orbital_mine_sweeper_power_up.gd",
+        "tests/test_orbital_mine_sweeper_power_up.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

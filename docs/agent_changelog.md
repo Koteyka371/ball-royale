@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1002] Quantum Entanglement Damage Sharing — *2026-07-15 20:23:00 UTC*
+
+After a ball uses a quantum teleporter, for 10 seconds they are 'entangled' with the node they exited from. If an enemy walks into that exit node within the 10 seconds, both the enemy and the teleported ball share any damage they take, encouraging strategic defense of exit points.
+
+---
+
 ## [idea-1016] Orbital Minefield Hazard — *2026-07-15 19:59:47 UTC*
 
 A new hazard type that constantly orbits the center of the arena (or around a central massive black hole). Unlike static traps, these mines are hard to track and add an element of bullet-hell dodgery to the center area.
