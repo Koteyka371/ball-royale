@@ -17696,7 +17696,7 @@
     },
     {
       "id": "idea-1031",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Synergies",
@@ -27927,6 +27927,23 @@
         "src/ai/mastery_trait.py",
         "src/ai/mastery_trait.gd",
         "tests/test_mastery_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1632",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Holo-Decoy Ball",
+      "description": "A consumable item that drops a visually identical hologram of the player's ball that travels in a straight line at maximum speed to confuse enemies and draw sniper fire or homing attacks.",
+      "allowed_paths": [
+        "src/ai/holo_decoy_ball.py",
+        "src/ai/holo_decoy_ball.gd",
+        "tests/test_holo_decoy_ball.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

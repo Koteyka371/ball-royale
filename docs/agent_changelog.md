@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1031] Decoy Synergies — *2026-07-15 23:41:19 UTC*
+
+Introduce combo effects when two different decoys explode simultaneously near an enemy. For instance, if an explosive decoy and a stun decoy detonate near each other, it creates an EMP blast that silences enemies instead of just stunning them.
+
+---
+
 ## [idea-1027] Decoy Flare Mechanic — *2026-07-15 23:22:09 UTC*
 
 A new skill that deploys a fake flare. When enemies approach it to gain vision or out of curiosity, it explodes, dealing damage in an area of effect.
