@@ -1786,3 +1786,128 @@ def test_inverse_controls_zone_mode():
     mode.tick(world, [ball_out_zone], delta=1.0)
     assert ball_out_zone.x == 100.0
     assert ball_out_zone.y == 100.0
+
+class MockBHBall:
+    def __init__(self, id, x, y, alive=True):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.alive = alive
+        self.hp = 100.0
+        self.vx = 0.0
+        self.vy = 0.0
+        self.ball_type = "basic"
+        self.radius = 10.0
+
+class MockBHHazard:
+    def __init__(self, id, x, y, radius, kind, duration=10.0, lifetime=0.0):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.kind = kind
+        self.duration = duration
+        self.lifetime = lifetime
+
+class MockBHArena:
+    def __init__(self):
+        self.hazards = []
+        self.width = 1000.0
+        self.height = 1000.0
+    def update_zone(self, tick, delta):
+        pass
+
+class MockBHWorld:
+    def __init__(self):
+        self.balls = []
+        self.arena = MockBHArena()
+        self.events = []
+        self.tick = 1
+        self.next_id = 9999
+
+def test_black_hole_merge():
+    from ai.action import Action
+    world = MockBHWorld()
+    b1 = MockBHBall(1, 500, 500)
+    world.balls.append(b1)
+
+    bh1 = MockBHHazard(1, 100, 100, 100, "black_hole")
+    bh2 = MockBHHazard(2, 100, 110, 80, "black_hole")
+    world.arena.hazards.extend([bh1, bh2])
+
+    action = Action(b1, world)
+    action.execute('idle', 1.0)
+
+    # Check merge
+    assert bh1.radius == 140.0
+    assert bh2.duration == 0.0
+
+def test_black_hole_supernova():
+    from ai.action import Action
+    world = MockBHWorld()
+    b1 = MockBHBall(1, 500, 500)
+    b2 = MockBHBall(2, 900, 900)
+    world.balls.extend([b1, b2])
+
+    bh1 = MockBHHazard(1, 100, 100, 150, "massive_black_hole")
+    world.arena.hazards.append(bh1)
+
+    action = Action(b1, world)
+    action.execute('idle', 1.0)
+
+    # Both should be dead due to supernova blast
+    assert b1.hp <= 0
+    assert b1.alive == False
+    assert b1.killer == "supernova_explosion"
+    assert b2.hp <= 0
+    assert b2.alive == False
+    assert b2.killer == "supernova_explosion"
+    assert bh1.duration == 0.0
+
+import pytest
+from ai.game_modes import MazeSafeZoneMode
+
+class DummyBall:
+    def __init__(self, bid, x, y, alive=True):
+        self.id = bid
+        self.x = x
+        self.y = y
+        self.alive = alive
+        self.gold = 0
+        self.max_hp = 100
+        self.hp = 100
+        self.base_speed = 100
+        self.speed = 100
+        self.base_damage = 10
+        self.damage = 10
+        self.ball_type = "test"
+
+class DummyWorld:
+    def __init__(self):
+        self.events = []
+        self.arena = None
+        self.match_time = 0.0
+    def add_event(self, name, data):
+        self.events.append((name, data))
+
+def test_kill_grants_gold():
+    gm = MazeSafeZoneMode()
+    world = DummyWorld()
+    killer = DummyBall("killer", 0, 0)
+    target = DummyBall("target", 10, 10)
+    gm.on_ball_died(world, target, killer)
+    assert killer.gold == 50
+    assert len(world.events) > 0
+    assert world.events[0][0] == "gold_earned"
+
+def test_shop_upgrade():
+    gm = MazeSafeZoneMode()
+    world = DummyWorld()
+    # Shop is at 500, 500
+    b = DummyBall("shopper", 500, 500)
+    b.gold = 150
+    gm.tick(world, [b], 0.1)
+    assert b.gold == 50
+    # verify an upgrade happened
+    assert b.max_hp == 120 or b.base_speed == 115 or b.base_damage == 15
+    assert any(e[0] == "shop_upgrade" for e in world.events)

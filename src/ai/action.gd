@@ -10155,7 +10155,22 @@ func execute(strategy: String, delta: float):
                         if hazard.has_meta("lifetime"):
                             h_lifetime = hazard.get_meta("lifetime")
 
-                        if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and h_lifetime >= 10.0:
+                        if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and (not hazard.has_meta("duration") or hazard.get_meta("duration") > 0.0):
+                            if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                                for other in self.world.arena.hazards:
+                                    if other != hazard and other.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and (not other.has_meta("duration") or other.get_meta("duration") > 0.0):
+                                        var dx = hazard.x - other.x
+                                        var dy = hazard.y - other.y
+                                        var dist = sqrt(dx * dx + dy * dy)
+                                        if dist < hazard.radius + other.radius:
+                                            if hazard.radius >= other.radius:
+                                                hazard.radius += other.radius * 0.5
+                                                other.set_meta("duration", 0.0)
+                                                other.radius = 0.0
+
+                        var is_supernova = hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and hazard.radius >= 150.0
+
+                        if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and (h_lifetime >= 10.0 or is_supernova):
                             hazard.set_meta("duration", 0.0)
 
                             if "events" in self.world:
@@ -10173,21 +10188,23 @@ func execute(strategy: String, delta: float):
                                     var bdx = hazard.x - b.x
                                     var bdy = hazard.y - b.y
                                     var bdist_sq = bdx * bdx + bdy * bdy
-                                    var blast_radius = hazard.radius * 6.0
+                                    var blast_radius = 10000.0 if is_supernova else hazard.radius * 6.0
 
                                     if bdist_sq < blast_radius * blast_radius and bdist_sq > 0.0001:
                                         var bdist = sqrt(bdist_sq)
                                         var bnx = bdx / bdist
                                         var bny = bdy / bdist
 
+                                        var damage_amount = 5000.0 if is_supernova else 500.0
+
                                         if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
-                                            b.take_damage(500.0)
+                                            b.take_damage(damage_amount)
                                         elif "hp" in b:
-                                            b.hp -= 500.0
+                                            b.hp -= damage_amount
                                             if b.hp <= 0:
                                                 b.hp = 0
                                                 b.alive = false
-                                                if "killer" in b: b.killer = "black_hole_explosion"
+                                                if "killer" in b: b.killer = "supernova_explosion" if is_supernova else "black_hole_explosion"
 
                                         var push_strength = 2000.0
                                         var has_vx = false
