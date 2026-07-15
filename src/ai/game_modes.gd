@@ -34977,3 +34977,81 @@ class PerfectReflectorHazardMode extends GameMode:
 					if b.has_method("set_meta"): b.set_meta("reflector_cooldown", 1.0)
 
 GAME_MODES["perfect_reflector"] = PerfectReflectorHazardMode.new()
+
+class InverseControlsZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 150.0
+	var hazard_obj = null
+
+	func _init():
+		super()
+		name = "Inverse Controls Zone"
+		description = "A localized zone that inverses the movement controls of any entity inside it."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			arena_width = world.arena.width if "width" in world.arena else 1000.0
+			arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+
+		var arena_has_hazards = false
+		var arena_ref = null
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_has_hazards = true
+				arena_ref = world.arena
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_has_hazards = true
+				arena_ref = world.arena
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_has_hazards = true
+				arena_ref = world.arena
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_has_hazards = true
+				arena_ref = world.arena
+
+		if arena_has_hazards:
+			var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+			if HazardObj != null:
+				hazard_obj = HazardObj.new("inverse_controls_zone", zone_x, zone_y, zone_radius, "inverse_controls_zone", 0.0)
+				if "active" in hazard_obj:
+					hazard_obj.active = true
+				arena_ref.hazards.append(hazard_obj)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var ball_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.ball_type if "ball_type" in b else null
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive if "alive" in b else true
+
+			if ball_type == "spectator" or not alive:
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x if "x" in b else 0.0
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y if "y" in b else 0.0
+
+			var dx = bx - zone_x
+			var dy = by - zone_y
+			var dist = sqrt(dx * dx + dy * dy)
+
+			if dist <= zone_radius:
+				var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.vx if "vx" in b else (b.get("velocity_x") if typeof(b) == TYPE_DICTIONARY else b.velocity_x if "velocity_x" in b else 0.0)
+				var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.vy if "vy" in b else (b.get("velocity_y") if typeof(b) == TYPE_DICTIONARY else b.velocity_y if "velocity_y" in b else 0.0)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] -= vx * delta * 2
+					b["y"] -= vy * delta * 2
+				else:
+					if "x" in b: b.x -= vx * delta * 2
+					if "y" in b: b.y -= vy * delta * 2
+
+GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()

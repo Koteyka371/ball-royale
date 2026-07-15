@@ -1741,3 +1741,48 @@ def test_orbital_mines_mode():
     for i, h in enumerate(world.arena.hazards):
         # Angle should have changed
         assert getattr(h, "angle") != initial_angles[i]
+
+def test_inverse_controls_zone_mode():
+    from ai.game_modes import InverseControlsZoneMode
+
+    class MockArena:
+        def __init__(self):
+            self.width = 1000.0
+            self.height = 1000.0
+            self.hazards = []
+            self.name = 'mock_arena'
+            self.weather = 'clear'
+
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.next_id = 9999
+
+    class MockEntity:
+        def __init__(self, x, y, vx, vy):
+            self.x = x
+            self.y = y
+            self.vx = vx
+            self.vy = vy
+            self.alive = True
+            self.ball_type = 'basic'
+            self.id = 1
+
+    world = MockWorld()
+    mode = InverseControlsZoneMode()
+    mode.setup(world, [])
+
+    # Inside zone
+    ball_in_zone = MockEntity(500.0, 500.0, 100.0, 0.0)
+    mode.tick(world, [ball_in_zone], delta=1.0)
+    # The normal physics engine would add vx * delta (+100).
+    # Since we subtracted vx * delta * 2 (-200), the net movement is -100.
+    # Therefore, we just test if x was modified appropriately by tick.
+    assert ball_in_zone.x == 300.0
+    assert ball_in_zone.y == 500.0
+
+    # Outside zone
+    ball_out_zone = MockEntity(100.0, 100.0, 100.0, 0.0)
+    mode.tick(world, [ball_out_zone], delta=1.0)
+    assert ball_out_zone.x == 100.0
+    assert ball_out_zone.y == 100.0

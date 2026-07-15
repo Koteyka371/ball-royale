@@ -22334,3 +22334,59 @@ class PerfectReflectorHazardMode(GameMode):
                 b.reflector_cooldown = 1.0
 
 GAME_MODES["perfect_reflector"] = PerfectReflectorHazardMode()
+
+class InverseControlsZoneMode(GameMode):
+    """
+    A localized zone that inverses the movement controls of any entity inside it.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Inverse Controls Zone"
+        self.description = "A localized zone that inverses the movement controls of any entity inside it."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 150.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            self.hazard_obj = hazard_class("inverse_controls_zone", self.zone_x, self.zone_y, self.zone_radius, "inverse_controls_zone", 0.0)
+            if not hasattr(self.hazard_obj, "active"):
+                self.hazard_obj.active = True
+            world.arena.hazards.append(self.hazard_obj)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", True):
+                continue
+
+            dx = b.x - self.zone_x
+            dy = b.y - self.zone_y
+            dist = math.hypot(dx, dy)
+
+            if dist <= self.zone_radius:
+                vx = getattr(b, "vx", getattr(b, "velocity_x", 0.0))
+                vy = getattr(b, "vy", getattr(b, "velocity_y", 0.0))
+
+                # Apply reverse movement to counteract normal physics
+                b.x -= vx * delta * 2
+                b.y -= vy * delta * 2
+
+GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()

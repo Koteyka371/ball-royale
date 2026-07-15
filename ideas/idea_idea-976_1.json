@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A hazard zone that sporadically forces players to swap positions with the player farthest from them, inducing sudden changes in map control and combat flow."
+}
