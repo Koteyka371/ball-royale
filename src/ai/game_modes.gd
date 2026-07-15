@@ -35077,4 +35077,254 @@ class InverseControlsZoneMode extends GameMode:
 					if "x" in b: b.x -= vx * delta * 2
 					if "y" in b: b.y -= vy * delta * 2
 
+class EdgeSlingshotsMode:
+	extends GameMode
+
+	var slingshots = []
+	var grabbed_state = {}
+	var grab_duration = 0.5
+	var launch_speed_mult = 4.0
+	var damage_mult = 3.0
+	var cooldown = 2.0
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		grabbed_state.clear()
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_width = world.arena.width
+				if world.arena.has("height"): arena_height = world.arena.height
+			else:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+
+		var margin = 150.0
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+
+		slingshots = [
+			[margin, center_y],
+			[arena_width - margin, center_y],
+			[center_x, margin],
+			[center_x, arena_height - margin],
+			[margin, margin],
+			[arena_width - margin, margin],
+			[margin, arena_height - margin],
+			[arena_width - margin, arena_height - margin]
+		]
+
+		var has_hazards = false
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("hazards"): has_hazards = true
+			else:
+				if "hazards" in world.arena: has_hazards = true
+
+		if has_hazards:
+			var hazards = world.arena.hazards if typeof(world.arena) != TYPE_DICTIONARY else world.arena.hazards
+			for i in range(slingshots.size()):
+				var sx = slingshots[i][0]
+				var sy = slingshots[i][1]
+				var h = {}
+				h.id = "edge_slingshot_" + str(i)
+				h.x = sx
+				h.y = sy
+				h.radius = 80.0
+				h.kind = "edge_slingshot"
+				h.damage = 0.0
+				hazards.append(h)
+
+	func tick(world, balls, delta=0.016):
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_width = world.arena.width
+				if world.arena.has("height"): arena_height = world.arena.height
+			else:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+
+		for b in balls:
+			var ball_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			var is_spectator = ball_type == "spectator"
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if b.get("alive") != null else true)
+
+			if is_spectator or not is_alive:
+				if grabbed_state.has(b.id):
+					grabbed_state.erase(b.id)
+				continue
+
+			var has_cooldown = false
+			if typeof(b) == TYPE_DICTIONARY:
+				has_cooldown = b.has("slingshot_cooldown")
+				if has_cooldown:
+					b.slingshot_cooldown -= delta
+					if b.slingshot_cooldown <= 0:
+						b.erase("slingshot_cooldown")
+						has_cooldown = false
+			else:
+				has_cooldown = b.has_meta("slingshot_cooldown")
+				if has_cooldown:
+					var cd = b.get_meta("slingshot_cooldown")
+					cd -= delta
+					if cd <= 0:
+						b.remove_meta("slingshot_cooldown")
+						has_cooldown = false
+					else:
+						b.set_meta("slingshot_cooldown", cd)
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("slingshot_buff_duration"):
+					b.slingshot_buff_duration -= delta
+					if b.slingshot_buff_duration <= 0:
+						b.erase("slingshot_buff_duration")
+						if b.has("pre_slingshot_speed"):
+							b.base_speed = b.pre_slingshot_speed
+							b.speed = b.pre_slingshot_speed
+						if b.has("pre_slingshot_damage"):
+							b.base_damage = b.pre_slingshot_damage
+							b.damage = b.pre_slingshot_damage
+			else:
+				if b.has_meta("slingshot_buff_duration"):
+					var bd = b.get_meta("slingshot_buff_duration")
+					bd -= delta
+					if bd <= 0:
+						b.remove_meta("slingshot_buff_duration")
+						if b.has_meta("pre_slingshot_speed"):
+							var pss = b.get_meta("pre_slingshot_speed")
+							b.set("base_speed", pss)
+							b.set("speed", pss)
+						if b.has_meta("pre_slingshot_damage"):
+							var psd = b.get_meta("pre_slingshot_damage")
+							b.set("base_damage", psd)
+							b.set("damage", psd)
+					else:
+						b.set_meta("slingshot_buff_duration", bd)
+
+			if not grabbed_state.has(b.id) and not has_cooldown:
+				var base_speed = b.get("base_speed") if typeof(b) == TYPE_DICTIONARY else (b.get("base_speed") if b.get("base_speed") != null else 300.0)
+				var base_damage = b.get("base_damage") if typeof(b) == TYPE_DICTIONARY else (b.get("base_damage") if b.get("base_damage") != null else 10.0)
+
+				var vx = b.get("velocity_x") if typeof(b) == TYPE_DICTIONARY else b.get("velocity_x")
+				if vx == null: vx = 0.0
+				var vy = b.get("velocity_y") if typeof(b) == TYPE_DICTIONARY else b.get("velocity_y")
+				if vy == null: vy = 0.0
+				var v_mag = sqrt(vx*vx + vy*vy)
+
+				if v_mag > 50.0:
+					var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+					var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+
+					for i in range(slingshots.size()):
+						var sx = slingshots[i][0]
+						var sy = slingshots[i][1]
+						var dist = sqrt((b_x - sx)*(b_x - sx) + (b_y - sy)*(b_y - sy))
+
+						if dist < 80.0:
+							grabbed_state[b.id] = {
+								"timer": grab_duration,
+								"slingshot_x": sx,
+								"slingshot_y": sy,
+								"original_speed": base_speed,
+								"original_damage": base_damage
+							}
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b.pre_slingshot_speed = base_speed
+								b.pre_slingshot_damage = base_damage
+								b.speed = 0.0
+								b.base_speed = 0.0
+								b.velocity_x = 0.0
+								b.velocity_y = 0.0
+								if b.has("silenced"): b.silenced = true
+							else:
+								b.set_meta("pre_slingshot_speed", base_speed)
+								b.set_meta("pre_slingshot_damage", base_damage)
+								b.set("speed", 0.0)
+								b.set("base_speed", 0.0)
+								b.set("velocity_x", 0.0)
+								b.set("velocity_y", 0.0)
+								if "silenced" in b: b.set("silenced", true)
+								elif b.has_method("set_meta"): b.set_meta("silenced", true)
+
+							break
+
+			if grabbed_state.has(b.id):
+				var state = grabbed_state[b.id]
+				state["timer"] -= delta
+
+				var sx = state["slingshot_x"]
+				var sy = state["slingshot_y"]
+
+				var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+				var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+
+				if state["timer"] > 0:
+					var new_x = b_x + (sx - b_x) * 5.0 * delta
+					var new_y = b_y + (sy - b_y) * 5.0 * delta
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b.x = new_x
+						b.y = new_y
+						b.speed = 0.0
+						b.base_speed = 0.0
+						b.velocity_x = 0.0
+						b.velocity_y = 0.0
+					else:
+						b.set("x", new_x)
+						b.set("y", new_y)
+						b.set("speed", 0.0)
+						b.set("base_speed", 0.0)
+						b.set("velocity_x", 0.0)
+						b.set("velocity_y", 0.0)
+				else:
+					var dx = center_x - b_x
+					var dy = center_y - b_y
+					var d_mag = sqrt(dx*dx + dy*dy)
+
+					var nx = 0.0
+					var ny = 0.0
+					if d_mag > 0.001:
+						nx = dx/d_mag
+						ny = dy/d_mag
+					else:
+						nx = 1.0
+						ny = 0.0
+
+					var launch_speed = state["original_speed"] * launch_speed_mult
+					var launch_damage = state["original_damage"] * damage_mult
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b.base_speed = launch_speed
+						b.speed = launch_speed
+						b.velocity_x = nx * launch_speed
+						b.velocity_y = ny * launch_speed
+						b.base_damage = launch_damage
+						b.damage = launch_damage
+						b.slingshot_cooldown = cooldown
+						b.slingshot_buff_duration = 3.0
+						if b.has("silenced"): b.silenced = false
+					else:
+						b.set("base_speed", launch_speed)
+						b.set("speed", launch_speed)
+						b.set("velocity_x", nx * launch_speed)
+						b.set("velocity_y", ny * launch_speed)
+						b.set("base_damage", launch_damage)
+						b.set("damage", launch_damage)
+						b.set_meta("slingshot_cooldown", cooldown)
+						b.set_meta("slingshot_buff_duration", 3.0)
+						if "silenced" in b: b.set("silenced", false)
+						elif b.has_method("set_meta"): b.set_meta("silenced", false)
+
+					grabbed_state.erase(b.id)
+
+
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
+GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
