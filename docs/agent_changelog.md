@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1007] Clan Wars — *2026-07-15 16:47:43 UTC*
+
+Weekly clan vs clan tournaments where clans compete for a shared pool of points. Top clans receive exclusive cosmetics and currency boosts for the week.
+
+---
+
 ## [idea-978] Decoy Confusion Aura — *2026-07-15 16:47:39 UTC*
 
 An area of effect aura around decoy clones that periodically scrambles the AI logic (flips targeting priorities from enemy to closest ally) of enemies caught within it, causing temporary friendly fire instances during chaotic brawls.
