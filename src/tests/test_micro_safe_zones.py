@@ -1,7 +1,7 @@
 import pytest
 import math
 from unittest.mock import MagicMock
-from src.ai.game_modes import MicroSafeZonesMode
+from ai.game_modes import MicroSafeZonesMode
 
 class MockEntity:
     def __init__(self, id, x, y, hp=100.0, team="team1"):
