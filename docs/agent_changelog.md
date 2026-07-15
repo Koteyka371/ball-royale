@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1020] Black Hole Collapses — *2026-07-15 23:42:31 UTC*
+
+Instead of a single stationary black hole, smaller temporary gravity wells spawn around the map and 'collapse' after a few seconds, exploding outwards and dealing damage while launching balls that were pulled in.
+
+---
+
 ## [idea-1031] Decoy Synergies — *2026-07-15 23:41:19 UTC*
 
 Introduce combo effects when two different decoys explode simultaneously near an enemy. For instance, if an explosive decoy and a stun decoy detonate near each other, it creates an EMP blast that silences enemies instead of just stunning them.
