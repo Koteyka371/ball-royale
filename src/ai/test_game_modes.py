@@ -1703,3 +1703,41 @@ def test_perfect_reflector_mode():
     assert ball.base_damage == 15.0
     assert hasattr(ball, "reflector_cooldown")
     assert ball.reflector_cooldown == 1.0
+
+def test_orbital_mines_mode():
+    from ai.game_modes import GAME_MODES
+
+    mode = GAME_MODES.get("orbital_mines")
+    assert mode is not None
+
+    class MockArena:
+        def __init__(self):
+            self.width = 1000.0
+            self.height = 1000.0
+            self.hazards = []
+
+    class MockWorld:
+        def __init__(self):
+            self.width = 1000.0
+            self.height = 1000.0
+            self.arena = MockArena()
+
+    world = MockWorld()
+
+    # First tick spawns 5 mines
+    mode.tick(world, [], 0.1)
+
+    assert len(world.arena.hazards) == 5
+    for h in world.arena.hazards:
+        assert getattr(h, "kind", "") == "orbital_mine"
+        assert getattr(h, "active", False) == True
+        assert hasattr(h, "angle")
+
+    initial_angles = [getattr(h, "angle") for h in world.arena.hazards]
+
+    # Second tick updates angles and positions
+    mode.tick(world, [], 0.1)
+
+    for i, h in enumerate(world.arena.hazards):
+        # Angle should have changed
+        assert getattr(h, "angle") != initial_angles[i]
