@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1017] Ghost Wall Mechanic — *2026-07-15 20:39:08 UTC*
+
+In MazeSafeZoneMode, periodically some walls turn 'ghostly' and pass through players without damaging them or pushing them back, allowing them brief moments of escape before solidifying again.
+
+---
+
 ## [idea-976] Reverse Controls Anomaly — *2026-07-15 20:31:30 UTC*
 
 An arena hazard or temporary weather event that inverses the movement controls for all players or AI entities caught within its radius, forcing them to quickly adapt their evasion and attack strategies.

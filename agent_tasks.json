@@ -17458,7 +17458,7 @@
     },
     {
       "id": "idea-1017",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ghost Wall Mechanic",
@@ -27706,6 +27706,23 @@
         "src/ai/black_hole_overload.py",
         "src/ai/black_hole_overload.gd",
         "tests/test_black_hole_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1619",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ammunition Scavenge Mode",
+      "description": "A game mode where default attack speed and damage are vastly reduced. Players must rely on picking up temporary 'ammunition' items spawned randomly to unleash high-damage combos.",
+      "allowed_paths": [
+        "src/ai/ammunition_scavenge.py",
+        "src/ai/ammunition_scavenge.gd",
+        "tests/test_ammunition_scavenge.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
