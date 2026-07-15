@@ -17313,6 +17313,12 @@ class HeavyRainMode(GameMode):
                 if hazards_to_remove and hasattr(world, "add_event"):
                     world.add_event("obstacles_destroyed", {"message": "Heavy Rain washed away small obstacles!"})
 
+class ExtremeBouncinessMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Extreme Bounciness"
+        self.description = "The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging."
+
 class JumpPadBoundariesMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -18346,6 +18352,7 @@ GAME_MODES = {
     "bumper_balls": BumperBallsMode(),
     "sumo_knockout": SumoKnockoutMode(),
     "bouncy_terrain": BouncyTerrainMode(),
+    "extreme_bounciness": ExtremeBouncinessMode(),
     "jump_pad_boundaries": JumpPadBoundariesMode(),
     "pinball": PinballMode(),
     "portal_node": PortalNodeMode(),
