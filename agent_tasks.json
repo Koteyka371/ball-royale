@@ -17390,7 +17390,7 @@
     },
     {
       "id": "idea-1013",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Supernova Event",
@@ -27944,6 +27944,57 @@
         "src/ai/holo_decoy_ball.py",
         "src/ai/holo_decoy_ball.gd",
         "tests/test_holo_decoy_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1633",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Decoy",
+      "description": "Introduce a new decoy type called the 'Black Hole Decoy'. When it detonates, instead of dealing immediate damage or crowd control, it creates a gravitational singularity that pulls in all nearby entities (balls, projectiles, items) for 3 seconds before collapsing and dealing damage based on the total mass/entities absorbed.",
+      "allowed_paths": [
+        "src/ai/black_hole_decoy.py",
+        "src/ai/black_hole_decoy.gd",
+        "tests/test_black_hole_decoy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1634",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Car Demolition",
+      "description": "Every ball is equipped with high-impact bumpers. Normal attacks are disabled. Players can only damage others by ramming into them at high speeds. The arena gradually shrinks, increasing the frequency and intensity of collisions.",
+      "allowed_paths": [
+        "src/ai/bumper_car_demolition.py",
+        "src/ai/bumper_car_demolition.gd",
+        "tests/test_bumper_car_demolition.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1635",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Resonance Chain",
+      "description": "If three or more decoys (of any type) detonate simultaneously near each other, they create a massive 'Resonance Chain' explosion. This explosion deals true damage ignoring armor, pulls all enemies within a massive radius toward the center, and permanently leaves a small scorched earth zone that deals minor damage over time to anyone walking on it.",
+      "allowed_paths": [
+        "src/ai/decoy_resonance_chain.py",
+        "src/ai/decoy_resonance_chain.gd",
+        "tests/test_decoy_resonance_chain.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1013] Supernova Event — *2026-07-15 23:43:28 UTC*
+
+If a merged black hole exceeds a certain radius, it explodes into a supernova, dealing massive damage to the entire arena before despawning, forcing players to avoid it at all costs.
+
+---
+
 ## [idea-1020] Black Hole Collapses — *2026-07-15 23:42:31 UTC*
 
 Instead of a single stationary black hole, smaller temporary gravity wells spawn around the map and 'collapse' after a few seconds, exploding outwards and dealing damage while launching balls that were pulled in.
