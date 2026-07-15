@@ -1,0 +1,4 @@
+{
+  "title": "Unstable Payload Event",
+  "description": "Periodically, an 'unstable payload' hazard spawns in the center of the arena. It slowly expands and deals increasing radiation damage. Players must attack it to push it towards enemy teams before it reaches critical mass and detonates, instantly eliminating anyone caught in its massive blast radius."
+}

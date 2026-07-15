@@ -5978,10 +5978,24 @@ func execute(strategy: String, delta: float):
             if my_ball.has_method("take_damage"):
                 my_ball.take_damage(dot_dmg)
             elif "hp" in my_ball:
+                if my_ball.has_method("has_meta") and my_ball.has_meta("radiation_duration") and my_ball.get_meta("radiation_duration") > 0.0:
+                    dot_dmg *= my_ball.get_meta("radiation_multiplier") if my_ball.has_meta("radiation_multiplier") else 1.5
+                elif "radiation_duration" in my_ball and my_ball.radiation_duration > 0.0:
+                    dot_dmg *= my_ball.radiation_multiplier if "radiation_multiplier" in my_ball else 1.5
                 my_ball.hp -= dot_dmg
                 if my_ball.hp <= 0:
                     my_ball.alive = false
             my_ball.set_meta("dot_duration", dot_dur - delta)
+
+    # Apply radiation duration decay
+    if my_ball.has_method("has_meta") and my_ball.has_meta("radiation_duration"):
+        var rad_dur = my_ball.get_meta("radiation_duration")
+        if rad_dur > 0:
+            my_ball.set_meta("radiation_duration", rad_dur - delta)
+    elif "radiation_duration" in my_ball:
+        var rad_dur = my_ball.radiation_duration
+        if rad_dur > 0:
+            my_ball.radiation_duration -= delta
 
     if world != null and "arena" in world:
         var cosmetic = ""
@@ -11367,6 +11381,14 @@ func execute(strategy: String, delta: float):
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("dot_duration", 3.0)
                             self.ball.set_meta("dot_damage_per_tick", hazard.damage)
+                            self.ball.set_meta("radiation_duration", 3.0)
+                            self.ball.set_meta("radiation_multiplier", 1.5)
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["radiation_duration"] = 3.0
+                            self.ball["radiation_multiplier"] = 1.5
+                        elif "radiation_duration" in self.ball:
+                            self.ball.radiation_duration = 3.0
+                            self.ball.radiation_multiplier = 1.5
                         var hd = hazard.damage * delta
                         var is_qs = false
                         if self.ball.has_method("get_meta") and self.ball.has_meta("is_in_quicksand"):
@@ -11375,6 +11397,16 @@ func execute(strategy: String, delta: float):
                             is_qs = self.ball.is_in_quicksand
                         if is_qs:
                             hd *= 2.0
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(hd)
+                        elif "hp" in self.ball:
+                            if self.ball.has_method("has_meta") and self.ball.has_meta("radiation_duration") and self.ball.get_meta("radiation_duration") > 0.0:
+                                hd *= self.ball.get_meta("radiation_multiplier") if self.ball.has_meta("radiation_multiplier") else 1.5
+                            elif "radiation_duration" in self.ball and self.ball.radiation_duration > 0.0:
+                                hd *= self.ball.radiation_multiplier if "radiation_multiplier" in self.ball else 1.5
+                            self.ball.hp -= hd
+                            if self.ball.hp <= 0:
+                                self.ball.alive = false
                     elif hazard.kind == "hidden_mine":
                         var dist_x = hazard.x - self.ball.x
                         var dist_y = hazard.y - self.ball.y

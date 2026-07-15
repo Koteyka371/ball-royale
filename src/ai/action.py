@@ -3266,10 +3266,16 @@ class Action:
             if hasattr(self.ball, "take_damage"):
                 self.ball.take_damage(dot_dmg)
             elif hasattr(self.ball, "hp"):
+                if getattr(self.ball, "radiation_duration", 0.0) > 0:
+                    dot_dmg *= getattr(self.ball, "radiation_multiplier", 1.5)
                 self.ball.hp -= dot_dmg
                 if self.ball.hp <= 0:
                     self.ball.alive = False
             self.ball.dot_duration -= delta
+
+        # Apply Radiation decay
+        if getattr(self.ball, "radiation_duration", 0.0) > 0:
+            self.ball.radiation_duration -= delta
 
         # Weather friction
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
@@ -6331,10 +6337,21 @@ class Action:
                             else:
                                 self.ball.dot_duration = 3.0
                                 self.ball.dot_damage_per_tick = hazard.damage
+                                # Apply Radiation debuff
+                                self.ball.radiation_duration = 3.0
+                                self.ball.radiation_multiplier = 1.5
                                 # Immediate application
                                 hazard_damage = hazard.damage * delta
                                 if getattr(self.ball, "is_in_quicksand", False):
                                     hazard_damage *= 2.0
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard_damage)
+                                elif hasattr(self.ball, "hp"):
+                                    if getattr(self.ball, "radiation_duration", 0.0) > 0:
+                                        hazard_damage *= getattr(self.ball, "radiation_multiplier", 1.5)
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
 
                         elif hazard.kind == "hidden_mine":
                             # Detonate on proximity, disable AI abilities and attacks for 5s
