@@ -641,6 +641,18 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 
 func update_zone(current_tick: int, delta: float) -> void:
     if current_tick != last_tick:
+        for h in hazards:
+            if h.kind == "avalanche":
+                h.y += h.get_meta("vy") * delta if h.has_meta("vy") else 60.0 * delta
+                for other in hazards:
+                    if other.kind in ["trap", "explosive_barrel", "sticky_mine", "puddle", "ice_patch", "spikes", "swap_trap", "shuffle_trap", "proximity_trap"]:
+                        var dist_sq = (h.x - other.x)*(h.x - other.x) + (h.y - other.y)*(h.y - other.y)
+                        if dist_sq < h.radius * h.radius:
+                            other.is_hidden = true
+                            other.set_meta("hidden_by_avalanche", true)
+                        elif other.has_meta("hidden_by_avalanche") and other.get_meta("hidden_by_avalanche"):
+                            other.is_hidden = false
+                            other.set_meta("hidden_by_avalanche", false)
 
         if current_tick % 400 == 0:
             var states = ["bouncy", "bouncy", "bouncy", "bouncy"]
@@ -1055,10 +1067,10 @@ func update_zone(current_tick: int, delta: float) -> void:
                         hazards.append(gw)
 
                 if has_method("_trigger_event"):
-                    var event_types = ["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]
+                    var event_types = ["avalanche", "meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]
                     call("_trigger_event", event_types[randi() % event_types.size()], current_tick)
                 else:
-                    var event_types = ["meteor_shower", "gravity_shift"]
+                    var event_types = ["avalanche", "meteor_shower", "gravity_shift"]
                     var event_type = event_types[randi() % event_types.size()]
                     if event_type == "meteor_shower":
                         for i in range(10):
@@ -1396,7 +1408,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                     h.damage *= 1.5
                     if "target_radius" in h: h.target_radius = h.radius * 1.2
 
-            var event_types = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
+            var event_types = ["avalanche", "meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
             if seasonal_modifier == "winter":
                 event_types.append("blizzard")
             elif seasonal_modifier == "summer":
@@ -1863,7 +1875,13 @@ class AmbushArena extends ProceduralArena:
 
 
 func _trigger_event(event_type: String, current_tick: int) -> void:
-    if event_type == "blizzard":
+    if event_type == "avalanche":
+        var h_id = 9500 + hazards.size()
+        var avalanche = ProceduralArena.Hazard.new(h_id, width/2, -600.0, 600.0, "avalanche", 0.0)
+        avalanche.set_meta("duration", 30.0)
+        avalanche.set_meta("vy", 60.0)
+        hazards.append(avalanche)
+    elif event_type == "blizzard":
         for h in hazards:
             if h.kind == "puddle":
                 h.kind = "ice_patch"

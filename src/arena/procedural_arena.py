@@ -561,6 +561,18 @@ class ProceduralArena:
 
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:
+            for h in self.hazards:
+                if getattr(h, "kind", "") == "avalanche":
+                    h.y += getattr(h, "vy", 60.0) * delta
+                    for other in self.hazards:
+                        if getattr(other, "kind", "") in ["trap", "explosive_barrel", "sticky_mine", "puddle", "ice_patch", "spikes", "swap_trap", "shuffle_trap", "proximity_trap"]:
+                            dist_sq = (h.x - other.x)**2 + (h.y - other.y)**2
+                            if dist_sq < h.radius**2:
+                                other.is_hidden = True
+                                other.hidden_by_avalanche = True
+                            elif getattr(other, "hidden_by_avalanche", False):
+                                other.is_hidden = False
+                                other.hidden_by_avalanche = False
 
             import random
             if current_tick % 400 == 0:
@@ -1142,7 +1154,7 @@ class ProceduralArena:
                     h.target_radius = h.radius * 1.2
 
             # Periodically trigger random arena-wide events
-            events = ["meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
+            events = ["avalanche", "meteor_shower", "gravity_shift", "moving_walls", "orbital_strike", "fire_ring", "anomaly_zone", "massive_black_hole_event", "none"]
             if seasonal_modifier == "winter":
                 events.append("blizzard")
             elif seasonal_modifier == "summer":
@@ -1269,7 +1281,13 @@ class ProceduralArena:
 
     def _trigger_event(self, event_type: str, current_tick: int):
         import random
-        if event_type == "blizzard":
+        if event_type == "avalanche":
+            h_id = 9500 + len(self.hazards)
+            avalanche = Hazard(id=h_id, x=self.width/2, y=-600.0, radius=600.0, kind="avalanche", damage=0.0)
+            setattr(avalanche, "duration", 30.0)
+            setattr(avalanche, "vy", 60.0)
+            self.hazards.append(avalanche)
+        elif event_type == "blizzard":
             for h in self.hazards:
                 if h.kind == "puddle":
                     h.kind = "ice_patch"
