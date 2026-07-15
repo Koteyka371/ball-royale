@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-989] Radioactive Poison Cloud — *2026-07-15 03:08:15 UTC*
+
+Enhancement to the decoy poison cloud. When enemies stand in the cloud, they do not just take DoT but instead accumulate a 'Radiation' debuff that increases the damage they take from all other sources until the debuff fades. Useful for softening tank builds.
+
+---
+
 ## [idea-1006] Temporal Loop Zone — *2026-07-15 02:41:12 UTC*
 
 A field that, when entered, records the player's position and HP for 3 seconds, then suddenly rewinds their state back to where they started the loop.

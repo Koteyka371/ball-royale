@@ -16982,7 +16982,7 @@
     },
     {
       "id": "idea-989",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Radioactive Poison Cloud",
@@ -27383,6 +27383,23 @@
         "src/ai/chain_lightning_relay.py",
         "src/ai/chain_lightning_relay.gd",
         "tests/test_chain_lightning_relay.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1600",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Swap Hazard",
+      "description": "A hazard zone that reverses the controls and gravity effects of anyone who enters it for a few seconds.",
+      "allowed_paths": [
+        "src/arena/gravity_swap.py",
+        "src/arena/gravity_swap.gd",
+        "tests/test_gravity_swap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
