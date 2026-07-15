@@ -1,0 +1,1 @@
+from ai.test_fake_flare import test_fake_flare_action, test_fake_flare_knockback
