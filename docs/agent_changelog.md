@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1006] Temporal Loop Zone — *2026-07-15 02:41:12 UTC*
+
+A field that, when entered, records the player's position and HP for 3 seconds, then suddenly rewinds their state back to where they started the loop.
+
+---
+
 ## [idea-871] Magnetic Boots Cosmetic — *2026-07-15 02:27:53 UTC*
 
 A new cosmetic/item loadout that heavily reduces knockback and pull effects from emp traps, temporal rifts, and black holes, but slightly increases the player's vulnerability to chain lightning bounces by functioning as an implicit lightning rod when within range.

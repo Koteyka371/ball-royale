@@ -17271,7 +17271,7 @@
     },
     {
       "id": "idea-1006",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Temporal Loop Zone",
@@ -27332,6 +27332,57 @@
         "src/ai/bouncing_bullets.py",
         "src/ai/bouncing_bullets.gd",
         "tests/test_bouncing_bullets.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1597",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Inverter Zone",
+      "description": "A specific zone in the arena where the effects of gravity and knockbacks are completely reversed for all entities inside.",
+      "allowed_paths": [
+        "src/ai/gravity_inverter_zone.py",
+        "src/ai/gravity_inverter_zone.gd",
+        "tests/test_gravity_inverter_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1598",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Boots",
+      "description": "A new cosmetic boot loadout that links the player's movement and knockback taken with the nearest ally. When the player receives knockback, the force is halved and the other half is applied to the linked ally in the same direction, allowing them to reposition together during chaotic team fights. Also shares positive status effect durations between them.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_boots.py",
+        "src/ai/quantum_entanglement_boots.gd",
+        "tests/test_quantum_entanglement_boots.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1599",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Relay",
+      "description": "A new hazard or deployable item that acts as a chain lightning relay. When struck by chain lightning (or any electrical effect), it amplifies the damage by 50% and extends the maximum chain jumps by 2, before passing it on to the next targets in range. It also absorbs nearby small electrical attacks to charge up a massive AoE burst.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_relay.py",
+        "src/ai/chain_lightning_relay.gd",
+        "tests/test_chain_lightning_relay.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
