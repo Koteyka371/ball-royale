@@ -16761,7 +16761,7 @@
     },
     {
       "id": "idea-976",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Controls Anomaly",
@@ -27689,6 +27689,23 @@
         "src/ai/orbital_mine_sweeper_power_up.py",
         "src/ai/orbital_mine_sweeper_power_up.gd",
         "tests/test_orbital_mine_sweeper_power_up.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1618",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Overload",
+      "description": "A new mutator where Black Holes periodically pulse, dealing damage and pushing balls away instead of pulling.",
+      "allowed_paths": [
+        "src/ai/black_hole_overload.py",
+        "src/ai/black_hole_overload.gd",
+        "tests/test_black_hole_overload.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

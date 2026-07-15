@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-976] Reverse Controls Anomaly — *2026-07-15 20:31:30 UTC*
+
+An arena hazard or temporary weather event that inverses the movement controls for all players or AI entities caught within its radius, forcing them to quickly adapt their evasion and attack strategies.
+
+---
+
 ## [idea-1002] Quantum Entanglement Damage Sharing — *2026-07-15 20:23:00 UTC*
 
 After a ball uses a quantum teleporter, for 10 seconds they are 'entangled' with the node they exited from. If an enemy walks into that exit node within the 10 seconds, both the enemy and the teleported ball share any damage they take, encouraging strategic defense of exit points.
