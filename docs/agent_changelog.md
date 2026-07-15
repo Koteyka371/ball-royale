@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-988] Decoy Transference Swap — *2026-07-15 18:02:45 UTC*
+
+An action or active item where throwing a decoy not only distracts enemies but also enables a secondary 'swap' cast. This allows the player to immediately teleport to the decoy's current position, trading places with it and confounding tracking spells.
+
+---
+
 ## [idea-1012] Breakable Grapple Points — *2026-07-15 17:36:43 UTC*
 
 Introduce specific grapple nodes floating in the arena that players can hook onto, but they break after one use, dropping materials.

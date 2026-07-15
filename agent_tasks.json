@@ -16965,7 +16965,7 @@
     },
     {
       "id": "idea-988",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Transference Swap",
@@ -27570,6 +27570,40 @@
         "src/ai/quantum_doppelgnger.py",
         "src/ai/quantum_doppelgnger.gd",
         "tests/test_quantum_doppelgnger.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1611",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slingshot Nodes",
+      "description": "Similar to grapple nodes, slingshot nodes can be attached to but instead of pulling the player towards them, they charge up tension and then launch the player in the opposite direction at extreme speed. They break after one use and drop unique 'Elastic Cord' materials.",
+      "allowed_paths": [
+        "src/ai/slingshot_nodes.py",
+        "src/ai/slingshot_nodes.gd",
+        "tests/test_slingshot_nodes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1612",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grapple Mines",
+      "description": "Traps that look like grapple nodes but pull players in and explode on contact. They can be disarmed by hitting them with a projectile from afar, which makes them drop explosive materials instead.",
+      "allowed_paths": [
+        "src/ai/grapple_mines.py",
+        "src/ai/grapple_mines.gd",
+        "tests/test_grapple_mines.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
