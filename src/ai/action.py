@@ -791,7 +791,17 @@ class Action:
                     if pm.is_nemesis(target.ball_type, attacker.ball_type):
                         base_xp *= 2.0
                 self._award_xp(attacker, base_xp, self.world)
+
         if new_hp <= 0 and old_hp > 0:
+            if getattr(target, "is_dynamic_bounty", False):
+                attacker.damage = getattr(attacker, "damage", 10.0) * 1.5
+                if hasattr(attacker, "base_damage"):
+                    attacker.base_damage *= 1.5
+                attacker.max_hp = getattr(attacker, "max_hp", 100.0) * 1.5
+                attacker.hp = min(getattr(attacker, "hp", 100.0) + (attacker.max_hp - attacker.max_hp / 1.5), attacker.max_hp)
+                attacker.loadout_fragments = getattr(attacker, "loadout_fragments", 0) + 1
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("dynamic_bounty_claimed", {"message": "Dynamic Bounty claimed!"})
             if pm and hasattr(pm, "add_kill"):
                 pm.add_kill(attacker.ball_type, target.ball_type)
                 if pm.is_nemesis(target.ball_type, attacker.ball_type):

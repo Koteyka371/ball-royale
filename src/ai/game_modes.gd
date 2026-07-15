@@ -14298,6 +14298,81 @@ class BountyHuntMode extends GameMode:
 			return teams_alive.keys()[0]
 		return null
 
+
+class DynamicBountyMode extends GameMode:
+	var vfx_timer = 0.0
+	var current_bounty_id = null
+
+	func _init() -> void:
+		name = "Dynamic Bounty"
+		description = "The player with the most kills is marked as a bounty for everyone to see. Defeating them grants special buffs and loadout fragments."
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var highest_kills = -1
+		var bounty_candidates = []
+
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var kills = 0
+				if "kills" in b:
+					kills = b.kills
+				elif b.has_method("get_meta") and b.has_meta("kills"):
+					kills = b.get_meta("kills")
+
+				if kills > highest_kills:
+					highest_kills = kills
+					bounty_candidates = [b]
+				elif kills == highest_kills and highest_kills > 0:
+					bounty_candidates.append(b)
+
+		var new_bounty_id = null
+		if highest_kills > 0 and bounty_candidates.size() > 0:
+			var selected = bounty_candidates[0]
+			if current_bounty_id != null:
+				for b in bounty_candidates:
+					var b_id = b.get("id") if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+					if b_id == current_bounty_id:
+						selected = b
+						break
+			new_bounty_id = selected.get("id") if "id" in selected else (selected.get_meta("id") if selected.has_method("get_meta") and selected.has_meta("id") else null)
+
+		for b in balls:
+			if b.alive:
+				var b_id = b.get("id") if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+				if b_id == new_bounty_id and new_bounty_id != null:
+					if "is_dynamic_bounty" in b:
+						b.is_dynamic_bounty = true
+					elif b.has_method("set_meta"):
+						b.set_meta("is_dynamic_bounty", true)
+				else:
+					if "is_dynamic_bounty" in b:
+						b.is_dynamic_bounty = false
+					elif b.has_method("set_meta"):
+						b.set_meta("is_dynamic_bounty", false)
+
+		current_bounty_id = new_bounty_id
+
+		vfx_timer += delta
+		if vfx_timer >= 1.0:
+			vfx_timer = 0.0
+			if new_bounty_id != null and world.has_method("add_event"):
+				for b in balls:
+					if b.alive:
+						var b_id = b.get("id") if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+						if b_id == new_bounty_id:
+							var bx = b.get("x") if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+							var by = b.get("y") if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+							world.add_event("visual_effect", {
+								"type": "bounty_mark",
+								"x": float(bx),
+								"y": float(by),
+								"radius": 50.0,
+								"color": "red"
+							})
+							break
+
 class EarthquakeMode extends GameMode:
 	var timer: float = 0.0
 	var is_shaking: bool = false
@@ -30362,6 +30437,7 @@ var GAME_MODES = {
 	"moving_safe_zone": MovingSafeZoneMode.new(),
 	"poison_gas_zone": PoisonGasZoneMode.new(),
 	"bounty_hunt": BountyHuntMode.new(),
+	"dynamic_bounty": DynamicBountyMode.new(),
 	"earthquake": EarthquakeMode.new(),
 	"inverse_mirror_arena": InverseMirrorArenaMode.new(),
 	"mirror_match": MirrorMatchMode.new(),
