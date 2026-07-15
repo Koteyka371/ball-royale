@@ -4133,6 +4133,66 @@ func execute(strategy: String, delta: float):
 	if self.ball.has_method("get_meta") and self.ball.has_meta("is_decoy_clone") and self.ball.get_meta("is_decoy_clone"): is_decoy_clone = true
 	elif "is_decoy_clone" in self.ball and self.ball.is_decoy_clone: is_decoy_clone = true
 
+	var is_decoy_aura = false
+	if self.ball.has_method("get_meta") and self.ball.has_meta("is_decoy") and self.ball.get_meta("is_decoy"): is_decoy_aura = true
+	elif "is_decoy" in self.ball and self.ball.is_decoy: is_decoy_aura = true
+
+	if is_decoy_clone or is_decoy_aura:
+		var my_team_aura = ""
+		if "team" in self.ball: my_team_aura = self.ball.team
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team_aura = self.ball.get_meta("team")
+
+		if world != null and "balls" in world:
+			for b in world.balls:
+				if b == self.ball: continue
+
+				var b_alive = true
+				if "alive" in b: b_alive = b.alive
+				elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+				if not b_alive: continue
+
+				var b_is_decoy = false
+				if "is_decoy" in b and b.is_decoy: b_is_decoy = true
+				elif b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"): b_is_decoy = true
+				if b_is_decoy: continue
+
+				var b_is_decoy_clone = false
+				if "is_decoy_clone" in b and b.is_decoy_clone: b_is_decoy_clone = true
+				elif b.has_method("get_meta") and b.has_meta("is_decoy_clone") and b.get_meta("is_decoy_clone"): b_is_decoy_clone = true
+				if b_is_decoy_clone: continue
+
+				var b_team_aura = ""
+				if "team" in b: b_team_aura = b.team
+				elif b.has_method("get_meta") and b.has_meta("team"): b_team_aura = b.get_meta("team")
+
+				if b_team_aura != my_team_aura:
+					var bx = 0.0
+					var by = 0.0
+					if "x" in b: bx = b.x
+					elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+					if "y" in b: by = b.y
+					elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+					var mx = 0.0
+					var my = 0.0
+					if "x" in self.ball: mx = self.ball.x
+					elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): mx = self.ball.get_meta("x")
+					if "y" in self.ball: my = self.ball.y
+					elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my = self.ball.get_meta("y")
+
+					var dist = sqrt(pow(bx - mx, 2) + pow(by - my, 2))
+					if dist <= 200.0:
+						if "is_confused" in b: b.is_confused = true
+						elif b.has_method("set_meta"): b.set_meta("is_confused", true)
+
+						var cur_conf = 0.0
+						if "confusion_timer" in b: cur_conf = b.confusion_timer
+						elif b.has_method("get_meta") and b.has_meta("confusion_timer"): cur_conf = b.get_meta("confusion_timer")
+
+						var new_conf = max(cur_conf, 2.0)
+						if "confusion_timer" in b: b.confusion_timer = new_conf
+						elif b.has_method("set_meta"): b.set_meta("confusion_timer", new_conf)
+
 	if is_decoy_clone:
 		var is_exploded = false
 		if self.ball.has_method("get_meta") and self.ball.has_meta("_exploded") and self.ball.get_meta("_exploded"): is_exploded = true

@@ -2955,6 +2955,25 @@ class Action:
 
 
         # Clone mine logic
+        if getattr(self.ball, "is_decoy", False) or getattr(self.ball, "is_decoy_clone", False):
+            aura_radius = 200.0
+            my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+
+            # Decoy Scramble Aura
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if b == self.ball: continue
+                    if not getattr(b, "alive", True): continue
+                    if getattr(b, "is_decoy", False) or getattr(b, "is_decoy_clone", False): continue
+
+                    b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                    if b_team != my_team:
+                        import math
+                        d = math.hypot(getattr(self.ball, "x", 0.0) - getattr(b, "x", 0.0), getattr(self.ball, "y", 0.0) - getattr(b, "y", 0.0))
+                        if d <= aura_radius:
+                            if not getattr(b, "is_confused", False):
+                                b.is_confused = True
+                            b.confusion_timer = max(getattr(b, "confusion_timer", 0.0), 2.0)
 
         if getattr(self.ball, "is_decoy_clone", False):
             if not getattr(self.ball, "_exploded", False):
