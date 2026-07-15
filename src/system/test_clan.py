@@ -194,3 +194,42 @@ def test_clan_hub_decorations(temp_clan_file):
     # Check buffs
     buffs = cm.get_hub_buffs("DecoClan")
     assert "Tournament_Champion_Aura" in buffs
+
+
+def test_clan_tournament(temp_clan_file):
+    cm = ClanManager(temp_clan_file)
+    cm.create_clan("ChampClan", "p1")
+    cm.create_clan("RunnerUpClan", "p2")
+    cm.create_clan("Top10Clan", "p3")
+    cm.create_clan("LoserClan", "p4")
+
+    assert cm.register_for_tournament("ChampClan", "tourney_1") == True
+    assert cm.register_for_tournament("RunnerUpClan", "tourney_1") == True
+    assert cm.register_for_tournament("Top10Clan", "tourney_1") == True
+    assert cm.register_for_tournament("LoserClan", "tourney_1") == True
+
+    rankings = [
+        {"clan_name": "ChampClan", "points": 1000},
+        {"clan_name": "RunnerUpClan", "points": 800},
+        {"clan_name": "Top10Clan", "points": 500},
+        {"clan_name": "LoserClan", "points": 100}
+    ]
+
+    assert cm.process_tournament_results("tourney_1", rankings) == True
+
+    # Check top 3 rewards
+    champ = cm.data["clans"]["ChampClan"]
+    assert champ["points"] == 1000
+    assert "Tournament_Champion" in champ.get("cosmetics", [])
+    assert "Currency_Boost_Weekly" in champ.get("buffs", [])
+
+    top10 = cm.data["clans"]["Top10Clan"]
+    assert top10["points"] == 500
+    assert "Tournament_Champion" in top10.get("cosmetics", [])
+    assert "Currency_Boost_Weekly" in top10.get("buffs", [])
+
+    # Check outside top 3
+    loser = cm.data["clans"]["LoserClan"]
+    assert loser["points"] == 100
+    assert "Tournament_Champion" not in loser.get("cosmetics", [])
+    assert "Currency_Boost_Weekly" not in loser.get("buffs", [])

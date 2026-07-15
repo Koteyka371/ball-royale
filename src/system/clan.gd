@@ -202,6 +202,53 @@ func unlock_buff(clan_name: String, buff_name: String) -> bool:
     return false
 
 
+
+func register_for_tournament(clan_name: String, tournament_id: String) -> bool:
+	if data["clans"].has(clan_name):
+		var clan = data["clans"][clan_name]
+		if not clan.has("tournaments"):
+			clan["tournaments"] = []
+		if not clan["tournaments"].has(tournament_id):
+			clan["tournaments"].append(tournament_id)
+			save_clans()
+			return true
+	return false
+
+func process_tournament_results(tournament_id: String, rankings: Array) -> bool:
+	var processed_any = false
+	for i in range(rankings.size()):
+		var rank_data = rankings[i]
+		if rank_data.has("clan_name"):
+			var clan_name = rank_data["clan_name"]
+			var points = 0
+			if rank_data.has("points"):
+				points = rank_data["points"]
+
+			if data["clans"].has(clan_name):
+				var clan = data["clans"][clan_name]
+				if clan.has("tournaments") and clan["tournaments"].has(tournament_id):
+					if not clan.has("points"):
+						clan["points"] = 0
+					clan["points"] += points
+
+					if i < 3:
+						if not clan.has("cosmetics"):
+							clan["cosmetics"] = []
+						if not clan["cosmetics"].has("Tournament_Champion"):
+							clan["cosmetics"].append("Tournament_Champion")
+
+						if not clan.has("buffs"):
+							clan["buffs"] = []
+						if not clan["buffs"].has("Currency_Boost_Weekly"):
+							clan["buffs"].append("Currency_Boost_Weekly")
+
+					processed_any = true
+
+	if processed_any:
+		save_clans()
+		return true
+	return false
+
 func capture_territory(clan_name: String, territory_name: String) -> bool:
 	if data["clans"].has(clan_name):
 		for c_name in data["clans"].keys():

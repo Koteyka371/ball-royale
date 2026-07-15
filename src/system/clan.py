@@ -184,6 +184,51 @@ class ClanManager:
         return False
 
 
+
+    def register_for_tournament(self, clan_name, tournament_id):
+        if clan_name in self.data["clans"]:
+            clan = self.data["clans"][clan_name]
+            if "tournaments" not in clan:
+                clan["tournaments"] = []
+            if tournament_id not in clan["tournaments"]:
+                clan["tournaments"].append(tournament_id)
+                self.save()
+                return True
+        return False
+
+    def process_tournament_results(self, tournament_id, rankings):
+        """
+        rankings is a list of dicts: [{"clan_name": "A", "points": 100}, ...]
+        Top 3 clans get exclusive cosmetics and currency boosts.
+        """
+        processed_any = False
+        for i, rank_data in enumerate(rankings):
+            clan_name = rank_data.get("clan_name")
+            points = rank_data.get("points", 0)
+            if clan_name in self.data["clans"]:
+                clan = self.data["clans"][clan_name]
+                if "tournaments" in clan and tournament_id in clan["tournaments"]:
+                    clan["points"] = clan.get("points", 0) + points
+
+                    if i < 3: # Top 3
+                        # Give exclusive cosmetic
+                        if "cosmetics" not in clan:
+                            clan["cosmetics"] = []
+                        if "Tournament_Champion" not in clan["cosmetics"]:
+                            clan["cosmetics"].append("Tournament_Champion")
+
+                        # Give currency boost
+                        if "buffs" not in clan:
+                            clan["buffs"] = []
+                        if "Currency_Boost_Weekly" not in clan["buffs"]:
+                            clan["buffs"].append("Currency_Boost_Weekly")
+
+                    processed_any = True
+        if processed_any:
+            self.save()
+            return True
+        return False
+
     def capture_territory(self, clan_name, territory_name):
         if clan_name in self.data["clans"]:
             # Remove territory from old owner if any
