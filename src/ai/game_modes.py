@@ -17199,6 +17199,87 @@ class ElementalAurasMode(GameMode):
                             other.vy = getattr(other, "vy", 0.0) + (dy / d) * pull * 100
 
 
+class AcidRainMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Acid Rain"
+        self.description = "Acid rain slowly degrades armor and max HP of metallic or heavily armored balls. Neutralizing puddles occasionally spawn to wash off the acid."
+        self.weather = "acid_rain"
+        self.puddle_spawn_timer = 0.0
+
+    class NeutralizingPuddle:
+        def __init__(self, x, y):
+            self.kind = "neutralizing_puddle"
+            self.x = x
+            self.y = y
+            self.radius = 60.0
+            self.duration = 10.0
+            self.active = True
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.weather = self.weather
+        self.puddle_spawn_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        self.puddle_spawn_timer -= delta
+        if self.puddle_spawn_timer <= 0.0:
+            self.puddle_spawn_timer = 15.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                x = getattr(world.arena, "width", 1000) / 2 + random.uniform(-200, 200)
+                y = getattr(world.arena, "height", 1000) / 2 + random.uniform(-200, 200)
+                world.arena.hazards.append(self.NeutralizingPuddle(x, y))
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if is_immune:
+                continue
+
+            in_puddle = False
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "neutralizing_puddle" and getattr(h, "active", False):
+                        hx = getattr(h, "x", 0)
+                        hy = getattr(h, "y", 0)
+                        hr = getattr(h, "radius", 60.0)
+                        dist_sq = (b.x - hx)**2 + (b.y - hy)**2
+                        if dist_sq <= (getattr(b, "radius", 10.0) + hr)**2:
+                            in_puddle = True
+                            break
+
+            if in_puddle:
+                b.acid_washed = True
+                if hasattr(b, "base_max_hp") and b.max_hp < b.base_max_hp:
+                    b.max_hp = min(b.base_max_hp, b.max_hp + 10.0 * delta)
+            else:
+                b.acid_washed = False
+
+            if not getattr(b, "acid_washed", False):
+                b_type = str(getattr(b, "ball_type", "")).lower()
+                traits = getattr(b, "traits", [])
+                is_metal = b_type in ["drone", "juggernaut", "tank", "neural", "shield_drone"] or "metal" in b_type or "armor" in b_type or "metal" in traits or "armor" in traits
+
+                if is_metal:
+                    if hasattr(b, "armor") and b.armor > 0:
+                        b.armor -= 2.0 * delta
+                        if b.armor < 0: b.armor = 0
+
+                    if hasattr(b, "base_max_hp"):
+                        b.max_hp -= 1.0 * delta
+                        if b.max_hp < b.base_max_hp * 0.5:
+                            b.max_hp = b.base_max_hp * 0.5
+
+                    if getattr(b, "hp", 0) > getattr(b, "max_hp", 100):
+                        b.hp = b.max_hp
+
 class HeavyRainMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -18159,6 +18240,7 @@ GAME_MODES = {
     "bounty_tag": BountyTagMode(),
     "cosmic_storm": CosmicStormMode(),
     "elemental_auras": ElementalAurasMode(),
+    "acid_rain": AcidRainMode(),
     "heavy_rain_mutator": HeavyRainMode(),
 
     'sticky_arena': StickyArenaMode(),

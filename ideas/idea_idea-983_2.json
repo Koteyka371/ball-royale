@@ -1,0 +1,4 @@
+{
+  "title": "Rust Golem Boss",
+  "description": "A slow-moving, high HP boss that leaves a trail of acidic waste. Its armor degrades over time on its own, increasing its movement speed and attack power as it gets weaker."
+}

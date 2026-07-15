@@ -28406,6 +28406,126 @@ class AerialArenaMode extends GameMode:
 				world.arena.hazards.remove_at(idx)
 
 
+class AcidRainMode:
+	extends GameMode
+
+	var puddle_spawn_timer = 0.0
+
+	func _init():
+		name = "Acid Rain"
+		description = "Acid rain slowly degrades armor and max HP of metallic or heavily armored balls. Neutralizing puddles occasionally spawn to wash off the acid."
+		weather = "acid_rain"
+
+	class NeutralizingPuddle:
+		var kind = "neutralizing_puddle"
+		var x = 0.0
+		var y = 0.0
+		var radius = 60.0
+		var duration = 10.0
+		var active = true
+
+		func _init(px, py):
+			x = px
+			y = py
+
+	func setup(world: Object, balls: Array) -> void:
+		super.setup(world, balls)
+		if world.has_method("get"):
+			var arena = world.get("arena")
+			if arena:
+				arena.set("weather", self.weather)
+		elif "arena" in world and world.arena:
+			world.arena.weather = self.weather
+		puddle_spawn_timer = 0.0
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		puddle_spawn_timer -= delta
+		if puddle_spawn_timer <= 0.0:
+			puddle_spawn_timer = 15.0
+			var arena = null
+			if world.has_method("get"):
+				arena = world.get("arena")
+			elif "arena" in world:
+				arena = world.arena
+
+			if arena:
+				var w = arena.get("width") if arena.has_method("get") else (arena.width if "width" in arena else 1000)
+				var h = arena.get("height") if arena.has_method("get") else (arena.height if "height" in arena else 1000)
+				var px = w / 2.0 + randf_range(-200.0, 200.0)
+				var py = h / 2.0 + randf_range(-200.0, 200.0)
+				var p = NeutralizingPuddle.new(px, py)
+				if arena.has_method("get") and arena.get("hazards") != null:
+					arena.get("hazards").append(p)
+				elif "hazards" in arena:
+					arena.hazards.append(p)
+
+		for b in balls:
+			if not b.get("alive", false) or str(b.get("ball_type", "")).to_lower() == "spectator":
+				continue
+
+			var w_timer = b.get("weather_immunity_timer", 0.0)
+			if w_timer > 0.0:
+				continue
+
+			var in_puddle = false
+			var arena = null
+			if world.has_method("get"):
+				arena = world.get("arena")
+			elif "arena" in world:
+				arena = world.arena
+
+			if arena:
+				var haz = arena.get("hazards") if arena.has_method("get") else (arena.hazards if "hazards" in arena else [])
+				for haz_obj in haz:
+					if haz_obj.get("kind") == "neutralizing_puddle" and haz_obj.get("active", false):
+						var hx = haz_obj.get("x", 0.0)
+						var hy = haz_obj.get("y", 0.0)
+						var hr = haz_obj.get("radius", 60.0)
+						var bx = b.get("x", 0.0)
+						var by = b.get("y", 0.0)
+						var br = b.get("radius", 10.0)
+						var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+						if dist_sq <= (br + hr) * (br + hr):
+							in_puddle = true
+							break
+
+			if in_puddle:
+				b.set_meta("acid_washed", true)
+				var b_max_hp = b.get("max_hp", 100.0)
+				var b_base_max_hp = b.get("base_max_hp", 100.0)
+				if b_max_hp < b_base_max_hp:
+					b.set("max_hp", min(b_base_max_hp, b_max_hp + 10.0 * delta))
+			else:
+				b.set_meta("acid_washed", false)
+
+			if not b.get_meta("acid_washed", false):
+				var b_type = str(b.get("ball_type", "")).to_lower()
+				var is_metal = false
+				if b_type in ["drone", "juggernaut", "tank", "neural", "shield_drone"] or "metal" in b_type or "armor" in b_type:
+					is_metal = true
+
+				var tr = b.get("traits", [])
+				if typeof(tr) == TYPE_ARRAY:
+					for t in tr:
+						if "metal" in str(t).to_lower() or "armor" in str(t).to_lower():
+							is_metal = true
+							break
+
+				if is_metal:
+					var b_armor = b.get("armor", 0.0)
+					if b_armor > 0.0:
+						b.set("armor", max(0.0, b_armor - 2.0 * delta))
+
+					var b_max_hp = b.get("max_hp", 100.0)
+					var b_base_max_hp = b.get("base_max_hp", 100.0)
+					b.set("max_hp", max(b_base_max_hp * 0.5, b_max_hp - 1.0 * delta))
+
+					if b.get("hp", 100.0) > b.get("max_hp", 100.0):
+						b.set("hp", b.get("max_hp", 100.0))
+
+
 class HeavyRainMode:
 	extends GameMode
 
@@ -30413,6 +30533,7 @@ var GAME_MODES = {
 	"aerial_arena": AerialArenaMode.new(),
 
 	"elemental_auras": ElementalAurasMode.new(),
+	"acid_rain": AcidRainMode.new(),
 	"heavy_rain_mutator": HeavyRainMode.new(),
 
 	"sticky_arena": StickyArenaMode.new(),
