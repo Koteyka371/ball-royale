@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Hazard",
+  "description": "A hazard zone that randomly pairs two balls that enter it. If one ball moves, the other is forced to move in the exact opposite direction. Damage taken by one is split equally between both until the link breaks (by distance or time)."
+}

@@ -1136,7 +1136,7 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
-        if hasattr(self.ball, "polarity_cooldown") and self.ball.polarity_cooldown > 0:
+        if hasattr(self.ball, "polarity_cooldown") and type(self.ball.polarity_cooldown) in (int, float) and self.ball.polarity_cooldown > 0:
             self.ball.polarity_cooldown = max(0, self.ball.polarity_cooldown - delta)
 
         if getattr(self.ball, "is_perfect_mirror", False):
