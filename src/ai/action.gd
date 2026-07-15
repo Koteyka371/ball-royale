@@ -16969,7 +16969,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -18021,7 +18021,7 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
-            elif "kind" in nearest and (nearest.kind == "fake_booster" or nearest.kind == "dummy_item"):
+            elif "kind" in nearest and (nearest.kind == "fake_booster" or nearest.kind == "dummy_item" or nearest.kind == "fake_flare"):
                 var explosion_radius = 45.0
                 if "radius" in nearest:
                     explosion_radius = nearest.radius * 3
@@ -20912,7 +20912,7 @@ func _use_skill():
                         var h_dist = sqrt(hx*hx + hy*hy)
                         if h_dist <= explosion_radius + hazard.radius:
                             if "kind" in hazard:
-                                if hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item":
+                                if hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item" or hazard.kind == "fake_flare":
                                     hazards_to_remove.append(hazard)
                                 elif (hazard.kind == "lava" or hazard.kind == "poison_cloud") and hazard.active:
                                     explosion_radius = 200.0
@@ -22055,10 +22055,15 @@ func _use_skill():
                         enemy.silence_timer = 5.0
                     elif enemy.has_method("set_meta"):
                         enemy.set_meta("silence_timer", 5.0)
-        elif skill_name == "place_fake_booster" or skill_name == "place_dummy_item":
+        elif skill_name == "place_fake_booster" or skill_name == "place_dummy_item" or skill_name == "place_fake_flare":
             if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                 var fb = {}
-                fb.kind = "dummy_item" if skill_name == "place_dummy_item" else "fake_booster"
+                if skill_name == "place_dummy_item":
+                    fb.kind = "dummy_item"
+                elif skill_name == "place_fake_flare":
+                    fb.kind = "fake_flare"
+                else:
+                    fb.kind = "fake_booster"
                 fb.x = self.ball.x
                 fb.y = self.ball.y
                 fb.radius = 15.0
@@ -22477,7 +22482,7 @@ func _use_skill():
                         var hy = hazard.y - self.ball.y
                         var h_dist = sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + (hazard.radius if "radius" in hazard else 0):
-                            if "kind" in hazard and (hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item"):
+                            if "kind" in hazard and (hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item" or hazard.kind == "fake_flare"):
                                 hazards_to_remove.append(hazard)
 
                     for h in hazards_to_remove:

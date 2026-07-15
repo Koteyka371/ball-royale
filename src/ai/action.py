@@ -9292,7 +9292,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -9855,7 +9855,7 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
-                elif getattr(nearest, "kind", None) in ["fake_booster", "dummy_item"]:
+                elif getattr(nearest, "kind", None) in ["fake_booster", "dummy_item", "fake_flare"]:
                     import math
                     import random
                     explosion_radius = getattr(nearest, "radius", 15.0) * 3
@@ -12301,11 +12301,16 @@ class Action:
                     for enemy in enemies:
                         if math.hypot(enemy.x - self.ball.x, enemy.y - self.ball.y) < 150.0:
                             enemy.silence_timer = 5.0
-            elif skill_name in ["place_fake_booster", "place_dummy_item"]:
+            elif skill_name in ["place_fake_booster", "place_dummy_item", "place_fake_flare"]:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     class FakeBooster:
                         def __init__(self, x, y, owner_id):
-                            self.kind = "dummy_item" if skill_name == "place_dummy_item" else "fake_booster"
+                            if skill_name == "place_dummy_item":
+                                self.kind = "dummy_item"
+                            elif skill_name == "place_fake_flare":
+                                self.kind = "fake_flare"
+                            else:
+                                self.kind = "fake_booster"
                             self.x = x
                             self.y = y
                             self.radius = 15.0
@@ -12512,7 +12517,7 @@ class Action:
                         h_dist = math.sqrt(hx*hx + hy*hy)
                         if h_dist <= explosion_radius + getattr(hazard, "radius", 0):
                             if hasattr(hazard, "kind"):
-                                if hazard.kind in ["spikes", "fake_booster", "dummy_item"]:
+                                if hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare"]:
                                     hazards_to_remove.append(hazard)
                                 elif hazard.kind in ["lava", "poison_cloud"] and getattr(hazard, "active", True):
                                     # Trigger secondary explosion: larger radius, hazard-specific effect
@@ -12716,7 +12721,7 @@ class Action:
                         hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
                         h_dist = math.sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + getattr(hazard, "radius", 0):
-                            if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster", "dummy_item"]:
+                            if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare"]:
                                 hazards_to_remove.append(hazard)
 
                     for h in hazards_to_remove:
