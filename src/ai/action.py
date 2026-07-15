@@ -884,7 +884,11 @@ class Action:
                         if e not in hit_entities and getattr(e, "insulator_timer", 0.0) <= 0:
                             dist_sq = (e.x - current_target.x)**2 + (e.y - current_target.y)**2
                             if dist_sq < chain_range_sq:
-                                nearby_entities.append((dist_sq, e, "enemy"))
+                                cosmetic = getattr(e, "cosmetic", "").lower().replace(" ", "_")
+                                if cosmetic == "grounded_boots" or cosmetic == "lightning_rod":
+                                    nearby_entities.append((-999999 + dist_sq, e, "enemy"))
+                                else:
+                                    nearby_entities.append((dist_sq, e, "enemy"))
                     for h in hazards:
                         if h not in hit_entities and getattr(h, "active", True):
                             dist_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
@@ -2817,6 +2821,9 @@ class Action:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= hazard.radius + getattr(self.ball, "radius", 10.0):
                         time_scale = getattr(hazard, "time_scale", 0.5)
+                        c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                        if c == "grounded_boots":
+                            time_scale = 1.0 - (1.0 - time_scale) * 0.1
                         delta *= time_scale
                         break
 
@@ -3479,6 +3486,8 @@ class Action:
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
             if cosmetic == "magnetic_boots":
                 self.ball.base_speed *= 0.9
+            elif cosmetic == "grounded_boots":
+                self.ball.base_speed *= 0.85
 
             # Weather effects on base speed
             arena = getattr(self.world, 'arena', None)
@@ -5094,8 +5103,10 @@ class Action:
                                 ny = dy / dist
                                 pull_strength = 80.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    self.ball.x += nx * pull_strength
-                                    self.ball.y += ny * pull_strength
+                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    mod = 0.1 if c == "grounded_boots" else 1.0
+                                    self.ball.x += nx * pull_strength * mod
+                                    self.ball.y += ny * pull_strength * mod
 
                             dmg = getattr(hazard, "damage", 30.0) * delta
                             if hasattr(self.ball, "hp"):
@@ -5196,6 +5207,8 @@ class Action:
                                 cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
                                 if cosmetic == "magnetic_boots":
                                     push_strength *= 0.5
+                                elif cosmetic == "grounded_boots":
+                                    push_strength *= 0.5
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
                     elif hazard.kind == "reverse_gravity_field":
@@ -5282,6 +5295,8 @@ class Action:
                                 push_strength = (hazard.radius * 2.0 / max(10.0, dist)) * 50.0 * delta
                                 cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
                                 if cosmetic == "magnetic_boots":
+                                    push_strength *= 0.5
+                                elif cosmetic == "grounded_boots":
                                     push_strength *= 0.5
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
@@ -5417,8 +5432,10 @@ class Action:
                                                 radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
                                                 pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, bdist)) * 80.0 * delta * lifetime_mult
                                                 if getattr(b, "anchor_booster_timer", 0.0) <= 0:
-                                                    b.x += bnx * pull_strength
-                                                    b.y += bny * pull_strength
+                                                    c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
+                                                    mod = 0.1 if c == "grounded_boots" else 1.0
+                                                    b.x += bnx * pull_strength * mod
+                                                    b.y += bny * pull_strength * mod
                                                 if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and hasattr(b, "vx") and hasattr(b, "vy"):
                                                     # Slingshot velocity addition
                                                     import math as _math
@@ -5428,8 +5445,10 @@ class Action:
                                                         dot = bnx * b.vx + bny * b.vy
                                                         if dot > -speed * 0.8: # If not flying directly into it
                                                             if getattr(b, "anchor_booster_timer", 0.0) <= 0:
-                                                                b.vx += bnx * slingshot_strength * delta
-                                                                b.vy += bny * slingshot_strength * delta
+                                                                c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
+                                                                mod = 0.1 if c == "grounded_boots" else 1.0
+                                                                b.vx += bnx * slingshot_strength * delta * mod
+                                                                b.vy += bny * slingshot_strength * delta * mod
                                                 if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                                     # Wind physics: tangential orbital pull
                                                     tx, ty = -bny, bnx
@@ -5491,8 +5510,10 @@ class Action:
                                 radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
                                 pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 50.0 * delta * lifetime_mult
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    self.ball.x += nx * pull_strength
-                                    self.ball.y += ny * pull_strength
+                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    mod = 0.1 if c == "grounded_boots" else 1.0
+                                    self.ball.x += nx * pull_strength * mod
+                                    self.ball.y += ny * pull_strength * mod
                                 if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                     # Slingshot velocity addition
                                     import math as _math
@@ -5502,8 +5523,10 @@ class Action:
                                         dot = nx * self.ball.vx + ny * self.ball.vy
                                         if dot > -speed * 0.8: # If not flying directly into it
                                             if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                                self.ball.vx += nx * slingshot_strength * delta
-                                                self.ball.vy += ny * slingshot_strength * delta
+                                                c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                                mod = 0.1 if c == "grounded_boots" else 1.0
+                                                self.ball.vx += nx * slingshot_strength * delta * mod
+                                                self.ball.vy += ny * slingshot_strength * delta * mod
                                 if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                     # Wind physics: tangential orbital pull
                                     tx, ty = -ny, nx
@@ -6200,6 +6223,8 @@ class Action:
                                 cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
                                 if cosmetic == "magnetic_boots":
                                     knockback_force *= 0.5
+                                elif cosmetic == "grounded_boots":
+                                    knockback_force *= 0.1
                                 self.ball.x += nx * knockback_force
                                 self.ball.y += ny * knockback_force
                             continue
@@ -12619,6 +12644,8 @@ class Action:
                 cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
                 if cosmetic == "magnetic_boots":
                     knockback_multiplier *= 0.5
+                elif cosmetic == "grounded_boots":
+                    knockback_multiplier *= 0.1
                 elif cosmetic == "kinetic_absorber" and getattr(other, "team", None) != getattr(self.ball, "team", None):
                     knockback_multiplier = 0.0
                     if not hasattr(self.ball, "kinetic_absorbed_energy"):
@@ -13572,8 +13599,10 @@ class Action:
                                 nx, ny = (hazard.x - self.ball.x) / dist, (hazard.y - self.ball.y) / dist
                                 pull_strength = 100.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
-                                    self.ball.x += nx * pull_strength
-                                    self.ball.y += ny * pull_strength
+                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    mod = 0.1 if c == "grounded_boots" else 1.0
+                                    self.ball.x += nx * pull_strength * mod
+                                    self.ball.y += ny * pull_strength * mod
                                 if hasattr(self.ball, "hp"):
                                     # Continuous damage when triggered
                                     dmg = getattr(hazard, "damage", 10.0) * delta
