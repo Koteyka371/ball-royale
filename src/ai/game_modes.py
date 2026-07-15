@@ -21968,4 +21968,124 @@ class PeriodicSafeZoneMode(GameMode):
                 elif hasattr(b, "hp"):
                     b.hp -= damage_this_tick
 
+
+class ElasticBandZoneMode(GameMode):
+    """
+    A hazard zone that functions as a powerful, omni-directional elastic band.
+    Balls that enter the zone are grabbed, stretched backward towards the center over a short duration
+    based on their momentum, and then violently launched back out in the opposite direction they entered
+    from with significantly increased speed.
+    """
+    def __init__(self):
+        super().__init__()
+        self.zone_radius = 200.0
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.grab_duration = 1.0 # time it takes to "stretch"
+        self.launch_speed_mult = 3.0
+        self.grabbed_state = {}
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.zone_x = getattr(world.arena, "width", 1000.0) / 2.0
+        self.zone_y = getattr(world.arena, "height", 1000.0) / 2.0
+        self.grabbed_state.clear()
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                hazard_class = FallbackHazard
+
+            h = hazard_class(f"elastic_zone", self.zone_x, self.zone_y, self.zone_radius, "elastic_band_zone", 0.0)
+            world.arena.hazards.append(h)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", True):
+                if b.id in self.grabbed_state:
+                    del self.grabbed_state[b.id]
+                continue
+
+            dist = math.hypot(b.x - self.zone_x, b.y - self.zone_y)
+
+            if hasattr(b, "elastic_cooldown"):
+                b.elastic_cooldown -= delta
+                if b.elastic_cooldown <= 0:
+                    delattr(b, "elastic_cooldown")
+                    if hasattr(b, "base_speed") and hasattr(b, "pre_elastic_speed"):
+                        b.base_speed = b.pre_elastic_speed
+                        b.speed = b.pre_elastic_speed
+
+            if dist < self.zone_radius and b.id not in self.grabbed_state and not hasattr(b, "elastic_cooldown"):
+                if not hasattr(b, 'base_speed'):
+                    b.base_speed = getattr(b, 'speed', 300.0)
+
+                vx = getattr(b, "velocity_x", 0.0)
+                vy = getattr(b, "velocity_y", 0.0)
+                v_mag = math.hypot(vx, vy)
+
+                if v_mag < 0.001:
+                    dx = b.x - self.zone_x
+                    dy = b.y - self.zone_y
+                    d_mag = math.hypot(dx, dy)
+                    if d_mag > 0.001:
+                        nx, ny = dx/d_mag, dy/d_mag
+                    else:
+                        nx, ny = 1.0, 0.0
+                else:
+                    nx, ny = vx/v_mag, vy/v_mag
+
+                self.grabbed_state[b.id] = {
+                    "timer": self.grab_duration,
+                    "entry_nx": nx,
+                    "entry_ny": ny,
+                    "original_speed": b.base_speed
+                }
+
+                b.pre_elastic_speed = b.base_speed
+                b.speed = 0.0
+                b.base_speed = 0.0
+                b.velocity_x = 0.0
+                b.velocity_y = 0.0
+                if hasattr(b, "silenced"):
+                    b.silenced = True
+
+            if b.id in self.grabbed_state:
+                state = self.grabbed_state[b.id]
+                state["timer"] -= delta
+
+                if state["timer"] > 0:
+                    pull_force = (self.grab_duration - state["timer"]) * 5.0
+
+                    b.x += (self.zone_x - b.x) * pull_force * delta
+                    b.y += (self.zone_y - b.y) * pull_force * delta
+
+                    b.speed = 0.0
+                    b.base_speed = 0.0
+                    b.velocity_x = 0.0
+                    b.velocity_y = 0.0
+                    if hasattr(b, "silenced"):
+                        b.silenced = True
+                else:
+                    launch_speed = state["original_speed"] * self.launch_speed_mult
+                    b.base_speed = launch_speed
+                    b.speed = launch_speed
+
+                    b.velocity_x = -state["entry_nx"] * launch_speed
+                    b.velocity_y = -state["entry_ny"] * launch_speed
+
+                    if hasattr(b, "silenced"):
+                        b.silenced = False
+
+                    setattr(b, "elastic_cooldown", 0.5)
+                    del self.grabbed_state[b.id]
+
+
 GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode()
+GAME_MODES["elastic_band_zone"] = ElasticBandZoneMode()

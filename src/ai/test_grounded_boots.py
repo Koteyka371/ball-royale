@@ -9,6 +9,7 @@ def test_grounded_boots():
             self.vx = 0.0
             self.vy = 0.0
             self.cosmetic = cosmetic
+            self.polarity_cooldown = 0
             self.alive = True
             self.team = 1
             self.hp = 100
@@ -32,6 +33,7 @@ def test_grounded_boots():
     h_black_hole = MockHazard(100, 110, "black_hole")
 
     world = MagicMock()
+
     world.balls = [b1, b2]
     world.arena.hazards = [h_black_hole]
     world.boosters = []

@@ -34469,4 +34469,169 @@ class PeriodicSafeZoneMode extends GameMode:
 	func hypot(dx: float, dy: float) -> float:
 		return sqrt(dx * dx + dy * dy)
 
+
+class ElasticBandZoneMode:
+	extends GameMode
+
+	var zone_radius = 200.0
+	var zone_x = 500.0
+	var zone_y = 500.0
+	var grab_duration = 1.0
+	var launch_speed_mult = 3.0
+	var grabbed_state = {}
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		zone_x = world.arena.width / 2.0 if "width" in world.arena else 1000.0 / 2.0
+		zone_y = world.arena.height / 2.0 if "height" in world.arena else 1000.0 / 2.0
+		grabbed_state.clear()
+
+		if world.arena.has("hazards"):
+			var h = {}
+			h.id = "elastic_zone"
+			h.x = zone_x
+			h.y = zone_y
+			h.radius = zone_radius
+			h.kind = "elastic_band_zone"
+			h.damage = 0.0
+			world.arena.hazards.append(h)
+
+	func tick(world, balls, delta=0.016):
+		for b in balls:
+			var ball_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			var is_spectator = ball_type == "spectator"
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if b.get("alive") != null else true)
+
+			if is_spectator or not is_alive:
+				if grabbed_state.has(b.id):
+					grabbed_state.erase(b.id)
+				continue
+
+			var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+			var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+			var dist = sqrt((b_x - zone_x)*(b_x - zone_x) + (b_y - zone_y)*(b_y - zone_y))
+
+			var has_cooldown = false
+			if typeof(b) == TYPE_DICTIONARY:
+				has_cooldown = b.has("elastic_cooldown")
+				if has_cooldown:
+					b.elastic_cooldown -= delta
+					if b.elastic_cooldown <= 0:
+						b.erase("elastic_cooldown")
+						has_cooldown = false
+						if b.has("base_speed") and b.has("pre_elastic_speed"):
+							b.base_speed = b.pre_elastic_speed
+							b.speed = b.pre_elastic_speed
+			else:
+				has_cooldown = b.has_meta("elastic_cooldown")
+				if has_cooldown:
+					var cd = b.get_meta("elastic_cooldown")
+					cd -= delta
+					if cd <= 0:
+						b.remove_meta("elastic_cooldown")
+						has_cooldown = false
+						if b.has_meta("pre_elastic_speed"):
+							var pre = b.get_meta("pre_elastic_speed")
+							b.set("base_speed", pre)
+							b.set("speed", pre)
+					else:
+						b.set_meta("elastic_cooldown", cd)
+
+			if dist < zone_radius and not grabbed_state.has(b.id) and not has_cooldown:
+				var base_speed = b.get("base_speed") if typeof(b) == TYPE_DICTIONARY else (b.get("base_speed") if b.get("base_speed") != null else 300.0)
+
+				var vx = b.get("velocity_x") if typeof(b) == TYPE_DICTIONARY else b.get("velocity_x")
+				if vx == null: vx = 0.0
+				var vy = b.get("velocity_y") if typeof(b) == TYPE_DICTIONARY else b.get("velocity_y")
+				if vy == null: vy = 0.0
+				var v_mag = sqrt(vx*vx + vy*vy)
+
+				var nx = 0.0
+				var ny = 0.0
+				if v_mag < 0.001:
+					var dx = b_x - zone_x
+					var dy = b_y - zone_y
+					var d_mag = sqrt(dx*dx + dy*dy)
+					if d_mag > 0.001:
+						nx = dx/d_mag
+						ny = dy/d_mag
+					else:
+						nx = 1.0
+						ny = 0.0
+				else:
+					nx = vx/v_mag
+					ny = vy/v_mag
+
+				grabbed_state[b.id] = {
+					"timer": grab_duration,
+					"entry_nx": nx,
+					"entry_ny": ny,
+					"original_speed": base_speed
+				}
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b.pre_elastic_speed = base_speed
+					b.speed = 0.0
+					b.base_speed = 0.0
+					b.velocity_x = 0.0
+					b.velocity_y = 0.0
+					if b.has("silenced"):
+						b.silenced = true
+				else:
+					b.set_meta("pre_elastic_speed", base_speed)
+					b.set("speed", 0.0)
+					b.set("base_speed", 0.0)
+					b.set("velocity_x", 0.0)
+					b.set("velocity_y", 0.0)
+					if b.get("silenced") != null:
+						b.set("silenced", true)
+
+			if grabbed_state.has(b.id):
+				var state = grabbed_state[b.id]
+				state.timer -= delta
+
+				if state.timer > 0:
+					var pull_force = (grab_duration - state.timer) * 5.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b.x += (zone_x - b.x) * pull_force * delta
+						b.y += (zone_y - b.y) * pull_force * delta
+						b.speed = 0.0
+						b.base_speed = 0.0
+						b.velocity_x = 0.0
+						b.velocity_y = 0.0
+						if b.has("silenced"):
+							b.silenced = true
+					else:
+						b.set("x", b.get("x") + (zone_x - b.get("x")) * pull_force * delta)
+						b.set("y", b.get("y") + (zone_y - b.get("y")) * pull_force * delta)
+						b.set("speed", 0.0)
+						b.set("base_speed", 0.0)
+						b.set("velocity_x", 0.0)
+						b.set("velocity_y", 0.0)
+						if b.get("silenced") != null:
+							b.set("silenced", true)
+				else:
+					var launch_speed = state.original_speed * launch_speed_mult
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b.base_speed = launch_speed
+						b.speed = launch_speed
+						b.velocity_x = -state.entry_nx * launch_speed
+						b.velocity_y = -state.entry_ny * launch_speed
+						if b.has("silenced"):
+							b.silenced = false
+						b.elastic_cooldown = 0.5
+					else:
+						b.set("base_speed", launch_speed)
+						b.set("speed", launch_speed)
+						b.set("velocity_x", -state.entry_nx * launch_speed)
+						b.set("velocity_y", -state.entry_ny * launch_speed)
+						if b.get("silenced") != null:
+							b.set("silenced", false)
+						b.set_meta("elastic_cooldown", 0.5)
+
+					grabbed_state.erase(b.id)
+
 GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode.new()
+GAME_MODES["elastic_band_zone"] = ElasticBandZoneMode.new()
