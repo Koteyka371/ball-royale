@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1014] Quantum Teleport Hazards — *2026-07-15 18:02:49 UTC*
+
+Hazards that randomly teleport entities within a small radius when stepped on, confusing movement algorithms and creating chaotic escapes from the shrinking safe zone.
+
+---
+
 ## [idea-988] Decoy Transference Swap — *2026-07-15 18:02:45 UTC*
 
 An action or active item where throwing a decoy not only distracts enemies but also enables a secondary 'swap' cast. This allows the player to immediately teleport to the decoy's current position, trading places with it and confounding tracking spells.
