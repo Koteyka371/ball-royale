@@ -24161,7 +24161,7 @@ class SolarFlareMode extends GameMode:
 	var flare_interval: float = 20.0
 	var flare_duration: float = 5.0
 	var is_flaring: bool = false
-	var excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
+	var excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node"]
 
 	func _init():
 		super()
@@ -30558,7 +30558,43 @@ class QuantumInstabilityEventMode extends GameMode:
 								h.set_meta("target_x", tx)
 								h.set_meta("target_y", ty)
 
-var GAME_MODES = {
+class GrappleNodeMode extends GameMode:
+	var spawn_timer = 5.0
+
+	func _init():
+		super()
+		name = "Grapple Nodes"
+		description = "Specific grapple nodes floating in the arena that players can hook onto, but they break after one use, dropping materials."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		spawn_timer = 5.0
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 15.0
+			if "arena" in world and world.arena != null and "hazards" in world.arena:
+				var arena_width = 1000.0
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				var arena_height = 1000.0
+				if "height" in world.arena: arena_height = float(world.arena.height)
+
+				var HazardType = null
+				if load("res://src/arena/procedural_arena.gd"):
+					HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+				elif load("res://src/ai/game_modes.gd"):
+					HazardType = load("res://src/ai/game_modes.gd").Hazard
+
+				if HazardType != null:
+					for i in range(3):
+						var nx = 50.0 + randf() * (arena_width - 100.0)
+						var ny = 50.0 + randf() * (arena_height - 100.0)
+						var n_id = randi() % 5000 + 10000 + world.arena.hazards.size()
+						var new_node = HazardType.new(n_id, nx, ny, 15.0, "grapple_node", 0.0)
+						world.arena.hazards.append(new_node)
+GAME_MODES = {
 	'time_loop_field': TimeLoopFieldMode.new(),
 	"sniper_only": SniperOnlyMode.new(),
 	"stats_decay": StatsDecayMode.new(),

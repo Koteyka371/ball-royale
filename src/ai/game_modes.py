@@ -19805,7 +19805,7 @@ class SolarFlareMode(GameMode):
         self.flare_interval = 20.0
         self.flare_duration = 5.0
         self.is_flaring = False
-        self.excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter"]
+        self.excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node"]
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
@@ -22134,3 +22134,43 @@ class ElasticBandZoneMode(GameMode):
 
 GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode()
 GAME_MODES["elastic_band_zone"] = ElasticBandZoneMode()
+
+class GrappleNodeMode(GameMode):
+    """Spawns grapple nodes periodically."""
+    def __init__(self):
+        super().__init__()
+        self.name = "Grapple Nodes"
+        self.description = "Specific grapple nodes floating in the arena that players can hook onto, but they break after one use, dropping materials."
+        self.spawn_timer = 5.0
+        import random
+        self.random = random
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 15.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+
+                class GrappleNode:
+                    def __init__(self, id, x, y):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.kind = "grapple_node"
+                        self.radius = 15.0
+                        self.active = True
+
+                for _ in range(3):
+                    n_id = getattr(world, "next_id", 9999) + len(world.arena.hazards) + self.random.randint(1000, 5000)
+                    nx = self.random.uniform(50, arena_width - 50)
+                    ny = self.random.uniform(50, arena_height - 50)
+                    world.arena.hazards.append(GrappleNode(n_id, nx, ny))
+
+GAME_MODES["grapple_node"] = GrappleNodeMode()
