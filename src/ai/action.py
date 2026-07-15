@@ -4741,6 +4741,38 @@ class Action:
                                         if hasattr(self.world, "events"):
                                             self.world.events.append({'type': 'visual_effect', 'data': {'x': old_x, 'y': old_y, 'target_x': self.ball.x, 'target_y': self.ball.y, 'kind': 'quantum_trail'}})
 
+                                        # Apply quantum instability buff/debuff if the event mode is active
+                                        mode_name = getattr(self.world, "game_mode", None)
+                                        if mode_name and getattr(mode_name, "name", "") == "Quantum Instability Event":
+                                            import random
+                                            r = random.random()
+                                            if r < 0.2:
+                                                # Temp Invincibility
+                                                setattr(self.ball, 'invulnerable_timer', max(getattr(self.ball, 'invulnerable_timer', 0.0), 3.0))
+                                                if hasattr(self.world, "events"):
+                                                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'invulnerable_start', 'target_id': getattr(self.ball, 'id', None)}})
+                                            elif r < 0.4:
+                                                # Massive Speed Up
+                                                setattr(self.ball, 'speed_boost_timer', max(getattr(self.ball, 'speed_boost_timer', 0.0), 3.0))
+                                                setattr(self.ball, 'speed_multiplier', 2.0)
+                                            elif r < 0.6:
+                                                # Healing
+                                                if hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
+                                                    self.ball.hp = min(self.ball.max_hp, self.ball.hp + self.ball.max_hp * 0.3)
+                                            elif r < 0.8:
+                                                # Massive Speed Slow
+                                                setattr(self.ball, 'slow_timer', max(getattr(self.ball, 'slow_timer', 0.0), 3.0))
+                                            else:
+                                                # Damage / Poison
+                                                setattr(self.ball, 'poison_timer', max(getattr(self.ball, 'poison_timer', 0.0), 3.0))
+                                                if hasattr(self.world, "events"):
+                                                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'poisoned', 'target_id': getattr(self.ball, 'id', None)}})
+
+                                        if hasattr(self.ball, "_teleported_this_tick"):
+                                            self.ball._teleported_this_tick = True
+                                        self.ball.last_teleport_tick = current_tick
+                                        break
+
                                         if hasattr(self.ball, "_teleported_this_tick"):
                                             self.ball._teleported_this_tick = True
                                         self.ball.last_teleport_tick = current_tick

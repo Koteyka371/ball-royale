@@ -8522,6 +8522,56 @@ func execute(strategy: String, delta: float):
                                         var eff = {"type": "visual_effect", "data": {"x": old_x, "y": old_y, "target_x": self.ball.x, "target_y": self.ball.y, "kind": "quantum_trail"}}
                                         self.world.events.append(eff)
 
+                                    var mode_name = ""
+                                    if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+                                        if "name" in self.world.game_mode: mode_name = self.world.game_mode.name
+
+                                    if mode_name == "Quantum Instability Event":
+                                        var r = randf()
+                                        if r < 0.2:
+                                            var inv = 0.0
+                                            if "invulnerable_timer" in self.ball: inv = self.ball.invulnerable_timer
+                                            elif self.ball.has_meta("invulnerable_timer"): inv = self.ball.get_meta("invulnerable_timer")
+                                            if inv < 3.0: inv = 3.0
+                                            if "invulnerable_timer" in self.ball: self.ball.invulnerable_timer = inv
+                                            elif self.ball.has_method("set_meta"): self.ball.set_meta("invulnerable_timer", inv)
+                                        elif r < 0.4:
+                                            var spd = 0.0
+                                            if "speed_boost_timer" in self.ball: spd = self.ball.speed_boost_timer
+                                            elif self.ball.has_meta("speed_boost_timer"): spd = self.ball.get_meta("speed_boost_timer")
+                                            if spd < 3.0: spd = 3.0
+                                            if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = spd
+                                            elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_boost_timer", spd)
+
+                                            if "speed_multiplier" in self.ball: self.ball.speed_multiplier = 2.0
+                                            elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier", 2.0)
+                                        elif r < 0.6:
+                                            var hp = 0.0
+                                            var max_hp = 100.0
+                                            if "hp" in self.ball: hp = self.ball.hp
+                                            elif self.ball.has_meta("hp"): hp = self.ball.get_meta("hp")
+                                            if "max_hp" in self.ball: max_hp = self.ball.max_hp
+                                            elif self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+
+                                            hp = min(max_hp, hp + max_hp * 0.3)
+
+                                            if "hp" in self.ball: self.ball.hp = hp
+                                            elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", hp)
+                                        elif r < 0.8:
+                                            var slw = 0.0
+                                            if "slow_timer" in self.ball: slw = self.ball.slow_timer
+                                            elif self.ball.has_meta("slow_timer"): slw = self.ball.get_meta("slow_timer")
+                                            if slw < 3.0: slw = 3.0
+                                            if "slow_timer" in self.ball: self.ball.slow_timer = slw
+                                            elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", slw)
+                                        else:
+                                            var psn = 0.0
+                                            if "poison_timer" in self.ball: psn = self.ball.poison_timer
+                                            elif self.ball.has_meta("poison_timer"): psn = self.ball.get_meta("poison_timer")
+                                            if psn < 3.0: psn = 3.0
+                                            if "poison_timer" in self.ball: self.ball.poison_timer = psn
+                                            elif self.ball.has_method("set_meta"): self.ball.set_meta("poison_timer", psn)
+
                                     if self.ball.has_method("set_meta"):
                                         self.ball.set_meta("last_teleport_tick", current_tick)
                                     break

@@ -18214,6 +18214,50 @@ class TimeLoopFieldMode(GameMode):
                     if hasattr(b, "hp"):
                         b.hp = state["start_hp"]
                     del self.recorded_states[b_id]
+
+class QuantumInstabilityEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Instability Event"
+        self.description = "All quantum teleporters rapidly shift locations every 5 seconds. Using a shifting teleporter applies a random positive or negative buff upon exit due to quantum instability."
+        self.shift_timer = 5.0
+        self.shift_interval = 5.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import random
+
+        self.shift_timer += delta
+        if self.shift_timer >= self.shift_interval:
+            self.shift_timer = 0.0
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                arena_w = getattr(world.arena, "width", 800)
+                arena_h = getattr(world.arena, "height", 600)
+
+                quantum_teleporters = [h for h in world.arena.hazards if getattr(h, "kind", "") == "quantum_teleporter"]
+
+                if quantum_teleporters:
+                    if hasattr(world, "add_event"):
+                        world.add_event("portal_shift", {"message": "Quantum teleporters are shifting locations!"})
+
+                for h in quantum_teleporters:
+                    h.x = random.uniform(100, arena_w - 100)
+                    h.y = random.uniform(100, arena_h - 100)
+                    if hasattr(world, "events") and type(world.events) is list:
+                        world.events.append({'type': 'visual_effect', 'data': {'type': 'portal_shift', 'x': h.x, 'y': h.y, 'radius': getattr(h, "radius", 30.0)}})
+
+                # Update targets so they point to other quantum teleporters if they exist
+                if len(quantum_teleporters) > 1:
+                    for h in quantum_teleporters:
+                        others = [o for o in quantum_teleporters if o != h]
+                        pair = random.choice(others)
+                        h.target_x = pair.x
+                        h.target_y = pair.y
+                else:
+                    for h in quantum_teleporters:
+                        h.target_x = random.uniform(100, arena_w - 100)
+                        h.target_y = random.uniform(100, arena_h - 100)
+
 GAME_MODES = {
     'time_loop_field': TimeLoopFieldMode(),
     "magnetic_bumpers": MagneticBumpersMode(),
@@ -18293,6 +18337,7 @@ GAME_MODES = {
     "custom_match": CustomMatchMode(),
     "reverse_event": ReverseEventMode(),
     "unstable_portals_event": UnstablePortalsEventMode(),
+    "quantum_instability_event": QuantumInstabilityEventMode(),
     "minefield_event": MinefieldEventMode(),
     "chain_lightning_storm": ChainLightningStormMode(),
     "meteor_crash_event": MeteorCrashEventMode(),
