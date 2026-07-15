@@ -16745,7 +16745,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -22297,6 +22297,202 @@ func _use_skill():
                 var cd = 5.0
                 if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
                 self.ball.skill_timer = cd
+
+        elif skill_name == "throw_decoy":
+            var active_decoys = []
+            var has_swapped_any = false
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    var is_d = false
+                    if "is_decoy" in b and b.is_decoy:
+                        is_d = true
+                    elif b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"):
+                        is_d = true
+
+                    if is_d:
+                        var owner = -1
+                        if "owner_id" in b: owner = b.owner_id
+                        elif b.has_method("get_meta") and b.has_meta("owner_id"): owner = b.get_meta("owner_id")
+
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        var self_id = -2
+                        if "id" in self.ball: self_id = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                        if owner == self_id and b_alive:
+                            active_decoys.append(b)
+                            var has_swapped = false
+                            if "has_swapped" in b: has_swapped = b.has_swapped
+                            elif b.has_method("get_meta") and b.has_meta("has_swapped"): has_swapped = b.get_meta("has_swapped")
+                            if has_swapped:
+                                has_swapped_any = true
+
+            if active_decoys.size() > 0:
+                if not has_swapped_any:
+                    var b = active_decoys[0]
+                    var tx = self.ball.x
+                    var ty = self.ball.y
+
+                    if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+                        var b_team = ""
+                        if "team" in self.ball: b_team = self.ball.team
+
+                        var trail = {
+                            "id": "electric_trail_" + str(randi()),
+                            "kind": "deployable_thin_hazard_line",
+                            "x": tx,
+                            "y": ty,
+                            "start_x": tx,
+                            "start_y": ty,
+                            "end_x": b.x,
+                            "end_y": b.y,
+                            "team": b_team,
+                            "damage": 30.0,
+                            "active": true,
+                            "hit_ids": [],
+                            "duration": 2.0,
+                            "radius": 10.0
+                        }
+                        world.arena.hazards.append(trail)
+
+                    self.ball.x = b.x
+                    self.ball.y = b.y
+                    b.x = tx
+                    b.y = ty
+
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b.has_swapped = true
+                    elif b.has_method("set_meta"):
+                        b.set_meta("has_swapped", true)
+                        b.has_swapped = true
+
+                    var cd = 4.0
+                    if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball.skill_timer = cd
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("skill_timer", cd)
+                        self.ball.skill_timer = cd
+                else:
+                    for d in active_decoys:
+                        if typeof(d) == TYPE_DICTIONARY:
+                            d.hp = 0.0
+                            d.alive = false
+                        elif d.has_method("set_meta"):
+                            d.set_meta("hp", 0.0)
+                            d.hp = 0.0
+                            d.set_meta("alive", false)
+                            d.alive = false
+
+                    var cd = 4.0
+                    if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball.skill_timer = cd
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("skill_timer", cd)
+                        self.ball.skill_timer = cd
+            elif "balls" in self.world:
+                var enemies = self._get_enemies()
+                var nx = 1.0
+                var ny = 0.0
+                if enemies.size() > 0:
+                    var closest_enemy = null
+                    var min_dist_sq = 999999999.0
+                    for e in enemies:
+                        var dx = e.x - self.ball.x
+                        var dy = e.y - self.ball.y
+                        var dist_sq = dx*dx + dy*dy
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            closest_enemy = e
+                    if closest_enemy != null:
+                        var dx = closest_enemy.x - self.ball.x
+                        var dy = closest_enemy.y - self.ball.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx = dx/dist
+                            ny = dy/dist
+
+                var decoy = null
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    decoy = self.ball.duplicate()
+                elif self.ball.has_method("duplicate"):
+                    decoy = self.ball.duplicate()
+
+                if decoy != null:
+                    if "id" in decoy: decoy.id = randi() % 90000 + 10000
+                    if "hp" in decoy: decoy.hp = float(self.ball.hp) * 0.5
+                    if "max_hp" in decoy: decoy.max_hp = float(self.ball.max_hp) * 0.5
+                    if "damage" in decoy: decoy.damage = 0.0
+                    if "speed" in decoy: decoy.speed = float(self.ball.get("speed", 5.0))
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball.skill_timer = 0.5
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("skill_timer", 0.5)
+                        self.ball.skill_timer = 0.5
+
+                    var self_id = -2
+                    if "id" in self.ball: self_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                    if typeof(decoy) == TYPE_DICTIONARY:
+                        decoy.owner_id = self_id
+                        decoy.has_swapped = false
+                        decoy.skill_timer = 9999.0
+                        decoy.attack_timer = 9999.0
+                        decoy.is_decoy = true
+                        decoy.decoy_timer = 6.0
+                        decoy.SKILL = null
+                        decoy.skill = null
+                        decoy.active_skill = null
+                        decoy.decoy_type = "explosive"
+
+                        var b_radius = 10.0
+                        if "radius" in self.ball: b_radius = self.ball.radius
+                        decoy.x = self.ball.x + nx * (b_radius + 15.0)
+                        decoy.y = self.ball.y + ny * (b_radius + 15.0)
+                        decoy.vx = nx * 800.0
+                        decoy.vy = ny * 800.0
+                    elif decoy.has_method("set_meta"):
+                        decoy.set_meta("owner_id", self_id)
+                        decoy.owner_id = self_id
+                        decoy.set_meta("has_swapped", false)
+                        decoy.has_swapped = false
+                        decoy.set_meta("skill_timer", 9999.0)
+                        decoy.skill_timer = 9999.0
+                        decoy.set_meta("attack_timer", 9999.0)
+                        decoy.attack_timer = 9999.0
+                        decoy.set_meta("is_decoy", true)
+                        decoy.is_decoy = true
+                        decoy.set_meta("decoy_timer", 6.0)
+                        decoy.decoy_timer = 6.0
+                        decoy.set_meta("SKILL", null)
+                        if "SKILL" in decoy: decoy.SKILL = null
+                        decoy.set_meta("skill", null)
+                        if "skill" in decoy: decoy.skill = null
+                        decoy.set_meta("active_skill", null)
+                        if "active_skill" in decoy: decoy.active_skill = null
+                        decoy.set_meta("decoy_type", "explosive")
+                        decoy.decoy_type = "explosive"
+
+                        var b_radius = 10.0
+                        if "radius" in self.ball: b_radius = self.ball.radius
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_radius = self.ball.get_meta("radius")
+
+                        decoy.x = self.ball.x + nx * (b_radius + 15.0)
+                        decoy.y = self.ball.y + ny * (b_radius + 15.0)
+                        decoy.vx = nx * 800.0
+                        decoy.vy = ny * 800.0
+
+                    self.world.balls.append(decoy)
 
         elif skill_name == "throw_bomb":
             if "hazards" in self.world.arena:

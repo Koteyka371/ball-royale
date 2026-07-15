@@ -9188,7 +9188,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -11393,6 +11393,90 @@ class Action:
                     thrown_bomb.team = getattr(self.ball, "team", None)
                     self.world.arena.hazards.append(thrown_bomb)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+            elif skill_name == "throw_decoy":
+                import copy
+                import math
+                import random
+                active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
+
+                if active_decoys:
+                    has_swapped_any = any(getattr(d, "has_swapped", False) for d in active_decoys)
+                    if not has_swapped_any:
+                        decoy = active_decoys[0]
+                        tx, ty = self.ball.x, self.ball.y
+
+                        # Create electric trail hazard before swapping
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            class ElectricTrailObj:
+                                pass
+                            trail = ElectricTrailObj()
+                            trail.id = "electric_trail_" + str(random.randint(10000, 99999))
+                            trail.kind = "deployable_thin_hazard_line"
+                            trail.x = tx
+                            trail.y = ty
+                            trail.start_x = tx
+                            trail.start_y = ty
+                            trail.end_x = decoy.x
+                            trail.end_y = decoy.y
+                            trail.team = getattr(self.ball, "team", "")
+                            trail.damage = 30.0
+                            trail.active = True
+                            trail.hit_ids = []
+                            trail.duration = 2.0
+                            trail.radius = 10.0
+                            self.world.arena.hazards.append(trail)
+
+                        self.ball.x, self.ball.y = decoy.x, decoy.y
+                        decoy.x, decoy.y = tx, ty
+                        decoy.has_swapped = True
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
+                    else:
+                        for d in active_decoys:
+                            d.hp = 0
+                            d.alive = False
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
+                elif hasattr(self.world, "balls"):
+                    enemies = self._get_enemies()
+                    nx, ny = 1.0, 0.0
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        dx = closest_enemy.x - self.ball.x
+                        dy = closest_enemy.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx, ny = dx/dist, dy/dist
+
+                    decoy = copy.copy(self.ball)
+                    decoy.owner_id = getattr(self.ball, "id", None)
+                    decoy.has_swapped = False
+                    self.ball.skill_timer = 0.5  # short cooldown to allow swapping
+                    decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    decoy.hp = getattr(self.ball, "hp", 100) * 0.5
+                    decoy.max_hp = getattr(self.ball, "max_hp", 100) * 0.5
+                    decoy.damage = 0
+                    decoy.speed = getattr(self.ball, "speed", 5.0)
+                    decoy.skill_timer = 9999.0
+                    decoy.attack_timer = 9999.0
+                    decoy.is_decoy = True
+                    decoy.decoy_timer = 6.0
+                    decoy.SKILL = None
+                    decoy.skill = None
+                    decoy.active_skill = None
+
+                    decoy.x = self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 15.0)
+                    decoy.y = self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 15.0)
+
+                    # Launch the decoy as a projectile
+                    decoy.vx = nx * 800.0
+                    decoy.vy = ny * 800.0
+                    # A thrown decoy explodes on impact or timeout
+                    decoy.decoy_type = "explosive"
+
+                    self.world.balls.append(decoy)
 
             elif skill_name == "throw_bomb":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
