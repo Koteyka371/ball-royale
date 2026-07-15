@@ -1277,6 +1277,20 @@ func _attempt_damage(attacker, target) -> void:
 			if "leech_seed_timer" in target: target.leech_seed_timer = 5.0
 			elif typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("leech_seed_timer", 5.0)
 
+		var bomb_timer = 0.0
+		if "bomb_booster_timer" in attacker: bomb_timer = float(attacker.bomb_booster_timer)
+		elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("get_meta") and attacker.has_meta("bomb_booster_timer"): bomb_timer = float(attacker.get_meta("bomb_booster_timer"))
+
+		if bomb_timer > 0.0:
+			if "time_bomb_timer" in target: target.time_bomb_timer = 5.0
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("time_bomb_timer", 5.0)
+
+			if "time_bomb_attacker_id" in target: target.time_bomb_attacker_id = attacker.get("id")
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"): target.set_meta("time_bomb_attacker_id", attacker.get("id"))
+
+			if "bomb_booster_timer" in attacker: attacker.bomb_booster_timer = 0.0
+			elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"): attacker.set_meta("bomb_booster_timer", 0.0)
+
 			var a_id = null
 			if "id" in attacker: a_id = attacker.id
 			elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("get_meta") and attacker.has_meta("id"): a_id = attacker.get_meta("id")
@@ -3788,6 +3802,55 @@ func execute(strategy: String, delta: float):
 		var new_l = max(0.0, leech_booster_t - delta)
 		if "leech_booster_timer" in self.ball: self.ball.leech_booster_timer = new_l
 		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("leech_booster_timer", new_l)
+
+	var bomb_b_t = 0.0
+	if "bomb_booster_timer" in self.ball: bomb_b_t = float(self.ball.bomb_booster_timer)
+	elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("bomb_booster_timer"): bomb_b_t = float(self.ball.get_meta("bomb_booster_timer"))
+
+	if bomb_b_t > 0.0:
+		var new_b = max(0.0, bomb_b_t - delta)
+		if "bomb_booster_timer" in self.ball: self.ball.bomb_booster_timer = new_b
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("bomb_booster_timer", new_b)
+
+	var tb_t = 0.0
+	if "time_bomb_timer" in self.ball: tb_t = float(self.ball.time_bomb_timer)
+	elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("time_bomb_timer"): tb_t = float(self.ball.get_meta("time_bomb_timer"))
+
+	if tb_t > 0.0:
+		var new_tb = tb_t - delta
+		if "time_bomb_timer" in self.ball: self.ball.time_bomb_timer = new_tb
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("time_bomb_timer", new_tb)
+
+		if new_tb <= 0.0:
+			var explosion_radius = 150.0
+			var explosion_damage = 50.0
+			if self.world != null and "balls" in self.world:
+				var ball_team = ""
+				if "team" in self.ball: ball_team = self.ball.team
+				elif "ball_type" in self.ball: ball_team = self.ball.ball_type
+
+				for b in self.world.balls:
+					if b != self.ball:
+						var is_alive = false
+						if "alive" in b: is_alive = b.alive
+						elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+						if is_alive:
+							var b_team = ""
+							if "team" in b: b_team = b.team
+							elif "ball_type" in b: b_team = b.ball_type
+
+							if b_team == ball_team:
+								var dist_sq = pow(b.x - self.ball.x, 2) + pow(b.y - self.ball.y, 2)
+								if dist_sq <= explosion_radius * explosion_radius:
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"):
+										b.take_damage(explosion_damage)
+									elif "hp" in b:
+										b.hp -= explosion_damage
+			if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("take_damage"):
+				self.ball.take_damage(explosion_damage)
+			elif "hp" in self.ball:
+				self.ball.hp -= explosion_damage
 
 	var leech_seed_t = 0.0
 	if "leech_seed_timer" in self.ball: leech_seed_t = float(self.ball.leech_seed_timer)
@@ -18232,6 +18295,21 @@ func _collect_booster(delta: float):
 							hazards.erase(nearest)
 							if typeof(nearest) != TYPE_DICTIONARY and nearest.has_method("queue_free"):
 								nearest.queue_free()
+				var b_list = self.world.get("boosters")
+				if typeof(b_list) == TYPE_ARRAY and b_list.has(nearest):
+					b_list.erase(nearest)
+					if typeof(nearest) != TYPE_DICTIONARY and nearest.has_method("queue_free"):
+						nearest.queue_free()
+			elif "kind" in nearest and nearest.kind == "bomb_booster":
+				if self.ball.has_method("set_meta"):
+					self.ball.set_meta("bomb_booster_timer", 10.0)
+				else:
+					self.ball.bomb_booster_timer = 10.0
+
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1:
+						self.world.arena.hazards.remove_at(idx)
 				var b_list = self.world.get("boosters")
 				if typeof(b_list) == TYPE_ARRAY and b_list.has(nearest):
 					b_list.erase(nearest)

@@ -708,6 +708,11 @@ class Action:
                 target.leech_seed_timer = 5.0
                 target.leech_seed_attacker_id = getattr(attacker, "id", None)
 
+            if getattr(attacker, "bomb_booster_timer", 0.0) > 0:
+                target.time_bomb_timer = 5.0
+                target.time_bomb_attacker_id = getattr(attacker, "id", None)
+                attacker.bomb_booster_timer = 0.0  # Consumed on first attack
+
             # Apply chain damage modifier if magnetic storm is active
             if hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "magnetic_storm":
                 import math
@@ -1872,6 +1877,31 @@ class Action:
 
         if getattr(self.ball, "leech_booster_timer", 0.0) > 0:
             self.ball.leech_booster_timer -= delta
+
+        if getattr(self.ball, "bomb_booster_timer", 0.0) > 0:
+            self.ball.bomb_booster_timer -= delta
+
+        if getattr(self.ball, "time_bomb_timer", 0.0) > 0:
+            self.ball.time_bomb_timer -= delta
+            if self.ball.time_bomb_timer <= 0:
+                explosion_radius = 150.0
+                explosion_damage = 50.0
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "alive", False) and b != self.ball:
+                            b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                            my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                            if b_team == my_team:
+                                dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                                if dist_sq <= explosion_radius**2:
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(explosion_damage)
+                                    else:
+                                        b.hp -= explosion_damage
+                if hasattr(self.ball, "take_damage"):
+                    self.ball.take_damage(explosion_damage)
+                else:
+                    self.ball.hp -= explosion_damage
 
         if getattr(self.ball, "leech_seed_timer", 0.0) > 0:
             self.ball.leech_seed_timer -= delta
@@ -9987,6 +10017,13 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "leech_booster":
                     self.ball.leech_booster_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "bomb_booster":
+                    self.ball.bomb_booster_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
