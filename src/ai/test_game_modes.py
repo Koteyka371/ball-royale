@@ -1741,3 +1741,56 @@ def test_orbital_mines_mode():
     for i, h in enumerate(world.arena.hazards):
         # Angle should have changed
         assert getattr(h, "angle") != initial_angles[i]
+
+def test_edge_slingshots_mode():
+    from ai.game_modes import EdgeSlingshotsMode
+    mode = EdgeSlingshotsMode()
+    world = MockWorld()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000.0
+            self.height = 1000.0
+    world.arena = MockArena()
+
+    # Create a ball hitting the left edge
+    ball = MockBall("test_ball_1")
+    ball.x = 10.0 # < 30.0 (edge_margin)
+    ball.y = 500.0
+    ball.vx = -200.0
+    ball.vy = 0.0
+    ball.speed = 300.0
+    ball.damage = 10.0
+    ball.base_damage = 10.0
+
+    # Initial tick, should trigger slingshot state and freeze the ball
+    mode.tick(world, [ball], 0.016)
+    assert ball.id in mode.slingshot_state
+    assert ball.speed == 0.0
+    assert ball.vx == 0.0
+
+    # Fast forward the timer
+    mode.slingshot_state[ball.id]["timer"] = 0.0
+
+    # Next tick, should launch the ball
+    mode.tick(world, [ball], 0.016)
+    assert ball.id not in mode.slingshot_state
+
+    # Speed is launched at 4x original speed (300 * 4 = 1200)
+    assert ball.speed == 1200.0
+
+    # Damage is multiplied by 3
+    assert ball.damage == 30.0
+    assert ball.base_damage == 30.0
+
+    # The ball should be moving towards the center (1000/2 = 500, so +x direction)
+    assert ball.vx > 0
+    assert hasattr(ball, "edge_slingshot_buff")
+
+    # Move away from edge so it doesn't get grabbed again
+    ball.x = 500.0
+    # Tick past buff duration to ensure stats reset
+    ball.edge_slingshot_buff = 0.0
+    mode.tick(world, [ball], 0.016)
+    assert ball.speed == 300.0
+    assert ball.damage == 10.0
+    assert ball.base_damage == 10.0

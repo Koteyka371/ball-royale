@@ -22334,3 +22334,124 @@ class PerfectReflectorHazardMode(GameMode):
                 b.reflector_cooldown = 1.0
 
 GAME_MODES["perfect_reflector"] = PerfectReflectorHazardMode()
+
+
+class EdgeSlingshotsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Edge Slingshots"
+        self.description = "The arena edges act as slingshots. Hitting the edge at high speed launches balls towards the center with massive speed and damage."
+        self.edge_margin = 30.0
+        self.velocity_threshold = 150.0
+        self.launch_duration = 0.5
+        self.slingshot_state = {}
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        cx = arena_width / 2.0
+        cy = arena_height / 2.0
+
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", True):
+                if b.id in self.slingshot_state:
+                    del self.slingshot_state[b.id]
+                continue
+
+            if hasattr(b, "edge_slingshot_buff"):
+                b.edge_slingshot_buff -= delta
+                if b.edge_slingshot_buff <= 0:
+                    delattr(b, "edge_slingshot_buff")
+                    if hasattr(b, "pre_slingshot_speed"):
+                        b.base_speed = b.pre_slingshot_speed
+                        b.speed = b.pre_slingshot_speed
+                    if hasattr(b, "pre_slingshot_damage"):
+                        if hasattr(b, "base_damage"):
+                            b.base_damage = getattr(b, "pre_slingshot_base_damage", b.pre_slingshot_damage)
+                        b.damage = b.pre_slingshot_damage
+
+            if b.id in self.slingshot_state:
+                state = self.slingshot_state[b.id]
+                state["timer"] -= delta
+
+                b.speed = 0.0
+                b.base_speed = 0.0
+                if hasattr(b, "vx"):
+                    b.vx = 0.0
+                    b.vy = 0.0
+                if hasattr(b, "velocity_x"):
+                    b.velocity_x = 0.0
+                    b.velocity_y = 0.0
+                if hasattr(b, "silenced"):
+                    b.silenced = True
+
+                if state["timer"] <= 0:
+                    launch_speed = state["original_speed"] * 4.0
+                    b.base_speed = launch_speed
+                    b.speed = launch_speed
+
+                    dx = cx - b.x
+                    dy = cy - b.y
+                    dist = math.hypot(dx, dy)
+                    if dist > 0.001:
+                        nx, ny = dx/dist, dy/dist
+                    else:
+                        nx, ny = 1.0, 0.0
+
+                    if hasattr(b, "velocity_x"):
+                        b.velocity_x = nx * launch_speed
+                        b.velocity_y = ny * launch_speed
+                    if hasattr(b, "vx"):
+                        b.vx = nx * launch_speed
+                        b.vy = ny * launch_speed
+
+                    if hasattr(b, "silenced"):
+                        b.silenced = False
+
+                    b.edge_slingshot_buff = 2.0
+                    b.pre_slingshot_speed = state["original_speed"]
+                    b.pre_slingshot_damage = getattr(b, "damage", 10.0)
+                    if hasattr(b, "base_damage"):
+                        b.pre_slingshot_base_damage = b.base_damage
+
+                    if hasattr(b, "base_damage"):
+                        b.base_damage *= 3.0
+                    if hasattr(b, "damage"):
+                        b.damage *= 3.0
+
+                    del self.slingshot_state[b.id]
+                continue
+
+            if hasattr(b, "edge_slingshot_buff"):
+                continue
+
+            hit_edge = (b.x < self.edge_margin or b.x > arena_width - self.edge_margin or
+                        b.y < self.edge_margin or b.y > arena_height - self.edge_margin)
+
+            if hit_edge:
+                vx = getattr(b, "velocity_x", getattr(b, "vx", 0.0))
+                vy = getattr(b, "velocity_y", getattr(b, "vy", 0.0))
+                v_mag = math.hypot(vx, vy)
+
+                if v_mag >= self.velocity_threshold:
+                    if not hasattr(b, 'base_speed'):
+                        b.base_speed = getattr(b, 'speed', 300.0)
+
+                    self.slingshot_state[b.id] = {
+                        "timer": self.launch_duration,
+                        "original_speed": b.base_speed
+                    }
+
+                    b.speed = 0.0
+                    b.base_speed = 0.0
+                    if hasattr(b, "vx"):
+                        b.vx = 0.0
+                        b.vy = 0.0
+                    if hasattr(b, "velocity_x"):
+                        b.velocity_x = 0.0
+                        b.velocity_y = 0.0
+                    if hasattr(b, "silenced"):
+                        b.silenced = True
+
+GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
