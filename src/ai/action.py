@@ -5083,6 +5083,15 @@ class Action:
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.2 # Drastically slow down
                             else:
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 1.2 # Slight speed boost for aquatic
+
+                            flow_dx = getattr(hazard, "flow_dx", 0.0)
+                            flow_dy = getattr(hazard, "flow_dy", 0.0)
+                            flow_speed = getattr(hazard, "flow_speed", 0.0)
+
+                            if (flow_dx != 0.0 or flow_dy != 0.0) and flow_speed > 0.0:
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    self.ball.x += flow_dx * flow_speed * delta
+                                    self.ball.y += flow_dy * flow_speed * delta
                     elif hazard.kind == "puddle":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

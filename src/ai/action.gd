@@ -9340,6 +9340,32 @@ func execute(strategy: String, delta: float):
                         else:
                             self.ball.speed = base_s * 1.2
 
+                        var flow_dx = 0.0
+                        var flow_dy = 0.0
+                        var flow_speed = 0.0
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            if hazard.has("flow_dx"): flow_dx = hazard.flow_dx
+                            if hazard.has("flow_dy"): flow_dy = hazard.flow_dy
+                            if hazard.has("flow_speed"): flow_speed = hazard.flow_speed
+                        elif typeof(hazard) == TYPE_OBJECT:
+                            if "flow_dx" in hazard: flow_dx = hazard.flow_dx
+                            elif hazard.has_method("get_meta") and hazard.has_meta("flow_dx"): flow_dx = hazard.get_meta("flow_dx")
+                            if "flow_dy" in hazard: flow_dy = hazard.flow_dy
+                            elif hazard.has_method("get_meta") and hazard.has_meta("flow_dy"): flow_dy = hazard.get_meta("flow_dy")
+                            if "flow_speed" in hazard: flow_speed = hazard.flow_speed
+                            elif hazard.has_method("get_meta") and hazard.has_meta("flow_speed"): flow_speed = hazard.get_meta("flow_speed")
+
+                        if (flow_dx != 0.0 or flow_dy != 0.0) and flow_speed > 0.0:
+                            var anch_t = 0.0
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("anchor_booster_timer"):
+                                anch_t = self.ball.get_meta("anchor_booster_timer")
+                            elif "anchor_booster_timer" in self.ball:
+                                anch_t = self.ball.anchor_booster_timer
+
+                            if anch_t <= 0.0:
+                                self.ball.x += flow_dx * flow_speed * delta
+                                self.ball.y += flow_dy * flow_speed * delta
+
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("is_in_quicksand", true)
                         else:
