@@ -286,3 +286,48 @@ class ClanManager:
                 elif dec_name == "Health_Fountain":
                     buffs.append("Hub_Health_Regen")
         return list(set(buffs))
+
+    def start_weekly_tournament(self):
+        self.data["tournament_active"] = True
+        self.data["tournament_scores"] = {clan: 0 for clan in self.data["clans"]}
+        self.save()
+        return True
+
+    def add_tournament_points(self, clan_name, points):
+        if self.data.get("tournament_active", False):
+            if "tournament_scores" not in self.data:
+                self.data["tournament_scores"] = {}
+            if clan_name in self.data["clans"]:
+                if clan_name not in self.data["tournament_scores"]:
+                    self.data["tournament_scores"][clan_name] = 0
+                self.data["tournament_scores"][clan_name] += points
+                self.save()
+                return True
+        return False
+
+    def end_weekly_tournament(self):
+        if not self.data.get("tournament_active", False):
+            return False
+
+        scores = self.data.get("tournament_scores", {})
+        ranked_clans = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+        for i, (clan_name, score) in enumerate(ranked_clans):
+            if clan_name not in self.data["clans"]:
+                continue
+
+            if i == 0:
+                self.add_clan_points(clan_name, 5000)
+                self.unlock_cosmetic(clan_name, "Weekly_Champion_Aura")
+                self.unlock_buff(clan_name, "Currency_Boost_Tier3")
+            elif i == 1:
+                self.add_clan_points(clan_name, 3000)
+                self.unlock_buff(clan_name, "Currency_Boost_Tier2")
+            elif i == 2:
+                self.add_clan_points(clan_name, 2000)
+                self.unlock_buff(clan_name, "Currency_Boost_Tier1")
+
+        self.data["tournament_active"] = False
+        self.data["tournament_scores"] = {}
+        self.save()
+        return True
