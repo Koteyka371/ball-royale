@@ -1,4 +1,0 @@
-{
-  "title": "Shared Health Pool Mode",
-  "description": "Teams share a single massive health pool. Taking damage drains from the collective pool. When it reaches 0, the entire team is eliminated simultaneously. Promotes extreme teamwork and protective strategies."
-}

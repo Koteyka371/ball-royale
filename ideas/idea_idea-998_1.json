@@ -1,4 +1,0 @@
-{
-  "title": "Acoustic Disruption Field",
-  "description": "A new hazard that temporarily disables the 'perception_radius' of any ball inside it, rendering them effectively blind and unable to target enemies, but still able to move freely."
-}

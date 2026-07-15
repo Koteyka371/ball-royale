@@ -1,4 +1,0 @@
-{
-  "title": "Reverse Time Penalty Mode",
-  "description": "Every 60 seconds, all balls are forcefully rewound to their positions 10 seconds ago. However, their health and cooldowns remain at current levels, leading to unpredictable resets and repositioning plays."
-}

@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Swap Bomb",
-  "description": "A new deployable hazard that arms after 2 seconds. When triggered, it swaps the positions of the closest ally and the closest enemy within a massive radius, potentially throwing an enemy into a hazard while pulling an ally to safety."
-}

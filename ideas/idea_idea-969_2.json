@@ -1,4 +1,0 @@
-{
-  "title": "Kinetic Reversal Zone",
-  "description": "A special arena hazard zone that acts like a mirror to momentum. Any entity entering the zone immediately has their velocity vectors flipped by 180 degrees, bouncing them directly backward without applying any damage. Great for defensive placements."
-}

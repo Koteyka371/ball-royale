@@ -27303,6 +27303,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1595",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Time Zone",
+      "description": "A battle royale where being outside the safe zone doesn't deal damage, but instead continuously reverses the player's position back in time, trapping them in the storm forever.",
+      "allowed_paths": [
+        "src/ai/reverse_time_zone.py",
+        "src/ai/reverse_time_zone.gd",
+        "tests/test_reverse_time_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1596",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Bullets Mode",
+      "description": "All projectiles fired by players bounce off walls infinitely until they hit a player or lose all their velocity.",
+      "allowed_paths": [
+        "src/ai/bouncing_bullets.py",
+        "src/ai/bouncing_bullets.gd",
+        "tests/test_bouncing_bullets.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

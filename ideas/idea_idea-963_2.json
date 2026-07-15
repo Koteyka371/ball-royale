@@ -1,4 +1,0 @@
-{
-    "title": "Dynamic Weather Mutators",
-    "description": "Introduce dynamic weather systems (e.g., thunderstorms, blizzards, sandstorms) that rotate during matches and affect gameplay. Thunderstorms could periodically strike random locations with lightning, blizzards could slow movement speed globally, and sandstorms could reduce perception radius for all AI."
-}

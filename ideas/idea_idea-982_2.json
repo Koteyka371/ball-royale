@@ -1,4 +1,0 @@
-{
-  "title": "Time Loop Trap",
-  "description": "A trap that records the triggering ball's position and HP over 3 seconds. After 3 seconds, the ball is teleported back to its recorded position and its HP is restored to what it was, essentially 'rewinding' them."
-}
