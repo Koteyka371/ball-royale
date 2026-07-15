@@ -17628,7 +17628,7 @@
     },
     {
       "id": "idea-1027",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Flare Mechanic",
@@ -27893,6 +27893,40 @@
         "src/ai/earthquake.py",
         "src/ai/earthquake.gd",
         "tests/test_earthquake.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1630",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hazard Traps",
+      "description": "Players can pick up 'Hazard Jars' to store environmental hazards like acid puddles or neutralizing puddles, and deploy them strategically to create chokepoints or safe zones for their team.",
+      "allowed_paths": [
+        "src/arena/traps.py",
+        "src/arena/traps.gd",
+        "tests/test_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1631",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Mastery Trait",
+      "description": "A new trait 'Weather Mastery' that grants a 20% speed and defense bonus when standing in extreme weather events or specific hazards, converting environmental danger into an advantage.",
+      "allowed_paths": [
+        "src/ai/mastery_trait.py",
+        "src/ai/mastery_trait.gd",
+        "tests/test_mastery_trait.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

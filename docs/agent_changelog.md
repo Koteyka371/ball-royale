@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1027] Decoy Flare Mechanic — *2026-07-15 23:22:09 UTC*
+
+A new skill that deploys a fake flare. When enemies approach it to gain vision or out of curiosity, it explodes, dealing damage in an area of effect.
+
+---
+
 ## [idea-983] Corrosive Acid Rain Weather — *2026-07-15 22:47:37 UTC*
 
 Introduce a new 'acid_rain' weather condition that slowly degrades the armor and max HP of metallic or heavily armored balls over time, while occasionally spawning neutralizing puddles that players can fight over to wash off the acid.
