@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-999] Invisible Mines Mode — *2026-07-15 00:15:15 UTC*
+
+A mode where players can randomly drop invisible mines while moving, making navigation dangerous and encouraging players to force opponents into previously traveled paths.
+
+---
+
 ## [idea-985] Explosive Knockback Cascade — *2026-07-15 00:06:53 UTC*
 
 Enhance standard explosion events (like decoy or mine explosions) to apply significant physics knockback to surviving entities, pushing them outward. If knocked entities collide heavily with a wall or another entity, it triggers a secondary, smaller stun explosion, creating a cascading crowd control effect.

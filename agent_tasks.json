@@ -17152,7 +17152,7 @@
     },
     {
       "id": "idea-999",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Invisible Mines Mode",
@@ -27162,6 +27162,57 @@
         "src/ai/assisting_spectator_actions.py",
         "src/ai/assisting_spectator_actions.gd",
         "tests/test_assisting_spectator_actions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1587",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shockwave Mine",
+      "description": "A new trap variant that deals zero damage but applies an enormous outward physics knockback in a massive area when detonated. Great for tossing opponents into hazards like poison clouds or spike walls.",
+      "allowed_paths": [
+        "src/ai/shockwave_mine.py",
+        "src/ai/shockwave_mine.gd",
+        "tests/test_shockwave_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1588",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Market Auction Event",
+      "description": "A mid-game event where players can wager their collected loadout fragments in a fast-paced blind auction to secure ultra-rare, game-changing booster items or exclusive cosmetics.",
+      "allowed_paths": [
+        "src/ai/black_market_auction.py",
+        "src/ai/black_market_auction.gd",
+        "tests/test_black_market_auction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1589",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Pinball Bumper Mutator",
+      "description": "A game mode mutator where colliding with any other ball automatically arms a Stun Explosion on both entities, creating an arena filled with constant bouncing and cascading stun effects.",
+      "allowed_paths": [
+        "src/ai/pinball_bumper_mutator.py",
+        "src/ai/pinball_bumper_mutator.gd",
+        "tests/test_pinball_bumper_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
