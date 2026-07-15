@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1001] Bumper Magnet Mode — *2026-07-15 00:27:49 UTC*
+
+A new game mode where bumpers exert a magnetic pull, making it tricky to navigate around them without getting caught in a pinball frenzy.
+
+---
+
 ## [idea-979] Phase Shift Hazard — *2026-07-15 00:27:44 UTC*
 
 A hazard that makes the triggering ball ethereal for 5 seconds. Ethereal balls can pass through walls and hazards but cannot attack or use skills.
