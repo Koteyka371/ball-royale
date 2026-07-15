@@ -1,0 +1,4 @@
+{
+    "title": "Sticky Floor Hazard",
+    "description": "Certain areas of the map act as sticky floors that slowly reduce movement speed over time while a player remains on them, but drastically increase traction/defense against pushing."
+}

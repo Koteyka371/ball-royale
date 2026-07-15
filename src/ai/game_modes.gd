@@ -34030,5 +34030,96 @@ class PhantomReplayHazardMode extends GameMode:
 
 GAME_MODES["phantom_replay_hazard"] = PhantomReplayHazardMode.new()
 GAME_MODES["grid_lockdown"] = GridLockdownMode.new()
+
+class InvisibleMinesMode extends GameMode:
+	var traveled: Dictionary = {}
+	var last_pos: Dictionary = {}
+	var mines_spawned: int = 0
+
+	func _init() -> void:
+		name = "Invisible Mines"
+		description = "Players drop invisible mines randomly while moving, encouraging tactical routing."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if typeof(world) == TYPE_DICTIONARY:
+			if not world.has("arena") or typeof(world["arena"]) != TYPE_DICTIONARY or not world["arena"].has("hazards"):
+				return
+		else:
+			if not "arena" in world or not "hazards" in world.arena:
+				return
+
+		var arena_hazards = world["arena"]["hazards"] if typeof(world) == TYPE_DICTIONARY else world.arena.hazards
+
+		for b in balls:
+			var is_alive = false
+			var b_id = -1
+			var bx = 0.0
+			var by = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_id = b.get("id", -1)
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			else:
+				is_alive = b.alive if "alive" in b else false
+				b_id = b.id if "id" in b else -1
+				bx = b.x if "x" in b else 0.0
+				by = b.y if "y" in b else 0.0
+
+			if not is_alive or b_id == -1:
+				continue
+
+			var current_pos = Vector2(bx, by)
+
+			if not last_pos.has(b_id):
+				last_pos[b_id] = current_pos
+				traveled[b_id] = 0.0
+				continue
+
+			var last_p = last_pos[b_id]
+			var dist = current_pos.distance_to(last_p)
+			traveled[b_id] += dist
+			last_pos[b_id] = current_pos
+
+			if traveled[b_id] >= 200.0:
+				traveled[b_id] -= 200.0
+
+				if randf() < 0.4:
+					var h_id = arena_hazards.size() + randi() % 90000 + 10000 + mines_spawned
+					var hazard_class = null
+					if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+						var script = load("res://src/arena/procedural_arena.gd")
+						if script != null and script.has_script_class():
+							# For godot 4, you can't easily check inner class existence dynamically without const_defined or using a new instance
+							hazard_class = script.Hazard if script.const_defined("Hazard") else null
+
+					# Fallback to the one we know works from MinefieldSafeZoneMode
+					var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+					if HazardObj != null:
+						var mine = HazardObj.new(h_id, bx, by, 20.0, "hidden_mine", 45.0)
+						mine.active = true
+						if mine.has_method("set_meta"):
+							mine.set_meta("active", true)
+							mine.set_meta("duration", -1.0)
+						arena_hazards.append(mine)
+						mines_spawned += 1
+					else:
+						# Fallback dict
+						var mine = {
+							"id": h_id,
+							"x": bx,
+							"y": by,
+							"radius": 20.0,
+							"kind": "hidden_mine",
+							"damage": 45.0,
+							"active": true,
+							"duration": -1.0
+						}
+						arena_hazards.append(mine)
+						mines_spawned += 1
+
+GAME_MODES["invisible_mines"] = InvisibleMinesMode.new()
+
 GAME_MODES["phantom_juggernaut"] = PhantomJuggernautMode.new()
 GAME_MODES["chicken_curse"] = ChickenCurseMode.new()
