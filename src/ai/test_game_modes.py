@@ -1786,3 +1786,60 @@ def test_inverse_controls_zone_mode():
     mode.tick(world, [ball_out_zone], delta=1.0)
     assert ball_out_zone.x == 100.0
     assert ball_out_zone.y == 100.0
+
+def test_water_current_hazard():
+    from src.ai.action import Action
+
+    class TestMockEntity:
+        def __init__(self, x, y, hp, max_hp):
+            self.id = 1
+            self.x = x
+            self.y = y
+            self.vx = 0.0
+            self.vy = 0.0
+            self.hp = hp
+            self.max_hp = max_hp
+            self.alive = True
+            self.team = "A"
+            self.radius = 10.0
+            self.ball_type = "basic"
+            self.speed = 100.0
+            self.attack_range = 100.0
+
+    class MockHazard:
+        def __init__(self, kind):
+            self.kind = kind
+            self.x = 500.0
+            self.y = 500.0
+            self.radius = 100.0
+            self.direction_x = 0.5
+            self.direction_y = -0.5
+            self.push_force = 400.0
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = [MockHazard("water_current")]
+            self.name = 'mock_arena'
+            self.weather = 'clear'
+
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.balls = []
+            self.time = 0.0
+            self.next_id = 9999
+
+        def get_nearby_entities(self, ball, radius):
+            return {'enemies': [], 'allies': [], 'boosters': []}
+
+    ball = TestMockEntity(500.0, 500.0, 100.0, 100.0)
+    world = MockWorld()
+    world.balls.append(ball)
+    action = Action(ball, world)
+
+    action.execute("idle", 0.5)
+
+    # 0.5 * 400.0 * 0.5 = 100.0
+    # 0.5 * 400.0 * -0.5 = -100.0
+    assert ball.vx > 10.0
+    assert ball.vy < -10.0

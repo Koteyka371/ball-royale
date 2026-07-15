@@ -12758,6 +12758,29 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp <= 0 and "alive" in self.ball:
                                 self.ball.alive = false
                         continue
+                    elif hazard.kind == "water_current":
+                        var push_force = 200.0
+                        if "push_force" in hazard: push_force = hazard.push_force
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get") and hazard.get("push_force") != null: push_force = hazard.get("push_force")
+
+                        var dir_x = 1.0
+                        if "direction_x" in hazard: dir_x = hazard.direction_x
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get") and hazard.get("direction_x") != null: dir_x = hazard.get("direction_x")
+
+                        var dir_y = 0.0
+                        if "direction_y" in hazard: dir_y = hazard.direction_y
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get") and hazard.get("direction_y") != null: dir_y = hazard.get("direction_y")
+
+                        if "vx" in self.ball:
+                            self.ball.vx += dir_x * push_force * delta
+                        elif self.ball.has_method("set_meta") and self.ball.has_meta("vx"):
+                            self.ball.set_meta("vx", self.ball.get_meta("vx") + dir_x * push_force * delta)
+
+                        if "vy" in self.ball:
+                            self.ball.vy += dir_y * push_force * delta
+                        elif self.ball.has_method("set_meta") and self.ball.has_meta("vy"):
+                            self.ball.set_meta("vy", self.ball.get_meta("vy") + dir_y * push_force * delta)
+                        continue
                     elif hazard.kind == "vampiric_puddle":
                         var hazard_damage = hazard.damage * delta
                         if self.ball.has_method("take_damage"):

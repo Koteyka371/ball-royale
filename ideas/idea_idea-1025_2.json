@@ -1,0 +1,4 @@
+{
+  "title": "Geyser Spring",
+  "description": "An intermittent hazard that acts like a jump pad for water. Every few seconds it erupts, applying a massive vertical velocity (vy) and briefly disabling player attacks while in the air."
+}

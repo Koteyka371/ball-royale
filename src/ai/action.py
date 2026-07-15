@@ -7040,6 +7040,15 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
+                        elif hazard.kind == "water_current":
+                            push_force = getattr(hazard, "push_force", 200.0)
+                            dir_x = getattr(hazard, "direction_x", 1.0)
+                            dir_y = getattr(hazard, "direction_y", 0.0)
+                            if hasattr(self.ball, "vx"):
+                                self.ball.vx += dir_x * push_force * delta
+                            if hasattr(self.ball, "vy"):
+                                self.ball.vy += dir_y * push_force * delta
+                            continue
                         elif hazard.kind == "vampiric_puddle":
                             hazard_damage = hazard.damage * delta
                             if hasattr(self.ball, "take_damage"):
