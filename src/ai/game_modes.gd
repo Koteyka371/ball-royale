@@ -34760,3 +34760,128 @@ class ElasticBandZoneMode:
 
 GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode.new()
 GAME_MODES["elastic_band_zone"] = ElasticBandZoneMode.new()
+
+class PerfectReflectorHazardMode extends GameMode:
+	var hazard_x: float = 500.0
+	var hazard_y: float = 500.0
+	var hazard_radius: float = 10.0
+	var expansion_rate: float = 30.0
+	var hazard_obj = null
+
+	func _init():
+		super()
+		name = "Perfect Reflector Hazard"
+		description = "An expanding hazard that reflects balls and doubles their velocity upon hitting its boundary."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			arena_width = world.arena.width if "width" in world.arena else 1000.0
+			arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+		hazard_x = arena_width / 2.0
+		hazard_y = arena_height / 2.0
+		hazard_radius = 10.0
+
+		var arena_has_hazards = false
+		var arena_ref = null
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_has_hazards = true
+				arena_ref = world.arena
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_has_hazards = true
+				arena_ref = world.arena
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_has_hazards = true
+				arena_ref = world.arena
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_has_hazards = true
+				arena_ref = world.arena
+
+		if arena_has_hazards:
+			var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+			if HazardObj != null:
+				hazard_obj = HazardObj.new("perfect_reflector_zone", hazard_x, hazard_y, hazard_radius, "perfect_reflector", 0.0)
+				if "active" in hazard_obj:
+					hazard_obj.active = true
+				arena_ref.hazards.append(hazard_obj)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		hazard_radius += expansion_rate * delta
+
+		if hazard_obj != null and "radius" in hazard_obj:
+			hazard_obj.radius = hazard_radius
+
+		for b in balls:
+			var ball_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.ball_type if "ball_type" in b else null
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive if "alive" in b else true
+
+			if ball_type == "spectator" or not alive:
+				continue
+
+			var has_cd = b.has("reflector_cooldown") if typeof(b) == TYPE_DICTIONARY else b.has_meta("reflector_cooldown") if b.has_method("has_meta") else false
+			if has_cd:
+				var current_cd = b.get("reflector_cooldown") if typeof(b) == TYPE_DICTIONARY else b.get_meta("reflector_cooldown")
+				current_cd -= delta
+				if current_cd <= 0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b.erase("reflector_cooldown")
+					elif b.has_method("remove_meta"):
+						b.remove_meta("reflector_cooldown")
+					has_cd = false
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["reflector_cooldown"] = current_cd
+					elif b.has_method("set_meta"):
+						b.set_meta("reflector_cooldown", current_cd)
+
+			if has_cd:
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x if "x" in b else 0.0
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y if "y" in b else 0.0
+
+			var dx = bx - hazard_x
+			var dy = by - hazard_y
+			var dist = sqrt(dx * dx + dy * dy)
+
+			if abs(dist - hazard_radius) < 15.0:
+				var nx = 0.0
+				var ny = 0.0
+				if dist > 0.001:
+					nx = dx / dist
+					ny = dy / dist
+
+				var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.vx if "vx" in b else 0.0
+				var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.vy if "vy" in b else 0.0
+
+				var dot_product = vx * nx + vy * ny
+
+				var new_vx = (vx - 2 * dot_product * nx) * 2.0
+				var new_vy = (vy - 2 * dot_product * ny) * 2.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["vx"] = new_vx
+					b["vy"] = new_vy
+					if b.has("speed"): b["speed"] *= 2.0
+					if b.has("base_speed"): b["base_speed"] *= 2.0
+					if b.has("damage"): b["damage"] *= 1.5
+					if b.has("base_damage"): b["base_damage"] *= 1.5
+					b["reflector_cooldown"] = 1.0
+				else:
+					if "vx" in b: b.vx = new_vx
+					if "vy" in b: b.vy = new_vy
+					if "speed" in b: b.speed *= 2.0
+					if "base_speed" in b: b.base_speed *= 2.0
+					if "damage" in b: b.damage *= 1.5
+					if "base_damage" in b: b.base_damage *= 1.5
+					if b.has_method("set_meta"): b.set_meta("reflector_cooldown", 1.0)
+
+GAME_MODES["perfect_reflector"] = PerfectReflectorHazardMode.new()
