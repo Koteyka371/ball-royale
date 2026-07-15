@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1026] Flooded Arena Event Phase — *2026-07-15 22:26:52 UTC*
+
+Create an arena event where the entire map slowly floods from the edges inward over time, restricting play exclusively to the shrinking dry center. Once fully flooded, only players with aquatic traits or floaters survive, changing the endgame dynamic completely.
+
+---
+
 ## [idea-1025] Water Flow Physics — *2026-07-15 22:26:48 UTC*
 
 Introduce directional water flow currents inside flood zones or rivers that physically push entities in a specific direction. Players could use these currents strategically to move faster across the map or push enemies into dangerous hazards.
