@@ -15208,6 +15208,31 @@ func _chase(delta: float):
     self.ball.y += comb_ny * step
 
 func _attack(delta: float):
+    var ghost_timer = 0.0
+    if "ghost_mode_timer" in self.ball: ghost_timer = self.ball.ghost_mode_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("ghost_mode_timer"): ghost_timer = self.ball.get_meta("ghost_mode_timer")
+    if ghost_timer > 0.0:
+        if "ghost_mode_timer" in self.ball: self.ball.ghost_mode_timer = 0.0
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_timer", 0.0)
+        var ghost_active = false
+        if "ghost_mode_active" in self.ball: ghost_active = self.ball.ghost_mode_active
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("ghost_mode_active"): ghost_active = self.ball.get_meta("ghost_mode_active")
+        if ghost_active:
+            if "intangible" in self.ball: self.ball.intangible = false
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", false)
+            if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = false
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_active", false)
+
+    var intangible = false
+    if "intangible" in self.ball: intangible = self.ball.intangible
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("intangible"): intangible = self.ball.get_meta("intangible")
+    var timer = 0.0
+    if "intangible_timer" in self.ball: timer = self.ball.intangible_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
+    if intangible or timer > 0.0:
+        self._idle(delta)
+        return
+
     var enemies = _get_enemies()
     if enemies.size() > 0:
         var target = _get_target(enemies)
@@ -18073,6 +18098,14 @@ func _collect_booster(delta: float):
         _idle(delta)
 
 func _use_skill():
+    var intangible = false
+    if "intangible" in self.ball: intangible = self.ball.intangible
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("intangible"): intangible = self.ball.get_meta("intangible")
+    var timer = 0.0
+    if "intangible_timer" in self.ball: timer = self.ball.intangible_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
+    if intangible or timer > 0.0:
+        return
 
     var _silence_timer = 0.0
     if "silence_timer" in self.ball: _silence_timer = self.ball.silence_timer
@@ -24953,6 +24986,32 @@ func _update_skill_timer(delta: float):
                             if "duration" in hazard: hazard.duration = 0.0
                             elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                             elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+
+                if h_kind == "ethereal_trap":
+                    var h_x = 0.0
+                    if "x" in hazard: h_x = hazard.x
+                    elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                    var h_y = 0.0
+                    if "y" in hazard: h_y = hazard.y
+                    elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+                    var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                    var h_rad = 15.0
+                    if "radius" in hazard: h_rad = hazard.radius
+                    elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+                    var b_rad = 10.0
+                    if "radius" in self.ball: b_rad = self.ball.radius
+
+                    if dist_sq < (h_rad + b_rad) * (h_rad + b_rad):
+                        if "intangible" in self.ball: self.ball.intangible = true
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", true)
+
+                        if "intangible_timer" in self.ball: self.ball.intangible_timer = 5.0
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", 5.0)
+
+                        if "duration" in hazard: hazard.duration = 0.0
+                        elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
 
                 if h_kind == "disguised_trap":
                     var h_x = 0.0

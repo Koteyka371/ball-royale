@@ -8430,6 +8430,10 @@ class Action:
             if getattr(self.ball, "ghost_mode_active", False):
                 self.ball.intangible = False
                 self.ball.ghost_mode_active = False
+
+        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0:
+            self._idle(delta)
+            return
         enemies = self._get_enemies()
         if enemies:
             target = self._get_target(enemies)
@@ -10000,6 +10004,8 @@ class Action:
             self._idle(delta)
 
     def _use_skill(self) -> None:
+        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0:
+            return
         import random
         import math
         if getattr(self.ball, "silence_timer", 0.0) > 0:
@@ -13536,6 +13542,13 @@ class Action:
                                                                 b.alive = False
                                                                 b.killer = "pull_trap"
                                         hazard.duration = 0.0 # Destroy trap
+                if getattr(hazard, "kind", "") == "ethereal_trap":
+                    dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                    if dist_sq < (getattr(hazard, "radius", 15.0) + getattr(self.ball, "radius", 10.0))**2:
+                        self.ball.intangible = True
+                        self.ball.intangible_timer = 5.0
+                        hazard.duration = 0.0
+
                 if getattr(hazard, "kind", "") == "disguised_trap":
                     dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                     trigger_radius = getattr(hazard, "radius", 20.0) + 15.0 # extra trigger range
