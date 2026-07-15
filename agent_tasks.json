@@ -17594,7 +17594,7 @@
     },
     {
       "id": "idea-1025",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Water Flow Physics",
@@ -27791,6 +27791,40 @@
         "src/ai/bouncy_bullet_hell.py",
         "src/ai/bouncy_bullet_hell.gd",
         "tests/test_bouncy_bullet_hell.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1624",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Frenzy Mode",
+      "description": "A new mode where bumpers spawn randomly all over the arena. Balls that bounce off them gain an additive speed multiplier, creating chaotic ultra-fast matches. Touching a wall while moving at max speed shatters the wall.",
+      "allowed_paths": [
+        "src/ai/bumper_frenzy.py",
+        "src/ai/bumper_frenzy.gd",
+        "tests/test_bumper_frenzy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1625",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Shield Integration",
+      "description": "If a player collects a bumper synergy booster while also having an active kinetic shield, the shield converts bumper impact energy into bonus shield capacity instead of speed boosts, turning them into a heavily armored juggernaut.",
+      "allowed_paths": [
+        "src/ai/bumper_shield_integration.py",
+        "src/ai/bumper_shield_integration.gd",
+        "tests/test_bumper_shield_integration.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

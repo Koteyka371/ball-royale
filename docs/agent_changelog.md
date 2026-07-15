@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1025] Water Flow Physics — *2026-07-15 22:26:48 UTC*
+
+Introduce directional water flow currents inside flood zones or rivers that physically push entities in a specific direction. Players could use these currents strategically to move faster across the map or push enemies into dangerous hazards.
+
+---
+
 ## [idea-966] Bumper Synergy Booster — *2026-07-15 22:13:25 UTC*
 
 Add a new 'bumper_synergy' booster that allows a ball to absorb the impact energy of bumping into bumpers and temporarily increase its own attack speed and movement speed.
