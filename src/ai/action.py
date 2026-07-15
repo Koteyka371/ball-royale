@@ -11036,6 +11036,17 @@ class Action:
 
                         self.world.balls.append(decoy)
 
+            elif skill_name == "swap_decoy_types":
+                active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
+                types = ["explosive", "stun_trap", "healing", "siren", "swap_trap"]
+                import random
+                for d in active_decoys:
+                    if hasattr(d, "decoy_type") and d.decoy_type in types:
+                        d.decoy_type = types[(types.index(d.decoy_type) + 1) % len(types)]
+                    else:
+                        d.decoy_type = types[0]
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+
             elif skill_name == "deploy_decoy":
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
