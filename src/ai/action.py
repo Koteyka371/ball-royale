@@ -7249,6 +7249,8 @@ class Action:
                     new_speed = min(speed * 2.5, 3500.0)
                 elif gm and getattr(gm, "name", "") == "Jump Pad Boundaries":
                     new_speed = min(speed * 4.0, 5000.0)
+                elif gm and getattr(gm, "name", "") == "Extreme Bounciness":
+                    new_speed = min(speed * 5.0, 6000.0)
                 else:
                     new_speed = min(speed * 1.5, 2000.0)
 
@@ -7269,6 +7271,9 @@ class Action:
                     is_bouncy_terrain = True
                     is_mirror_walls = True
                 elif gm and getattr(gm, "name", "") == "Jump Pad Boundaries":
+                    is_bouncy_terrain = True
+                    is_mirror_walls = True
+                elif gm and getattr(gm, "name", "") == "Extreme Bounciness":
                     is_bouncy_terrain = True
                     is_mirror_walls = True
 

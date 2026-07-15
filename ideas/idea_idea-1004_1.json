@@ -1,0 +1,4 @@
+{
+    "title": "Magnetic Walls mode",
+    "description": "Arena walls slowly pull players towards them. If a player touches a wall, they are stuck for 2 seconds and take continuous damage."
+}
