@@ -1,0 +1,4 @@
+{
+  "title": "Bouncing Bullets Mode",
+  "description": "All projectiles fired by players bounce off walls infinitely until they hit a player or lose all their velocity."
+}

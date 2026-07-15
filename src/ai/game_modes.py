@@ -21804,3 +21804,103 @@ GAME_MODES["invisible_mines"] = InvisibleMinesMode()
 GAME_MODES['phantom_juggernaut'] = PhantomJuggernautMode()
 
 GAME_MODES["chicken_curse"] = ChickenCurseMode()
+
+class PeriodicSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Periodic Safe Zone"
+        self.description = "A battle royale game mode where the safe zone of the arena periodically shrinks. Entities outside the safe zone take continuous damage. This mode forces encounters, accelerates matches, and creates intense late-game scenarios."
+
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.target_radius = 500.0
+        self.target_x = 500.0
+        self.target_y = 500.0
+        self.start_radius = 500.0
+        self.start_x = 500.0
+        self.start_y = 500.0
+
+        self.phase = "waiting" # "waiting", "shrinking"
+        self.phase_timer = 0.0
+
+        self.waiting_duration = 15.0
+        self.shrinking_duration = 10.0
+
+        self.shrink_factor = 0.65
+        self.min_zone_radius = 30.0
+
+        self.outside_damage_per_second = 10.0
+        self.damage_multiplier = 1.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.target_x = self.zone_x
+        self.target_y = self.zone_y
+        self.start_x = self.zone_x
+        self.start_y = self.zone_y
+
+        self.zone_radius = max(arena_width, arena_height) * 0.75
+        self.target_radius = self.zone_radius
+        self.start_radius = self.zone_radius
+
+        self.phase = "waiting"
+        self.phase_timer = 0.0
+        self.damage_multiplier = 1.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        self.phase_timer += delta
+
+        if self.phase == "waiting":
+            if self.phase_timer >= self.waiting_duration and self.zone_radius > self.min_zone_radius:
+                self.phase = "shrinking"
+                self.phase_timer = 0.0
+
+                self.start_radius = self.zone_radius
+                self.start_x = self.zone_x
+                self.start_y = self.zone_y
+
+                self.target_radius = max(self.min_zone_radius, self.zone_radius * self.shrink_factor)
+
+                max_offset = max(0.0, self.zone_radius - self.target_radius)
+                angle = random.uniform(0, 2 * math.pi)
+                dist = random.uniform(0, max_offset)
+
+                self.target_x = self.zone_x + math.cos(angle) * dist
+                self.target_y = self.zone_y + math.sin(angle) * dist
+
+                self.damage_multiplier += 0.5
+
+        elif self.phase == "shrinking":
+            t = min(1.0, self.phase_timer / self.shrinking_duration)
+            self.zone_radius = self.start_radius + (self.target_radius - self.start_radius) * t
+            self.zone_x = self.start_x + (self.target_x - self.start_x) * t
+            self.zone_y = self.start_y + (self.target_y - self.start_y) * t
+
+            if self.phase_timer >= self.shrinking_duration:
+                self.phase = "waiting"
+                self.phase_timer = 0.0
+
+        damage_this_tick = self.outside_damage_per_second * self.damage_multiplier * delta
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dist = math.hypot(b.x - self.zone_x, b.y - self.zone_y)
+            if dist > self.zone_radius:
+                if hasattr(b, "take_damage"):
+                    b.take_damage(damage_this_tick, "periodic_safe_zone")
+                elif hasattr(b, "hp"):
+                    b.hp -= damage_this_tick
+
+GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode()
