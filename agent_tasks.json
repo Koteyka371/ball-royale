@@ -17373,7 +17373,7 @@
     },
     {
       "id": "idea-1012",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Breakable Grapple Points",
@@ -27536,6 +27536,40 @@
         "src/ai/gravity_inverter.py",
         "src/ai/gravity_inverter.gd",
         "tests/test_gravity_inverter.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1609",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Unstable Artifact Event",
+      "description": "An artifact spawns that gives a massive power boost to whoever holds it, but completely randomizes their abilities and ball type every 10 seconds.",
+      "allowed_paths": [
+        "src/ai/unstable_artifact.py",
+        "src/ai/unstable_artifact.gd",
+        "tests/test_unstable_artifact.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1610",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Doppelgänger Event",
+      "description": "Using a quantum teleporter has a small chance to spawn an aggressive clone of the player at the exit point that mirrors their stats and attacks them.",
+      "allowed_paths": [
+        "src/ai/quantum_doppelgnger.py",
+        "src/ai/quantum_doppelgnger.gd",
+        "tests/test_quantum_doppelgnger.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

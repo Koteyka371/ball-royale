@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1012] Breakable Grapple Points — *2026-07-15 17:36:43 UTC*
+
+Introduce specific grapple nodes floating in the arena that players can hook onto, but they break after one use, dropping materials.
+
+---
+
 ## [idea-1000] Unstable Quantum Storm Event — *2026-07-15 17:04:37 UTC*
 
 An arena event where all existing quantum teleporters begin rapidly shifting locations around the map every 5 seconds. Using a shifting teleporter applies a random positive or negative buff (e.g. temporary invincibility, or a massive speed slow) upon exit due to quantum instability.
