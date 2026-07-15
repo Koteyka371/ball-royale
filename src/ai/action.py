@@ -4750,7 +4750,7 @@ class Action:
                                         self.ball.last_teleport_tick = current_tick
                                         entity_to_swap.last_teleport_tick = current_tick
 
-                    elif hazard.kind in ("portal", "teleporter", "one_way_teleporter", "wormhole", "quantum_teleporter", "chaos_portal"):
+                    elif hazard.kind in ("portal", "teleporter", "one_way_teleporter", "wormhole", "quantum_teleporter", "chaos_portal", "chaos_teleporter"):
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
@@ -4856,6 +4856,26 @@ class Action:
                                             self.ball._teleported_this_tick = True
                                         self.ball.last_teleport_tick = current_tick
                                         return
+                                if hazard.kind == "chaos_teleporter":
+                                    import random
+                                    # Randomly teleport within a small radius around the hazard (e.g., 50-100 units away)
+                                    angle = random.uniform(0, 2 * math.pi)
+                                    distance = random.uniform(50.0, 100.0)
+                                    self.ball.x += math.cos(angle) * distance
+                                    self.ball.y += math.sin(angle) * distance
+
+                                    # Apply confusion effect
+                                    self.ball.is_confused = True
+                                    self.ball.confusion_timer = max(getattr(self.ball, "confusion_timer", 0.0), 2.0)
+
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({'type': 'visual_effect', 'data': {'x': hazard.x, 'y': hazard.y, 'target_x': self.ball.x, 'target_y': self.ball.y, 'kind': 'chaos_trail'}})
+
+                                    if hasattr(self.ball, "_teleported_this_tick"):
+                                        self.ball._teleported_this_tick = True
+                                    self.ball.last_teleport_tick = current_tick
+                                    continue
+
                                 if hazard.kind in ("teleporter", "one_way_teleporter"):
                                     if hasattr(hazard, "target_x") and hasattr(hazard, "target_y"):
                                         self.ball.x = getattr(hazard, "target_x")

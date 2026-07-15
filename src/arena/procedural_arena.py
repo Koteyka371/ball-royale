@@ -314,6 +314,14 @@ class ProceduralArena:
                 setattr(new_hazard, "pull_speed", random.uniform(50.0, 150.0))
             self.hazards.append(new_hazard)
 
+        # Generate random chaos teleporters
+        num_chaos = max(1, self.num_rooms // 3)
+        for t in range(num_chaos):
+            t_id = len(self.hazards) + 20000 + t
+            tx, ty = self.get_random_spawn_point(25.0)
+            teleporter = Hazard(id=t_id, x=tx, y=ty, radius=25.0, kind="chaos_teleporter", damage=0.0)
+            self.hazards.append(teleporter)
+
         # Generate guaranteed paired portals
         num_portals = max(1, self.num_rooms // 2)
         for p in range(num_portals):
