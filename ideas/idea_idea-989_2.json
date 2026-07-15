@@ -1,4 +1,0 @@
-{
-  "title": "Toxic Sludge Mutator",
-  "description": "A new mutator for custom matches where all ground hazards (like lava and spikes) are replaced with toxic sludge. Toxic sludge applies the Radiation debuff for 10 seconds, drastically increasing damage taken from all sources, and slows movement speed. Forces players to heavily prioritize area control."
-}

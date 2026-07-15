@@ -27405,6 +27405,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1601",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Toxic Sludge Mutator",
+      "description": "A new mutator for custom matches where all ground hazards (like lava and spikes) are replaced with toxic sludge. Toxic sludge applies the Radiation debuff for 10 seconds, drastically increasing damage taken from all sources, and slows movement speed. Forces players to heavily prioritize area control.",
+      "allowed_paths": [
+        "src/ai/toxic_sludge_mutator.py",
+        "src/ai/toxic_sludge_mutator.gd",
+        "tests/test_toxic_sludge_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1602",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Unstable Payload Event",
+      "description": "Periodically, an 'unstable payload' hazard spawns in the center of the arena. It slowly expands and deals increasing radiation damage. Players must attack it to push it towards enemy teams before it reaches critical mass and detonates, instantly eliminating anyone caught in its massive blast radius.",
+      "allowed_paths": [
+        "src/ai/unstable_payload.py",
+        "src/ai/unstable_payload.gd",
+        "tests/test_unstable_payload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

@@ -1,4 +1,0 @@
-{
-    "title": "Chain Lightning Relay",
-    "description": "A new hazard or deployable item that acts as a chain lightning relay. When struck by chain lightning (or any electrical effect), it amplifies the damage by 50% and extends the maximum chain jumps by 2, before passing it on to the next targets in range. It also absorbs nearby small electrical attacks to charge up a massive AoE burst."
-}
