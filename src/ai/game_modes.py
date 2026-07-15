@@ -9286,7 +9286,9 @@ class ShiftingMazeMode(GameMode):
                         "width": cell_size,
                         "height": 20,
                         "dx": rng.uniform(-10, 10),
-                        "dy": rng.uniform(-10, 10)
+                        "dy": rng.uniform(-10, 10),
+                        "is_ghostly": False,
+                        "ghost_timer": rng.uniform(5.0, 15.0)
                     })
                 else:
                     self.walls.append({
@@ -9295,7 +9297,9 @@ class ShiftingMazeMode(GameMode):
                         "width": 20,
                         "height": cell_size,
                         "dx": rng.uniform(-10, 10),
-                        "dy": rng.uniform(-10, 10)
+                        "dy": rng.uniform(-10, 10),
+                        "is_ghostly": False,
+                        "ghost_timer": rng.uniform(5.0, 15.0)
                     })
 
     def tick(self, world, balls, delta=0.016):
@@ -14372,7 +14376,9 @@ class MazeSafeZoneMode(GameMode):
                         "width": cell_size,
                         "height": 20,
                         "dx": rng.uniform(-10, 10),
-                        "dy": rng.uniform(-10, 10)
+                        "dy": rng.uniform(-10, 10),
+                        "is_ghostly": False,
+                        "ghost_timer": rng.uniform(5.0, 15.0)
                     })
                 else:
                     self.walls.append({
@@ -14381,7 +14387,9 @@ class MazeSafeZoneMode(GameMode):
                         "width": 20,
                         "height": cell_size,
                         "dx": rng.uniform(-10, 10),
-                        "dy": rng.uniform(-10, 10)
+                        "dy": rng.uniform(-10, 10),
+                        "is_ghostly": False,
+                        "ghost_timer": rng.uniform(5.0, 15.0)
                     })
 
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -14458,9 +14466,19 @@ class MazeSafeZoneMode(GameMode):
                         b.vy += (bdy / bdist) * pull_strength * delta
 
         # Update walls
+        import random
         for w in self.walls:
             w["x"] += w["dx"] * delta
             w["y"] += w["dy"] * delta
+
+            w["ghost_timer"] -= delta
+            if w["ghost_timer"] <= 0:
+                if w.get("is_ghostly", False):
+                    w["is_ghostly"] = False
+                    w["ghost_timer"] = random.uniform(5.0, 15.0)
+                else:
+                    w["is_ghostly"] = True
+                    w["ghost_timer"] = random.uniform(2.0, 5.0)
 
         # Apply continuous damage outside the safe zone and check wall collisions
         max_arena_dim = max(arena_width, arena_height)
@@ -14490,6 +14508,8 @@ class MazeSafeZoneMode(GameMode):
 
                     touching_wall = False
                     for w in self.walls:
+                        if w.get("is_ghostly", False):
+                            continue
                         nearest_x = max(w["x"], min(bx, w["x"] + w["width"]))
                         nearest_y = max(w["y"], min(by, w["y"] + w["height"]))
 
