@@ -18025,7 +18025,70 @@ class SniperOnlyMode(GameMode):
             if hasattr(b, "traits") and "sniper" not in getattr(b, "traits", []):
                 b.traits.append("sniper")
 
+class MagneticBumpersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Magnetic Bumpers"
+        self.description = "Bumpers exert a magnetic pull, making it tricky to navigate around them without getting caught in a pinball frenzy."
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        pass
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+            import random
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            class BumperHazard:
+                def __init__(self, hid, hx, hy, r, k):
+                    self.id = hid
+                    self.x = hx
+                    self.y = hy
+                    self.radius = r
+                    self.kind = k
+                    self.damage = 0.0
+
+            hazard_kinds = ["bumper", "bounce_pad", "pinball_flipper"]
+            for i in range(15):
+                x = random.uniform(100, arena_width - 100)
+                y = random.uniform(100, arena_height - 100)
+                r = random.uniform(30.0, 60.0)
+                kind = random.choice(hazard_kinds)
+                world.arena.hazards.append(BumperHazard(12000 + i, x, y, r, kind))
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        hazards = []
+        if hasattr(world, "arena") and world.arena and hasattr(world.arena, "hazards"):
+            hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") in ["bumper", "bounce_pad", "pinball_flipper", "electric_bumper"]]
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            b_x = getattr(b, "x", 0.0)
+            b_y = getattr(b, "y", 0.0)
+
+            for h in hazards:
+                h_x = getattr(h, "x", 0.0)
+                h_y = getattr(h, "y", 0.0)
+                dist = math.hypot(b_x - h_x, b_y - h_y)
+
+                if dist > 0 and dist < 250.0:
+                    pull_strength = 200.0 * delta * (1.0 - dist / 250.0)
+                    dx = (h_x - b_x) / dist
+                    dy = (h_y - b_y) / dist
+
+                    b.x = b_x + dx * pull_strength
+                    b.y = b_y + dy * pull_strength
+
 GAME_MODES = {
+    "magnetic_bumpers": MagneticBumpersMode(),
     'sniper_only': SniperOnlyMode(),
     "stationary_turrets": StationaryTurretsMode(),
 
