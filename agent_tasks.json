@@ -16880,7 +16880,7 @@
     },
     {
       "id": "idea-983",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Corrosive Acid Rain Weather",
@@ -27825,6 +27825,74 @@
         "src/ai/bumper_shield_integration.py",
         "src/ai/bumper_shield_integration.gd",
         "tests/test_bumper_shield_integration.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1626",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Mayhem",
+      "description": "Every player defeated unleashes a massive explosion that can trigger other players' explosions, leading to catastrophic chain reactions.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_mayhem.py",
+        "src/ai/chain_reaction_mayhem.gd",
+        "tests/test_chain_reaction_mayhem.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1627",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Grid Arena",
+      "description": "A mode where random intersecting lasers continuously activate across the arena, forcing players to perfectly time their movements.",
+      "allowed_paths": [
+        "src/arena/laser_grid_arena.py",
+        "src/arena/laser_grid_arena.gd",
+        "tests/test_laser_grid_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1628",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Waterfalls (Vertical Currents)",
+      "description": "Introduce a Waterfall hazard that operates similarly to flood zones but dynamically changes the elevation level of the arena, dropping entities to a lower arena layer where different hazards might exist. While falling, entities cannot attack but can be attacked.",
+      "allowed_paths": [
+        "src/ai/waterfalls_vertical_currents.py",
+        "src/ai/waterfalls_vertical_currents.gd",
+        "tests/test_waterfalls_vertical_currents.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1629",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Earthquake Event",
+      "description": "A random arena event that randomly shifts hazard positions and adds small random velocity impulses to all balls for a short duration.",
+      "allowed_paths": [
+        "src/ai/earthquake.py",
+        "src/ai/earthquake.gd",
+        "tests/test_earthquake.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

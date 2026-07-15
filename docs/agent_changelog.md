@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-983] Corrosive Acid Rain Weather — *2026-07-15 22:47:37 UTC*
+
+Introduce a new 'acid_rain' weather condition that slowly degrades the armor and max HP of metallic or heavily armored balls over time, while occasionally spawning neutralizing puddles that players can fight over to wash off the acid.
+
+---
+
 ## [idea-1026] Flooded Arena Event Phase — *2026-07-15 22:26:52 UTC*
 
 Create an arena event where the entire map slowly floods from the edges inward over time, restricting play exclusively to the shrinking dry center. Once fully flooded, only players with aquatic traits or floaters survive, changing the endgame dynamic completely.
