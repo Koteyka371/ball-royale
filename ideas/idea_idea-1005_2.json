@@ -1,1 +1,4 @@
-{"title": "Gravity Inverter", "description": "A consumable item that inverts gravity in an area."}
+{
+  "title": "Teleporter Pads",
+  "description": "Linked teleportation pads that instantly move a ball from one side of the map to the other."
+}

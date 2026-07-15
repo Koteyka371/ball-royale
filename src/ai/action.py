@@ -6587,6 +6587,20 @@ class Action:
                                         if hazard.hp <= 0:
                                             hazard.active = False
                             continue
+                        elif hazard.kind == "geyser" and getattr(hazard, "erupting", False):
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            import math
+                            dist = math.hypot(dx, dy)
+                            if dist < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 10.0)) and not getattr(self.ball, "is_flying", False):
+                                self.ball.is_flying = True
+                                import random
+                                angle = random.uniform(0, 2 * math.pi)
+                                distance = random.uniform(500, 1000)
+                                self.ball.fly_target_x = self.ball.x + math.cos(angle) * distance
+                                self.ball.fly_target_y = self.ball.y + math.sin(angle) * distance
+                                self.ball.fly_timer = max(0.5, distance / 1500.0)
+                            continue
                         elif hazard.kind == "launch_pad":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y

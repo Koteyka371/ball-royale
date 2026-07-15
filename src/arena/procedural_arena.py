@@ -553,6 +553,18 @@ class ProceduralArena:
 
     def update_zone(self, current_tick: int, delta: float):
         if current_tick != self.last_tick:
+            for h in self.hazards:
+                if h.kind == "geyser":
+                    if getattr(h, "erupting", False):
+                        h.erupt_timer = getattr(h, "erupt_timer", 0.0) - delta
+                        if h.erupt_timer <= 0:
+                            h.erupting = False
+                    else:
+                        h.pressure = getattr(h, "pressure", 0.0) + delta * 20.0
+                        if h.pressure >= 100.0:
+                            h.erupting = True
+                            h.erupt_timer = 2.0
+                            h.pressure = 0.0
 
             import random
             if current_tick % 400 == 0:
@@ -1169,6 +1181,9 @@ class ProceduralArena:
                 elif random.random() < 0.1:
                     kind = "bounce_pad"
                     damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "geyser"
+                    damage = 0.0
                 elif random.random() < 0.1:
                     kind = "explosive_barrel"
                     damage = 0.0
@@ -1248,6 +1263,10 @@ class ProceduralArena:
                     target_ly = random.uniform(200, self.height - 200)
                     setattr(new_hazard, "target_x", target_lx)
                     setattr(new_hazard, "target_y", target_ly)
+                if kind == "geyser":
+                    setattr(new_hazard, "pressure", 0.0)
+                    setattr(new_hazard, "erupting", False)
+                    setattr(new_hazard, "erupt_timer", 0.0)
                 if kind == "temporal_rift":
                     setattr(new_hazard, "time_scale", random.choice([0.5, 1.5, 2.0]))
                 elif kind == "breakable_wall":

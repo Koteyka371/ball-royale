@@ -633,6 +633,27 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 
 func update_zone(current_tick: int, delta: float) -> void:
     if current_tick != last_tick:
+        for h in hazards:
+            if h.kind == "geyser":
+                var erupting = false
+                if h.has_meta("erupting"): erupting = h.get_meta("erupting")
+                if erupting:
+                    var et = 0.0
+                    if h.has_meta("erupt_timer"): et = h.get_meta("erupt_timer")
+                    et -= delta
+                    h.set_meta("erupt_timer", et)
+                    if et <= 0.0:
+                        h.set_meta("erupting", false)
+                else:
+                    var p = 0.0
+                    if h.has_meta("pressure"): p = h.get_meta("pressure")
+                    p += delta * 20.0
+                    if p >= 100.0:
+                        h.set_meta("erupting", true)
+                        h.set_meta("erupt_timer", 2.0)
+                        h.set_meta("pressure", 0.0)
+                    else:
+                        h.set_meta("pressure", p)
 
         if current_tick % 400 == 0:
             var states = ["bouncy", "bouncy", "bouncy", "bouncy"]
@@ -1420,6 +1441,12 @@ func update_zone(current_tick: int, delta: float) -> void:
                 elif randf() < 0.1:
                     h.kind = "bounce_pad"
                     h.damage = 0.0
+                elif randf() < 0.05:
+                    h.kind = "geyser"
+                    h.damage = 0.0
+                    h.set_meta("pressure", 0.0)
+                    h.set_meta("erupting", false)
+                    h.set_meta("erupt_timer", 0.0)
                 elif randf() < 0.1:
                     h.kind = "explosive_barrel"
                     h.damage = 0.0

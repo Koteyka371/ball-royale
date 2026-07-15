@@ -1,1 +1,4 @@
-{"title": "Teleportation Trap", "description": "A trap that teleports a player to a random spot."}
+{
+  "title": "Earthquake Hazard",
+  "description": "Periodically shakes the whole arena, momentarily knocking up and stunning balls, and interrupting dashes."
+}

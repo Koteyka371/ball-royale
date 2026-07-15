@@ -11803,6 +11803,40 @@ func execute(strategy: String, delta: float):
                                         hazard.active = false
                                         hazard.set_meta("active", false)
                         continue
+                    elif hazard.kind == "geyser":
+                        var erupting = false
+                        if hazard.has_meta("erupting"): erupting = hazard.get_meta("erupting")
+                        if erupting:
+                            var dx = self.ball.x - hazard.x
+                            var dy = self.ball.y - hazard.y
+                            var d = sqrt(dx*dx + dy*dy)
+                            var b_rad = 10.0
+                            if "radius" in self.ball: b_rad = self.ball.radius
+                            var is_flying_c = false
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_flying"):
+                                is_flying_c = self.ball.get_meta("is_flying")
+                            elif "is_flying" in self.ball:
+                                is_flying_c = self.ball.is_flying
+                            var haz_rad = 10.0
+                            if "radius" in hazard: haz_rad = hazard.radius
+                            if d < (b_rad + haz_rad) and not is_flying_c:
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("is_flying", true)
+                                else:
+                                    self.ball.is_flying = true
+                                var angle = randf() * 2.0 * PI
+                                var dist_target = randf_range(500.0, 1000.0)
+                                var tx = self.ball.x + cos(angle) * dist_target
+                                var ty = self.ball.y + sin(angle) * dist_target
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("fly_target_x", tx)
+                                    self.ball.set_meta("fly_target_y", ty)
+                                    self.ball.set_meta("fly_timer", max(0.5, dist_target / 1500.0))
+                                else:
+                                    self.ball.fly_target_x = tx
+                                    self.ball.fly_target_y = ty
+                                    self.ball.fly_timer = max(0.5, dist_target / 1500.0)
+                        continue
                     elif hazard.kind == "launch_pad":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
