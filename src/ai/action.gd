@@ -1580,7 +1580,9 @@ func _attempt_damage(attacker, target) -> void:
 								if dist_sq < chain_range_sq:
 									var t_var = ""
 									if typeof(h) == TYPE_OBJECT and h.has_meta("trap_variant"): t_var = h.get_meta("trap_variant")
-									if t_var == "emp_trap":
+									var h_kind = ""
+									if typeof(h) == TYPE_OBJECT and h.has_meta("kind"): h_kind = h.get_meta("kind")
+									if t_var == "emp_trap" or h_kind == "lightning_rod":
 										nearby.append({"dist": -999999.0 + dist_sq, "entity": h, "type": "hazard"})
 									else:
 										nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
@@ -5649,6 +5651,12 @@ func execute(strategy: String, delta: float):
 						time_scale = float(hazard.time_scale)
 					elif hazard.has_method("get_meta") and hazard.has_meta("time_scale"):
 						time_scale = float(hazard.get_meta("time_scale"))
+					var cb = ""
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cb = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+					elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball: cb = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cb = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+					if cb == "grounded_boots":
+						time_scale = 1.0 - (1.0 - time_scale) * 0.1
 					delta *= time_scale
 					break
 
@@ -5779,7 +5787,9 @@ func execute(strategy: String, delta: float):
                                 if dist_sq < chain_range_sq:
                                     var t_var = ""
                                     if typeof(h) == TYPE_OBJECT and h.has_meta("trap_variant"): t_var = h.get_meta("trap_variant")
-                                    if t_var == "emp_trap":
+                                    var h_kind = ""
+                                    if typeof(h) == TYPE_OBJECT and h.has_meta("kind"): h_kind = h.get_meta("kind")
+                                    if t_var == "emp_trap" or h_kind == "lightning_rod":
                                         nearby.append({"dist": -999999.0 + dist_sq, "entity": h, "type": "hazard"})
                                     else:
                                         nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
@@ -6135,6 +6145,8 @@ func execute(strategy: String, delta: float):
 
         if cosmetic_val == "magnetic_boots":
             base_s *= 0.9
+        elif cosmetic_val == "grounded_boots":
+            base_s *= 0.85
 
         var arena_ref_sp = self.world.get("arena") if "arena" in self.world else null
         var is_snowing_sp = arena_ref_sp.get("is_snowing") if arena_ref_sp != null and "is_snowing" in arena_ref_sp else false
@@ -9452,6 +9464,8 @@ func execute(strategy: String, delta: float):
 
                             if cosmetic_val == "magnetic_boots":
                                 push_strength *= 0.5
+                            elif cosmetic_val == "grounded_boots":
+                                push_strength *= 0.1
 
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
@@ -9609,6 +9623,8 @@ func execute(strategy: String, delta: float):
 
                             if cosmetic_val == "magnetic_boots":
                                 push_strength *= 0.5
+                            elif cosmetic_val == "grounded_boots":
+                                push_strength *= 0.1
 
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
@@ -9830,8 +9846,13 @@ func execute(strategy: String, delta: float):
                             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer = float(self.ball.get_meta("anchor_booster_timer"))
                             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): anchor_timer = float(self.ball["anchor_booster_timer"])
                             if anchor_timer <= 0:
-                                self.ball.x += nx * pull_strength
-                                self.ball.y += ny * pull_strength
+                                var cb = ""
+                                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cb = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                                elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball: cb = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cb = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+                                var mod = 0.1 if cb == "grounded_boots" else 1.0
+                                self.ball.x += nx * pull_strength * mod
+                                self.ball.y += ny * pull_strength * mod
                 elif hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal"]:
                     var current_tick = 0
                     if "tick" in self.world:
@@ -10012,8 +10033,13 @@ func execute(strategy: String, delta: float):
                             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer = float(self.ball.get_meta("anchor_booster_timer"))
                             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): anchor_timer = float(self.ball["anchor_booster_timer"])
                             if anchor_timer <= 0:
-                                self.ball.x += nx * pull_strength
-                                self.ball.y += ny * pull_strength
+                                var cb = ""
+                                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cb = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                                elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball: cb = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cb = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+                                var mod = 0.1 if cb == "grounded_boots" else 1.0
+                                self.ball.x += nx * pull_strength * mod
+                                self.ball.y += ny * pull_strength * mod
                             if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"]:
                                 var has_vx = false
                                 if "vx" in self.ball: has_vx = true
@@ -11214,6 +11240,8 @@ func execute(strategy: String, delta: float):
 
                             if cosmetic_val == "magnetic_boots":
                                 knockback_force *= 0.5
+                            elif cosmetic_val == "grounded_boots":
+                                knockback_force *= 0.1
 
                             self.ball.x += nx * knockback_force
                             self.ball.y += ny * knockback_force
@@ -22865,6 +22893,8 @@ func _resolve_collisions() -> bool:
 
             if cosmetic_val == "magnetic_boots":
                 knockback_multiplier *= 0.5
+            elif cosmetic_val == "grounded_boots":
+                knockback_multiplier *= 0.1
             elif cosmetic_val == "kinetic_absorber":
                 var o_team = null
                 if typeof(other) == TYPE_DICTIONARY and other.has("team"):
