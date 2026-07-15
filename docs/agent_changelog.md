@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-979] Phase Shift Hazard — *2026-07-15 00:27:44 UTC*
+
+A hazard that makes the triggering ball ethereal for 5 seconds. Ethereal balls can pass through walls and hazards but cannot attack or use skills.
+
+---
+
 ## [idea-999] Invisible Mines Mode — *2026-07-15 00:15:15 UTC*
 
 A mode where players can randomly drop invisible mines while moving, making navigation dangerous and encouraging players to force opponents into previously traveled paths.

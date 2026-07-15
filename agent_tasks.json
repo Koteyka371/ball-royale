@@ -16812,7 +16812,7 @@
     },
     {
       "id": "idea-979",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Phase Shift Hazard",
@@ -27213,6 +27213,40 @@
         "src/ai/pinball_bumper_mutator.py",
         "src/ai/pinball_bumper_mutator.gd",
         "tests/test_pinball_bumper_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1590",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Trail Mode",
+      "description": "Players periodically leave behind a trail of decoys that inherit their current appearance and velocity for a short duration, confusing opponents in high-speed chases.",
+      "allowed_paths": [
+        "src/ai/decoy_trail.py",
+        "src/ai/decoy_trail.gd",
+        "tests/test_decoy_trail.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1591",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Floor Hazard",
+      "description": "Certain areas of the map act as sticky floors that slowly reduce movement speed over time while a player remains on them, but drastically increase traction/defense against pushing.",
+      "allowed_paths": [
+        "src/arena/sticky_floor.py",
+        "src/arena/sticky_floor.gd",
+        "tests/test_sticky_floor.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
