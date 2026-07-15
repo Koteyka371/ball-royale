@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-966] Bumper Synergy Booster — *2026-07-15 22:13:25 UTC*
+
+Add a new 'bumper_synergy' booster that allows a ball to absorb the impact energy of bumping into bumpers and temporarily increase its own attack speed and movement speed.
+
+---
+
 ## [idea-1004] Bumper Arena Boundaries — *2026-07-15 21:47:54 UTC*
 
 The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging.

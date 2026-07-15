@@ -16591,7 +16591,7 @@
     },
     {
       "id": "idea-966",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Synergy Booster",
@@ -27757,6 +27757,40 @@
         "src/ai/false_maze_walls.py",
         "src/ai/false_maze_walls.gd",
         "tests/test_false_maze_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1622",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Bouncy Arena Mode",
+      "description": "Combines Extreme Bounciness with a shrinking safe zone. As the walls close in, the bouncing intensity increases, forcing players into frantic, close-quarters pinball scenarios.",
+      "allowed_paths": [
+        "src/arena/shrinking_bouncy_arena.py",
+        "src/arena/shrinking_bouncy_arena.gd",
+        "tests/test_shrinking_bouncy_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1623",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Bullet Hell Mode",
+      "description": "Projectiles inherit the extreme bounciness physics, turning the arena into a chaotic bullet hell where missed shots rapidly ricochet off walls, growing in speed until they hit something.",
+      "allowed_paths": [
+        "src/ai/bouncy_bullet_hell.py",
+        "src/ai/bouncy_bullet_hell.gd",
+        "tests/test_bouncy_bullet_hell.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
