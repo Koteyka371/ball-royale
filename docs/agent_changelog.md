@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1016] Orbital Minefield Hazard — *2026-07-15 19:59:47 UTC*
+
+A new hazard type that constantly orbits the center of the arena (or around a central massive black hole). Unlike static traps, these mines are hard to track and add an element of bullet-hell dodgery to the center area.
+
+---
+
 ## [idea-1018] Kinetic Rebound Hazard — *2026-07-15 19:18:50 UTC*
 
 A dynamic hazard that spawns and expands across the arena. Any projectile or moving entity that hits its boundary gets reflected perfectly but with 2x velocity and increased damage potential.

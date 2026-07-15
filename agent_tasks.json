@@ -17441,7 +17441,7 @@
     },
     {
       "id": "idea-1016",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Minefield Hazard",
@@ -27655,6 +27655,23 @@
         "src/ai/decoy_bodyguard.py",
         "src/ai/decoy_bodyguard.gd",
         "tests/test_decoy_bodyguard.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1616",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zone With Damage Multiplier",
+      "description": "Like a standard safe zone, but instead of straight damage out of bounds, the further out you are, the higher the damage multiplier gets when hit by enemies.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zone_with_damage_multiplier.py",
+        "src/ai/shrinking_safe_zone_with_damage_multiplier.gd",
+        "tests/test_shrinking_safe_zone_with_damage_multiplier.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
