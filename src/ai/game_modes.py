@@ -21681,6 +21681,63 @@ class PhantomReplayHazardMode(GameMode):
 
 GAME_MODES['phantom_replay_hazard'] = PhantomReplayHazardMode()
 GAME_MODES['grid_lockdown'] = GridLockdownMode()
+
+class InvisibleMinesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Invisible Mines"
+        self.description = "Players drop invisible mines randomly while moving, encouraging tactical routing."
+        self.traveled = {}
+        self.last_pos = {}
+        self.mines_spawned = 0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            b_id = getattr(b, "id", None)
+            if b_id is None:
+                continue
+
+            current_pos = (getattr(b, "x", 0.0), getattr(b, "y", 0.0))
+
+            if b_id not in self.last_pos:
+                self.last_pos[b_id] = current_pos
+                self.traveled[b_id] = 0.0
+                continue
+
+            last_p = self.last_pos[b_id]
+            dist = math.hypot(current_pos[0] - last_p[0], current_pos[1] - last_p[1])
+            self.traveled[b_id] += dist
+            self.last_pos[b_id] = current_pos
+
+            # Drop a mine every ~200 units traveled
+            if self.traveled[b_id] >= 200.0:
+                self.traveled[b_id] -= 200.0
+
+                # Small chance to drop
+                if random.random() < 0.4:
+                    h_id = len(world.arena.hazards) + random.randint(10000, 99999) + self.mines_spawned
+                    try:
+                        from arena.procedural_arena import Hazard
+                        mine = Hazard(id=h_id, x=current_pos[0], y=current_pos[1], radius=20.0, kind="hidden_mine", damage=45.0)
+                        mine.duration = -1.0
+                        mine.active = True
+                    except ImportError:
+                        mine = _MinefieldHazard(h_id, current_pos[0], current_pos[1], 20.0, "hidden_mine", 45.0, duration=-1.0)
+
+                    world.arena.hazards.append(mine)
+                    self.mines_spawned += 1
+
+GAME_MODES["invisible_mines"] = InvisibleMinesMode()
+
 GAME_MODES['phantom_juggernaut'] = PhantomJuggernautMode()
 
 GAME_MODES["chicken_curse"] = ChickenCurseMode()
