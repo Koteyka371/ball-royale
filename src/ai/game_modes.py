@@ -21804,3 +21804,105 @@ GAME_MODES["invisible_mines"] = InvisibleMinesMode()
 GAME_MODES['phantom_juggernaut'] = PhantomJuggernautMode()
 
 GAME_MODES["chicken_curse"] = ChickenCurseMode()
+
+
+class ElasticBandHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Elastic Band Hazard"
+        self.description = "A hazard zone that functions as a powerful, omni-directional elastic band. Balls that enter the zone are grabbed, stretched backward towards the center over a short duration based on their momentum, and then violently launched back out in the opposite direction they entered from with significantly increased speed."
+        self.hazard_x = 500.0
+        self.hazard_y = 500.0
+        self.hazard_radius = 150.0
+        self.grabbed = {}
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.grabbed.clear()
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.duration = 9999.0
+                        self.active = True
+
+                import random
+                h = FallbackHazard(id=random.randint(50000, 59999), x=self.hazard_x, y=self.hazard_y, radius=self.hazard_radius, kind="elastic_band_zone", damage=0.0)
+                world.arena.hazards.append(h)
+            except Exception:
+                pass
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if getattr(b, "hp", 1.0) <= 0:
+                if getattr(b, "id", None) in self.grabbed:
+                    del self.grabbed[b.id]
+                continue
+
+            dist = math.hypot(b.x - self.hazard_x, b.y - self.hazard_y)
+
+            if b.id not in self.grabbed:
+                if dist < self.hazard_radius:
+                    momentum = math.hypot(b.vx, b.vy)
+                    duration = max(0.5, min(1.5, momentum / 300.0))
+
+                    in_vx = b.vx
+                    in_vy = b.vy
+                    if momentum < 10.0:
+                        in_vx = -(b.x - self.hazard_x)
+                        in_vy = -(b.y - self.hazard_y)
+                        if in_vx == 0 and in_vy == 0:
+                            in_vx = 10.0
+
+                    self.grabbed[b.id] = {
+                        "phase": "stretching",
+                        "timer": 0.0,
+                        "duration": duration,
+                        "entry_vx": in_vx,
+                        "entry_vy": in_vy,
+                        "start_x": b.x,
+                        "start_y": b.y
+                    }
+            else:
+                state = self.grabbed[b.id]
+                if state["phase"] == "stretching":
+                    state["timer"] += delta
+                    t = state["timer"] / state["duration"]
+                    if t >= 1.0:
+                        state["phase"] = "launched"
+                        state["timer"] = 0.0
+
+                        launch_vx = -state["entry_vx"] * 2.5
+                        launch_vy = -state["entry_vy"] * 2.5
+
+                        launch_speed = math.hypot(launch_vx, launch_vy)
+                        if launch_speed < 800.0:
+                            scale = 800.0 / max(1.0, launch_speed)
+                            launch_vx *= scale
+                            launch_vy *= scale
+
+                        b.vx = launch_vx
+                        b.vy = launch_vy
+                    else:
+                        target_x = state["start_x"] + (self.hazard_x - state["start_x"]) * t
+                        target_y = state["start_y"] + (self.hazard_y - state["start_y"]) * t
+
+                        b.vx = (target_x - b.x) / delta
+                        b.vy = (target_y - b.y) / delta
+
+                elif state["phase"] == "launched":
+                    state["timer"] += delta
+                    if dist > self.hazard_radius + 20.0 or state["timer"] > 2.0:
+                        del self.grabbed[b.id]
+
+GAME_MODES['elastic_band_hazard'] = ElasticBandHazardMode()

@@ -34294,3 +34294,100 @@ GAME_MODES["phantom_juggernaut"] = PhantomJuggernautMode.new()
 GAME_MODES["chicken_curse"] = ChickenCurseMode.new()
 
 GAME_MODES["magnetic_bumpers"] = MagneticBumpersMode.new()
+
+
+class ElasticBandHazardMode extends GameMode:
+	var hazard_x: float = 500.0
+	var hazard_y: float = 500.0
+	var hazard_radius: float = 150.0
+	var grabbed: Dictionary = {}
+
+	func _init() -> void:
+		name = "Elastic Band Hazard"
+		description = "A hazard zone that functions as a powerful, omni-directional elastic band. Balls that enter the zone are grabbed, stretched backward towards the center over a short duration based on their momentum, and then violently launched back out in the opposite direction they entered from with significantly increased speed."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		grabbed.clear()
+
+		if world.get("arena") != null and world.arena.get("hazards") != null:
+			var h_id = randi() % 10000 + 50000
+			var h = {
+				"id": h_id,
+				"x": hazard_x,
+				"y": hazard_y,
+				"radius": hazard_radius,
+				"kind": "elastic_band_zone",
+				"damage": 0.0,
+				"duration": 9999.0,
+				"active": true
+			}
+			world.arena.hazards.append(h)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			if b.get("hp", 1.0) <= 0:
+				if grabbed.has(b.id):
+					grabbed.erase(b.id)
+				continue
+
+			var dx = b.x - hazard_x
+			var dy = b.y - hazard_y
+			var dist = sqrt(dx * dx + dy * dy)
+
+			if not grabbed.has(b.id):
+				if dist < hazard_radius:
+					var momentum = sqrt(b.vx * b.vx + b.vy * b.vy)
+					var duration = max(0.5, min(1.5, momentum / 300.0))
+
+					var in_vx = b.vx
+					var in_vy = b.vy
+					if momentum < 10.0:
+						in_vx = -dx
+						in_vy = -dy
+						if in_vx == 0 and in_vy == 0:
+							in_vx = 10.0
+
+					grabbed[b.id] = {
+						"phase": "stretching",
+						"timer": 0.0,
+						"duration": duration,
+						"entry_vx": in_vx,
+						"entry_vy": in_vy,
+						"start_x": b.x,
+						"start_y": b.y
+					}
+			else:
+				var state = grabbed[b.id]
+				if state["phase"] == "stretching":
+					state["timer"] += delta
+					var t = state["timer"] / state["duration"]
+					if t >= 1.0:
+						state["phase"] = "launched"
+						state["timer"] = 0.0
+
+						var launch_vx = -state["entry_vx"] * 2.5
+						var launch_vy = -state["entry_vy"] * 2.5
+
+						var launch_speed = sqrt(launch_vx * launch_vx + launch_vy * launch_vy)
+						if launch_speed < 800.0:
+							var scale = 800.0 / max(1.0, launch_speed)
+							launch_vx *= scale
+							launch_vy *= scale
+
+						b.vx = launch_vx
+						b.vy = launch_vy
+					else:
+						var target_x = state["start_x"] + (hazard_x - state["start_x"]) * t
+						var target_y = state["start_y"] + (hazard_y - state["start_y"]) * t
+
+						b.vx = (target_x - b.x) / delta
+						b.vy = (target_y - b.y) / delta
+				elif state["phase"] == "launched":
+					state["timer"] += delta
+					if dist > hazard_radius + 20.0 or state["timer"] > 2.0:
+						grabbed.erase(b.id)
+
+GAME_MODES["elastic_band_hazard"] = ElasticBandHazardMode.new()

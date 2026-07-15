@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A hazard that randomly tags two balls in the zone and swaps their exact positions and velocities after a brief warning, causing massive chaos and unexpected collisions."
+}
