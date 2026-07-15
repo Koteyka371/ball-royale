@@ -24883,6 +24883,68 @@ func _update_skill_timer(delta: float):
                             if "duration" in hazard: hazard.duration = 0.0
                             elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                             elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+                elif h_kind == "polarity_inverter":
+                    var h_x = 0.0
+                    if "x" in hazard: h_x = hazard.x
+                    elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                    var h_y = 0.0
+                    if "y" in hazard: h_y = hazard.y
+                    elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+                    var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                    var h_rad = 50.0
+                    if "radius" in hazard: h_rad = hazard.radius
+                    elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+
+                    if dist_sq < h_rad * h_rad:
+                        var current_polarity = 0
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("polarity"): current_polarity = int(self.ball.get_meta("polarity"))
+                        elif "polarity" in self.ball: current_polarity = int(self.ball.polarity)
+
+                        var cooldown = 0.0
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("polarity_cooldown"): cooldown = float(self.ball.get_meta("polarity_cooldown"))
+                        elif "polarity_cooldown" in self.ball: cooldown = float(self.ball.polarity_cooldown)
+
+                        if cooldown <= 0:
+                            var new_polarity = 1
+                            if current_polarity == 0: new_polarity = 1
+                            elif current_polarity == 1: new_polarity = -1
+                            elif current_polarity == -1: new_polarity = 1
+
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("polarity", new_polarity)
+                                self.ball.set_meta("polarity_cooldown", 1.0)
+                            else:
+                                self.ball.polarity = new_polarity
+                                self.ball.polarity_cooldown = 1.0
+
+                        if world.has_method("get") and world.get("balls") != null:
+                            for other in world.balls:
+                                if typeof(other) != TYPE_OBJECT or not other.get("alive", true) or other.get("id") == self.ball.get("id"):
+                                    continue
+                                var other_polarity = 0
+                                if other.has_method("get_meta") and other.has_meta("polarity"): other_polarity = int(other.get_meta("polarity"))
+                                elif "polarity" in other: other_polarity = int(other.polarity)
+
+                                var my_polarity = 0
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("polarity"): my_polarity = int(self.ball.get_meta("polarity"))
+                                elif "polarity" in self.ball: my_polarity = int(self.ball.polarity)
+
+                                if other_polarity != 0 and my_polarity != 0:
+                                    var dx = other.x - self.ball.x
+                                    var dy = other.y - self.ball.y
+                                    var dist2 = dx*dx + dy*dy
+                                    if dist2 < 10000.0 and dist2 > 0:
+                                        var dist = sqrt(dist2)
+                                        var nx = dx / dist
+                                        var ny = dy / dist
+                                        var force = 200.0 * delta * (1.0 - dist/100.0)
+                                        if my_polarity == other_polarity:
+                                            self.ball.x -= nx * force
+                                            self.ball.y -= ny * force
+                                        else:
+                                            self.ball.x += nx * force
+                                            self.ball.y += ny * force
                             elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
                 if h_kind == "aura_inverter_trap":
                     var owner_id = null
@@ -25157,6 +25219,68 @@ func _update_skill_timer(delta: float):
                             if "duration" in hazard: hazard.duration = 0.0
                             elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                             elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+                elif h_kind == "polarity_inverter":
+                    var h_x = 0.0
+                    if "x" in hazard: h_x = hazard.x
+                    elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                    var h_y = 0.0
+                    if "y" in hazard: h_y = hazard.y
+                    elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+                    var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                    var h_rad = 50.0
+                    if "radius" in hazard: h_rad = hazard.radius
+                    elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+
+                    if dist_sq < h_rad * h_rad:
+                        var current_polarity = 0
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("polarity"): current_polarity = int(self.ball.get_meta("polarity"))
+                        elif "polarity" in self.ball: current_polarity = int(self.ball.polarity)
+
+                        var cooldown = 0.0
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("polarity_cooldown"): cooldown = float(self.ball.get_meta("polarity_cooldown"))
+                        elif "polarity_cooldown" in self.ball: cooldown = float(self.ball.polarity_cooldown)
+
+                        if cooldown <= 0:
+                            var new_polarity = 1
+                            if current_polarity == 0: new_polarity = 1
+                            elif current_polarity == 1: new_polarity = -1
+                            elif current_polarity == -1: new_polarity = 1
+
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("polarity", new_polarity)
+                                self.ball.set_meta("polarity_cooldown", 1.0)
+                            else:
+                                self.ball.polarity = new_polarity
+                                self.ball.polarity_cooldown = 1.0
+
+                        if world.has_method("get") and world.get("balls") != null:
+                            for other in world.balls:
+                                if typeof(other) != TYPE_OBJECT or not other.get("alive", true) or other.get("id") == self.ball.get("id"):
+                                    continue
+                                var other_polarity = 0
+                                if other.has_method("get_meta") and other.has_meta("polarity"): other_polarity = int(other.get_meta("polarity"))
+                                elif "polarity" in other: other_polarity = int(other.polarity)
+
+                                var my_polarity = 0
+                                if self.ball.has_method("get_meta") and self.ball.has_meta("polarity"): my_polarity = int(self.ball.get_meta("polarity"))
+                                elif "polarity" in self.ball: my_polarity = int(self.ball.polarity)
+
+                                if other_polarity != 0 and my_polarity != 0:
+                                    var dx = other.x - self.ball.x
+                                    var dy = other.y - self.ball.y
+                                    var dist2 = dx*dx + dy*dy
+                                    if dist2 < 10000.0 and dist2 > 0:
+                                        var dist = sqrt(dist2)
+                                        var nx = dx / dist
+                                        var ny = dy / dist
+                                        var force = 200.0 * delta * (1.0 - dist/100.0)
+                                        if my_polarity == other_polarity:
+                                            self.ball.x -= nx * force
+                                            self.ball.y -= ny * force
+                                        else:
+                                            self.ball.x += nx * force
+                                            self.ball.y += ny * force
 
                 if h_kind == "ethereal_trap":
                     var h_x = 0.0
