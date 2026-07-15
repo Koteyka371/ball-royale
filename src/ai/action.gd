@@ -8570,6 +8570,67 @@ func execute(strategy: String, delta: float):
                         var cooldown = 10
                         if hazard.kind == "quantum_teleporter":
                             cooldown = 30
+
+                        if hazard.kind == "quantum_teleporter":
+                            var ent_tick = 0
+                            if hazard.has_meta("entangled_until_tick"): ent_tick = hazard.get_meta("entangled_until_tick")
+                            var ent_user_id = -1
+                            if hazard.has_meta("entangled_user_id"): ent_user_id = hazard.get_meta("entangled_user_id")
+
+                            var b_id = -1
+                            if "id" in self.ball: b_id = self.ball.id
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("id") != null: b_id = self.ball.get("id")
+
+                            if current_tick <= ent_tick and ent_user_id != -1 and ent_user_id != b_id:
+                                var user_ball = null
+                                var balls_list = []
+                                if "balls" in self.world: balls_list = self.world.balls
+                                for b in balls_list:
+                                    var curr_id = -1
+                                    if "id" in b: curr_id = b.id
+                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("id") != null: curr_id = b.get("id")
+                                    if curr_id == ent_user_id:
+                                        user_ball = b
+                                        break
+
+                                if user_ball != null:
+                                    var u_team = 1
+                                    if "team" in user_ball: u_team = user_ball.team
+                                    elif typeof(user_ball) == TYPE_OBJECT and user_ball.has_method("get") and user_ball.get("team") != null: u_team = user_ball.get("team")
+                                    var my_team = 2
+                                    if "team" in self.ball: my_team = self.ball.team
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("team") != null: my_team = self.ball.get("team")
+                                    var u_alive = true
+                                    if "alive" in user_ball: u_alive = user_ball.alive
+                                    elif typeof(user_ball) == TYPE_OBJECT and user_ball.has_method("get") and user_ball.get("alive") != null: u_alive = user_ball.get("alive")
+
+                                    if u_team != my_team and u_alive:
+                                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                            self.ball.set_meta("quantum_entanglement_target", user_ball)
+                                            self.ball.set_meta("quantum_entanglement_timer", 10.0)
+                                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                                            self.ball["quantum_entanglement_target"] = user_ball
+                                            self.ball["quantum_entanglement_timer"] = 10.0
+                                        elif "quantum_entanglement_target" in self.ball:
+                                            self.ball.quantum_entanglement_target = user_ball
+                                            self.ball.quantum_entanglement_timer = 10.0
+
+                                        if typeof(user_ball) == TYPE_OBJECT and user_ball.has_method("set_meta"):
+                                            user_ball.set_meta("quantum_entanglement_target", self.ball)
+                                            user_ball.set_meta("quantum_entanglement_timer", 10.0)
+                                        elif typeof(user_ball) == TYPE_DICTIONARY:
+                                            user_ball["quantum_entanglement_target"] = self.ball
+                                            user_ball["quantum_entanglement_timer"] = 10.0
+                                        elif "quantum_entanglement_target" in user_ball:
+                                            user_ball.quantum_entanglement_target = self.ball
+                                            user_ball.quantum_entanglement_timer = 10.0
+
+                                        hazard.set_meta("entangled_user_id", -1)
+
+                                        if self.world.get("events") != null:
+                                            var eff = {"type": "visual_effect", "data": {"x": self.ball.x, "y": self.ball.y, "target_x": user_ball.x, "target_y": user_ball.y, "kind": "quantum_entanglement"}}
+                                            self.world.events.append(eff)
+
                         if current_tick - last_teleport > cooldown:
                             if hazard.kind == "quantum_teleporter":
                                 if hazard.has_meta("target_x") and hazard.has_meta("target_y"):
@@ -8577,6 +8638,18 @@ func execute(strategy: String, delta: float):
                                     var old_y = self.ball.y
                                     self.ball.x = hazard.get_meta("target_x")
                                     self.ball.y = hazard.get_meta("target_y")
+
+                                    var arena_hazards = []
+                                    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                        arena_hazards = self.world.arena.hazards
+                                    for h in arena_hazards:
+                                        if h.kind == "quantum_teleporter" and abs(h.x - self.ball.x) < 0.1 and abs(h.y - self.ball.y) < 0.1:
+                                            var b_id = -1
+                                            if "id" in self.ball: b_id = self.ball.id
+                                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("id") != null: b_id = self.ball.get("id")
+                                            h.set_meta("entangled_user_id", b_id)
+                                            h.set_meta("entangled_until_tick", current_tick + int(10.0 / delta))
+                                            break
 
                                     if self.world.get("events") != null:
                                         var eff = {"type": "visual_effect", "data": {"x": old_x, "y": old_y, "target_x": self.ball.x, "target_y": self.ball.y, "kind": "quantum_trail"}}

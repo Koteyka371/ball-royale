@@ -4759,12 +4759,37 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             cooldown = 30 if hazard.kind == "quantum_teleporter" else 10
+
+                            if hazard.kind == "quantum_teleporter":
+                                ent_tick = getattr(hazard, "entangled_until_tick", 0)
+                                ent_user_id = getattr(hazard, "entangled_user_id", None)
+                                if current_tick <= ent_tick and ent_user_id is not None and ent_user_id != getattr(self.ball, "id", None):
+                                    user_ball = None
+                                    for b in getattr(self.world, "balls", []):
+                                        if getattr(b, "id", None) == ent_user_id:
+                                            user_ball = b
+                                            break
+                                    if user_ball and getattr(user_ball, "team", 1) != getattr(self.ball, "team", 2) and getattr(user_ball, "alive", True):
+                                        self.ball.quantum_entanglement_target = user_ball
+                                        self.ball.quantum_entanglement_timer = 10.0
+                                        user_ball.quantum_entanglement_target = self.ball
+                                        user_ball.quantum_entanglement_timer = 10.0
+                                        hazard.entangled_user_id = None
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append({'type': 'visual_effect', 'data': {'x': self.ball.x, 'y': self.ball.y, 'target_x': user_ball.x, 'target_y': user_ball.y, 'kind': 'quantum_entanglement'}})
+
                             if current_tick - last_teleport > cooldown:  # Prevent immediate re-teleport
                                 if hazard.kind == "quantum_teleporter":
                                     if hasattr(hazard, "target_x") and hasattr(hazard, "target_y"):
                                         old_x, old_y = self.ball.x, self.ball.y
                                         self.ball.x = getattr(hazard, "target_x")
                                         self.ball.y = getattr(hazard, "target_y")
+
+                                        for h in getattr(getattr(self.world, "arena", None), "hazards", []):
+                                            if getattr(h, "kind", "") == "quantum_teleporter" and abs(h.x - self.ball.x) < 0.1 and abs(h.y - self.ball.y) < 0.1:
+                                                h.entangled_user_id = getattr(self.ball, "id", None)
+                                                h.entangled_until_tick = current_tick + int(10.0 / delta)
+                                                break
 
                                         if hasattr(self.world, "events"):
                                             self.world.events.append({'type': 'visual_effect', 'data': {'x': old_x, 'y': old_y, 'target_x': self.ball.x, 'target_y': self.ball.y, 'kind': 'quantum_trail'}})
