@@ -404,6 +404,14 @@ func generate():
         var spawn_pt = get_random_spawn_point(radius)
         hazards.append(ProceduralArena.Hazard.new(i, spawn_pt[0], spawn_pt[1], radius, kind, damage))
 
+    # Generate random chaos teleporters
+    var num_chaos = max(1, num_rooms / 3)
+    for t in range(num_chaos):
+        var t_id = hazards.size() + 20000 + t
+        var pt = get_random_spawn_point(25.0)
+        var teleporter = ProceduralArena.Hazard.new(t_id, pt[0], pt[1], 25.0, "chaos_teleporter", 0.0)
+        hazards.append(teleporter)
+
     # Generate guaranteed paired portals
     var num_portals = max(1, num_rooms / 2)
     for p in range(num_portals):

@@ -8556,7 +8556,7 @@ func execute(strategy: String, delta: float):
                                             self.ball.set_meta("last_teleport_tick", current_tick)
                                         if entity_to_swap.has_method("set_meta"):
                                             entity_to_swap.set_meta("last_teleport_tick", current_tick)
-                elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter" or hazard.kind == "wormhole" or hazard.kind == "quantum_teleporter" or hazard.kind == "chaos_portal":
+                elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter" or hazard.kind == "wormhole" or hazard.kind == "quantum_teleporter" or hazard.kind == "chaos_portal" or hazard.kind == "chaos_teleporter":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
@@ -8766,6 +8766,31 @@ func execute(strategy: String, delta: float):
                                     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("last_teleport_tick", current_tick)
 
                                     return
+                            if hazard.kind == "chaos_teleporter":
+                                var angle = randf() * 2.0 * PI
+                                var distance = randf_range(50.0, 100.0)
+                                self.ball.x += cos(angle) * distance
+                                self.ball.y += sin(angle) * distance
+
+                                if "is_confused" in self.ball: self.ball.is_confused = true
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_confused", true)
+
+                                var cur_conf = 0.0
+                                if "confusion_timer" in self.ball: cur_conf = self.ball.confusion_timer
+                                elif self.ball.has_method("has_meta") and self.ball.has_meta("confusion_timer"): cur_conf = self.ball.get_meta("confusion_timer")
+
+                                var new_conf = max(cur_conf, 2.0)
+                                if "confusion_timer" in self.ball: self.ball.confusion_timer = new_conf
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("confusion_timer", new_conf)
+
+                                if self.world != null and "events" in self.world:
+                                    self.world.events.append({'type': 'visual_effect', 'data': {'x': hazard.x, 'y': hazard.y, 'target_x': self.ball.x, 'target_y': self.ball.y, 'kind': 'chaos_trail'}})
+
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("_teleported_this_tick", true)
+                                if "last_teleport_tick" in self.ball: self.ball.last_teleport_tick = current_tick
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("last_teleport_tick", current_tick)
+
+                                continue
                             if hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter":
                                 if hazard.has_meta("target_x") and hazard.has_meta("target_y"):
                                     self.ball.x = hazard.get_meta("target_x")
