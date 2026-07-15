@@ -13466,12 +13466,16 @@ func execute(strategy: String, delta: float):
             if "game_mode" in self.world and self.world.game_mode != null:
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bouncy Terrain":
                     is_bouncy_terrain = true
+                elif "name" in self.world.game_mode and self.world.game_mode.name == "Extreme Bounciness":
+                    is_bouncy_terrain = true
                 elif "name" in self.world.game_mode and self.world.game_mode.name == "Jump Pad Boundaries":
                     is_bouncy_terrain = true
             var new_speed = 0.0
             # Bouncy walls cause high-speed ricochets to make dodging harder and create chaotic collisions
             if wall_state == "bouncy":
                 new_speed = min(speed * 3.5, 4500.0)
+            elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Extreme Bounciness":
+                new_speed = min(speed * 4.0, 5000.0)
             elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Jump Pad Boundaries":
                 new_speed = min(speed * 4.0, 5000.0)
             elif is_bouncy_terrain:
