@@ -17475,7 +17475,7 @@
     },
     {
       "id": "idea-1018",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Rebound Hazard",
@@ -27604,6 +27604,57 @@
         "src/ai/grapple_mines.py",
         "src/ai/grapple_mines.gd",
         "tests/test_grapple_mines.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1613",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Decoy",
+      "description": "A new skill that deploys a special decoy that links to nearby enemies with tethers. When the decoy explodes or takes enough damage, it transfers a portion of the damage back to all linked enemies.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_decoy.py",
+        "src/ai/chain_reaction_decoy.gd",
+        "tests/test_chain_reaction_decoy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1614",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Instability Field",
+      "description": "A hazard that periodically applies randomized stat modifications to all entities inside it.",
+      "allowed_paths": [
+        "src/ai/quantum_instability_field.py",
+        "src/ai/quantum_instability_field.gd",
+        "tests/test_quantum_instability_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1615",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Bodyguard",
+      "description": "An active ability that summons a beefy decoy that doesn't just sit there, but actively orbits the player. Any incoming projectiles hitting the decoy are absorbed, but if it takes too much damage it detonates, stunning nearby enemies.",
+      "allowed_paths": [
+        "src/ai/decoy_bodyguard.py",
+        "src/ai/decoy_bodyguard.gd",
+        "tests/test_decoy_bodyguard.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1018] Kinetic Rebound Hazard — *2026-07-15 19:18:50 UTC*
+
+A dynamic hazard that spawns and expands across the arena. Any projectile or moving entity that hits its boundary gets reflected perfectly but with 2x velocity and increased damage potential.
+
+---
+
 ## [idea-1014] Quantum Teleport Hazards — *2026-07-15 18:02:49 UTC*
 
 Hazards that randomly teleport entities within a small radius when stepped on, confusing movement algorithms and creating chaotic escapes from the shrinking safe zone.
