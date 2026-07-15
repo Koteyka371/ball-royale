@@ -1,0 +1,4 @@
+{
+  "title": "Reversed Controls Anomaly",
+  "description": "An anomaly zone that reverses the movement vectors of any entity inside it. If an entity tries to move right, it moves left. Projectiles shot into it will also have their velocities inverted upon entry, creating a chaotic defensive barrier."
+}

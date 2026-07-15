@@ -2578,7 +2578,33 @@ func execute(strategy: String, delta: float):
     if sus_proj.size() > 0:
         var updated_proj = []
         for sp in sus_proj:
-            sp["timer"] -= delta
+            var sp_delta = delta
+            if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+                for h in world.arena.hazards:
+                    if "kind" in h and h.kind == "chrono_anomaly":
+                        var sp_x = 0.0
+                        if "x" in sp:
+                            sp_x = sp["x"]
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"):
+                            sp_x = self.ball["x"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "x" in self.ball:
+                            sp_x = self.ball.x
+
+                        var sp_y = 0.0
+                        if "y" in sp:
+                            sp_y = sp["y"]
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"):
+                            sp_y = self.ball["y"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "y" in self.ball:
+                            sp_y = self.ball.y
+
+                        var dx = h.x - sp_x
+                        var dy = h.y - sp_y
+                        if dx*dx + dy*dy < h.radius * h.radius:
+                            sp_delta *= 0.5
+                            break
+
+            sp["timer"] -= sp_delta
             if sp["timer"] <= 0.0:
                 var t = sp["target"]
                 var t_alive = true
@@ -11584,16 +11610,45 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp <= 0:
                                 self.ball.alive = false
                     elif hazard.kind == "chrono_anomaly":
-                        var speed_mult = 0.2
+                        var speed_mult = 0.5
                         if self.ball.has_method("set_meta"):
                             self.ball.set_meta("_chrono_slow", speed_mult)
                         elif typeof(self.ball) == TYPE_DICTIONARY:
                             self.ball["_chrono_slow"] = speed_mult
 
-                        if "attack_timer" in self.ball and self.ball.attack_timer > 0:
-                            self.ball.attack_timer += delta * (1.0 - speed_mult)
-                        if "skill_timer" in self.ball and self.ball.skill_timer > 0:
-                            self.ball.skill_timer += delta * (1.0 - speed_mult)
+                        var props = []
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            props = self.ball.keys()
+                        elif typeof(self.ball) == TYPE_OBJECT:
+                            for p in self.ball.get_property_list():
+                                props.append(p.name)
+                            if self.ball.has_method("get_meta_list"):
+                                for p in self.ball.get_meta_list():
+                                    props.append(p)
+
+                        for p in props:
+                            if str(p).ends_with("_timer"):
+                                var val = 0.0
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    val = self.ball[p]
+                                elif typeof(self.ball) == TYPE_OBJECT:
+                                    if p in self.ball:
+                                        val = self.ball.get(p)
+                                    elif self.ball.has_method("has_meta") and self.ball.has_meta(p):
+                                        val = self.ball.get_meta(p)
+                                if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
+                                    if val > 0:
+                                        var new_val = val + delta * (1.0 - speed_mult)
+                                        if typeof(self.ball) == TYPE_DICTIONARY:
+                                            self.ball[p] = new_val
+                                        elif typeof(self.ball) == TYPE_OBJECT:
+                                            if p in self.ball:
+                                                self.ball.set(p, new_val)
+                                            elif self.ball.has_method("set_meta"):
+                                                self.ball.set_meta(p, new_val)
+
+                        if "duration" in self.ball and typeof(self.ball.duration) in [TYPE_INT, TYPE_FLOAT] and self.ball.duration > 0:
+                            self.ball.duration += delta * (1.0 - speed_mult)
                     elif hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y

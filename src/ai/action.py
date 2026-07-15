@@ -1376,11 +1376,23 @@ class Action:
                 cy = getattr(gm, "cy", 500.0)
 
             for sp in list(self.ball.suspended_projectiles):
-                sp["timer"] -= delta
+                sp_delta = delta
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for h in self.world.arena.hazards:
+                        if getattr(h, "kind", "") == "chrono_anomaly":
+                            sp_x = sp.get("x", getattr(self.ball, "x", 0.0))
+                            sp_y = sp.get("y", getattr(self.ball, "y", 0.0))
+                            dx = h.x - sp_x
+                            dy = h.y - sp_y
+                            if dx*dx + dy*dy < h.radius * h.radius:
+                                sp_delta *= 0.5
+                                break
+
+                sp["timer"] -= sp_delta
                 if sp.get("is_anomaly", False):
                     import math
-                    sp["x"] += sp.get("vx", 0.0) * delta
-                    sp["y"] += sp.get("vy", 0.0) * delta
+                    sp["x"] += sp.get("vx", 0.0) * sp_delta
+                    sp["y"] += sp.get("vy", 0.0) * sp_delta
 
                     dx = cx - sp["x"]
                     dy = cy - sp["y"]
@@ -6455,16 +6467,19 @@ class Action:
                             continue
                         elif hazard.kind == "chrono_anomaly":
                             # Slows down action timers drastically
-                            speed_mult = 0.2
+                            speed_mult = 0.5
                             # For speed, instead of overriding state, we negate most of the movement that just happened
                             # assuming the previous steps moved it. But a cleaner way is just marking the ball
                             self.ball._chrono_slow = speed_mult
 
                             # Decrease timers
-                            if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
-                                self.ball.attack_timer += delta * (1.0 - speed_mult) # Slow down cooldowns
-                            if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
-                                self.ball.skill_timer += delta * (1.0 - speed_mult)
+                            for attr in dir(self.ball):
+                                if attr.endswith("_timer"):
+                                    val = getattr(self.ball, attr)
+                                    if type(val) in (int, float) and val > 0:
+                                        setattr(self.ball, attr, val + delta * (1.0 - speed_mult))
+                            if hasattr(self.ball, "duration") and getattr(self.ball, "duration") > 0:
+                                self.ball.duration += delta * (1.0 - speed_mult)
                             continue
                         elif hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                             # Pull effect, launch, and damage
