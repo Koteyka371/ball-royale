@@ -1136,6 +1136,15 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "is_overclocked", False) and getattr(self.ball, "is_turret", False):
+            # Turret overclock effect: loses HP over time
+            if hasattr(self.world, "_deal_damage"):
+                self.world._deal_damage(self.ball, 10.0 * delta, self.ball)
+            else:
+                self.ball.hp -= 10.0 * delta
+            if self.ball.hp <= 0:
+                self.ball.alive = False
+
         if hasattr(self.ball, "polarity_cooldown") and type(self.ball.polarity_cooldown) in (int, float) and self.ball.polarity_cooldown > 0:
             self.ball.polarity_cooldown = max(0, self.ball.polarity_cooldown - delta)
 
@@ -10250,6 +10259,14 @@ class Action:
                     if getattr(h, "kind", "") == "fireball" and getattr(h, "owner_id", None) == self.ball.id:
                         can_recast = True
                         break
+        if skill_timer > 0 and skill_name == "deploy_turret":
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == self.ball.id:
+                        import math
+                        if math.hypot(b.x - self.ball.x, b.y - self.ball.y) < 150.0:
+                            can_recast = True
+                            break
 
         if skill_timer <= 0 or can_recast:
             if hasattr(self.ball, "use_skill") and skill_timer <= 0:
@@ -10931,28 +10948,39 @@ class Action:
             elif skill_name == "deploy_turret":
                 import copy
                 import random
-                if hasattr(self.world, "balls"):
-                    turret = copy.copy(self.ball)
-                    turret.owner_id = getattr(self.ball, "id", None)
-                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 15.0)
-                    turret.id = getattr(self.world, "next_id", random.randint(10000, 99999))
-                    if hasattr(self.world, "next_id"):
-                        self.world.next_id += 1
 
-                    turret.hp = 50.0
-                    turret.max_hp = 50.0
-                    turret.damage = 15.0
-                    turret.speed = 0.0
-                    turret.skill_timer = 9999.0
-                    turret.attack_timer = 0.0
-                    turret.is_decoy = True
-                    turret.is_turret = True
-                    turret.decoy_timer = 15.0
-                    turret.attack_range = 250.0
-                    turret.SKILL = None
-                    turret.skill = None
-                    turret.active_skill = None
-                    self.world.balls.append(turret)
+                overclocked = False
+                if hasattr(self.world, "balls"):
+                    if getattr(self.ball, "skill_timer", 0) > 0:
+                        for b in self.world.balls:
+                            if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == self.ball.id:
+                                import math
+                                if math.hypot(b.x - self.ball.x, b.y - self.ball.y) < 150.0:
+                                    b.is_overclocked = True
+                                    overclocked = True
+
+                    if not overclocked:
+                        turret = copy.copy(self.ball)
+                        turret.owner_id = getattr(self.ball, "id", None)
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 15.0)
+                        turret.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        turret.hp = 50.0
+                        turret.max_hp = 50.0
+                        turret.damage = 15.0
+                        turret.speed = 0.0
+                        turret.skill_timer = 9999.0
+                        turret.attack_timer = 0.0
+                        turret.is_decoy = True
+                        turret.is_turret = True
+                        turret.decoy_timer = 15.0
+                        turret.attack_range = 250.0
+                        turret.SKILL = None
+                        turret.skill = None
+                        turret.active_skill = None
+                        self.world.balls.append(turret)
 
             elif skill_name == "master_decoys":
                 import copy
@@ -14174,6 +14202,8 @@ class Action:
             cooldown_mult *= 2.0
         if getattr(self.ball, "overclock_timer", 0.0) > 0:
             cooldown_mult *= 10.0
+        if getattr(self.ball, "is_overclocked", False) and getattr(self.ball, "is_turret", False):
+            cooldown_mult *= 2.0
 
         if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
             if not getattr(self.world, "solar_flare_active", False):

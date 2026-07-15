@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+
 from action import Action
 
 def test_grounded_boots():
@@ -14,7 +14,6 @@ def test_grounded_boots():
             self.team = 1
             self.hp = 100
             self.speed = 2.0
-            self.polarity_cooldown = 0
             self.skill = "dash"
     class MockHazard:
         def __init__(self, x, y, kind):
@@ -29,23 +28,34 @@ def test_grounded_boots():
             self.lifetime = 5.0
             self.trap_variant = ""
 
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+            self.safe_zone_center = (500, 500)
+            self.safe_zone_radius = 500
+            self.width = 1000
+            self.height = 1000
+
+    class MockWorld:
+        def __init__(self):
+            self.balls = []
+            self.arena = MockArena()
+            self.boosters = []
+            self.items = []
+            self.tick = 0
+
     b1 = MockBall(100, 100, "grounded_boots")
     b2 = MockBall(150, 100, "none")
     h_black_hole = MockHazard(100, 110, "black_hole")
 
-    world = MagicMock()
+    world = MockWorld()
 
     world.balls = [b1, b2]
     world.arena.hazards = [h_black_hole]
-    world.boosters = []
-    world.items = []
 
-    action_b1 = Action(world, b1)
-    action_b2 = Action(world, b2)
-    action_b1.ball.polarity_cooldown = 0
-    action_b2.ball.polarity_cooldown = 0
+    action_b1 = Action(b1, world)
+    action_b2 = Action(b2, world)
 
-    # Tick to process pull
     action_b1.execute("flee", 1.0)
     action_b2.execute("flee", 1.0)
 

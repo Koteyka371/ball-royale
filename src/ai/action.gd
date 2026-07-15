@@ -18638,6 +18638,45 @@ func _use_skill():
                             can_recast = true
                             break
 
+    if skill_timer > 0.0 and skill_name == "deploy_turret":
+        if world != null and "balls" in world:
+            var b_id = null
+            if "id" in self.ball: b_id = self.ball.id
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+            var b_x = 0.0
+            var b_y = 0.0
+            if "x" in self.ball: b_x = self.ball.x
+            elif self.ball.has_method("get") and self.ball.get("x") != null: b_x = float(self.ball.get("x"))
+            if "y" in self.ball: b_y = self.ball.y
+            elif self.ball.has_method("get") and self.ball.get("y") != null: b_y = float(self.ball.get("y"))
+
+            for b in world.balls:
+                var is_turret = false
+                if "is_turret" in b: is_turret = b.is_turret
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_turret"): is_turret = b.get_meta("is_turret")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("is_turret"): is_turret = b["is_turret"]
+
+                var owner_id = null
+                if "owner_id" in b: owner_id = b.owner_id
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("owner_id"): owner_id = b.get_meta("owner_id")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("owner_id"): owner_id = b["owner_id"]
+
+                if is_turret and owner_id != null and b_id != null and owner_id == b_id:
+                    var bx = 0.0
+                    var by = 0.0
+                    if "x" in b: bx = b.x
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("x") != null: bx = float(b.get("x"))
+                    elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = float(b["x"])
+                    if "y" in b: by = b.y
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("y") != null: by = float(b.get("y"))
+                    elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = float(b["y"])
+
+                    var dist = sqrt(pow(bx - b_x, 2) + pow(by - b_y, 2))
+                    if dist < 150.0:
+                        can_recast = true
+                        break
+
     if skill_timer <= 0.0 or can_recast:
         if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
             self.ball.use_skill()
@@ -19789,6 +19828,58 @@ func _use_skill():
                 else:
                     self.ball.skill_timer = 5.0
         elif skill_name == "deploy_turret":
+            var b_id = null
+            if "id" in self.ball: b_id = self.ball.id
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+            var b_x = 0.0
+            var b_y = 0.0
+            if "x" in self.ball: b_x = self.ball.x
+            elif self.ball.has_method("get") and self.ball.get("x") != null: b_x = float(self.ball.get("x"))
+            if "y" in self.ball: b_y = self.ball.y
+            elif self.ball.has_method("get") and self.ball.get("y") != null: b_y = float(self.ball.get("y"))
+
+            var s_timer = 0.0
+            if "skill_timer" in self.ball: s_timer = self.ball.skill_timer
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("skill_timer"): s_timer = self.ball.get_meta("skill_timer")
+
+            var overclocked = false
+            if world != null and "balls" in world and s_timer > 0:
+                for b in world.balls:
+                    var is_turret = false
+                    if "is_turret" in b: is_turret = b.is_turret
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_turret"): is_turret = b.get_meta("is_turret")
+                    elif typeof(b) == TYPE_DICTIONARY and b.has("is_turret"): is_turret = b["is_turret"]
+
+                    var owner_id = null
+                    if "owner_id" in b: owner_id = b.owner_id
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("owner_id"): owner_id = b.get_meta("owner_id")
+                    elif typeof(b) == TYPE_DICTIONARY and b.has("owner_id"): owner_id = b["owner_id"]
+
+                    if is_turret and owner_id != null and b_id != null and owner_id == b_id:
+                        var bx = 0.0
+                        var by = 0.0
+                        if "x" in b: bx = b.x
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("x") != null: bx = float(b.get("x"))
+                        elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = float(b["x"])
+                        if "y" in b: by = b.y
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("y") != null: by = float(b.get("y"))
+                        elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = float(b["y"])
+
+                        var dist = sqrt(pow(bx - b_x, 2) + pow(by - b_y, 2))
+                        if dist < 150.0:
+                            if typeof(b) == TYPE_OBJECT:
+                                if "is_overclocked" in b:
+                                    b.is_overclocked = true
+                                elif b.has_method("set_meta"):
+                                    b.set_meta("is_overclocked", true)
+                            elif typeof(b) == TYPE_DICTIONARY:
+                                b["is_overclocked"] = true
+                            overclocked = true
+
+            if overclocked:
+                return
+
             var turret = null
             if self.ball.has_method("duplicate"): turret = self.ball.duplicate()
             elif typeof(self.ball) == TYPE_DICTIONARY: turret = self.ball.duplicate()
