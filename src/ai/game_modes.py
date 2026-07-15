@@ -22174,3 +22174,52 @@ class GrappleNodeMode(GameMode):
                     world.arena.hazards.append(GrappleNode(n_id, nx, ny))
 
 GAME_MODES["grapple_node"] = GrappleNodeMode()
+
+class InversionZoneMode(GameMode):
+    """
+    An arena hazard that inverses the movement controls for all players or AI entities caught within its radius.
+    It forces them to quickly adapt their evasion and attack strategies.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Inversion Zone"
+        self.description = "A large hazard zone that reverses the movement of entities inside it."
+        self.zone_radius = 250.0
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.zone_x = getattr(world.arena, "width", 1000.0) / 2.0
+        self.zone_y = getattr(world.arena, "height", 1000.0) / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            h = hazard_class(f"inversion_zone", self.zone_x, self.zone_y, self.zone_radius, "inversion_zone", 0.0)
+            h.active = True
+            world.arena.hazards.append(h)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", True):
+                continue
+
+            dist = math.hypot(b.x - self.zone_x, b.y - self.zone_y)
+
+            if dist < self.zone_radius:
+                vx = getattr(b, "vx", 0.0)
+                vy = getattr(b, "vy", 0.0)
+                b.x -= vx * delta * 2
+                b.y -= vy * delta * 2
+
+GAME_MODES["inversion_zone"] = InversionZoneMode()

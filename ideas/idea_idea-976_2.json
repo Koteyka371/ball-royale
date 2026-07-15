@@ -1,0 +1,4 @@
+{
+  "title": "Gravity Inversion Mutator",
+  "description": "A global mutator that intermittently reverses the arena's gravity logic. Instead of objects being pulled towards black holes or heavy entities, they are violently repelled, completely flipping positioning and trapping strategies."
+}

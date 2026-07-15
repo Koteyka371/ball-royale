@@ -1645,3 +1645,45 @@ def test_grid_lockdown_mode():
     # b2 is in safe cell, should have 100 hp and be alive
     assert b2.hp == 100.0
     assert b2.alive
+
+def test_inversion_zone_mode():
+    from ai.game_modes import InversionZoneMode
+    class MockArena:
+        def __init__(self):
+            self.width = 1000.0
+            self.height = 1000.0
+            self.hazards = []
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+    class TestMockEntity:
+        def __init__(self, id, x, y, vx, vy):
+            self.id = id
+            self.ball_type = "basic"
+            self.alive = True
+            self.x = x
+            self.y = y
+            self.vx = vx
+            self.vy = vy
+
+    mode = InversionZoneMode()
+    world = MockWorld()
+
+    # b1 is inside the zone (center is 500, 500, radius is 250)
+    b1 = TestMockEntity(1, 500.0, 500.0, 100.0, 0.0)
+    # b2 is outside the zone
+    b2 = TestMockEntity(2, 900.0, 900.0, 100.0, 0.0)
+
+    balls = [b1, b2]
+
+    mode.setup(world, balls)
+
+    # Tick with delta 1.0 for easy calculation
+    mode.tick(world, balls, delta=1.0)
+
+    # b1 is inside, its position should be adjusted by -vx * delta * 2
+    # Initial x: 500.0, vx: 100.0 -> x -= 100.0 * 1.0 * 2 -> x = 300.0
+    assert b1.x == 300.0
+
+    # b2 is outside, its position should remain unchanged by the mode
+    assert b2.x == 900.0

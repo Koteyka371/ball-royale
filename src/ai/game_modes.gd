@@ -34760,3 +34760,55 @@ class ElasticBandZoneMode:
 
 GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode.new()
 GAME_MODES["elastic_band_zone"] = ElasticBandZoneMode.new()
+
+class InversionZoneMode extends GameMode:
+	var zone_radius: float = 250.0
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+
+	func _init() -> void:
+		super()
+		name = "Inversion Zone"
+		description = "A large hazard zone that reverses the movement of entities inside it."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		zone_x = world.arena.width / 2.0 if "width" in world.arena else 1000.0 / 2.0
+		zone_y = world.arena.height / 2.0 if "height" in world.arena else 1000.0 / 2.0
+
+		if "hazards" in world.arena:
+			var h = {}
+			h.id = "inversion_zone"
+			h.x = zone_x
+			h.y = zone_y
+			h.radius = zone_radius
+			h.kind = "inversion_zone"
+			h.damage = 0.0
+			h.active = true
+			world.arena.hazards.append(h)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var ball_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			var is_spectator = ball_type == "spectator"
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if b.get("alive") != null else true)
+
+			if is_spectator or not is_alive:
+				continue
+
+			var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+			var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+			var dist = sqrt((b_x - zone_x)*(b_x - zone_x) + (b_y - zone_y)*(b_y - zone_y))
+
+			if dist < zone_radius:
+				var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else (b.get("vx") if b.get("vx") != null else 0.0)
+				var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else (b.get("vy") if b.get("vy") != null else 0.0)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b.x -= vx * delta * 2
+					b.y -= vy * delta * 2
+				else:
+					b.set("x", b.get("x") - vx * delta * 2)
+					b.set("y", b.get("y") - vy * delta * 2)
+
+GAME_MODES["inversion_zone"] = InversionZoneMode.new()
