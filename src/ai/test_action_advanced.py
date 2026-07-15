@@ -510,7 +510,7 @@ def test_bumper_detonation():
             self.boosters = []
 
         def get_nearby_entities(self, ball, radius):
-            return {"enemies": [], "allies": []}
+            return {"enemies": [], "allies": [], "boosters": self.boosters}
 
     # Setup
     fast_ball = MockBall(1, 40.0, 50.0) # dx = -10, dy = 0, dist = 10, dist < b_rad(10) + h_rad(10) = 20
@@ -981,3 +981,136 @@ def test_raise_dead_corpse_explosion_elite():
     assert getattr(cloud, "kind", "") == "poison_cloud"
     assert getattr(cloud, "radius", 0) == 150.0
     assert getattr(cloud, "damage", 0) == 20.0
+
+def test_bumper_synergy_collision():
+    from ai.action import Action
+
+    class ArenaMock:
+        def __init__(self, h1):
+            self.hazards = [h1]
+            self.items = []
+            self.modifier_zones = []
+            self.width = 1000
+            self.height = 1000
+            self.update_zone = lambda *args: None
+            self.clamp_position = lambda *args: (0, 0, False)
+
+    class MockHazard:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+            self.radius = 30.0
+            self.damage = 0.0
+            self.kind = "bumper"
+            self.duration = 1.0
+            self.id = 1
+
+    class MockGameMode:
+        pass
+
+    class MockWorldLocal:
+        def __init__(self, arena, balls):
+            self.arena = arena
+            self.balls = balls
+            self.game_mode = MockGameMode()
+            self.events = []
+            self.tick = 1
+            self.boosters = []
+
+        def get_nearby_entities(self, ball, radius):
+            return {"enemies": [], "allies": [], "boosters": self.boosters}
+
+    class MockBallLocal:
+        def __init__(self, id, x, y):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.vx = 0.0
+            self.vy = 0.0
+            self.hp = 100.0
+            self.max_hp = 100.0
+            self.radius = 10.0
+            self.alive = True
+            self.team = "team1"
+            self.ball_type = "easy"
+            self.speed = 100.0
+            self.base_speed = 100.0
+            self.damage = 10.0
+            self.base_damage = 10.0
+            self.perception_radius = 200.0
+            self.state = "idle"
+            self.cooldowns = {}
+            self.active_skills = {}
+
+    ball = MockBallLocal(1, 10.0, 10.0)
+    # Bumper synergy
+    ball.bumper_synergy_active = True
+    ball.attack_speed_buff_timer = 0.0
+    ball.speed_boost_timer = 0.0
+
+    bumper = MockHazard(15.0, 15.0)
+
+    world = MockWorldLocal(ArenaMock(bumper), [ball])
+
+    action = Action(ball, world)
+    action.execute("idle", 0.016)
+
+    # By colliding with bumper, speed_boost_timer gets +3 and another +3 from synergy => ~6.0, attack_speed_buff_timer gets +3.0
+    assert getattr(ball, "attack_speed_buff_timer", 0.0) >= 3.0
+    assert getattr(ball, "speed_boost_timer", 0.0) >= 3.0
+
+def test_bumper_synergy_pickup():
+    from ai.action import Action
+
+    class MockBooster(dict):
+        def __init__(self, x, y, kind):
+            super().__init__()
+            self["x"] = x
+            self["y"] = y
+            self["kind"] = kind
+            self.x = x
+            self.y = y
+            self.kind = kind
+
+    class MockWorldLocal:
+        def __init__(self):
+            self.boosters = [MockBooster(10.0, 10.0, "bumper_synergy_booster")]
+            class DummyArena:
+                def __init__(self, hazards):
+                    self.hazards = hazards
+            self.arena = DummyArena([self.boosters[0]])
+            self.events = []
+            self.balls = []
+
+        def get_nearby_entities(self, ball, radius):
+            return {"enemies": [], "allies": [], "boosters": self.boosters}
+
+    class MockBallLocal:
+        def __init__(self, id, x, y):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.vx = 0.0
+            self.vy = 0.0
+            self.hp = 100.0
+            self.max_hp = 100.0
+            self.radius = 10.0
+            self.alive = True
+            self.team = "team1"
+            self.ball_type = "easy"
+            self.speed = 100.0
+            self.base_speed = 100.0
+            self.damage = 10.0
+            self.base_damage = 10.0
+            self.perception_radius = 200.0
+            self.state = "idle"
+            self.cooldowns = {}
+            self.active_skills = {}
+
+    ball = MockBallLocal(1, 10.0, 10.0)
+    world = MockWorldLocal()
+
+    action = Action(ball, world)
+    action._collect_booster(0.016)
+
+    assert getattr(ball, "bumper_synergy_active", False) == True

@@ -6913,6 +6913,10 @@ class Action:
                                 # Grant a temporary movement speed boost upon bouncing
                                 self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
 
+                                if getattr(self.ball, "bumper_synergy_active", False):
+                                    self.ball.attack_speed_buff_timer = getattr(self.ball, "attack_speed_buff_timer", 0.0) + 3.0
+                                    self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
+
                                 # Combo logic
                                 bumper_combo = getattr(self.ball, "bumper_combo", 0) + 1
                                 self.ball.bumper_combo = bumper_combo
@@ -9878,6 +9882,13 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "breach_charge_booster":
                     self.ball.breach_charge_active = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "bumper_synergy_booster":
+                    self.ball.bumper_synergy_active = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

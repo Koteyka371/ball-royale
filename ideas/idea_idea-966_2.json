@@ -1,0 +1,4 @@
+{
+  "title": "Bumper Shield Integration",
+  "description": "If a player collects a bumper synergy booster while also having an active kinetic shield, the shield converts bumper impact energy into bonus shield capacity instead of speed boosts, turning them into a heavily armored juggernaut."
+}

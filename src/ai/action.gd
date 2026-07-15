@@ -12420,6 +12420,30 @@ func execute(strategy: String, delta: float):
                             if "speed_boost_timer" in self.ball:
                                 self.ball.speed_boost_timer = cur_speed + 3.0
 
+                            var has_synergy = false
+                            if "bumper_synergy_active" in self.ball: has_synergy = self.ball.bumper_synergy_active
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("bumper_synergy_active"): has_synergy = self.ball.get_meta("bumper_synergy_active")
+                            if has_synergy:
+                                var cur_atk_spd = 0.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("attack_speed_buff_timer"):
+                                    cur_atk_spd = self.ball.get_meta("attack_speed_buff_timer")
+                                elif "attack_speed_buff_timer" in self.ball:
+                                    cur_atk_spd = self.ball.attack_speed_buff_timer
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("attack_speed_buff_timer", cur_atk_spd + 3.0)
+                                if "attack_speed_buff_timer" in self.ball:
+                                    self.ball.attack_speed_buff_timer = cur_atk_spd + 3.0
+
+                                var cur_spd_bst = 0.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
+                                    cur_spd_bst = self.ball.get_meta("speed_boost_timer")
+                                elif "speed_boost_timer" in self.ball:
+                                    cur_spd_bst = self.ball.speed_boost_timer
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("speed_boost_timer", cur_spd_bst + 3.0)
+                                if "speed_boost_timer" in self.ball:
+                                    self.ball.speed_boost_timer = cur_spd_bst + 3.0
+
                             var bumper_combo = 0
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bumper_combo"):
                                 bumper_combo = self.ball.get_meta("bumper_combo")
@@ -18018,6 +18042,20 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "bumper_synergy_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("bumper_synergy_active", true)
+                else:
+                    self.ball.bumper_synergy_active = true
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "bumper_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("bumper_booster_timer", 10.0)
