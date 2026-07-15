@@ -30470,6 +30470,94 @@ class TimeLoopFieldMode extends GameMode:
 						if "y" in b: b.y = state["start_y"]
 						if "hp" in b: b.hp = state["start_hp"]
 					recorded_states.erase(b_id)
+class QuantumInstabilityEventMode extends GameMode:
+	var shift_timer: float = 5.0
+	var shift_interval: float = 5.0
+
+	func _init() -> void:
+		name = "Quantum Instability Event"
+		description = "All quantum teleporters rapidly shift locations every 5 seconds. Using a shifting teleporter applies a random positive or negative buff upon exit due to quantum instability."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		shift_timer += delta
+		if shift_timer >= shift_interval:
+			shift_timer = 0.0
+
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena_w = 800.0
+				var arena_h = 600.0
+				if "width" in world.arena: arena_w = world.arena.width
+				if "height" in world.arena: arena_h = world.arena.height
+
+				var quantum_teleporters = []
+				for h in world.arena.hazards:
+					var kind = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+
+					if kind == "quantum_teleporter":
+						quantum_teleporters.append(h)
+
+				if quantum_teleporters.size() > 0:
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("portal_shift", {"message": "Quantum teleporters are shifting locations!"})
+
+				for h in quantum_teleporters:
+					var nx = 100.0 + randf() * (arena_w - 200.0)
+					var ny = 100.0 + randf() * (arena_h - 200.0)
+					if typeof(h) == TYPE_DICTIONARY:
+						h["x"] = nx
+						h["y"] = ny
+					elif typeof(h) == TYPE_OBJECT:
+						if "x" in h: h.x = nx
+						if "y" in h: h.y = ny
+
+					var rad = 30.0
+					if typeof(h) == TYPE_DICTIONARY and h.has("radius"): rad = h["radius"]
+					elif typeof(h) == TYPE_OBJECT and "radius" in h: rad = h.radius
+
+					if "events" in world and typeof(world.events) == TYPE_ARRAY:
+						world.events.append({'type': 'visual_effect', 'data': {'type': 'portal_shift', 'x': nx, 'y': ny, 'radius': rad}})
+
+				if quantum_teleporters.size() > 1:
+					for h in quantum_teleporters:
+						var others = []
+						for o in quantum_teleporters:
+							if o != h: others.append(o)
+						var pair = others[randi() % others.size()]
+
+						var px = 0.0
+						var py = 0.0
+						if typeof(pair) == TYPE_DICTIONARY:
+							px = pair.get("x", 0.0)
+							py = pair.get("y", 0.0)
+						elif typeof(pair) == TYPE_OBJECT:
+							px = pair.x if "x" in pair else 0.0
+							py = pair.y if "y" in pair else 0.0
+
+						if typeof(h) == TYPE_DICTIONARY:
+							h["target_x"] = px
+							h["target_y"] = py
+						elif typeof(h) == TYPE_OBJECT:
+							if "target_x" in h: h.target_x = px
+							if "target_y" in h: h.target_y = py
+							elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+								h.set_meta("target_x", px)
+								h.set_meta("target_y", py)
+				else:
+					for h in quantum_teleporters:
+						var tx = 100.0 + randf() * (arena_w - 200.0)
+						var ty = 100.0 + randf() * (arena_h - 200.0)
+						if typeof(h) == TYPE_DICTIONARY:
+							h["target_x"] = tx
+							h["target_y"] = ty
+						elif typeof(h) == TYPE_OBJECT:
+							if "target_x" in h: h.target_x = tx
+							if "target_y" in h: h.target_y = ty
+							elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+								h.set_meta("target_x", tx)
+								h.set_meta("target_y", ty)
+
 var GAME_MODES = {
 	'time_loop_field': TimeLoopFieldMode.new(),
 	"sniper_only": SniperOnlyMode.new(),
@@ -30566,6 +30654,7 @@ var GAME_MODES = {
 	"custom_match": CustomMatchMode.new(),
 	"reverse_event": ReverseEventMode.new(),
 	"unstable_portals_event": UnstablePortalsEventMode.new(),
+	"quantum_instability_event": QuantumInstabilityEventMode.new(),
 	"minefield_event": MinefieldEventMode.new(),
 	"meteor_crash_event": MeteorCrashEventMode.new(),
 	"lightning_strike_event": LightningStrikeEventMode.new(),
