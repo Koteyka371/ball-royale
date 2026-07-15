@@ -22409,4 +22409,158 @@ class InverseControlsZoneMode(GameMode):
                 b.x -= vx * delta * 2
                 b.y -= vy * delta * 2
 
+class EdgeSlingshotsMode(GameMode):
+    """
+    Elastic bands or physical slingshots placed around the edge of the arena.
+    When a ball hits them with high velocity, they get launched back towards the center
+    with massively increased speed, turning them into deadly projectiles for a short duration.
+    """
+    def __init__(self):
+        super().__init__()
+        self.slingshots = []
+        self.grabbed_state = {}
+        self.grab_duration = 0.5
+        self.launch_speed_mult = 4.0
+        self.damage_mult = 3.0
+        self.cooldown = 2.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.grabbed_state.clear()
+
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+        margin = 150.0
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+
+        self.slingshots = [
+            (margin, center_y),
+            (arena_width - margin, center_y),
+            (center_x, margin),
+            (center_x, arena_height - margin),
+            (margin, margin),
+            (arena_width - margin, margin),
+            (margin, arena_height - margin),
+            (arena_width - margin, arena_height - margin)
+        ]
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                hazard_class = FallbackHazard
+
+            for i, (sx, sy) in enumerate(self.slingshots):
+                h = hazard_class(f"edge_slingshot_{i}", sx, sy, 80.0, "edge_slingshot", 0.0)
+                world.arena.hazards.append(h)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        center_x = getattr(world.arena, "width", 1000.0) / 2.0 if hasattr(world, "arena") else 500.0
+        center_y = getattr(world.arena, "height", 1000.0) / 2.0 if hasattr(world, "arena") else 500.0
+
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", True):
+                if b.id in self.grabbed_state:
+                    del self.grabbed_state[b.id]
+                continue
+
+            if hasattr(b, "slingshot_cooldown"):
+                b.slingshot_cooldown -= delta
+                if b.slingshot_cooldown <= 0:
+                    delattr(b, "slingshot_cooldown")
+
+            if hasattr(b, "slingshot_buff_duration"):
+                b.slingshot_buff_duration -= delta
+                if b.slingshot_buff_duration <= 0:
+                    delattr(b, "slingshot_buff_duration")
+                    if hasattr(b, "pre_slingshot_speed"):
+                        b.base_speed = b.pre_slingshot_speed
+                        b.speed = b.pre_slingshot_speed
+                    if hasattr(b, "pre_slingshot_damage"):
+                        b.base_damage = b.pre_slingshot_damage
+                        b.damage = b.pre_slingshot_damage
+
+            if b.id not in self.grabbed_state and not hasattr(b, "slingshot_cooldown"):
+                if not hasattr(b, "base_speed"):
+                    b.base_speed = getattr(b, "speed", 300.0)
+                if not hasattr(b, "base_damage"):
+                    b.base_damage = getattr(b, "damage", 10.0)
+
+                vx = getattr(b, "velocity_x", 0.0)
+                vy = getattr(b, "velocity_y", 0.0)
+                v_mag = math.hypot(vx, vy)
+
+                if v_mag > 50.0:
+                    for i, (sx, sy) in enumerate(self.slingshots):
+                        dist = math.hypot(b.x - sx, b.y - sy)
+                        if dist < 80.0:
+                            self.grabbed_state[b.id] = {
+                                "timer": self.grab_duration,
+                                "slingshot_x": sx,
+                                "slingshot_y": sy,
+                                "original_speed": b.base_speed,
+                                "original_damage": b.base_damage
+                            }
+
+                            b.pre_slingshot_speed = b.base_speed
+                            b.pre_slingshot_damage = b.base_damage
+
+                            b.speed = 0.0
+                            b.base_speed = 0.0
+                            b.velocity_x = 0.0
+                            b.velocity_y = 0.0
+
+                            if hasattr(b, "silenced"):
+                                b.silenced = True
+
+                            break
+
+            if b.id in self.grabbed_state:
+                state = self.grabbed_state[b.id]
+                state["timer"] -= delta
+
+                sx, sy = state["slingshot_x"], state["slingshot_y"]
+
+                if state["timer"] > 0:
+                    b.x += (sx - b.x) * 5.0 * delta
+                    b.y += (sy - b.y) * 5.0 * delta
+                    b.speed = 0.0
+                    b.base_speed = 0.0
+                    b.velocity_x = 0.0
+                    b.velocity_y = 0.0
+                else:
+                    dx = center_x - b.x
+                    dy = center_y - b.y
+                    d_mag = math.hypot(dx, dy)
+                    if d_mag > 0.001:
+                        nx, ny = dx/d_mag, dy/d_mag
+                    else:
+                        nx, ny = 1.0, 0.0
+
+                    launch_speed = state["original_speed"] * self.launch_speed_mult
+                    b.base_speed = launch_speed
+                    b.speed = launch_speed
+                    b.velocity_x = nx * launch_speed
+                    b.velocity_y = ny * launch_speed
+
+                    b.base_damage = state["original_damage"] * self.damage_mult
+                    b.damage = b.base_damage
+
+                    if hasattr(b, "silenced"):
+                        b.silenced = False
+
+                    setattr(b, "slingshot_cooldown", self.cooldown)
+                    setattr(b, "slingshot_buff_duration", 3.0)
+
+                    del self.grabbed_state[b.id]
+
+
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
+GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
