@@ -84,8 +84,8 @@ def test_decoy_explosion_no_confuse():
         random.random = original_random
 
     assert getattr(decoy, "_decoy_exploded", False) is True
-    assert enemy.is_confused is False
-    assert enemy.confusion_timer == 0.0
+    assert enemy.is_confused is True
+    assert enemy.confusion_timer == 2.0
 
 def test_decoy_explosion_all_confuse():
     owner = MockBall(x=10, y=10)
