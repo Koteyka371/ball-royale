@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-997] Shrinking Arena Mode — *2026-07-15 00:40:25 UTC*
+
+A battle royale game mode where the safe zone of the arena periodically shrinks. Entities outside the safe zone take continuous damage. This mode forces encounters, accelerates matches, and creates intense late-game scenarios.
+
+---
+
 ## [idea-1001] Bumper Magnet Mode — *2026-07-15 00:27:49 UTC*
 
 A new game mode where bumpers exert a magnetic pull, making it tricky to navigate around them without getting caught in a pinball frenzy.

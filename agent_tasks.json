@@ -17118,7 +17118,7 @@
     },
     {
       "id": "idea-997",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Arena Mode",
@@ -27247,6 +27247,57 @@
         "src/arena/sticky_floor.py",
         "src/arena/sticky_floor.gd",
         "tests/test_sticky_floor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1592",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Image Decoy Booster",
+      "description": "A booster that, when picked up, spawns two intangible clones of the ball that move in mirrored paths from the original ball. They don't do damage, but confuse enemies and disappear after 5 seconds or upon taking damage.",
+      "allowed_paths": [
+        "src/ai/mirror_image_decoy_booster.py",
+        "src/ai/mirror_image_decoy_booster.gd",
+        "tests/test_mirror_image_decoy_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1593",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Arenas",
+      "description": "Certain walls bounce projectiles back perfectly and sometimes duplicate them to double the chaos.",
+      "allowed_paths": [
+        "src/arena/mirror_arenas.py",
+        "src/arena/mirror_arenas.gd",
+        "tests/test_mirror_arenas.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1594",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunneling Skill",
+      "description": "A new skill that allows the ball to instantly teleport through a wall or hazard if they are right next to it. They become intangible for 0.5s after tunneling to ensure they don't get stuck, and the skill goes on a 15-second cooldown.",
+      "allowed_paths": [
+        "src/ai/quantum_tunneling_skill.py",
+        "src/ai/quantum_tunneling_skill.gd",
+        "tests/test_quantum_tunneling_skill.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
