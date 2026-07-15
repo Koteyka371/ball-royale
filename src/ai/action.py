@@ -9032,6 +9032,38 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "turret_linker_booster":
+                    if getattr(self.ball, "ball_type", "") == "engineer":
+                        if hasattr(self.world, "balls"):
+                            my_team = getattr(self.ball, "team", "")
+                            if my_team == "": my_team = getattr(self.ball, "ball_type", "")
+                            for b in self.world.balls:
+                                if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == getattr(self.ball, "id", None):
+                                    nearest_enemy = None
+                                    min_dist = 999999.0
+                                    for eb in self.world.balls:
+                                        if getattr(eb, "alive", True) and eb != b:
+                                            e_team = getattr(eb, "team", "")
+                                            if e_team == "": e_team = getattr(eb, "ball_type", "")
+                                            if e_team != my_team and getattr(eb, "is_decoy", False) == False:
+                                                dx = eb.x - b.x
+                                                dy = eb.y - b.y
+                                                dist_sq = dx * dx + dy * dy
+                                                if dist_sq < min_dist:
+                                                    min_dist = dist_sq
+                                                    nearest_enemy = eb
+                                    if nearest_enemy:
+                                        nearest_enemy.hp -= 20.0
+                                        if nearest_enemy.hp <= 0 and getattr(nearest_enemy, "alive", True):
+                                            nearest_enemy.alive = False
+                                        if not hasattr(self.world, "events"):
+                                            self.world.events = []
+                                        self.world.events.append({"type": "turret_laser_blast", "source": b.id, "target": nearest_enemy.id, "x": nearest_enemy.x, "y": nearest_enemy.y})
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "siren_decoy_booster":
                     import copy
                     if hasattr(self.world, "balls"):

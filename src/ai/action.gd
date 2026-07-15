@@ -16276,6 +16276,124 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx >= 0:
                         self.world.boosters.remove_at(idx)
+            elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "turret_linker_booster":
+                var ball_type = ""
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): ball_type = self.ball.ball_type
+                elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: ball_type = self.ball.ball_type
+
+                if ball_type == "engineer":
+                    if self.world != null and "balls" in self.world:
+                        var my_team = ""
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball.team
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                        elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: my_team = self.ball.team
+
+                        if my_team == "": my_team = ball_type
+
+                        var self_id = -1
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): self_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: self_id = self.ball.id
+
+                        for b in self.world.balls:
+                            var is_turret = false
+                            if typeof(b) == TYPE_DICTIONARY and b.has("is_turret"): is_turret = b.is_turret
+                            elif typeof(b) == TYPE_OBJECT and "is_turret" in b: is_turret = b.is_turret
+
+                            var b_owner = -1
+                            if typeof(b) == TYPE_DICTIONARY and b.has("owner_id"): b_owner = b.owner_id
+                            elif typeof(b) == TYPE_OBJECT and "owner_id" in b: b_owner = b.owner_id
+
+                            if is_turret and b_owner == self_id:
+                                var nearest_enemy = null
+                                var min_dist = 999999.0
+                                for eb in self.world.balls:
+                                    var is_alive = true
+                                    if typeof(eb) == TYPE_DICTIONARY and eb.has("alive"): is_alive = eb.alive
+                                    elif typeof(eb) == TYPE_OBJECT and "alive" in eb: is_alive = eb.alive
+
+                                    if is_alive and eb != b:
+                                        var e_team = ""
+                                        if typeof(eb) == TYPE_DICTIONARY and eb.has("team"): e_team = eb.team
+                                        elif typeof(eb) == TYPE_OBJECT and eb.has_method("has_meta") and eb.has_meta("team"): e_team = eb.get_meta("team")
+                                        elif typeof(eb) == TYPE_OBJECT and "team" in eb: e_team = eb.team
+
+                                        if e_team == "":
+                                            if typeof(eb) == TYPE_DICTIONARY and eb.has("ball_type"): e_team = eb.ball_type
+                                            elif typeof(eb) == TYPE_OBJECT and "ball_type" in eb: e_team = eb.ball_type
+
+                                        var is_decoy = false
+                                        if typeof(eb) == TYPE_DICTIONARY and eb.has("is_decoy"): is_decoy = eb.is_decoy
+                                        elif typeof(eb) == TYPE_OBJECT and "is_decoy" in eb: is_decoy = eb.is_decoy
+
+                                        if e_team != my_team and not is_decoy:
+                                            var bx = 0.0
+                                            var by = 0.0
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                if b.has("x"): bx = b.x
+                                                if b.has("y"): by = b.y
+                                            else:
+                                                if "x" in b: bx = b.x
+                                                if "y" in b: by = b.y
+
+                                            var ebx = 0.0
+                                            var eby = 0.0
+                                            if typeof(eb) == TYPE_DICTIONARY:
+                                                if eb.has("x"): ebx = eb.x
+                                                if eb.has("y"): eby = eb.y
+                                            else:
+                                                if "x" in eb: ebx = eb.x
+                                                if "y" in eb: eby = eb.y
+
+                                            var dx = ebx - bx
+                                            var dy = eby - by
+                                            var dist_sq = dx * dx + dy * dy
+                                            if dist_sq < min_dist:
+                                                min_dist = dist_sq
+                                                nearest_enemy = eb
+
+                                if nearest_enemy != null:
+                                    var e_hp = 0.0
+                                    if typeof(nearest_enemy) == TYPE_DICTIONARY and nearest_enemy.has("hp"): e_hp = nearest_enemy.hp
+                                    elif typeof(nearest_enemy) == TYPE_OBJECT and "hp" in nearest_enemy: e_hp = nearest_enemy.hp
+
+                                    e_hp -= 20.0
+
+                                    if typeof(nearest_enemy) == TYPE_DICTIONARY:
+                                        nearest_enemy.hp = e_hp
+                                        if e_hp <= 0: nearest_enemy.alive = false
+                                    elif typeof(nearest_enemy) == TYPE_OBJECT:
+                                        if "hp" in nearest_enemy: nearest_enemy.hp = e_hp
+                                        if e_hp <= 0 and "alive" in nearest_enemy: nearest_enemy.alive = false
+
+                                    var b_id = -1
+                                    if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+                                    elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+
+                                    var en_id = -1
+                                    if typeof(nearest_enemy) == TYPE_DICTIONARY and nearest_enemy.has("id"): en_id = nearest_enemy.id
+                                    elif typeof(nearest_enemy) == TYPE_OBJECT and "id" in nearest_enemy: en_id = nearest_enemy.id
+
+                                    var en_x = 0.0
+                                    var en_y = 0.0
+                                    if typeof(nearest_enemy) == TYPE_DICTIONARY:
+                                        if nearest_enemy.has("x"): en_x = nearest_enemy.x
+                                        if nearest_enemy.has("y"): en_y = nearest_enemy.y
+                                    elif typeof(nearest_enemy) == TYPE_OBJECT:
+                                        if "x" in nearest_enemy: en_x = nearest_enemy.x
+                                        if "y" in nearest_enemy: en_y = nearest_enemy.y
+
+                                    if not ("events" in self.world):
+                                        self.world.events = []
+                                    self.world.events.append({"type": "turret_laser_blast", "source": b_id, "target": en_id, "x": en_x, "y": en_y})
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var h_idx = self.world.arena.hazards.find(nearest)
+                    if h_idx >= 0:
+                        self.world.arena.hazards.remove_at(h_idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx >= 0:
+                        self.world.boosters.remove_at(idx)
             elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "ghost_mode_booster":
                 if typeof(self.ball) == TYPE_DICTIONARY:
                     self.ball["ghost_mode_timer"] = 5.0
