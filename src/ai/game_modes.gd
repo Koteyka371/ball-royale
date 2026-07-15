@@ -9590,6 +9590,95 @@ class EMPBurstMode extends GameMode:
 
 	func tick(world, balls, delta: float = 0.016):
 		super.tick(world, balls, delta)
+		# Process existing gravity wells for collapse and explosion
+		var hazards_to_remove = []
+		var new_explosions = []
+		if "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var kind = ""
+				if "kind" in h: kind = h.kind
+				elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+				elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+
+				var explodes = false
+				if "explodes" in h: explodes = h.explodes
+				elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("explodes"): explodes = h.get_meta("explodes")
+				elif typeof(h) == TYPE_DICTIONARY and h.has("explodes"): explodes = h["explodes"]
+
+				if kind == "gravity_well" and explodes:
+					var duration = 0.0
+					if "duration" in h: duration = h.duration
+					elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("duration"): duration = h.get_meta("duration")
+					elif typeof(h) == TYPE_DICTIONARY and h.has("duration"): duration = h["duration"]
+
+					if duration > 0.0:
+						duration -= delta
+						if "duration" in h: h.duration = duration
+						elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("duration", duration)
+						elif typeof(h) == TYPE_DICTIONARY: h["duration"] = duration
+
+						if duration <= 0:
+							hazards_to_remove.append(h)
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_radius = 50.0
+							if "x" in h: h_x = h.x
+							elif typeof(h) == TYPE_DICTIONARY and h.has("x"): h_x = h["x"]
+							if "y" in h: h_y = h.y
+							elif typeof(h) == TYPE_DICTIONARY and h.has("y"): h_y = h["y"]
+							if "radius" in h: h_radius = h.radius
+							elif typeof(h) == TYPE_DICTIONARY and h.has("radius"): h_radius = h["radius"]
+
+							var exp_radius = h_radius * 1.5
+							var exp = {
+								"id": randi() % 1000000,
+								"x": h_x,
+								"y": h_y,
+								"radius": exp_radius,
+								"kind": "explosion",
+								"duration": 0.5,
+								"damage": 50.0,
+								"active": true
+							}
+							new_explosions.append(exp)
+
+							for b in balls:
+								var is_alive = false
+								var b_type = ""
+								if typeof(b) == TYPE_OBJECT:
+									if "alive" in b: is_alive = b.alive
+									if "ball_type" in b: b_type = b.ball_type
+								elif typeof(b) == TYPE_DICTIONARY:
+									if b.has("alive"): is_alive = b["alive"]
+									if b.has("ball_type"): b_type = b["ball_type"]
+
+								if is_alive and b_type != "spectator":
+									var bx = 0.0
+									var by = 0.0
+									if typeof(b) == TYPE_OBJECT:
+										if "x" in b: bx = b.x
+										if "y" in b: by = b.y
+									elif typeof(b) == TYPE_DICTIONARY:
+										if b.has("x"): bx = b["x"]
+										if b.has("y"): by = b["y"]
+
+									var dx = bx - h_x
+									var dy = by - h_y
+									var dist = sqrt(dx*dx + dy*dy)
+									if dist < exp_radius and dist > 0.0:
+										var knockback_force = (exp_radius - dist) * 10.0
+										if typeof(b) == TYPE_OBJECT:
+											if "x" in b: b.x += (dx / dist) * knockback_force * delta
+											if "y" in b: b.y += (dy / dist) * knockback_force * delta
+										elif typeof(b) == TYPE_DICTIONARY:
+											if b.has("x"): b["x"] += (dx / dist) * knockback_force * delta
+											if b.has("y"): b["y"] += (dy / dist) * knockback_force * delta
+
+			for h in hazards_to_remove:
+				world.arena.hazards.erase(h)
+			for exp in new_explosions:
+				world.arena.hazards.append(exp)
+
 		spawn_timer += delta
 		if spawn_timer >= 5.0:
 			spawn_timer = 0.0
@@ -14719,6 +14808,95 @@ class GravityWellMode extends GameMode:
 		super.tick(world, balls, delta)
 
 
+
+		# Process existing gravity wells for collapse and explosion
+		var hazards_to_remove = []
+		var new_explosions = []
+		if "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var kind = ""
+				if "kind" in h: kind = h.kind
+				elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+				elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+
+				var explodes = false
+				if "explodes" in h: explodes = h.explodes
+				elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("explodes"): explodes = h.get_meta("explodes")
+				elif typeof(h) == TYPE_DICTIONARY and h.has("explodes"): explodes = h["explodes"]
+
+				if kind == "gravity_well" and explodes:
+					var duration = 0.0
+					if "duration" in h: duration = h.duration
+					elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("duration"): duration = h.get_meta("duration")
+					elif typeof(h) == TYPE_DICTIONARY and h.has("duration"): duration = h["duration"]
+
+					if duration > 0.0:
+						duration -= delta
+						if "duration" in h: h.duration = duration
+						elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("duration", duration)
+						elif typeof(h) == TYPE_DICTIONARY: h["duration"] = duration
+
+						if duration <= 0:
+							hazards_to_remove.append(h)
+							var h_x = 0.0
+							var h_y = 0.0
+							var h_radius = 50.0
+							if "x" in h: h_x = h.x
+							elif typeof(h) == TYPE_DICTIONARY and h.has("x"): h_x = h["x"]
+							if "y" in h: h_y = h.y
+							elif typeof(h) == TYPE_DICTIONARY and h.has("y"): h_y = h["y"]
+							if "radius" in h: h_radius = h.radius
+							elif typeof(h) == TYPE_DICTIONARY and h.has("radius"): h_radius = h["radius"]
+
+							var exp_radius = h_radius * 1.5
+							var exp = {
+								"id": randi() % 1000000,
+								"x": h_x,
+								"y": h_y,
+								"radius": exp_radius,
+								"kind": "explosion",
+								"duration": 0.5,
+								"damage": 50.0,
+								"active": true
+							}
+							new_explosions.append(exp)
+
+							for b in balls:
+								var is_alive = false
+								var b_type = ""
+								if typeof(b) == TYPE_OBJECT:
+									if "alive" in b: is_alive = b.alive
+									if "ball_type" in b: b_type = b.ball_type
+								elif typeof(b) == TYPE_DICTIONARY:
+									if b.has("alive"): is_alive = b["alive"]
+									if b.has("ball_type"): b_type = b["ball_type"]
+
+								if is_alive and b_type != "spectator":
+									var bx = 0.0
+									var by = 0.0
+									if typeof(b) == TYPE_OBJECT:
+										if "x" in b: bx = b.x
+										if "y" in b: by = b.y
+									elif typeof(b) == TYPE_DICTIONARY:
+										if b.has("x"): bx = b["x"]
+										if b.has("y"): by = b["y"]
+
+									var dx = bx - h_x
+									var dy = by - h_y
+									var dist = sqrt(dx*dx + dy*dy)
+									if dist < exp_radius and dist > 0.0:
+										var knockback_force = (exp_radius - dist) * 10.0
+										if typeof(b) == TYPE_OBJECT:
+											if "x" in b: b.x += (dx / dist) * knockback_force * delta
+											if "y" in b: b.y += (dy / dist) * knockback_force * delta
+										elif typeof(b) == TYPE_DICTIONARY:
+											if b.has("x"): b["x"] += (dx / dist) * knockback_force * delta
+											if b.has("y"): b["y"] += (dy / dist) * knockback_force * delta
+
+			for h in hazards_to_remove:
+				world.arena.hazards.erase(h)
+			for exp in new_explosions:
+				world.arena.hazards.append(exp)
 
 		spawn_timer += delta
 		if spawn_timer >= 5.0:
