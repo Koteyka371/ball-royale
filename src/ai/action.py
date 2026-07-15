@@ -3819,7 +3819,24 @@ class Action:
                                             heal_amount = 30.0
                                             other.hp = min(getattr(other, "max_hp", 100.0), other.hp + heal_amount)
                                         elif is_enemy and decoy_type != "healing":
-                                            if decoy_type == "stun_trap":
+                                            # Check for EMP combo (explosive + stun)
+                                            emp_combo = False
+                                            if simultaneous and decoy_type in ("explosive", "stun_trap"):
+                                                for sib in decoy_sibs:
+                                                    if getattr(sib, "decoy_type", "") in ("explosive", "stun_trap") and getattr(sib, "decoy_type", "") != decoy_type:
+                                                        emp_combo = True
+                                                        break
+
+                                            if emp_combo:
+                                                other.silence_timer = getattr(other, "silence_timer", 0.0) + 5.0
+                                                # Optional minor damage for EMP combo
+                                                other.hp -= (explosion_damage * 0.5)
+                                                other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
+
+                                                # Visual noise for EMP
+                                                if hasattr(self.world, "events"):
+                                                    self.world.events.append({"type": "visual_effect", "data": {"type": "emp_blast", "x": other.x, "y": other.y, "radius": radius}})
+                                            elif decoy_type == "stun_trap":
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
                                             elif decoy_type == "explosive":
                                                 actual_damage = explosion_damage

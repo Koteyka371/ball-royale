@@ -1,0 +1,4 @@
+{
+    "title": "Black Hole Decoy",
+    "description": "Introduce a new decoy type called the 'Black Hole Decoy'. When it detonates, instead of dealing immediate damage or crowd control, it creates a gravitational singularity that pulls in all nearby entities (balls, projectiles, items) for 3 seconds before collapsing and dealing damage based on the total mass/entities absorbed."
+}

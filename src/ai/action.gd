@@ -7001,7 +7001,32 @@ func execute(strategy: String, delta: float):
                                             other.set_meta("hp", min(max_hp, other.get_meta("hp") + heal_amount))
 
                                     elif is_enemy and b_decoy_type != "healing":
-                                        if b_decoy_type == "stun_trap":
+                                        var emp_combo = false
+                                        if simultaneous and (b_decoy_type == "explosive" or b_decoy_type == "stun_trap"):
+                                            for sib in decoys:
+                                                var sib_decoy_type = sib.decoy_type if "decoy_type" in sib else (sib.get_meta("decoy_type") if sib.has_method("has_meta") and sib.has_meta("decoy_type") else "")
+                                                if (sib_decoy_type == "explosive" or sib_decoy_type == "stun_trap") and sib_decoy_type != b_decoy_type:
+                                                    emp_combo = true
+                                                    break
+
+                                        if emp_combo:
+                                            if "silence_timer" in other:
+                                                other.silence_timer += 5.0
+                                            elif other.has_method("set_meta") and other.has_meta("silence_timer"):
+                                                other.set_meta("silence_timer", other.get_meta("silence_timer") + 5.0)
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("silence_timer", 5.0)
+
+                                            if "hp" in other:
+                                                other.hp -= (explosion_damage * 0.5)
+
+                                            if "stutter_timer" in other:
+                                                other.stutter_timer += 2.0
+                                            elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
+                                                other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0)
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("stutter_timer", 2.0)
+                                        elif b_decoy_type == "stun_trap":
                                             if "stutter_timer" in other:
                                                 other.stutter_timer += 5.0
                                             elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
