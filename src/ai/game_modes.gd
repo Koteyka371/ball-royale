@@ -30394,7 +30394,84 @@ class MagneticBumpersMode extends GameMode:
 						b.set("x", new_x)
 						b.set("y", new_y)
 
+class TimeLoopFieldMode extends GameMode:
+	var hazard_x: float = 500.0
+	var hazard_y: float = 500.0
+	var hazard_radius: float = 200.0
+	var recorded_states: Dictionary = {}
+
+	func _init() -> void:
+		name = "Time Loop Field"
+		description = "A field that, when entered, records the player's position and HP for 3 seconds, then suddenly rewinds their state back to where they started the loop."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		recorded_states.clear()
+		if "arena" in world and "hazards" in world.arena:
+			var dict_hazard = {
+				"x": hazard_x,
+				"y": hazard_y,
+				"radius": hazard_radius,
+				"duration": 9999.0,
+				"kind": "time_loop_field",
+				"damage": 0.0,
+				"base_damage": 0.0,
+				"owner_id": -1
+			}
+			world.arena.hazards.append(dict_hazard)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var is_alive = false
+			var b_x = 0.0
+			var b_y = 0.0
+			var b_hp = 100.0
+			var b_id = -1
+
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				if not is_alive: continue
+				b_x = b.get("x", 0.0)
+				b_y = b.get("y", 0.0)
+				b_hp = b.get("hp", 100.0)
+				b_id = b.get("id", -1)
+			else:
+				if b.has_method("get_meta"):
+					is_alive = b.alive if "alive" in b else false
+				if not is_alive: continue
+				b_x = b.x if "x" in b else 0.0
+				b_y = b.y if "y" in b else 0.0
+				b_hp = b.hp if "hp" in b else 100.0
+				b_id = b.id if "id" in b else b.get_instance_id()
+
+			var dist = sqrt((b_x - hazard_x)*(b_x - hazard_x) + (b_y - hazard_y)*(b_y - hazard_y))
+			var in_field = dist <= hazard_radius
+
+			if in_field and not recorded_states.has(b_id):
+				recorded_states[b_id] = {
+					"timer": 0.0,
+					"start_x": b_x,
+					"start_y": b_y,
+					"start_hp": b_hp
+				}
+
+			if recorded_states.has(b_id):
+				recorded_states[b_id]["timer"] += delta
+				if recorded_states[b_id]["timer"] >= 3.0:
+					var state = recorded_states[b_id]
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = state["start_x"]
+						b["y"] = state["start_y"]
+						b["hp"] = state["start_hp"]
+					else:
+						if "x" in b: b.x = state["start_x"]
+						if "y" in b: b.y = state["start_y"]
+						if "hp" in b: b.hp = state["start_hp"]
+					recorded_states.erase(b_id)
 var GAME_MODES = {
+	'time_loop_field': TimeLoopFieldMode.new(),
 	"sniper_only": SniperOnlyMode.new(),
 	"stats_decay": StatsDecayMode.new(),
 	"watchtower": WatchtowerMode.new(),

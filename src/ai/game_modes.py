@@ -18150,7 +18150,72 @@ class MagneticBumpersMode(GameMode):
                     b.x = b_x + dx * pull_strength
                     b.y = b_y + dy * pull_strength
 
+
+class TimeLoopFieldMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Loop Field"
+        self.description = "A field that, when entered, records the player's position and HP for 3 seconds, then suddenly rewinds their state back to where they started the loop."
+        self.hazard_x = 500.0
+        self.hazard_y = 500.0
+        self.hazard_radius = 200.0
+        self.recorded_states = {}
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.recorded_states.clear()
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                class SimpleHazard:
+                    def __init__(self):
+                        self.id = 1100
+                        self.x = 500.0
+                        self.y = 500.0
+                        self.radius = 200.0
+                        self.duration = 9999.0
+                        self.kind = "time_loop_field"
+                        self.damage = 0.0
+                        self.base_damage = 0.0
+                        self.owner_id = -1
+                h = SimpleHazard()
+                world.arena.hazards.append(h)
+            except Exception:
+                pass
+
+    def tick(self, world, balls, delta):
+        import math
+        super().tick(world, balls, delta)
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            b_id = getattr(b, "id", None)
+            if b_id is None:
+                b_id = id(b)
+
+            dist = math.hypot(b.x - self.hazard_x, b.y - self.hazard_y)
+            in_field = dist <= self.hazard_radius
+
+            if in_field and b_id not in self.recorded_states:
+                self.recorded_states[b_id] = {
+                    "timer": 0.0,
+                    "start_x": b.x,
+                    "start_y": b.y,
+                    "start_hp": getattr(b, "hp", 100.0)
+                }
+
+            if b_id in self.recorded_states:
+                self.recorded_states[b_id]["timer"] += delta
+                if self.recorded_states[b_id]["timer"] >= 3.0:
+                    state = self.recorded_states[b_id]
+                    b.x = state["start_x"]
+                    b.y = state["start_y"]
+                    if hasattr(b, "hp"):
+                        b.hp = state["start_hp"]
+                    del self.recorded_states[b_id]
 GAME_MODES = {
+    'time_loop_field': TimeLoopFieldMode(),
     "magnetic_bumpers": MagneticBumpersMode(),
     'sniper_only': SniperOnlyMode(),
     "stationary_turrets": StationaryTurretsMode(),
