@@ -24974,6 +24974,17 @@ func _update_skill_timer(delta: float):
                                 var b_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_meta("ball_type") if self.ball.has_method("get_meta") and self.ball.has_meta("ball_type") else "")
                                 b_type = b_type.to_lower()
 
+                                var angle = randf() * 2.0 * PI
+                                var launch_force = 1500.0
+                                var new_vx = cos(angle) * launch_force
+                                var new_vy = sin(angle) * launch_force
+
+                                if "vx" in self.ball: self.ball.vx = new_vx
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", new_vx)
+
+                                if "vy" in self.ball: self.ball.vy = new_vy
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", new_vy)
+
                                 var c_stun = self.ball.stun_timer if "stun_timer" in self.ball else (self.ball.get_meta("stun_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer") else 0.0)
                                 c_stun = max(c_stun, 1.0)
                                 if "stun_timer" in self.ball: self.ball.stun_timer = c_stun

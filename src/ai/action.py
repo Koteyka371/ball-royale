@@ -13533,6 +13533,12 @@ class Action:
                                 b_type = getattr(self.ball, "ball_type", "").lower()
 
                                 # Launch / Stun effect
+                                import random
+                                angle = random.uniform(0, 2 * math.pi)
+                                launch_force = 1500.0
+                                self.ball.vx = math.cos(angle) * launch_force
+                                self.ball.vy = math.sin(angle) * launch_force
+
                                 self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 1.0)
                                 self.ball.geyser_immunity_timer = 3.0 # Immunity to prevent multi-hit from same eruption
 
