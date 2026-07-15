@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-978] Decoy Confusion Aura — *2026-07-15 16:47:39 UTC*
+
+An area of effect aura around decoy clones that periodically scrambles the AI logic (flips targeting priorities from enemy to closest ally) of enemies caught within it, causing temporary friendly fire instances during chaotic brawls.
+
+---
+
 ## [idea-1010] Orbital Strike Coordinator — *2026-07-15 16:46:30 UTC*
 
 A new hazard or booster that links to turrets. When collected by an Engineer, all active turrets fire a simultaneous laser blast at the nearest enemy with infinite range.
