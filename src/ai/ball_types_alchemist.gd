@@ -43,6 +43,11 @@ func get_hp_percent() -> float:
 	return 0.0
 
 func take_damage(amount: float) -> void:
+	if has_meta("radiation_duration") and get_meta("radiation_duration") > 0.0:
+		amount *= get_meta("radiation_multiplier") if has_meta("radiation_multiplier") else 1.5
+	elif "radiation_duration" in self and self.radiation_duration > 0.0:
+		amount *= self.radiation_multiplier if "radiation_multiplier" in self else 1.5
+
 	if self.hp == self.max_hp and amount > 0:
 		self.first_hit_taken = true
 	self.hp -= amount

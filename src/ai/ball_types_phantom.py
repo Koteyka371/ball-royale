@@ -52,6 +52,9 @@ class Phantom:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
+        if getattr(self, "radiation_duration", 0.0) > 0:
+            amount *= getattr(self, "radiation_multiplier", 1.5)
+
         if self.hp == self.max_hp and amount > 0:
             self.first_hit_taken = True
         self.hp -= amount

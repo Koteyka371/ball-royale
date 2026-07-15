@@ -55,6 +55,9 @@ class Spectator:
         self.current_action = "idle"
 
     def take_damage(self, amount: float) -> None:
+        if getattr(self, "radiation_duration", 0.0) > 0:
+            amount *= getattr(self, "radiation_multiplier", 1.5)
+
         self.hp -= int(amount)
         if self.hp <= 0:
             self.alive = False
