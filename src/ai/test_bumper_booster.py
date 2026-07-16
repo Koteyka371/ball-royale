@@ -104,3 +104,23 @@ def test_bumper_booster_aura_out_of_range():
     assert enemy.x == 200.0
     assert getattr(enemy, "vx", 0.0) == 0.0
     assert getattr(enemy, "vy", 0.0) == 0.0
+
+def test_bumper_booster_void_immunity():
+    world = MockWorld()
+    ball = MockBall(1, 100.0, 100.0)
+    ball.bumper_booster_timer = 5.0
+
+    # Put a void panel under the ball
+    void_panel = MockEntity(id=99, x=100.0, y=100.0, kind="void_panel", ball_type="hazard")
+    world.arena.hazards = [void_panel]
+
+    action = Action(ball, world)
+
+    action._idle = lambda d: None
+    action._chase = lambda d: None
+    action._attack = lambda d: None
+    action._process_physics = lambda delta: None
+
+    action.execute("idle", 0.1)
+
+    assert ball.alive == True

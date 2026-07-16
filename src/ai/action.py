@@ -1526,6 +1526,8 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "kind", "") == "void_panel":
+                    if getattr(self.ball, "bumper_booster_timer", 0.0) > 0.0:
+                        continue
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
                     hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
                     # Use square bounding box collision instead of circular
@@ -4111,6 +4113,8 @@ class Action:
             if hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
                     if getattr(hazard, "kind", "") == "void_panel":
+                        if getattr(self.ball, "bumper_booster_timer", 0.0) > 0.0:
+                            continue
                         hx = hazard.x - self.ball.x
                         hy = hazard.y - self.ball.y
                         h_dist = math.sqrt(hx*hx + hy*hy)
