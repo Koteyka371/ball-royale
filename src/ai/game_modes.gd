@@ -9686,7 +9686,7 @@ class EMPBurstMode extends GameMode:
 	var spawn_timer: float = 0.0
 
 	func _init():
-		super._init()
+		pass
 		name = "EMP Burst"
 		description = "Periodic EMP bursts scramble AI targeting!"
 
@@ -10398,7 +10398,7 @@ class PoisonGasZoneMode extends MovingSafeZoneMode:
 	var tick_timer: float = 0.0
 
 	func _init() -> void:
-		super._init()
+		pass
 		name = "Poison Gas Zone"
 		description = "A dynamic battle royale where a deadly poison gas engulfs the arena. The safe zone moves randomly and shrinks, forcing players together. Severe DoT damage outside."
 		outside_damage_per_second = 30.0
@@ -12300,7 +12300,7 @@ class CloneTrailMode extends GameMode:
 	var trail_timer = 0.0
 
 	func _init():
-		super._init()
+		pass
 		name = "Clone Trail"
 		description = "Every few seconds, a trail of static clones is left behind every ball. If an enemy touches a clone, it detonates and deals damage."
 
@@ -14667,7 +14667,7 @@ class ShiftingMazeMode extends GameMode:
 	var wall_damage_per_second: float = 50.0
 
 	func _init() -> void:
-		super._init()
+		pass
 		name = "Shifting Maze"
 		description = "The arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage."
 
@@ -15193,7 +15193,7 @@ class ScorchingSunMode extends GameMode:
 	var timer = 0.0
 
 	func _init():
-		super._init()
+		pass
 		name = "Scorching Sun"
 		description = "The sun gets progressively hotter, causing a slowly shrinking safe zone of shade. Balls outside the shade take continuous damage and have their stamina drained."
 
@@ -15300,7 +15300,7 @@ class DayNightMode extends GameMode:
 	var is_eclipse_active = false
 
 	func _init():
-		super._init()
+		pass
 		name = "Day/Night Cycle"
 		description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear."
 
@@ -17016,7 +17016,7 @@ class InvisibleWallsMode extends GameMode:
 
 class MirrorWallsMode extends GameMode:
 	func _init():
-		super._init()
+		pass
 		name = "Mirror Walls"
 		description = "An arena event where all projectiles are reflected infinitely across mirror walls."
 
@@ -17042,7 +17042,7 @@ class GeometricZoneMode extends GameMode:
 	var rng = RandomNumberGenerator.new()
 
 	func _init():
-		super._init()
+		pass
 		rng.randomize()
 		name = "Geometric Zone"
 		description = "The safe zone shrinks into varied geometric shapes or splits temporarily to disrupt camping."
@@ -17993,7 +17993,7 @@ class ChainLightningStormMode extends GameMode:
 	var weather: String = "thunderstorm"
 
 	func _init():
-		super._init()
+		pass
 		name = "Chain Lightning Storm"
 		description = "A massive electrical storm periodically targets players. When struck, balls release chain lightning that damages and repels nearby entities. Keep your distance!"
 
@@ -18116,7 +18116,7 @@ class LightningStrikeEventMode extends GameMode:
 	var strikes: Array = []
 
 	func _init():
-		super._init()
+		pass
 		name = "Lightning Strike Event"
 		description = "Lightning strikes the arena periodically. Balls caught in the blast radius are stunned and take damage. A visual warning appears briefly before the strike."
 
@@ -18224,7 +18224,7 @@ class MeteorCrashEventMode extends GameMode:
 	var craters: Array = []
 
 	func _init():
-		super._init()
+		pass
 		name = "Meteor Crash Event"
 		description = "Meteors crash into the arena, creating hazardous craters that yield rare materials when destroyed."
 
@@ -18682,7 +18682,7 @@ class StaminaSpeedMode extends GameMode:
 
 class FactoryMode extends GameMode:
 	func _init():
-		super._init()
+		pass
 		self.name = "Factory"
 		self.description = "Conveyor belts push you around!"
 		self.points_for_kill = 10
@@ -19135,7 +19135,7 @@ class MinefieldSafeZoneMode extends SafeZoneMode:
 	var mines_spawned: int = 0
 
 	func _init() -> void:
-		super._init()
+		pass
 		name = "Minefield Safe Zone"
 		description = "The safe zone shrinks over time, and the shrinking border leaves behind an increasing density of explosive landmines."
 
@@ -19478,7 +19478,7 @@ class MicroSafeZonesMode extends SafeZoneMode:
 	var micro_zone_timer: float = 0.0
 
 	func _init() -> void:
-		super._init()
+		pass
 		name = "Micro Safe Zones"
 		description = "In the late game, instead of the primary safe zone just shrinking steadily, micro safe zones start appearing inside it, while the rest of the primary safe zone gets flooded with toxic gas."
 
@@ -19825,7 +19825,7 @@ class ExplodingDecoysMode extends GameMode:
 	var mutators: Array = ["exploding_decoys"]
 
 	func _init():
-		super._init()
+		pass
 		mode_name = "exploding_decoys"
 		description = "A mutator where decoys explode upon expiration or death, dealing area-of-effect damage to nearby enemies."
 
@@ -20231,7 +20231,7 @@ class BlackMarketMode extends GameMode:
 	var currency_spawn_timer = 0.0
 
 	func _init():
-		super._init()
+		pass
 		self.name = "Black Market"
 		self.description = "Collect currency to buy upgrades from wandering Black Markets."
 
@@ -20605,7 +20605,7 @@ class FloorIsLavaMode extends GameMode:
 	var bounce_pads: Array = []
 
 	func _init():
-		super._init()
+		pass
 		name = "Floor Is Lava"
 		description = "The center of the map becomes lava first and expands outwards, forcing players to eventually fight on the very edges of the arena. Safe zones are randomly generated platforms that appear for a limited time before submerging. Players must navigate between platforms using bounce pads and careful movement."
 
@@ -21516,7 +21516,7 @@ class RhythmPanelsMode extends GameMode:
 	var rng = RandomNumberGenerator.new()
 
 	func _init() -> void:
-		super._init()
+		pass
 		name = "Rhythm Panels"
 		description = "Floor panels light up to the beat. Stay on lit panels for buffs; unlit panels will debuff and damage you."
 
@@ -23431,7 +23431,7 @@ class MazeSafeZoneMode extends GameMode:
 	var outside_damage_per_second: float = 20.0
 
 	func _init() -> void:
-		super._init()
+		pass
 		name = "Maze Safe Zone"
 		description = "Navigate a shifting maze while the safe area gets smaller."
 
@@ -26227,7 +26227,7 @@ class CenterBlackHoleMode extends GameMode:
 
 class SpikedWallsMode extends GameMode:
 	func _init():
-		super._init()
+		pass
 		self.name = "Spiked Walls"
 		self.description = "The arena walls are lined with spikes. Hitting a wall doesn't just do damage, but also applies a bleeding effect that drains HP slowly over time until the player stops moving."
 
@@ -27407,7 +27407,7 @@ class MultipleSafeZonesMode extends GameMode:
 
 class FallingPanelsMode extends GameMode:
 	func _init():
-		super._init()
+		pass
 		self.name = "Falling Panels"
 		self.description = "The arena slowly breaks away, falling into a void."
 		self.id = "falling_panels"
@@ -27457,7 +27457,7 @@ class PhysicsAnomalyEventMode extends GameMode:
 	var cy = 500.0
 
 	func _init():
-		super._init()
+		pass
 		self.name = "Physics Anomaly Event"
 		self.description = "A random event that alters the physics of the arena. Projectiles curve, movement speed is affected depending on the direction of travel relative to the anomaly's center."
 
@@ -27821,7 +27821,7 @@ class WeatherStationMode extends GameMode:
 	var controlling_team = null
 
 	func _init():
-		super._init()
+		pass
 		self.name = "Weather Station"
 		self.description = "A neutral capture point occasionally spawns. Capturing it grants control over the weather to attack enemies."
 
@@ -28098,7 +28098,7 @@ class DynamicWeatherTransitionsMode extends GameMode:
 
 class StickyArenaMode extends GameMode:
 	func _init():
-		super._init()
+		pass
 		name = "Sticky Arena"
 		description = "An arena with glue patches and sticky walls that slow down players and heavily dampen bouncing physics, forcing close-quarters combat."
 
@@ -29329,7 +29329,7 @@ class SolarEclipseEventMode extends GameMode:
 	var modified_walls = []
 
 	func _init():
-		super._init()
+		pass
 		name = "Solar Eclipse Event"
 		description = "A rare mid-day event where the sun goes dark abruptly, swapping all day/night buffs globally for 30 seconds and turning indestructible walls destructible."
 
@@ -29528,7 +29528,7 @@ class StationaryTurretsMode extends GameMode:
 
 class SacrificeAltarMode extends GameMode:
 	func _init():
-		super._init()
+		pass
 		self.name = "Sacrifice Altar"
 		self.description = "Hazards where balls can deliberately sacrifice a portion of their max HP to gain permanent buffs or a rare booster drop."
 
@@ -29683,7 +29683,7 @@ class WatchtowerMode extends GameMode:
 	var tower_spawn_timer: float = 0.0
 
 	func _init():
-		super._init()
+		pass
 		name = "Watchtower"
 		description = "Periodically, tall towers rise from the ground. Balls that climb them gain massively increased line of sight and projectile speed, but are immobile while on top."
 
@@ -31287,7 +31287,91 @@ class EchoMode extends GameMode:
 		return null
 
 
+class ParallelDimensionsMode extends GameMode:
+	var split_timer = 0
+	var split_interval = 600
+	var split_duration = 300
+	var dimension_split = false
+
+	func _init():
+		pass
+		name = "Parallel Dimensions"
+		description = "Periodically splits players into two parallel dimensions. Players in different dimensions cannot interact. Collect dimension-exclusive buffs while separated!"
+
+	func tick(world, balls, delta = 0.016):
+		split_timer += 1
+
+		if not dimension_split and split_timer >= split_interval:
+			dimension_split = true
+			split_timer = 0
+
+			var alive_balls = []
+			for b in balls:
+				var is_alive = b.is_alive if "is_alive" in b else true
+				var is_decoy = b.is_decoy if "is_decoy" in b else false
+				if is_alive and not is_decoy:
+					alive_balls.append(b)
+
+			for i in range(alive_balls.size()):
+				var b = alive_balls[i]
+				if i % 2 == 1:
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("in_mirror_dimension", true)
+					else:
+						b["in_mirror_dimension"] = true
+
+					if typeof(b) == TYPE_OBJECT and b.has_method("get_meta"):
+						var old_c = b.get_meta("color") if b.has_meta("color") else (b.color if "color" in b else "white")
+						b.set_meta("original_color", old_c)
+						if "color" in b:
+							b.color = "purple"
+						else:
+							b.set_meta("color", "purple")
+				else:
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("in_mirror_dimension", false)
+					else:
+						b["in_mirror_dimension"] = false
+
+			if world and typeof(world) == TYPE_OBJECT and "arena" in world and "boosters" in world.arena:
+				for i in range(5):
+					var bx = 100.0 + randf() * 800.0
+					var by = 100.0 + randf() * 800.0
+					var mb = {"x": bx, "y": by, "kind": "mirror_buff", "radius": 15.0}
+					world.arena.boosters.append(mb)
+
+		elif dimension_split and split_timer >= split_duration:
+			dimension_split = false
+			split_timer = 0
+
+			for b in balls:
+				var in_mirror = b.in_mirror_dimension if "in_mirror_dimension" in b else false
+				if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("in_mirror_dimension"):
+					in_mirror = b.get_meta("in_mirror_dimension")
+
+				if in_mirror:
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("in_mirror_dimension", false)
+						if b.has_meta("original_color"):
+							if "color" in b:
+								b.color = b.get_meta("original_color")
+							else:
+								b.set_meta("color", b.get_meta("original_color"))
+					else:
+						b["in_mirror_dimension"] = false
+						if "original_color" in b:
+							b["color"] = b["original_color"]
+
+			if world and typeof(world) == TYPE_OBJECT and "arena" in world and "boosters" in world.arena:
+				var new_boosters = []
+				for booster in world.arena.boosters:
+					var kind = booster.kind if typeof(booster) == TYPE_OBJECT and "kind" in booster else (booster["kind"] if typeof(booster) == TYPE_DICTIONARY and "kind" in booster else "")
+					if kind != "mirror_buff":
+						new_boosters.append(booster)
+				world.arena.boosters = new_boosters
+
 GAME_MODES = {
+	"parallel_dimensions": ParallelDimensionsMode.new(),
 	'time_loop_field': TimeLoopFieldMode.new(),
 	"sniper_only": SniperOnlyMode.new(),
 	"stats_decay": StatsDecayMode.new(),
@@ -33387,7 +33471,7 @@ class ColorTrailMode extends GameMode:
 	var timer = 0.0
 
 	func _init():
-		super._init()
+		pass
 		self.name = "Color Trail"
 		self.description = "Leave a trail of your team's color. Stepping on your own color gives a speed and regen buff, while stepping on enemy colors causes slowdown and damage. Teams win by controlling the most territory."
 
@@ -34257,7 +34341,7 @@ class ClanWarMode extends GameMode:
 	var target_score = 1000
 
 	func _init():
-		super._init()
+		pass
 		self.name = "Clan War"
 		self.description = "Rival clans battle for territory control. Controlling a territory grants passive bonuses (e.g. reduced hazard damage, increased speed) within that arena. Teams capture control points to win."
 
@@ -35305,7 +35389,7 @@ class PeriodicSafeZoneMode extends GameMode:
 	var damage_multiplier: float = 1.0
 
 	func _init():
-		super._init()
+		pass
 		name = "Periodic Safe Zone"
 		description = "A battle royale game mode where the safe zone of the arena periodically shrinks. Entities outside the safe zone take continuous damage. This mode forces encounters, accelerates matches, and creates intense late-game scenarios."
 
@@ -35682,7 +35766,7 @@ class TimeDilationZoneMode extends GameMode:
 	var hazard_obj = null
 
 	func _init():
-		super._init()
+		pass
 		name = "Time Dilation Zone"
 		description = "A localized zone that slows down time for entities and projectiles inside it."
 

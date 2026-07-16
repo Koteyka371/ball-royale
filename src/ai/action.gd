@@ -312,6 +312,15 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+	var a_dim = attacker.in_mirror_dimension if "in_mirror_dimension" in attacker else false
+	var t_dim = target.in_mirror_dimension if "in_mirror_dimension" in target else false
+	if typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("in_mirror_dimension"):
+		a_dim = attacker.get_meta("in_mirror_dimension")
+	if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("in_mirror_dimension"):
+		t_dim = target.get_meta("in_mirror_dimension")
+	if a_dim != t_dim:
+		return
+
 
 	var is_shuffler_clone = false
 	if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("is_shuffler_clone") and target.get_meta("is_shuffler_clone"): is_shuffler_clone = true
@@ -14918,6 +14927,40 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
     return [nx, ny]
 
 func _get_enemies() -> Array:
+	var amnesia_timer = 0.0
+	if typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("amnesia_timer"): amnesia_timer = ball.get_meta("amnesia_timer")
+	elif "amnesia_timer" in ball: amnesia_timer = ball.amnesia_timer
+	if amnesia_timer > 0.0:
+		if randf() < 0.5:
+			return []
+
+	var is_confused = false
+	if typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("is_confused"): is_confused = ball.get_meta("is_confused")
+	elif "is_confused" in ball: is_confused = ball.is_confused
+	if is_confused:
+		var enemies = _get_allies_internal()
+		var ball_dim = ball.in_mirror_dimension if "in_mirror_dimension" in ball else false
+		if typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("in_mirror_dimension"): ball_dim = ball.get_meta("in_mirror_dimension")
+		var filtered = []
+		for e in enemies:
+			var e_dim = e.in_mirror_dimension if "in_mirror_dimension" in e else false
+			if typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("in_mirror_dimension"): e_dim = e.get_meta("in_mirror_dimension")
+			if ball_dim == e_dim:
+				filtered.append(e)
+		return filtered
+
+	var enemies = _get_enemies_internal()
+	var ball_dim = ball.in_mirror_dimension if "in_mirror_dimension" in ball else false
+	if typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("in_mirror_dimension"): ball_dim = ball.get_meta("in_mirror_dimension")
+	var filtered = []
+	for e in enemies:
+		var e_dim = e.in_mirror_dimension if "in_mirror_dimension" in e else false
+		if typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("in_mirror_dimension"): e_dim = e.get_meta("in_mirror_dimension")
+		if ball_dim == e_dim:
+			filtered.append(e)
+	return filtered
+
+func _get_enemies_internal() -> Array:
     var amnesia = 0.0
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("amnesia_timer"):
         amnesia = self.ball.get_meta("amnesia_timer")
@@ -18108,6 +18151,40 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.get("kind", "") == "mirror_buff" or (typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "mirror_buff"):
+                var in_mirror = ball.in_mirror_dimension if "in_mirror_dimension" in ball else false
+                if typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("in_mirror_dimension"):
+                    in_mirror = ball.get_meta("in_mirror_dimension")
+                if in_mirror:
+                    var current_damage = ball.damage if "damage" in ball else 10.0
+                    var current_max_hp = ball.max_hp if "max_hp" in ball else 100.0
+                    var current_hp = ball.hp if "hp" in ball else 100.0
+
+                    if typeof(ball) == TYPE_OBJECT and ball.has_method("set"):
+                        ball.set("damage", current_damage * 1.1)
+                        ball.set("max_hp", current_max_hp * 1.1)
+                        ball.set("hp", min(current_hp + 10.0, current_max_hp * 1.1))
+                    else:
+                        ball.damage = current_damage * 1.1
+                        ball.max_hp = current_max_hp * 1.1
+                        ball.hp = min(current_hp + 10.0, current_max_hp * 1.1)
+
+                    if typeof(nearest) == TYPE_OBJECT and nearest.has_method("set"):
+                        nearest.set("duration", 0.0)
+                    elif typeof(nearest) == TYPE_DICTIONARY:
+                        nearest["duration"] = 0.0
+
+                    if world and typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena and nearest in world.arena.hazards:
+                        world.arena.hazards.erase(nearest)
+                    elif world and typeof(world) == TYPE_OBJECT and "arena" in world and "boosters" in world.arena and nearest in world.arena.boosters:
+                        world.arena.boosters.erase(nearest)
+                    elif world and typeof(world) == TYPE_OBJECT and "boosters" in world and nearest in world.boosters:
+                        world.boosters.erase(nearest)
+
+                    if world and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                        var b_x = ball.x if "x" in ball else 0.0
+                        var b_y = ball.y if "y" in ball else 0.0
+                        world.add_event("buff_collected", {"x": b_x, "y": b_y})
             elif "kind" in nearest and nearest.kind == "nemesis_compass_item":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
