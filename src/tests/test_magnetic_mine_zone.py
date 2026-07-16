@@ -1,62 +1,75 @@
-import unittest
-import math
-from ai.game_modes import GAME_MODES
+import pytest
+from ai.game_modes import MagneticMineZoneMode
+
+class MockWorld:
+    def __init__(self):
+        self.events = []
+
+    def add_event(self, name, data):
+        self.events.append((name, data))
 
 class MockBall:
-    def __init__(self, x, y, vx, vy):
+    def __init__(self, x, y, vx, vy, radius=10.0):
         self.x = x
         self.y = y
         self.vx = vx
         self.vy = vy
-        self.radius = 20.0
+        self.radius = radius
         self.alive = True
-        self.hp = 100.0
+        self.hp = 100
 
-class MockWorld:
-    pass
+def test_magnetic_mine_pull():
+    mode = MagneticMineZoneMode()
+    world = MockWorld()
 
-class TestMagneticMineZoneMode(unittest.TestCase):
-    def setUp(self):
-        self.mode = GAME_MODES.get("magnetic_mine_zone")
-        self.world = MockWorld()
+    # Fast ball (speed 150 -> norm 1 -> tracking 150)
+    b_fast = MockBall(200, 200, 150, 0)
+    mode.setup(world, [b_fast])
 
-    def test_mine_tracking(self):
-        balls = [MockBall(200.0, 200.0, 150.0, 0.0)] # fast ball
-        self.mode.setup(self.world, balls)
+    # Place a mine at 300, 200. Distance = 100.
+    # It should track because tracking = 150.
+    mode.mines = [{
+        "x": 300.0,
+        "y": 200.0,
+        "radius": 15.0,
+        "damage": 50.0,
+        "active": True
+    }]
 
-        self.mode.mines = [{
-            "x": 300.0,
-            "y": 200.0,
-            "radius": 15.0,
-            "damage": 50.0,
-            "active": True
-        }]
+    orig_x = mode.mines[0]["x"]
+    mode.tick(world, [b_fast], delta=1.0)
+    assert mode.mines[0]["x"] < orig_x
 
-        m = self.mode.mines[0]
-        self.assertEqual(m["x"], 300.0)
+    # Slow ball (speed 0 -> norm 0 -> tracking 50)
+    b_slow = MockBall(200, 200, 0, 0)
+    mode.mines = [{
+        "x": 300.0,
+        "y": 200.0,
+        "radius": 15.0,
+        "damage": 50.0,
+        "active": True
+    }]
+    orig_x_slow = mode.mines[0]["x"]
+    mode.tick(world, [b_slow], delta=1.0)
+    # distance = 100. tracking = 50. Should NOT track!
+    assert mode.mines[0]["x"] == orig_x_slow
 
-        self.mode.tick(self.world, balls, delta=1.0)
+def test_magnetic_mine_explosion():
+    mode = MagneticMineZoneMode()
+    world = MockWorld()
+    b = MockBall(200, 200, 0, 0)
+    mode.setup(world, [b])
+    mode.mines = [{
+        "x": 200.0,
+        "y": 200.0,
+        "radius": 15.0,
+        "damage": 50.0,
+        "active": True
+    }]
 
-        self.assertTrue(m["x"] < 300.0)
+    mode.tick(world, [b], delta=1.0)
+    assert not mode.mines[0]["active"]
+    assert b.hp == 50
+    assert len(world.events) == 1
+    assert world.events[0][0] == "mine_explosion"
 
-    def test_mine_no_tracking(self):
-        balls = [MockBall(200.0, 200.0, 10.0, 0.0)] # slow ball
-        self.mode.setup(self.world, balls)
-
-        self.mode.mines = [{
-            "x": 300.0,
-            "y": 200.0,
-            "radius": 15.0,
-            "damage": 50.0,
-            "active": True
-        }]
-
-        m = self.mode.mines[0]
-        self.assertEqual(m["x"], 300.0)
-
-        self.mode.tick(self.world, balls, delta=1.0)
-
-        self.assertEqual(m["x"], 300.0)
-
-if __name__ == '__main__':
-    unittest.main()

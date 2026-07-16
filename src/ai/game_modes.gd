@@ -18396,6 +18396,8 @@ class MagneticMineZoneMode extends GameMode:
 
 				if dist < tracking_distance and dist > 0.0:
 					var pull_force = 150.0 * delta
+					# The mine is attracted to the ball, so the direction is from mine to ball.
+					# dx = bx - m["x"], dy = by - m["y"]
 					m["x"] += (dx / dist) * pull_force
 					m["y"] += (dy / dist) * pull_force
 
