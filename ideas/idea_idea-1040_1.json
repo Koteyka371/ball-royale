@@ -1,0 +1,4 @@
+{
+  "title": "Weather-Dependent Traps",
+  "description": "Certain traps malfunction or behave differently depending on the current weather condition (e.g. electrical traps short circuit during rain, or spikes get buried and deal less damage during snow)."
+}
