@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1003] Chain Reaction Bumpers — *2026-07-16 00:21:21 UTC*
+
+Bumpers that activate each other when one is hit. Hitting a chain reaction bumper sends out a shockwave that bounces other balls nearby.
+
+---
+
 ## [idea-1015] Sticky Bomb Booster — *2026-07-16 00:02:06 UTC*
 
 A booster item that, when collected, allows a ball's next attack to attach a timed explosive to an enemy ball. The enemy then has to run away from their team to avoid blowing them up in a chain reaction.
