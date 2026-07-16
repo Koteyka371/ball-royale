@@ -1182,14 +1182,24 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
-        if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
+        try:
+            timer_val = float(getattr(self.ball, "wall_stick_timer", 0.0))
+        except (TypeError, ValueError):
+            timer_val = 0.0
+
+        if timer_val > 0.0:
             self.ball.wall_stick_timer -= delta
             if self.ball.wall_stick_timer <= 0.0:
                 if getattr(self.ball, "stun_timer", 0.0) <= 0.0:
                     self.ball.is_stunned = False
 
+        try:
+            timer_val2 = float(getattr(self.ball, "wall_stick_timer", 0.0))
+        except (TypeError, ValueError):
+            timer_val2 = 0.0
+
         if getattr(self.ball, "is_stunned", False):
-            if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
+            if timer_val2 > 0.0:
                 return
 
         if hasattr(self.ball, "polarity_cooldown") and type(self.ball.polarity_cooldown) in (int, float) and self.ball.polarity_cooldown > 0:
@@ -4363,7 +4373,13 @@ class Action:
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
-                            if not hasattr(hazard, "vx"):
+                            if getattr(hazard, "vx", None) is None:
+                                hazard.vx = 0.0
+                            if getattr(hazard, "vy", None) is None:
+                                hazard.vy = 0.0
+                            if hazard.vx == 0.0 and hazard.vy == 0.0:
+                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal") else random.uniform(-10.0, 10.0)
+                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal") else random.uniform(-10.0, 10.0)
                                 hazard.vx = 0.0
                             if not hasattr(hazard, "vy"):
                                 hazard.vy = 0.0
@@ -5573,7 +5589,7 @@ class Action:
                         dist_sq = dx * dx + dy * dy
                         # Magnetic pull effective up to 3x radius
                         if dist_sq < (hazard.radius * 3.0) ** 2:
-                            if dist_sq > 0.0001:
+                            if float(dist_sq) > 0.0001:
                                 dist = math.sqrt(dist_sq)
                                 nx, ny = dx / dist, dy / dist
                                 hazard_polarity = getattr(hazard, "polarity", 1)
@@ -5606,7 +5622,7 @@ class Action:
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
 
-                            if dist_sq > 0.0001:
+                            if float(dist_sq) > 0.0001:
                                 dist = math.sqrt(dist_sq)
                                 # push AWAY from hazard, direction = ball - hazard = -dx
                                 nx, ny = -dx / dist, -dy / dist
@@ -5633,7 +5649,7 @@ class Action:
                                             is_enemy = False
                                         break
                             if is_enemy:
-                                if dist_sq > 0.0001:
+                                if float(dist_sq) > 0.0001:
                                     import math
                                     dist = math.sqrt(dist_sq)
                                     # Push upwards and outwards
@@ -5694,7 +5710,7 @@ class Action:
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
 
-                            if dist_sq > 0.0001:
+                            if float(dist_sq) > 0.0001:
                                 dist = math.sqrt(dist_sq)
                                 # dx = hazard.x - ball.x
                                 # We want to push AWAY from hazard, so direction is ball - hazard = -dx
@@ -5775,7 +5791,13 @@ class Action:
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
-                            if not hasattr(hazard, "vx"):
+                            if getattr(hazard, "vx", None) is None:
+                                hazard.vx = 0.0
+                            if getattr(hazard, "vy", None) is None:
+                                hazard.vy = 0.0
+                            if hazard.vx == 0.0 and hazard.vy == 0.0:
+                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal") else random.uniform(-10.0, 10.0)
+                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal") else random.uniform(-10.0, 10.0)
 
                                 import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal") else random.uniform(-10.0, 10.0)
                                 hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal") else random.uniform(-10.0, 10.0)
@@ -5844,8 +5866,8 @@ class Action:
                                         bdy = hazard.y - b.y
                                         bdist_sq = bdx * bdx + bdy * bdy
                                         lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") else 1.0
-                                        if bdist_sq < hazard.radius * hazard.radius * 4 * lifetime_mult: # Effective pull range
-                                            if bdist_sq > 0.0001:
+                                        if float(bdist_sq) < float(hazard.radius) * float(hazard.radius) * 4 * float(lifetime_mult): # Effective pull range
+                                            if float(bdist_sq) > 0.0001:
                                                 bdist = math.sqrt(bdist_sq)
                                                 bnx, bny = bdx / bdist, bdy / bdist
                                                 is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
@@ -5882,7 +5904,7 @@ class Action:
                                                     elif hazard.kind in ("poison_tornado", "local_poison_tornado"):
                                                         b.poison_timer = max(getattr(b, "poison_timer", 0.0), 5.0)
 
-                                                if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") and bdist_sq < hazard.radius * hazard.radius:
+                                                if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") and float(bdist_sq) < float(hazard.radius) * float(hazard.radius):
                                                     damage_val = getattr(hazard, "damage", 10.0) * delta * lifetime_mult
                                                     if hasattr(b, "take_damage"):
                                                         b.take_damage(damage_val)
@@ -5900,7 +5922,7 @@ class Action:
                                     bdx = hazard.x - b.x
                                     bdy = hazard.y - b.y
                                     bdist_sq = bdx * bdx + bdy * bdy
-                                    if bdist_sq > 0.0001:
+                                    if float(bdist_sq) > 0.0001:
                                         lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") else 1.0
                                         bdist = math.sqrt(bdist_sq)
                                         bnx, bny = bdx / bdist, bdy / bdist
@@ -5922,7 +5944,7 @@ class Action:
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
-                            if dist_sq > 0.0001:
+                            if float(dist_sq) > 0.0001:
                                 lifetime_mult = 1.0 + (getattr(hazard, "lifetime", 0.0) / 10.0) if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") else 1.0
                                 dist = math.sqrt(dist_sq)
                                 nx, ny = dx / dist, dy / dist
@@ -8669,7 +8691,7 @@ class Action:
 
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist_sq = dx * dx + dy * dy
-            if dist_sq > 0.0001:
+            if float(dist_sq) > 0.0001:
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
 
@@ -8834,7 +8856,7 @@ class Action:
 
             dx, dy = flank_x - self.ball.x, flank_y - self.ball.y
             dist_sq = dx * dx + dy * dy
-            if dist_sq > 0.0001:
+            if float(dist_sq) > 0.0001:
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
 
@@ -8943,7 +8965,7 @@ class Action:
         dx = target.x - self.ball.x
         dy = target.y - self.ball.y
         dist_sq = dx * dx + dy * dy
-        if dist_sq > 0.0001:
+        if float(dist_sq) > 0.0001:
             dist = math.sqrt(dist_sq)
             nx = dx / dist
             ny = dy / dist
@@ -9104,7 +9126,7 @@ class Action:
 
             dx, dy = target.x - self.ball.x, target.y - self.ball.y
             dist_sq = dx * dx + dy * dy
-            if dist_sq > 0.0001:
+            if float(dist_sq) > 0.0001:
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
 
@@ -9353,7 +9375,7 @@ class Action:
                 if should_move:
                     dx, dy = target_pos_x - self.ball.x, target_pos_y - self.ball.y
                     dist_sq = dx * dx + dy * dy
-                    if dist_sq > 0.0001:
+                    if float(dist_sq) > 0.0001:
                         dist = math.sqrt(dist_sq)
                         nx, ny = dx / dist, dy / dist
                         nx, ny = self._apply_obstacle_avoidance(nx, ny, target_enemy)
@@ -9424,7 +9446,7 @@ class Action:
             if target_ally:
                 dx, dy = target_ally.x - self.ball.x, target_ally.y - self.ball.y
                 dist_sq = dx * dx + dy * dy
-                if dist_sq > 0.0001:
+                if float(dist_sq) > 0.0001:
                     dist = math.sqrt(dist_sq)
                     nx, ny = dx / dist, dy / dist
                     nx, ny = self._apply_obstacle_avoidance(nx, ny, target_ally)
@@ -9503,7 +9525,7 @@ class Action:
             ny_target = get_by(nearest)
             dx, dy = nx_target - self.ball.x, ny_target - self.ball.y
             dist_sq = dx * dx + dy * dy
-            if dist_sq > 0.0001:
+            if float(dist_sq) > 0.0001:
                 dist = math.sqrt(dist_sq)
                 nx, ny = dx / dist, dy / dist
                 nx, ny = self._apply_obstacle_avoidance(nx, ny, nearest, ignore_enemies=True)
@@ -13373,7 +13395,7 @@ class Action:
         nx = random.uniform(-1, 1)
         ny = random.uniform(-1, 1)
         dist_sq = nx*nx + ny*ny
-        if dist_sq > 0.0001:
+        if float(dist_sq) > 0.0001:
             dist = math.sqrt(dist_sq)
             nx /= dist
             ny /= dist

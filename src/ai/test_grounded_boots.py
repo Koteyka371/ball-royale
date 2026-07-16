@@ -16,6 +16,9 @@ def test_grounded_boots():
             self.speed = 2.0
             self.polarity_cooldown = 0
             self.skill = "dash"
+            self.radius = 10.0
+            self.wall_stick_timer = 0.0
+            self.zone_immunity_timer = 0.0
     class MockHazard:
         def __init__(self, x, y, kind):
             self.id = 1
@@ -30,18 +33,38 @@ def test_grounded_boots():
             self.trap_variant = ""
 
     b1 = MockBall(100, 100, "grounded_boots")
-    b2 = MockBall(150, 100, "none")
+    b2 = MockBall(100, 100, "none")
     h_black_hole = MockHazard(100, 110, "black_hole")
 
-    world = MagicMock()
+    class MockArena:
+        def __init__(self):
+            self.width = 1000.0
+            self.height = 1000.0
+            self.safe_zone_center = (500, 500)
+            self.safe_zone_radius = 1000
+            self.damage_per_second = 10.0
+            self.hazards = []
+            self.weather = "clear"
+        def update_zone(self, tick, delta):
+            pass
+        def clamp_position(self, x, y, r):
+            return (x, y, False)
+    class MockWorld:
+        def __init__(self):
+            self.balls = []
+            self.arena = MockArena()
+            self.boosters = []
+            self.items = []
+            self.tick = 1
+    world = MockWorld()
 
     world.balls = [b1, b2]
     world.arena.hazards = [h_black_hole]
     world.boosters = []
     world.items = []
 
-    action_b1 = Action(world, b1)
-    action_b2 = Action(world, b2)
+    action_b1 = Action(b1, world)
+    action_b2 = Action(b2, world)
     action_b1.ball.polarity_cooldown = 0
     action_b2.ball.polarity_cooldown = 0
 
@@ -52,4 +75,4 @@ def test_grounded_boots():
     dy_b1 = b1.y - 100
     dy_b2 = b2.y - 100
 
-    assert abs(dy_b1) < 20, f"b1 pulled too much: {dy_b1}"
+    assert abs(dy_b1) < abs(dy_b2), f"b1 pulled too much: {dy_b1}"

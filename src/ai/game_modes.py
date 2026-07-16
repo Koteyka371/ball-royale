@@ -143,7 +143,7 @@ class GameMode:
         elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
             season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
 
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             import random
             season_index = ((season_num - 1) % 4) + 1
             if season_index == 1:
@@ -1556,7 +1556,7 @@ class BattleRoyaleMode(GameMode):
         self.high_tier_supply_drop_timer = getattr(self, "high_tier_supply_drop_timer", 0.0) + delta
         if self.high_tier_supply_drop_timer >= 30.0:
             self.high_tier_supply_drop_timer = 0.0
-            if hasattr(world, "arena"):
+            if getattr(world, "arena", None) is not None:
                 arena_width = getattr(world.arena, "width", 1000)
                 arena_height = getattr(world.arena, "height", 1000)
                 rnd = getattr(self, "random", __import__("random"))
@@ -1740,7 +1740,7 @@ class BattleRoyaleMode(GameMode):
         elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
             season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
 
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             world.arena.is_foggy = (self.weather in ["fog", "snow", "blizzard"])
             world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
             world.arena.is_sandstorming = (self.weather == "sandstorm")
@@ -1828,7 +1828,7 @@ class BattleRoyaleMode(GameMode):
                                     else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
                 self.craters = still_craters
 
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                     try:
@@ -4979,7 +4979,7 @@ class WeatherChaosMode(GameMode):
         elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
             season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
 
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             world.arena.is_foggy = (self.weather in ["fog", "snow", "blizzard"])
             world.arena.is_raining = (self.weather in ["rain", "thunderstorm"])
             world.arena.is_sandstorming = (self.weather == "sandstorm")
@@ -5057,7 +5057,7 @@ class WeatherChaosMode(GameMode):
                                     else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
                 self.craters = still_craters
 
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                     try:
@@ -6224,7 +6224,7 @@ class EcholocationMode(GameMode):
         self.is_flashing = False
         self.current_flash_time = 0.0
 
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             world.arena.is_night = True
 
         if not hasattr(world, "dead_balls"):
@@ -6257,7 +6257,7 @@ class EcholocationMode(GameMode):
             self.current_flash_time += delta
             if self.current_flash_time >= self.flash_duration:
                 self.is_flashing = False
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.is_night = True
                 for b in balls:
                     if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
@@ -6267,7 +6267,7 @@ class EcholocationMode(GameMode):
                 self.flash_timer = 0.0
                 self.is_flashing = True
                 self.current_flash_time = 0.0
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.is_night = False
 
                 if hasattr(world, "add_event"):
@@ -6345,7 +6345,7 @@ class PitchBlackMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             world.arena.is_night = True
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -9632,7 +9632,7 @@ class ScorchingSunMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             world.arena.is_night = False
             self.safe_zone_x = getattr(world.arena, "width", 1000) / 2
             self.safe_zone_y = getattr(world.arena, "height", 1000) / 2
@@ -9640,7 +9640,7 @@ class ScorchingSunMode(GameMode):
         self.timer = 0.0
 
     def tick(self, world, balls, delta=0.016):
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             world.arena.is_night = False
             # Force heatwave weather for aesthetics and modifiers
             world.arena.weather = "heatwave"
@@ -9711,7 +9711,7 @@ class DayNightMode(GameMode):
     def setup(self, world, balls):
         super().setup(world, balls)
         self.world = world
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             world.arena.is_night = False
         self.timer = 0.0
         self.sunlight_beam_timer = 0.0
@@ -9754,7 +9754,7 @@ class DayNightMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         import math
         import random
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             self.timer += delta
             if self.timer >= self.phase_duration:
                 self.timer = 0.0
@@ -10247,7 +10247,7 @@ class MagneticCollisionsMode(GameMode):
                                     else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
                 self.craters = still_craters
 
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                     try:
@@ -10545,7 +10545,7 @@ class PinballMode(GameMode):
                                     else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
                 self.craters = still_craters
 
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                     try:
@@ -13311,7 +13311,7 @@ class MeteorShowerMode(GameMode):
         self.craters = still_craters
 
         # update hazards for visual/external systems
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
             try:
@@ -13797,7 +13797,7 @@ class LunarEclipseEventMode(GameMode):
 
         if self.event_active:
             self.event_duration -= delta
-            if hasattr(world, "arena"):
+            if getattr(world, "arena", None) is not None:
                 world.arena.is_lunar_eclipse = True
                 world.arena.is_eclipse = True
 
@@ -13838,7 +13838,7 @@ class LunarEclipseEventMode(GameMode):
 
             if self.event_duration <= 0:
                 self.event_active = False
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.is_lunar_eclipse = False
                     world.arena.is_eclipse = False
                     if hasattr(world.arena, "hazards"):
@@ -14271,7 +14271,7 @@ class SweepingPaddlesMode(GameMode):
                                     else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
                 self.craters = still_craters
 
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                     try:
@@ -14665,7 +14665,7 @@ class ReverseGravityEventMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("reverse_gravity", {"active": False})
 
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             force_mag = 400.0 * delta
             # Fall downwards normally, upwards when event active
             direction_mult = -1.0 if self.event_active else 1.0
@@ -15094,7 +15094,7 @@ class ExtremeWeatherMode(GameMode):
                                 else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
             self.craters = still_craters
 
-            if hasattr(world, "arena"):
+            if getattr(world, "arena", None) is not None:
                 world.arena.hazards = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") not in ["meteor", "meteor_crater", "mud_pit", "ice_patch", "lava_pit"]]
 
                 try:
@@ -16735,7 +16735,7 @@ class PhysicsAnomalyEventMode(GameMode):
             else:
                 self.event_timer = 0.0
 
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             self.cx = getattr(world.arena, "width", 1000.0) / 2.0
             self.cy = getattr(world.arena, "height", 1000.0) / 2.0
 
@@ -17040,7 +17040,7 @@ class DynamicWeatherTransitionsMode(GameMode):
         self.current_stage = 0
         self.weather = self.weather_sequence[self.current_stage]
         self.weather_timer = 20.0
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             world.arena.weather = self.weather
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
@@ -17070,7 +17070,7 @@ class DynamicWeatherTransitionsMode(GameMode):
                 self.current_stage += 1
                 self.weather = self.weather_sequence[self.current_stage]
                 self.weather_timer = 20.0  # Reset timer for next stage
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.weather = self.weather
                 if hasattr(world, "add_event"):
                     world.add_event("weather_transition", {"new_weather": self.weather})
@@ -17173,7 +17173,7 @@ class ElementalAurasMode(GameMode):
         self.aura_drop_timer += delta
         if self.aura_drop_timer >= 5.0:
             self.aura_drop_timer = 0.0
-            if hasattr(world, "arena"):
+            if getattr(world, "arena", None) is not None:
                 aw = getattr(world.arena, "width", 1000)
                 ah = getattr(world.arena, "height", 1000)
                 element = random.choice(self.elements)
@@ -17337,7 +17337,7 @@ class HeavyRainMode(GameMode):
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             world.arena.weather = self.weather
             world.arena.is_raining = True
 
@@ -17616,7 +17616,7 @@ class SolarEclipseEventMode(GameMode):
                     world.add_event("solar_eclipse_warning", {"type": "weather_warning", "message": "A SOLAR ECLIPSE HAS BEGUN!"})
                     world.add_event("visual_effect", {"type": "solar_eclipse", "duration": 30.0})
 
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.is_night = True
                     world.arena.is_solar_eclipse = True
                     if hasattr(world.arena, "hazards"):
@@ -17629,13 +17629,13 @@ class SolarEclipseEventMode(GameMode):
 
         if self.event_active:
             self.event_duration -= delta
-            if hasattr(world, "arena"):
+            if getattr(world, "arena", None) is not None:
                 world.arena.is_night = True
                 world.arena.is_solar_eclipse = True
 
             if self.event_duration <= 0:
                 self.event_active = False
-                if hasattr(world, "arena"):
+                if getattr(world, "arena", None) is not None:
                     world.arena.is_night = False
                     world.arena.is_solar_eclipse = False
                     if hasattr(world.arena, "hazards"):
@@ -21549,7 +21549,7 @@ class PaintSplatterMode(GameMode):
 
         width = getattr(world, "width", 1000.0)
         height = getattr(world, "height", 1000.0)
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             width = getattr(world.arena, "width", width)
             height = getattr(world.arena, "height", height)
 
