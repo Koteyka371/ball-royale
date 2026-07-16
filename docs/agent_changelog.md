@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1039] Magnetic Bumpers — *2026-07-16 13:36:19 UTC*
+
+Introduce a new 'magnetic_bumper' hazard variant that slightly attracts balls moving slowly nearby towards it, but aggressively repels them once they make contact. This would create gravity-well-like traps that fling unwary players into other hazards or force them to burn skills to escape the pull.
+
+---
+
 ## [idea-967] Pinball Flipper Traps — *2026-07-16 02:57:47 UTC*
 
 Introduce dynamic pinball flippers in the arena that players can control (or AI logic triggers) to bat enemy balls across the map, combining well with bumper chains.
