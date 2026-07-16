@@ -17305,7 +17305,7 @@
     },
     {
       "id": "idea-1008",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Map Hazards: Avalanche",
@@ -28233,6 +28233,41 @@
         "src/ai/kinetic_energy_battery.py",
         "src/ai/kinetic_energy_battery.gd",
         "tests/test_kinetic_energy_battery.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1650",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Safe Zone",
+      "description": "A safe zone that randomly teleports around the map every 10 seconds, forcing players to constantly adapt their positioning to stay alive.",
+      "allowed_paths": [
+        "src/ai/quantum_safe_zone.py",
+        "src/ai/quantum_safe_zone.gd",
+        "tests/test_quantum_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1651",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chameleon Skin Item",
+      "description": "An item that changes your appearance to match the nearest hazard or enemy, tricking opponents or making it harder to track you visually.",
+      "allowed_paths": [
+        "src/ui/chameleon_skin_item.py",
+        "src/ui/chameleon_skin_item.gd",
+        "src/ai/chameleon_skin_item.py",
+        "tests/test_chameleon_skin_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

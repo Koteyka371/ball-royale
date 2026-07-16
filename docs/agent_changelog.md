@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1008] Dynamic Map Hazards: Avalanche — *2026-07-16 17:23:33 UTC*
+
+Add a new random weather/event to the procedural arena: Avalanche. A sweeping zone of slow-moving snow covers part of the map, significantly slowing movement speed and hiding traps, forcing players to adapt their positioning.
+
+---
+
 ## [idea-1024] Mirage Hazard — *2026-07-16 17:18:59 UTC*
 
 A procedural hazard that looks like an active Safe Zone or high-tier loot crate from a distance but dissipates upon entering, sometimes revealing a trap (like a snare or minor explosion).
