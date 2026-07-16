@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1059] Stealth Espionage Mode — *2026-07-16 21:23:41 UTC*
+
+Players start permanently cloaked and must complete objectives without triggering alarms or laser tripwires. Using skills momentarily reveals their position to guards.
+
+---
+
 ## [idea-957] Sticky Walls — *2026-07-16 20:17:08 UTC*
 
 Balls that hit the wall stick to it for a few seconds.

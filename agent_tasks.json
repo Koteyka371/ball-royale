@@ -18172,7 +18172,7 @@
     },
     {
       "id": "idea-1059",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stealth Espionage Mode",
@@ -28456,6 +28456,91 @@
         "src/ai/item_mirror_shield.py",
         "src/ai/item_mirror_shield.gd",
         "tests/test_item_mirror_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1663",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Mine Traps",
+      "description": "New hazard type that attaches to walls. If a ball gets too close, it leaps onto the ball and slows it down before exploding.",
+      "allowed_paths": [
+        "src/arena/sticky_mine_traps.py",
+        "src/arena/sticky_mine_traps.gd",
+        "tests/test_sticky_mine_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1664",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Chain Mode",
+      "description": "Players are paired randomly using an invisible quantum thread. If one player in the pair takes damage or collects a booster, a percentage of that effect (positive or negative) is transferred to the other player. If the thread breaks by them moving too far apart, both suffer a temporary stun and debuff.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_chain.py",
+        "src/ai/quantum_entanglement_chain.gd",
+        "tests/test_quantum_entanglement_chain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1665",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Inversion Traps",
+      "description": "A new trap type that, when triggered, creates a localized zone of reverse gravity. Projectiles and balls entering the zone are heavily deflected upwards or away, fundamentally changing map traversal and providing defensive utility to hold choke points.",
+      "allowed_paths": [
+        "src/arena/gravity_inversion_traps.py",
+        "src/arena/gravity_inversion_traps.gd",
+        "tests/test_gravity_inversion_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1666",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall Jump Booster",
+      "description": "A booster item that grants increased speed and a brief shield for 2 seconds immediately after a ball bounces off a wall.",
+      "allowed_paths": [
+        "src/ai/wall_jump_booster.py",
+        "src/ai/wall_jump_booster.gd",
+        "tests/test_wall_jump_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1667",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Snowball Growth",
+      "description": "Rolling on ice patches makes the ball gradually increase in size and mass, increasing its collision damage and knockback but decreasing its acceleration.",
+      "allowed_paths": [
+        "src/ai/snowball_growth.py",
+        "src/ai/snowball_growth.gd",
+        "tests/test_snowball_growth.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
