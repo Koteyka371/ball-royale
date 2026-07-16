@@ -3110,6 +3110,41 @@ class Action:
                 self._clamp_position()
                 return
 
+        if getattr(self.ball, "is_disguised", False):
+            self.ball.disguise_timer = getattr(self.ball, "disguise_timer", 5.0) - delta
+            if self.ball.disguise_timer <= 0:
+                self.ball.is_disguised = False
+                self.ball.team = getattr(self.ball, "original_team", getattr(self.ball, "team", ""))
+                self.ball.color = getattr(self.ball, "original_color", getattr(self.ball, "color", "gray"))
+                self.ball.label = getattr(self.ball, 'original_name', getattr(self.ball, 'label', 'Impostor'))
+
+                # Deal explosion damage to enemies (using original team)
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("impostor_explosion")
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0, 'color': 'gray'}})
+
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "alive", True) and getattr(b, "team", "") != self.ball.team and b.id != self.ball.id:
+                            dx = b.x - self.ball.x
+                            dy = b.y - self.ball.y
+                            dist = __import__('math').sqrt(dx*dx + dy*dy)
+                            if dist <= 60.0:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(30.0)
+                                else:
+                                    b.hp -= 30.0
+                                    if b.hp <= 0:
+                                        b.alive = False
+                                # knockback
+                                if dist > 0 and hasattr(b, "vx") and hasattr(b, "vy"):
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    force = 500.0
+                                    b.vx += nx * force * delta
+                                    b.vy += ny * force * delta
+
         if getattr(self.ball, "is_mimic_clone", False) and getattr(self.ball, "alive", True):
             owner_id = getattr(self.ball, "mimic_owner", None)
             owner = None
@@ -9530,7 +9565,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                    skills = ['arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -11544,6 +11579,19 @@ class Action:
                         clone.skill_timer = 9999.0
 
                         self.world.balls.append(clone)
+            elif skill_name == "impostor_disguise":
+                enemies = self._get_enemies()
+                if enemies:
+                    closest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    self.ball.original_team = getattr(self.ball, "team", "")
+                    self.ball.original_color = getattr(self.ball, "color", "gray")
+                    self.ball.original_name = getattr(self.ball, 'name', getattr(self.ball, 'label', 'Impostor'))
+                    self.ball.label = getattr(closest, 'name', getattr(closest, 'label', 'Enemy'))
+                    self.ball.team = getattr(closest, "team", getattr(closest, "ball_type", getattr(closest, "BALL_TYPE", "")))
+                    self.ball.color = getattr(closest, "color", "red")
+                    self.ball.is_disguised = True
+                    self.ball.disguise_timer = 5.0
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 12.0)
             elif skill_name == "global_mirage":
                 import copy
                 import random

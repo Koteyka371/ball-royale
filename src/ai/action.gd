@@ -4382,6 +4382,72 @@ func execute(strategy: String, delta: float):
 		self._clamp_position()
 		return
 
+	var is_disguised = false
+	if self.ball.has_method("get_meta") and self.ball.has_meta("is_disguised") and self.ball.get_meta("is_disguised"): is_disguised = true
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_disguised") and self.ball.is_disguised: is_disguised = true
+
+	if is_disguised:
+		var d_timer = 0.0
+		if self.ball.has_method("get_meta") and self.ball.has_meta("disguise_timer"):
+			d_timer = self.ball.get_meta("disguise_timer") - delta
+			self.ball.set_meta("disguise_timer", d_timer)
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("disguise_timer"):
+			d_timer = self.ball.disguise_timer - delta
+			self.ball.disguise_timer = d_timer
+
+		if d_timer <= 0:
+			if self.ball.has_method("set_meta"):
+				self.ball.set_meta("is_disguised", false)
+				if self.ball.has_meta("original_team") and "team" in self.ball: self.ball.team = self.ball.get_meta("original_team")
+				if self.ball.has_meta("original_color") and "color" in self.ball: self.ball.color = self.ball.get_meta("original_color")
+				if self.ball.has_meta(\"original_name\") and \"label\" in self.ball: self.ball.label = self.ball.get_meta(\"original_name\")
+				elif self.ball.has_meta(\"original_name\") and \"name\" in self.ball: self.ball.name = self.ball.get_meta(\"original_name\")
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["is_disguised"] = false
+				if self.ball.has("original_team") and "team" in self.ball: self.ball.team = self.ball["original_team"]
+				if self.ball.has("original_color") and "color" in self.ball: self.ball.color = self.ball["original_color"]
+				if self.ball.has(\"original_name\") and \"label\" in self.ball: self.ball.label = self.ball[\"original_name\"]
+				elif self.ball.has(\"original_name\") and \"name\" in self.ball: self.ball.name = self.ball[\"original_name\"]
+
+			if self.has_method("_spawn_skill_particles"):
+				self._spawn_skill_particles("impostor_explosion")
+			if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+				self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0, 'color': 'gray'}})
+			elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+				self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0, 'color': 'gray'}})
+
+			if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+				for b in self.world.balls:
+					var b_alive = true
+					if "alive" in b: b_alive = b.alive
+					var b_team = ""
+					if "team" in b: b_team = b.team
+					var my_team = ""
+					if "team" in self.ball: my_team = self.ball.team
+					var b_id = -1
+					if "id" in b: b_id = b.id
+					var my_id = -1
+					if "id" in self.ball: my_id = self.ball.id
+
+					if b_alive and b_team != my_team and b_id != my_id:
+						var dx = b.x - self.ball.x
+						var dy = b.y - self.ball.y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= 60.0:
+							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+								b.take_damage(30.0)
+							elif "hp" in b:
+								b.hp -= 30.0
+								if b.hp <= 0 and "alive" in b:
+									b.alive = false
+
+							if dist > 0 and "vx" in b and "vy" in b:
+								var nx = dx / dist
+								var ny = dy / dist
+								var force = 500.0
+								b.vx += nx * force * delta
+								b.vy += ny * force * delta
+
 	var is_mimic_clone = false
 	if self.ball.has_method("get_meta") and self.ball.get_meta("is_mimic_clone"): is_mimic_clone = true
 	elif "is_mimic_clone" in self.ball and self.ball.is_mimic_clone: is_mimic_clone = true
@@ -17460,7 +17526,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                var skills = ['arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -20987,6 +21053,60 @@ func _use_skill():
                             clone["skill_timer"] = 9999.0
 
                         self.world.balls.append(clone)
+            elif skill_name == "impostor_disguise":
+                var enemies = _get_enemies()
+                if enemies.size() > 0:
+                    var closest = enemies[0]
+                    var min_dist = (closest.x - self.ball.x) * (closest.x - self.ball.x) + (closest.y - self.ball.y) * (closest.y - self.ball.y)
+                    for i in range(1, enemies.size()):
+                        var e = enemies[i]
+                        var dist = (e.x - self.ball.x) * (e.x - self.ball.x) + (e.y - self.ball.y) * (e.y - self.ball.y)
+                        if dist < min_dist:
+                            min_dist = dist
+                            closest = e
+
+                    var orig_team = ""
+                    if "team" in self.ball: orig_team = self.ball.team
+                    var orig_color = "gray"
+                    if "color" in self.ball: orig_color = self.ball.color
+
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("original_team", orig_team)
+                        self.ball.set_meta("original_color", orig_color)
+                        var orig_name_meta = \"Impostor\"
+                        if \"label\" in self.ball: orig_name_meta = self.ball.label
+                        elif \"name\" in self.ball: orig_name_meta = self.ball.name
+                        self.ball.set_meta(\"original_name\", orig_name_meta)
+                        self.ball.set_meta("is_disguised", true)
+                        self.ball.set_meta("disguise_timer", 5.0)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["original_team"] = orig_team
+                        self.ball["original_color"] = orig_color
+                        var orig_name = \"Impostor\"
+                        if \"label\" in self.ball: orig_name = self.ball.label
+                        elif \"name\" in self.ball: orig_name = self.ball.name
+                        self.ball[\"original_name\"] = orig_name
+                        self.ball["is_disguised"] = true
+                        self.ball["disguise_timer"] = 5.0
+
+                    var c_team = ""
+                    if "team" in closest: c_team = closest.team
+                    var c_color = "red"
+                    if "color" in closest: c_color = closest.color
+
+                    if "team" in self.ball: self.ball.team = c_team
+                    if "color" in self.ball: self.ball.color = c_color
+                    var c_name = \"Enemy\"
+                    if \"label\" in closest: c_name = closest.label
+                    elif \"name\" in closest: c_name = closest.name
+                    if \"label\" in self.ball: self.ball.label = c_name
+                    elif \"name\" in self.ball: self.ball.name = c_name
+
+                    if "skill_timer" in self.ball:
+                        var cd = 12.0
+                        if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+                        self.ball.skill_timer = cd
+
         elif skill_name == "global_mirage":
             if "balls" in self.world:
                 var new_decoys = []
