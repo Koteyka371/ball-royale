@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1036] Echo Mode — *2026-07-16 17:31:34 UTC*
+
+A game mode where player inputs and actions are 'recorded' every 10 seconds. In the following 10 seconds, shadowy echoes repeat those actions, doubling the player's output but also exposing their predictable patterns.
+
+---
+
 ## [idea-890] New Ball Type: The Illusionist — *2026-07-16 17:25:40 UTC*
 
 A ball type that frequently spawns multiple fake clones of itself as it moves. The clones deal no damage and have 1 HP, but they inherit the ball's current momentum and color. Enemies hitting the clones trigger a small visual explosion that briefly blinds them, heavily rewarding misdirection and punishing aggressive spam.

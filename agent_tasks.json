@@ -17781,7 +17781,7 @@
     },
     {
       "id": "idea-1036",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echo Mode",
@@ -28319,6 +28319,58 @@
         "src/arena/volcanic_eruption_arena.py",
         "src/arena/volcanic_eruption_arena.gd",
         "tests/test_volcanic_eruption_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1655",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sabotage Decoys",
+      "description": "An ability that places fake booster items around the arena. If an enemy AI or player picks it up, instead of granting a buff, it detonates, dealing damage and temporarily disabling the victim's skills.",
+      "allowed_paths": [
+        "src/ai/sabotage_decoys.py",
+        "src/ai/sabotage_decoys.gd",
+        "tests/test_sabotage_decoys.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1656",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chameleon Booster",
+      "description": "A booster item that grants temporary invisibility while standing completely still, but breaking movement instantly breaks stealth and resets the cooldown.",
+      "allowed_paths": [
+        "src/ai/chameleon_booster.py",
+        "src/ai/chameleon_booster.gd",
+        "tests/test_chameleon_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1657",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chameleon Skin Environmental Camouflage",
+      "description": "A new ball type or passive ability that gradually blends into the background color or the nearest wall's color when standing still, significantly reducing their perception radius for enemy AI and removing them from the minimap.",
+      "allowed_paths": [
+        "src/ui/chameleon_skin_environmental_camouflage.py",
+        "src/ui/chameleon_skin_environmental_camouflage.gd",
+        "src/ai/chameleon_skin_environmental_camouflage.py",
+        "tests/test_chameleon_skin_environmental_camouflage.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
