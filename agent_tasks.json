@@ -17866,7 +17866,7 @@
     },
     {
       "id": "idea-1041",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slippery Trails Skill",
@@ -28541,6 +28541,40 @@
         "src/ai/snowball_growth.py",
         "src/ai/snowball_growth.gd",
         "tests/test_snowball_growth.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1668",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Heist Vaults",
+      "description": "Add vaults with loot to infiltration mode.",
+      "allowed_paths": [
+        "src/ai/heist_vaults.py",
+        "src/ai/heist_vaults.gd",
+        "tests/test_heist_vaults.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1669",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Drone",
+      "description": "Drone that distracts guards.",
+      "allowed_paths": [
+        "src/ai/decoy_drone.py",
+        "src/ai/decoy_drone.gd",
+        "tests/test_decoy_drone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

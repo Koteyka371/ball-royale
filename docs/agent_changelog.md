@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1041] Slippery Trails Skill — *2026-07-16 21:31:31 UTC*
+
+A new skill for the Trickster ball type that leaves a temporary trail of ice patches behind it as it moves, causing pursuing enemies to slip and slide past it.
+
+---
+
 ## [idea-1059] Stealth Espionage Mode — *2026-07-16 21:23:41 UTC*
 
 Players start permanently cloaked and must complete objectives without triggering alarms or laser tripwires. Using skills momentarily reveals their position to guards.
