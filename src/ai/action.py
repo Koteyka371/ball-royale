@@ -1644,7 +1644,7 @@ class Action:
             # Check for poison_cloud or poison_nova
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(self.ball, "hazard_immunity_timer", 0.0) > 0 and getattr(hazard, "kind", "") not in ["void_panel", "temporal_rift"] and getattr(hazard, "damage", 0) > 0:
+                    if getattr(self.ball, "hazard_immunity_timer", 0.0) > 0 and getattr(hazard, "kind", "") not in ["void_panel", "temporal_rift", "time_rift"] and getattr(hazard, "damage", 0) > 0:
                         continue
 
                     if getattr(hazard, 'kind', '') in ['poison_cloud', 'poison_nova']:
@@ -2881,6 +2881,24 @@ class Action:
                             time_scale = 1.0 - (1.0 - time_scale) * 0.1
                         delta *= time_scale
                         break
+
+                if getattr(hazard, "kind", "") == "time_rift":
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist <= hazard.radius + getattr(self.ball, "radius", 10.0):
+                        self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.5
+
+                    current_time = getattr(self.world, "time", 0.0)
+                    cycle_id = int(current_time / 5.0)
+                    if getattr(hazard, "last_reversed_cycle", -1) != cycle_id and (current_time % 5.0) < 0.2:
+                        hazard.last_reversed_cycle = cycle_id
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                b_type = getattr(b, "ball_type", getattr(b, "kind", ""))
+                                if b_type in ["projectile", "spell"] or getattr(b, "is_projectile", False):
+                                    dist_to_proj = math.sqrt((b.x - hazard.x)**2 + (b.y - hazard.y)**2)
+                                    if dist_to_proj <= hazard.radius:
+                                        b.vx = -getattr(b, "vx", 0.0)
+                                        b.vy = -getattr(b, "vy", 0.0)
 
                 if getattr(hazard, "kind", "") == "localized_blizzard":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
@@ -4196,8 +4214,8 @@ class Action:
 
                     if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                         continue
-                    if hazard.kind == "temporal_rift":
-                        continue
+                    if hazard.kind in ["temporal_rift", "time_rift"]:
+                            continue
                     if hazard.kind in ("explosive_barrel", "volatile_barrel"):
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
@@ -5780,7 +5798,7 @@ class Action:
                 for hazard in self.world.arena.hazards:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist < (self.ball.radius + hazard.radius):
-                        if hazard.kind == "temporal_rift":
+                        if hazard.kind in ["temporal_rift", "time_rift"]:
                             continue
                         if hazard.kind in ("explosive_barrel", "volatile_barrel"):
                             if not getattr(hazard, "is_exploded", False):
