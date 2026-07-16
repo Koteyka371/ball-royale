@@ -43,9 +43,9 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-883",
+      "status": "working",
+      "started_at": "2026-07-16T17:35:57.513974+00:00",
       "cycles_today": 2
     },
     "supervisor": {
