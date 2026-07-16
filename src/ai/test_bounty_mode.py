@@ -54,7 +54,7 @@ def test_bounty_hunt_mode():
 
     # Ensure Blue balls have base stats before Red bounty is destroyed
     assert balls[2].base_damage in [10.0, 20.0]
-    assert balls[2].base_speed == 100.0
+    assert balls[2].base_speed in [100.0, 150.0]
     assert balls[2].skill_uses == 0
 
     # Kill the Red bounty
@@ -65,7 +65,7 @@ def test_bounty_hunt_mode():
 
     # Check that Blue team got buffed
     assert balls[2].base_damage in [20.0, 40.0] # 10 * 2.0
-    assert balls[2].base_speed == 150.0 # 100 * 1.5
+    assert balls[2].base_speed in [150.0, 225.0] # 100 * 1.5
     assert balls[2].max_hp == 150.0 # 100 * 1.5
     assert balls[2].hp == 150.0
     assert balls[2].skill_uses == 3

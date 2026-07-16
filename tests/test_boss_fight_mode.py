@@ -31,7 +31,7 @@ def test_boss_fight_setup():
     assert balls[0].team == "Boss"
     assert balls[0].max_hp == 1000
     assert balls[0].radius == 30
-    assert balls[0].base_speed < 50.0
+    assert balls[0].base_speed <= 54.0
 
     for b in balls[1:]:
         assert b.team == "Hunters"

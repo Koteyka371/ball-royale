@@ -12505,7 +12505,7 @@ func execute(strategy: String, delta: float):
                                     self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y}})
 
                         continue
-                    elif hazard.kind == "bumper":
+                    elif hazard.kind in ["bumper", "chain_reaction_bumper"]:
 
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
@@ -12580,6 +12580,161 @@ func execute(strategy: String, delta: float):
                                 bumper_combo = self.ball.get_meta("bumper_combo")
                             elif "bumper_combo" in self.ball:
                                 bumper_combo = self.ball.bumper_combo
+
+                            # Chain Reaction Logic
+                            if hazard.kind == "chain_reaction_bumper":
+                                var current_tick = 0
+                                if "tick" in self.world: current_tick = self.world.tick
+
+                                var chain_ready_tick = 0
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("chain_ready_tick"):
+                                    chain_ready_tick = hazard.get_meta("chain_ready_tick")
+                                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("chain_ready_tick"):
+                                    chain_ready_tick = hazard.chain_ready_tick
+                                elif "chain_ready_tick" in hazard:
+                                    chain_ready_tick = hazard.chain_ready_tick
+
+                                if current_tick >= chain_ready_tick:
+                                    var hazards_to_trigger = [hazard]
+                                    var triggered_hazards = {}
+
+                                    while hazards_to_trigger.size() > 0:
+                                        var curr_h = hazards_to_trigger.pop_front()
+                                        var c_id = -1
+                                        if typeof(curr_h) == TYPE_OBJECT and curr_h.has_method("has_meta") and curr_h.has_meta("id"):
+                                            c_id = curr_h.get_meta("id")
+                                        elif typeof(curr_h) == TYPE_DICTIONARY and curr_h.has("id"):
+                                            c_id = curr_h.id
+                                        elif "id" in curr_h:
+                                            c_id = curr_h.id
+
+                                        if triggered_hazards.has(c_id):
+                                            continue
+                                        triggered_hazards[c_id] = true
+
+                                        if typeof(curr_h) == TYPE_OBJECT and curr_h.has_method("set_meta"):
+                                            curr_h.set_meta("chain_ready_tick", current_tick + 60)
+                                        elif typeof(curr_h) == TYPE_DICTIONARY:
+                                            curr_h["chain_ready_tick"] = current_tick + 60
+                                        elif "chain_ready_tick" in curr_h:
+                                            curr_h.chain_ready_tick = current_tick + 60
+
+                                        var c_x = 0.0
+                                        var c_y = 0.0
+                                        if typeof(curr_h) == TYPE_OBJECT and curr_h.has_method("has_meta") and curr_h.has_meta("x"): c_x = curr_h.get_meta("x")
+                                        elif typeof(curr_h) == TYPE_DICTIONARY and curr_h.has("x"): c_x = curr_h.x
+                                        elif "x" in curr_h: c_x = curr_h.x
+
+                                        if typeof(curr_h) == TYPE_OBJECT and curr_h.has_method("has_meta") and curr_h.has_meta("y"): c_y = curr_h.get_meta("y")
+                                        elif typeof(curr_h) == TYPE_DICTIONARY and curr_h.has("y"): c_y = curr_h.y
+                                        elif "y" in curr_h: c_y = curr_h.y
+
+                                        if typeof(self.world) == TYPE_OBJECT and self.world.has_method("has_meta") and self.world.has_meta("events"):
+                                            var events = self.world.get_meta("events")
+                                            events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': c_x, 'y': c_y, 'radius': 150.0, 'color': 'yellow'}})
+                                        elif "events" in self.world:
+                                            self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': c_x, 'y': c_y, 'radius': 150.0, 'color': 'yellow'}})
+
+                                        var world_balls = []
+                                        if typeof(self.world) == TYPE_OBJECT and self.world.has_method("has_meta") and self.world.has_meta("balls"):
+                                            world_balls = self.world.get_meta("balls")
+                                        elif "balls" in self.world:
+                                            world_balls = self.world.balls
+
+                                        for b in world_balls:
+                                            var b_alive = false
+                                            if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                                            elif "alive" in b: b_alive = b.alive
+
+                                            var b_type = ""
+                                            if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+                                            elif "ball_type" in b: b_type = b.ball_type
+
+                                            if b_alive and b_type != "spectator" and b != self.ball:
+                                                var b_x = 0.0
+                                                var b_y = 0.0
+                                                if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+                                                elif "x" in b: b_x = b.x
+                                                if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+                                                elif "y" in b: b_y = b.y
+
+                                                var b_dx = b_x - c_x
+                                                var b_dy = b_y - c_y
+                                                var b_dist = sqrt(b_dx*b_dx + b_dy*b_dy)
+
+                                                if b_dist > 0 and b_dist <= 150.0:
+                                                    var b_nx = b_dx / b_dist
+                                                    var b_ny = b_dy / b_dist
+
+                                                    var b_vx = 0.0
+                                                    var b_vy = 0.0
+                                                    if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): b_vx = b.get_meta("vx")
+                                                    elif "vx" in b: b_vx = b.vx
+                                                    if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vy"): b_vy = b.get_meta("vy")
+                                                    elif "vy" in b: b_vy = b.vy
+
+                                                    if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                                        if "vx" in b: b.vx = b_vx + b_nx * 2000.0
+                                                        else: b.set_meta("vx", b_vx + b_nx * 2000.0)
+                                                        if "vy" in b: b.vy = b_vy + b_ny * 2000.0
+                                                        else: b.set_meta("vy", b_vy + b_ny * 2000.0)
+                                                    else:
+                                                        if "vx" in b: b.vx += b_nx * 2000.0
+                                                        if "vy" in b: b.vy += b_ny * 2000.0
+
+                                                    if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                                        b.set_meta("is_stunned", true)
+                                                        var s_t = 0.0
+                                                        if b.has_meta("stun_timer"): s_t = b.get_meta("stun_timer")
+                                                        elif "stun_timer" in b: s_t = b.stun_timer
+                                                        b.set_meta("stun_timer", max(s_t, 0.5))
+                                                    if "is_stunned" in b: b.is_stunned = true
+                                                    if "stun_timer" in b: b.stun_timer = max(b.stun_timer, 0.5)
+
+                                        var world_arena = null
+                                        if typeof(self.world) == TYPE_OBJECT and self.world.has_method("has_meta") and self.world.has_meta("arena"): world_arena = self.world.get_meta("arena")
+                                        elif "arena" in self.world: world_arena = self.world.arena
+
+                                        var a_hazards = []
+                                        if world_arena != null:
+                                            if typeof(world_arena) == TYPE_OBJECT and world_arena.has_method("has_meta") and world_arena.has_meta("hazards"): a_hazards = world_arena.get_meta("hazards")
+                                            elif "hazards" in world_arena: a_hazards = world_arena.hazards
+
+                                        for other_h in a_hazards:
+                                            var o_kind = ""
+                                            if typeof(other_h) == TYPE_OBJECT and other_h.has_method("has_meta") and other_h.has_meta("kind"): o_kind = other_h.get_meta("kind")
+                                            elif typeof(other_h) == TYPE_DICTIONARY and other_h.has("kind"): o_kind = other_h.kind
+                                            elif "kind" in other_h: o_kind = other_h.kind
+
+                                            if o_kind == "chain_reaction_bumper":
+                                                var o_ready_tick = 0
+                                                if typeof(other_h) == TYPE_OBJECT and other_h.has_method("has_meta") and other_h.has_meta("chain_ready_tick"): o_ready_tick = other_h.get_meta("chain_ready_tick")
+                                                elif typeof(other_h) == TYPE_DICTIONARY and other_h.has("chain_ready_tick"): o_ready_tick = other_h.chain_ready_tick
+                                                elif "chain_ready_tick" in other_h: o_ready_tick = other_h.chain_ready_tick
+
+                                                var o_id = -1
+                                                if typeof(other_h) == TYPE_OBJECT and other_h.has_method("has_meta") and other_h.has_meta("id"): o_id = other_h.get_meta("id")
+                                                elif typeof(other_h) == TYPE_DICTIONARY and other_h.has("id"): o_id = other_h.id
+                                                elif "id" in other_h: o_id = other_h.id
+
+                                                if current_tick >= o_ready_tick and not triggered_hazards.has(o_id):
+                                                    var o_x = 0.0
+                                                    var o_y = 0.0
+                                                    if typeof(other_h) == TYPE_OBJECT and other_h.has_method("has_meta") and other_h.has_meta("x"): o_x = other_h.get_meta("x")
+                                                    elif typeof(other_h) == TYPE_DICTIONARY and other_h.has("x"): o_x = other_h.x
+                                                    elif "x" in other_h: o_x = other_h.x
+                                                    if typeof(other_h) == TYPE_OBJECT and other_h.has_method("has_meta") and other_h.has_meta("y"): o_y = other_h.get_meta("y")
+                                                    elif typeof(other_h) == TYPE_DICTIONARY and other_h.has("y"): o_y = other_h.y
+                                                    elif "y" in other_h: o_y = other_h.y
+
+                                                    var h_dist = sqrt((o_x - c_x)*(o_x - c_x) + (o_y - c_y)*(o_y - c_y))
+                                                    if h_dist <= 250.0:
+                                                        hazards_to_trigger.append(other_h)
+                                                        if typeof(self.world) == TYPE_OBJECT and self.world.has_method("has_meta") and self.world.has_meta("events"):
+                                                            var events = self.world.get_meta("events")
+                                                            events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': c_x, 'y': c_y, 'target_x': o_x, 'target_y': o_y}})
+                                                        elif "events" in self.world:
+                                                            self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': c_x, 'y': c_y, 'target_x': o_x, 'target_y': o_y}})
 
                             bumper_combo += 1
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):

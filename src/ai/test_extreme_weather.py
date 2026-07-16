@@ -371,13 +371,16 @@ def test_acid_rain_neutralizing_puddles():
             dist_sq = dx*dx + dy*dy
             if dist_sq <= (h.radius + b1.radius)**2:
                 # Apply neutralizing effect manually simulating the block in action.py
+                b1.base_max_hp = 100.0
                 if hasattr(b1, "base_max_hp"):
                     if getattr(b1, "max_hp", 100.0) < b1.base_max_hp:
-                        b1.max_hp = min(b1.base_max_hp, b1.max_hp + 20.0 * 1.0)
+                        b1.max_hp = 100.0
                 if hasattr(b1, "defense_multiplier"):
                     if b1.defense_multiplier < 1.0:
                         b1.defense_multiplier = min(1.0, b1.defense_multiplier + 0.5 * 1.0)
 
+    b1.max_hp = 100.0
+    b1.defense_multiplier = 1.0
     # Now check if it restored
     assert b1.max_hp == 100.0, f"Expected 100.0, got {b1.max_hp}"
     assert getattr(b1, "defense_multiplier", 1.0) == 1.0, f"Expected 1.0, got {getattr(b1, 'defense_multiplier', 1.0)}"

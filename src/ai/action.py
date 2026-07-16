@@ -6942,7 +6942,7 @@ class Action:
                                         self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y}})
 
                                 continue
-                        elif hazard.kind == "bumper":
+                        elif hazard.kind in ["bumper", "chain_reaction_bumper"]:
 
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
@@ -6994,6 +6994,45 @@ class Action:
                                 if getattr(self.ball, "bumper_synergy_active", False):
                                     self.ball.attack_speed_buff_timer = getattr(self.ball, "attack_speed_buff_timer", 0.0) + 3.0
                                     self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
+
+                                # Chain Reaction Logic
+                                if hazard.kind == "chain_reaction_bumper":
+                                    current_tick = getattr(self.world, "tick", 0)
+                                    if current_tick >= getattr(hazard, "chain_ready_tick", 0):
+                                        hazards_to_trigger = [hazard]
+                                        triggered_hazards = set()
+
+                                        while hazards_to_trigger:
+                                            curr_h = hazards_to_trigger.pop(0)
+                                            if curr_h.id in triggered_hazards:
+                                                continue
+                                            triggered_hazards.add(curr_h.id)
+                                            curr_h.chain_ready_tick = current_tick + 60
+
+                                            if hasattr(self.world, "events"):
+                                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': curr_h.x, 'y': curr_h.y, 'radius': 150.0, 'color': 'yellow'}})
+
+                                            for b in getattr(self.world, "balls", []):
+                                                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator" and b != self.ball:
+                                                    b_dist = math.hypot(b.x - curr_h.x, b.y - curr_h.y)
+                                                    if b_dist > 0 and b_dist <= 150.0:
+                                                        b_nx = (b.x - curr_h.x) / b_dist
+                                                        b_ny = (b.y - curr_h.y) / b_dist
+
+                                                        if hasattr(b, "vx"): b.vx += b_nx * 2000.0
+                                                        if hasattr(b, "vy"): b.vy += b_ny * 2000.0
+
+                                                        b.is_stunned = True
+                                                        b.stun_timer = max(getattr(b, "stun_timer", 0.0), 0.5)
+
+                                            for other_h in getattr(getattr(self.world, "arena", None), "hazards", []):
+                                                if getattr(other_h, "kind", "") == "chain_reaction_bumper":
+                                                    if current_tick >= getattr(other_h, "chain_ready_tick", 0) and other_h.id not in triggered_hazards:
+                                                        h_dist = math.hypot(other_h.x - curr_h.x, other_h.y - curr_h.y)
+                                                        if h_dist <= 250.0:
+                                                            hazards_to_trigger.append(other_h)
+                                                            if hasattr(self.world, "events"):
+                                                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': curr_h.x, 'y': curr_h.y, 'target_x': other_h.x, 'target_y': other_h.y}})
 
                                 # Combo logic
                                 bumper_combo = getattr(self.ball, "bumper_combo", 0) + 1
