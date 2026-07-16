@@ -10996,6 +10996,25 @@ class Action:
                     self.world.balls.append(beacon)
 
 
+            elif skill_name == "decoy_transmutation":
+                import random
+                active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
+                if active_decoys:
+                    pool = ["explosive", "stun_trap", "healing", "swap_trap", "siren"]
+                    for decoy in active_decoys:
+                        current_type = getattr(decoy, "decoy_type", "")
+                        choices = [t for t in pool if t != current_type]
+                        if not choices:
+                            choices = pool
+                        new_type = random.choice(choices)
+                        decoy.decoy_type = new_type
+
+                        # Particles for visual flair
+                        if hasattr(self, "_spawn_directed_particles"):
+                            self._spawn_directed_particles(decoy, decoy, "decoy_transmute")
+
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+
             elif skill_name == "shoot_portals":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random

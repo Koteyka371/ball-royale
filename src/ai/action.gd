@@ -19951,6 +19951,62 @@ func _use_skill():
                     self.world.balls.append(beacon)
 
 
+        elif skill_name == "decoy_transmutation":
+            var active_decoys = []
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    var is_d = false
+                    if "is_decoy" in b and b.is_decoy:
+                        is_d = true
+                    elif b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"):
+                        is_d = true
+
+                    if is_d:
+                        var owner = -1
+                        if "owner_id" in b: owner = b.owner_id
+                        elif b.has_method("get_meta") and b.has_meta("owner_id"): owner = b.get_meta("owner_id")
+
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        var self_id = -2
+                        if "id" in self.ball: self_id = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                        if owner == self_id and b_alive:
+                            active_decoys.append(b)
+
+            if active_decoys.size() > 0:
+                var pool = ["explosive", "stun_trap", "healing", "swap_trap", "siren"]
+                for b in active_decoys:
+                    var current_type = ""
+                    if "decoy_type" in b: current_type = b.decoy_type
+                    elif b.has_method("get_meta") and b.has_meta("decoy_type"): current_type = b.get_meta("decoy_type")
+
+                    var choices = []
+                    for t in pool:
+                        if t != current_type:
+                            choices.append(t)
+                    if choices.size() == 0:
+                        choices = pool
+
+                    var new_type = choices[randi() % choices.size()]
+
+                    if "decoy_type" in b: b.decoy_type = new_type
+                    if b.has_method("set_meta"): b.set_meta("decoy_type", new_type)
+                    if b is Dictionary: b["decoy_type"] = new_type
+
+                    if self.has_method("_spawn_directed_particles"):
+                        self._spawn_directed_particles(b, b, "decoy_transmute")
+
+                var cooldown = 5.0
+                if "SKILL_COOLDOWN" in self.ball: cooldown = float(self.ball.SKILL_COOLDOWN)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cooldown = float(self.ball.get_meta("SKILL_COOLDOWN"))
+
+                if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
         elif skill_name == "shoot_portals":
             var arena = self.world.get("arena") if self.world != null else null
             if arena != null and "hazards" in arena:
