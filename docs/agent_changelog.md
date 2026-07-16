@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1051] Mirror Dimension Mode — *2026-07-16 20:16:57 UTC*
+
+A game mode where periodically the arena splits into two parallel dimensions. Players in the mirror dimension cannot be seen or damaged by those in the normal dimension, but they can collect mirror-exclusive powerups that apply permanent buffs when dimensions merge back together.
+
+---
+
 ## [idea-1050] Molten Rock Hazard — *2026-07-16 18:10:23 UTC*
 
 A new hazard that acts oppositely to ice patches. Passing over molten rock severely increases friction (slowing the ball down) but applies a lingering burn effect that deals damage over time for a few seconds after exiting the hazard.

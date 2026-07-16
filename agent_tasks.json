@@ -18036,7 +18036,7 @@
     },
     {
       "id": "idea-1051",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Dimension Mode",
@@ -28422,6 +28422,40 @@
         "src/ai/echo_strike_booster.py",
         "src/ai/echo_strike_booster.gd",
         "tests/test_echo_strike_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1661",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Event: Eclipse",
+      "description": "A new procedural arena event that reduces the vision range of all entities by 50% for 30 seconds. Players must rely on proximity and sound cues, while stealth items become exceptionally powerful. Torches or flares could counter this effect.",
+      "allowed_paths": [
+        "src/ai/eclipse.py",
+        "src/ai/eclipse.gd",
+        "tests/test_eclipse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1662",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Item: Mirror Shield",
+      "description": "An active item that deploys a directional shield for a short duration. Any projectile or spell hitting the shield is reflected back towards the attacker with increased velocity, but taking a direct melee hit shatters the shield and stuns the user.",
+      "allowed_paths": [
+        "src/ai/item_mirror_shield.py",
+        "src/ai/item_mirror_shield.gd",
+        "tests/test_item_mirror_shield.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
