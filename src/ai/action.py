@@ -9577,6 +9577,13 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "blackout_booster":
+                    self.ball.blackout_aura_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "disruptor_booster":
                     self.ball.disruptor_aura_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -13755,6 +13762,27 @@ class Action:
             self.ball.aura_booster_timer -= delta
             if self.ball.aura_booster_timer < 0:
                 self.ball.aura_booster_timer = 0.0
+
+        if getattr(self.ball, "blackout_aura_timer", 0.0) > 0:
+            self.ball.blackout_aura_timer -= delta
+            if self.ball.blackout_aura_timer < 0:
+                self.ball.blackout_aura_timer = 0.0
+            if hasattr(self.world, "balls"):
+                my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                for other in self.world.balls:
+                    if getattr(other, "alive", True) and getattr(other, "id", None) != getattr(self.ball, "id", None):
+                        other_team = getattr(other, "team", getattr(other, "ball_type", ""))
+                        if other_team != my_team:
+                            dx = self.ball.x - other.x
+                            dy = self.ball.y - other.y
+                            if (dx*dx + dy*dy) <= 22500.0:  # 150 radius
+                                other.silence_timer = max(getattr(other, "silence_timer", 0.0), 0.5)
+                                other.hud_disabled_timer = max(getattr(other, "hud_disabled_timer", 0.0), 0.5)
+
+        if getattr(self.ball, "hud_disabled_timer", 0.0) > 0:
+            self.ball.hud_disabled_timer -= delta
+            if self.ball.hud_disabled_timer < 0:
+                self.ball.hud_disabled_timer = 0.0
 
         if getattr(self.ball, "disruptor_aura_timer", 0.0) > 0:
             self.ball.disruptor_aura_timer -= delta

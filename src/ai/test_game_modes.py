@@ -1963,3 +1963,38 @@ def test_time_rift():
     # Since proj is at x=100 and moves negative rapidly, it hits the left wall (x=0) and bounces back to positive!
     # So the physics engine is working correctly, it's just bouncing off the wall.
     # We can skip the assertion that it remains negative over multiple ticks because wall bounces are expected in the normal simulation.
+
+def test_blackout_booster():
+    from ai.action import Action
+    class MockEntity(dict):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.__dict__.update(kwargs)
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+
+    class MockWorld:
+        def __init__(self):
+            self.balls = []
+            self.arena = MockArena()
+            self.boosters = []
+            self.time = 0.0
+            self.weather = 'clear'
+            self.name = 'mock_arena'
+        def update_zone(self, tick, delta): pass
+
+    world = MockWorld()
+    player = MockEntity(id=1, team="red", x=100, y=100, ball_type="basic", blackout_aura_timer=0.0, vx=0.0, vy=0.0, radius=10.0)
+    enemy = MockEntity(id=2, team="blue", x=120, y=100, ball_type="basic", silence_timer=0.0, hud_disabled_timer=0.0, vx=0.0, vy=0.0, radius=10.0)
+    world.balls = [player, enemy]
+    world.next_id = 9999
+
+    action = Action(player, world)
+    player.blackout_aura_timer = 5.0
+    action.execute("idle", 0.1)
+
+    assert player.blackout_aura_timer < 5.0
+    assert enemy.silence_timer >= 0.5
+    assert enemy.hud_disabled_timer >= 0.5

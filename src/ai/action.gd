@@ -17499,6 +17499,19 @@ func _collect_booster(delta: float):
                     self.ball.stealth_drone_timer = 15.0
                 elif "stealth_drone_timer" in self.ball:
                     self.ball.stealth_drone_timer = 15.0
+            elif "kind" in nearest and nearest.kind == "blackout_booster":
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("blackout_aura_timer", 5.0)
+                else:
+                    self.ball["blackout_aura_timer"] = 5.0
+                if "arena" in world and "hazards" in world.arena:
+                    var idx = world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        world.arena.hazards.remove_at(idx)
+                if "boosters" in world:
+                    var idx = world.boosters.find(nearest)
+                    if idx != -1:
+                        world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "disruptor_booster":
                 if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
                     self.ball.set_meta("disruptor_aura_timer", 5.0)
@@ -25202,6 +25215,85 @@ func _update_skill_timer(delta: float):
             self.ball.set_meta("aura_booster_timer", ab_timer)
         if "aura_booster_timer" in self.ball:
             self.ball["aura_booster_timer"] = ab_timer
+
+    var bo_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("blackout_aura_timer"):
+        bo_timer = float(self.ball.get_meta("blackout_aura_timer"))
+    elif "blackout_aura_timer" in self.ball:
+        bo_timer = float(self.ball.blackout_aura_timer)
+
+    if bo_timer > 0.0:
+        bo_timer -= delta
+        if bo_timer < 0.0: bo_timer = 0.0
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+            self.ball.set_meta("blackout_aura_timer", bo_timer)
+        else:
+            self.ball["blackout_aura_timer"] = bo_timer
+
+        if "balls" in world:
+            var my_team = ""
+            if "team" in self.ball: my_team = self.ball.team
+            elif "ball_type" in self.ball: my_team = self.ball.ball_type
+
+            for other in world.balls:
+                var o_alive = true
+                if "alive" in other: o_alive = other.alive
+
+                var o_id = null
+                if "id" in other: o_id = other.id
+
+                var my_id = null
+                if "id" in self.ball: my_id = self.ball.id
+
+                if o_alive and o_id != my_id:
+                    var other_team = ""
+                    if "team" in other: other_team = other.team
+                    elif "ball_type" in other: other_team = other.ball_type
+
+                    if other_team != my_team:
+                        var ox = 0.0
+                        var oy = 0.0
+                        if "x" in other: ox = other.x
+                        if "y" in other: oy = other.y
+                        var dx = self.ball.x - ox
+                        var dy = self.ball.y - oy
+                        if dx*dx + dy*dy <= 22500.0:
+                            var cur_silence = 0.0
+                            if "silence_timer" in other: cur_silence = float(other.silence_timer)
+                            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("silence_timer"): cur_silence = float(other.get_meta("silence_timer"))
+
+                            if cur_silence < 0.5:
+                                if typeof(other) == TYPE_DICTIONARY:
+                                    other.silence_timer = 0.5
+                                elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"):
+                                    other.set_meta("silence_timer", 0.5)
+                                else:
+                                    other.silence_timer = 0.5
+
+                            var cur_hud = 0.0
+                            if "hud_disabled_timer" in other: cur_hud = float(other.hud_disabled_timer)
+                            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("hud_disabled_timer"): cur_hud = float(other.get_meta("hud_disabled_timer"))
+
+                            if cur_hud < 0.5:
+                                if typeof(other) == TYPE_DICTIONARY:
+                                    other.hud_disabled_timer = 0.5
+                                elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"):
+                                    other.set_meta("hud_disabled_timer", 0.5)
+                                else:
+                                    other.hud_disabled_timer = 0.5
+
+    var hud_timer = 0.0
+    if "hud_disabled_timer" in self.ball: hud_timer = float(self.ball.hud_disabled_timer)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hud_disabled_timer"): hud_timer = float(self.ball.get_meta("hud_disabled_timer"))
+    if hud_timer > 0.0:
+        hud_timer -= delta
+        if hud_timer < 0.0: hud_timer = 0.0
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball.hud_disabled_timer = hud_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("hud_disabled_timer", hud_timer)
+        else:
+            self.ball.hud_disabled_timer = hud_timer
 
     var da_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("disruptor_aura_timer"):
