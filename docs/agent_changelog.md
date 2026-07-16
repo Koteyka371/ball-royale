@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-922] Homing Missiles — *2026-07-16 17:23:40 UTC*
+
+A new ball type that occasionally fires homing projectiles that curve towards the nearest enemy.
+
+---
+
 ## [idea-1008] Dynamic Map Hazards: Avalanche — *2026-07-16 17:23:33 UTC*
 
 Add a new random weather/event to the procedural arena: Avalanche. A sweeping zone of slow-moving snow covers part of the map, significantly slowing movement speed and hiding traps, forcing players to adapt their positioning.
