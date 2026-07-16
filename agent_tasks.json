@@ -17883,7 +17883,7 @@
     },
     {
       "id": "idea-1042",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Phase Shift Booster",
@@ -28371,6 +28371,40 @@
         "src/ui/chameleon_skin_environmental_camouflage.gd",
         "src/ai/chameleon_skin_environmental_camouflage.py",
         "tests/test_chameleon_skin_environmental_camouflage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1658",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Doppelganger Mode",
+      "description": "Every player spawns with an AI-controlled doppelganger that mimics their attacks but moves randomly. If a player dies, they take over their doppelganger.",
+      "allowed_paths": [
+        "src/ai/doppelganger.py",
+        "src/ai/doppelganger.gd",
+        "tests/test_doppelganger.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1659",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Relay Race Mode",
+      "description": "Players can only control one ball at a time in a squad. When the active ball dies, the next one spawns in with inherited speed and temporary invulnerability.",
+      "allowed_paths": [
+        "src/ai/relay_race.py",
+        "src/ai/relay_race.gd",
+        "tests/test_relay_race.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

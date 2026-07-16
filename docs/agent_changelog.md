@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1042] Phase Shift Booster — *2026-07-16 17:55:08 UTC*
+
+A new booster type that temporarily allows a ball to pass through all solid hazards and walls, taking no damage from them, but prevents the ball from dealing any damage while active.
+
+---
+
 ## [idea-1036] Echo Mode — *2026-07-16 17:31:34 UTC*
 
 A game mode where player inputs and actions are 'recorded' every 10 seconds. In the following 10 seconds, shadowy echoes repeat those actions, doubling the player's output but also exposing their predictable patterns.
