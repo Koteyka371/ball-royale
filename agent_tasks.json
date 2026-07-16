@@ -16948,7 +16948,7 @@
     },
     {
       "id": "idea-987",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stealth Grass Bushes",
@@ -28131,6 +28131,40 @@
         "src/ai/quantum_swap_grenade.py",
         "src/ai/quantum_swap_grenade.gd",
         "tests/test_quantum_swap_grenade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1644",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Collapser",
+      "description": "A hazard that slowly pulls entities toward its center. When it expires, it violently explodes, pushing everyone away.",
+      "allowed_paths": [
+        "src/ai/black_hole_collapser.py",
+        "src/ai/black_hole_collapser.gd",
+        "tests/test_black_hole_collapser.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1645",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Swap Pad",
+      "description": "A hazard pad that reverses the effect of gravity for any ball that touches it for 3 seconds.",
+      "allowed_paths": [
+        "src/ai/gravity_swap_pad.py",
+        "src/ai/gravity_swap_pad.gd",
+        "tests/test_gravity_swap_pad.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

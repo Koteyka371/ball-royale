@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-987] Stealth Grass Bushes — *2026-07-16 02:22:32 UTC*
+
+Add tall grass or bush terrain patches where balls can hide. Entering a bush reduces movement speed slightly but grants temporary stealth, making the ball invisible to enemies whose perception radius does not directly intersect with the center of the bush. Attacking from inside the bush reveals the ball and applies a 'Surprise Attack' damage multiplier for the first hit.
+
+---
+
 ## [idea-1029] Time Rift Hazard — *2026-07-16 01:32:30 UTC*
 
 A new procedural hazard called 'Time Rift' that periodically reverses the direction of all projectiles and halves the movement speed of any ball caught in its radius for a few seconds. The effect visually looks like a distorted purple bubble.
