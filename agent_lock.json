@@ -203,9 +203,9 @@
     "agent-25": {
       "name": "Jules Worker 25",
       "area": "meta",
-      "status": "assigned",
+      "status": "working",
       "task_id": "idea-1058",
-      "started_at": "2026-07-16T22:07:43.259738+00:00",
+      "started_at": "2026-07-16T22:13:04.710885+00:00",
       "cycles_today": 0
     },
     "agent-26": {
