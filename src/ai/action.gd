@@ -6092,11 +6092,58 @@ func execute(strategy: String, delta: float):
                                 trap_link_target.hp -= hp_diff
                         elif typeof(trap_link_target) == TYPE_DICTIONARY:
                             trap_link_target["hp"] -= hp_diff
+
+                        if typeof(trap_link_target) == TYPE_OBJECT and trap_link_target.has_meta("prev_hp"):
+                            trap_link_target.set_meta("prev_hp", trap_link_target.get_meta("prev_hp") - hp_diff)
+                        elif typeof(trap_link_target) == TYPE_DICTIONARY and "prev_hp" in trap_link_target:
+                            trap_link_target["prev_hp"] -= hp_diff
+
                         my_ball.set_meta("_is_trap_link_syncing", false)
+
+                var status_effects = [
+                    ["stun_timer", "prev_stun_timer"],
+                    ["slow_timer", "prev_slow_timer"],
+                    ["poison_timer", "prev_poison_timer"],
+                    ["silence_timer", "prev_silence_timer"],
+                    ["freeze_timer", "prev_freeze_timer"],
+                    ["confused_timer", "prev_confused_timer"]
+                ]
+                for effect in status_effects:
+                    var stat_attr = effect[0]
+                    var prev_attr = effect[1]
+                    var current_val = 0.0
+                    if typeof(my_ball) == TYPE_OBJECT and stat_attr in my_ball: current_val = my_ball.get(stat_attr)
+                    elif typeof(my_ball) == TYPE_DICTIONARY and stat_attr in my_ball: current_val = my_ball[stat_attr]
+
+                    var prev_val = 0.0
+                    if my_ball.has_meta(prev_attr): prev_val = my_ball.get_meta(prev_attr)
+
+                    if current_val > prev_val:
+                        var diff = current_val - prev_val
+                        var target_val = 0.0
+                        if typeof(trap_link_target) == TYPE_OBJECT and stat_attr in trap_link_target: target_val = trap_link_target.get(stat_attr)
+                        elif typeof(trap_link_target) == TYPE_DICTIONARY and stat_attr in trap_link_target: target_val = trap_link_target[stat_attr]
+
+                        if typeof(trap_link_target) == TYPE_OBJECT:
+                            trap_link_target.set(stat_attr, target_val + diff)
+                            var t_prev = 0.0
+                            if trap_link_target.has_meta(prev_attr): t_prev = trap_link_target.get_meta(prev_attr)
+                            trap_link_target.set_meta(prev_attr, t_prev + diff)
+                        elif typeof(trap_link_target) == TYPE_DICTIONARY:
+                            trap_link_target[stat_attr] = target_val + diff
+                            var t_prev = 0.0
+                            if prev_attr in trap_link_target: t_prev = trap_link_target[prev_attr]
+                            trap_link_target[prev_attr] = t_prev + diff
 
         my_ball.set_meta("prev_hp", my_ball.get("hp"))
         my_ball.set_meta("prev_x", my_ball.get("x"))
         my_ball.set_meta("prev_y", my_ball.get("y"))
+        var stat_attrs_to_save = ["stun_timer", "slow_timer", "poison_timer", "silence_timer", "freeze_timer", "confused_timer"]
+        for stat in stat_attrs_to_save:
+            var val = 0.0
+            if typeof(my_ball) == TYPE_OBJECT and stat in my_ball: val = my_ball.get(stat)
+            elif typeof(my_ball) == TYPE_DICTIONARY and stat in my_ball: val = my_ball[stat]
+            my_ball.set_meta("prev_" + stat, val)
 
     # Apply Damage Over Time (DOT)
     if my_ball.has_method("has_meta") and my_ball.has_meta("dot_duration"):
@@ -11204,6 +11251,12 @@ func execute(strategy: String, delta: float):
                                     var enemy = enemies[randi() % enemies.size()]
                                     self.ball.set_meta("trap_link_target", enemy)
                                     self.ball.set_meta("trap_link_timer", 10.0)
+                                    if typeof(enemy) == TYPE_OBJECT:
+                                        enemy.set_meta("trap_link_target", self.ball)
+                                        enemy.set_meta("trap_link_timer", 10.0)
+                                    elif typeof(enemy) == TYPE_DICTIONARY:
+                                        enemy["trap_link_target"] = self.ball
+                                        enemy["trap_link_timer"] = 10.0
                                 if typeof(hazard) == TYPE_OBJECT:
                                     hazard.duration = 0.0
                                 elif typeof(hazard) == TYPE_DICTIONARY:
