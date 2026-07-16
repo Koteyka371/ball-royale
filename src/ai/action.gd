@@ -398,6 +398,16 @@ func _attempt_damage(attacker, target) -> void:
     elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("intangible_timer"): a_timer = attacker.get_meta("intangible_timer")
     if a_intangible or a_timer > 0.0:
         return
+    var a_phase_timer = 0.0
+    if typeof(attacker) == TYPE_OBJECT and "phase_booster_timer" in attacker: a_phase_timer = attacker.phase_booster_timer
+    elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("phase_booster_timer"): a_phase_timer = attacker.get_meta("phase_booster_timer")
+    if a_phase_timer > 0.0:
+        return
+    var a_phase_timer = 0.0
+    if typeof(attacker) == TYPE_OBJECT and "phase_booster_timer" in attacker: a_phase_timer = attacker.phase_booster_timer
+    elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("phase_booster_timer"): a_phase_timer = attacker.get_meta("phase_booster_timer")
+    if a_phase_timer > 0.0:
+        return
     var q_state = 0.0
     if typeof(target) == TYPE_OBJECT and "quantum_state_timer" in target: q_state = target.quantum_state_timer
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("quantum_state_timer"): q_state = target.get_meta("quantum_state_timer")
@@ -3259,6 +3269,12 @@ func execute(strategy: String, delta: float):
                 haz_imm_active = true
             elif self.ball.has_method("get_meta") and self.ball.has_meta("hazard_immunity_timer") and float(self.ball.get_meta("hazard_immunity_timer")) > 0:
                 haz_imm_active = true
+
+            var ph_active = false
+            if "phase_booster_timer" in self.ball and float(self.ball.phase_booster_timer) > 0:
+                ph_active = true
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("phase_booster_timer") and float(self.ball.get_meta("phase_booster_timer")) > 0:
+                ph_active = true
 
             var h_kind_for_skip = ""
             if "kind" in hazard: h_kind_for_skip = hazard.kind
@@ -14447,6 +14463,20 @@ func execute(strategy: String, delta: float):
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("hazard_immunity_timer", haz_imm_timer)
 
+        var ph_timer = 0.0
+        if "phase_booster_timer" in self.ball:
+            ph_timer = float(self.ball.phase_booster_timer)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("phase_booster_timer"):
+            ph_timer = float(self.ball.get_meta("phase_booster_timer"))
+        if ph_timer > 0:
+            ph_timer -= delta
+            if ph_timer < 0:
+                ph_timer = 0.0
+            if "phase_booster_timer" in self.ball:
+                self.ball.phase_booster_timer = ph_timer
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("phase_booster_timer", ph_timer)
+
         var emp_imm_timer = 0.0
         if "emp_immunity_timer" in self.ball:
             emp_imm_timer = float(self.ball.emp_immunity_timer)
@@ -17891,6 +17921,19 @@ func _collect_booster(delta: float):
                     self.ball.hazard_immunity_timer = 15.0
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("hazard_immunity_timer", 15.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "phase_booster":
+                if "phase_booster_timer" in self.ball:
+                    self.ball.phase_booster_timer = 10.0
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("phase_booster_timer", 10.0)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -23543,7 +23586,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["vampiric_aura_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster", "anvil_piece", "legendary_loot"]:
+                    if not kind in ["vampiric_aura_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster", "anvil_piece", "legendary_loot"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -24196,7 +24239,10 @@ func _clamp_position() -> bool:
     var timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: timer = self.ball.intangible_timer
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
-    if intangible or timer > 0.0:
+    var p_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "phase_booster_timer" in self.ball: p_timer = self.ball.phase_booster_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("phase_booster_timer"): p_timer = self.ball.get_meta("phase_booster_timer")
+    if intangible or timer > 0.0 or p_timer > 0.0:
         return false
     var bounced = false
     if self.world != null:
@@ -24244,7 +24290,10 @@ func _resolve_collisions() -> bool:
     var timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: timer = self.ball.intangible_timer
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
-    if intangible or timer > 0.0:
+    var p_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "phase_booster_timer" in self.ball: p_timer = self.ball.phase_booster_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("phase_booster_timer"): p_timer = self.ball.get_meta("phase_booster_timer")
+    if intangible or timer > 0.0 or p_timer > 0.0:
         return false
     var bounced = false
     var ball_radius = 10.0
@@ -25990,7 +26039,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["vampiric_aura_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot"]
+                var pullable = ["vampiric_aura_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
