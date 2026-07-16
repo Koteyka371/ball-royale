@@ -18104,7 +18104,7 @@
     },
     {
       "id": "idea-1055",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Hazard for Windy Arenas",
@@ -28575,6 +28575,40 @@
         "src/ai/decoy_drone.py",
         "src/ai/decoy_drone.gd",
         "tests/test_decoy_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1670",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster's Mirage Clone",
+      "description": "A new skill for the Trickster that creates a clone with reversed controls from the player. When the player moves left, the clone moves right. The clone deals no damage but taunts AI enemies globally, drawing them away from the true player.",
+      "allowed_paths": [
+        "src/ai/tricksters_mirage_clone.py",
+        "src/ai/tricksters_mirage_clone.gd",
+        "tests/test_tricksters_mirage_clone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1671",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slippery Slope Arena Mode",
+      "description": "An arena modifier where the entire floor is covered in ice, forcing all balls to slide continuously with low friction. Movement speed is uncapped, and players rely purely on bouncing off walls and recoil from skills to change direction.",
+      "allowed_paths": [
+        "src/arena/slippery_slope_arena.py",
+        "src/arena/slippery_slope_arena.gd",
+        "tests/test_slippery_slope_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

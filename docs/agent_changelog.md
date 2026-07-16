@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1055] Tornado Hazard for Windy Arenas — *2026-07-16 21:53:59 UTC*
+
+Introduce a dynamic Tornado hazard in AutumnArena that spawns occasionally. It pulls nearby balls towards its center, reducing their friction to near zero and launching them in a random direction if they reach the eye of the tornado.
+
+---
+
 ## [idea-1041] Slippery Trails Skill — *2026-07-16 21:31:31 UTC*
 
 A new skill for the Trickster ball type that leaves a temporary trail of ice patches behind it as it moves, causing pursuing enemies to slip and slide past it.
