@@ -17747,7 +17747,7 @@
     },
     {
       "id": "idea-1034",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Thermal Boots Booster",
@@ -28063,6 +28063,23 @@
         "src/ai/supernova_powerup.py",
         "src/ai/supernova_powerup.gd",
         "tests/test_supernova_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1640",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Decoy",
+      "description": "When destroyed, this decoy disables all skills of nearby enemies for a few seconds.",
+      "allowed_paths": [
+        "src/ai/emp_decoy.py",
+        "src/ai/emp_decoy.gd",
+        "tests/test_emp_decoy.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

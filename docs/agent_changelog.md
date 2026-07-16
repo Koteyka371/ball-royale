@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1034] Thermal Boots Booster — *2026-07-16 00:56:53 UTC*
+
+Add a new booster type called 'Thermal Boots' that grants temporary immunity to the sliding effect of ice_patches, frictionless zones, and slip zones, allowing players to traverse these hazards with full control.
+
+---
+
 ## [idea-1030] Decoy Transmutation — *2026-07-16 00:53:41 UTC*
 
 A new skill that allows a player to swap the types of decoys currently on the field dynamically. For example, changing a healing decoy into an explosive decoy to trap enemies who think it is safe.
