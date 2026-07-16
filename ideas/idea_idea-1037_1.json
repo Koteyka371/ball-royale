@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Swap Grenade",
-  "description": "A throwable grenade that upon detonation instantly swaps the positions of the thrower and the closest enemy caught in its blast radius. If no enemy is hit, it just deals minor area damage."
-}

@@ -1,4 +1,0 @@
-{
-    "title": "Teleporting Safe Zone Mode",
-    "description": "The safe zone does not slowly move; instead, it instantly teleports to a random location every minute, forcing players to scramble across the dangerous zone quickly to find it."
-}

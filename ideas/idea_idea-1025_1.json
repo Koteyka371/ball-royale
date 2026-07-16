@@ -1,4 +1,0 @@
-{
-  "title": "Waterfalls (Vertical Currents)",
-  "description": "Introduce a Waterfall hazard that operates similarly to flood zones but dynamically changes the elevation level of the arena, dropping entities to a lower arena layer where different hazards might exist. While falling, entities cannot attack but can be attacked."
-}

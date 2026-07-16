@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zones",
-  "description": "Like a traditional battle royale, implement a shrinking safe zone that slowly forces all balls to the center of the arena. Any ball outside the zone takes continuous damage."
-}
