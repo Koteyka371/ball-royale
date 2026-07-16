@@ -18547,7 +18547,6 @@ GAME_MODES = {
     "team_deathmatch": TeamDeathmatchMode(),
     "zombie_infection": ZombieInfectionMode(),
     "boss_fight": BossFightMode(),
-    "echo": EchoMode(),
     "juggernaut": JuggernautMode(),
     "guild_boss_fight": GuildBossFightMode(),
     "gvg": GuildVsGuildMode(),
@@ -22958,3 +22957,5 @@ class EchoMode(GameMode):
         if len(alive_teams) <= 1:
             return alive_teams.pop() if alive_teams else "Draw"
         return None
+
+GAME_MODES["echo"] = EchoMode()
