@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-967] Pinball Flipper Traps — *2026-07-16 02:57:47 UTC*
+
+Introduce dynamic pinball flippers in the arena that players can control (or AI logic triggers) to bat enemy balls across the map, combining well with bumper chains.
+
+---
+
 ## [idea-901] Time-Dilation Field — *2026-07-16 02:55:58 UTC*
 
 An anomalous zone in the arena where the flow of time slows down drastically. Entities, projectiles, and status effects within the field move and expire at half their normal rate. Players can use this defensively to dodge attacks or offensively to trap opponents in slow motion.
