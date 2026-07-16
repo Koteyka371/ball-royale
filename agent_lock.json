@@ -44,8 +44,8 @@
       "name": "Jules Innovation",
       "area": "innovation",
       "task_id": "idea-1023",
-      "status": "assigned",
-      "started_at": "2026-07-16T22:07:43.259738+00:00",
+      "status": "working",
+      "started_at": "2026-07-16T22:18:16.500680+00:00",
       "cycles_today": 3
     },
     "supervisor": {
