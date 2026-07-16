@@ -12337,6 +12337,12 @@ func execute(strategy: String, delta: float):
                         if dist < hazard.radius * 0.5:
                             if "vx" in self.ball: self.ball.vx = 0
                             if "vy" in self.ball: self.ball.vy = 0
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["is_frictionless"] = true
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_frictionless", true)
+                            elif "is_frictionless" in self.ball:
+                                self.ball.is_frictionless = true
 
                             var current_tick = 0
                             if "tick" in self.world: current_tick = self.world.tick
