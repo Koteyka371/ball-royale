@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-862] Bumper Car Powerup — *2026-07-16 00:21:26 UTC*
+
+A temporary booster that completely removes fall-off damage and instead causes massive knockback to anyone touched by the active player.
+
+---
+
 ## [idea-1003] Chain Reaction Bumpers — *2026-07-16 00:21:21 UTC*
 
 Bumpers that activate each other when one is hit. Hitting a chain reaction bumper sends out a shockwave that bounces other balls nearby.
