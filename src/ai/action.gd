@@ -312,6 +312,30 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+
+	var is_shuffler_clone = false
+	if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("is_shuffler_clone") and target.get_meta("is_shuffler_clone"): is_shuffler_clone = true
+	elif typeof(target) == TYPE_DICTIONARY and target.has("is_shuffler_clone") and target["is_shuffler_clone"]: is_shuffler_clone = true
+	elif "is_shuffler_clone" in target and target.is_shuffler_clone: is_shuffler_clone = true
+
+	if is_shuffler_clone:
+		var a_team_chk = attacker.team if "team" in attacker else ""
+		var t_team_chk = target.team if "team" in target else ""
+		if a_team_chk != t_team_chk:
+			if self.world != null and self.world.has_method("add_event"):
+				self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 50.0, "damage": 0.0})
+			if "is_blinded" in attacker: attacker.is_blinded = true
+			elif attacker.has_method("set_meta"): attacker.set_meta("is_blinded", true)
+			elif typeof(attacker) == TYPE_DICTIONARY: attacker["is_blinded"] = true
+
+			var btimer = 3.0
+			if "blindness_timer" in attacker: btimer = max(attacker.blindness_timer, 3.0)
+			elif attacker.has_method("get_meta") and attacker.has_meta("blindness_timer"): btimer = max(attacker.get_meta("blindness_timer"), 3.0)
+
+			if "blindness_timer" in attacker: attacker.blindness_timer = btimer
+			elif attacker.has_method("set_meta"): attacker.set_meta("blindness_timer", btimer)
+			elif typeof(attacker) == TYPE_DICTIONARY: attacker["blindness_timer"] = btimer
+
     var t_intangible = false
     if typeof(target) == TYPE_OBJECT and "intangible" in target: t_intangible = target.intangible
     elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible"): t_intangible = target.get_meta("intangible")
@@ -1934,6 +1958,37 @@ func execute(strategy: String, delta: float):
         is_laser = true
     elif typeof(self.ball) == TYPE_OBJECT and "is_ricochet_laser" in self.ball and self.ball.is_ricochet_laser:
         is_laser = true
+
+
+	if "ball_type" in self.ball and str(self.ball.ball_type) == "shuffler" and not ("is_shuffler_clone" in self.ball and self.ball.is_shuffler_clone) and ("alive" in self.ball and self.ball.alive):
+		var vx = self.ball.vx if "vx" in self.ball else 0.0
+		var vy = self.ball.vy if "vy" in self.ball else 0.0
+		if abs(vx) + abs(vy) > 0.5:
+			var timer = 2.0
+			if "shuffler_clone_timer" in self.ball: timer = self.ball.shuffler_clone_timer
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("shuffler_clone_timer"): timer = self.ball.get_meta("shuffler_clone_timer")
+			timer -= delta
+			if timer <= 0:
+				timer = 2.0
+				var clone = null
+				if self.ball.has_method("duplicate"): clone = self.ball.duplicate()
+				elif typeof(self.ball) == TYPE_DICTIONARY: clone = self.ball.duplicate()
+				if clone != null:
+					if "next_id" in self.world:
+						if "id" in clone: clone.id = self.world.next_id
+						self.world.next_id += 1
+					if "is_shuffler_clone" in clone: clone.is_shuffler_clone = true
+					elif clone.has_method("set_meta"): clone.set_meta("is_shuffler_clone", true)
+					elif typeof(clone) == TYPE_DICTIONARY: clone["is_shuffler_clone"] = true
+
+					if "max_hp" in clone: clone.max_hp = 1.0
+					if "hp" in clone: clone.hp = 1.0
+					if "damage" in clone: clone.damage = 0.0
+					if "vx" in clone: clone.vx = vx
+					if "vy" in clone: clone.vy = vy
+					if "balls" in self.world: self.world.balls.append(clone)
+			if "shuffler_clone_timer" in self.ball: self.ball.shuffler_clone_timer = timer
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("shuffler_clone_timer", timer)
 
     if is_laser:
         if typeof(self.ball) == TYPE_DICTIONARY:

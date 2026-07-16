@@ -196,6 +196,18 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+
+        if getattr(target, "is_shuffler_clone", False):
+            if getattr(attacker, "team", "") != getattr(target, "team", ""):
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 50.0, "damage": 0.0})
+                if hasattr(attacker, "is_blinded"):
+                    attacker.is_blinded = True
+                    attacker.blindness_timer = max(getattr(attacker, "blindness_timer", 0.0), 3.0)
+                else:
+                    attacker.is_blinded = True
+                    attacker.blindness_timer = 3.0
+
         if getattr(target, "intangible", False) or getattr(target, "intangible_timer", 0.0) > 0.0:
             if getattr(target, "ghost_mode_active", False):
                 is_proj = getattr(attacker, "ball_type", getattr(attacker, "kind", "")) in ["projectile", "spell"] or getattr(attacker, "is_projectile", False) or getattr(attacker, "is_spell", False)
@@ -1149,6 +1161,29 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
         if hasattr(self.ball, "polarity_cooldown") and type(self.ball.polarity_cooldown) in (int, float) and self.ball.polarity_cooldown > 0:
             self.ball.polarity_cooldown = max(0, self.ball.polarity_cooldown - delta)
+
+
+        if getattr(self.ball, "ball_type", "") == "shuffler" and not getattr(self.ball, "is_shuffler_clone", False) and getattr(self.ball, "alive", True):
+            if abs(getattr(self.ball, "vx", 0.0)) + abs(getattr(self.ball, "vy", 0.0)) > 0.5:
+                timer = getattr(self.ball, "shuffler_clone_timer", 2.0)
+                timer -= delta
+                if timer <= 0:
+                    timer = 2.0
+                    import copy
+                    import random
+                    clone = copy.copy(self.ball)
+                    clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+                    clone.is_shuffler_clone = True
+                    clone.max_hp = 1.0
+                    clone.hp = 1.0
+                    clone.damage = 0.0
+                    clone.vx = getattr(self.ball, "vx", 0.0)
+                    clone.vy = getattr(self.ball, "vy", 0.0)
+                    if hasattr(self.world, "balls"):
+                        self.world.balls.append(clone)
+                self.ball.shuffler_clone_timer = timer
 
         if getattr(self.ball, "is_perfect_mirror", False):
             owner_id = getattr(self.ball, "owner_id", None)
