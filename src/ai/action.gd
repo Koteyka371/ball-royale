@@ -3215,7 +3215,7 @@ func execute(strategy: String, delta: float):
             elif hazard.has_method("get_meta") and hazard.has_meta("damage") and float(hazard.get_meta("damage")) > 0:
                 has_damage = true
 
-            if haz_imm_active and h_kind_for_skip != "void_panel" and h_kind_for_skip != "temporal_rift" and has_damage:
+            if haz_imm_active and h_kind_for_skip != "void_panel" and h_kind_for_skip != "temporal_rift" and h_kind_for_skip != "time_rift" and has_damage:
                 continue
 
             if hazard.get("kind") == "slime":
@@ -5768,6 +5768,54 @@ func execute(strategy: String, delta: float):
 
 	if world != null and "arena" in world and "hazards" in world.arena:
 		for hazard in world.arena.hazards:
+			if hazard.get("kind") == "time_rift":
+				var my_rad = 10.0
+				if "radius" in self.ball: my_rad = float(self.ball.radius)
+				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+				if s_dist <= hazard.radius + my_rad:
+					var base_speed = 100.0
+					if "base_speed" in self.ball: base_speed = float(self.ball.base_speed)
+					self.ball["speed"] = base_speed * 0.5
+
+				var w_time = 0.0
+				if world.has_method("get") and world.get("time") != null:
+					w_time = float(world.time)
+				elif "time" in world:
+					w_time = float(world.time)
+				var cycle = fmod(w_time, 5.0)
+				var cycle_id = int(w_time / 5.0)
+				var last_cycle = hazard.get("last_reversed_cycle") if "last_reversed_cycle" in hazard else (hazard.get_meta("last_reversed_cycle") if hazard.has_method("has_meta") and hazard.has_meta("last_reversed_cycle") else -1)
+				if last_cycle != cycle_id and cycle < 0.2:
+					if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+						hazard.set_meta("last_reversed_cycle", cycle_id)
+					elif typeof(hazard) == TYPE_DICTIONARY:
+						hazard["last_reversed_cycle"] = cycle_id
+					if "balls" in world:
+						for b in world.balls:
+							var is_proj_flag = false
+							if typeof(b) == TYPE_OBJECT:
+								if "ball_type" in b and (b.ball_type == "projectile" or b.ball_type == "spell"): is_proj_flag = true
+								elif "is_projectile" in b and b.is_projectile: is_proj_flag = true
+								elif b.has_method("has_meta"):
+									if b.has_meta("is_projectile") and b.get_meta("is_projectile"): is_proj_flag = true
+									elif b.has_meta("ball_type") and (b.get_meta("ball_type") == "projectile" or b.get_meta("ball_type") == "spell"): is_proj_flag = true
+							elif typeof(b) == TYPE_DICTIONARY:
+								if b.has("ball_type") and (b["ball_type"] == "projectile" or b["ball_type"] == "spell"): is_proj_flag = true
+								elif b.has("is_projectile") and b["is_projectile"]: is_proj_flag = true
+
+							if is_proj_flag:
+								var bx = b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") else 0.0)
+								var by = b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") else 0.0)
+								var p_dist = sqrt((bx - hazard.x) * (bx - hazard.x) + (by - hazard.y) * (by - hazard.y))
+								if p_dist <= hazard.radius:
+									if typeof(b) == TYPE_OBJECT:
+										if "vx" in b: b.vx = -b.vx
+										elif b.has_method("set_meta") and b.has_meta("vx"): b.set_meta("vx", -b.get_meta("vx"))
+										if "vy" in b: b.vy = -b.vy
+										elif b.has_method("set_meta") and b.has_meta("vy"): b.set_meta("vy", -b.get_meta("vy"))
+									elif typeof(b) == TYPE_DICTIONARY:
+										if b.has("vx"): b["vx"] = -b["vx"]
+										if b.has("vy"): b["vy"] = -b["vy"]
 			if hazard.get("kind") == "temporal_rift":
 				var my_rad = 10.0
 				if "radius" in self.ball:
@@ -7552,7 +7600,7 @@ func execute(strategy: String, delta: float):
 
         if "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
-                if hazard.kind == "temporal_rift":
+                if hazard.kind in ["temporal_rift", "time_rift"]:
 			continue
                 if hazard.kind in ["explosive_barrel", "volatile_barrel"]:
                     var current_tick = world.get("tick") if world.has_method("get") else 0
@@ -10456,7 +10504,7 @@ func execute(strategy: String, delta: float):
             for hazard in self.world.arena.hazards:
                 var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
                 if s_dist < (self.ball.radius + hazard.radius):
-                    if hazard.kind == "temporal_rift":
+                    if hazard.kind in ["temporal_rift", "time_rift"]:
 			continue
                     if hazard.kind in ["explosive_barrel", "volatile_barrel"]:
                         if not hazard.has_meta("is_exploded") or not hazard.get_meta("is_exploded"):
