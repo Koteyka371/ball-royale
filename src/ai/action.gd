@@ -2015,6 +2015,62 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var wall_stick = false
+    var ws_timer = 0.0
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        if self.ball.has("wall_stick_timer"):
+            ws_timer = self.ball["wall_stick_timer"]
+            if ws_timer > 0.0: wall_stick = true
+    elif "wall_stick_timer" in self.ball:
+        ws_timer = self.ball.wall_stick_timer
+        if ws_timer > 0.0: wall_stick = true
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("wall_stick_timer"):
+        ws_timer = self.ball.get_meta("wall_stick_timer")
+        if ws_timer > 0.0: wall_stick = true
+
+    if wall_stick:
+        var new_ws = ws_timer - delta
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["wall_stick_timer"] = new_ws
+            if new_ws <= 0.0 and (not self.ball.has("stun_timer") or self.ball["stun_timer"] <= 0.0):
+                self.ball["is_stunned"] = false
+        elif "wall_stick_timer" in self.ball:
+            self.ball.wall_stick_timer = new_ws
+            if new_ws <= 0.0:
+                var st = 0.0
+                if "stun_timer" in self.ball: st = self.ball.stun_timer
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("stun_timer"): st = self.ball.get_meta("stun_timer")
+                if st <= 0.0:
+                    if "is_stunned" in self.ball: self.ball.is_stunned = false
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", false)
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("wall_stick_timer", new_ws)
+            if new_ws <= 0.0:
+                var st = 0.0
+                if self.ball.has_meta("stun_timer"): st = self.ball.get_meta("stun_timer")
+                if st <= 0.0:
+                    self.ball.set_meta("is_stunned", false)
+
+    var is_stunned = false
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        if self.ball.has("is_stunned"):
+            is_stunned = self.ball["is_stunned"]
+    elif "is_stunned" in self.ball:
+        is_stunned = self.ball.is_stunned
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("is_stunned"):
+        is_stunned = self.ball.get_meta("is_stunned")
+
+    if is_stunned:
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            if self.ball.has("wall_stick_timer") and self.ball["wall_stick_timer"] > 0.0:
+                return
+        elif "wall_stick_timer" in self.ball:
+            if self.ball.wall_stick_timer > 0.0:
+                return
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("wall_stick_timer"):
+            if self.ball.get_meta("wall_stick_timer") > 0.0:
+                return
+
     var is_laser = false
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_ricochet_laser") and self.ball.is_ricochet_laser:
         is_laser = true
@@ -13641,12 +13697,34 @@ func execute(strategy: String, delta: float):
         if is_stunned:
             stun_timer = self.ball.get_meta("stun_timer")
 
+    var wall_stick = false
+    var ws_timer = 0.0
+    if "wall_stick_timer" in self.ball:
+        ws_timer = self.ball.wall_stick_timer
+        if ws_timer > 0.0: wall_stick = true
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("wall_stick_timer"):
+        ws_timer = self.ball.get_meta("wall_stick_timer")
+        if ws_timer > 0.0: wall_stick = true
+
+    if wall_stick:
+        var new_ws = ws_timer - delta
+        if "wall_stick_timer" in self.ball:
+            self.ball.wall_stick_timer = new_ws
+            if new_ws <= 0.0:
+                if "is_stunned" in self.ball: self.ball.is_stunned = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", false)
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("wall_stick_timer", new_ws)
+            if new_ws <= 0.0: self.ball.set_meta("is_stunned", false)
+
     if is_stunned:
         if stun_timer > 0.0:
             if "stun_timer" in self.ball:
                 self.ball.stun_timer -= delta
             elif self.ball.has_method("set_meta"):
                 self.ball.set_meta("stun_timer", stun_timer - delta)
+            return
+        elif wall_stick:
             return
         else:
             if "is_stunned" in self.ball:
@@ -14168,6 +14246,21 @@ func execute(strategy: String, delta: float):
 
     var bounced_col = _resolve_collisions()
     var bounced_wall = _clamp_position()
+
+    if bounced_wall:
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            if not (self.ball.has("wall_stick_timer") and self.ball["wall_stick_timer"] > 0.0):
+                self.ball["wall_stick_timer"] = 2.0
+                self.ball["is_stunned"] = true
+        elif "wall_stick_timer" in self.ball:
+            if not self.ball.wall_stick_timer > 0.0:
+                self.ball.wall_stick_timer = 2.0
+                if "is_stunned" in self.ball: self.ball.is_stunned = true
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", true)
+        elif self.ball.has_method("set_meta"):
+            if not (self.ball.has_meta("wall_stick_timer") and self.ball.get_meta("wall_stick_timer") > 0.0):
+                self.ball.set_meta("wall_stick_timer", 2.0)
+                self.ball.set_meta("is_stunned", true)
 
     if bounced_wall:
         if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):

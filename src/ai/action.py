@@ -1182,6 +1182,16 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
+            self.ball.wall_stick_timer -= delta
+            if self.ball.wall_stick_timer <= 0.0:
+                if getattr(self.ball, "stun_timer", 0.0) <= 0.0:
+                    self.ball.is_stunned = False
+
+        if getattr(self.ball, "is_stunned", False):
+            if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
+                return
+
         if hasattr(self.ball, "polarity_cooldown") and type(self.ball.polarity_cooldown) in (int, float) and self.ball.polarity_cooldown > 0:
             self.ball.polarity_cooldown = max(0, self.ball.polarity_cooldown - delta)
 
@@ -4290,7 +4300,11 @@ class Action:
             self._apply_friendly_aura(delta)
             self._update_skill_timer(delta)
             self._resolve_collisions()
-            self._clamp_position()
+            bounced_wall = self._clamp_position()
+            if bounced_wall:
+                if getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0:
+                    self.ball.wall_stick_timer = 2.0
+                    self.ball.is_stunned = True
             return
 
         """
@@ -7511,12 +7525,19 @@ class Action:
             if self.ball.emp_timer <= 0:
                 self.ball.is_emped = False
 
+        if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
+            self.ball.wall_stick_timer -= delta
+            if self.ball.wall_stick_timer <= 0.0:
+                self.ball.is_stunned = False
+
         if getattr(self.ball, "is_stunned", False):
 
             stun_timer = getattr(self.ball, "stun_timer", 0.0)
             if stun_timer > 0:
                 self.ball.stun_timer -= delta
                 return  # Skip movement if stunned
+            elif getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
+                return # Skip movement if wall stuck
             else:
                 self.ball.is_stunned = False
 
@@ -7760,6 +7781,11 @@ class Action:
 
         bounced_col = self._resolve_collisions()
         bounced_wall = self._clamp_position()
+
+        if bounced_wall:
+            if getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0:
+                self.ball.wall_stick_timer = 2.0
+                self.ball.is_stunned = True
 
         # Reflect projectiles and entities with increased speed upon hitting the boundary
         if bounced_wall:
