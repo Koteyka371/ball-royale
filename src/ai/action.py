@@ -10488,6 +10488,24 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "mega_starlight_booster":
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("starlight_booster_collected", {"ball_id": self.ball.id, "team": getattr(self.ball, "team", "")})
+                    team = getattr(self.ball, "team", "")
+                    if team and hasattr(self.world, "balls"):
+                        for member in self.world.balls:
+                            if getattr(member, "team", "") == team:
+                                member.speed = getattr(member, "speed", 100.0) + 20.0
+                                if getattr(member, "base_speed", None) is not None:
+                                    member.base_speed += 20.0
+                                else:
+                                    member.base_speed = member.speed
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "weather_shield_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
