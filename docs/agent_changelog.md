@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1035] Sliding Momentum Bash — *2026-07-16 20:17:02 UTC*
+
+Introduce a new damage multiplier mechanic where a ball sliding on an ice_patches hazard deals significantly more damage upon collision, proportional to its current velocity, rewarding players for successfully targeting enemies while sliding.
+
+---
+
 ## [idea-1051] Mirror Dimension Mode — *2026-07-16 20:16:57 UTC*
 
 A game mode where periodically the arena splits into two parallel dimensions. Players in the mirror dimension cannot be seen or damaged by those in the normal dimension, but they can collect mirror-exclusive powerups that apply permanent buffs when dimensions merge back together.
