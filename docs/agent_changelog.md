@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1015] Sticky Bomb Booster — *2026-07-16 00:02:06 UTC*
+
+A booster item that, when collected, allows a ball's next attack to attach a timed explosive to an enemy ball. The enemy then has to run away from their team to avoid blowing them up in a chain reaction.
+
+---
+
 ## [idea-1013] Supernova Event — *2026-07-15 23:43:28 UTC*
 
 If a merged black hole exceeds a certain radius, it explodes into a supernova, dealing massive damage to the entire arena before despawning, forcing players to avoid it at all costs.

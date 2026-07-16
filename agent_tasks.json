@@ -17424,7 +17424,7 @@
     },
     {
       "id": "idea-1015",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Bomb Booster",
@@ -27995,6 +27995,40 @@
         "src/ai/decoy_resonance_chain.py",
         "src/ai/decoy_resonance_chain.gd",
         "tests/test_decoy_resonance_chain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1636",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wormhole network",
+      "description": "Black holes periodically form a network to transport balls.",
+      "allowed_paths": [
+        "src/ai/wormhole_network.py",
+        "src/ai/wormhole_network.gd",
+        "tests/test_wormhole_network.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1637",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmic string",
+      "description": "A line of intense gravity pulls balls along a specific path.",
+      "allowed_paths": [
+        "src/ai/cosmic_string.py",
+        "src/ai/cosmic_string.gd",
+        "tests/test_cosmic_string.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
