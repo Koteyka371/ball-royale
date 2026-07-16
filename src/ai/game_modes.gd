@@ -31029,8 +31029,179 @@ class FloodingArenaMode extends GameMode:
 						base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
 						if "speed" in b: b.speed = base_speed * 1.2
 
+class HalfLifeReviveMode extends GameMode:
+	func _init():
+		name = "Half-Life Revive"
+		description = "Every player spawns with a clone that perfectly mimics their inputs, but it only deals half damage and takes double damage. If the real player is killed, they immediately swap into their clone, reviving but with halved stats for the rest of the game."
+
+	func setup(world, balls):
+		if not world.has_meta("dead_players_processed"):
+			world.set_meta("dead_players_processed", [])
+		var new_clones = []
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				var is_clone = false
+				if "is_clone" in b: is_clone = b.is_clone
+				elif b.has_method("get_meta") and b.has_meta("is_clone"): is_clone = b.get_meta("is_clone")
+				var is_decoy = false
+				if "is_decoy" in b: is_decoy = b.is_decoy
+				elif b.has_method("get_meta") and b.has_meta("is_decoy"): is_decoy = b.get_meta("is_decoy")
+				var is_revive_clone = false
+				if "is_revive_clone" in b: is_revive_clone = b.is_revive_clone
+				elif b.has_method("get_meta") and b.has_meta("is_revive_clone"): is_revive_clone = b.get_meta("is_revive_clone")
+
+				if is_clone or is_decoy or is_revive_clone: continue
+
+				# GDScript doesn't have a built-in perfect copy for arbitrary nodes easily like Python's copy, so we duplicate or fake it depending on standard architecture
+				# Given standard architecture, we can duplicate the object if it's a Node or Resource
+				var clone = b
+				if b.has_method("duplicate"):
+					clone = b.duplicate()
+				else:
+					continue
+
+				if "id" in clone: clone.id = randi() % 90000 + 10000
+				if "x" in clone: clone.x = max(10, min(1000 - 10, clone.x + randf_range(-50, 50)))
+				if "y" in clone: clone.y = max(10, min(1000 - 10, clone.y + randf_range(-50, 50)))
+
+				if "is_revive_clone" in clone: clone.is_revive_clone = true
+				elif clone.has_method("set_meta"): clone.set_meta("is_revive_clone", true)
+
+				var b_id = -1
+				if "id" in b: b_id = b.id
+				if "clone_owner" in clone: clone.clone_owner = b_id
+				elif clone.has_method("set_meta"): clone.set_meta("clone_owner", b_id)
+
+				var b_dmg_mult = 1.0
+				if "base_damage_multiplier" in b: b_dmg_mult = b.base_damage_multiplier
+				elif b.has_method("get_meta") and b.has_meta("base_damage_multiplier"): b_dmg_mult = b.get_meta("base_damage_multiplier")
+
+				if "base_damage_multiplier" in clone: clone.base_damage_multiplier = b_dmg_mult * 0.5
+				elif clone.has_method("set_meta"): clone.set_meta("base_damage_multiplier", b_dmg_mult * 0.5)
+
+				if "damage_multiplier" in clone: clone.damage_multiplier = b_dmg_mult * 0.5
+				elif clone.has_method("set_meta"): clone.set_meta("damage_multiplier", b_dmg_mult * 0.5)
+
+				var c_hp = 100.0
+				if "hp" in clone: c_hp = clone.hp
+				if clone.has_method("set_meta"): clone.set_meta("last_hp", c_hp)
+
+				new_clones.append(clone)
+		for c in new_clones:
+			balls.append(c)
+
+	func tick(world, balls, delta=0.016):
+		if not world.has_meta("dead_players_processed"):
+			world.set_meta("dead_players_processed", [])
+		var processed = world.get_meta("dead_players_processed")
+
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				var is_revive_clone = false
+				if "is_revive_clone" in b: is_revive_clone = b.is_revive_clone
+				elif b.has_method("get_meta") and b.has_meta("is_revive_clone"): is_revive_clone = b.get_meta("is_revive_clone")
+
+				var b_alive = false
+				if "alive" in b: b_alive = b.alive
+
+				if is_revive_clone and b_alive:
+					var curr_hp = 100.0
+					if "hp" in b: curr_hp = b.hp
+					var last_hp = 100.0
+					if b.has_method("get_meta") and b.has_meta("last_hp"): last_hp = b.get_meta("last_hp")
+
+					if curr_hp < last_hp:
+						var damage_taken = last_hp - curr_hp
+						if "hp" in b: b.hp -= damage_taken
+						if "hp" in b and b.hp <= 0:
+							b.hp = 0
+							if "alive" in b: b.alive = false
+					if b.has_method("set_meta"): b.set_meta("last_hp", b.hp if "hp" in b else 0.0)
+
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				var is_revive_clone = false
+				if "is_revive_clone" in b: is_revive_clone = b.is_revive_clone
+				elif b.has_method("get_meta") and b.has_meta("is_revive_clone"): is_revive_clone = b.get_meta("is_revive_clone")
+				var is_clone = false
+				if "is_clone" in b: is_clone = b.is_clone
+				elif b.has_method("get_meta") and b.has_meta("is_clone"): is_clone = b.get_meta("is_clone")
+				var is_decoy = false
+				if "is_decoy" in b: is_decoy = b.is_decoy
+				elif b.has_method("get_meta") and b.has_meta("is_decoy"): is_decoy = b.get_meta("is_decoy")
+
+				if not is_revive_clone and not is_clone and not is_decoy:
+					var b_alive = false
+					if "alive" in b: b_alive = b.alive
+					var b_hp = 100.0
+					if "hp" in b: b_hp = b.hp
+					var b_id = -1
+					if "id" in b: b_id = b.id
+
+					if (not b_alive or b_hp <= 0) and not processed.has(b_id):
+						for c in balls:
+							if typeof(c) == TYPE_OBJECT:
+								var c_is_revive_clone = false
+								if "is_revive_clone" in c: c_is_revive_clone = c.is_revive_clone
+								elif c.has_method("get_meta") and c.has_meta("is_revive_clone"): c_is_revive_clone = c.get_meta("is_revive_clone")
+								var c_owner = -1
+								if "clone_owner" in c: c_owner = c.clone_owner
+								elif c.has_method("get_meta") and c.has_meta("clone_owner"): c_owner = c.get_meta("clone_owner")
+								var c_alive = false
+								if "alive" in c: c_alive = c.alive
+
+								if c_is_revive_clone and c_owner == b_id and c_alive:
+									if "x" in b and "x" in c: b.x = c.x
+									if "y" in b and "y" in c: b.y = c.y
+									if "vx" in b and "vx" in c: b.vx = c.vx
+									if "vy" in b and "vy" in c: b.vy = c.vy
+									if "alive" in b: b.alive = true
+									var b_max_hp = 100.0
+									if "max_hp" in b: b_max_hp = b.max_hp
+									if "max_hp" in b: b.max_hp = b_max_hp * 0.5
+									if "hp" in b: b.hp = b.max_hp
+
+									var b_dmg_mult = 1.0
+									if "base_damage_multiplier" in b: b_dmg_mult = b.base_damage_multiplier
+									elif b.has_method("get_meta") and b.has_meta("base_damage_multiplier"): b_dmg_mult = b.get_meta("base_damage_multiplier")
+									if "base_damage_multiplier" in b: b.base_damage_multiplier = b_dmg_mult * 0.5
+									elif b.has_method("set_meta"): b.set_meta("base_damage_multiplier", b_dmg_mult * 0.5)
+									if "damage_multiplier" in b: b.damage_multiplier = b_dmg_mult * 0.5
+									elif b.has_method("set_meta"): b.set_meta("damage_multiplier", b_dmg_mult * 0.5)
+
+									if "alive" in c: c.alive = false
+									if "hp" in c: c.hp = 0
+
+									processed.append(b_id)
+									if world.has_method("add_event"):
+										world.add_event("revive", {"type": "revive", "message": "Player revived in clone's body with halved stats!"})
+									break
+					else:
+						# Mimic inputs: sync clone velocity and skills to player
+						if b_alive:
+							for c in balls:
+								if typeof(c) == TYPE_OBJECT:
+									var c_is_revive_clone = false
+									if "is_revive_clone" in c: c_is_revive_clone = c.is_revive_clone
+									elif c.has_method("get_meta") and c.has_meta("is_revive_clone"): c_is_revive_clone = c.get_meta("is_revive_clone")
+									var c_owner = -1
+									if "clone_owner" in c: c_owner = c.clone_owner
+									elif c.has_method("get_meta") and c.has_meta("clone_owner"): c_owner = c.get_meta("clone_owner")
+									var c_alive = false
+									if "alive" in c: c_alive = c.alive
+
+									if c_is_revive_clone and c_owner == b_id and c_alive:
+										if "vx" in b and "vx" in c: c.vx = b.vx
+										if "vy" in b and "vy" in c: c.vy = b.vy
+										if "active_skill" in b and "active_skill" in c: c.active_skill = b.active_skill
+										if "skill" in b and "skill" in c: c.skill = b.skill
+										break
+
+
+
 GAME_MODES = {
 	'time_loop_field': TimeLoopFieldMode.new(),
+	'half_life_revive': HalfLifeReviveMode.new(),
 	"sniper_only": SniperOnlyMode.new(),
 	"stats_decay": StatsDecayMode.new(),
 	"watchtower": WatchtowerMode.new(),

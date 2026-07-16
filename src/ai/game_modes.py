@@ -18445,8 +18445,79 @@ class FloodingArenaMode(GameMode):
                 else:
                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.2  # Speed boost for aquatics in flood
 
+class HalfLifeReviveMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Half-Life Revive"
+        self.description = "Every player spawns with a clone that perfectly mimics their inputs, but it only deals half damage and takes double damage. If the real player is killed, they immediately swap into their clone, reviving but with halved stats for the rest of the game."
+
+    def setup(self, world, balls):
+        if not hasattr(world, "dead_players_processed"):
+            world.dead_players_processed = []
+
+        import copy
+        import random
+        new_clones = []
+        for b in balls:
+            if getattr(b, "is_clone", False) or getattr(b, "is_decoy", False) or getattr(b, "is_revive_clone", False):
+                continue
+            clone = copy.copy(b)
+            clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+            if hasattr(world, "next_id"):
+                world.next_id += 1
+            clone.x = max(10, min(getattr(getattr(world, "arena", None), "width", 1000) - 10, b.x + random.uniform(-50, 50)))
+            clone.y = max(10, min(getattr(getattr(world, "arena", None), "height", 1000) - 10, b.y + random.uniform(-50, 50)))
+            clone.is_revive_clone = True
+            clone.clone_owner = b.id
+
+            clone.base_damage_multiplier = getattr(b, "base_damage_multiplier", 1.0) * 0.5
+            clone.damage_multiplier = clone.base_damage_multiplier
+            clone.last_hp = getattr(clone, "hp", 100.0)
+            new_clones.append(clone)
+        world.balls.extend(new_clones)
+
+    def tick(self, world, balls, delta=0.016):
+        if not hasattr(world, "dead_players_processed"):
+            world.dead_players_processed = []
+
+        # Process double damage for clones
+        for b in balls:
+            if getattr(b, "is_revive_clone", False) and getattr(b, "alive", True):
+                curr_hp = getattr(b, "hp", 100.0)
+                last_hp = getattr(b, "last_hp", 100.0)
+                if curr_hp < last_hp:
+                    damage_taken = last_hp - curr_hp
+                    b.hp -= damage_taken # Take it again (double damage)
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                b.last_hp = b.hp
+
+        # Process revive swap
+        for b in balls:
+            if not getattr(b, "is_revive_clone", False) and not getattr(b, "is_clone", False) and not getattr(b, "is_decoy", False):
+                if (not getattr(b, "alive", False) or getattr(b, "hp", 100) <= 0) and b.id not in world.dead_players_processed:
+                    # Look for their clone
+                    for c in balls:
+                        if getattr(c, "is_revive_clone", False) and getattr(c, "clone_owner", -1) == b.id and getattr(c, "alive", True):
+                            b.x = c.x
+                            b.y = c.y
+                            b.alive = True
+                            b.max_hp = getattr(b, "max_hp", 100.0) * 0.5
+                            b.hp = b.max_hp
+                            b.base_damage_multiplier = getattr(b, "base_damage_multiplier", 1.0) * 0.5
+                            b.damage_multiplier = b.base_damage_multiplier
+                            c.alive = False
+                            c.hp = 0
+                            world.dead_players_processed.append(b.id)
+                            if hasattr(world, "add_event"):
+                                world.add_event("revive", {"type": "revive", "message": "Player revived in clone's body with halved stats!"})
+                            break
+
+
 GAME_MODES = {
     'time_loop_field': TimeLoopFieldMode(),
+    'half_life_revive': HalfLifeReviveMode(),
     "magnetic_bumpers": MagneticBumpersMode(),
     'sniper_only': SniperOnlyMode(),
     "stationary_turrets": StationaryTurretsMode(),

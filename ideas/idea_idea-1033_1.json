@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Entanglement Revive",
+    "description": "Players can link their health pool to a stationary tether node. If killed, they revive at the node, but the node breaks and permanently lowers their max health by 25%."
+}
