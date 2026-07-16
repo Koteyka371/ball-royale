@@ -1,0 +1,2 @@
+1. Implement the `void_panel` immunity logic in `src/ai/action.py` and `src/ai/action.gd`. Check if `getattr(self.ball, "bumper_booster_timer", 0.0) > 0.0` or `self.ball.bumper_booster_timer > 0.0` depending on the file, inside the `void_panel` checks where it currently applies damage.
+2. Run pytest to check nothing breaks, and create a test specifically for this.

@@ -2893,6 +2893,11 @@ func execute(strategy: String, delta: float):
 								self.ball.speed_multiplier = cur_speed_mult * 0.5
 
 				if kind == "void_panel":
+					var bbt = 0.0
+					if "bumper_booster_timer" in self.ball: bbt = float(self.ball.bumper_booster_timer)
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("bumper_booster_timer"): bbt = float(self.ball.get_meta("bumper_booster_timer"))
+					if bbt > 0.0:
+						continue
 					var hx = 0.0
 					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]
 					elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: hx = hazard.x
