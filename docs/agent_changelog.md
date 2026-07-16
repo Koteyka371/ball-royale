@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1040] Interactive Terrain Reactions — *2026-07-16 02:45:01 UTC*
+
+Arena terrain permanently reacts to weather conditions over time. Snow accumulates making movement slower without specific traits, or heatwaves dry up muddy patches making them solid ground again.
+
+---
+
 ## [idea-987] Stealth Grass Bushes — *2026-07-16 02:22:32 UTC*
 
 Add tall grass or bush terrain patches where balls can hide. Entering a bush reduces movement speed slightly but grants temporary stealth, making the ball invisible to enemies whose perception radius does not directly intersect with the center of the bush. Attacking from inside the bush reveals the ball and applies a 'Surprise Attack' damage multiplier for the first hit.

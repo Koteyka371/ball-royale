@@ -17849,7 +17849,7 @@
     },
     {
       "id": "idea-1040",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Terrain Reactions",
@@ -28165,6 +28165,23 @@
         "src/ai/gravity_swap_pad.py",
         "src/ai/gravity_swap_pad.gd",
         "tests/test_gravity_swap_pad.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1646",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Anomaly - Thunderstorm",
+      "description": "A new hazard event where lightning strikes randomly. Balls can collect a 'Lightning Rod' item to redirect strikes toward enemies.",
+      "allowed_paths": [
+        "src/ai/anomaly_thunderstorm.py",
+        "src/ai/anomaly_thunderstorm.gd",
+        "tests/test_anomaly_thunderstorm.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
