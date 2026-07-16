@@ -31370,7 +31370,102 @@ class ParallelDimensionsMode extends GameMode:
 						new_boosters.append(booster)
 				world.arena.boosters = new_boosters
 
+class InfiltrationMode extends GameMode:
+	func _init() -> void:
+		self.name = "Infiltration"
+		self.description = "Players start permanently cloaked. Using skills reveals position."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_DICTIONARY:
+			world["alarm_triggered"] = false
+		else:
+			world.set("alarm_triggered", false)
+		for b in balls:
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if b_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["stealth_booster_timer"] = 9999.0
+					b["last_skill_timer"] = 0.0
+				else:
+					if "stealth_booster_timer" in b: b.stealth_booster_timer = 9999.0
+					elif b.has_method("set_meta"): b.set_meta("stealth_booster_timer", 9999.0)
+					if "last_skill_timer" in b: b.last_skill_timer = 0.0
+					elif b.has_method("set_meta"): b.set_meta("last_skill_timer", 0.0)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		var alarm = world.get("alarm_triggered") if typeof(world) == TYPE_DICTIONARY else world.get("alarm_triggered")
+		if alarm == null: alarm = false
+
+		for b in balls:
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if b_type == "spectator": continue
+
+			var st = b.get("skill_timer") if typeof(b) == TYPE_DICTIONARY else (b.get("skill_timer") if "skill_timer" in b else (b.get_meta("skill_timer") if b.has_method("get_meta") and b.has_meta("skill_timer") else 0.0))
+			if st == null: st = 0.0
+			var lst = b.get("last_skill_timer") if typeof(b) == TYPE_DICTIONARY else (b.get("last_skill_timer") if "last_skill_timer" in b else (b.get_meta("last_skill_timer") if b.has_method("get_meta") and b.has_meta("last_skill_timer") else 0.0))
+			if lst == null: lst = 0.0
+
+			var rev = b.get("reveal_timer") if typeof(b) == TYPE_DICTIONARY else (b.get("reveal_timer") if "reveal_timer" in b else (b.get_meta("reveal_timer") if b.has_method("get_meta") and b.has_meta("reveal_timer") else 0.0))
+			if rev == null: rev = 0.0
+
+			if st > lst + 0.5:
+				rev = 3.0
+			lst = st
+			if rev > 0:
+				rev -= delta
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["last_skill_timer"] = lst
+				b["reveal_timer"] = rev
+			else:
+				if "last_skill_timer" in b: b.last_skill_timer = lst
+				elif b.has_method("set_meta"): b.set_meta("last_skill_timer", lst)
+				if "reveal_timer" in b: b.reveal_timer = rev
+				elif b.has_method("set_meta"): b.set_meta("reveal_timer", rev)
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get("x")
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get("y")
+			var br = b.get("radius") if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+
+			var hazards = []
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+					hazards = world["arena"]["hazards"]
+			else:
+				var a = world.get("arena")
+				if a != null and typeof(a) == TYPE_DICTIONARY and a.has("hazards"):
+					hazards = a["hazards"]
+				elif a != null and "hazards" in a:
+					hazards = a.hazards
+
+			for h in hazards:
+				var hk = h.get("kind") if typeof(h) == TYPE_DICTIONARY else h.get("kind")
+				if hk == "laser_tripwire":
+					var hx = h.get("x") if typeof(h) == TYPE_DICTIONARY else h.get("x")
+					var hy = h.get("y") if typeof(h) == TYPE_DICTIONARY else h.get("y")
+					var hr = h.get("radius") if typeof(h) == TYPE_DICTIONARY else (h.get("radius") if "radius" in h else 10.0)
+					var dist = sqrt((bx-hx)*(bx-hx) + (by-hy)*(by-hy))
+					if dist < br + hr:
+						alarm = true
+						if typeof(world) == TYPE_DICTIONARY: world["alarm_triggered"] = true
+						else: world.set("alarm_triggered", true)
+
+			if alarm or rev > 0:
+				if typeof(b) == TYPE_DICTIONARY: b["stealth_booster_timer"] = 0.0
+				else:
+					if "stealth_booster_timer" in b: b.stealth_booster_timer = 0.0
+					elif b.has_method("set_meta"): b.set_meta("stealth_booster_timer", 0.0)
+			else:
+				if typeof(b) == TYPE_DICTIONARY: b["stealth_booster_timer"] = 9999.0
+				else:
+					if "stealth_booster_timer" in b: b.stealth_booster_timer = 9999.0
+					elif b.has_method("set_meta"): b.set_meta("stealth_booster_timer", 9999.0)
+
+
 GAME_MODES = {
+	"infiltration": InfiltrationMode.new(),
 	"parallel_dimensions": ParallelDimensionsMode.new(),
 	'time_loop_field': TimeLoopFieldMode.new(),
 	"sniper_only": SniperOnlyMode.new(),
