@@ -1254,6 +1254,9 @@ class ProceduralArena:
                 elif random.random() < 0.15:
                     kind = "quicksand"
                     damage = 10.0
+                elif random.random() < 0.05:
+                    kind = "gravity_pulsar"
+                    damage = 0.0
                 elif random.random() < 0.10:
                     kind = "sinkhole"
                     damage = 5.0

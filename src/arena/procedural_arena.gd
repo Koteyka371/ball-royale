@@ -1528,6 +1528,9 @@ func update_zone(current_tick: int, delta: float) -> void:
                 elif randf() < 0.15:
                     h.kind = "quicksand"
                     h.damage = 10.0
+                elif randf() < 0.05:
+                    h.kind = "gravity_pulsar"
+                    h.damage = 0.0
                 elif randf() < 0.10:
                     h.kind = "sinkhole"
                     h.damage = 5.0

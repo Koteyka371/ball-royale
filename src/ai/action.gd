@@ -10082,6 +10082,72 @@ func execute(strategy: String, delta: float):
                             self.ball.set_meta("_chrono_slow", 0.4)
                         elif typeof(self.ball) == TYPE_DICTIONARY:
                             self.ball["_chrono_slow"] = 0.4
+                elif hazard.kind == "gravity_pulsar":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var tick = 0
+                        if typeof(self.world) == TYPE_OBJECT and self.world.has_method("get_meta") and self.world.has_meta("tick"):
+                            tick = self.world.get_meta("tick")
+                        elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("tick"):
+                            tick = self.world["tick"]
+                        elif typeof(self.world) == TYPE_OBJECT and "tick" in self.world:
+                            tick = self.world.tick
+                        if tick % 180 < 90:
+                            var dist = sqrt(dist_sq)
+                            if dist > 0.0001:
+                                var nx = dx / dist
+                                var ny = dy / dist
+                                var pull_strength = 60.0 * delta
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
+
+                                var vx = 0.0
+                                var vy = 0.0
+                                if "vx" in self.ball: vx = self.ball.vx
+                                if "vy" in self.ball: vy = self.ball.vy
+
+                                var dot_product = vx * nx + vy * ny
+                                var speed_mod = 1.0
+                                if dot_product > 0:
+                                    speed_mod = 1.5
+                                elif dot_product < 0:
+                                    speed_mod = 0.5
+
+                                var base_speed = 100.0
+                                if "base_speed" in self.ball: base_speed = self.ball.base_speed
+                                self.ball.speed = base_speed * speed_mod
+
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("pulsar_affected", true)
+                                elif typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["pulsar_affected"] = true
+                                else:
+                                    self.ball.pulsar_affected = true
+                        else:
+                            if (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("pulsar_affected") and self.ball.get_meta("pulsar_affected")) or (typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("pulsar_affected") and self.ball["pulsar_affected"]) or ("pulsar_affected" in self.ball and self.ball.pulsar_affected):
+                                var base_speed = 100.0
+                                if "base_speed" in self.ball: base_speed = self.ball.base_speed
+                                self.ball.speed = base_speed
+
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("pulsar_affected", false)
+                                elif typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["pulsar_affected"] = false
+                                else:
+                                    self.ball.pulsar_affected = false
+                    elif (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("pulsar_affected") and self.ball.get_meta("pulsar_affected")) or (typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("pulsar_affected") and self.ball["pulsar_affected"]) or ("pulsar_affected" in self.ball and self.ball.pulsar_affected):
+                        var base_speed = 100.0
+                        if "base_speed" in self.ball: base_speed = self.ball.base_speed
+                        self.ball.speed = base_speed
+
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                            self.ball.set_meta("pulsar_affected", false)
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["pulsar_affected"] = false
+                        else:
+                            self.ball.pulsar_affected = false
                 elif hazard.kind == "sinkhole":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

@@ -5523,6 +5523,41 @@ class Action:
                                     self.ball.hp = 0
                                     self.ball.killer = "singularity"
                             self.ball._chrono_slow = 0.4
+                    elif hazard.kind == "gravity_pulsar":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            current_tick = getattr(self.world, 'tick', 0)
+                            if current_tick % 180 < 90:
+                                import math
+                                dist = math.sqrt(dist_sq)
+                                if dist > 0.0001:
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    pull_strength = 60.0 * delta
+                                    self.ball.x += nx * pull_strength
+                                    self.ball.y += ny * pull_strength
+
+                                    if hasattr(self.ball, 'vx') and hasattr(self.ball, 'vy'):
+                                        dot_product = self.ball.vx * nx + self.ball.vy * ny
+                                        speed_mod = 1.0
+                                        if dot_product > 0:
+                                            speed_mod = 1.5
+                                        elif dot_product < 0:
+                                            speed_mod = 0.5
+                                        if hasattr(self.ball, 'speed'):
+                                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * speed_mod
+                                            self.ball.pulsar_affected = True
+                            else:
+                                if getattr(self.ball, 'pulsar_affected', False):
+                                    if hasattr(self.ball, 'speed'):
+                                        self.ball.speed = getattr(self.ball, 'base_speed', 100.0)
+                                    self.ball.pulsar_affected = False
+                        elif getattr(self.ball, 'pulsar_affected', False):
+                            if hasattr(self.ball, 'speed'):
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0)
+                            self.ball.pulsar_affected = False
                     elif hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
