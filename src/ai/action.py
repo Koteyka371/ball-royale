@@ -3328,11 +3328,38 @@ class Action:
                         trap_link_target.take_damage(hp_diff)
                     else:
                         trap_link_target.hp -= hp_diff
+                    if hasattr(trap_link_target, "prev_hp"):
+                        trap_link_target.prev_hp -= hp_diff
                     trap_link_target._is_trap_link_syncing = False
                     self.ball._is_trap_link_syncing = False
+
+                # Mirror status effects
+                status_effects = [
+                    ("stun_timer", "prev_stun_timer"),
+                    ("slow_timer", "prev_slow_timer"),
+                    ("poison_timer", "prev_poison_timer"),
+                    ("silence_timer", "prev_silence_timer"),
+                    ("freeze_timer", "prev_freeze_timer"),
+                    ("confused_timer", "prev_confused_timer")
+                ]
+                for stat_attr, prev_attr in status_effects:
+                    current_val = getattr(self.ball, stat_attr, 0.0)
+                    prev_val = getattr(self.ball, prev_attr, 0.0)
+                    if current_val > prev_val:
+                        diff = current_val - prev_val
+                        target_val = getattr(trap_link_target, stat_attr, 0.0)
+                        setattr(trap_link_target, stat_attr, target_val + diff)
+                        setattr(trap_link_target, prev_attr, getattr(trap_link_target, prev_attr, 0.0) + diff)
+
         self.ball.prev_hp = getattr(self.ball, "hp", 0)
         self.ball.prev_x = getattr(self.ball, "x", 0)
         self.ball.prev_y = getattr(self.ball, "y", 0)
+        self.ball.prev_stun_timer = getattr(self.ball, "stun_timer", 0.0)
+        self.ball.prev_slow_timer = getattr(self.ball, "slow_timer", 0.0)
+        self.ball.prev_poison_timer = getattr(self.ball, "poison_timer", 0.0)
+        self.ball.prev_silence_timer = getattr(self.ball, "silence_timer", 0.0)
+        self.ball.prev_freeze_timer = getattr(self.ball, "freeze_timer", 0.0)
+        self.ball.prev_confused_timer = getattr(self.ball, "confused_timer", 0.0)
 
         # Apply Damage Over Time (DOT)
         if getattr(self.ball, "dot_duration", 0.0) > 0:
@@ -6017,6 +6044,8 @@ class Action:
                                         enemy = random.choice(enemies)
                                         self.ball.trap_link_target = enemy
                                         self.ball.trap_link_timer = 10.0
+                                        enemy.trap_link_target = self.ball
+                                        enemy.trap_link_timer = 10.0
                                     hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "tar":
                                     # Tar trap: heavily slow down the ball and create a tar puddle
