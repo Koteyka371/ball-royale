@@ -15482,7 +15482,7 @@
     },
     {
       "id": "idea-901",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time-Dilation Field",
@@ -28182,6 +28182,23 @@
         "src/ai/anomaly_thunderstorm.py",
         "src/ai/anomaly_thunderstorm.gd",
         "tests/test_anomaly_thunderstorm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1647",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Dependent Traps",
+      "description": "Certain traps malfunction or behave differently depending on the current weather condition (e.g. electrical traps short circuit during rain, or spikes get buried and deal less damage during snow).",
+      "allowed_paths": [
+        "src/arena/dependent_traps.py",
+        "src/arena/dependent_traps.gd",
+        "tests/test_dependent_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

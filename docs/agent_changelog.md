@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-901] Time-Dilation Field — *2026-07-16 02:55:58 UTC*
+
+An anomalous zone in the arena where the flow of time slows down drastically. Entities, projectiles, and status effects within the field move and expire at half their normal rate. Players can use this defensively to dodge attacks or offensively to trap opponents in slow motion.
+
+---
+
 ## [idea-1040] Interactive Terrain Reactions — *2026-07-16 02:45:01 UTC*
 
 Arena terrain permanently reacts to weather conditions over time. Snow accumulates making movement slower without specific traits, or heatwaves dry up muddy patches making them solid ground again.
