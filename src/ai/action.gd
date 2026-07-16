@@ -14664,7 +14664,7 @@ func _get_enemies_internal() -> Array:
 		if is_disabled_sf:
 			continue
             var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
-            if h_kind == "stealth_zone" or h_kind == "tall_grass":
+            if h_kind == "stealth_zone" or h_kind == "tall_grass" or h_kind == "bush":
                 var hx = h.x if "x" in h else h.get_meta("x")
                 var hy = h.y if "y" in h else h.get_meta("y")
                 var hr = h.radius if "radius" in h else h.get_meta("radius")
@@ -14856,7 +14856,7 @@ func _get_enemies_internal() -> Array:
 		if is_disabled_sf:
 			continue
                 var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
-                if h_kind == "stealth_zone" or h_kind == "tall_grass":
+                if h_kind == "stealth_zone" or h_kind == "tall_grass" or h_kind == "bush":
                     var hx = h.x if "x" in h else h.get_meta("x")
                     var hy = h.y if "y" in h else h.get_meta("y")
                     var hr = h.radius if "radius" in h else h.get_meta("radius")

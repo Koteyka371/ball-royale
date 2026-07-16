@@ -211,6 +211,12 @@ class Action:
         if getattr(target, "quantum_state_timer", 0.0) > 0.0:
             return
 
+        # Surprise Attack multiplier from bush
+        multiplier = 1.0
+        if getattr(attacker, "in_bush", False):
+            attacker.in_bush = False # Reveal after attack
+            multiplier = 1.5
+
         a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
         t_team = getattr(target, "team", getattr(target, "ball_type", ""))
         if a_team == t_team and a_team != -1 and getattr(attacker, "id", None) != getattr(target, "id", None):
@@ -1476,6 +1482,8 @@ class Action:
         self.ball.perception_radius = self.ball.base_perception_radius
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Bush stealth state
+            self.ball.in_bush = False
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "kind", "") == "sniper_nest":
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
@@ -1502,6 +1510,8 @@ class Action:
 
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Bush stealth state
+            self.ball.in_bush = False
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "kind", "") == "slow_motion_zone":
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
@@ -1543,6 +1553,8 @@ class Action:
 
         # Void panel instant death
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Bush stealth state
+            self.ball.in_bush = False
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "kind", "") == "void_panel":
                     if getattr(self.ball, "bumper_booster_timer", 0.0) > 0.0:
@@ -2562,6 +2574,8 @@ class Action:
 
         # Max HP draining hazard logic
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Bush stealth state
+            self.ball.in_bush = False
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
@@ -2831,6 +2845,8 @@ class Action:
 
         # Empowerment Matrix logic
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Bush stealth state
+            self.ball.in_bush = False
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
@@ -2867,6 +2883,8 @@ class Action:
                                 self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.5
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Bush stealth state
+            self.ball.in_bush = False
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
@@ -3559,6 +3577,8 @@ class Action:
         in_anomaly_zone = False
         in_bouncy_zone = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Bush stealth state
+            self.ball.in_bush = False
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
@@ -7997,7 +8017,7 @@ class Action:
             for h in self.world.arena.hazards:
                 if getattr(h, 'is_disabled_by_flare', False):
                     continue
-                if getattr(h, "kind", "") in ["stealth_zone", "tall_grass"]:
+                if getattr(h, "kind", "") in ["stealth_zone", "tall_grass", "bush"]:
                     dx = h.x - self.ball.x
                     dy = h.y - self.ball.y
                     if dx*dx + dy*dy <= h.radius*h.radius:
@@ -8016,7 +8036,7 @@ class Action:
                 for h in self.world.arena.hazards:
                     if getattr(h, 'is_disabled_by_flare', False):
                         continue
-                    if getattr(h, "kind", "") in ["stealth_zone", "tall_grass"]:
+                    if getattr(h, "kind", "") in ["stealth_zone", "tall_grass", "bush"]:
                         dx = h.x - getattr(enemy, "x", 0)
                         dy = h.y - getattr(enemy, "y", 0)
                         if dx*dx + dy*dy <= h.radius*h.radius:
@@ -13934,6 +13954,8 @@ class Action:
                                 b.y += ny * pull_strength
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Bush stealth state
+            self.ball.in_bush = False
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
