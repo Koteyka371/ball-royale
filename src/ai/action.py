@@ -3843,6 +3843,17 @@ class Action:
             self.ball.speed = self.ball.base_speed
             self.ball.damage = getattr(self.ball, "base_damage", 10.0)
 
+        # Shadow Monster Pet cosmetic speed boost in dark areas
+        cosmetic_val = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        if cosmetic_val == "shadow_monster_pet":
+            is_dark_phase = False
+            if hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "is_dark_phase", False):
+                is_dark_phase = True
+            if is_dark_phase:
+                import random
+                if random.random() < 0.5 * delta:
+                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
+
         # Apply global eclipse effect across all strategies early in the tick
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_eclipse", False):
             self.ball.damage = getattr(self.ball, "damage", 10.0) * 2.0

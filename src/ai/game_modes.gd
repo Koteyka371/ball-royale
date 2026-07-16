@@ -3876,11 +3876,39 @@ class BattleRoyaleMode extends GameMode:
 			for b in balls:
 								if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
 					var base_perc = 250.0
-					if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
+					if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("base_perception_radius"):
 						base_perc = b.get_meta("base_perception_radius")
-					b.perception_radius = base_perc
-					if "score" in b:
-						b.score += 100
+					if typeof(b) == TYPE_DICTIONARY:
+						b["perception_radius"] = base_perc
+						if "score" in b: b["score"] += 100
+					elif typeof(b) == TYPE_OBJECT:
+						if "perception_radius" in b: b.perception_radius = base_perc
+						if "score" in b: b.score += 100
+
+					var survived = 0
+					if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("dark_phases_survived"):
+						survived = b.get_meta("dark_phases_survived")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("dark_phases_survived"):
+						survived = b["dark_phases_survived"]
+					elif typeof(b) == TYPE_OBJECT and "dark_phases_survived" in b:
+						survived = b.dark_phases_survived
+
+					survived += 1
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["dark_phases_survived"] = survived
+						if survived >= 2:
+							b["cosmetic"] = "shadow_monster_pet"
+					elif typeof(b) == TYPE_OBJECT:
+						if b.has_method("set_meta"):
+							b.set_meta("dark_phases_survived", survived)
+							if survived >= 2:
+								b.set_meta("cosmetic", "shadow_monster_pet")
+						if "dark_phases_survived" in b:
+							b.dark_phases_survived = survived
+						if survived >= 2 and "cosmetic" in b:
+							b.cosmetic = "shadow_monster_pet"
+
 
 	func check_winner(world, balls: Array):
 		var alive = []
