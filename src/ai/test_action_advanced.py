@@ -1114,3 +1114,40 @@ def test_bumper_synergy_pickup():
     action._collect_booster(0.016)
 
     assert getattr(ball, "bumper_synergy_active", False) == True
+
+def test_decoy_transmutation():
+    from ai.test_action_advanced import MockWorld, MockBall
+    from ai.action import Action
+    world = MockWorld()
+    world.balls = []
+    ball = MockBall(x=0, y=0)
+    ball.id = 123
+    ball.SKILL_COOLDOWN = 5.0
+    ball.skill = "decoy_transmutation"
+    ball.skill_timer = 0.0
+    world.balls.append(ball)
+
+    decoy1 = MockBall(x=10, y=10)
+    decoy1.is_decoy = True
+    decoy1.owner_id = 123
+    decoy1.alive = True
+    decoy1.decoy_type = "healing"
+    world.balls.append(decoy1)
+
+    decoy2 = MockBall(x=20, y=20)
+    decoy2.is_decoy = True
+    decoy2.owner_id = 123
+    decoy2.alive = True
+    decoy2.decoy_type = "explosive"
+    world.balls.append(decoy2)
+
+    action = Action(ball, world)
+    action._use_skill()
+
+    assert decoy1.decoy_type != "healing"
+    assert decoy1.decoy_type in ["explosive", "stun_trap", "healing", "swap_trap", "siren"]
+
+    assert decoy2.decoy_type != "explosive"
+    assert decoy2.decoy_type in ["explosive", "stun_trap", "healing", "swap_trap", "siren"]
+
+    assert ball.skill_timer == 5.0
