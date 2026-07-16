@@ -3222,6 +3222,39 @@ func execute(strategy: String, delta: float):
 	if b_type == null and "BALL_TYPE" in self.ball: b_type = self.ball.BALL_TYPE
 
 	if b_type != null and str(b_type).to_lower() == "trickster":
+		var sk = self.ball.get("skill") if "skill" in self.ball else self.ball.get("SKILL") if "SKILL" in self.ball else self.ball.get("active_skill") if "active_skill" in self.ball else ""
+		if sk == "ice_trail":
+			var ice_timer = self.ball.get("ice_trail_timer") if "ice_trail_timer" in self.ball else 0.5
+			ice_timer -= delta
+			var vx = self.ball.get("vx") if "vx" in self.ball else 0.0
+			var vy = self.ball.get("vy") if "vy" in self.ball else 0.0
+			if ice_timer <= 0 and (abs(vx) > 5.0 or abs(vy) > 5.0):
+				ice_timer = 0.5
+				if "arena" in self.world and "hazards" in self.world.arena:
+					var patch_id = randi() % 90000 + 10000
+					if "next_id" in self.world:
+						patch_id = self.world.next_id
+						self.world.next_id += 1
+					var patch = {}
+					patch["id"] = patch_id
+					patch["kind"] = "ice_patch"
+					patch["x"] = self.ball.get("x")
+					patch["y"] = self.ball.get("y")
+					patch["radius"] = 40.0
+					patch["damage"] = 0.0
+					patch["duration"] = 4.0
+					patch["active"] = true
+					if typeof(self.world.arena.hazards) == TYPE_ARRAY:
+						self.world.arena.hazards.append(patch)
+					elif self.world.arena.hazards.has_method("append"):
+						self.world.arena.hazards.append(patch)
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["ice_trail_timer"] = ice_timer
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"):
+				self.ball.set("ice_trail_timer", ice_timer)
+			elif "ice_trail_timer" in self.ball:
+				self.ball.ice_trail_timer = ice_timer
+
 		var decoy_swap_timer = 0.0
 		if "decoy_swap_timer" in self.ball:
 			decoy_swap_timer = self.ball.decoy_swap_timer
@@ -17824,7 +17857,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill

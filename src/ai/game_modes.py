@@ -143,7 +143,7 @@ class GameMode:
         elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
             season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
 
-        if hasattr(world, "arena"):
+        if getattr(world, "arena", None) is not None:
             import random
             season_index = ((season_num - 1) % 4) + 1
             if season_index == 1:

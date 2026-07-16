@@ -1670,6 +1670,28 @@ class Action:
             self.ball.speed_debuff_multiplier = 1.0
 
         if getattr(self.ball, "ball_type", "") == "trickster":
+            if getattr(self.ball, "skill", getattr(self.ball, "SKILL", getattr(self.ball, "active_skill", ""))) == "ice_trail":
+                if not hasattr(self.ball, "ice_trail_timer"):
+                    self.ball.ice_trail_timer = 0.5
+                self.ball.ice_trail_timer -= delta
+                if self.ball.ice_trail_timer <= 0 and (abs(getattr(self.ball, "vx", 0.0)) > 5.0 or abs(getattr(self.ball, "vy", 0.0)) > 5.0):
+                    self.ball.ice_trail_timer = 0.5
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        class IceTrailPatch:
+                            pass
+                        patch = IceTrailPatch()
+                        patch.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+                        patch.kind = "ice_patch"
+                        patch.x = self.ball.x
+                        patch.y = self.ball.y
+                        patch.radius = 40.0
+                        patch.damage = 0.0
+                        patch.duration = 4.0
+                        patch.active = True
+                        self.world.arena.hazards.append(patch)
+
             if not hasattr(self.ball, "decoy_swap_timer"):
                 import random
                 self.ball.decoy_swap_timer = random.uniform(2.0, 4.0)
@@ -9712,7 +9734,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
