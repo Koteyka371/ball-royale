@@ -740,6 +740,7 @@ func _attempt_damage(attacker, target) -> void:
 	if "hp" in target: old_hp = float(target.hp)
 	# Slight damage reduction if target is on ice patch
 	var damage_reduction = 1.0
+	var attacker_on_ice = false
 	if "arena" in world and world.arena != null and "hazards" in world.arena:
 		for h in world.arena.hazards:
 			var h_kind = ""
@@ -771,12 +772,34 @@ func _attempt_damage(attacker, target) -> void:
 					var dy = hy - ty
 					if dx*dx + dy*dy < hr*hr:
 						damage_reduction = 0.8
-						break
+
+					var ax_pos = 0.0
+					var ay_pos = 0.0
+					if "x" in attacker: ax_pos = attacker.x
+					elif attacker.has_method("get_meta") and attacker.has_meta("x"): ax_pos = attacker.get_meta("x")
+					if "y" in attacker: ay_pos = attacker.y
+					elif attacker.has_method("get_meta") and attacker.has_meta("y"): ay_pos = attacker.get_meta("y")
+
+					var adx = hx - ax_pos
+					var ady = hy - ay_pos
+					if adx*adx + ady*ady < hr*hr:
+						attacker_on_ice = true
 
 	var base_dmg = 10.0
 	if "damage" in attacker: base_dmg = float(attacker.damage)
 	var original_damage = base_dmg * damage_reduction
 
+	if attacker_on_ice and not is_ranged_attack:
+		var avx = 0.0
+		var avy = 0.0
+		if "vx" in attacker: avx = float(attacker.vx)
+		if "vy" in attacker: avy = float(attacker.vy)
+		var v_sq = avx*avx + avy*avy
+		if v_sq > 0.0:
+			var vel = sqrt(v_sq)
+			var multiplier = 1.0 + (vel / 200.0)
+			multiplier = min(3.0, multiplier)
+			original_damage *= multiplier
 	var a_has_kinetic = false
 	var a_stored_dmg = 0.0
 	if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("kinetic_shield_stored_damage"):

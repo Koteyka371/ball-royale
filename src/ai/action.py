@@ -446,6 +446,7 @@ class Action:
 
         # Slight damage reduction if target is on ice patch
         damage_reduction = 1.0
+        attacker_on_ice = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
                 if getattr(h, 'is_disabled_by_flare', False):
@@ -455,9 +456,22 @@ class Action:
                     dy = h.y - getattr(target, "y", 0.0)
                     if dx*dx + dy*dy < getattr(h, "radius", 0.0)**2:
                         damage_reduction = 0.8
-                        break
+
+                    adx = h.x - getattr(attacker, "x", 0.0)
+                    ady = h.y - getattr(attacker, "y", 0.0)
+                    if adx*adx + ady*ady < getattr(h, "radius", 0.0)**2:
+                        attacker_on_ice = True
 
         original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
+
+        if attacker_on_ice and not is_ranged:
+            import math
+            v_sq = getattr(attacker, "vx", 0.0)**2 + getattr(attacker, "vy", 0.0)**2
+            if v_sq > 0:
+                vel = math.sqrt(v_sq)
+                multiplier = 1.0 + (vel / 200.0)
+                multiplier = min(3.0, multiplier)
+                original_damage *= multiplier
 
         if getattr(attacker, "kinetic_shield_stored_damage", 0.0) > 0 and not is_ranged:
             stored_dmg = attacker.kinetic_shield_stored_damage

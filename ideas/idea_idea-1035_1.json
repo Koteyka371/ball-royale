@@ -1,0 +1,4 @@
+{
+  "title": "Slingshot Hazard",
+  "description": "A hazard that acts as a slingshot. If a ball enters it, they are briefly held and then launched at high speed in the direction they were travelling, allowing for high-speed hit-and-run attacks."
+}

@@ -1,0 +1,4 @@
+{
+  "title": "Snowball Growth Mechanic",
+  "description": "A new hazard 'snow_patch'. When balls roll over it, they accumulate snow, slightly increasing their radius and mass (knockback resistance), but slowing them down over time. It can be shaken off by using a movement skill."
+}
