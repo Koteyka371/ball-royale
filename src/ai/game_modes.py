@@ -18580,7 +18580,74 @@ class EchoMode(GameMode):
         return None
 
 
+
+class ParallelDimensionsMode(GameMode):
+    """
+    Periodically the arena splits into two parallel dimensions. Players in the mirror dimension
+    cannot be seen or damaged by those in the normal dimension, but they can collect mirror-exclusive
+    powerups that apply permanent buffs when dimensions merge back together.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Parallel Dimensions"
+        self.description = "Periodically splits players into two parallel dimensions. Players in different dimensions cannot interact. Collect dimension-exclusive buffs while separated!"
+        self.dimension_split = False
+        self.split_timer = 0
+        self.split_interval = 600  # Split every 10 seconds (at 60 ticks)
+        self.split_duration = 300  # Dimensions are split for 5 seconds
+
+    class MirrorBooster:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+            self.kind = "mirror_buff"
+            self.radius = 15.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        self.split_timer += 1
+
+        if not self.dimension_split and self.split_timer >= self.split_interval:
+            self.dimension_split = True
+            self.split_timer = 0
+
+            # Send half the players to the mirror dimension
+            alive_balls = [b for b in balls if getattr(b, "is_alive", True) and not getattr(b, "is_decoy", False)]
+            for i, b in enumerate(alive_balls):
+                if i % 2 == 1:
+                    b.in_mirror_dimension = True
+                    # Cosmetic indication
+                    if hasattr(b, "color"):
+                        b.original_color = b.color
+                        b.color = "purple"
+                else:
+                    b.in_mirror_dimension = False
+
+            # Spawn some mirror boosters
+            if hasattr(world, "arena") and hasattr(world.arena, "boosters"):
+                import random
+                for _ in range(5):
+                    bx = 100.0 + random.random() * 800.0
+                    by = 100.0 + random.random() * 800.0
+                    world.arena.boosters.append(self.MirrorBooster(bx, by))
+
+        elif self.dimension_split and self.split_timer >= self.split_duration:
+            self.dimension_split = False
+            self.split_timer = 0
+
+            # Merge dimensions
+            for b in balls:
+                if getattr(b, "in_mirror_dimension", False):
+                    b.in_mirror_dimension = False
+                    if hasattr(b, "original_color"):
+                        b.color = b.original_color
+
+            # Clear mirror boosters
+            if hasattr(world, "arena") and hasattr(world.arena, "boosters"):
+                world.arena.boosters = [booster for booster in world.arena.boosters if getattr(booster, "kind", "") != "mirror_buff"]
+
+
 GAME_MODES = {
+    "parallel_dimensions": ParallelDimensionsMode(),
     'time_loop_field': TimeLoopFieldMode(),
     "magnetic_bumpers": MagneticBumpersMode(),
     'sniper_only': SniperOnlyMode(),

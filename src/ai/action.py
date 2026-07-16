@@ -196,6 +196,9 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+        if getattr(attacker, "in_mirror_dimension", False) != getattr(target, "in_mirror_dimension", False):
+            return
+
         if getattr(attacker, "phase_booster_timer", 0.0) > 0.0:
             return
 
@@ -8171,9 +8174,22 @@ class Action:
             if random.random() < 0.5:
                 return []
         if getattr(self.ball, "is_confused", False):
+            enemies = self._get_allies_internal()
+            ball_dim = getattr(self.ball, "in_mirror_dimension", False)
+            filtered = []
+            for e in enemies:
+                if getattr(e, "in_mirror_dimension", False) == ball_dim:
+                    filtered.append(e)
+            return filtered
 
-            return self._get_allies_internal()
-        return self._get_enemies_internal()
+        # Filter by dimension
+        enemies = self._get_enemies_internal()
+        ball_dim = getattr(self.ball, "in_mirror_dimension", False)
+        filtered = []
+        for e in enemies:
+            if getattr(e, "in_mirror_dimension", False) == ball_dim:
+                filtered.append(e)
+        return filtered
 
     def _get_enemies_internal(self) -> list:
         perception_radius = self._get_perception_radius()
@@ -8366,8 +8382,16 @@ class Action:
 
     def _get_allies(self) -> list:
         if getattr(self.ball, "is_confused", False):
-            return self._get_enemies_internal()
-        return self._get_allies_internal()
+            res = self._get_enemies_internal()
+        else:
+            res = self._get_allies_internal()
+
+        ball_dim = getattr(self.ball, "in_mirror_dimension", False)
+        filtered = []
+        for a in res:
+            if getattr(a, "in_mirror_dimension", False) == ball_dim:
+                filtered.append(a)
+        return filtered
 
     def _get_allies_internal(self) -> list:
         perception_radius = self._get_perception_radius()
@@ -9879,6 +9903,22 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "mirror_buff":
+                    if getattr(self.ball, "in_mirror_dimension", False):
+                        self.ball.damage = getattr(self.ball, "damage", 10.0) * 1.1
+                        self.ball.max_hp = getattr(self.ball, "max_hp", 100.0) * 1.1
+                        self.ball.hp = min(getattr(self.ball, "hp", 100.0) + 10.0, getattr(self.ball, "max_hp", 100.0))
+                        if hasattr(nearest, "duration"):
+                            nearest.duration = 0.0
+                        else:
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(nearest)
+                            elif hasattr(self.world, "arena") and hasattr(self.world.arena, "boosters") and nearest in self.world.arena.boosters:
+                                self.world.arena.boosters.remove(nearest)
+                            elif hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                                self.world.boosters.remove(nearest)
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("buff_collected", {"x": self.ball.x, "y": self.ball.y})
                 elif getattr(nearest, "kind", None) == "nemesis_compass_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
