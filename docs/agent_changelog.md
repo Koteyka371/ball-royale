@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1030] Decoy Transmutation — *2026-07-16 00:53:41 UTC*
+
+A new skill that allows a player to swap the types of decoys currently on the field dynamically. For example, changing a healing decoy into an explosive decoy to trap enemies who think it is safe.
+
+---
+
 ## [idea-1022] Magnetic Minefield — *2026-07-16 00:53:36 UTC*
 
 A hazard zone where proximity mines are strongly attracted to nearby moving entities (players and AI alike). If you move quickly through it, they pull towards you; if you move slowly, their tracking distance is significantly reduced.
