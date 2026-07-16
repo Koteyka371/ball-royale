@@ -1,0 +1,7 @@
+{
+  "id": "idea-890-1",
+  "title": "Quantum Entanglement Trap",
+  "description": "A new trap that, when triggered, links the health and status effects of the triggering ball to the closest enemy ball for 10 seconds. Damage taken by one is partially reflected to the other.",
+  "area": "innovation",
+  "risk": "medium"
+}
