@@ -1150,6 +1150,13 @@ class Action:
         if hasattr(self.ball, "polarity_cooldown") and type(self.ball.polarity_cooldown) in (int, float) and self.ball.polarity_cooldown > 0:
             self.ball.polarity_cooldown = max(0, self.ball.polarity_cooldown - delta)
 
+        if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
+            self.ball.wall_stick_timer -= delta
+            self.ball.vx = 0.0
+            self.ball.vy = 0.0
+            return
+
+
         if getattr(self.ball, "is_perfect_mirror", False):
             owner_id = getattr(self.ball, "owner_id", None)
             if owner_id is not None and hasattr(self.world, "balls"):
@@ -7633,6 +7640,15 @@ class Action:
             vx = getattr(self.ball, "vx", 0.0)
             vy = getattr(self.ball, "vy", 0.0)
             speed_sq = vx*vx + vy*vy
+
+            if not getattr(self.ball, 'is_projectile', False) and not getattr(self.ball, 'is_spell', False):
+                self.ball.wall_stick_timer = 2.0
+                speed_sq = 0.0
+                self.ball.vx = 0.0
+                self.ball.vy = 0.0
+                self.ball._reflection_vx = 0.0
+                self.ball._reflection_vy = 0.0
+
 
             # Determine which wall was hit based on coordinates
             margin = getattr(self.ball, "radius", 10.0) + 5.0

@@ -1929,6 +1929,33 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+    var wst = 0.0
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("wall_stick_timer"):
+        wst = self.ball["wall_stick_timer"]
+    elif typeof(self.ball) == TYPE_OBJECT:
+        if "wall_stick_timer" in self.ball:
+            wst = self.ball.wall_stick_timer
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("wall_stick_timer"):
+            wst = self.ball.get_meta("wall_stick_timer")
+
+    if wst > 0.0:
+        wst -= delta
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["wall_stick_timer"] = wst
+            self.ball["vx"] = 0.0
+            self.ball["vy"] = 0.0
+        else:
+            if "wall_stick_timer" in self.ball: self.ball.wall_stick_timer = wst
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("wall_stick_timer", wst)
+
+            if "vx" in self.ball: self.ball.vx = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", 0.0)
+
+            if "vy" in self.ball: self.ball.vy = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", 0.0)
+        return
+
     var is_laser = false
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_ricochet_laser") and self.ball.is_ricochet_laser:
         is_laser = true
@@ -13983,6 +14010,30 @@ func execute(strategy: String, delta: float):
                 wall_state = self.world.arena.boundary_states[hit_wall]
 
         var speed_sq = vx*vx + vy*vy
+
+        var is_proj = false
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_projectile") and self.ball.is_projectile: is_proj = true
+        elif typeof(self.ball) == TYPE_OBJECT and "is_projectile" in self.ball and self.ball.is_projectile: is_proj = true
+
+        var is_spell = false
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_spell") and self.ball.is_spell: is_spell = true
+        elif typeof(self.ball) == TYPE_OBJECT and "is_spell" in self.ball and self.ball.is_spell: is_spell = true
+
+        if not is_proj and not is_spell:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["wall_stick_timer"] = 2.0
+                self.ball["vx"] = 0.0
+                self.ball["vy"] = 0.0
+            else:
+                if "wall_stick_timer" in self.ball: self.ball.wall_stick_timer = 2.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("wall_stick_timer", 2.0)
+
+                if "vx" in self.ball: self.ball.vx = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", 0.0)
+
+                if "vy" in self.ball: self.ball.vy = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", 0.0)
+            speed_sq = 0.0
 
         if wall_state == "sticky":
             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
