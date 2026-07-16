@@ -811,6 +811,49 @@ func _attempt_damage(attacker, target) -> void:
 	if "damage" in attacker: base_dmg = float(attacker.damage)
 	var original_damage = base_dmg * damage_reduction
 
+	# Damage multiplier if attacker is sliding on ice patch
+	if "arena" in world and world.arena != null and "hazards" in world.arena:
+		for h in world.arena.hazards:
+			var h_kind = ""
+			if "kind" in h: h_kind = h.kind
+			elif h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+			if h_kind == "ice_patch" or h_kind == "ice_patches":
+				var h_active = true
+				if "active" in h: h_active = h.active
+				elif h.has_method("get_meta") and h.has_meta("active"): h_active = h.get_meta("active")
+				if h_active:
+					var hx = 0.0
+					var hy = 0.0
+					var hr = 0.0
+					if "x" in h: hx = h.x
+					elif h.has_method("get_meta") and h.has_meta("x"): hx = h.get_meta("x")
+					if "y" in h: hy = h.y
+					elif h.has_method("get_meta") and h.has_meta("y"): hy = h.get_meta("y")
+					if "radius" in h: hr = h.radius
+					elif h.has_method("get_meta") and h.has_meta("radius"): hr = h.get_meta("radius")
+
+					var ax = 0.0
+					var ay = 0.0
+					if "x" in attacker: ax = attacker.x
+					elif attacker.has_method("get_meta") and attacker.has_meta("x"): ax = attacker.get_meta("x")
+					if "y" in attacker: ay = attacker.y
+					elif attacker.has_method("get_meta") and attacker.has_meta("y"): ay = attacker.get_meta("y")
+
+					var adx = hx - ax
+					var ady = hy - ay
+					if adx*adx + ady*ady < hr*hr:
+						var vx = 0.0
+						var vy = 0.0
+						if "vx" in attacker: vx = attacker.vx
+						elif attacker.has_method("get_meta") and attacker.has_meta("vx"): vx = attacker.get_meta("vx")
+						if "vy" in attacker: vy = attacker.vy
+						elif attacker.has_method("get_meta") and attacker.has_meta("vy"): vy = attacker.get_meta("vy")
+						var speed_sq = vx*vx + vy*vy
+						if speed_sq > 0:
+							var speed = sqrt(speed_sq)
+							original_damage *= (1.0 + (speed / 100.0))
+						break
+
 	var a_has_kinetic = false
 	var a_stored_dmg = 0.0
 	if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("kinetic_shield_stored_damage"):

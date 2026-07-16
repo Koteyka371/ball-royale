@@ -479,6 +479,24 @@ class Action:
 
         original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
 
+        # Damage multiplier if attacker is sliding on ice patch
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, 'is_disabled_by_flare', False):
+                    continue
+                if getattr(h, "kind", "") in ("ice_patch", "ice_patches") and getattr(h, "active", True):
+                    dx = h.x - getattr(attacker, "x", 0.0)
+                    dy = h.y - getattr(attacker, "y", 0.0)
+                    if dx*dx + dy*dy < getattr(h, "radius", 0.0)**2:
+                        vx = getattr(attacker, "vx", 0.0)
+                        vy = getattr(attacker, "vy", 0.0)
+                        speed_sq = vx*vx + vy*vy
+                        if speed_sq > 0:
+                            import math
+                            speed = math.sqrt(speed_sq)
+                            original_damage *= (1.0 + (speed / 100.0))
+                        break
+
         if getattr(attacker, "kinetic_shield_stored_damage", 0.0) > 0 and not is_ranged:
             stored_dmg = attacker.kinetic_shield_stored_damage
             original_damage += stored_dmg
