@@ -1,0 +1,4 @@
+{
+    "title": "Turret Overload Explosion",
+    "description": "When an overclocked turret's HP drops to 0, it explodes instead of just disappearing, dealing AoE damage to nearby enemies and leaving a lingering smoke cloud that blocks perception."
+}

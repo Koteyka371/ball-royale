@@ -19427,6 +19427,60 @@ func _use_skill():
                             can_recast = true
                             break
 
+    if skill_timer > 0.0 and skill_name == "deploy_turret":
+        if self.world != null and "balls" in self.world:
+            for b in self.world.balls:
+                var is_turret = false
+                if typeof(b) == TYPE_DICTIONARY: is_turret = b.get("is_turret", false)
+                elif "is_turret" in b: is_turret = b.is_turret
+                elif b.has_method("has_meta") and b.has_meta("is_turret"): is_turret = b.get_meta("is_turret")
+
+                var owner_id = null
+                if typeof(b) == TYPE_DICTIONARY: owner_id = b.get("owner_id", null)
+                elif "owner_id" in b: owner_id = b.owner_id
+                elif b.has_method("has_meta") and b.has_meta("owner_id"): owner_id = b.get_meta("owner_id")
+
+                var is_alive = true
+                if typeof(b) == TYPE_DICTIONARY: is_alive = b.get("alive", true)
+                elif "alive" in b: is_alive = b.alive
+                elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                var self_id = null
+                if "id" in self.ball: self_id = self.ball.id
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                if is_turret and owner_id != null and self_id != null and owner_id == self_id and is_alive:
+                    var bx = 0.0
+                    var by = 0.0
+                    if typeof(b) == TYPE_DICTIONARY:
+                        bx = b.get("x", 0.0)
+                        by = b.get("y", 0.0)
+                    else:
+                        if "x" in b: bx = b.x
+                        if "y" in b: by = b.y
+
+                    var sx = 0.0
+                    var sy = 0.0
+                    if "x" in self.ball: sx = self.ball.x
+                    if "y" in self.ball: sy = self.ball.y
+
+                    var dx = sx - bx
+                    var dy = sy - by
+                    if dx*dx + dy*dy <= 10000:
+                        if typeof(b) == TYPE_OBJECT:
+                            if "is_overclocked" in b:
+                                b.is_overclocked = true
+                                b.overclock_hp_loss_timer = 0.0
+                            elif b.has_method("set_meta"):
+                                b.set_meta("is_overclocked", true)
+                                b.set_meta("overclock_hp_loss_timer", 0.0)
+                        elif typeof(b) == TYPE_DICTIONARY:
+                            b["is_overclocked"] = true
+                            b["overclock_hp_loss_timer"] = 0.0
+                        can_recast = false
+                        if "events" in self.world:
+                            self.world.events.append({"type": "overclock_start", "x": bx, "y": by})
+
     if skill_timer <= 0.0 or can_recast:
         if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
             self.ball.use_skill()
@@ -27499,6 +27553,20 @@ func _update_skill_timer(delta: float):
             cd_mult2 = 1.5
         elif is_windy2:
             cd_mult2 = 1.2
+
+        var is_turret_atk = false
+        var is_overclocked_atk = false
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            is_turret_atk = self.ball.get("is_turret", false)
+            is_overclocked_atk = self.ball.get("is_overclocked", false)
+        else:
+            if "is_turret" in self.ball: is_turret_atk = self.ball.is_turret
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("is_turret"): is_turret_atk = self.ball.get_meta("is_turret")
+            if "is_overclocked" in self.ball: is_overclocked_atk = self.ball.is_overclocked
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("is_overclocked"): is_overclocked_atk = self.ball.get_meta("is_overclocked")
+
+        if is_turret_atk and is_overclocked_atk:
+            cd_mult2 *= 2.0
 
         attack_timer -= delta * cd_mult2
         if "attack_timer" in self.ball:

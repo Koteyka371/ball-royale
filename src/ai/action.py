@@ -10675,6 +10675,23 @@ class Action:
                         can_recast = True
                         break
 
+        if skill_timer > 0 and skill_name == "deploy_turret":
+            # Check for nearby turrets to overclock
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == getattr(self.ball, "id", None) and getattr(b, "alive", True):
+                        dx = self.ball.x - b.x
+                        dy = self.ball.y - b.y
+                        if dx*dx + dy*dy <= 10000: # 100 distance
+                            # Overclock the turret
+                            b.is_overclocked = True
+                            b.overclock_hp_loss_timer = 0.0
+                            can_recast = False # We don't want to actually deploy a new turret
+                            # Add an event for visual feedback
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({"type": "overclock_start", "x": b.x, "y": b.y})
+                            # Restart skill timer to prevent spamming it? No, let them spam if they want, it doesn't do anything extra
+
         if skill_timer <= 0 or can_recast:
             if hasattr(self.ball, "use_skill") and skill_timer <= 0:
                 self.ball.use_skill()
@@ -13830,6 +13847,16 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+        if getattr(self.ball, "is_turret", False) and getattr(self.ball, "is_overclocked", False):
+            # Turret loses 5 HP per second while overclocked
+            hp_loss = 5.0 * delta
+            if hasattr(self.ball, "take_damage"):
+                self.ball.take_damage(hp_loss)
+            elif hasattr(self.ball, "hp"):
+                self.ball.hp -= hp_loss
+                if self.ball.hp <= 0:
+                    self.ball.alive = False
+
         if getattr(self.ball, "blood_magic_timer", 0.0) > 0.0:
             current_st = getattr(self.ball, "skill_timer", 0.0)
             prev_st = getattr(self.ball, "_prev_skill_timer", 0.0)
@@ -14872,9 +14899,14 @@ class Action:
             self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 0.4
             self.ball.attack_timer += delta * 0.5 # Cooldown slower
             self.ball.skill_timer += delta * 0.5
-            if self.ball.time_warp_slow_timer <= 0:
+            if getattr(self.ball, "time_warp_slow_timer", 0.0) <= 0:
                 self.ball.time_warp_slow_timer = 0.0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+
+        if getattr(self.ball, "is_turret", False) and getattr(self.ball, "is_overclocked", False):
+            # Decrement attack timer twice as fast
+            if self.ball.attack_timer > 0:
+                self.ball.attack_timer -= delta
 
         if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
             self.ball.speed_boost_timer -= delta
