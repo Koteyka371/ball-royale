@@ -18445,7 +18445,82 @@ class FloodingArenaMode(GameMode):
                 else:
                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.2  # Speed boost for aquatics in flood
 
+
+class CentralMassiveGravityWellMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Central Massive Gravity Well"
+        self.description = "A massive gravity well in the center that slowly pulls everything towards it, requiring players to constantly fight the pull or use it for slingshot maneuvers."
+        self.mgw_x = 500.0
+        self.mgw_y = 500.0
+        self.mgw_radius = 150.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            self.mgw_x = getattr(world.arena, "width", 1000) / 2.0
+            self.mgw_y = getattr(world.arena, "height", 1000) / 2.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if hasattr(world, "arena"):
+            self.mgw_x = getattr(world.arena, "width", 1000) / 2.0
+            self.mgw_y = getattr(world.arena, "height", 1000) / 2.0
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+                continue
+
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dx = self.mgw_x - getattr(b, "x", 0.0)
+            dy = self.mgw_y - getattr(b, "y", 0.0)
+            dist = math.hypot(dx, dy)
+
+            if dist < 50.0:
+                # Core of the well, massive damage
+                hp = getattr(b, "hp", 100.0)
+                hp -= 200.0 * delta
+                if hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                else:
+                    b.hp = hp
+            elif dist > 0:
+                # Increasing pull strength the closer they get, allowing slingshot maneuvers
+                # Pull strength is inversely proportional to distance (but capped)
+                pull_strength = 50000.0 / (dist * dist)
+                pull_strength = min(pull_strength, 300.0)
+
+                b.x = getattr(b, "x", 0.0) + (dx / dist) * pull_strength * delta
+                b.y = getattr(b, "y", 0.0) + (dy / dist) * pull_strength * delta
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
 GAME_MODES = {
+    "central_massive_gravity_well": CentralMassiveGravityWellMode(),
     'time_loop_field': TimeLoopFieldMode(),
     "magnetic_bumpers": MagneticBumpersMode(),
     'sniper_only': SniperOnlyMode(),

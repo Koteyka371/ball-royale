@@ -31029,7 +31029,113 @@ class FloodingArenaMode extends GameMode:
 						base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
 						if "speed" in b: b.speed = base_speed * 1.2
 
-GAME_MODES = {
+
+class CentralMassiveGravityWellMode extends GameMode:
+	var mgw_x = 500.0
+	var mgw_y = 500.0
+	var mgw_radius = 150.0
+
+	func _init():
+		name = "Central Massive Gravity Well"
+		description = "A massive gravity well in the center that slowly pulls everything towards it, requiring players to constantly fight the pull or use it for slingshot maneuvers."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			mgw_x = world.arena.get("width") / 2.0 if world.arena.get("width") != null else 500.0
+			mgw_y = world.arena.get("height") / 2.0 if world.arena.get("height") != null else 500.0
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			mgw_x = world.arena.has("width") and world.arena.width / 2.0 or 500.0
+			mgw_y = world.arena.has("height") and world.arena.height / 2.0 or 500.0
+
+	func tick(world, balls, delta = 0.016):
+		if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			mgw_x = world.arena.get("width") / 2.0 if world.arena.get("width") != null else 500.0
+			mgw_y = world.arena.get("height") / 2.0 if world.arena.get("height") != null else 500.0
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			mgw_x = world.arena.has("width") and world.arena.width / 2.0 or 500.0
+			mgw_y = world.arena.has("height") and world.arena.height / 2.0 or 500.0
+
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_OBJECT:
+				b_alive = b.get("alive") != null and b.get("alive")
+			else:
+				b_alive = b.has("alive") and b["alive"]
+
+			if not b_alive:
+				continue
+
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
+			if b_type == "spectator":
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_OBJECT else (b["x"] if b.has("x") else 0.0)
+			var by = b.get("y") if typeof(b) == TYPE_OBJECT else (b["y"] if b.has("y") else 0.0)
+
+			var dx = mgw_x - bx
+			var dy = mgw_y - by
+			var dist = sqrt(dx * dx + dy * dy)
+
+			if dist < 50.0:
+				var bhp = b.get("hp") if typeof(b) == TYPE_OBJECT else (b["hp"] if b.has("hp") else 0.0)
+				bhp -= 200.0 * delta
+				if bhp <= 0:
+					bhp = 0
+					if typeof(b) == TYPE_OBJECT:
+						b.set("alive", false)
+					else:
+						b["alive"] = false
+				if typeof(b) == TYPE_OBJECT:
+					b.set("hp", bhp)
+				else:
+					b["hp"] = bhp
+			elif dist > 0:
+				var pull_strength = 50000.0 / (dist * dist)
+				if pull_strength > 300.0:
+					pull_strength = 300.0
+
+				bx += (dx / dist) * pull_strength * delta
+				by += (dy / dist) * pull_strength * delta
+
+				if typeof(b) == TYPE_OBJECT:
+					b.set("x", bx)
+					b.set("y", by)
+				else:
+					b["x"] = bx
+					b["y"] = by
+
+	func check_winner(world, balls):
+		var alive_teams = []
+		var alive_balls = []
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_OBJECT:
+				b_alive = b.get("alive") != null and b.get("alive")
+			else:
+				b_alive = b.has("alive") and b["alive"]
+
+			if b_alive:
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
+				if b_type != "spectator" and b_type != "shadow_monster":
+					alive_balls.append(b)
+					var b_team = b.get("team") if typeof(b) == TYPE_OBJECT else (b["team"] if b.has("team") else b_type)
+					if not b_team in alive_teams:
+						alive_teams.append(b_team)
+
+		if alive_balls.size() == 0:
+			return "Draw"
+
+		if alive_teams.size() == 1:
+			return alive_teams[0]
+
+		if alive_balls.size() == 1:
+			return alive_balls[0].get("ball_type") if typeof(alive_balls[0]) == TYPE_OBJECT else alive_balls[0].get("ball_type", "")
+
+		return null
+
+var GAME_MODES = {
+	"central_massive_gravity_well": CentralMassiveGravityWellMode.new(),
 	'time_loop_field': TimeLoopFieldMode.new(),
 	"sniper_only": SniperOnlyMode.new(),
 	"stats_decay": StatsDecayMode.new(),
