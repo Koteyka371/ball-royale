@@ -13754,6 +13754,51 @@ func execute(strategy: String, delta: float):
         _hold_zone(delta)
     elif strategy == "opportunistic" or strategy == "collect booster":
         _collect_booster(delta)
+
+    elif strategy == "trigger_flipper":
+        if "arena" in self.world and "hazards" in self.world.arena:
+            var closest_flipper = null
+            var min_dist = 999999.0
+            for h in self.world.arena.hazards:
+                if h.get("kind") == "pinball_flipper" or (h.has_meta("kind") and h.get_meta("kind") == "pinball_flipper") or ("kind" in h and h.kind == "pinball_flipper"):
+                    var h_x = 0.0
+                    var h_y = 0.0
+                    if typeof(h) == TYPE_DICTIONARY:
+                        h_x = h.x
+                        h_y = h.y
+                    else:
+                        h_x = h.x
+                        h_y = h.y
+                    var dx = self.ball.x - h_x
+                    var dy = self.ball.y - h_y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist < min_dist:
+                        min_dist = dist
+                        closest_flipper = h
+
+            var current_time = 0.0
+            if "tick" in self.world:
+                current_time = self.world.tick * 0.016
+            var last_trig = -999.0
+            if self.ball.has_meta("last_flipper_trigger"):
+                last_trig = self.ball.get_meta("last_flipper_trigger")
+            elif "last_flipper_trigger" in self.ball:
+                last_trig = self.ball.last_flipper_trigger
+
+            if closest_flipper != null and min_dist < 400.0 and current_time - last_trig > 2.0:
+                if typeof(closest_flipper) == TYPE_DICTIONARY:
+                    pass # Typically hazards are objects in GDScript but just in case
+                else:
+                    if closest_flipper.has_method("set_meta"):
+                        closest_flipper.set_meta("flip_timer", 0.5)
+                    elif "flip_timer" in closest_flipper:
+                        closest_flipper.flip_timer = 0.5
+
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("last_flipper_trigger", current_time)
+                elif "last_flipper_trigger" in self.ball:
+                    self.ball.last_flipper_trigger = current_time
+
     elif strategy == "use_sub_skill":
         var skill_name = null
         if "active_skill" in self.ball and self.ball.active_skill != null and str(self.ball.active_skill) != "": skill_name = self.ball.active_skill
@@ -17353,7 +17398,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                var skills = ['arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
