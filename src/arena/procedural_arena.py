@@ -1213,6 +1213,9 @@ class ProceduralArena:
                     kind = "bounce_pad"
                     damage = 0.0
                 elif random.random() < 0.1:
+                    kind = "trampoline"
+                    damage = 0.0
+                elif random.random() < 0.1:
                     kind = "explosive_barrel"
                     damage = 0.0
                 elif random.random() < 0.05:

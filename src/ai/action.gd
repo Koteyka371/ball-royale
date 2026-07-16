@@ -12630,6 +12630,39 @@ func execute(strategy: String, delta: float):
                                 self.ball.vy = ny * 1000.0
                         continue
 
+                    elif hazard.kind == "trampoline":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+                        if d < (b_rad + hazard.radius) and d > 0.0001:
+                            var nx = dx / d
+                            var ny = dy / d
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("vx", nx * 1000.0)
+                                self.ball.set_meta("vy", ny * 1000.0)
+                                var cur_spd = self.ball.get_meta("speed_boost_timer") if self.ball.has_meta("speed_boost_timer") else 0.0
+                                self.ball.set_meta("speed_boost_timer", max(cur_spd, 2.0))
+                                var cur_imm = self.ball.get_meta("hazard_immunity_timer") if self.ball.has_meta("hazard_immunity_timer") else 0.0
+                                self.ball.set_meta("hazard_immunity_timer", max(cur_imm, 2.0))
+                            elif typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["vx"] = nx * 1000.0
+                                self.ball["vy"] = ny * 1000.0
+                                var cur_spd = float(self.ball.get("speed_boost_timer", 0.0))
+                                self.ball["speed_boost_timer"] = max(cur_spd, 2.0)
+                                var cur_imm = float(self.ball.get("hazard_immunity_timer", 0.0))
+                                self.ball["hazard_immunity_timer"] = max(cur_imm, 2.0)
+                            elif "vx" in self.ball:
+                                self.ball.vx = nx * 1000.0
+                                self.ball.vy = ny * 1000.0
+                                var cur_spd = float(self.ball.speed_boost_timer) if "speed_boost_timer" in self.ball else 0.0
+                                self.ball.speed_boost_timer = max(cur_spd, 2.0)
+                                var cur_imm = float(self.ball.hazard_immunity_timer) if "hazard_immunity_timer" in self.ball else 0.0
+                                self.ball.hazard_immunity_timer = max(cur_imm, 2.0)
+                        continue
+
 
                     elif hazard.kind == "orbital_accelerator":
                         var dx = self.ball.x - hazard.x
