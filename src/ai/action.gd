@@ -18254,6 +18254,13 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "smoke_grenade":
+                if "arena" in self.world and "hazards" in self.world.arena:
+                    var smoke_grenade_hazard = {"x": self.ball.x, "y": self.ball.y, "radius": 50.0, "kind": "smoke_grenade", "duration": 5.0, "damage": 0.0, "id": randi()}
+                    self.world.arena.hazards.append(smoke_grenade_hazard)
+
+                if "boosters" in self.world and nearest in self.world.boosters:
+                    self.world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "stealth_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("stealth_booster_timer", 10.0)

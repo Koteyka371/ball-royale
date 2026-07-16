@@ -9969,6 +9969,20 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "smoke_grenade":
+                    # Spawns a smoke grenade hazard at the player's current location
+                    if hasattr(self.world, "arena"):
+                        class SmokeGrenadeHazard:
+                            def __init__(self, x, y):
+                                self.x = x
+                                self.y = y
+                                self.radius = 50.0
+                                self.kind = "smoke_grenade"
+                                self.duration = 5.0
+                                self.damage = 0.0
+                        self.world.arena.hazards.append(SmokeGrenadeHazard(self.ball.x, self.ball.y))
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stealth_booster":
                     self.ball.stealth_booster_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

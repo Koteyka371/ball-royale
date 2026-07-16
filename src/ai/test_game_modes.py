@@ -2009,11 +2009,16 @@ def test_mirage_safe_zone():
 import pytest
 from ai.action import Action
 
+class MockWorldArena:
+    def __init__(self):
+        self.weather = "clear"
+        self.is_eclipse = False
+
 class MockWorld(dict):
     def __init__(self):
         super().__init__()
         self.balls = []
-        self.arena = None
+        self.arena = MockWorldArena()
         self.next_id = 9999
 
 class MockArena(dict):
