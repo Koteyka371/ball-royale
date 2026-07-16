@@ -13070,6 +13070,14 @@ class Action:
             elif skill_name == "phase_through":
                 self.ball.intangible_timer = 3.0
                 self.ball.intangible = True
+            elif skill_name == "fire_homing_missile":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random
+                    m_id = f"hm_{getattr(self.ball, 'id', 'x')}_{random.randint(0,99999)}"
+                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0)
+                    m.owner_id = getattr(self.ball, "id", None)
+                    self.world.arena.hazards.append(m)
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
             elif skill_name == "target_strong":
                 import math
                 enemies = self._get_enemies()

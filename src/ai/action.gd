@@ -23475,6 +23475,37 @@ func _use_skill():
             elif typeof(self.ball) == TYPE_OBJECT:
                 self.ball.intangible_timer = 3.0
                 self.ball.intangible = true
+        elif skill_name == "fire_homing_missile":
+            if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
+                var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+                var bid = -1
+                var bx = 0.0
+                var by = 0.0
+                if typeof(self.ball) == TYPE_OBJECT:
+                    bid = self.ball.id
+                    bx = self.ball.x
+                    by = self.ball.y
+                    if "skill_timer" in self.ball:
+                        self.ball.skill_timer = 4.0
+                else:
+                    bid = self.ball.get("id", -1)
+                    bx = self.ball.get("x", 0.0)
+                    by = self.ball.get("y", 0.0)
+
+                var m_id = "hm_" + str(bid) + "_" + str(randi() % 100000)
+                var m = HazardObj.new()
+                m.id = m_id
+                m.x = bx
+                m.y = by
+                m.radius = 10.0
+                m.kind = "homing_missile"
+                m.damage = 20.0
+
+                if m.has_method("set_meta"):
+                    m.set_meta("owner_id", bid)
+                else:
+                    m.owner_id = bid
+                self.world.arena.hazards.append(m)
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
             if enemies.size() > 0:
