@@ -26610,6 +26610,26 @@ func _update_skill_timer(delta: float):
                         elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                         elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
 
+				if h_kind == "mirage_safe_zone":
+					var hx = float(hazard.x if typeof(hazard) != TYPE_DICTIONARY else hazard["x"])
+					var hy = float(hazard.y if typeof(hazard) != TYPE_DICTIONARY else hazard["y"])
+					var hr = float(hazard.get("radius", 150.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.radius)
+					var br = float(self.ball.get("radius", 10.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.radius)
+					var bx = float(self.ball.x if typeof(self.ball) != TYPE_DICTIONARY else self.ball["x"])
+					var by = float(self.ball.y if typeof(self.ball) != TYPE_DICTIONARY else self.ball["y"])
+					var dist_sq = (hx - bx)*(hx - bx) + (hy - by)*(hy - by)
+					if dist_sq < (hr + br)*(hr + br):
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["duration"] = 0.0
+							hazard["active"] = false
+						else:
+							hazard.duration = 0.0
+							hazard.active = false
+						if randf() < 0.5:
+							var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+							var new_trap = HazardObj.new(9999, hx, hy, 20.0, "disguised_trap", 0.0)
+							new_trap.duration = 10.0
+							world.arena.hazards.append(new_trap)
                 if h_kind == "disguised_trap":
                     var h_x = 0.0
                     if "x" in hazard: h_x = hazard.x

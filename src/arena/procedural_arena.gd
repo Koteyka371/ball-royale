@@ -252,6 +252,8 @@ func generate():
             kind = "skill_reroll_booster"
         elif r < 0.99999:
             kind = "friendly_fire_reflect_booster"
+        elif r < 0.999995:
+            kind = "mirage_safe_zone"
         else:
             kind = "switch"
 
@@ -260,6 +262,9 @@ func generate():
         if kind == "spikes":
             radius = rng.randf_range(15.0, 30.0)
             damage = 20.0
+        elif kind == "mirage_safe_zone":
+            radius = 150.0
+            damage = 0.0
         elif kind == "lava":
             radius = rng.randf_range(30.0, 60.0)
             damage = 50.0

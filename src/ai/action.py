@@ -14269,6 +14269,22 @@ class Action:
                         self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 3.0)
                         self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 0.1 # heavily slow
                         hazard.duration = 0.0 # Destroy trap after springing
+                if getattr(hazard, "kind", "") == "mirage_safe_zone":
+                    dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                    if dist_sq < (getattr(hazard, "radius", 150.0) + getattr(self.ball, "radius", 10.0)) ** 2:
+                        hazard.duration = 0.0
+                        hazard.active = False
+                        import random
+                        if random.random() < 0.5:
+                            trap = type("Hazard", (), {})()
+                            trap.id = getattr(self.world, "next_id", 99999) + random.randint(1000, 9999)
+                            trap.x = hazard.x
+                            trap.y = hazard.y
+                            trap.radius = 20.0
+                            trap.kind = "disguised_trap"
+                            trap.damage = 0.0
+                            trap.duration = 10.0
+                            self.world.arena.hazards.append(trap)
                 if getattr(hazard, "kind", "") == "booster_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
