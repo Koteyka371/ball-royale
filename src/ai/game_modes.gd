@@ -35415,6 +35415,141 @@ class PerfectReflectorHazardMode extends GameMode:
 
 GAME_MODES["perfect_reflector"] = PerfectReflectorHazardMode.new()
 
+class TimeDilationZoneMode extends GameMode:
+
+	var zone_x = 500.0
+	var zone_y = 500.0
+	var zone_radius = 200.0
+	var hazard_obj = null
+
+	func _init():
+		super._init()
+		name = "Time Dilation Zone"
+		description = "A localized zone that slows down time for entities and projectiles inside it."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_width = world.arena.width
+				if world.arena.has("height"): arena_height = world.arena.height
+			else:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+
+		var arena_has_hazards = false
+		var arena_ref = null
+
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_has_hazards = true
+				arena_ref = world.arena
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_has_hazards = true
+				arena_ref = world.arena
+
+		if arena_has_hazards:
+			var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+			if HazardObj != null:
+				hazard_obj = HazardObj.new("time_dilation_zone", zone_x, zone_y, zone_radius, "time_dilation_zone", 0.0)
+				if "active" in hazard_obj:
+					hazard_obj.active = true
+				arena_ref.hazards.append(hazard_obj)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive if "alive" in b else true
+			if not alive:
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x if "x" in b else 0.0
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y if "y" in b else 0.0
+
+			var dx = bx - zone_x
+			var dy = by - zone_y
+			var dist = sqrt(dx * dx + dy * dy)
+
+			if dist <= zone_radius:
+				var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.vx if "vx" in b else (b.get("velocity_x") if typeof(b) == TYPE_DICTIONARY else b.velocity_x if "velocity_x" in b else 0.0)
+				var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.vy if "vy" in b else (b.get("velocity_y") if typeof(b) == TYPE_DICTIONARY else b.velocity_y if "velocity_y" in b else 0.0)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] -= vx * delta * 0.5
+					b["y"] -= vy * delta * 0.5
+
+					var keys = b.keys()
+					for k in keys:
+						if typeof(k) == TYPE_STRING and (k.ends_with("_timer") or k.ends_with("_duration") or k.ends_with("_cooldown")):
+							var val = b[k]
+							if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
+								b[k] = val + delta * 0.5
+				else:
+					if "x" in b: b.x -= vx * delta * 0.5
+					if "y" in b: b.y -= vy * delta * 0.5
+
+					# Cannot iterate properties dynamically in GDScript object easily, so we only handle common ones
+					var attrs = ["polarity_cooldown", "duration", "invulnerability_timer", "attack_cooldown", "dash_cooldown", "stun_duration"]
+					for attr in attrs:
+						if attr in b:
+							var val = b.get(attr)
+							if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
+								b.set(attr, val + delta * 0.5)
+						elif b.has_method("get_meta") and b.has_meta(attr):
+							var val = b.get_meta(attr)
+							if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
+								b.set_meta(attr, val + delta * 0.5)
+
+		if world != null and "arena" in world and world.arena != null:
+			var hazards = null
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				hazards = world.arena.hazards
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				hazards = world.arena.hazards
+
+			if hazards != null:
+				for h in hazards:
+					var active = h.get("active") if typeof(h) == TYPE_DICTIONARY else h.active if "active" in h else true
+					if not active:
+						continue
+
+					var hx = h.get("x") if typeof(h) == TYPE_DICTIONARY else h.x if "x" in h else 0.0
+					var hy = h.get("y") if typeof(h) == TYPE_DICTIONARY else h.y if "y" in h else 0.0
+
+					var dx = hx - zone_x
+					var dy = hy - zone_y
+					var dist = sqrt(dx * dx + dy * dy)
+
+					if dist <= zone_radius:
+						var hvx = h.get("vx") if typeof(h) == TYPE_DICTIONARY else h.vx if "vx" in h else 0.0
+						var hvy = h.get("vy") if typeof(h) == TYPE_DICTIONARY else h.vy if "vy" in h else 0.0
+
+						if typeof(h) == TYPE_DICTIONARY:
+							h["x"] -= hvx * delta * 0.5
+							h["y"] -= hvy * delta * 0.5
+
+							var keys = h.keys()
+							for k in keys:
+								if typeof(k) == TYPE_STRING and (k.ends_with("_timer") or k.ends_with("_duration") or k.ends_with("_cooldown")):
+									var val = h[k]
+									if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
+										h[k] = val + delta * 0.5
+						else:
+							if "x" in h: h.x -= hvx * delta * 0.5
+							if "y" in h: h.y -= hvy * delta * 0.5
+
+							var attrs = ["duration", "lifetime", "explosion_timer"]
+							for attr in attrs:
+								if attr in h:
+									var val = h.get(attr)
+									if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
+										h.set(attr, val + delta * 0.5)
+
 class InverseControlsZoneMode extends GameMode:
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -35740,6 +35875,7 @@ class EdgeSlingshotsMode:
 					grabbed_state.erase(b.id)
 
 
+GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode.new()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
 

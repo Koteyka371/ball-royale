@@ -22524,6 +22524,92 @@ class PerfectReflectorHazardMode(GameMode):
 
 GAME_MODES["perfect_reflector"] = PerfectReflectorHazardMode()
 
+class TimeDilationZoneMode(GameMode):
+    """
+    An anomalous zone in the arena where the flow of time slows down drastically.
+    Entities, projectiles, and status effects within the field move and expire at half their normal rate.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Dilation Zone"
+        self.description = "A localized zone that slows down time for entities and projectiles inside it."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 200.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            self.hazard_obj = hazard_class("time_dilation_zone", self.zone_x, self.zone_y, self.zone_radius, "time_dilation_zone", 0.0)
+            if not hasattr(self.hazard_obj, "active"):
+                self.hazard_obj.active = True
+            world.arena.hazards.append(self.hazard_obj)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            dx = b.x - self.zone_x
+            dy = b.y - self.zone_y
+            dist = math.hypot(dx, dy)
+
+            if dist <= self.zone_radius:
+                vx = getattr(b, "vx", getattr(b, "velocity_x", 0.0))
+                vy = getattr(b, "vy", getattr(b, "velocity_y", 0.0))
+
+                # Apply counter-movement to simulate half speed
+                b.x -= vx * delta * 0.5
+                b.y -= vy * delta * 0.5
+
+                for attr in dir(b):
+                    if attr.endswith("_timer") or attr.endswith("_duration") or attr.endswith("_cooldown"):
+                        val = getattr(b, attr)
+                        if isinstance(val, (int, float)) and not isinstance(val, bool):
+                            setattr(b, attr, val + delta * 0.5)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if not getattr(h, "active", True):
+                    continue
+
+                h_x = getattr(h, "x", 0.0)
+                h_y = getattr(h, "y", 0.0)
+
+                dx = h_x - self.zone_x
+                dy = h_y - self.zone_y
+                dist = math.hypot(dx, dy)
+
+                if dist <= self.zone_radius:
+                    h_vx = getattr(h, "vx", 0.0)
+                    h_vy = getattr(h, "vy", 0.0)
+
+                    if hasattr(h, "x"): h.x -= h_vx * delta * 0.5
+                    if hasattr(h, "y"): h.y -= h_vy * delta * 0.5
+
+                    for attr in dir(h):
+                        if attr.endswith("_timer") or attr.endswith("_duration") or attr.endswith("_cooldown"):
+                            val = getattr(h, attr)
+                            if isinstance(val, (int, float)) and not isinstance(val, bool):
+                                setattr(h, attr, val + delta * 0.5)
+
 class InverseControlsZoneMode(GameMode):
     """
     A localized zone that inverses the movement controls of any entity inside it.
@@ -22731,6 +22817,7 @@ class EdgeSlingshotsMode(GameMode):
                     del self.grabbed_state[b.id]
 
 
+GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
 
