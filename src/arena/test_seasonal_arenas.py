@@ -45,3 +45,14 @@ def test_seasonal_arena_weather_hazards():
 
     # We just want to check that update_zone doesn't crash
     assert True
+
+def test_ice_arena():
+    from arena.arena_types import ARENAS
+    IceArena = ARENAS.get("ice")
+    assert IceArena is not None
+    arena = IceArena()
+    assert getattr(arena, "is_ice", False) is True
+    ice_patches = [h for h in arena.hazards if getattr(h, "kind", "") == "ice_patches"]
+    assert len(ice_patches) >= 1
+    # Check that at least one is large
+    assert any(getattr(h, "radius", 0) >= 100 for h in ice_patches)

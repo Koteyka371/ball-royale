@@ -1794,7 +1794,39 @@ ARENAS["summer"] = SummerArena
 ARENAS["autumn"] = AutumnArena
 ARENAS["lava"] = LavaArena
 ARENAS["neon"] = NeonArena
+class IceArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_ice = True
+
+    def generate(self):
+        super().generate()
+        cx = self.width / 2.0
+        cy = self.height / 2.0
+        h_id = 5000 + len(self.hazards)
+
+        # Add large central ice patches
+        try:
+            from arena.procedural_arena import Hazard
+            hazard_class = Hazard
+        except ImportError:
+            hazard_class = type("Hazard", (object,), {})
+
+        ice_patch = hazard_class() if not hasattr(hazard_class, "__init__") or hazard_class.__init__.__code__.co_argcount == 1 else hazard_class(id=h_id, x=cx, y=cy, radius=300.0, kind="ice_patches", damage=0.0)
+
+        if not hasattr(ice_patch, "id"):
+            ice_patch.id = h_id
+            ice_patch.x = cx
+            ice_patch.y = cy
+            ice_patch.radius = 300.0
+            ice_patch.kind = "ice_patches"
+            ice_patch.damage = 0.0
+            ice_patch.active = True
+
+        self.hazards.append(ice_patch)
+
 ARENAS["winter"] = WinterArena
+ARENAS["ice"] = IceArena
 
 def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = None) -> ProceduralArena:
     arena_class = ARENAS.get(arena_type, ProceduralArena)

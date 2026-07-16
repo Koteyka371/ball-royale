@@ -6641,12 +6641,26 @@ func execute(strategy: String, delta: float):
         elif gm.name == "Custom Match" and gm.get("mutators_active") == true and "zero_gravity" in gm.get("mutators", []):
             is_zero_gravity = true
 
+    var base_friction = 1.0
+    if typeof(world) == TYPE_OBJECT and world.has_method("get_arena") and world.get_arena() != null:
+        if "is_ice" in world.get_arena() and world.get_arena().is_ice:
+            base_friction = 0.2
+    elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world["arena"] != null:
+        if typeof(world["arena"]) == TYPE_OBJECT and "is_ice" in world["arena"] and world["arena"].is_ice:
+            base_friction = 0.2
+        elif typeof(world["arena"]) == TYPE_DICTIONARY and "is_ice" in world["arena"] and world["arena"]["is_ice"]:
+            base_friction = 0.2
+
     if is_zero_gravity:
         if "vx" in my_ball and "vy" in my_ball:
-            my_ball.vx *= (1.0 - 0.5 * delta)
-            my_ball.vy *= (1.0 - 0.5 * delta)
+            my_ball.vx *= (1.0 - (0.5 * base_friction) * delta)
+            my_ball.vy *= (1.0 - (0.5 * base_friction) * delta)
             my_ball.x += my_ball.vx * delta
             my_ball.y += my_ball.vy * delta
+    else:
+        if "vx" in my_ball and "vy" in my_ball:
+            my_ball.vx *= (1.0 - (1.0 * base_friction) * delta)
+            my_ball.vy *= (1.0 - (1.0 * base_friction) * delta)
 
     if my_ball.get("BALL_TYPE") == "mimic" and my_ball.has_method("process_mimicry"):
         var enemies = self._get_enemies()

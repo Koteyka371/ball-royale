@@ -3749,13 +3749,26 @@ class Action:
                 if getattr(gm, "mutators_active", False) and "zero_gravity" in getattr(gm, "mutators", []):
                     is_zero_gravity = True
 
+        # Determine arena base friction multiplier
+        base_friction = getattr(self.world.arena, "base_friction_multiplier", 1.0) if hasattr(self.world, "arena") and self.world.arena else 1.0
+        # If IceArena, lower friction drastically
+        if getattr(self.world.arena, "is_ice", False) if hasattr(self.world, "arena") and self.world.arena else False:
+            base_friction = 0.2
+
         if is_zero_gravity:
             # Apply friction
             if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                self.ball.vx *= (1.0 - 0.5 * delta)
-                self.ball.vy *= (1.0 - 0.5 * delta)
+                self.ball.vx *= (1.0 - (0.5 * base_friction) * delta)
+                self.ball.vy *= (1.0 - (0.5 * base_friction) * delta)
                 self.ball.x += self.ball.vx * delta
                 self.ball.y += self.ball.vy * delta
+        else:
+            # Apply standard friction if not handled elsewhere
+            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                # Standard friction reduction
+                self.ball.vx *= (1.0 - (1.0 * base_friction) * delta)
+                self.ball.vy *= (1.0 - (1.0 * base_friction) * delta)
+
 
         if getattr(self.ball, "BALL_TYPE", "") == "mimic" and hasattr(self.ball, "process_mimicry"):
             enemies = self._get_enemies()

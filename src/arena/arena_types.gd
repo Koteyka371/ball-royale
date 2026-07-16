@@ -649,6 +649,7 @@ class SpringArena extends ProceduralArena:
 			hazards.append(pad)
 
 const ARENAS = [
+    "ice",
 	"falling_panels",
     "spring",
     "shrinking_hazards",
@@ -917,3 +918,18 @@ class TimeDistortionArena extends ProceduralArena:
 
 		rooms.append(ProceduralArena.Room.new(cx - 200.0, cy - 200.0, 400.0, 400.0))
 		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 200.0, "chrono_anomaly", 0.0))
+
+class IceArena extends ProceduralArena:
+	var is_ice = true
+
+	func _init(size: float = 2000.0, seed_val = null):
+		super(size, 5, seed_val)
+
+	func generate() -> void:
+		super.generate()
+		var cx = width / 2.0
+		var cy = height / 2.0
+		var h_id = 5000 + hazards.size()
+		var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+		var ice_patch = ProceduralArenaScript.Hazard.new(h_id, cx, cy, 300.0, "ice_patches", 0.0)
+		hazards.append(ice_patch)
