@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1061] Shadow Monster Pet — *2026-07-16 21:55:10 UTC*
+
+If a player survives multiple dark phases, they can unlock a 'Shadow Monster Pet' cosmetic that follows them around and occasionally boosts their speed in dark areas.
+
+---
+
 ## [idea-1055] Tornado Hazard for Windy Arenas — *2026-07-16 21:53:59 UTC*
 
 Introduce a dynamic Tornado hazard in AutumnArena that spawns occasionally. It pulls nearby balls towards its center, reducing their friction to near zero and launching them in a random direction if they reach the eye of the tornado.

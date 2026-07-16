@@ -18206,7 +18206,7 @@
     },
     {
       "id": "idea-1061",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shadow Monster Pet",
@@ -28609,6 +28609,23 @@
         "src/arena/slippery_slope_arena.py",
         "src/arena/slippery_slope_arena.gd",
         "tests/test_slippery_slope_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1672",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Thunderstorm Tornado Combo",
+      "description": "A rare hybrid weather hazard that spawns when a thunderstorm and wind event overlap. It would pull balls like a tornado but also periodically strike them with chain lightning while they are caught in the outer vortex.",
+      "allowed_paths": [
+        "src/ai/thunderstorm_tornado_combo.py",
+        "src/ai/thunderstorm_tornado_combo.gd",
+        "tests/test_thunderstorm_tornado_combo.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
