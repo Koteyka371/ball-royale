@@ -854,21 +854,55 @@ func update_zone(current_tick: int, delta: float) -> void:
                     if hazard.has_method("has_meta") and hazard.has_meta("duration"):
                         h_dur = hazard.get_meta("duration")
 
-                    if temperature > 0.0:
-                        h_dur -= temperature * 0.1 * delta
+                    var active_heatwave = false
+                    if "is_heatwave" in self:
+                        active_heatwave = self.is_heatwave
+
+                    var active_snowing = false
+                    if "is_snowing" in self:
+                        active_snowing = self.is_snowing
+
+                    if active_heatwave or temperature > 0.0:
+                        var eff_temp = max(temperature, 20.0) if active_heatwave else temperature
+                        h_dur -= eff_temp * 0.1 * delta
                         if h_dur <= 0.0:
                             if hazard.has_method("set_meta"):
                                 hazard.set_meta("active", false)
                             else:
                                 hazard.active = false
-                    elif temperature < 0.0:
-                        h_dur -= -temperature * 0.1 * delta
+                    elif active_snowing or temperature < 0.0:
+                        var eff_temp = min(temperature, -20.0) if active_snowing else temperature
+                        h_dur -= -eff_temp * 0.1 * delta
                         if h_dur <= 0.0:
                             hazard.kind = "ice_patch"
                             h_dur = 20.0
 
                     if hazard.has_method("set_meta"):
                         hazard.set_meta("duration", h_dur)
+
+                elif hazard.kind == "mud_puddle":
+                    var active_heatwave = false
+                    if "is_heatwave" in self:
+                        active_heatwave = self.is_heatwave
+
+                    if active_heatwave:
+                        if not (hazard.has_method("has_meta") and hazard.has_meta("duration")):
+                            if hazard.has_method("set_meta"):
+                                hazard.set_meta("duration", 20.0)
+
+                        var h_dur = 20.0
+                        if hazard.has_method("has_meta") and hazard.has_meta("duration"):
+                            h_dur = hazard.get_meta("duration")
+
+                        h_dur -= 20.0 * 0.1 * delta
+                        if h_dur <= 0.0:
+                            if hazard.has_method("set_meta"):
+                                hazard.set_meta("active", false)
+                            else:
+                                hazard.active = false
+
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("duration", h_dur)
 
             for hazard in hazards:
                 if hazard.kind == "slip_zone":
@@ -1065,6 +1099,14 @@ func update_zone(current_tick: int, delta: float) -> void:
                         var gw = Hazard.new(gw_id, randf_range(50, width - 50), randf_range(50, height - 50), randf_range(80.0, 150.0), "gravity_well", 2.0)
                         gw.set_meta("duration", 10.0)
                         hazards.append(gw)
+
+                if weather == "snow":
+                    var num_snows = (randi() % 2) + 1
+                    for i in range(num_snows):
+                        var snow_id = 8400 + hazards.size() + (randi() % 1000)
+                        var snow = Hazard.new(snow_id, randf_range(50, width - 50), randf_range(50, height - 50), randf_range(40.0, 80.0), "ice_patch", 0.0)
+                        snow.set_meta("duration", 15.0)
+                        hazards.append(snow)
 
                 if has_method("_trigger_event"):
                     var event_types = ["avalanche", "meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]

@@ -725,15 +725,25 @@ class ProceduralArena:
                         if not hasattr(hazard, "duration"):
                             hazard.duration = 20.0
 
-                        if self.temperature > 0.0:
-                            hazard.duration -= self.temperature * 0.1 * delta
+                        if getattr(self, "is_heatwave", False) or self.temperature > 0.0:
+                            eff_temp = max(self.temperature, 20.0) if getattr(self, "is_heatwave", False) else self.temperature
+                            hazard.duration -= eff_temp * 0.1 * delta
                             if hazard.duration <= 0.0:
                                 hazard.active = False
-                        elif self.temperature < 0.0:
-                            hazard.duration -= -self.temperature * 0.1 * delta
+                        elif getattr(self, "is_snowing", False) or self.temperature < 0.0:
+                            eff_temp = min(self.temperature, -20.0) if getattr(self, "is_snowing", False) else self.temperature
+                            hazard.duration -= -eff_temp * 0.1 * delta
                             if hazard.duration <= 0.0:
                                 hazard.kind = "ice_patch"
                                 hazard.duration = 20.0
+
+                    elif getattr(hazard, "kind", "") == "mud_puddle":
+                        if getattr(self, "is_heatwave", False):
+                            if not hasattr(hazard, "duration"):
+                                hazard.duration = 20.0
+                            hazard.duration -= 20.0 * 0.1 * delta
+                            if hazard.duration <= 0.0:
+                                hazard.active = False
 
                 for hazard in self.hazards:
                     if hazard.kind == "slip_zone":
@@ -883,6 +893,13 @@ class ProceduralArena:
                             gw = Hazard(id=gw_id, x=random.uniform(50, self.width - 50), y=random.uniform(50, self.height - 50), radius=random.uniform(80.0, 150.0), kind="gravity_well", damage=2.0)
                             setattr(gw, 'duration', 10.0)
                             self.hazards.append(gw)
+
+                    if getattr(self, "weather", "") == "snow":
+                        for _ in range(random.randint(1, 2)):
+                            snow_id = 8400 + len(self.hazards) + random.randint(0, 1000)
+                            snow = Hazard(id=snow_id, x=random.uniform(50, self.width - 50), y=random.uniform(50, self.height - 50), radius=random.uniform(40.0, 80.0), kind="ice_patch", damage=0.0)
+                            setattr(snow, 'duration', 15.0)
+                            self.hazards.append(snow)
 
                     if hasattr(self, "_trigger_event"):
                         self._trigger_event(random.choice(["meteor_shower", "gravity_shift", "orbital_strike", "massive_black_hole_event"]), current_tick)
