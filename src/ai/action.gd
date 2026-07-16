@@ -6771,6 +6771,38 @@ func execute(strategy: String, delta: float):
             if "damage" in my_ball:
                 my_ball.damage = my_ball.get_meta("base_damage")
 
+        # Shadow Monster Pet cosmetic speed boost in dark areas
+        var c_val_sm = ""
+        if typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("cosmetic"):
+            c_val_sm = str(my_ball["cosmetic"]).to_lower().replace(" ", "_")
+        elif typeof(my_ball) == TYPE_OBJECT and "cosmetic" in my_ball:
+            c_val_sm = str(my_ball.cosmetic).to_lower().replace(" ", "_")
+        elif typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get_meta") and my_ball.has_meta("cosmetic"):
+            c_val_sm = str(my_ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+        if c_val_sm == "shadow_monster_pet":
+            var is_dark = false
+            if self.world != null and "game_mode" in self.world and self.world.game_mode != null and "is_dark_phase" in self.world.game_mode:
+                is_dark = self.world.game_mode.is_dark_phase
+            if is_dark and randf() < 0.5 * delta:
+                var cur_sbt = 0.0
+                if typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("speed_boost_timer"):
+                    cur_sbt = float(my_ball["speed_boost_timer"])
+                elif typeof(my_ball) == TYPE_OBJECT and "speed_boost_timer" in my_ball:
+                    cur_sbt = float(my_ball.speed_boost_timer)
+                elif typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get_meta") and my_ball.has_meta("speed_boost_timer"):
+                    cur_sbt = float(my_ball.get_meta("speed_boost_timer"))
+
+                var new_sbt = max(cur_sbt, 3.0)
+                if typeof(my_ball) == TYPE_DICTIONARY:
+                    my_ball["speed_boost_timer"] = new_sbt
+                elif typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
+                    my_ball.set_meta("speed_boost_timer", new_sbt)
+                    if "speed_boost_timer" in my_ball:
+                        my_ball.speed_boost_timer = new_sbt
+                elif typeof(my_ball) == TYPE_OBJECT:
+                    my_ball.speed_boost_timer = new_sbt
+
         # Apply global eclipse effect across all strategies early in the tick
         if self.world != null and "arena" in self.world and "is_eclipse" in self.world.arena and self.world.arena.is_eclipse:
             if "damage" in my_ball:

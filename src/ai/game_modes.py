@@ -2747,6 +2747,13 @@ class BattleRoyaleMode(GameMode):
                     # Reward survivors
                     b.score = getattr(b, "score", 0) + 100
 
+                    # Unlock Shadow Monster Pet
+                    b.dark_phases_survived = getattr(b, "dark_phases_survived", 0) + 1
+                    if b.dark_phases_survived >= 2:
+                        b.cosmetic = "shadow_monster_pet"
+                        if hasattr(world, "add_event"):
+                            world.add_event("unlock", {"message": "Unlocked Shadow Monster Pet!"})
+
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
