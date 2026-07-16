@@ -1,0 +1,4 @@
+{
+  "title": "Item: Mirror Shield",
+  "description": "An active item that deploys a directional shield for a short duration. Any projectile or spell hitting the shield is reflected back towards the attacker with increased velocity, but taking a direct melee hit shatters the shield and stuns the user."
+}

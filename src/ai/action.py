@@ -1852,6 +1852,17 @@ class Action:
 
         self.ball.is_frictionless = False
 
+
+        # Molten burn effect
+        if getattr(self.ball, "molten_burn_timer", 0.0) > 0:
+            if hasattr(self.ball, "hp"):
+                self.ball.hp -= 10.0 * delta
+                if self.ball.hp <= 0:
+                    self.ball.alive = False
+                    self.ball.hp = 0
+                    self.ball.killer = "molten_rock"
+            self.ball.molten_burn_timer -= delta
+
         if getattr(self.ball, "cursed_bumper_active", False):
             if hasattr(self.ball, "stamina"):
                 self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 15.0 * delta)
@@ -5278,6 +5289,19 @@ class Action:
                                     self.ball.alive = False
                                     self.ball.hp = 0
                                     self.ball.killer = "fire_zone"
+                    elif hazard.kind == "molten_rock":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            # Severely increases friction (slowing ball down)
+                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.1
+                            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                # decrease velocity significantly
+                                self.ball.vx *= max(0.0, 1.0 - 5.0 * delta)
+                                self.ball.vy *= max(0.0, 1.0 - 5.0 * delta)
+                            # apply lingering burn effect
+                            self.ball.molten_burn_timer = 3.0
                     elif hazard.kind == "quicksand":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -5370,6 +5394,19 @@ class Action:
                                 if not hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = True
 
+                    elif hazard.kind == "molten_rock":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            # Severely increases friction (slowing ball down)
+                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.1
+                            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                # decrease velocity significantly
+                                self.ball.vx *= max(0.0, 1.0 - 5.0 * delta)
+                                self.ball.vy *= max(0.0, 1.0 - 5.0 * delta)
+                            # apply lingering burn effect
+                            self.ball.molten_burn_timer = 3.0
                     elif hazard.kind == "quicksand":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y

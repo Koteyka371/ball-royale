@@ -234,6 +234,8 @@ func generate():
             kind = "slip_zone"
         elif r < 0.99982:
             kind = "frictionless_zone"
+        elif r < 0.999825:
+            kind = "molten_rock"
         elif r < 0.99983:
             kind = "ice_patches"
         elif r < 0.99985:
@@ -383,6 +385,9 @@ func generate():
             damage = 0.0
         elif kind == "frictionless_zone":
             radius = rng.randf_range(40.0, 80.0)
+            damage = 0.0
+        elif kind == "molten_rock":
+            radius = rng.randf_range(30.0, 60.0)
             damage = 0.0
         elif kind == "ice_patches":
             radius = rng.randf_range(30.0, 60.0)
