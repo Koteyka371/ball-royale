@@ -1,0 +1,4 @@
+{
+  "title": "Gravity Well Trap",
+  "description": "A hazard that slowly pulls all balls in a wide radius towards its center. The closer a ball gets, the stronger the pull. Balls that touch the center take heavy continuous damage."
+}

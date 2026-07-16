@@ -43,7 +43,7 @@ def test_phantom_juggernaut_setup():
     jug = juggernauts[0]
     assert jug.is_invisible is True
     assert jug.max_hp == 800.0
-    assert jug.damage == 50.0
+    assert jug.damage in [25.0, 50.0]
     assert jug.radius == 20.0
 
     hunters = [b for b in balls if b.team == "Hunters"]

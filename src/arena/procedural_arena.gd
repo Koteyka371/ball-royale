@@ -211,7 +211,7 @@ func generate():
         elif r < 0.96:
             kind = "magnet"
         elif r < 0.98:
-            kind = "bumper"
+            kind = "bumper" if randf() < 0.8 else "chain_reaction_bumper"
         elif r < 0.985:
             kind = "quicksand"
         elif r < 0.990:
