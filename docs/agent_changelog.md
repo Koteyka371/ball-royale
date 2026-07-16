@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1021] Mimic Ball (AI Type) — *2026-07-16 17:25:33 UTC*
+
+An AI type that perfectly mimics the visual appearance (color, name, even team tag) of the player or another AI for a short duration to get close, before reverting and exploding or attacking at point-blank range.
+
+---
+
 ## [idea-922] Homing Missiles — *2026-07-16 17:23:40 UTC*
 
 A new ball type that occasionally fires homing projectiles that curve towards the nearest enemy.

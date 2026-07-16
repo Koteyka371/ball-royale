@@ -17526,7 +17526,7 @@
     },
     {
       "id": "idea-1021",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mimic Ball (AI Type)",
@@ -28268,6 +28268,57 @@
         "src/ui/chameleon_skin_item.gd",
         "src/ai/chameleon_skin_item.py",
         "tests/test_chameleon_skin_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1652",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Windstorm Mutator",
+      "description": "A mutator where wind constantly pushes all balls to a random side of the arena.",
+      "allowed_paths": [
+        "src/ai/windstorm_mutator.py",
+        "src/ai/windstorm_mutator.gd",
+        "tests/test_windstorm_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1653",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grappling Hook Buff",
+      "description": "Grappling hook pulls enemies slightly upon hit.",
+      "allowed_paths": [
+        "src/ai/grappling_hook_buff.py",
+        "src/ai/grappling_hook_buff.gd",
+        "tests/test_grappling_hook_buff.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1654",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Volcanic Eruption Arena Event",
+      "description": "Lava pools expand across the map while fireballs rain from above.",
+      "allowed_paths": [
+        "src/arena/volcanic_eruption_arena.py",
+        "src/arena/volcanic_eruption_arena.gd",
+        "tests/test_volcanic_eruption_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
