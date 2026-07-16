@@ -9601,6 +9601,31 @@ func execute(strategy: String, delta: float):
                             if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
                                 world.add_event("soul_fragment_collected", {"ball_id": b_id})
 
+                elif hazard.kind == "molten_rock":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var base_s = 100.0
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                            base_s = float(self.ball.get_meta("base_speed"))
+                        elif "base_speed" in self.ball:
+                            base_s = float(self.ball.base_speed)
+                        self.ball.speed = base_s * 0.1
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["molten_burn_timer"] = 3.0
+                            if self.ball.has("vx") and self.ball.has("vy"):
+                                self.ball["vx"] = self.ball["vx"] * max(0.0, 1.0 - 5.0 * delta)
+                                self.ball["vy"] = self.ball["vy"] * max(0.0, 1.0 - 5.0 * delta)
+                        elif typeof(self.ball) == TYPE_OBJECT:
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("molten_burn_timer", 3.0)
+                            elif "molten_burn_timer" in self.ball:
+                                self.ball.molten_burn_timer = 3.0
+
+                            if "vx" in self.ball and "vy" in self.ball:
+                                self.ball.vx = self.ball.vx * max(0.0, 1.0 - 5.0 * delta)
+                                self.ball.vy = self.ball.vy * max(0.0, 1.0 - 5.0 * delta)
                 elif hazard.kind == "quicksand":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
