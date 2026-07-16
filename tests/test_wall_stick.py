@@ -42,6 +42,8 @@ def test_wall_stick():
     assert ball.x == old_x # no movement
 
     # Wait until it expires
+    ball.vx = -100.0
+    ball.x = 500.0
     action.execute("target_weak", 1.5)
     assert ball.wall_stick_timer == 0.0
     assert ball.is_stunned == False
