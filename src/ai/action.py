@@ -3600,6 +3600,53 @@ class Action:
             enemies = self._get_enemies()
             self.ball.process_mimicry(enemies, delta)
 
+        if getattr(self.ball, "is_disguised", False) and getattr(self.ball, "alive", True):
+            self.ball.disguise_timer = getattr(self.ball, "disguise_timer", 0.0) - delta
+
+            revert = False
+            explode = False
+
+            if self.ball.disguise_timer <= 0:
+                revert = True
+            else:
+                original_team = getattr(self.ball, "original_team", "")
+                enemies_for_spy = [b for b in getattr(self.world, "balls", []) if getattr(b, "alive", True) and b.id != self.ball.id and getattr(b, "team", getattr(b, "ball_type", getattr(b, "BALL_TYPE", ""))) != original_team]
+
+                my_r = getattr(self.ball, "radius", 10.0)
+                for e in enemies_for_spy:
+                    dist = math.hypot(e.x - self.ball.x, e.y - self.ball.y)
+                    e_r = getattr(e, "radius", 10.0)
+                    if dist < my_r + e_r + 15.0:
+                        revert = True
+                        explode = True
+                        break
+
+            if revert:
+                self.ball.is_disguised = False
+                self.ball.color = getattr(self.ball, "original_color", "black")
+                self.ball.ball_type = getattr(self.ball, "original_ball_type", "spy")
+                self.ball.team = getattr(self.ball, "original_team", "spy")
+                self._spawn_skill_particles("smoke_puff")
+
+                if explode:
+                    self._spawn_skill_particles("explosion")
+                    original_team = getattr(self.ball, "original_team", getattr(self.ball, "team", ""))
+                    all_balls = getattr(self.world, "balls", [])
+                    for b in all_balls:
+                        if getattr(b, "alive", True) and b.id != self.ball.id:
+                            b_team = getattr(b, "team", getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")))
+                            if b_team != original_team:
+                                dist = math.hypot(b.x - self.ball.x, b.y - self.ball.y)
+                                if dist < 100.0:
+                                    damage = getattr(self.ball, "damage", 20.0) * 2.5
+                                    b.hp = max(0.0, getattr(b, "hp", 100) - damage)
+                                    if b.hp <= 0:
+                                        b.alive = False
+                                    if dist > 0.1:
+                                        kb = 300.0 * (1.0 - dist / 100.0)
+                                        b.x += (b.x - self.ball.x) / dist * kb * delta
+                                        b.y += (b.y - self.ball.y) / dist * kb * delta
+
         if not hasattr(self.ball, "dot_duration"):
             self.ball.dot_duration = 0.0
             self.ball.dot_damage_per_tick = 0.0
@@ -9457,7 +9504,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                    skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'disguise']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -10783,6 +10830,25 @@ class Action:
                             continue
                         h.frozen_timer = 2.0
 
+            elif skill_name == "disguise":
+                my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "")))
+                candidates = [b for b in getattr(self.world, "balls", []) if getattr(b, "alive", True) and b.id != self.ball.id and getattr(b, "team", getattr(b, "ball_type", getattr(b, "BALL_TYPE", ""))) != my_team]
+                if candidates:
+                    target = min(candidates, key=lambda b: math.hypot(b.x - self.ball.x, b.y - self.ball.y))
+
+                    if not getattr(self.ball, "is_disguised", False):
+                        self.ball.original_color = getattr(self.ball, "color", getattr(self.ball, "COLOR", "black"))
+                        self.ball.original_ball_type = getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "spy"))
+                        self.ball.original_team = my_team
+
+                    self.ball.is_disguised = True
+                    self.ball.disguise_timer = 10.0
+
+                    self.ball.color = getattr(target, "color", getattr(target, "COLOR", "black"))
+                    self.ball.ball_type = getattr(target, "ball_type", getattr(target, "BALL_TYPE", "unknown"))
+                    self.ball.team = getattr(target, "team", getattr(target, "ball_type", getattr(target, "BALL_TYPE", "unknown")))
+
+                    self._spawn_skill_particles("smoke_puff")
             elif skill_name == "time_rewind":
                 allies = [b for b in getattr(self.world, "balls", []) if getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True)]
                 for ally in allies:

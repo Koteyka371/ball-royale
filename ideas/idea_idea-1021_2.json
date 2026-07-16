@@ -1,0 +1,4 @@
+{
+    "title": "Sabotage Drone Skill",
+    "description": "A new AI skill that deploys a tiny, fast drone to attach itself to an enemy ball. Once attached, it reverses their movement inputs for 3 seconds or periodically drains their stamina to disrupt their escape."
+}

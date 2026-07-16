@@ -6373,6 +6373,91 @@ func execute(strategy: String, delta: float):
     if my_ball.get("BALL_TYPE") == "mimic" and my_ball.has_method("process_mimicry"):
         var enemies = self._get_enemies()
         my_ball.process_mimicry(enemies, delta)
+
+    if "is_disguised" in self.ball and self.ball.is_disguised and ("alive" not in self.ball or self.ball.alive):
+        if not "disguise_timer" in self.ball:
+            self.ball.disguise_timer = 0.0
+        self.ball.disguise_timer -= delta
+
+        var revert = false
+        var explode = false
+
+        if self.ball.disguise_timer <= 0:
+            revert = true
+        else:
+            var original_team = self.ball.original_team if "original_team" in self.ball else ""
+            var enemies_for_spy = []
+            if typeof(self.world) == TYPE_OBJECT and self.world.get("balls") != null:
+                for b in self.world.balls:
+                    var b_id = b.id if "id" in b else (b.get("id") if typeof(b) == TYPE_OBJECT else null)
+                    var b_alive = b.alive if "alive" in b else (b.get("alive") if typeof(b) == TYPE_OBJECT else true)
+                    if b_id != self.ball.id and b_alive:
+                        var b_team = "unknown"
+                        if "team" in b: b_team = b.team
+                        elif typeof(b) == TYPE_OBJECT and b.get("team") != null: b_team = b.get("team")
+                        elif "ball_type" in b: b_team = b.ball_type
+                        elif typeof(b) == TYPE_OBJECT and b.get("ball_type") != null: b_team = b.get("ball_type")
+                        elif "BALL_TYPE" in b: b_team = b.BALL_TYPE
+                        elif typeof(b) == TYPE_OBJECT and b.get("BALL_TYPE") != null: b_team = b.get("BALL_TYPE")
+                        if b_team != original_team:
+                            enemies_for_spy.append(b)
+
+            var my_r = self.ball.radius if "radius" in self.ball else (self.ball.get("radius") if typeof(self.ball) == TYPE_OBJECT and self.ball.get("radius") != null else 10.0)
+            for e in enemies_for_spy:
+                var e_x = e.x if "x" in e else e.get("x")
+                var e_y = e.y if "y" in e else e.get("y")
+                var dist = sqrt(pow(e_x - self.ball.x, 2) + pow(e_y - self.ball.y, 2))
+                var e_r = e.radius if "radius" in e else (e.get("radius") if typeof(e) == TYPE_OBJECT and e.get("radius") != null else 10.0)
+                if dist < my_r + e_r + 15.0:
+                    revert = true
+                    explode = true
+                    break
+
+        if revert:
+            self.ball.is_disguised = false
+            self.ball.color = self.ball.original_color if "original_color" in self.ball else "black"
+            self.ball.ball_type = self.ball.original_ball_type if "original_ball_type" in self.ball else "spy"
+            self.ball.team = self.ball.original_team if "original_team" in self.ball else "spy"
+            _spawn_skill_particles("smoke_puff")
+
+            if explode:
+                _spawn_skill_particles("explosion")
+                var original_team = self.ball.original_team if "original_team" in self.ball else (self.ball.team if "team" in self.ball else "")
+                var all_balls = []
+                if typeof(self.world) == TYPE_OBJECT and self.world.get("balls") != null:
+                    all_balls = self.world.balls
+                for b in all_balls:
+                    var b_id = b.id if "id" in b else (b.get("id") if typeof(b) == TYPE_OBJECT else null)
+                    var b_alive = b.alive if "alive" in b else (b.get("alive") if typeof(b) == TYPE_OBJECT else true)
+                    if b_alive and b_id != self.ball.id:
+                        var b_team = "unknown"
+                        if "team" in b: b_team = b.team
+                        elif typeof(b) == TYPE_OBJECT and b.get("team") != null: b_team = b.get("team")
+                        elif "ball_type" in b: b_team = b.ball_type
+                        elif typeof(b) == TYPE_OBJECT and b.get("ball_type") != null: b_team = b.get("ball_type")
+                        elif "BALL_TYPE" in b: b_team = b.BALL_TYPE
+                        elif typeof(b) == TYPE_OBJECT and b.get("BALL_TYPE") != null: b_team = b.get("BALL_TYPE")
+                        if b_team != original_team:
+                            var e_x = b.x if "x" in b else b.get("x")
+                            var e_y = b.y if "y" in b else b.get("y")
+                            var dist = sqrt(pow(e_x - self.ball.x, 2) + pow(e_y - self.ball.y, 2))
+                            if dist < 100.0:
+                                var damage = (self.ball.damage if "damage" in self.ball else 20.0) * 2.5
+                                var curr_hp = b.hp if "hp" in b else (b.get("hp") if typeof(b) == TYPE_OBJECT else 100.0)
+                                var new_hp = max(0.0, curr_hp - damage)
+                                if "hp" in b: b.hp = new_hp
+                                else: b.set("hp", new_hp)
+                                if new_hp <= 0:
+                                    if "alive" in b: b.alive = false
+                                    else: b.set("alive", false)
+                                if dist > 0.1:
+                                    var kb = 300.0 * (1.0 - dist / 100.0)
+                                    if "x" in b:
+                                        b.x += (e_x - self.ball.x) / dist * kb * delta
+                                        b.y += (e_y - self.ball.y) / dist * kb * delta
+                                    else:
+                                        b.set("x", e_x + (e_x - self.ball.x) / dist * kb * delta)
+                                        b.set("y", e_y + (e_y - self.ball.y) / dist * kb * delta)
     if my_ball.has_method("has_meta") and not my_ball.has_meta("dot_duration"):
         my_ball.set_meta("dot_duration", 0.0)
         my_ball.set_meta("dot_damage_per_tick", 0.0)
@@ -17353,7 +17438,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar']
+                var skills = ['arena_shout', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'disguise']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -19648,6 +19733,63 @@ func _use_skill():
                         if h.has_method("set_meta"):
                             h.set_meta("frozen_timer", 2.0)
 
+        elif skill_name == "disguise":
+            var my_team = "unknown"
+            if "team" in self.ball: my_team = self.ball.team
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.get("team") != null: my_team = self.ball.get("team")
+            elif "ball_type" in self.ball: my_team = self.ball.ball_type
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.get("ball_type") != null: my_team = self.ball.get("ball_type")
+            elif "BALL_TYPE" in self.ball: my_team = self.ball.BALL_TYPE
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.get("BALL_TYPE") != null: my_team = self.ball.get("BALL_TYPE")
+
+            var candidates = []
+            if typeof(self.world) == TYPE_OBJECT and self.world.get("balls") != null:
+                for b in self.world.balls:
+                    var b_id = b.id if "id" in b else (b.get("id") if typeof(b) == TYPE_OBJECT else null)
+                    var b_alive = b.alive if "alive" in b else (b.get("alive") if typeof(b) == TYPE_OBJECT else true)
+                    if b_id != self.ball.id and b_alive:
+                        var b_team = "unknown"
+                        if "team" in b: b_team = b.team
+                        elif typeof(b) == TYPE_OBJECT and b.get("team") != null: b_team = b.get("team")
+                        elif "ball_type" in b: b_team = b.ball_type
+                        elif typeof(b) == TYPE_OBJECT and b.get("ball_type") != null: b_team = b.get("ball_type")
+                        elif "BALL_TYPE" in b: b_team = b.BALL_TYPE
+                        elif typeof(b) == TYPE_OBJECT and b.get("BALL_TYPE") != null: b_team = b.get("BALL_TYPE")
+                        if b_team != my_team:
+                            candidates.append(b)
+
+            if candidates.size() > 0:
+                var target = candidates[0]
+                var min_dist = 999999.0
+                for b in candidates:
+                    var e_x = b.x if "x" in b else b.get("x")
+                    var e_y = b.y if "y" in b else b.get("y")
+                    var dist = sqrt(pow(e_x - self.ball.x, 2) + pow(e_y - self.ball.y, 2))
+                    if dist < min_dist:
+                        min_dist = dist
+                        target = b
+
+                var is_disg = self.ball.is_disguised if "is_disguised" in self.ball else (self.ball.get("is_disguised") if typeof(self.ball) == TYPE_OBJECT else false)
+                if not is_disg:
+                    self.ball.original_color = self.ball.color if "color" in self.ball else (self.ball.get("color") if typeof(self.ball) == TYPE_OBJECT else (self.ball.COLOR if "COLOR" in self.ball else "black"))
+                    self.ball.original_ball_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get("ball_type") if typeof(self.ball) == TYPE_OBJECT else (self.ball.BALL_TYPE if "BALL_TYPE" in self.ball else "spy"))
+                    self.ball.original_team = my_team
+
+                self.ball.is_disguised = true
+                self.ball.disguise_timer = 10.0
+
+                var target_color = target.color if "color" in target else (target.get("color") if typeof(target) == TYPE_OBJECT else (target.COLOR if "COLOR" in target else "black"))
+                var target_ball_type = target.ball_type if "ball_type" in target else (target.get("ball_type") if typeof(target) == TYPE_OBJECT else (target.BALL_TYPE if "BALL_TYPE" in target else "unknown"))
+                var target_team = target.team if "team" in target else (target.get("team") if typeof(target) == TYPE_OBJECT else target_ball_type)
+
+                if "color" in self.ball: self.ball.color = target_color
+                else: self.ball.set("color", target_color)
+                if "ball_type" in self.ball: self.ball.ball_type = target_ball_type
+                else: self.ball.set("ball_type", target_ball_type)
+                if "team" in self.ball: self.ball.team = target_team
+                else: self.ball.set("team", target_team)
+
+                _spawn_skill_particles("smoke_puff")
         elif skill_name == "time_rewind":
             var r_allies = []
             if self.world.has("balls"):
