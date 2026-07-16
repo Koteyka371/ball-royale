@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1024] Mirage Hazard — *2026-07-16 17:18:59 UTC*
+
+A procedural hazard that looks like an active Safe Zone or high-tier loot crate from a distance but dissipates upon entering, sometimes revealing a trap (like a snare or minor explosion).
+
+---
+
 ## [idea-1039] Magnetic Bumpers — *2026-07-16 13:36:19 UTC*
 
 Introduce a new 'magnetic_bumper' hazard variant that slightly attracts balls moving slowly nearby towards it, but aggressively repels them once they make contact. This would create gravity-well-like traps that fling unwary players into other hazards or force them to burn skills to escape the pull.
