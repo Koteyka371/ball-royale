@@ -18646,7 +18646,68 @@ class ParallelDimensionsMode(GameMode):
                 world.arena.boosters = [booster for booster in world.arena.boosters if getattr(booster, "kind", "") != "mirror_buff"]
 
 
+class InfiltrationMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Infiltration"
+        self.description = "Players start permanently cloaked. Using skills reveals position."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        setattr(world, "alarm_triggered", False)
+        for b in balls:
+            if getattr(b, "ball_type", "") != "spectator":
+                b.stealth_booster_timer = 9999.0
+                b.last_skill_timer = 0.0
+                b.reveal_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        alarm = getattr(world, "alarm_triggered", False)
+
+        for b in balls:
+            if getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            st = getattr(b, "skill_timer", 0.0)
+            lst = getattr(b, "last_skill_timer", 0.0)
+            rev = getattr(b, "reveal_timer", 0.0)
+
+            if st > lst + 0.5:
+                rev = 3.0
+
+            lst = st
+            if rev > 0:
+                rev -= delta
+
+            b.last_skill_timer = lst
+            b.reveal_timer = rev
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            br = getattr(b, "radius", 10.0)
+
+            arena = getattr(world, "arena", None)
+            if arena:
+                hazards = getattr(arena, "hazards", [])
+                for h in hazards:
+                    if getattr(h, "kind", "") == "laser_tripwire":
+                        hx = getattr(h, "x", 0.0)
+                        hy = getattr(h, "y", 0.0)
+                        hr = getattr(h, "radius", 10.0)
+                        dist = ((bx - hx)**2 + (by - hy)**2)**0.5
+                        if dist < br + hr:
+                            alarm = True
+                            setattr(world, "alarm_triggered", True)
+
+            if alarm or rev > 0:
+                b.stealth_booster_timer = 0.0
+            else:
+                b.stealth_booster_timer = 9999.0
+
+
 GAME_MODES = {
+    "infiltration": InfiltrationMode(),
     "parallel_dimensions": ParallelDimensionsMode(),
     'time_loop_field': TimeLoopFieldMode(),
     "magnetic_bumpers": MagneticBumpersMode(),
