@@ -18445,6 +18445,141 @@ class FloodingArenaMode(GameMode):
                 else:
                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.2  # Speed boost for aquatics in flood
 
+class EchoMode(GameMode):
+    """
+    A game mode where player inputs and actions are 'recorded' every 10 seconds.
+    In the following 10 seconds, shadowy echoes repeat those actions, doubling the
+    player's output but also exposing their predictable patterns.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Echo Mode"
+        self.description = "Records player inputs for 10s, then plays them back as shadowy echoes."
+        self.timer = 0.0
+        self.cycle_duration = 20.0
+        self.record_duration = 10.0
+        self.history = {}
+        self.echoes = {}
+        self.current_cycle = 0
+
+    def tick(self, world, balls, delta):
+        self.timer += delta
+        new_cycle = int(self.timer / self.cycle_duration)
+        if new_cycle > self.current_cycle:
+            self.current_cycle = new_cycle
+            # Cleanup echoes
+            for e_id, e in self.echoes.items():
+                if e in balls:
+                    balls.remove(e)
+            self.echoes.clear()
+            self.history.clear()
+
+        cycle_time = self.timer % self.cycle_duration
+
+        if cycle_time < self.record_duration:
+            # Record phase
+            if self.timer >= self.cycle_duration and not hasattr(self, "cleaned_up"):
+                self.cleaned_up = True
+
+
+
+            # Record every tick for each ball
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "is_echo", False):
+                    continue
+                if b.id not in self.history:
+                    self.history[b.id] = []
+                # Store relevant state
+                state = {
+                    "x": b.x,
+                    "y": b.y,
+                    "vx": b.vx,
+                    "vy": b.vy,
+                    "is_casting": getattr(b, "is_casting", False),
+                    "skill_target": getattr(b, "skill_target", None),
+                    "cd_timer": getattr(b, "cd_timer", 0.0)
+                }
+                self.history[b.id].append(state)
+        else:
+            # Playback phase
+            playback_time = cycle_time - self.record_duration
+
+            # For each ball with a history, ensure there is an echo
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "is_echo", False):
+                    continue
+                if b.id not in self.history:
+                    continue
+
+                if b.id not in self.echoes:
+                    # Spawn echo
+                    import copy
+                    try:
+                        echo = copy.copy(b)
+                    except Exception:
+                        continue
+                    echo.id = f"{b.id}_echo"
+                    echo.is_echo = True
+                    # Optional: alter appearance or properties
+                    if hasattr(echo, "color"):
+                        echo.color = "purple"
+                    balls.append(echo)
+                    self.echoes[b.id] = echo
+
+            # Update echoes
+            for b_id, echo in self.echoes.items():
+                if echo not in balls:
+                    balls.append(echo)
+
+                history = self.history.get(b_id, [])
+                if not history:
+                    continue
+
+                # We need to map playback_time to tick index
+                # assuming 1 delta per tick, tick = playback_time / delta approximately
+                # Let's just track how many ticks passed in playback phase
+                # We will just increment an index. A better way:
+                # Store timestamps or rely on list index
+
+                # To be precise, calculate the expected index:
+                # since delta might vary, let's just use index based on average delta or
+                # actually, we can pop from the queue or maintain a playback index per echo
+
+                if not hasattr(echo, "playback_index"):
+                    echo.playback_index = 0
+
+                idx = echo.playback_index
+                if idx < len(history):
+                    state = history[idx]
+                    echo.x = state["x"]
+                    echo.y = state["y"]
+                    echo.vx = state["vx"]
+                    echo.vy = state["vy"]
+
+                    if "is_casting" in state:
+                        echo.is_casting = state["is_casting"]
+                    if "skill_target" in state:
+                        echo.skill_target = state["skill_target"]
+                    if "cd_timer" in state:
+                        echo.cd_timer = state["cd_timer"]
+
+                    echo.playback_index += 1
+                else:
+                    # Hold last state
+                    pass
+
+    def check_winner(self, world, balls):
+        # Normal elimination rules apply
+        alive_teams = set()
+        for b in balls:
+            if getattr(b, "alive", False) and not getattr(b, "is_echo", False):
+                alive_teams.add(getattr(b, "team", b.id))
+
+        if len(alive_teams) <= 1:
+            return alive_teams.pop() if alive_teams else "Draw"
+        return None
+
+
 GAME_MODES = {
     'time_loop_field': TimeLoopFieldMode(),
     "magnetic_bumpers": MagneticBumpersMode(),
@@ -22823,138 +22958,3 @@ GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
 
 GAME_MODES['flooding_arena'] = FloodingArenaMode()
-
-
-class EchoMode(GameMode):
-    """
-    A game mode where player inputs and actions are 'recorded' every 10 seconds.
-    In the following 10 seconds, shadowy echoes repeat those actions, doubling the
-    player's output but also exposing their predictable patterns.
-    """
-    def __init__(self):
-        super().__init__()
-        self.name = "Echo Mode"
-        self.description = "Records player inputs for 10s, then plays them back as shadowy echoes."
-        self.timer = 0.0
-        self.cycle_duration = 20.0
-        self.record_duration = 10.0
-        self.history = {}
-        self.echoes = {}
-        self.current_cycle = 0
-
-    def tick(self, world, balls, delta):
-        self.timer += delta
-        new_cycle = int(self.timer / self.cycle_duration)
-        if new_cycle > self.current_cycle:
-            self.current_cycle = new_cycle
-            # Cleanup echoes
-            for e_id, e in self.echoes.items():
-                if e in balls:
-                    balls.remove(e)
-            self.echoes.clear()
-            self.history.clear()
-
-        cycle_time = self.timer % self.cycle_duration
-
-        if cycle_time < self.record_duration:
-            # Record phase
-            if self.timer >= self.cycle_duration and not hasattr(self, "cleaned_up"):
-                self.cleaned_up = True
-
-
-
-            # Record every tick for each ball
-            for b in balls:
-                if not getattr(b, "alive", False) or getattr(b, "is_echo", False):
-                    continue
-                if b.id not in self.history:
-                    self.history[b.id] = []
-                # Store relevant state
-                state = {
-                    "x": b.x,
-                    "y": b.y,
-                    "vx": b.vx,
-                    "vy": b.vy,
-                    "is_casting": getattr(b, "is_casting", False),
-                    "skill_target": getattr(b, "skill_target", None),
-                    "cd_timer": getattr(b, "cd_timer", 0.0)
-                }
-                self.history[b.id].append(state)
-        else:
-            # Playback phase
-            playback_time = cycle_time - self.record_duration
-
-            # For each ball with a history, ensure there is an echo
-            for b in balls:
-                if not getattr(b, "alive", False) or getattr(b, "is_echo", False):
-                    continue
-                if b.id not in self.history:
-                    continue
-
-                if b.id not in self.echoes:
-                    # Spawn echo
-                    import copy
-                    try:
-                        echo = copy.copy(b)
-                    except Exception:
-                        continue
-                    echo.id = f"{b.id}_echo"
-                    echo.is_echo = True
-                    # Optional: alter appearance or properties
-                    if hasattr(echo, "color"):
-                        echo.color = "purple"
-                    balls.append(echo)
-                    self.echoes[b.id] = echo
-
-            # Update echoes
-            for b_id, echo in self.echoes.items():
-                if echo not in balls:
-                    balls.append(echo)
-
-                history = self.history.get(b_id, [])
-                if not history:
-                    continue
-
-                # We need to map playback_time to tick index
-                # assuming 1 delta per tick, tick = playback_time / delta approximately
-                # Let's just track how many ticks passed in playback phase
-                # We will just increment an index. A better way:
-                # Store timestamps or rely on list index
-
-                # To be precise, calculate the expected index:
-                # since delta might vary, let's just use index based on average delta or
-                # actually, we can pop from the queue or maintain a playback index per echo
-
-                if not hasattr(echo, "playback_index"):
-                    echo.playback_index = 0
-
-                idx = echo.playback_index
-                if idx < len(history):
-                    state = history[idx]
-                    echo.x = state["x"]
-                    echo.y = state["y"]
-                    echo.vx = state["vx"]
-                    echo.vy = state["vy"]
-
-                    if "is_casting" in state:
-                        echo.is_casting = state["is_casting"]
-                    if "skill_target" in state:
-                        echo.skill_target = state["skill_target"]
-                    if "cd_timer" in state:
-                        echo.cd_timer = state["cd_timer"]
-
-                    echo.playback_index += 1
-                else:
-                    # Hold last state
-                    pass
-
-    def check_winner(self, world, balls):
-        # Normal elimination rules apply
-        alive_teams = set()
-        for b in balls:
-            if getattr(b, "alive", False) and not getattr(b, "is_echo", False):
-                alive_teams.add(getattr(b, "team", b.id))
-
-        if len(alive_teams) <= 1:
-            return alive_teams.pop() if alive_teams else "Draw"
-        return None
