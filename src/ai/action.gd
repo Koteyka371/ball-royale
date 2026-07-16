@@ -9251,6 +9251,15 @@ func execute(strategy: String, delta: float):
                             hazards_to_remove.append(hazard)
                             if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
                                 world.add_event("soul_fragment_collected", {"ball_id": b_id})
+                elif hazard.kind == "avalanche":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var base_s = 100.0
+                        if "base_speed" in self.ball:
+                            base_s = self.ball.base_speed
+                        self.ball.speed = base_s * 0.25
                 elif hazard.kind == "mud_puddle":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
