@@ -23077,7 +23077,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["vampiric_aura_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster", "anvil_piece", "legendary_loot"]:
+                    if not kind in ["vampiric_aura_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "disguised_trap", "booster_trap", "booster_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "mirage_hazard"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -26327,6 +26327,42 @@ func _update_skill_timer(delta: float):
                         if "duration" in hazard: hazard.duration = 0.0
                         elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                         elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+
+                if h_kind == "mirage_hazard":
+                    var h_x = 0.0
+                    if "x" in hazard: h_x = hazard.x
+                    elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                    var h_y = 0.0
+                    if "y" in hazard: h_y = hazard.y
+                    elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+                    var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                    var trigger_radius = 60.0
+                    if "radius" in hazard: trigger_radius = hazard.radius
+                    elif hazard.has_method("get_meta") and hazard.has_meta("radius"): trigger_radius = hazard.get_meta("radius")
+
+                    if dist_sq < trigger_radius * trigger_radius:
+                        if "duration" in hazard: hazard.duration = 0.0
+                        elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+
+                        if randf() < 0.5:
+                            var current_stun = 0.0
+                            if "stun_timer" in self.ball: current_stun = self.ball.stun_timer
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer"): current_stun = self.ball.get_meta("stun_timer")
+                            var new_stun = 3.0
+                            if current_stun > new_stun: new_stun = current_stun
+                            if "stun_timer" in self.ball: self.ball.stun_timer = new_stun
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", new_stun)
+
+                            var base_spd = 2.0
+                            if "base_speed" in self.ball: base_spd = self.ball.base_speed
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"): base_spd = self.ball.get_meta("base_speed")
+                            if "speed" in self.ball: self.ball.speed = base_spd * 0.1
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_spd * 0.1)
+                        else:
+                            var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+                            var new_trap = HazardObj.new(100000, h_x, h_y, 30.0, "proximity_trap", 30.0)
+                            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                                self.world.arena.hazards.append(new_trap)
 
                 if h_kind == "disguised_trap":
                     var h_x = 0.0

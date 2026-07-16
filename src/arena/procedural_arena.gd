@@ -198,6 +198,8 @@ func generate():
             kind = "silence_booster"
         elif r < 0.46:
             kind = "freeze_booster"
+        elif r < 0.48:
+            kind = "mirage_hazard"
         elif r < 0.5:
             kind = "stamina_booster"
         elif r < 0.55:
@@ -257,7 +259,10 @@ func generate():
 
         var radius = 15.0
         var damage = 20.0
-        if kind == "spikes":
+        if kind == "mirage_hazard":
+            radius = 60.0
+            damage = 0.0
+        elif kind == "spikes":
             radius = rng.randf_range(15.0, 30.0)
             damage = 20.0
         elif kind == "lava":

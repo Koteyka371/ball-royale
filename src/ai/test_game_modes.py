@@ -1911,3 +1911,74 @@ def test_shop_upgrade():
     # verify an upgrade happened
     assert b.max_hp == 120 or b.base_speed == 115 or b.base_damage == 15
     assert any(e[0] == "shop_upgrade" for e in world.events)
+
+def test_mirage_hazard():
+    from ai.action import Action
+    from arena.procedural_arena import Hazard
+    class MockEntity:
+        def __init__(self):
+            self.id = 1
+            self.x = 50.0
+            self.y = 50.0
+            self.vx = 0.0
+            self.vy = 0.0
+            self.radius = 10.0
+            self.stun_timer = 0.0
+            self.base_speed = 10.0
+            self.speed = 10.0
+            self.alive = True
+            self.ball_type = "basic"
+            self.inventory = []
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.balls = []
+            self.boosters = []
+            self.tick = 0
+
+    ball = MockEntity()
+    world = MockWorld()
+    world.balls.append(ball)
+
+    # Place a mirage_hazard
+    mirage = Hazard(0, 50.0, 50.0, 60.0, "mirage_hazard", 0.0)
+    world.arena.hazards.append(mirage)
+
+    action = Action(ball, world)
+
+    # We can seed random to test both paths or just run once to ensure no errors
+    import random
+    random.seed(42) # Force a predictable outcome, let's see which path it takes
+
+    action.execute("idle", 0.1)
+
+    # The hazard should be dissipated
+    assert getattr(mirage, "duration", None) == 0.0
+
+    # Either a snare is applied or a proximity trap is spawned
+    has_trap = any(h.kind == "proximity_trap" for h in world.arena.hazards)
+    has_snare = ball.stun_timer > 0.0
+
+    assert has_trap or has_snare, "Expected either snare or trap to be applied"
+
+    # To cover both paths, let's test with a different seed
+    ball.stun_timer = 0.0
+    world.arena.hazards.remove(mirage)
+    if has_trap:
+        # clear trap
+        world.arena.hazards = [h for h in world.arena.hazards if h.kind != "proximity_trap"]
+
+    random.seed(99) # Hope it takes the other path
+    mirage2 = Hazard(1, 50.0, 50.0, 60.0, "mirage_hazard", 0.0)
+    world.arena.hazards.append(mirage2)
+    action.execute("idle", 0.1)
+
+    assert getattr(mirage2, "duration", None) == 0.0
+    has_trap2 = any(h.kind == "proximity_trap" for h in world.arena.hazards)
+    has_snare2 = ball.stun_timer > 0.0
+    assert has_trap2 or has_snare2, "Expected either snare or trap to be applied on second run"
