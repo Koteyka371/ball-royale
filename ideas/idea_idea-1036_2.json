@@ -1,0 +1,4 @@
+{
+  "title": "Relay Race Mode",
+  "description": "Players can only control one ball at a time in a squad. When the active ball dies, the next one spawns in with inherited speed and temporary invulnerability."
+}

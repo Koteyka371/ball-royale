@@ -1,0 +1,4 @@
+{
+  "title": "Doppelganger Mode",
+  "description": "Every player spawns with an AI-controlled doppelganger that mimics their attacks but moves randomly. If a player dies, they take over their doppelganger."
+}
