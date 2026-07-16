@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A hazard that periodically swaps the positions of the two nearest balls when it triggers, forcing players to suddenly adapt to a completely new location in the arena."
+}

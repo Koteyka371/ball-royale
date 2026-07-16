@@ -12735,7 +12735,6 @@ func execute(strategy: String, delta: float):
                                         if triggered_hazards.has(c_id):
                                             continue
                                         triggered_hazards[c_id] = true
-
                                         if typeof(curr_h) == TYPE_OBJECT and curr_h.has_method("set_meta"):
                                             curr_h.set_meta("chain_ready_tick", current_tick + 60)
                                         elif typeof(curr_h) == TYPE_DICTIONARY:
@@ -12992,6 +12991,69 @@ func execute(strategy: String, delta: float):
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("stamina", stam)
                                 if "stamina" in self.ball: self.ball.stamina = stam
                         continue
+
+                    elif hazard.kind == "magnetic_bumper":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        if d < 0.0001: d = 0.0001
+
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+
+                        if d < (b_rad + hazard.radius):
+                            var nx = dx / d
+                            var ny = dy / d
+
+                            var bounce_strength = 2000.0 * delta
+                            self.ball.x += nx * bounce_strength
+                            self.ball.y += ny * bounce_strength
+
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                if "vx" in self.ball:
+                                    self.ball.vx = nx * 4000.0
+                                    self.ball.vy = ny * 4000.0
+                                else:
+                                    self.ball.set_meta("vx", nx * 4000.0)
+                                    self.ball.set_meta("vy", ny * 4000.0)
+                            elif "vx" in self.ball:
+                                self.ball.vx = nx * 4000.0
+                                self.ball.vy = ny * 4000.0
+                        elif d < (b_rad + hazard.radius + 150.0):
+                            var b_vx = 0.0
+                            var b_vy = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta"):
+                                if "vx" in self.ball:
+                                    b_vx = self.ball.vx
+                                    b_vy = self.ball.vy
+                                elif self.ball.has_meta("vx"):
+                                    b_vx = self.ball.get_meta("vx")
+                                    b_vy = self.ball.get_meta("vy")
+                            elif "vx" in self.ball:
+                                b_vx = self.ball.vx
+                                b_vy = self.ball.vy
+
+                            var speed = sqrt(b_vx*b_vx + b_vy*b_vy)
+                            if speed < 250.0:
+                                var nx = dx / d
+                                var ny = dy / d
+                                var pull_strength = 300.0 * delta
+                                self.ball.x -= nx * pull_strength
+                                self.ball.y -= ny * pull_strength
+
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    if "vx" in self.ball:
+                                        self.ball.vx -= nx * 500.0 * delta
+                                        self.ball.vy -= ny * 500.0 * delta
+                                    else:
+                                        var new_vx = b_vx - (nx * 500.0 * delta)
+                                        var new_vy = b_vy - (ny * 500.0 * delta)
+                                        self.ball.set_meta("vx", new_vx)
+                                        self.ball.set_meta("vy", new_vy)
+                                elif "vx" in self.ball:
+                                    self.ball.vx -= nx * 500.0 * delta
+                                    self.ball.vy -= ny * 500.0 * delta
                     elif hazard.kind == "healing_spring":
                         var is_siege = false
                         if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT:

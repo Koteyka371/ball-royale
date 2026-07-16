@@ -7027,6 +7027,36 @@ class Action:
                                         self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y}})
 
                                 continue
+
+                        elif hazard.kind == "magnetic_bumper":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist2 = dx*dx + dy*dy
+                            dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
+
+                            b_rad = getattr(self.ball, "radius", 10.0)
+                            h_rad = getattr(hazard, "radius", 10.0)
+
+                            if dist < (b_rad + h_rad):
+                                # Aggressive repel
+                                nx = dx / dist
+                                ny = dy / dist
+                                bounce_strength = 2000.0 * delta
+                                self.ball.x += nx * bounce_strength
+                                self.ball.y += ny * bounce_strength
+                                self.ball.vx = nx * 4000.0
+                                self.ball.vy = ny * 4000.0
+                            elif dist < (b_rad + h_rad + 150.0):
+                                speed = math.hypot(getattr(self.ball, 'vx', 0.0), getattr(self.ball, 'vy', 0.0))
+                                if speed < 250.0:
+                                    # Slight attract
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    pull_strength = 300.0 * delta
+                                    self.ball.x -= nx * pull_strength
+                                    self.ball.y -= ny * pull_strength
+                                    self.ball.vx -= nx * 500.0 * delta
+                                    self.ball.vy -= ny * 500.0 * delta
                         elif hazard.kind in ["bumper", "chain_reaction_bumper"]:
 
                             dx = self.ball.x - hazard.x
