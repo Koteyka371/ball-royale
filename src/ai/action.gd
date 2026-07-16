@@ -14522,6 +14522,25 @@ func execute(strategy: String, delta: float):
         var vx = dx / delta
         var vy = dy / delta
 
+        var final_wst = 0.0
+        if typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("wall_stick_timer"):
+            final_wst = my_ball["wall_stick_timer"]
+        elif typeof(my_ball) == TYPE_OBJECT:
+            if "wall_stick_timer" in my_ball: final_wst = my_ball.wall_stick_timer
+            elif my_ball.has_method("get_meta") and my_ball.has_meta("wall_stick_timer"): final_wst = my_ball.get_meta("wall_stick_timer")
+
+        if final_wst > 0.0:
+            vx = 0.0
+            vy = 0.0
+            if typeof(my_ball) == TYPE_DICTIONARY:
+                my_ball["x"] = old_x
+                my_ball["y"] = old_y
+            else:
+                if "x" in my_ball: my_ball.x = old_x
+                elif my_ball.has_method("set_meta"): my_ball.set_meta("x", old_x)
+                if "y" in my_ball: my_ball.y = old_y
+                elif my_ball.has_method("set_meta"): my_ball.set_meta("y", old_y)
+
         if typeof(my_ball) == TYPE_DICTIONARY:
             if my_ball.has("_reflection_vx"):
                 vx = my_ball["_reflection_vx"]
