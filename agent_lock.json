@@ -211,10 +211,10 @@
     "agent-26": {
       "name": "Jules Worker 26",
       "area": "innovation",
-      "status": "working",
-      "task_id": "idea-1044",
-      "started_at": "2026-07-16T13:03:32.657150+00:00",
-      "cycles_today": 3
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 2
     },
     "agent-27": {
       "name": "Jules Worker 27",
