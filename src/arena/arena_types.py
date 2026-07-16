@@ -1731,6 +1731,21 @@ class AutumnArena(ProceduralArena):
             tornado.target_radius = 0.0
             self.hazards.append(tornado)
 
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        import random
+        if getattr(self, "is_windy", False) and current_tick % 300 == 0 and random.random() < 0.5:
+            # Spawn dynamic tornado occasionally
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            tornado_id = 17000 + len(self.hazards)
+            from arena.procedural_arena import Hazard
+            tornado = Hazard(id=tornado_id, x=x, y=y, radius=random.uniform(50.0, 100.0), kind="tornado", damage=5.0)
+            tornado.duration = 15.0
+            tornado.vx = random.uniform(-100.0, 100.0)
+            tornado.vy = random.uniform(-100.0, 100.0)
+            self.hazards.append(tornado)
+
 class WinterArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)

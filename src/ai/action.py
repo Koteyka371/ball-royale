@@ -6897,6 +6897,7 @@ class Action:
                                 # Reset movement
                                 if hasattr(self.ball, "vx"): self.ball.vx = 0
                                 if hasattr(self.ball, "vy"): self.ball.vy = 0
+                                self.ball.is_frictionless = True
                                 # Launch randomly (deterministic pseudo-random based on id and tick)
                                 import math as _math
                                 current_tick = getattr(self.world, "tick", 0)

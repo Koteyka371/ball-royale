@@ -861,6 +861,19 @@ class AutumnArena extends ProceduralArena:
 			var h_id = 3000 + hazards.size()
 			hazards.append(ProceduralArena.Hazard.new(h_id, x, y, randf_range(50.0, 100.0), "tornado", 5.0))
 
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		if is_windy and current_tick % 300 == 0 and randf() < 0.5:
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 17000 + hazards.size()
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+			var tornado = ProceduralArena.Hazard.new(h_id, x, y, randf_range(50.0, 100.0), "tornado", 5.0)
+			tornado.set_meta("duration", 15.0)
+			tornado.set_meta("vx", randf_range(-100.0, 100.0))
+			tornado.set_meta("vy", randf_range(-100.0, 100.0))
+			hazards.append(tornado)
+
 class WinterArena extends ProceduralArena:
 	var is_snowing = true
 
