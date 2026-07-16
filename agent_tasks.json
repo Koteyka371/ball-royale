@@ -17798,7 +17798,7 @@
     },
     {
       "id": "idea-1037",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Trap",
@@ -28080,6 +28080,40 @@
         "src/ai/emp_decoy.py",
         "src/ai/emp_decoy.gd",
         "tests/test_emp_decoy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1641",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cryogenic Ammo",
+      "description": "A booster that imbues a ball's attacks with cryogenic properties for a limited time, causing any target hit to leave behind temporary small ice patches where they walk.",
+      "allowed_paths": [
+        "src/ai/cryogenic_ammo.py",
+        "src/ai/cryogenic_ammo.gd",
+        "tests/test_cryogenic_ammo.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1642",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Thermal Jetpack Booster",
+      "description": "A new booster that grants temporary flight, ignoring ground friction, ground traps, and knockback effects for a short duration while significantly boosting movement speed.",
+      "allowed_paths": [
+        "src/ai/thermal_jetpack_booster.py",
+        "src/ai/thermal_jetpack_booster.gd",
+        "tests/test_thermal_jetpack_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

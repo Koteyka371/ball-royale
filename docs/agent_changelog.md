@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1037] Quantum Entanglement Trap — *2026-07-16 01:11:20 UTC*
+
+A trap that links two players together when triggered. Any damage or status effect inflicted on one is fully mirrored onto the other for the duration of the entanglement, leading to crazy indirect combat.
+
+---
+
 ## [idea-1034] Thermal Boots Booster — *2026-07-16 00:56:53 UTC*
 
 Add a new booster type called 'Thermal Boots' that grants temporary immunity to the sliding effect of ice_patches, frictionless zones, and slip zones, allowing players to traverse these hazards with full control.
