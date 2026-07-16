@@ -2006,3 +2006,48 @@ def test_mirage_safe_zone():
         assert getattr(hazard, "active", True) == False
         assert len(world.arena.hazards) > 1
         assert any(getattr(h, "kind", "") == "disguised_trap" for h in world.arena.hazards)
+
+def test_trampoline_effect():
+    class MockEntity(dict):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+
+    class MockHazard:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+            self.name = 'mock_arena'
+            self.weather = 'clear'
+        def update_zone(self, tick, delta):
+            pass
+
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.next_id = 9999
+            self.time = 0.0
+            self.config = {}
+
+    world = MockWorld()
+    ball = MockEntity(
+        id=1, x=90.0, y=100.0, vx=0.0, vy=0.0,
+        radius=10.0, ball_type='basic', team='A',
+        hazard_immunity_timer=0.0,
+        stun_timer=0.0, speed_booster_timer=0.0,
+        attack_timer=0.0
+    )
+    trampoline = MockHazard(kind="trampoline", x=100.0, y=100.0, radius=20.0, damage=0.0)
+    world.arena.hazards.append(trampoline)
+
+    from ai.action import Action
+    action = Action(ball, world)
+    action.execute("move", 0.1)
+
+    assert ball.vx != 0.0 or ball.vy != 0.0
+    assert ball.hazard_immunity_timer >= 1.0 # Due to delta decrement or simply check it's active

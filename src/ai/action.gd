@@ -12442,6 +12442,33 @@ func execute(strategy: String, delta: float):
                                 self.ball.vy = ny * 1000.0
                         continue
 
+                    elif hazard.kind == "trampoline":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+                        if d < (b_rad + hazard.radius) and d > 0.0001:
+                            var nx = dx / d
+                            var ny = dy / d
+                            var boost_speed = 2000.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("vx", nx * boost_speed)
+                                self.ball.set_meta("vy", ny * boost_speed)
+                                var current_imm = 0.0
+                                if self.ball.has_meta("hazard_immunity_timer"):
+                                    current_imm = self.ball.get_meta("hazard_immunity_timer")
+                                self.ball.set_meta("hazard_immunity_timer", max(current_imm, 2.0))
+                            elif "vx" in self.ball:
+                                self.ball.vx = nx * boost_speed
+                                self.ball.vy = ny * boost_speed
+                                var current_imm = 0.0
+                                if "hazard_immunity_timer" in self.ball:
+                                    current_imm = self.ball.hazard_immunity_timer
+                                self.ball.hazard_immunity_timer = max(current_imm, 2.0)
+                        continue
+
 
                     elif hazard.kind == "orbital_accelerator":
                         var dx = self.ball.x - hazard.x
