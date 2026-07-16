@@ -28410,6 +28410,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1660",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Strike Booster",
+      "description": "After attacking, a holographic clone briefly appears in the same spot 2 seconds later to repeat the exact same attack before disappearing.",
+      "allowed_paths": [
+        "src/ai/echo_strike_booster.py",
+        "src/ai/echo_strike_booster.gd",
+        "tests/test_echo_strike_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
