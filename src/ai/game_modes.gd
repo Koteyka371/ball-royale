@@ -31137,6 +31137,156 @@ class FloodingArenaMode extends GameMode:
 						base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
 						if "speed" in b: b.speed = base_speed * 1.2
 
+class EchoMode extends GameMode:
+	var timer: float = 0.0
+	var cycle_duration: float = 20.0
+	var record_duration: float = 10.0
+	var history: Dictionary = {}
+	var echoes: Dictionary = {}
+	var current_cycle: int = 0
+
+	func _init():
+		name = "Echo Mode"
+		description = "Records player inputs for 10s, then plays them back as shadowy echoes."
+
+	func tick(world, balls, delta: float):
+		timer += delta
+		var new_cycle = int(timer / cycle_duration)
+		if new_cycle > current_cycle:
+			current_cycle = new_cycle
+			for e_id in echoes.keys():
+				var e = echoes[e_id]
+				if typeof(balls) == TYPE_ARRAY:
+					balls.erase(e)
+			echoes.clear()
+			history.clear()
+
+		var cycle_time = fmod(timer, cycle_duration)
+
+		if cycle_time < record_duration:
+
+			for b in balls:
+				var is_alive = b.get("alive") if typeof(b) == TYPE_OBJECT else (b.get("alive") if "alive" in b else false)
+				var is_echo = b.get_meta("is_echo") if typeof(b) == TYPE_OBJECT and b.has_meta("is_echo") else (b.get("is_echo") if typeof(b) == TYPE_DICTIONARY and "is_echo" in b else false)
+
+				if not is_alive or is_echo:
+					continue
+
+				var b_id = b.get("id")
+				if not history.has(b_id):
+					history[b_id] = []
+
+				var state = {
+					"x": b.get("x"),
+					"y": b.get("y"),
+					"vx": b.get("vx"),
+					"vy": b.get("vy")
+				}
+
+				if typeof(b) == TYPE_OBJECT:
+					state["is_casting"] = b.get("is_casting") if "is_casting" in b else false
+					state["skill_target"] = b.get("skill_target") if "skill_target" in b else null
+					state["cd_timer"] = b.get("cd_timer") if "cd_timer" in b else 0.0
+				else:
+					state["is_casting"] = b.get("is_casting") if "is_casting" in b else false
+					state["skill_target"] = b.get("skill_target") if "skill_target" in b else null
+					state["cd_timer"] = b.get("cd_timer") if "cd_timer" in b else 0.0
+
+				history[b_id].append(state)
+		else:
+			for b in balls:
+				var is_alive = b.get("alive") if typeof(b) == TYPE_OBJECT else (b.get("alive") if "alive" in b else false)
+				var is_echo = b.get_meta("is_echo") if typeof(b) == TYPE_OBJECT and b.has_meta("is_echo") else (b.get("is_echo") if typeof(b) == TYPE_DICTIONARY and "is_echo" in b else false)
+
+				if not is_alive or is_echo:
+					continue
+
+				var b_id = b.get("id")
+				if not history.has(b_id):
+					continue
+
+				if not echoes.has(b_id):
+					var echo = null
+					if typeof(b) == TYPE_OBJECT:
+						if b.has_method("duplicate"):
+							echo = b.duplicate()
+						else:
+							continue
+					else:
+						echo = b.duplicate()
+
+					echo.id = str(b_id) + "_echo"
+
+					if typeof(echo) == TYPE_OBJECT:
+						echo.set_meta("is_echo", true)
+						if "color" in echo:
+							echo.color = "purple"
+					else:
+						echo["is_echo"] = true
+						if "color" in echo:
+							echo["color"] = "purple"
+
+					balls.append(echo)
+					echoes[b_id] = echo
+
+			for b_id in echoes.keys():
+				var echo = echoes[b_id]
+				if not balls.has(echo):
+					balls.append(echo)
+
+				var hist = history.get(b_id, [])
+				if hist.size() == 0:
+					continue
+
+				var idx = echo.get_meta("playback_index") if typeof(echo) == TYPE_OBJECT and echo.has_meta("playback_index") else (echo.get("playback_index") if typeof(echo) == TYPE_DICTIONARY and "playback_index" in echo else 0)
+
+				if idx < hist.size():
+					var state = hist[idx]
+					if typeof(echo) == TYPE_OBJECT:
+						echo.set("x", state["x"])
+						echo.set("y", state["y"])
+						echo.set("vx", state["vx"])
+						echo.set("vy", state["vy"])
+						if "is_casting" in state:
+							echo.set("is_casting", state["is_casting"])
+						if "skill_target" in state:
+							echo.set("skill_target", state["skill_target"])
+						if "cd_timer" in state:
+							echo.set("cd_timer", state["cd_timer"])
+						echo.set_meta("playback_index", idx + 1)
+					else:
+						echo["x"] = state["x"]
+						echo["y"] = state["y"]
+						echo["vx"] = state["vx"]
+						echo["vy"] = state["vy"]
+						if "is_casting" in state:
+							echo["is_casting"] = state["is_casting"]
+						if "skill_target" in state:
+							echo["skill_target"] = state["skill_target"]
+						if "cd_timer" in state:
+							echo["cd_timer"] = state["cd_timer"]
+						echo["playback_index"] = idx + 1
+
+	func check_winner(world, balls):
+		var alive_teams = {}
+		for b in balls:
+			var is_alive = b.get("alive") if typeof(b) == TYPE_OBJECT else (b.get("alive") if "alive" in b else false)
+			var is_echo = b.get_meta("is_echo") if typeof(b) == TYPE_OBJECT and b.has_meta("is_echo") else (b.get("is_echo") if typeof(b) == TYPE_DICTIONARY and "is_echo" in b else false)
+			if is_alive and not is_echo:
+				var t = b.get("team") if typeof(b) == TYPE_OBJECT else (b.get("team") if "team" in b else null)
+				if t == null:
+					t = b.get("id") if typeof(b) == TYPE_OBJECT else b.get("id")
+				alive_teams[t] = true
+
+		if alive_teams.size() <= 1:
+			var keys = alive_teams.keys()
+			if keys.size() > 0:
+				return keys[0]
+			else:
+				return "Draw"
+		return null
+
+
 GAME_MODES = {
 	'time_loop_field': TimeLoopFieldMode.new(),
 	"sniper_only": SniperOnlyMode.new(),
@@ -31256,6 +31406,7 @@ GAME_MODES = {
 	"team_deathmatch": TeamDeathmatchMode.new(),
 	"zombie_infection": ZombieInfectionMode.new(),
 	"boss_fight": BossFightMode.new(),
+	"echo": EchoMode.new(),
 	"juggernaut": JuggernautMode.new(),
 	"guild_boss_fight": GuildBossFightMode.new(),
 	"gvg": GuildVsGuildMode.new(),
