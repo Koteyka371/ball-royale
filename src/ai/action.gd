@@ -12591,6 +12591,50 @@ func execute(strategy: String, delta: float):
                                 self.ball.vy = ny * 1000.0
                         continue
 
+                    elif hazard.kind == "trampoline":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+                        if d < (b_rad + hazard.radius) and d > 0.0001:
+                            var nx = dx / d
+                            var ny = dy / d
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("vx", nx * 1500.0)
+                                self.ball.set_meta("vy", ny * 1500.0)
+                            elif "vx" in self.ball:
+                                self.ball.vx = nx * 1500.0
+                                self.ball.vy = ny * 1500.0
+
+                            var cur_sb = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
+                                cur_sb = float(self.ball.get_meta("speed_boost_timer"))
+                            elif "speed_boost_timer" in self.ball:
+                                cur_sb = float(self.ball.speed_boost_timer)
+
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("speed_boost_timer", max(cur_sb, 2.0))
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"):
+                                self.ball.speed_boost_timer = max(cur_sb, 2.0)
+                            elif "speed_boost_timer" in self.ball:
+                                self.ball.speed_boost_timer = max(cur_sb, 2.0)
+
+                            var cur_hi = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hazard_immunity_timer"):
+                                cur_hi = float(self.ball.get_meta("hazard_immunity_timer"))
+                            elif "hazard_immunity_timer" in self.ball:
+                                cur_hi = float(self.ball.hazard_immunity_timer)
+
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("hazard_immunity_timer", max(cur_hi, 2.0))
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hazard_immunity_timer"):
+                                self.ball.hazard_immunity_timer = max(cur_hi, 2.0)
+                            elif "hazard_immunity_timer" in self.ball:
+                                self.ball.hazard_immunity_timer = max(cur_hi, 2.0)
+                        continue
+
 
                     elif hazard.kind == "orbital_accelerator":
                         var dx = self.ball.x - hazard.x

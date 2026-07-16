@@ -1275,6 +1275,9 @@ class ProceduralArena:
                 elif random.random() < 0.05:
                     kind = "time_rift"
                     damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "trampoline"
+                    damage = 0.0
                 else:
                     if is_temporal_rift:
                         kind = "temporal_rift"

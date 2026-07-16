@@ -256,6 +256,8 @@ func generate():
             kind = "friendly_fire_reflect_booster"
         elif r < 0.999995:
             kind = "mirage_safe_zone"
+        elif r < 0.999996:
+            kind = "trampoline"
         else:
             kind = "switch"
 
