@@ -47,9 +47,7 @@ def test_ice_slide_multiplier():
     # Target not on ice patch, so damage_reduction = 1.0
     # Mock the random check
     import random
-    import sys
-    sys.modules['random'] = __import__('unittest.mock').mock.Mock()
-    sys.modules['random'].random = lambda: 0.0
+    random.seed(42)
 
     print(f"Before attempt damage: target HP = {target.hp}")
 
