@@ -17543,7 +17543,7 @@
     },
     {
       "id": "idea-1022",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Minefield",
@@ -28029,6 +28029,40 @@
         "src/ai/cosmic_string.py",
         "src/ai/cosmic_string.gd",
         "tests/test_cosmic_string.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1638",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Supply Drops",
+      "description": "Periodically drop powerful, game-changing items from the sky. The drop location is broadcasted in advance, creating a hotspot for skirmishes.",
+      "allowed_paths": [
+        "src/ai/random_supply_drops.py",
+        "src/ai/random_supply_drops.gd",
+        "tests/test_random_supply_drops.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1639",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supernova Powerup",
+      "description": "A rare drop that causes the collecting ball to explode upon receiving fatal damage instead of dying immediately. The explosion damages and knocks back all nearby balls, and the player is resurrected with 1 HP and brief invulnerability.",
+      "allowed_paths": [
+        "src/ai/supernova_powerup.py",
+        "src/ai/supernova_powerup.gd",
+        "tests/test_supernova_powerup.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

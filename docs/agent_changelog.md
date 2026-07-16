@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1022] Magnetic Minefield — *2026-07-16 00:53:36 UTC*
+
+A hazard zone where proximity mines are strongly attracted to nearby moving entities (players and AI alike). If you move quickly through it, they pull towards you; if you move slowly, their tracking distance is significantly reduced.
+
+---
+
 ## [idea-862] Bumper Car Powerup — *2026-07-16 00:21:26 UTC*
 
 A temporary booster that completely removes fall-off damage and instead causes massive knockback to anyone touched by the active player.
