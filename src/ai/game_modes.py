@@ -14785,7 +14785,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse", "celestial_alignment"]
         import random
         self.random = random
 
@@ -14844,6 +14844,7 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "earthquake": booster_kind = "seismic_booster"
             elif self.current_weather == "giant_flood": booster_kind = "life_jacket_booster"
             elif self.current_weather == "solar_eclipse": booster_kind = "vision_booster"
+            elif self.current_weather == "celestial_alignment": booster_kind = "starlight_booster"
 
             # Spawn a Boss / Mega-Minion for the current weather
             if hasattr(world, "balls"):
@@ -14857,7 +14858,8 @@ class ExtremeWeatherMode(GameMode):
                     "ice": "Frost Titan",
                     "earthquake": "Tremor Behemoth",
                     "giant_flood": "Ocean Overlord",
-                    "solar_eclipse": "Umbra Lord"
+                    "solar_eclipse": "Umbra Lord",
+                    "celestial_alignment": "Starlight Boss"
                 }
 
                 boss_name = boss_map.get(self.current_weather)
@@ -15031,6 +15033,15 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "solar_eclipse":
                 if not getattr(b, "vision_booster_timer", 0.0) > 0 and not getattr(b, "mega_vision_booster_timer", 0.0) > 0:
                     b.perception_radius = 50.0
+            elif self.current_weather == "celestial_alignment":
+                if self.random.random() < 0.05:
+                    if hasattr(world, "events"):
+                        target_id = getattr(b, "id", 0)
+                        # Ensure we don't accidentally attack boss
+                        if getattr(b, "team", "") != "boss":
+                            world.events.append({"type": "starlight_projectile", "data": {"target_id": target_id, "damage": 15.0}})
+                            if hasattr(b, "take_damage"): b.take_damage(15.0 * delta)
+                            elif hasattr(b, "hp"): b.hp -= 15.0 * delta
 
         if self.current_weather == "earthquake" and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:

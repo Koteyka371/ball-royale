@@ -24037,7 +24037,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse", "celestial_alignment"]
 
 	func _init():
 		name = "Extreme Weather"
@@ -24122,6 +24122,7 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "earthquake": booster_kind = "seismic_booster"
 			elif current_weather == "giant_flood": booster_kind = "life_jacket_booster"
 			elif current_weather == "solar_eclipse": booster_kind = "vision_booster"
+			elif current_weather == "celestial_alignment": booster_kind = "starlight_booster"
 
 			var boss_map = {
 				"blizzard": "Frost Titan",
@@ -24133,7 +24134,8 @@ class ExtremeWeatherMode extends GameMode:
 				"ice": "Frost Titan",
 				"earthquake": "Tremor Behemoth",
 				"giant_flood": "Ocean Overlord",
-				"solar_eclipse": "Umbra Lord"
+				"solar_eclipse": "Umbra Lord",
+				"celestial_alignment": "Starlight Boss"
 			}
 
 			if current_weather in boss_map and world != null and "balls" in world:
@@ -24322,6 +24324,19 @@ class ExtremeWeatherMode extends GameMode:
 						b.set_meta("perception_radius", 50.0)
 					else:
 						b.perception_radius = 50.0
+			elif current_weather == "celestial_alignment":
+				if randf() < 0.05:
+					if typeof(world) != TYPE_DICTIONARY and "events" in world:
+						var t_id = 0
+						if "id" in b: t_id = b.id
+						var team = ""
+						if "team" in b: team = b.team
+						if team != "boss":
+							world.events.append({"type": "starlight_projectile", "data": {"target_id": t_id, "damage": 15.0}})
+							if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"):
+								b.take_damage(15.0 * delta)
+							elif "hp" in b:
+								b.hp -= 15.0 * delta
 
 		if current_weather == "earthquake" and world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
 			for h in world.arena.hazards:
