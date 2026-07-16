@@ -1,0 +1,4 @@
+{
+  "title": "Sabotage Decoys",
+  "description": "An ability that places fake booster items around the arena. If an enemy AI or player picks it up, instead of granting a buff, it detonates, dealing damage and temporarily disabling the victim's skills."
+}
