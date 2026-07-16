@@ -28221,6 +28221,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1649",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Energy Battery",
+      "description": "A booster item that stores kinetic energy from taking damage and converting a percentage of it into a massive movement speed and knockback buff once the energy threshold is reached.",
+      "allowed_paths": [
+        "src/ai/kinetic_energy_battery.py",
+        "src/ai/kinetic_energy_battery.gd",
+        "tests/test_kinetic_energy_battery.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
