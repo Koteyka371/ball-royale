@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-957] Sticky Walls — *2026-07-16 20:17:08 UTC*
+
+Balls that hit the wall stick to it for a few seconds.
+
+---
+
 ## [idea-1035] Sliding Momentum Bash — *2026-07-16 20:17:02 UTC*
 
 Introduce a new damage multiplier mechanic where a ball sliding on an ice_patches hazard deals significantly more damage upon collision, proportional to its current velocity, rewarding players for successfully targeting enemies while sliding.
