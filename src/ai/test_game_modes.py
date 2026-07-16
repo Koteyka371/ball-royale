@@ -1963,3 +1963,46 @@ def test_time_rift():
     # Since proj is at x=100 and moves negative rapidly, it hits the left wall (x=0) and bounces back to positive!
     # So the physics engine is working correctly, it's just bouncing off the wall.
     # We can skip the assertion that it remains negative over multiple ticks because wall bounces are expected in the normal simulation.
+
+def test_mirage_safe_zone():
+    from ai.action import Action
+    ball = type('MockEntity', (), {'id': 1, 'x': 50.0, 'y': 50.0, 'radius': 10.0, 'ball_type': 'basic', 'vx': 0.0, 'vy': 0.0, 'team': 'team_1', 'alive': True, 'hp': 100})()
+    world = type('MockWorld', (), {'balls': [ball], 'time': 10.0, 'next_id': 9999})()
+
+    hazard = type('Hazard', (), {})()
+    hazard.id = 100
+    hazard.x = 50.0
+    hazard.y = 50.0
+    hazard.radius = 150.0
+    hazard.kind = 'mirage_safe_zone'
+    hazard.damage = 0.0
+    hazard.duration = 10.0
+    hazard.active = True
+
+    world.arena = type('MockArena', (), {'width': 2000.0, 'height': 2000.0, 'hazards': [hazard], 'weather': 'clear'})()
+
+    # We use random seed to ensure trap spawns
+    import random
+    random.seed(42)
+
+    action = Action(ball, world)
+    action.execute("idle", 0.1)
+
+    # Check if mirage was destroyed
+    assert getattr(hazard, "duration", 10.0) == 0.0
+    assert getattr(hazard, "active", True) == False
+
+    # Check if disguised_trap was spawned (50% chance, seed 42 makes random.random() return 0.639..., wait let's just mock random.random)
+    import unittest.mock
+    with unittest.mock.patch('random.random', return_value=0.1):
+        # Reset hazard
+        hazard.duration = 10.0
+        hazard.active = True
+        world.arena.hazards = [hazard]
+        action = Action(ball, world)
+        action.execute("idle", 0.1)
+
+        assert getattr(hazard, "duration", 10.0) == 0.0
+        assert getattr(hazard, "active", True) == False
+        assert len(world.arena.hazards) > 1
+        assert any(getattr(h, "kind", "") == "disguised_trap" for h in world.arena.hazards)

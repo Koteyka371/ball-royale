@@ -233,6 +233,9 @@ class ProceduralArena:
             elif kind == "healing_spring":
                 radius = random.uniform(40.0, 80.0)
                 damage = -20.0
+            elif kind == "mirage_safe_zone":
+                radius = 150.0
+                damage = 0.0
             elif kind == "temporal_rift":
                 radius = random.uniform(60.0, 100.0)
                 damage = 0.0
@@ -1226,6 +1229,9 @@ class ProceduralArena:
                     damage = 0.0
                 elif random.random() < 0.10:
                     kind = "placeable_trap_item"
+                    damage = 0.0
+                elif random.random() < 0.05:
+                    kind = "mirage_safe_zone"
                     damage = 0.0
                 elif random.random() < 0.05:
                     kind = "vampiric_puddle"
