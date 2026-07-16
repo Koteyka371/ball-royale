@@ -28631,6 +28631,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1673",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflect Shield Booster",
+      "description": "A new booster item that grants a temporary shield that reflects projectiles back at the attacker for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/reflect_shield_booster.py",
+        "src/ai/reflect_shield_booster.gd",
+        "tests/test_reflect_shield_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1674",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Abyssal Labyrinth",
+      "description": "A new game mode where the map is a maze that slowly shifts and changes its layout over time. Balls must find the center to win.",
+      "allowed_paths": [
+        "src/ai/abyssal_labyrinth.py",
+        "src/ai/abyssal_labyrinth.gd",
+        "tests/test_abyssal_labyrinth.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
