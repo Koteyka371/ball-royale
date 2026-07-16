@@ -703,6 +703,114 @@ class GameMode:
 							if b.has_meta("_original_base_damage"):
 								b.base_damage = b.get_meta("_original_base_damage")
 								b.damage = b.base_damage
+
+			var missiles = []
+			if world != null and typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						kind = h.get("kind", "")
+					elif "kind" in h:
+						kind = h.kind
+					if kind == "homing_missile":
+						missiles.append(h)
+
+			for m in missiles:
+				var mx = m.x if typeof(m) != TYPE_DICTIONARY else m.get("x", 0.0)
+				var my = m.y if typeof(m) != TYPE_DICTIONARY else m.get("y", 0.0)
+				var owner_id = null
+				if typeof(m) == TYPE_DICTIONARY:
+					owner_id = m.get("owner_id")
+				elif "owner_id" in m:
+					owner_id = m.owner_id
+				elif m.has_method("get_meta") and m.has_meta("owner_id"):
+					owner_id = m.get_meta("owner_id")
+
+				var target_x = 500.0
+				var target_y = 500.0
+				if typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if "safe_zone_x" in world.arena: target_x = world.arena.safe_zone_x
+					elif "width" in world.arena: target_x = world.arena.width / 2.0
+					if "safe_zone_y" in world.arena: target_y = world.arena.safe_zone_y
+					elif "height" in world.arena: target_y = world.arena.height / 2.0
+
+				var min_dist = 9999999.0
+				for b in balls:
+					var b_alive = b.alive if typeof(b) != TYPE_DICTIONARY else b.get("alive", false)
+					if not b_alive: continue
+					var bid = b.id if typeof(b) != TYPE_DICTIONARY else b.get("id")
+					if bid == owner_id: continue
+
+					var bx = b.x if typeof(b) != TYPE_DICTIONARY else b.get("x", 0.0)
+					var by = b.y if typeof(b) != TYPE_DICTIONARY else b.get("y", 0.0)
+					var dist = sqrt(pow(bx - mx, 2) + pow(by - my, 2))
+					if dist < min_dist:
+						min_dist = dist
+						target_x = bx
+						target_y = by
+
+				var dx = target_x - mx
+				var dy = target_y - my
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > 0:
+					var mvx = m.vx if "vx" in m else (m.get("vx", 0.0) if typeof(m) == TYPE_DICTIONARY else (m.get_meta("vx") if m.has_method("get_meta") and m.has_meta("vx") else 0.0))
+					var mvy = m.vy if "vy" in m else (m.get("vy", 0.0) if typeof(m) == TYPE_DICTIONARY else (m.get_meta("vy") if m.has_method("get_meta") and m.has_meta("vy") else 0.0))
+
+					if mvx == 0.0 and mvy == 0.0:
+						mvx = (dx/dist) * 300.0
+						mvy = (dy/dist) * 300.0
+
+					var desired_vx = (dx/dist) * 300.0
+					var desired_vy = (dy/dist) * 300.0
+
+					var steer_factor = 5.0 * delta
+					mvx += (desired_vx - mvx) * steer_factor
+					mvy += (desired_vy - mvy) * steer_factor
+
+					mx += mvx * delta
+					my += mvy * delta
+
+					if typeof(m) == TYPE_DICTIONARY:
+						m["vx"] = mvx
+						m["vy"] = mvy
+						m["x"] = mx
+						m["y"] = my
+					else:
+						if "vx" in m: m.vx = mvx
+						elif m.has_method("set_meta"): m.set_meta("vx", mvx)
+						if "vy" in m: m.vy = mvy
+						elif m.has_method("set_meta"): m.set_meta("vy", mvy)
+						if "x" in m: m.x = mx
+						if "y" in m: m.y = my
+
+				var hit = false
+				var m_radius = m.radius if typeof(m) != TYPE_DICTIONARY else m.get("radius", 10.0)
+				var m_damage = m.damage if typeof(m) != TYPE_DICTIONARY else m.get("damage", 20.0)
+
+				for b in balls:
+					var b_alive = b.alive if typeof(b) != TYPE_DICTIONARY else b.get("alive", false)
+					if not b_alive: continue
+					var bid = b.id if typeof(b) != TYPE_DICTIONARY else b.get("id")
+					if bid == owner_id: continue
+
+					var bx = b.x if typeof(b) != TYPE_DICTIONARY else b.get("x", 0.0)
+					var by = b.y if typeof(b) != TYPE_DICTIONARY else b.get("y", 0.0)
+					var b_radius = b.radius if typeof(b) != TYPE_DICTIONARY else b.get("radius", 15.0)
+
+					var b_dist = sqrt(pow(bx - mx, 2) + pow(by - my, 2))
+					if b_dist < m_radius + b_radius:
+						if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+							b.take_damage(m_damage)
+						elif typeof(b) == TYPE_DICTIONARY:
+							b["hp"] -= m_damage
+						elif "hp" in b:
+							b.hp -= m_damage
+						hit = true
+
+				if hit or dist < 10.0:
+					if typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena:
+						world.arena.hazards.erase(m)
+
 	func on_ball_died(world, ball, killer = null) -> void:
 		if killer != null and "id" in ball and "id" in killer:
 			var pm = null
