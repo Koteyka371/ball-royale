@@ -17662,7 +17662,7 @@
     },
     {
       "id": "idea-1029",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Rift Hazard",
@@ -28114,6 +28114,23 @@
         "src/ai/thermal_jetpack_booster.py",
         "src/ai/thermal_jetpack_booster.gd",
         "tests/test_thermal_jetpack_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1643",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Grenade",
+      "description": "A throwable grenade that upon detonation instantly swaps the positions of the thrower and the closest enemy caught in its blast radius. If no enemy is hit, it just deals minor area damage.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_grenade.py",
+        "src/ai/quantum_swap_grenade.gd",
+        "tests/test_quantum_swap_grenade.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1029] Time Rift Hazard — *2026-07-16 01:32:30 UTC*
+
+A new procedural hazard called 'Time Rift' that periodically reverses the direction of all projectiles and halves the movement speed of any ball caught in its radius for a few seconds. The effect visually looks like a distorted purple bubble.
+
+---
+
 ## [idea-1037] Quantum Entanglement Trap — *2026-07-16 01:11:20 UTC*
 
 A trap that links two players together when triggered. Any damage or status effect inflicted on one is fully mirrored onto the other for the duration of the entanglement, leading to crazy indirect combat.
