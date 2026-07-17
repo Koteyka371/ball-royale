@@ -23220,3 +23220,73 @@ GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
 GAME_MODES['flooding_arena'] = FloodingArenaMode()
 import ai.slingshot
 GAME_MODES['slingshot'] = ai.slingshot.SlingshotMode()
+
+class QuantumShiftHazardsMode(GameMode):
+    """
+    A game mode where every basic hazard (like spike traps or puddles) randomly shifts
+    into a quantum teleporter for 5 seconds when activated, creating chaotic movement possibilities.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Shift Hazards"
+        self.description = "Basic hazards randomly shift into quantum teleporters for 5 seconds when activated."
+        self.shifted_hazards = {}
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.shifted_hazards.clear()
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+
+        if not getattr(world, "arena", None) or not getattr(world.arena, "hazards", None):
+            return
+
+        expired = []
+        for h_id, data in self.shifted_hazards.items():
+            data["timer"] -= delta
+            if data["timer"] <= 0:
+                expired.append(h_id)
+
+        for h_id in expired:
+            data = self.shifted_hazards.pop(h_id)
+            for h in world.arena.hazards:
+                if getattr(h, "id", None) == h_id:
+                    h.kind = data["original_kind"]
+                    h.damage = data.get("original_damage", 0.0)
+                    break
+
+        basic_hazards = ["puddle", "spike_trap", "trap", "mud_puddle", "rock", "spikes", "acid_puddle", "tar_puddle"]
+
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            br = getattr(b, "radius", 10.0)
+
+            for h in world.arena.hazards:
+                hid = getattr(h, "id", None)
+                if hid in self.shifted_hazards:
+                    continue
+
+                h_kind = getattr(h, "kind", "")
+                if h_kind in basic_hazards:
+                    hx = getattr(h, "x", 0.0)
+                    hy = getattr(h, "y", 0.0)
+                    hr = getattr(h, "radius", 10.0)
+
+                    dist = math.hypot(bx - hx, by - hy)
+                    if dist <= br + hr:
+                        if random.random() < 0.25:
+                            self.shifted_hazards[hid] = {
+                                "timer": 5.0,
+                                "original_kind": h_kind,
+                                "original_damage": getattr(h, "damage", 0.0)
+                            }
+                            h.kind = "quantum_teleporter"
+                            h.damage = 0.0
+
+GAME_MODES["quantum_shift_hazards"] = QuantumShiftHazardsMode()

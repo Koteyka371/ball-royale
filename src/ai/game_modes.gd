@@ -36510,3 +36510,94 @@ GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
 
 GAME_MODES['flooding_arena'] = FloodingArenaMode.new()
 GAME_MODES["slingshot"] = preload("res://src/ai/slingshot.gd").SlingshotMode.new()
+
+class QuantumShiftHazardsMode:
+	extends GameMode
+
+	var shifted_hazards = {}
+
+	func _init():
+		name = "Quantum Shift Hazards"
+		description = "Basic hazards randomly shift into quantum teleporters for 5 seconds when activated."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		shifted_hazards.clear()
+
+	func tick(world, balls, delta=0.016):
+		if world == null or not "arena" in world or world.arena == null:
+			return
+
+		var hazards = []
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if world.arena.has("hazards"):
+				hazards = world.arena.hazards
+		else:
+			if "hazards" in world.arena:
+				hazards = world.arena.hazards
+
+		var expired = []
+		for h_id in shifted_hazards.keys():
+			var data = shifted_hazards[h_id]
+			data["timer"] -= delta
+			if data["timer"] <= 0:
+				expired.append(h_id)
+
+		for h_id in expired:
+			var data = shifted_hazards[h_id]
+			shifted_hazards.erase(h_id)
+			for h in hazards:
+				var hid = h.get("id") if typeof(h) == TYPE_DICTIONARY else h.id
+				if hid == h_id:
+					if typeof(h) == TYPE_DICTIONARY:
+						h["kind"] = data["original_kind"]
+						h["damage"] = data["original_damage"]
+					else:
+						h.set("kind", data["original_kind"])
+						h.set("damage", data["original_damage"])
+					break
+
+		var basic_hazards = ["puddle", "spike_trap", "trap", "mud_puddle", "rock", "spikes", "acid_puddle", "tar_puddle"]
+
+		for b in balls:
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if b.get("alive") != null else true)
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+			var br = b.get("radius") if typeof(b) == TYPE_DICTIONARY else (b.get("radius") if b.get("radius") != null else 10.0)
+
+			for h in hazards:
+				var hid = h.get("id") if typeof(h) == TYPE_DICTIONARY else h.id
+				if shifted_hazards.has(hid):
+					continue
+
+				var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY else h.get("kind")
+				if h_kind in basic_hazards:
+					var hx = h.get("x") if typeof(h) == TYPE_DICTIONARY else h.get("x")
+					var hy = h.get("y") if typeof(h) == TYPE_DICTIONARY else h.get("y")
+					var hr = h.get("radius") if typeof(h) == TYPE_DICTIONARY else h.get("radius")
+
+					var dx = bx - hx
+					var dy = by - hy
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist <= br + hr:
+						if randf() < 0.25:
+							var h_dmg = h.get("damage") if typeof(h) == TYPE_DICTIONARY else (h.get("damage") if h.get("damage") != null else 0.0)
+							shifted_hazards[hid] = {
+								"timer": 5.0,
+								"original_kind": h_kind,
+								"original_damage": h_dmg
+							}
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["kind"] = "quantum_teleporter"
+								h["damage"] = 0.0
+							else:
+								h.set("kind", "quantum_teleporter")
+								h.set("damage", 0.0)
+
+GAME_MODES["quantum_shift_hazards"] = QuantumShiftHazardsMode.new()
