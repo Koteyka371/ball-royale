@@ -18257,7 +18257,7 @@
     },
     {
       "id": "idea-1064",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Bumper",
@@ -29085,6 +29085,57 @@
         "src/ai/stasis_bubble.py",
         "src/ai/stasis_bubble.gd",
         "tests/test_stasis_bubble.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1700",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Balloon Trap",
+      "description": "Players can deploy a balloon that perfectly mirrors their appearance and movement patterns, but has zero health. When an enemy pops it, it releases a small cloud of confusing gas that temporarily randomizes their movement controls.",
+      "allowed_paths": [
+        "src/arena/decoy_balloon_trap.py",
+        "src/arena/decoy_balloon_trap.gd",
+        "tests/test_decoy_balloon_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1701",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Minefield Mode",
+      "description": "A game mode where the arena is seeded with dormant decoys that activate and walk around randomly when players approach. They act as moving proximity mines that confuse and detonate, adding a stealth and careful movement requirement to navigation.",
+      "allowed_paths": [
+        "src/ai/decoy_minefield.py",
+        "src/ai/decoy_minefield.gd",
+        "tests/test_decoy_minefield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1702",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Holographic projection traps",
+      "description": "Traps that, when triggered, spawn 3 fake holographic clones of the player that triggered it. The clones mirror the player's inputs but cannot deal damage. Any enemy attacking a hologram is revealed on the minimap and takes minor feedback damage.",
+      "allowed_paths": [
+        "src/arena/holographic_projection_traps.py",
+        "src/arena/holographic_projection_traps.gd",
+        "tests/test_holographic_projection_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

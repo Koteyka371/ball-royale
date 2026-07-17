@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1064] Quantum Entanglement Bumper — *2026-07-17 04:47:04 UTC*
+
+A bumper that links two balls together dynamically. When one ball hits the bumper, its movement and physics properties are temporarily mirrored or synchronized with a random nearby opponent, forcing them to coordinate or face collisions.
+
+---
+
 ## [idea-1076] Decoy Bomb Upgrade — *2026-07-17 04:39:43 UTC*
 
 A feature where player decoys automatically detonate upon touching an enemy, creating a large blast radius that deals significant damage and briefly stuns all enemies hit.
