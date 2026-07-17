@@ -20674,6 +20674,32 @@ func _use_skill():
     if skill_timer <= 0.0 or can_recast:
         if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
             self.ball.use_skill()
+        if self.world != null and typeof(self.world) == TYPE_OBJECT and self.world.has("arena") and self.world.arena != null and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+            for hazard in self.world.arena.hazards:
+                var h_kind = ""
+                if "kind" in hazard: h_kind = hazard.kind
+                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+                if h_kind == "sound_mine":
+                    var h_exploded = false
+                    if "is_exploded" in hazard: h_exploded = hazard.is_exploded
+                    elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("is_exploded"): h_exploded = hazard.get_meta("is_exploded")
+                    if not h_exploded:
+                        var h_x = 0.0
+                        if "x" in hazard: h_x = hazard.x
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                        var h_y = 0.0
+                        if "y" in hazard: h_y = hazard.y
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+                        var h_radius = 150.0
+                        if "radius" in hazard: h_radius = hazard.radius
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("radius"): h_radius = hazard.get_meta("radius")
+                        var dx = self.ball.x - h_x
+                        var dy = self.ball.y - h_y
+                        if (dx*dx + dy*dy) < (h_radius * h_radius):
+                            if "is_exploded" in hazard:
+                                hazard.is_exploded = true
+                            elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                hazard.set_meta("is_exploded", true)
 
         # Synergy Logic
         var allies = []

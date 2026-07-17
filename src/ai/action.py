@@ -11164,6 +11164,9 @@ class Action:
 
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
+                    if hazard.kind == "sound_mine" and not getattr(hazard, "is_exploded", False):
+                        if math.hypot(hazard.x - self.ball.x, hazard.y - self.ball.y) < hazard.radius:
+                            hazard.is_exploded = True
                     if hazard.kind in ("explosive_barrel", "volatile_barrel") and not getattr(hazard, "is_exploded", False):
                         if math.hypot(hazard.x - self.ball.x, hazard.y - self.ball.y) < 200.0:
                             hazard.is_exploded = True

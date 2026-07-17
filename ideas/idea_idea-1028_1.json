@@ -1,0 +1,4 @@
+{
+    "title": "Decoy Sound Mine Skill",
+    "description": "A new skill that deploys a 'sound_mine' hazard which is invisible and does not deal damage, but creates a loud noise and fake visual ping when triggered to distract enemies and pull their attention."
+}

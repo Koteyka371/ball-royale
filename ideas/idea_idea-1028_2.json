@@ -1,0 +1,4 @@
+{
+    "title": "Acoustic Dampener Item",
+    "description": "A consumable item that grants temporary immunity to triggering 'sound_mine' hazards and muffles all movement, dash, and skill usage sounds, reducing the perception radius of nearby enemies for a short duration."
+}
