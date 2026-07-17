@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1044] Winter Wonderland Arena — *2026-07-17 01:35:59 UTC*
+
+A new permanent arena themed entirely around ice. The ground has a much lower base friction for all balls, and large permanent ice patches exist near the center, forcing a highly mobile, slippery combat style.
+
+---
+
 ## [idea-1047] Gravity Well Arena — *2026-07-17 01:35:56 UTC*
 
 An arena with a massive gravity well in the center that slowly pulls everything towards it, requiring players to constantly fight the pull or use it for slingshot maneuvers.
