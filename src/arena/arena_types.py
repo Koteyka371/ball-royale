@@ -1541,8 +1541,29 @@ class SpringArena(ProceduralArena):
             self.hazards.append(pad)
 
 
+class IceArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_snowing = True
+        self.weather = "ice"
+        self.base_friction = 0.2
+
+    def generate(self):
+        super().generate()
+        # Add massive ice patches near center
+        import random
+        cx = self.width / 2.0
+        cy = self.height / 2.0
+        for _ in range(5):
+            x = random.uniform(cx - 300, cx + 300)
+            y = random.uniform(cy - 300, cy + 300)
+            radius = random.uniform(150.0, 300.0)
+            h_id = len(self.hazards) + 500
+            self.hazards.append(Hazard(id=h_id, x=x, y=y, radius=radius, kind="ice_patches", damage=0.0))
+
 ARENAS = {
     'falling_panels': FallingPanelsArena,
+    'ice': IceArena,
     'spring': SpringArena,
     'shrinking_hazards': ShrinkingHazardsArena,
 

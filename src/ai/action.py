@@ -3756,6 +3756,15 @@ class Action:
                 self.ball.vy *= (1.0 - 0.5 * delta)
                 self.ball.x += self.ball.vx * delta
                 self.ball.y += self.ball.vy * delta
+        else:
+            arena = getattr(self.world, "arena", None)
+            base_friction = getattr(arena, "base_friction", None) if arena else None
+            if base_friction is not None and not getattr(self.ball, "is_frictionless", False):
+                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                    self.ball.vx *= max(0.0, 1.0 - base_friction * delta)
+                    self.ball.vy *= max(0.0, 1.0 - base_friction * delta)
+                    self.ball.x += self.ball.vx * delta
+                    self.ball.y += self.ball.vy * delta
 
         if getattr(self.ball, "BALL_TYPE", "") == "mimic" and hasattr(self.ball, "process_mimicry"):
             enemies = self._get_enemies()
