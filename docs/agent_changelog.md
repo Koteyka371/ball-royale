@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1048] EMP Pulse Item — *2026-07-17 18:03:07 UTC*
+
+A new active item that disables the abilities and HUD of nearby enemies for a short duration when triggered, allowing for tactical ambushes.
+
+---
+
 ## [idea-1053] Tactical Smoke Grenades — *2026-07-17 18:03:02 UTC*
 
 Add a new item 'smoke_grenade' that creates a temporary smoke zone hazard. While inside the smoke zone, a ball's perception radius is severely reduced, and enemies outside cannot target those inside. It allows for stealthy escapes and tactical ambushes.
