@@ -1253,6 +1253,12 @@ class BattleRoyaleMode(GameMode):
                         b.take_damage(damage_amount)
                     else:
                         b.hp -= damage_amount  # Apply continuous safe zone damage
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if not hasattr(b, "killer") or not b.killer:
+                                b.killer = "safe_zone"
+
 
                     # Apply burn status effect (if not already burned/lava)
                     if not hasattr(b, "burn_timer") or b.burn_timer <= 0:
@@ -17005,6 +17011,11 @@ class LavaRoyaleMode(GameMode):
                         b.take_damage(damage_amount)
                     else:
                         b.hp -= damage_amount
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if not hasattr(b, "killer") or not b.killer:
+                                b.killer = "lava_zone"
 
                     if not hasattr(b, "burn_timer") or b.burn_timer <= 0:
                         b.burn_timer = 2.0
