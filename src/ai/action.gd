@@ -10130,6 +10130,66 @@ func execute(strategy: String, delta: float):
                                     self.ball["stun_timer"] = 1.0
                                 elif "stun_timer" in self.ball:
                                     self.ball.stun_timer = 1.0
+                elif hazard.kind == "wind_current":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        var is_proj = false
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"):
+                            is_proj = str(self.ball.get_meta("ball_type")) in ["projectile", "spell"]
+                        elif "ball_type" in self.ball:
+                            is_proj = str(self.ball.ball_type) in ["projectile", "spell"]
+
+                        if not is_proj:
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("is_projectile"):
+                                is_proj = self.ball.get_meta("is_projectile")
+                            elif "is_projectile" in self.ball:
+                                is_proj = self.ball.is_projectile
+
+                        var strength = 200.0
+                        if "wind_strength" in hazard:
+                            strength = hazard.wind_strength
+                        elif hazard.has_method("get_meta") and hazard.has_meta("wind_strength"):
+                            strength = hazard.get_meta("wind_strength")
+
+                        var h_wind_dir_x = 0.0
+                        var h_wind_dir_y = 0.0
+                        if "wind_dir_x" in hazard: h_wind_dir_x = hazard.wind_dir_x
+                        elif hazard.has_method("get_meta") and hazard.has_meta("wind_dir_x"): h_wind_dir_x = hazard.get_meta("wind_dir_x")
+
+                        if "wind_dir_y" in hazard: h_wind_dir_y = hazard.wind_dir_y
+                        elif hazard.has_method("get_meta") and hazard.has_meta("wind_dir_y"): h_wind_dir_y = hazard.get_meta("wind_dir_y")
+
+                        if is_proj:
+                            if "vx" in self.ball and "vy" in self.ball:
+                                self.ball.vx += h_wind_dir_x * strength * delta
+                                self.ball.vy += h_wind_dir_y * strength * delta
+                        else:
+                            var traits = []
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("traits"):
+                                traits = self.ball.get_meta("traits")
+                            elif "traits" in self.ball:
+                                traits = self.ball.traits
+
+                            var b_type = ""
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"):
+                                b_type = str(self.ball.get_meta("ball_type")).to_lower()
+                            elif "ball_type" in self.ball:
+                                b_type = str(self.ball.ball_type).to_lower()
+
+                            var is_heavy = traits.has("heavy") or b_type.find("heavy") != -1
+                            var is_light = traits.has("light") or b_type.find("light") != -1
+
+                            if is_heavy:
+                                strength *= 0.5
+                            elif is_light:
+                                strength *= 1.5
+
+                            if "vx" in self.ball and "vy" in self.ball:
+                                self.ball.vx += h_wind_dir_x * strength * delta
+                                self.ball.vy += h_wind_dir_y * strength * delta
+
                 elif hazard.kind == "ice_patch":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

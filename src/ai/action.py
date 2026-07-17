@@ -5479,6 +5479,35 @@ class Action:
                                     self.ball.stun_timer = 1.0 # Rooted by ice
 
 
+                    elif hazard.kind == "wind_current":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            is_projectile = getattr(self.ball, "ball_type", getattr(self.ball, "kind", "")) in ["projectile", "spell"] or getattr(self.ball, "is_projectile", False)
+
+                            if is_projectile:
+                                strength = getattr(hazard, "wind_strength", 200.0)
+                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    self.ball.vx += getattr(hazard, "wind_dir_x", 0.0) * strength * delta
+                                    self.ball.vy += getattr(hazard, "wind_dir_y", 0.0) * strength * delta
+                            else:
+                                traits = getattr(self.ball, "traits", [])
+                                b_type = getattr(self.ball, "ball_type", "").lower()
+
+                                is_heavy = "heavy" in traits or "heavy" in b_type
+                                is_light = "light" in traits or "light" in b_type
+
+                                strength = getattr(hazard, "wind_strength", 200.0)
+                                if is_heavy:
+                                    strength *= 0.5
+                                elif is_light:
+                                    strength *= 1.5
+
+                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    self.ball.vx += getattr(hazard, "wind_dir_x", 0.0) * strength * delta
+                                    self.ball.vy += getattr(hazard, "wind_dir_y", 0.0) * strength * delta
+
                     elif hazard.kind == "ice_patch":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
