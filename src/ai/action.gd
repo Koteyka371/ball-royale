@@ -6364,6 +6364,35 @@ func execute(strategy: String, delta: float):
 						self.ball.set_meta("_vampiric_drained", true)
 
 	# Temporal rift logic to modify local delta
+    var scrambled_timer = 0.0
+    if "scrambled_movement_timer" in self.ball:
+        scrambled_timer = float(self.ball.scrambled_movement_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("scrambled_movement_timer"):
+        scrambled_timer = self.ball.get_meta("scrambled_movement_timer")
+
+    if scrambled_timer > 0.0:
+        scrambled_timer -= delta
+        if scrambled_timer < 0.0:
+            scrambled_timer = 0.0
+        if "scrambled_movement_timer" in self.ball:
+            self.ball.scrambled_movement_timer = scrambled_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("scrambled_movement_timer", scrambled_timer)
+
+        var bvx = 0.0
+        var bvy = 0.0
+        if "vx" in self.ball: bvx = self.ball.vx
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vx"): bvx = self.ball["vx"]
+        if "vy" in self.ball: bvy = self.ball.vy
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vy"): bvy = self.ball["vy"]
+
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "x" in self.ball: self.ball.x -= bvx * delta * 2.0
+            if "y" in self.ball: self.ball.y -= bvy * delta * 2.0
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            if self.ball.has("x"): self.ball["x"] -= bvx * delta * 2.0
+            if self.ball.has("y"): self.ball["y"] -= bvy * delta * 2.0
+
 	var emp_timer = 0.0
 	if self.ball.has_method("get_meta") and self.ball.has_meta("empowerment_boost_timer"):
 		emp_timer = float(self.ball.get_meta("empowerment_boost_timer"))
@@ -6996,6 +7025,154 @@ func execute(strategy: String, delta: float):
                     var dy = hy - my_ball.y
                     if dx*dx + dy*dy <= hr*hr:
                         in_anomaly_zone = true
+
+            elif h_kind == "nemesis_hunter":
+                var h_x = 0.0
+                if typeof(h) == TYPE_OBJECT and "x" in h: h_x = h.x
+                elif typeof(h) == TYPE_DICTIONARY and h.has("x"): h_x = h["x"]
+                var h_y = 0.0
+                if typeof(h) == TYPE_OBJECT and "y" in h: h_y = h.y
+                elif typeof(h) == TYPE_DICTIONARY and h.has("y"): h_y = h["y"]
+                var nearest_nemesis = null
+                var min_dist_sq = 999999999.0
+                if world != null and "profile_manager" in world and world.profile_manager != null and world.profile_manager.has_method("is_nemesis") and "balls" in world:
+                    for potential_victim in world.balls:
+                        var pv_alive = false
+                        if typeof(potential_victim) == TYPE_OBJECT and "alive" in potential_victim: pv_alive = potential_victim.alive
+                        elif typeof(potential_victim) == TYPE_DICTIONARY and potential_victim.has("alive"): pv_alive = potential_victim["alive"]
+
+                        var pv_type = ""
+                        if typeof(potential_victim) == TYPE_OBJECT and "ball_type" in potential_victim: pv_type = potential_victim.ball_type
+                        elif typeof(potential_victim) == TYPE_DICTIONARY and potential_victim.has("ball_type"): pv_type = potential_victim["ball_type"]
+
+                        if pv_alive and pv_type != "spectator":
+                            var is_nemesis = false
+                            for other in world.balls:
+                                if other != potential_victim:
+                                    var o_alive = false
+                                    if typeof(other) == TYPE_OBJECT and "alive" in other: o_alive = other.alive
+                                    elif typeof(other) == TYPE_DICTIONARY and other.has("alive"): o_alive = other["alive"]
+
+                                    var o_type = ""
+                                    if typeof(other) == TYPE_OBJECT and "ball_type" in other: o_type = other.ball_type
+                                    elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+
+                                    if o_alive and o_type != "spectator":
+                                        if world.profile_manager.is_nemesis(o_type, pv_type):
+                                            is_nemesis = true
+                                            break
+                            if is_nemesis:
+                                var pv_x = 0.0
+                                if typeof(potential_victim) == TYPE_OBJECT and "x" in potential_victim: pv_x = potential_victim.x
+                                elif typeof(potential_victim) == TYPE_DICTIONARY and potential_victim.has("x"): pv_x = potential_victim["x"]
+                                var pv_y = 0.0
+                                if typeof(potential_victim) == TYPE_OBJECT and "y" in potential_victim: pv_y = potential_victim.y
+                                elif typeof(potential_victim) == TYPE_DICTIONARY and potential_victim.has("y"): pv_y = potential_victim["y"]
+                                var dx = pv_x - h_x
+                                var dy = pv_y - h_y
+                                var dist_sq = dx*dx + dy*dy
+                                if dist_sq < min_dist_sq:
+                                    min_dist_sq = dist_sq
+                                    nearest_nemesis = potential_victim
+
+                if nearest_nemesis != null:
+                    var dist = sqrt(min_dist_sq)
+                    if dist > 0.0:
+                        var nn_x = 0.0
+                        if typeof(nearest_nemesis) == TYPE_OBJECT and "x" in nearest_nemesis: nn_x = nearest_nemesis.x
+                        elif typeof(nearest_nemesis) == TYPE_DICTIONARY and nearest_nemesis.has("x"): nn_x = nearest_nemesis["x"]
+                        var nn_y = 0.0
+                        if typeof(nearest_nemesis) == TYPE_OBJECT and "y" in nearest_nemesis: nn_y = nearest_nemesis.y
+                        elif typeof(nearest_nemesis) == TYPE_DICTIONARY and nearest_nemesis.has("y"): nn_y = nearest_nemesis["y"]
+                        var nx = (nn_x - h_x) / dist
+                        var ny = (nn_y - h_y) / dist
+                        var hunter_speed = 150.0 * delta
+
+                        var last_updated = -1
+                        if typeof(h) == TYPE_OBJECT and "last_updated_tick" in h: last_updated = h.last_updated_tick
+                        elif typeof(h) == TYPE_DICTIONARY and h.has("last_updated_tick"): last_updated = h["last_updated_tick"]
+
+                        var c_tick = 0
+                        if world != null and "tick" in world: c_tick = world.tick
+
+                        if last_updated != c_tick:
+                            if typeof(h) == TYPE_OBJECT and "x" in h: h.x += nx * hunter_speed
+                            elif typeof(h) == TYPE_DICTIONARY and h.has("x"): h["x"] += nx * hunter_speed
+                            if typeof(h) == TYPE_OBJECT and "y" in h: h.y += ny * hunter_speed
+                            elif typeof(h) == TYPE_DICTIONARY and h.has("y"): h["y"] += ny * hunter_speed
+
+                var h_rad = 15.0
+                if typeof(h) == TYPE_OBJECT and "radius" in h: h_rad = h.radius
+                elif typeof(h) == TYPE_DICTIONARY and h.has("radius"): h_rad = h["radius"]
+
+                var my_rad = 10.0
+                if "radius" in my_ball: my_rad = my_ball.radius
+                elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("radius"): my_rad = my_ball["radius"]
+
+                var dist_to_me = sqrt((my_ball.x - h_x)*(my_ball.x - h_x) + (my_ball.y - h_y)*(my_ball.y - h_y))
+                if dist_to_me <= h_rad + my_rad:
+                    var dmg = 40.0 * delta
+                    if typeof(h) == TYPE_OBJECT and "damage" in h: dmg = h.damage * delta
+                    elif typeof(h) == TYPE_DICTIONARY and h.has("damage"): dmg = h["damage"] * delta
+
+                    if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("take_damage"):
+                        my_ball.take_damage(dmg)
+                    elif typeof(my_ball) == TYPE_OBJECT and "hp" in my_ball:
+                        my_ball.hp -= dmg
+                        if my_ball.hp <= 0:
+                            my_ball.hp = 0
+                            my_ball.alive = false
+                    elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("hp"):
+                        my_ball["hp"] -= dmg
+                        if my_ball["hp"] <= 0:
+                            my_ball["hp"] = 0
+                            my_ball["alive"] = false
+
+                    var b_alive = false
+                    if typeof(my_ball) == TYPE_OBJECT and "alive" in my_ball: b_alive = my_ball.alive
+                    elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("alive"): b_alive = my_ball["alive"]
+
+                    if not b_alive:
+                        var is_nemesis = false
+                        if world != null and "profile_manager" in world and world.profile_manager != null and world.profile_manager.has_method("is_nemesis") and "balls" in world:
+                            var my_type = ""
+                            if typeof(my_ball) == TYPE_OBJECT and "ball_type" in my_ball: my_type = my_ball.ball_type
+                            elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("ball_type"): my_type = my_ball["ball_type"]
+                            for other in world.balls:
+                                var o_type = ""
+                                if typeof(other) == TYPE_OBJECT and "ball_type" in other: o_type = other.ball_type
+                                elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+                                if world.profile_manager.is_nemesis(o_type, my_type):
+                                    is_nemesis = true
+                                    break
+                        if is_nemesis:
+                            if world != null and "balls" in world:
+                                for b in world.balls:
+                                    var other_alive = false
+                                    if typeof(b) == TYPE_OBJECT and "alive" in b: other_alive = b.alive
+                                    elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): other_alive = b["alive"]
+                                    var other_type = ""
+                                    if typeof(b) == TYPE_OBJECT and "ball_type" in b: other_type = b.ball_type
+                                    elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): other_type = b["ball_type"]
+
+                                    if other_alive and b != my_ball and other_type != "spectator":
+                                        if typeof(b) == TYPE_OBJECT:
+                                            if "scrambled_movement_timer" in b:
+                                                b.scrambled_movement_timer = 3.0
+                                            elif b.has_method("set_meta"):
+                                                b.set_meta("scrambled_movement_timer", 3.0)
+                                        elif typeof(b) == TYPE_DICTIONARY:
+                                            b["scrambled_movement_timer"] = 3.0
+                            if typeof(h) == TYPE_OBJECT and "duration" in h: h.duration = 0.0
+                            elif typeof(h) == TYPE_DICTIONARY and h.has("duration"): h["duration"] = 0.0
+
+                var c_tick_upd = 0
+                if world != null and "tick" in world: c_tick_upd = world.tick
+                if typeof(h) == TYPE_OBJECT:
+                    if "last_updated_tick" in h: h.last_updated_tick = c_tick_upd
+                    elif h.has_method("set_meta"): h.set_meta("last_updated_tick", c_tick_upd)
+                elif typeof(h) == TYPE_DICTIONARY: h["last_updated_tick"] = c_tick_upd
+
             elif h_kind == "bouncy_zone":
                 var hx = h.x if "x" in h else h.get_meta("x")
                 var hy = h.y if "y" in h else h.get_meta("y")
