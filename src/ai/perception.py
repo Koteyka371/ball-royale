@@ -82,10 +82,13 @@ class Perception:
 
         is_lunar = hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False)
 
-        ignores_fog = cosmetic_val == "thermal_goggles"
-        ignores_sandstorm = cosmetic_val in ["desert_goggles", "sand_goggles"]
-        ignores_snow = cosmetic_val in ["snow_goggles", "ski_goggles"]
-        ignores_rain = cosmetic_val in ["rain_goggles", "waterproof_goggles"]
+        has_thermal_vision = getattr(self.ball, "has_thermal_vision", False) or cosmetic_val in ["thermal_goggles", "infrared_goggles", "vision_module"]
+
+        ignores_fog = has_thermal_vision or cosmetic_val == "thermal_goggles"
+        ignores_sandstorm = has_thermal_vision or cosmetic_val in ["desert_goggles", "sand_goggles"]
+        ignores_snow = has_thermal_vision or cosmetic_val in ["snow_goggles", "ski_goggles"]
+        ignores_rain = has_thermal_vision or cosmetic_val in ["rain_goggles", "waterproof_goggles"]
+        ignores_windy = has_thermal_vision
 
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", None) is not None:
             if self.world.arena.is_foggy and not ignores_fog and not is_lunar:
@@ -94,7 +97,7 @@ class Perception:
             if self.world.arena.is_raining and not ignores_rain and not is_lunar:
                 perception_radius = perception_radius * 0.8
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_windy", None) is not None:
-            if self.world.arena.is_windy and not is_lunar:
+            if self.world.arena.is_windy and not ignores_windy and not is_lunar:
                 perception_radius = perception_radius * 0.7
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_sandstorming", None) is not None:
             if self.world.arena.is_sandstorming and not ignores_sandstorm and getattr(self.ball, "ball_type", "") != "sand_elemental" and not is_lunar:

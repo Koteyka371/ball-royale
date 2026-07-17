@@ -1,4 +1,1 @@
-{
-  "title": "EMP Blast Trap",
-  "description": "A deployable trap that, when triggered, releases an electromagnetic pulse. This pulse temporarily disables the thermal vision, advanced optics, and stealth drones of caught enemies, returning their perception back to standard visual range."
-}
+{"title": "Decoy Flare", "description": "A type of flare that instead of revealing enemies, projects a fake copy of the user to draw aggro and trick enemy thermals."}

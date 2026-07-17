@@ -88,12 +88,13 @@ func scan() -> Dictionary:
     var has_thermal_vision = false
     if "has_thermal_vision" in self.ball and self.ball.has_thermal_vision:
         has_thermal_vision = true
-    elif cosmetic == "thermal_goggles" or cosmetic == "infrared_goggles":
+    elif cosmetic == "thermal_goggles" or cosmetic == "infrared_goggles" or cosmetic == "vision_module":
         has_thermal_vision = true
-    var ignores_fog = cosmetic == "thermal_goggles"
-    var ignores_sandstorm = cosmetic in ["desert_goggles", "sand_goggles"]
-    var ignores_snow = cosmetic in ["snow_goggles", "ski_goggles"]
-    var ignores_rain = cosmetic in ["rain_goggles", "waterproof_goggles"]
+    var ignores_fog = has_thermal_vision or cosmetic == "thermal_goggles"
+    var ignores_sandstorm = has_thermal_vision or cosmetic in ["desert_goggles", "sand_goggles"]
+    var ignores_snow = has_thermal_vision or cosmetic in ["snow_goggles", "ski_goggles"]
+    var ignores_rain = has_thermal_vision or cosmetic in ["rain_goggles", "waterproof_goggles"]
+    var ignores_windy = has_thermal_vision
 
     if self.world != null and "arena" in self.world and "is_foggy" in self.world.arena:
         if self.world.arena.is_foggy and not ignores_fog and not is_lunar:
@@ -102,7 +103,7 @@ func scan() -> Dictionary:
         if self.world.arena.is_raining and not ignores_rain and not is_lunar:
             perception_radius = perception_radius * 0.8
     if self.world != null and "arena" in self.world and "is_windy" in self.world.arena:
-        if self.world.arena.is_windy and not is_lunar:
+        if self.world.arena.is_windy and not ignores_windy and not is_lunar:
             perception_radius = perception_radius * 0.7
     if self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena:
         if self.world.arena.is_sandstorming and not ignores_sandstorm and ("ball_type" in self.ball and self.ball.ball_type != "sand_elemental") and not is_lunar:

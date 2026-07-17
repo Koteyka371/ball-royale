@@ -64,3 +64,31 @@ def test_autumn_vision_reduced():
 
     assert len(scan_normal["enemies"]) == 1
     assert len(scan_windy["enemies"]) == 0
+
+def test_thermal_vision_ignores_weather():
+    ball = MockBall(1)
+    ball.has_thermal_vision = True
+
+    # Normal perception
+    world_normal = MockWorld()
+    p_normal = Perception(ball, world_normal)
+
+    # Windy perception
+    world_windy = MockWorld()
+    world_windy.arena.is_windy = True
+    p_windy = Perception(ball, world_windy)
+
+    radius_normal = 2000.0
+    radius_windy = 2000.0  # Should NOT be reduced because of thermal vision
+
+    enemy = MockBall(2, team="blue")
+    enemy.x = 2000.0 * 0.7 + 100.0
+    enemy.y = 0.0
+    world_windy.balls.append(enemy)
+    world_normal.balls.append(enemy)
+
+    scan_normal = p_normal.scan()
+    scan_windy = p_windy.scan()
+
+    assert len(scan_normal["enemies"]) == 1
+    assert len(scan_windy["enemies"]) == 1
