@@ -10004,14 +10004,20 @@ func execute(strategy: String, delta: float):
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
                     if dist_sq < hazard.radius * hazard.radius:
-                        var base_s = 100.0
-                        if "base_speed" in self.ball:
-                            base_s = self.ball.base_speed
-                        self.ball.speed = base_s * 0.5
-                        if self.ball.has_method("set_meta"):
-                            self.ball.set_meta("is_in_mud", true)
-                        elif "is_in_mud" in self.ball:
-                            self.ball.is_in_mud = true
+                        var tbt = 0.0
+                        if "tornado_booster_timer" in self.ball:
+                            tbt = float(self.ball.tornado_booster_timer)
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("tornado_booster_timer"):
+                            tbt = self.ball.get_meta("tornado_booster_timer")
+                        if tbt <= 0:
+                            var base_s = 100.0
+                            if "base_speed" in self.ball:
+                                base_s = self.ball.base_speed
+                            self.ball.speed = base_s * 0.5
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("is_in_mud", true)
+                            elif "is_in_mud" in self.ball:
+                                self.ball.is_in_mud = true
                 elif hazard.kind == "slip_zone":
                     var active = true
                     if hazard.has_method("get_meta") and hazard.has_meta("active"):
@@ -20086,6 +20092,19 @@ func _collect_booster(delta: float):
 					var idx = self.world.boosters.find(nearest)
 					if idx != -1:
 						self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "tornado_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("tornado_booster_timer", 5.0)
+                else:
+                    self.ball.tornado_booster_timer = 5.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "magnet_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("pull_booster_timer", 5.0)
@@ -27338,6 +27357,79 @@ func _update_skill_timer(delta: float):
                             elif typeof(item) == TYPE_OBJECT:
                                 if "x" in item: item.x += nx * pull_strength
                                 if "y" in item: item.y += ny * pull_strength
+
+    var tornado_booster_timer = 0.0
+    if "tornado_booster_timer" in self.ball:
+        tornado_booster_timer = float(self.ball.tornado_booster_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("tornado_booster_timer"):
+        tornado_booster_timer = self.ball.get_meta("tornado_booster_timer")
+    if tornado_booster_timer > 0:
+        tornado_booster_timer -= delta
+        if "tornado_booster_timer" in self.ball:
+            self.ball.tornado_booster_timer = tornado_booster_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("tornado_booster_timer", tornado_booster_timer)
+
+        if self.world != null and "balls" in self.world:
+            for b in self.world.balls:
+                var is_alive = false
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("alive"): is_alive = b.alive
+                else:
+                    if "alive" in b: is_alive = b.alive
+
+                var b_type = ""
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("ball_type"): b_type = b.ball_type
+                else:
+                    if "ball_type" in b: b_type = b.ball_type
+
+                var b_id = -1
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("id"): b_id = b.id
+                else:
+                    if "id" in b: b_id = b.id
+
+                var self_id = -1
+                if "id" in self.ball: self_id = self.ball.id
+
+                var b_team = -1
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("team"): b_team = b.team
+                else:
+                    if "team" in b: b_team = b.team
+
+                var self_team = -1
+                if "team" in self.ball: self_team = self.ball.team
+
+                if is_alive and b_type != "spectator" and b_id != self_id and b_team != self_team:
+                    var b_x = 0.0
+                    if typeof(b) == TYPE_DICTIONARY:
+                        if b.has("x"): b_x = float(b.x)
+                    else:
+                        if "x" in b: b_x = float(b.x)
+
+                    var b_y = 0.0
+                    if typeof(b) == TYPE_DICTIONARY:
+                        if b.has("y"): b_y = float(b.y)
+                    else:
+                        if "y" in b: b_y = float(b.y)
+
+                    var dx = self.ball.x - b_x
+                    var dy = self.ball.y - b_y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < 250000.0:
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.0001:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var pull_strength = 150.0 * delta
+                            if typeof(b) == TYPE_DICTIONARY:
+                                if b.has("x"): b.x += nx * pull_strength
+                                if b.has("y"): b.y += ny * pull_strength
+                            elif typeof(b) == TYPE_OBJECT:
+                                if "x" in b: b.x += nx * pull_strength
+                                if "y" in b: b.y += ny * pull_strength
 
     var gravity_well_aura_timer = 0.0
     if "gravity_well_aura_timer" in self.ball:

@@ -5430,8 +5430,9 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.5
-                            self.ball.is_in_mud = True
+                            if getattr(self.ball, "tornado_booster_timer", 0.0) <= 0:
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.5
+                                self.ball.is_in_mud = True
                     elif hazard.kind == "slip_zone":
                         if getattr(hazard, "active", True):
                             dx = hazard.x - self.ball.x
@@ -10836,6 +10837,13 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "tornado_booster":
+                    self.ball.tornado_booster_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "magnet_booster":
                     self.ball.pull_booster_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -14652,6 +14660,21 @@ class Action:
                             else:
                                 self.ball.x += nx * force
                                 self.ball.y += ny * force
+
+        if hasattr(self.ball, "tornado_booster_timer") and self.ball.tornado_booster_timer > 0:
+            self.ball.tornado_booster_timer -= delta
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator" and b.id != self.ball.id and b.team != self.ball.team:
+                        dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                        if dist_sq < 250000: # 500 range
+                            import math
+                            dist = math.sqrt(dist_sq)
+                            if dist > 0.0001:
+                                nx, ny = (self.ball.x - b.x) / dist, (self.ball.y - b.y) / dist
+                                pull_strength = 150.0 * delta
+                                b.x += nx * pull_strength
+                                b.y += ny * pull_strength
 
         if hasattr(self.ball, "pull_booster_timer") and self.ball.pull_booster_timer > 0:
             self.ball.pull_booster_timer -= delta
