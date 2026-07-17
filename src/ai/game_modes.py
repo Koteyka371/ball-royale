@@ -15966,6 +15966,14 @@ class WeaponCollectionMode(GameMode):
                     combined_rad = getattr(b, "radius", 10.0) + getattr(h, "radius", 15.0)
                     if dist_sq < combined_rad * combined_rad:
                         h.active = False
+                        # Add random weapon attachment to inventory
+                        if not hasattr(b, "inventory"):
+                            b.inventory = []
+                        attachments = ["fire_attachment", "ice_attachment", "spread_attachment", "pierce_attachment"]
+                        import random
+                        attachment = random.choice(attachments)
+                        b.inventory.append(attachment)
+
                         abilities = [
                             "fireball",
                             "explosion",

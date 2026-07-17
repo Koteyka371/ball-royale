@@ -26013,6 +26013,20 @@ class WeaponCollectionMode extends GameMode:
 						else:
 							h.set("active", false)
 
+						# Add random weapon attachment to inventory
+						var attachments = ["fire_attachment", "ice_attachment", "spread_attachment", "pierce_attachment"]
+						var attachment = attachments[randi() % attachments.size()]
+						if typeof(b) == TYPE_DICTIONARY:
+							if not b.has("inventory"):
+								b["inventory"] = []
+							b["inventory"].append(attachment)
+						else:
+							if not b.has_meta("inventory"):
+								b.set_meta("inventory", [])
+							var inv = b.get_meta("inventory")
+							inv.append(attachment)
+							b.set_meta("inventory", inv)
+
 						var abilities = [
 							"fireball",
 							"explosion",

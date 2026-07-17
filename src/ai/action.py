@@ -553,6 +553,13 @@ class Action:
                 if random.random() < 0.25:
                     executed_by_necromancer = True
 
+        inv = getattr(attacker, "inventory", [])
+        if "fire_attachment" in inv:
+            target.burn_timer = getattr(target, "burn_timer", 0.0) + 3.0
+        if "ice_attachment" in inv:
+            target.frozen_timer = getattr(target, "frozen_timer", 0.0) + 2.0
+            target.speed = max(10.0, getattr(target, "speed", 100.0) * 0.5)
+
         if executed_by_necromancer:
             if hasattr(self.world, "_deal_damage"):
                 old_dmg = getattr(attacker, "damage", original_damage)
@@ -8942,7 +8949,28 @@ class Action:
                             self.ball.damage = original_damage * 2.0
 
                     if hasattr(self.world, "_deal_damage"):
-                        self.world._deal_damage(self.ball, target)
+                        inv = getattr(self.ball, "inventory", [])
+
+                        targets_to_damage = [target]
+
+                        # Spread attachment: damage nearby enemies
+                        if "spread_attachment" in inv:
+                            all_enemies = self._get_enemies()
+                            for e in all_enemies:
+                                if e != target and e not in targets_to_damage:
+                                    dist_sq = (e.x - target.x)**2 + (e.y - target.y)**2
+                                    if dist_sq < 10000: # 100 radius
+                                        targets_to_damage.append(e)
+
+                        # Pierce attachment: extra damage or ignore shields
+                        if "pierce_attachment" in inv:
+                            target.reflect_shield_active = False # Break shield
+                            self.ball.damage = original_damage * 1.5
+
+                        for t in targets_to_damage:
+                            self.world._deal_damage(self.ball, t)
+                        if "pierce_attachment" in inv:
+                            self.ball.damage = original_damage
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
                         if True:
@@ -9270,7 +9298,28 @@ class Action:
                                     self.ball.damage = original_damage * 2.0
 
                     if hasattr(self.world, "_deal_damage"):
-                        self.world._deal_damage(self.ball, target)
+                        inv = getattr(self.ball, "inventory", [])
+
+                        targets_to_damage = [target]
+
+                        # Spread attachment: damage nearby enemies
+                        if "spread_attachment" in inv:
+                            all_enemies = self._get_enemies()
+                            for e in all_enemies:
+                                if e != target and e not in targets_to_damage:
+                                    dist_sq = (e.x - target.x)**2 + (e.y - target.y)**2
+                                    if dist_sq < 10000: # 100 radius
+                                        targets_to_damage.append(e)
+
+                        # Pierce attachment: extra damage or ignore shields
+                        if "pierce_attachment" in inv:
+                            target.reflect_shield_active = False # Break shield
+                            self.ball.damage = original_damage * 1.5
+
+                        for t in targets_to_damage:
+                            self.world._deal_damage(self.ball, t)
+                        if "pierce_attachment" in inv:
+                            self.ball.damage = original_damage
                         if not hasattr(self.ball, "charge_level"):
                             self.ball.charge_level = 0.0
                         if True:

@@ -16350,7 +16350,48 @@ func _flank(delta: float):
                         self.ball.damage = original_damage * 2.0
 
                 if self.world != null and self.world.has_method("_deal_damage"):
-                    self._attempt_damage(self.ball, target)
+                    var b_inv = []
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        b_inv = self.ball.get("inventory", [])
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("inventory"):
+                        b_inv = self.ball.get_meta("inventory")
+                    elif typeof(self.ball) == TYPE_OBJECT and "inventory" in self.ball:
+                        b_inv = self.ball.inventory
+
+                    var targets_to_damage = [target]
+
+                    if b_inv.has("spread_attachment"):
+                        var all_e = _get_enemies()
+                        for e in all_e:
+                            if e != target and not targets_to_damage.has(e):
+                                var ex = e.get("x") if typeof(e) == TYPE_DICTIONARY else e.x
+                                var ey = e.get("y") if typeof(e) == TYPE_DICTIONARY else e.y
+                                var tx = target.get("x") if typeof(target) == TYPE_DICTIONARY else target.x
+                                var ty = target.get("y") if typeof(target) == TYPE_DICTIONARY else target.y
+                                var dist_sq = pow(ex - tx, 2) + pow(ey - ty, 2)
+                                if dist_sq < 10000:
+                                    targets_to_damage.append(e)
+
+                    if b_inv.has("pierce_attachment"):
+                        if typeof(target) == TYPE_DICTIONARY:
+                            target["reflect_shield_active"] = false
+                        elif typeof(target) == TYPE_OBJECT and "reflect_shield_active" in target:
+                            target.reflect_shield_active = false
+                        elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+                            target.set_meta("reflect_shield_active", false)
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["damage"] = original_damage * 1.5
+                        elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball:
+                            self.ball.damage = original_damage * 1.5
+
+                    for t in targets_to_damage:
+                        self._attempt_damage(self.ball, t)
+
+                    if b_inv.has("pierce_attachment"):
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["damage"] = original_damage
+                        elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball:
+                            self.ball.damage = original_damage
                     if "charge_level" in self.ball:
                         self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
                     elif self.ball.has_method("set_meta"):
@@ -16536,7 +16577,48 @@ func _chase(delta: float):
                         return
 
                 if self.world != null and self.world.has_method("_deal_damage"):
-                    self._attempt_damage(self.ball, target)
+                    var b_inv = []
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        b_inv = self.ball.get("inventory", [])
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("inventory"):
+                        b_inv = self.ball.get_meta("inventory")
+                    elif typeof(self.ball) == TYPE_OBJECT and "inventory" in self.ball:
+                        b_inv = self.ball.inventory
+
+                    var targets_to_damage = [target]
+
+                    if b_inv.has("spread_attachment"):
+                        var all_e = _get_enemies()
+                        for e in all_e:
+                            if e != target and not targets_to_damage.has(e):
+                                var ex = e.get("x") if typeof(e) == TYPE_DICTIONARY else e.x
+                                var ey = e.get("y") if typeof(e) == TYPE_DICTIONARY else e.y
+                                var tx = target.get("x") if typeof(target) == TYPE_DICTIONARY else target.x
+                                var ty = target.get("y") if typeof(target) == TYPE_DICTIONARY else target.y
+                                var dist_sq = pow(ex - tx, 2) + pow(ey - ty, 2)
+                                if dist_sq < 10000:
+                                    targets_to_damage.append(e)
+
+                    if b_inv.has("pierce_attachment"):
+                        if typeof(target) == TYPE_DICTIONARY:
+                            target["reflect_shield_active"] = false
+                        elif typeof(target) == TYPE_OBJECT and "reflect_shield_active" in target:
+                            target.reflect_shield_active = false
+                        elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+                            target.set_meta("reflect_shield_active", false)
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["damage"] = original_damage * 1.5
+                        elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball:
+                            self.ball.damage = original_damage * 1.5
+
+                    for t in targets_to_damage:
+                        self._attempt_damage(self.ball, t)
+
+                    if b_inv.has("pierce_attachment"):
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["damage"] = original_damage
+                        elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball:
+                            self.ball.damage = original_damage
                     if "charge_level" in self.ball:
                         self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
                     elif self.ball.has_method("set_meta"):
@@ -16887,7 +16969,48 @@ func _attack(delta: float):
                                 self.ball.damage = original_damage * 2.0
 
                 if self.world != null and self.world.has_method("_deal_damage"):
-                    self._attempt_damage(self.ball, target)
+                    var b_inv = []
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        b_inv = self.ball.get("inventory", [])
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("inventory"):
+                        b_inv = self.ball.get_meta("inventory")
+                    elif typeof(self.ball) == TYPE_OBJECT and "inventory" in self.ball:
+                        b_inv = self.ball.inventory
+
+                    var targets_to_damage = [target]
+
+                    if b_inv.has("spread_attachment"):
+                        var all_e = _get_enemies()
+                        for e in all_e:
+                            if e != target and not targets_to_damage.has(e):
+                                var ex = e.get("x") if typeof(e) == TYPE_DICTIONARY else e.x
+                                var ey = e.get("y") if typeof(e) == TYPE_DICTIONARY else e.y
+                                var tx = target.get("x") if typeof(target) == TYPE_DICTIONARY else target.x
+                                var ty = target.get("y") if typeof(target) == TYPE_DICTIONARY else target.y
+                                var dist_sq = pow(ex - tx, 2) + pow(ey - ty, 2)
+                                if dist_sq < 10000:
+                                    targets_to_damage.append(e)
+
+                    if b_inv.has("pierce_attachment"):
+                        if typeof(target) == TYPE_DICTIONARY:
+                            target["reflect_shield_active"] = false
+                        elif typeof(target) == TYPE_OBJECT and "reflect_shield_active" in target:
+                            target.reflect_shield_active = false
+                        elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+                            target.set_meta("reflect_shield_active", false)
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["damage"] = original_damage * 1.5
+                        elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball:
+                            self.ball.damage = original_damage * 1.5
+
+                    for t in targets_to_damage:
+                        self._attempt_damage(self.ball, t)
+
+                    if b_inv.has("pierce_attachment"):
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["damage"] = original_damage
+                        elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball:
+                            self.ball.damage = original_damage
                     if "charge_level" in self.ball:
                         self.ball.charge_level = min(100.0, float(self.ball.charge_level) + 10.0)
                     elif self.ball.has_method("set_meta"):

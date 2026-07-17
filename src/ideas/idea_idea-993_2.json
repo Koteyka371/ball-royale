@@ -1,0 +1,4 @@
+{
+  "title": "Weapon Attachment Crafting and Combining",
+  "description": "Add crafting stations scattered around the arena where players can combine standard attachments into legendary ones. For example, combining fire_attachment and ice_attachment could yield an 'oblivion_attachment' that applies both a burn and a massive slow with a new particle effect, adding depth to looting routes."
+}
