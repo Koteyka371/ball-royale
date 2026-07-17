@@ -187,7 +187,11 @@ class Perception:
                 fx = getattr(f, "x", 0)
                 fy = getattr(f, "y", 0)
                 fr = getattr(f, "radius", 0)
-                if (ex - fx)**2 + (ey - fy)**2 <= fr**2:
+
+                # Flares slightly illuminate a small area for players using stealth
+                illumination_radius_sq = max(fr**2, 900.0) # slightly illuminate (radius 30 at least)
+
+                if (ex - fx)**2 + (ey - fy)**2 <= illumination_radius_sq:
                     revealed_by_flare = True
                     break
 
