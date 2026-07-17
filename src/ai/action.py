@@ -7468,11 +7468,18 @@ class Action:
                                 ny = dy / dist
 
                                 bounce_strength = 2000.0 * delta
+                                if getattr(self.ball, "kinetic_shield_active", False):
+                                    bounce_strength *= 0.5
+                                    self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
+                                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
 
                                 self.ball.vx = nx * 3000.0
                                 self.ball.vy = ny * 3000.0
+                                if getattr(self.ball, "kinetic_shield_active", False):
+                                    self.ball.vx *= 0.5
+                                    self.ball.vy *= 0.5
                         elif hazard.kind == "electric_bumper":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
@@ -7492,6 +7499,9 @@ class Action:
                                 self.ball.y += ny * bounce_strength
                                 self.ball.vx = nx * 3000.0
                                 self.ball.vy = ny * 3000.0
+                                if getattr(self.ball, "kinetic_shield_active", False):
+                                    self.ball.vx *= 0.5
+                                    self.ball.vy *= 0.5
 
                                 # Apply stun and damage
                                 if not getattr(self.ball, "is_stunned", False):
@@ -7530,10 +7540,17 @@ class Action:
                                 nx = dx / dist
                                 ny = dy / dist
                                 bounce_strength = 2000.0 * delta
+                                if getattr(self.ball, "kinetic_shield_active", False):
+                                    bounce_strength *= 0.5
+                                    self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
+                                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
                                 self.ball.vx = nx * 4000.0
                                 self.ball.vy = ny * 4000.0
+                                if getattr(self.ball, "kinetic_shield_active", False):
+                                    self.ball.vx *= 0.5
+                                    self.ball.vy *= 0.5
                             elif dist < (b_rad + h_rad + 150.0):
                                 speed = math.hypot(getattr(self.ball, 'vx', 0.0), getattr(self.ball, 'vy', 0.0))
                                 if speed < 250.0:
@@ -7565,11 +7582,18 @@ class Action:
                                     nx = dx / dist
                                     ny = dy / dist
                                     bounce_strength = 1200.0 * delta
+                                    if getattr(self.ball, "kinetic_shield_active", False):
+                                        bounce_strength *= 0.5
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
+                                        self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                     self.ball.x += nx * bounce_strength
                                     self.ball.y += ny * bounce_strength
 
                                     self.ball.vx = nx * 4000.0
                                     self.ball.vy = ny * 4000.0
+                                    if getattr(self.ball, "kinetic_shield_active", False):
+                                        self.ball.vx *= 0.5
+                                        self.ball.vy *= 0.5
 
                                     # Find nearby random opponent
                                     import random as _rnd
@@ -7640,11 +7664,18 @@ class Action:
                                 ny = math.sin(angle)
 
                                 bounce_strength = 1200.0 * delta
+                                if getattr(self.ball, "kinetic_shield_active", False):
+                                    bounce_strength *= 0.5
+                                    self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
+                                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
                                 # Accelerate ball significantly to create chaotic pinball-like movement
                                 self.ball.vx = nx * 4000.0
                                 self.ball.vy = ny * 4000.0
+                                if getattr(self.ball, "kinetic_shield_active", False):
+                                    self.ball.vx *= 0.5
+                                    self.ball.vy *= 0.5
                                 # Grant a temporary movement speed boost upon bouncing
                                 self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
 
