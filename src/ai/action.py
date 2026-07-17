@@ -14592,6 +14592,40 @@ class Action:
             if has_minion:
                 self.ball.speed = base_s * 1.5
 
+            # Necromancer damaging aura
+            necro_aura_radius = 200.0
+            damage_per_sec = 10.0
+            total_damage_dealt = 0.0
+            for other in self.world.balls:
+                if not getattr(other, "alive", True) or getattr(other, "id", None) == ball_id:
+                    continue
+                other_team = getattr(other, "team", getattr(other, "ball_type", ""))
+                if other_team != team:
+                    dist_sq = (self.ball.x - other.x)**2 + (self.ball.y - other.y)**2
+                    if dist_sq <= necro_aura_radius**2:
+                        dmg = damage_per_sec * delta
+                        if hasattr(other, "hp"):
+                            other.hp -= dmg
+                            if other.hp <= 0:
+                                other.hp = 0
+                                other.alive = False
+                            total_damage_dealt += dmg
+
+            if total_damage_dealt > 0:
+                heal_amount = total_damage_dealt * 0.5
+                current_hp = getattr(self.ball, "hp", 100.0)
+                max_hp = getattr(self.ball, "max_hp", 100.0)
+                if current_hp < max_hp:
+                    self.ball.hp = min(current_hp + heal_amount, max_hp)
+                else:
+                    acc = getattr(self.ball, "_necro_aura_dmg_acc", 0.0) + heal_amount
+                    if acc >= 15.0:
+                        stacks_to_add = int(acc // 15.0)
+                        self.ball.bone_armor_stacks = min(5, getattr(self.ball, "bone_armor_stacks", 0) + stacks_to_add)
+                        self.ball._necro_aura_dmg_acc = acc % 15.0
+                    else:
+                        self.ball._necro_aura_dmg_acc = acc
+
     def _update_skill_timer(self, delta: float) -> None:
         if getattr(self.ball, "blood_magic_timer", 0.0) > 0.0:
             current_st = getattr(self.ball, "skill_timer", 0.0)

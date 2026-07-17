@@ -27332,6 +27332,102 @@ func _apply_friendly_aura(delta: float):
                 if "speed" in self.ball:
                     self.ball.speed = base_s * 1.5
 
+            var necro_aura_radius = 200.0
+            var damage_per_sec = 10.0
+            var total_damage_dealt = 0.0
+            for other in world.balls:
+                var o_alive = true
+                if typeof(other) == TYPE_DICTIONARY and other.has("alive"): o_alive = other.alive
+                elif typeof(other) == TYPE_OBJECT and "alive" in other: o_alive = other.alive
+
+                var o_id = -1
+                if typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other.id
+                elif typeof(other) == TYPE_OBJECT and "id" in other: o_id = other.id
+
+                if not o_alive or o_id == ball_id:
+                    continue
+
+                var other_team = ""
+                if "team" in other: other_team = other.team
+                elif "ball_type" in other: other_team = other.ball_type
+
+                if other_team != team:
+                    var o_x = 0.0
+                    var o_y = 0.0
+                    if typeof(other) == TYPE_DICTIONARY:
+                        o_x = other.get("x", 0.0)
+                        o_y = other.get("y", 0.0)
+                    else:
+                        o_x = other.x
+                        o_y = other.y
+
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        b_x = self.ball.get("x", 0.0)
+                        b_y = self.ball.get("y", 0.0)
+                    else:
+                        b_x = self.ball.x
+                        b_y = self.ball.y
+
+                    var dist_sq = (b_x - o_x) * (b_x - o_x) + (b_y - o_y) * (b_y - o_y)
+                    if dist_sq <= necro_aura_radius * necro_aura_radius:
+                        var dmg = damage_per_sec * delta
+                        if typeof(other) == TYPE_DICTIONARY and other.has("hp"):
+                            other.hp -= dmg
+                            if other.hp <= 0:
+                                other.hp = 0
+                                other.alive = false
+                            total_damage_dealt += dmg
+                        elif typeof(other) == TYPE_OBJECT and "hp" in other:
+                            other.hp -= dmg
+                            if other.hp <= 0:
+                                other.hp = 0
+                                other.alive = false
+                            total_damage_dealt += dmg
+
+            if total_damage_dealt > 0:
+                var heal_amount = total_damage_dealt * 0.5
+                var current_hp = 100.0
+                var max_hp = 100.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    current_hp = self.ball.get("hp", 100.0)
+                    max_hp = self.ball.get("max_hp", 100.0)
+                else:
+                    current_hp = self.ball.hp
+                    max_hp = self.ball.max_hp
+
+                if current_hp < max_hp:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball.hp = min(current_hp + heal_amount, max_hp)
+                    else:
+                        self.ball.hp = min(current_hp + heal_amount, max_hp)
+                else:
+                    var acc = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        acc = self.ball.get("_necro_aura_dmg_acc", 0.0) + heal_amount
+                    else:
+                        if "get" in self.ball: acc = self.ball.get("_necro_aura_dmg_acc", 0.0) + heal_amount
+
+                    if acc >= 15.0:
+                        var stacks_to_add = int(acc / 15.0)
+                        var current_stacks = 0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            current_stacks = self.ball.get("bone_armor_stacks", 0)
+                            self.ball["bone_armor_stacks"] = min(5, current_stacks + stacks_to_add)
+                            self.ball["_necro_aura_dmg_acc"] = fmod(acc, 15.0)
+                        else:
+                            current_stacks = self.ball.get("bone_armor_stacks", 0) if "get" in self.ball else 0
+                            self.ball.bone_armor_stacks = min(5, current_stacks + stacks_to_add)
+                            if "set" in self.ball: self.ball.set("_necro_aura_dmg_acc", fmod(acc, 15.0))
+                            elif "_necro_aura_dmg_acc" in self.ball: self.ball._necro_aura_dmg_acc = fmod(acc, 15.0)
+                    else:
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["_necro_aura_dmg_acc"] = acc
+                        else:
+                            if "set" in self.ball: self.ball.set("_necro_aura_dmg_acc", acc)
+                            elif "_necro_aura_dmg_acc" in self.ball: self.ball._necro_aura_dmg_acc = acc
+
 
 func _update_skill_timer(delta: float):
     var bm_timer = 0.0
