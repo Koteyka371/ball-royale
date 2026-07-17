@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Laser Grid Mode",
+  "description": "A dense grid of lasers spans the arena. Over time, the spacing between the lasers shrinks, forcing players into a smaller and smaller grid box, eventually pushing them into one central box before turning off completely and resetting."
+}

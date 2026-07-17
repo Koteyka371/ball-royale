@@ -18408,6 +18408,68 @@ class QuantumInstabilityEventMode(GameMode):
                         h.target_y = random.uniform(100, arena_h - 100)
 
 
+
+class RotatingLaserWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rotating Laser Walls"
+        self.description = "Long laser walls rotate from the center of the arena, forcing players to move in specific patterns."
+        self.lasers_spawned = False
+        self.lasers = []
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.lasers_spawned = False
+        self.lasers = []
+        if hasattr(world, "arena"):
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena"): return
+
+        if not self.lasers_spawned:
+            self.lasers_spawned = True
+
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+            center_x = arena_width / 2.0
+            center_y = arena_height / 2.0
+
+            try:
+                from arena.procedural_arena import Hazard
+                def create_hazard(hid, hx, hy, r, k):
+                    return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, hid, hx, hy, r, k):
+                        self.id = hid
+                        self.x = hx
+                        self.y = hy
+                        self.radius = r
+                        self.kind = k
+                        self.damage = 0.0
+                def create_hazard(hid, hx, hy, r, k):
+                    return FallbackHazard(hid, hx, hy, r, k)
+
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            import math
+            # Spawn two orthogonal laser walls that cross in the middle
+            laser1 = create_hazard("rot_laser_wall_1", center_x, center_y, max(arena_width, arena_height), "rotating_laser_wall")
+            laser1.angle = 0.0
+            laser1.damage = 60.0
+
+            laser2 = create_hazard("rot_laser_wall_2", center_x, center_y, max(arena_width, arena_height), "rotating_laser_wall")
+            laser2.angle = math.pi / 2.0
+            laser2.damage = 60.0
+
+            world.arena.hazards.append(laser1)
+            world.arena.hazards.append(laser2)
+            self.lasers = [laser1, laser2]
+
 class FloodingArenaMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -23102,5 +23164,6 @@ class EdgeSlingshotsMode(GameMode):
 GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
+GAME_MODES["rotating_laser_walls"] = RotatingLaserWallsMode()
 
 GAME_MODES['flooding_arena'] = FloodingArenaMode()

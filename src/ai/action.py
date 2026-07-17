@@ -4612,6 +4612,14 @@ class Action:
                             hazard.last_updated_tick = current_tick
                             if not getattr(hazard, "hologram_spawned", False):
                                 hazard.duration = getattr(hazard, "duration", 5.0) - delta
+                    elif hazard.kind == "rotating_laser_wall":
+                        current_tick = getattr(self.world, "tick", 0)
+                        if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            # Update angle continuously (faster than spinning_laser to make it challenging, or maybe similar)
+                            hazard.angle = getattr(hazard, "angle", 0.0) + (math.pi / 4.0) * delta
+                            if hazard.angle > 2 * math.pi:
+                                hazard.angle -= 2 * math.pi
                     elif hazard.kind == "spinning_laser":
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
@@ -6743,6 +6751,28 @@ class Action:
                                     self.ball.take_damage(damage_amount)
                                 elif hasattr(self.ball, "hp"):
                                     self.ball.hp -= damage_amount
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+                        elif hazard.kind == "rotating_laser_wall":
+                            angle = getattr(hazard, "angle", 0.0)
+                            beam_width = 20.0
+
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+
+                            # Distance to line
+                            normal_x = -math.sin(angle)
+                            normal_y = math.cos(angle)
+                            dist_to_beam = abs(dx * normal_x + dy * normal_y)
+
+                            if dist_to_beam < beam_width + self.ball.radius:
+                                hazard_damage = hazard.damage * delta
+                                if getattr(self.ball, "is_in_quicksand", False):
+                                    hazard_damage *= 2.0
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard_damage)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
                         elif hazard.kind == "spinning_laser":

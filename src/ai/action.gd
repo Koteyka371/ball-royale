@@ -8393,6 +8393,19 @@ func execute(strategy: String, delta: float):
                                 if hazard.has_meta("duration"):
                                     dur = hazard.get_meta("duration")
                                 hazard.set_meta("duration", dur - delta)
+                elif hazard.kind == "rotating_laser_wall":
+                    var current_tick = world.get("tick") if world.has("tick") else 0
+                    var last_tick = hazard.get_meta("last_updated_tick") if hazard.has_meta("last_updated_tick") else -1
+                    if last_tick != current_tick:
+                        hazard.set_meta("last_updated_tick", current_tick)
+                        var current_angle = hazard.angle if "angle" in hazard else (hazard.get_meta("angle") if hazard.has_meta("angle") else 0.0)
+                        current_angle += (PI / 4.0) * delta
+                        if current_angle > 2 * PI:
+                            current_angle -= 2 * PI
+                        if "angle" in hazard:
+                            hazard.angle = current_angle
+                        else:
+                            hazard.set_meta("angle", current_angle)
                 elif hazard.kind == "spinning_laser":
                     var current_tick = 0
                     if "tick" in self.world:
@@ -12143,6 +12156,40 @@ func execute(strategy: String, delta: float):
                                 self.ball.hp -= damage_amount
                                 if self.ball.hp <= 0:
                                     self.ball.alive = false
+                    elif hazard.kind == "rotating_laser_wall":
+                        var angle = 0.0
+                        if "angle" in hazard:
+                            angle = hazard.angle
+                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("angle"):
+                            angle = hazard.angle
+                        elif hazard.has_meta("angle"):
+                            angle = hazard.get_meta("angle")
+
+                        var beam_width = 20.0
+
+                        var dx = ball.x - hazard.x
+                        var dy = ball.y - hazard.y
+
+                        var normal_x = -sin(angle)
+                        var normal_y = cos(angle)
+                        var dist_to_beam = abs(dx * normal_x + dy * normal_y)
+
+                        var hazard_damage = 0.0
+                        if "damage" in hazard:
+                            hazard_damage = hazard.damage * delta
+                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("damage"):
+                            hazard_damage = hazard.damage * delta
+
+                        if "is_in_quicksand" in ball and ball.is_in_quicksand:
+                            hazard_damage *= 2.0
+
+                        if dist_to_beam < beam_width + ball.radius:
+                            if ball.has_method("take_damage"):
+                                ball.take_damage(hazard_damage)
+                            elif "hp" in ball:
+                                ball.hp -= hazard_damage
+                                if ball.hp <= 0:
+                                    ball.alive = false
                     elif hazard.kind == "spinning_laser":
                         var is_on = true
                         if hazard.has_meta("is_on"):

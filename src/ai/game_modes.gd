@@ -31058,6 +31058,77 @@ class GrappleNodeMode extends GameMode:
 						var new_node = HazardType.new(n_id, nx, ny, 15.0, "grapple_node", 0.0)
 						world.arena.hazards.append(new_node)
 
+class RotatingLaserWallsMode extends GameMode:
+    var lasers_spawned = false
+
+    func _init().():
+        self.name = "Rotating Laser Walls"
+        self.description = "Long laser walls rotate from the center of the arena, forcing players to move in specific patterns."
+
+    func setup(world, balls):
+        .setup(world, balls)
+        self.lasers_spawned = false
+        if world.has("arena") and world.arena != null:
+            if not world.arena.has("hazards"):
+                world.arena["hazards"] = []
+
+    func tick(world, balls, delta=0.016):
+        .tick(world, balls, delta)
+        if not world.has("arena") or world.arena == null:
+            return
+
+        if not self.lasers_spawned:
+            self.lasers_spawned = true
+
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if world.arena.has("width"):
+                arena_width = world.arena.width
+            if world.arena.has("height"):
+                arena_height = world.arena.height
+
+            var center_x = arena_width / 2.0
+            var center_y = arena_height / 2.0
+
+            if not world.arena.has("hazards"):
+                world.arena["hazards"] = []
+
+            var HazardClass = null
+            if Engine.has_meta("ProceduralArena"):
+                var ProceduralArenaScript = Engine.get_meta("ProceduralArena")
+                if ProceduralArenaScript != null:
+                    HazardClass = ProceduralArenaScript.Hazard
+
+            if HazardClass != null:
+                var laser1 = HazardClass.new("rot_laser_wall_1", center_x, center_y, max(arena_width, arena_height), "rotating_laser_wall", 60.0)
+                laser1.set_meta("angle", 0.0)
+
+                var laser2 = HazardClass.new("rot_laser_wall_2", center_x, center_y, max(arena_width, arena_height), "rotating_laser_wall", 60.0)
+                laser2.set_meta("angle", PI / 2.0)
+
+                world.arena.hazards.append(laser1)
+                world.arena.hazards.append(laser2)
+            else:
+                # Fallback
+                world.arena.hazards.append({
+                    "id": "rot_laser_wall_1",
+                    "x": center_x,
+                    "y": center_y,
+                    "radius": max(arena_width, arena_height),
+                    "kind": "rotating_laser_wall",
+                    "damage": 60.0,
+                    "angle": 0.0
+                })
+                world.arena.hazards.append({
+                    "id": "rot_laser_wall_2",
+                    "x": center_x,
+                    "y": center_y,
+                    "radius": max(arena_width, arena_height),
+                    "kind": "rotating_laser_wall",
+                    "damage": 60.0,
+                    "angle": PI / 2.0
+                })
+
 class FloodingArenaMode extends GameMode:
 	var flood_radius: float = 1000.0
 	var min_flood_radius: float = 50.0
@@ -36359,5 +36430,6 @@ class EdgeSlingshotsMode:
 GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode.new()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
+GAME_MODES["rotating_laser_walls"] = RotatingLaserWallsMode.new()
 
 GAME_MODES['flooding_arena'] = FloodingArenaMode.new()

@@ -1,0 +1,4 @@
+{
+  "title": "Bouncing Laser Walls Mode",
+  "description": "Similar to Rotating Laser Walls, but instead of rotating, the laser walls move horizontally and vertically, bouncing off the edges of the arena, requiring players to thread the needle as multiple laser walls sweep the map at different speeds."
+}
