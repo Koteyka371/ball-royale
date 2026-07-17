@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-875] Bouncy Terrain Feature — *2026-07-17 01:36:11 UTC*
+
+Add dynamic terrain objects that act as trampolines. Balls colliding with them gain a temporary speed boost and ignore ground hazards for 2 seconds.
+
+---
+
 ## [idea-1062] Day/Night Vision Modules — *2026-07-17 01:36:07 UTC*
 
 Add vision enhancement modules that dynamically adjust player's perception radius during different weather and time of day (e.g. night vision goggles for dark phases, thermal vision for finding invisible hazards).
