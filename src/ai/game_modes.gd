@@ -37067,3 +37067,162 @@ class BountyContractEventMode extends GameMode:
 						k_alive = killer.alive if "alive" in killer else false
 						if k_alive and "xp" in killer:
 							killer.xp += b_reward
+
+
+class VengefulDecoysMode extends GameMode:
+    var timer: float = 0.0
+    var decoy_interval: float = 10.0
+    var recordings: Dictionary = {}
+
+    class VengefulDecoy:
+        var id: int
+        var owner_id: int
+        var path: Array
+        var timer: float = 0.0
+        var x: float
+        var y: float
+        var radius: float = 15.0
+        var hp: float = 100.0
+        var max_hp: float = 100.0
+        var alive: bool = true
+        var kind: String = "vengeful_decoy"
+        var duration: float = 5.0
+        var is_decoy: bool = true
+        var team: String = "neutral"
+        var half_reflect_shield_active: bool = true
+        var ball_type: String = "basic"
+        var damage: float = 0.0
+        var base_damage: float = 0.0
+        var speed: float = 0.0
+        var speed_buff_timer: float = 0.0
+        var damage_buff_timer: float = 0.0
+        var attack_speed_buff_timer: float = 0.0
+
+        func _init(target_ball, p_path: Array):
+            self.owner_id = target_ball.id if "id" in target_ball else 0
+            self.path = p_path
+            self.timer = 0.0
+
+            if self.path.size() > 0:
+                self.x = self.path[0][1]
+                self.y = self.path[0][2]
+            else:
+                self.x = target_ball.x if "x" in target_ball else 0.0
+                self.y = target_ball.y if "y" in target_ball else 0.0
+
+            if "radius" in target_ball: self.radius = target_ball.radius
+            if "hp" in target_ball: self.hp = target_ball.hp
+            if "max_hp" in target_ball: self.max_hp = target_ball.max_hp
+            if "team" in target_ball: self.team = target_ball.team
+            if "ball_type" in target_ball: self.ball_type = target_ball.ball_type
+
+        func update(delta: float):
+            self.timer += delta
+            self.duration -= delta
+            if self.duration <= 0.0 or self.path.size() == 0:
+                self.alive = false
+                return
+            if self.timer >= self.path[self.path.size() - 1][0]:
+                self.x = self.path[self.path.size() - 1][1]
+                self.y = self.path[self.path.size() - 1][2]
+                return
+            for i in range(self.path.size() - 1):
+                var t1 = self.path[i][0]
+                var x1 = self.path[i][1]
+                var y1 = self.path[i][2]
+                var t2 = self.path[i+1][0]
+                var x2 = self.path[i+1][1]
+                var y2 = self.path[i+1][2]
+                if t1 <= self.timer and self.timer <= t2:
+                    if t2 == t1:
+                        self.x = x1
+                        self.y = y1
+                    else:
+                        var ratio = (self.timer - t1) / (t2 - t1)
+                        self.x = x1 + (x2 - x1) * ratio
+                        self.y = y1 + (y2 - y1) * ratio
+                    break
+
+        func take_damage(amount: float):
+            self.hp -= amount
+            if self.hp <= 0:
+                self.alive = false
+
+    func _init():
+        self.name = "Vengeful Decoys"
+        self.description = "All players occasionally leave behind a decoy that perfectly replicates their health and movement history for 5 seconds. Attacking a decoy reflects 50% of the damage back to the attacker."
+
+    func setup(world, balls: Array):
+        super.setup(world, balls)
+        self.timer = 0.0
+        self.recordings.clear()
+
+    func tick(world, balls: Array, delta: float = 0.016):
+        self.timer += delta
+
+        for b in balls:
+            var alive = true
+            if typeof(b) == TYPE_DICTIONARY:
+                alive = b.get("alive", false)
+            else:
+                alive = b.alive if "alive" in b else false
+
+            var is_decoy = false
+            if typeof(b) == TYPE_DICTIONARY:
+                is_decoy = b.get("is_decoy", false)
+            else:
+                is_decoy = b.is_decoy if "is_decoy" in b else false
+
+            if alive and not is_decoy:
+                var bid = b.id if "id" in b else (b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else 0)
+                if not self.recordings.has(bid):
+                    self.recordings[bid] = []
+
+                var bx = b.x if "x" in b else (b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+                var by = b.y if "y" in b else (b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+
+                self.recordings[bid].append([self.timer, bx, by])
+
+                while self.recordings[bid].size() > 0 and self.timer - self.recordings[bid][0][0] > 5.0:
+                    self.recordings[bid].pop_front()
+
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT and b.has_method("update") and "kind" in b and b.kind == "vengeful_decoy" and ("alive" in b and b.alive):
+                b.update(delta)
+
+        if self.timer >= self.decoy_interval:
+            self.timer = 0.0
+            for b in balls:
+                var alive = true
+                if typeof(b) == TYPE_DICTIONARY:
+                    alive = b.get("alive", false)
+                else:
+                    alive = b.alive if "alive" in b else false
+
+                var is_decoy = false
+                if typeof(b) == TYPE_DICTIONARY:
+                    is_decoy = b.get("is_decoy", false)
+                else:
+                    is_decoy = b.is_decoy if "is_decoy" in b else false
+
+                if alive and not is_decoy:
+                    var bid = b.id if "id" in b else (b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else 0)
+                    if self.recordings.has(bid) and self.recordings[bid].size() > 0:
+                        var start_time = self.recordings[bid][0][0]
+                        var path = []
+                        for rec in self.recordings[bid]:
+                            path.append([rec[0] - start_time, rec[1], rec[2]])
+
+                        var decoy = VengefulDecoy.new(b, path)
+
+                        if typeof(world) == TYPE_OBJECT and "next_id" in world:
+                            decoy.id = world.next_id
+                            world.next_id += 1
+                        else:
+                            decoy.id = randi() % 900000 + 100000
+
+                        balls.append(decoy)
+
+            self.recordings.clear()
+
+GAME_MODES["vengeful_decoys"] = VengefulDecoysMode.new()

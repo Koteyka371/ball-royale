@@ -23535,3 +23535,107 @@ class BountyContractEventMode(GameMode):
                     killer.xp += reward
 
 GAME_MODES['bounty_contract_event'] = BountyContractEventMode()
+
+
+class VengefulDecoysMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vengeful Decoys"
+        self.description = "All players occasionally leave behind a decoy that perfectly replicates their health and movement history for 5 seconds. Attacking a decoy reflects 50% of the damage back to the attacker."
+        self.timer = 0.0
+        self.decoy_interval = 10.0
+        self.recordings = {}
+
+    class VengefulDecoy:
+        def __init__(self, target_ball, path):
+            self.owner_id = target_ball.id
+            self.path = path
+            self.timer = 0.0
+            self.x = path[0][1] if path else target_ball.x
+            self.y = path[0][2] if path else target_ball.y
+            self.radius = getattr(target_ball, "radius", 15.0)
+            self.hp = getattr(target_ball, "hp", 100.0)
+            self.max_hp = getattr(target_ball, "max_hp", 100.0)
+            self.alive = True
+            self.kind = "vengeful_decoy"
+            self.duration = 5.0
+            self.is_decoy = True
+            self.team = getattr(target_ball, "team", "neutral")
+            self.half_reflect_shield_active = True
+            self.ball_type = getattr(target_ball, "ball_type", "basic")
+            self.damage = 0.0
+            self.base_damage = 0.0
+            self.speed = 0.0
+
+        def update(self, delta):
+            self.timer += delta
+            self.duration -= delta
+            if self.duration <= 0.0 or not self.path:
+                self.alive = False
+                return
+            if self.timer >= self.path[-1][0]:
+                self.x = self.path[-1][1]
+                self.y = self.path[-1][2]
+                return
+            for i in range(len(self.path) - 1):
+                t1, x1, y1 = self.path[i]
+                t2, x2, y2 = self.path[i+1]
+                if t1 <= self.timer <= t2:
+                    if t2 == t1:
+                        self.x, self.y = x1, y1
+                    else:
+                        ratio = (self.timer - t1) / (t2 - t1)
+                        self.x = x1 + (x2 - x1) * ratio
+                        self.y = y1 + (y2 - y1) * ratio
+                    break
+
+        def take_damage(self, amount):
+            self.hp -= amount
+            if self.hp <= 0:
+                self.alive = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.timer = 0.0
+        self.recordings.clear()
+
+    def tick(self, world, balls, delta=0.016):
+        import copy
+        self.timer += delta
+
+        for b in balls:
+            if getattr(b, "alive", False) and not getattr(b, "is_decoy", False):
+                if b.id not in self.recordings:
+                    self.recordings[b.id] = []
+                self.recordings[b.id].append((self.timer, b.x, b.y))
+
+                while len(self.recordings[b.id]) > 0 and self.timer - self.recordings[b.id][0][0] > 5.0:
+                    self.recordings[b.id].pop(0)
+
+        for b in balls:
+            if getattr(b, "kind", "") == "vengeful_decoy" and getattr(b, "alive", True):
+                b.update(delta)
+
+        if self.timer >= self.decoy_interval:
+            self.timer = 0.0
+
+            for b in balls:
+                if getattr(b, "alive", False) and not getattr(b, "is_decoy", False):
+                    if b.id in self.recordings and self.recordings[b.id]:
+                        start_time = self.recordings[b.id][0][0]
+                        path = [(t - start_time, x, y) for t, x, y in self.recordings[b.id]]
+
+                        decoy = self.VengefulDecoy(b, path)
+
+                        if hasattr(world, "next_id"):
+                            decoy.id = world.next_id
+                            world.next_id += 1
+                        else:
+                            import random
+                            decoy.id = random.randint(100000, 999999)
+
+                        world.balls.append(decoy)
+
+            self.recordings.clear()
+
+GAME_MODES['vengeful_decoys'] = VengefulDecoysMode()
