@@ -6122,15 +6122,21 @@ class Action:
                                                         b.poison_timer = max(getattr(b, "poison_timer", 0.0), 5.0)
 
                                                 if hazard.kind in ("black_hole", "massive_black_hole", "mini_black_hole") and bdist_sq < hazard.radius * hazard.radius:
-                                                    damage_val = getattr(hazard, "damage", 10.0) * delta * lifetime_mult
-                                                    if hasattr(b, "take_damage"):
-                                                        b.take_damage(damage_val)
-                                                    elif hasattr(b, "hp"):
-                                                        b.hp -= damage_val
-                                                        if b.hp <= 0:
+                                                    if hazard.kind == "massive_black_hole":
+                                                        if hasattr(b, "hp"):
                                                             b.hp = 0
-                                                            b.alive = False
-                                                            b.killer = "black_hole"
+                                                        b.alive = False
+                                                        b.killer = "massive_black_hole"
+                                                    else:
+                                                        damage_val = getattr(hazard, "damage", 10.0) * delta * lifetime_mult
+                                                        if hasattr(b, "take_damage"):
+                                                            b.take_damage(damage_val)
+                                                        elif hasattr(b, "hp"):
+                                                            b.hp -= damage_val
+                                                            if b.hp <= 0:
+                                                                b.hp = 0
+                                                                b.alive = False
+                                                                b.killer = "black_hole"
 
 
                             # Pull boosters once per frame
