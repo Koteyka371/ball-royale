@@ -19443,6 +19443,18 @@ func _collect_booster(delta: float):
                                         other_ball.set_meta("speed_booster_timer", 0.0)
                                     elif "speed_booster_timer" in other_ball:
                                         other_ball.speed_booster_timer = 0.0
+                                    if "is_emped" in other_ball: other_ball.is_emped = true
+                                    elif typeof(other_ball) == TYPE_OBJECT and other_ball.has_method("set_meta"): other_ball.set_meta("is_emped", true)
+                                    elif typeof(other_ball) == TYPE_DICTIONARY: other_ball["is_emped"] = true
+                                    if "emp_timer" in other_ball: other_ball.emp_timer = 5.0
+                                    elif typeof(other_ball) == TYPE_OBJECT and other_ball.has_method("set_meta"): other_ball.set_meta("emp_timer", 5.0)
+                                    elif typeof(other_ball) == TYPE_DICTIONARY: other_ball["emp_timer"] = 5.0
+                                    if "hud_disabled" in other_ball: other_ball.hud_disabled = true
+                                    elif typeof(other_ball) == TYPE_OBJECT and other_ball.has_method("set_meta"): other_ball.set_meta("hud_disabled", true)
+                                    elif typeof(other_ball) == TYPE_DICTIONARY: other_ball["hud_disabled"] = true
+                                    if "abilities_disabled" in other_ball: other_ball.abilities_disabled = true
+                                    elif typeof(other_ball) == TYPE_OBJECT and other_ball.has_method("set_meta"): other_ball.set_meta("abilities_disabled", true)
+                                    elif typeof(other_ball) == TYPE_DICTIONARY: other_ball["abilities_disabled"] = true
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:

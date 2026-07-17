@@ -10441,6 +10441,10 @@ class Action:
                                         other_ball.has_drone = False
                                         other_ball.has_shield = False
                                         other_ball.speed_booster_timer = 0.0
+                                        other_ball.is_emped = True
+                                        other_ball.emp_timer = 5.0
+                                        other_ball.hud_disabled = True
+                                        other_ball.abilities_disabled = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
