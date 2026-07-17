@@ -2092,3 +2092,86 @@ def test_molten_rock_slows_and_burns():
     ball.x = -1000.0
     action.execute("idle", 0.1)
     assert ball.hp < 100.0
+
+
+def test_platformer_mode():
+    from ai.game_modes import PlatformerMode
+
+    mode = PlatformerMode()
+    class MinimalMockWorld:
+        def __init__(self):
+            self.arena = type('MockArena', (), {'width': 1000, 'height': 1000, 'hazards': [], 'weather': 'clear'})()
+
+    world = MinimalMockWorld()
+
+    class PBall:
+        def __init__(self, id_val):
+            self.id = id_val
+            self.x = 0
+            self.y = 0
+            self.alive = True
+            self.radius = 15.0
+
+    b1 = PBall("p1")
+    balls = [b1]
+
+    mode.setup(world, balls)
+
+    assert world.arena.width == 6000.0
+    assert world.arena.height == 1000.0
+    assert b1.x == 100.0
+    assert b1.y == 500.0
+    assert b1.gravity_modifier == 0.5
+    assert getattr(b1, "velocity_x", -1) == 0.0
+    assert getattr(b1, "velocity_y", -1) == 0.0
+
+    # tick without hazards
+    mode.tick(world, balls, delta=1.0) # 1 second tick
+
+    # Gravity accelerates b1 downwards
+    # Starts v_y=0, delta=1.0 -> v_y += 50 * 0.5 * 1.0 = 25.0
+    # b1.y += 25.0 * 1.0 = 25.0, so y -> 525.0
+    assert b1.velocity_y == 25.0
+    assert b1.y == 525.0
+
+    # Spawn a pad
+    class MockHazard:
+        def __init__(self, kind):
+            self.kind = kind
+            self.active = True
+            self.x = b1.x
+            self.y = b1.y
+            self.radius = 20.0
+            self.bounciness = 2.0
+
+    pad = MockHazard("bounce_pad")
+    world.arena.hazards.append(pad)
+
+    # Another tick to hit the pad
+    mode.tick(world, balls, delta=0.1)
+
+    # distance is 0, so it hits pad
+    # v_y becomes -300.0 * 2.0 = -600.0
+    assert b1.velocity_y == -600.0
+    assert not pad.active
+
+    # Test grapple
+    gpoint = MockHazard("grapple_point")
+    gpoint.x = b1.x + 10 # close enough to fling
+    gpoint.y = b1.y
+    world.arena.hazards.append(gpoint)
+
+    b1.velocity_x = 0.0
+    b1.velocity_y = 0.0
+    mode.tick(world, balls, delta=0.1)
+
+    # dist is 10, < 30 so it flings
+    # v_x += dx * 2 * 0.1 = 10 * 0.2 = 2.0
+    # then flings: v_x += 500.0 -> 502.0
+    assert b1.velocity_x > 400.0
+    assert not gpoint.active
+
+    # Test win condition
+    b1.x = 5001.0
+    mode.tick(world, balls, delta=0.1)
+    assert getattr(b1, "is_winner", False)

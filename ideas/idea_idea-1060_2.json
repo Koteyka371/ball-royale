@@ -1,0 +1,4 @@
+{
+  "title": "Timer-based Race Mode",
+  "description": "A variant of Platformer Mode where the focus is not just surviving but reaching the finish line under a strict time limit, with time-extension pickups scattered throughout the level."
+}

@@ -31655,6 +31655,7 @@ class InfiltrationMode extends GameMode:
 
 
 GAME_MODES = {
+	"platformer_mode": PlatformerMode.new(),
 	"infiltration": InfiltrationMode.new(),
 	"parallel_dimensions": ParallelDimensionsMode.new(),
 	'time_loop_field': TimeLoopFieldMode.new(),
@@ -36509,3 +36510,158 @@ GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
 
 GAME_MODES['flooding_arena'] = FloodingArenaMode.new()
+
+
+
+class PlatformerMode extends GameMode:
+	var spawn_timer = 0.0
+	var finish_x = 5000.0
+
+	func _init():
+		super()
+		name = "Side-Scrolling Platformer"
+		description = "Navigate using bounce pads, grapple points, and low gravity to reach the end of a long, treacherous level."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if "arena" in world and world.arena != null:
+			world.arena.set("width", 6000.0)
+			world.arena.set("height", 1000.0)
+
+		for b in balls:
+			b.set("x", 100.0)
+			b.set("y", 500.0)
+			if b.has_method("set_meta"):
+				b.set_meta("gravity_modifier", 0.5)
+			else:
+				b.set("gravity_modifier", 0.5)
+
+			if not "velocity_x" in b:
+				b.set("velocity_x", 0.0)
+			if not "velocity_y" in b:
+				b.set("velocity_y", 0.0)
+
+	class PlatformerHazard:
+		var id = ""
+		var x = 0.0
+		var y = 0.0
+		var radius = 20.0
+		var kind = ""
+		var active = true
+		var duration = 10.0
+		var bounciness = 2.0
+
+		func _init(id_val, x_val, y_val, kind_val, radius_val):
+			id = id_val
+			x = x_val
+			y = y_val
+			kind = kind_val
+			radius = radius_val
+			if kind == "bounce_pad":
+				bounciness = 2.0
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 3.0
+			if "arena" in world and world.arena != null and "hazards" in world.arena:
+				var arena_width = 6000.0
+				if "width" in world.arena: arena_width = float(world.arena.width)
+
+				var hx = 200.0 + randf() * (arena_width - 700.0)
+				var hy = 100.0 + randf() * 800.0
+
+				if randf() < 0.5:
+					var pad = PlatformerHazard.new("platformer_pad_" + str(randi() % 10000), hx, hy, "bounce_pad", 30.0)
+					world.arena.hazards.append(pad)
+				else:
+					var gpoint = PlatformerHazard.new("platformer_gp_" + str(randi() % 10000), hx, hy, "grapple_point", 20.0)
+					world.arena.hazards.append(gpoint)
+
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null and "height" in world.arena:
+			arena_height = float(world.arena.height)
+
+		for b in balls:
+			var is_alive = false
+			if "alive" in b: is_alive = b.alive
+			elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+			else: is_alive = true
+
+			if is_alive:
+				var bx = float(b.get("x"))
+				var by = float(b.get("y"))
+
+				if bx >= finish_x:
+					b.set("is_winner", true)
+					if b.has_method("set_meta"): b.set_meta("is_winner", true)
+
+				var v_y = 0.0
+				var v_x = 0.0
+				if "velocity_y" in b: v_y = float(b.get("velocity_y"))
+				if "velocity_x" in b: v_x = float(b.get("velocity_x"))
+
+				var grav_mod = 0.5
+				if "gravity_modifier" in b: grav_mod = float(b.get("gravity_modifier"))
+				elif b.has_method("get_meta") and b.has_meta("gravity_modifier"): grav_mod = float(b.get_meta("gravity_modifier"))
+
+				v_y += 50.0 * grav_mod * delta
+				by += v_y * delta
+				bx += v_x * delta
+
+				var b_rad = 15.0
+				if "radius" in b: b_rad = float(b.get("radius"))
+
+				if by > arena_height - b_rad:
+					by = arena_height - b_rad
+					v_y = 0.0
+				if by < b_rad:
+					by = b_rad
+					v_y = 0.0
+
+				b.set("x", bx)
+				b.set("y", by)
+				b.set("velocity_x", v_x)
+				b.set("velocity_y", v_y)
+
+				if "arena" in world and world.arena != null and "hazards" in world.arena:
+					for h in world.arena.hazards:
+						var is_active = false
+						if "active" in h: is_active = h.active
+						elif h.has_method("get_meta") and h.has_meta("active"): is_active = h.get_meta("active")
+
+						if is_active:
+							var hx_pos = float(h.get("x"))
+							var hy_pos = float(h.get("y"))
+							var h_rad = 20.0
+							if "radius" in h: h_rad = float(h.get("radius"))
+
+							var dx = hx_pos - bx
+							var dy = hy_pos - by
+							var dist = sqrt(dx * dx + dy * dy)
+
+							if dist < b_rad + h_rad:
+								var h_kind = ""
+								if "kind" in h: h_kind = h.get("kind")
+								elif h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+								if h_kind == "bounce_pad":
+									var bounce = 2.0
+									if "bounciness" in h: bounce = float(h.get("bounciness"))
+									b.set("velocity_y", -300.0 * bounce)
+									if "active" in h: h.active = false
+									elif h.has_method("set_meta"): h.set_meta("active", false)
+								elif h_kind == "grapple_point":
+									v_x += dx * 2.0 * delta
+									v_y += dy * 2.0 * delta
+									b.set("velocity_x", v_x)
+									b.set("velocity_y", v_y)
+									if dist < 30.0:
+										v_x += 500.0
+										v_y -= 200.0
+										b.set("velocity_x", v_x)
+										b.set("velocity_y", v_y)
+										if "active" in h: h.active = false
+										elif h.has_method("set_meta"): h.set_meta("active", false)

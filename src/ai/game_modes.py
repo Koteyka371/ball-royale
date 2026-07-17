@@ -23218,3 +23218,110 @@ GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
 
 GAME_MODES['flooding_arena'] = FloodingArenaMode()
+
+
+
+class PlatformerMode(GameMode):
+    """A side-scrolling platformer mode where balls navigate using bounce pads, grapple points, and low gravity to reach the end."""
+    def __init__(self):
+        super().__init__()
+        self.name = "Side-Scrolling Platformer"
+        self.description = "Navigate using bounce pads, grapple points, and low gravity to reach the end of a long, treacherous level."
+        self.spawn_timer = 0.0
+        self.finish_x = 5000.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.width = 6000.0
+            world.arena.height = 1000.0
+
+        for b in balls:
+            b.x = 100.0
+            b.y = 500.0
+            b.gravity_modifier = 0.5
+            # Reset velocities
+            b.velocity_x = getattr(b, 'velocity_x', 0.0)
+            b.velocity_y = getattr(b, 'velocity_y', 0.0)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 3.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                class PlatformerHazard:
+                    def __init__(self, id, x, y, kind, radius):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.active = True
+                        self.duration = 10.0
+                        if kind == "bounce_pad":
+                            self.bounciness = 2.0
+
+                arena_width = getattr(world.arena, "width", 6000)
+
+                # Spawn a random pad or point
+                hx = random.uniform(200, arena_width - 500)
+                hy = random.uniform(100, 900)
+
+                if random.random() < 0.5:
+                    pad = PlatformerHazard(f"platformer_pad_{int(random.random()*10000)}", hx, hy, "bounce_pad", 30.0)
+                    world.arena.hazards.append(pad)
+                else:
+                    gpoint = PlatformerHazard(f"platformer_gp_{int(random.random()*10000)}", hx, hy, "grapple_point", 20.0)
+                    world.arena.hazards.append(gpoint)
+
+        for b in balls:
+            if b.alive:
+                if b.x >= self.finish_x:
+                    b.is_winner = True
+
+                # simulate low gravity pulling them down
+                if not hasattr(b, "velocity_y"):
+                    b.velocity_y = 0.0
+                if not hasattr(b, "velocity_x"):
+                    b.velocity_x = 0.0
+
+                # Assume falling
+                b.velocity_y += 50.0 * getattr(b, "gravity_modifier", 0.5) * delta
+                b.y += b.velocity_y * delta
+                b.x += b.velocity_x * delta
+
+                # Check bounds
+                if b.y > getattr(world.arena, "height", 1000.0) - getattr(b, "radius", 15.0):
+                    b.y = getattr(world.arena, "height", 1000.0) - getattr(b, "radius", 15.0)
+                    b.velocity_y = 0.0
+                if b.y < getattr(b, "radius", 15.0):
+                    b.y = getattr(b, "radius", 15.0)
+                    b.velocity_y = 0.0
+
+                # check for hazards
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        if getattr(h, "active", False):
+                            dist = math.hypot(b.x - h.x, b.y - h.y)
+                            if dist < getattr(b, "radius", 15) + getattr(h, "radius", 20.0):
+                                h_kind = getattr(h, "kind", "")
+                                if h_kind == "bounce_pad":
+                                    b.velocity_y = -300.0 * getattr(h, "bounciness", 2.0)
+                                    h.active = False
+                                elif h_kind == "grapple_point":
+                                    # pull towards grapple point, then fling
+                                    dx = h.x - b.x
+                                    dy = h.y - b.y
+                                    b.velocity_x += dx * 2.0 * delta
+                                    b.velocity_y += dy * 2.0 * delta
+                                    if dist < 30:
+                                        b.velocity_x += 500.0
+                                        b.velocity_y -= 200.0
+                                        h.active = False
+
+
+GAME_MODES["platformer_mode"] = PlatformerMode()
