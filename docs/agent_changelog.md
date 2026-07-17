@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1086] Quantum Teleportation Module — *2026-07-17 22:02:32 UTC*
+
+An active item that allows the player to instantly swap positions with a targeted enemy, dealing minor damage and briefly slowing the enemy upon arrival. Useful for escaping bad situations or pulling an enemy into a hazard.
+
+---
+
 ## [idea-1090] Frictionless Arena Modifier — *2026-07-17 21:44:52 UTC*
 
 Introduce an arena modifier that completely removes friction for a random duration, forcing players to perfectly balance their momentum and making collisions much more impactful and chaotic.

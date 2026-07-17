@@ -18631,7 +18631,7 @@
     },
     {
       "id": "idea-1086",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Teleportation Module",
@@ -29561,6 +29561,23 @@
         "src/ai/grounding_field.py",
         "src/ai/grounding_field.gd",
         "tests/test_grounding_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1728",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Image Event",
+      "description": "An arena event where every player is cloned for 10 seconds. The clones mimic the players' inputs but in reverse, causing confusion and distracting enemies. Destroying a clone deals damage to the original.",
+      "allowed_paths": [
+        "src/ai/mirror_image.py",
+        "src/ai/mirror_image.gd",
+        "tests/test_mirror_image.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
