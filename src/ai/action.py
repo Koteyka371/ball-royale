@@ -11202,6 +11202,25 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "tether_booster":
+                    enemies = self._get_enemies()
+                    allies = self._get_allies()
+                    if enemies:
+                        target_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        target_ally = self.ball
+                        if allies:
+                            target_ally = min(allies, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
+
+                        target_enemy.tether_booster_timer = 5.0
+                        target_enemy.tether_booster_anchor = target_ally
+
+                        if hasattr(self, "_spawn_directed_particles"):
+                            self._spawn_directed_particles(target_ally, target_enemy, "tether_link")
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "link_booster":
                     enemies = self._get_enemies()
                     if enemies:
@@ -14787,7 +14806,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "tether_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -15319,6 +15338,40 @@ class Action:
 
         if hasattr(self.ball, "infinite_stamina_timer") and self.ball.infinite_stamina_timer > 0:
             self.ball.infinite_stamina_timer -= delta
+
+        if hasattr(self.ball, "tether_booster_timer") and self.ball.tether_booster_timer > 0:
+            self.ball.tether_booster_timer -= delta
+            anchor = getattr(self.ball, "tether_booster_anchor", None)
+            if anchor and getattr(anchor, "alive", True):
+                dist_sq = (anchor.x - self.ball.x)**2 + (anchor.y - self.ball.y)**2
+
+                # Apply continuous damage
+                damage_tick = 10.0 * delta
+                if hasattr(self.ball, "take_damage"):
+                    self.ball.take_damage(damage_tick)
+                else:
+                    if hasattr(self.ball, "hp"):
+                        self.ball.hp -= damage_tick
+                        if self.ball.hp <= 0:
+                            self.ball.hp = 0
+                            self.ball.alive = False
+
+                # Pull towards anchor if outside small radius
+                if dist_sq > 2500: # 50 range
+                    import math
+                    dist = math.sqrt(dist_sq)
+                    if dist > 0.0001:
+                        dx = anchor.x - self.ball.x
+                        dy = anchor.y - self.ball.y
+                        pull_strength = 200.0 * delta
+                        self.ball.x += (dx / dist) * pull_strength
+                        self.ball.y += (dy / dist) * pull_strength
+
+                if self.ball.tether_booster_timer <= 0:
+                    self.ball.tether_booster_anchor = None
+            else:
+                self.ball.tether_booster_timer = 0
+                self.ball.tether_booster_anchor = None
 
         if hasattr(self.ball, "link_booster_timer") and self.ball.link_booster_timer > 0:
             self.ball.link_booster_timer -= delta

@@ -20648,6 +20648,43 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+            elif "kind" in nearest and nearest.kind == "tether_booster":
+                var enemies_tether = _get_enemies()
+                var allies_tether = _get_allies()
+                if enemies_tether.size() > 0:
+                    var tether_enemy = null
+                    var min_e_dist_sq = INF
+                    for e in enemies_tether:
+                        var d_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                        if d_sq < min_e_dist_sq:
+                            min_e_dist_sq = d_sq
+                            tether_enemy = e
+
+                    var tether_ally = self.ball
+                    var min_a_dist_sq = INF
+                    if allies_tether.size() > 0:
+                        for a in allies_tether:
+                            var d_sq = pow(a.x - self.ball.x, 2) + pow(a.y - self.ball.y, 2)
+                            if d_sq < min_a_dist_sq:
+                                min_a_dist_sq = d_sq
+                                tether_ally = a
+
+                    if tether_enemy != null and tether_ally != null:
+                        if tether_enemy.has_method("set_meta"):
+                            tether_enemy.set_meta("tether_booster_timer", 5.0)
+                            tether_enemy.set_meta("tether_booster_anchor", tether_ally)
+                        else:
+                            tether_enemy.tether_booster_timer = 5.0
+                            tether_enemy.tether_booster_anchor = tether_ally
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "link_booster":
                 var enemies_link = _get_enemies()
                 if enemies_link.size() > 0:
@@ -27646,7 +27683,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["vampiric_aura_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item"]
+                var pullable = ["vampiric_aura_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "tether_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -28570,6 +28607,60 @@ func _update_skill_timer(delta: float):
             self.ball.infinite_stamina_timer = inf_stam_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("infinite_stamina_timer", inf_stam_timer)
+
+    var tether_timer = 0.0
+    if "tether_booster_timer" in self.ball:
+        tether_timer = self.ball.tether_booster_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("tether_booster_timer"):
+        tether_timer = self.ball.get_meta("tether_booster_timer")
+
+    if tether_timer > 0:
+        tether_timer -= delta
+        var anchor = null
+        if "tether_booster_anchor" in self.ball:
+            anchor = self.ball.tether_booster_anchor
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("tether_booster_anchor"):
+            anchor = self.ball.get_meta("tether_booster_anchor")
+
+        var a_alive = true
+        if anchor != null and "alive" in anchor:
+            a_alive = anchor.alive
+
+        if anchor != null and a_alive:
+            var dist_sq = pow(anchor.x - self.ball.x, 2) + pow(anchor.y - self.ball.y, 2)
+
+            var damage_tick = 10.0 * delta
+            if self.ball.has_method("take_damage"):
+                self.ball.take_damage(damage_tick)
+            elif "hp" in self.ball:
+                self.ball.hp -= damage_tick
+                if self.ball.hp <= 0:
+                    self.ball.hp = 0
+                    if "alive" in self.ball: self.ball.alive = false
+
+            if dist_sq > 2500:
+                var dist = sqrt(dist_sq)
+                if dist > 0.0001:
+                    var dx = anchor.x - self.ball.x
+                    var dy = anchor.y - self.ball.y
+                    var pull_strength = 200.0 * delta
+                    if "x" in self.ball: self.ball.x += (dx / dist) * pull_strength
+                    elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + (dx / dist) * pull_strength)
+                    if "y" in self.ball: self.ball.y += (dy / dist) * pull_strength
+                    elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + (dy / dist) * pull_strength)
+
+            if tether_timer <= 0:
+                anchor = null
+        else:
+            tether_timer = 0.0
+            anchor = null
+
+        if "tether_booster_timer" in self.ball:
+            self.ball.tether_booster_timer = tether_timer
+            self.ball.tether_booster_anchor = anchor
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("tether_booster_timer", tether_timer)
+            self.ball.set_meta("tether_booster_anchor", anchor)
 
     var link_timer = 0.0
     if "link_booster_timer" in self.ball:

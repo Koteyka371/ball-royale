@@ -1,0 +1,4 @@
+{
+  "title": "Magnetize Booster",
+  "description": "A booster that applies a magnetic polarity to the picking entity and the opposite polarity to a random enemy. Over time, they are either pulled forcefully towards each other, increasing collision damage based on speed."
+}
