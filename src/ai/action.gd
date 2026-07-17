@@ -5076,6 +5076,27 @@ func execute(strategy: String, delta: float):
 					arena.hazards.append(bh)
 					inv.erase("deployable_black_hole")
 					self.ball.set_meta("inventory", inv)
+		if inv.has("lightning_rod_item"):
+			var is_ts = false
+			if world != null and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "weather" in world.arena and world.arena.weather == "thunderstorm":
+				is_ts = true
+			elif world != null and "game_mode" in world and typeof(world.game_mode) == TYPE_OBJECT and "weather" in world.game_mode and world.game_mode.weather == "thunderstorm":
+				is_ts = true
+
+			if is_ts:
+				if world != null and "arena" in world and "hazards" in world.arena:
+					var arena = world.arena
+					var rod_id = arena.hazards.size() + randi() % 10000
+					var rod = null
+					if load("res://src/arena/procedural_arena.gd") != null:
+						rod = load("res://src/arena/procedural_arena.gd").Hazard.new(rod_id, self.ball.x, self.ball.y, 30.0, "lightning_rod", 0.0)
+						rod.set_meta("duration", 10.0)
+						rod.set_meta("charge", 0.0)
+						if "id" in self.ball: rod.set_meta("owner_id", self.ball.id)
+						arena.hazards.append(rod)
+						inv.erase("lightning_rod_item")
+						self.ball.set_meta("inventory", inv)
+
 		if inv.has("deployable_gravity_well"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -19787,7 +19808,36 @@ func _use_skill():
                 if world.has_method("get_nearby_entities"):
                     var nearby_e = world.get_nearby_entities(self.ball, 300)
                     if typeof(nearby_e) == TYPE_DICTIONARY and nearby_e.has("enemies"):
+                        if "arena" in world and world.arena != null and "hazards" in world.arena:
+                            for h in world.arena.hazards:
+                                var h_kind = ""
+                                if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
+                                elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+                                elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+                                if h_kind == "lightning_rod":
+                                    var hx = 0.0
+                                    var hy = 0.0
+                                    if typeof(h) == TYPE_DICTIONARY:
+                                        hx = h.get("x", 0.0)
+                                        hy = h.get("y", 0.0)
+                                    elif typeof(h) == TYPE_OBJECT:
+                                        hx = h.x
+                                        hy = h.y
+                                    var dist_sq = (hx - self.ball.x) * (hx - self.ball.x) + (hy - self.ball.y) * (hy - self.ball.y)
+                                    if dist_sq <= 90000.0:
+                                        var charge = 0.0
+                                        if typeof(h) == TYPE_DICTIONARY:
+                                            charge = h.get("charge", 0.0)
+                                            h["charge"] = charge + 1.0
+                                        elif typeof(h) == TYPE_OBJECT:
+                                            if "charge" in h: charge = h.charge
+                                            h.set("charge", charge + 1.0)
+                                        target = h
+                                        break
+
                         for local_enemy in nearby_e["enemies"]:
+
                             var a_type = ""
                             if "ball_type" in local_enemy:
                                 a_type = str(local_enemy.ball_type).to_lower()
@@ -22827,7 +22877,37 @@ func _use_skill():
                 if is_foggy:
                     strike_range *= 1.5
 
-                if dist <= strike_range:
+            if target == null:
+                if "arena" in world and world.arena != null and "hazards" in world.arena:
+                    for h in world.arena.hazards:
+                        var h_kind = ""
+                        if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
+                        elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+                        elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+                        if h_kind == "lightning_rod":
+                            var hx = 0.0
+                            var hy = 0.0
+                            if typeof(h) == TYPE_DICTIONARY:
+                                hx = h.get("x", 0.0)
+                                hy = h.get("y", 0.0)
+                            elif typeof(h) == TYPE_OBJECT:
+                                hx = h.x
+                                hy = h.y
+                            var dist_sq = (hx - self.ball.x) * (hx - self.ball.x) + (hy - self.ball.y) * (hy - self.ball.y)
+                            if dist_sq <= 40000.0:
+                                target = h
+                                dist = sqrt(dist_sq)
+                                var charge = 0.0
+                                if typeof(h) == TYPE_DICTIONARY:
+                                    charge = h.get("charge", 0.0)
+                                    h["charge"] = charge + 1.0
+                                elif typeof(h) == TYPE_OBJECT:
+                                    if "charge" in h: charge = h.charge
+                                    h.set("charge", charge + 1.0)
+                                break
+
+                if target != null and dist <= strike_range:
                     var dmg = 24.0
                     if "damage" in self.ball:
                         dmg = self.ball.damage

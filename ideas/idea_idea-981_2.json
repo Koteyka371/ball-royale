@@ -1,0 +1,4 @@
+{
+  "title": "Static Cling Mutator",
+  "description": "A game modifier where balls continuously build up static electricity as they move. Colliding with other entities causes a discharge that deals damage based on distance moved and briefly stuns both targets."
+}

@@ -2261,6 +2261,25 @@ class Action:
                     setattr(bh, 'owner_id', getattr(self.ball, 'id', None))
                     self.world.arena.hazards.append(bh)
                 self.ball.inventory.remove("deployable_black_hole")
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "lightning_rod_item" in self.ball.inventory:
+            is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
+            if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
+            if is_ts:
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        pass
+                    else:
+                        import random
+                        rod_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                        rod = Hazard(rod_id, self.ball.x, self.ball.y, 30.0, "lightning_rod", 0.0)
+                        setattr(rod, 'duration', 10.0) # Eventually detonates
+                        setattr(rod, 'charge', 0.0)
+                        setattr(rod, 'owner_id', getattr(self.ball, 'id', None))
+                        self.world.arena.hazards.append(rod)
+                    self.ball.inventory.remove("lightning_rod_item")
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_gravity_well" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 try:
@@ -7369,6 +7388,19 @@ class Action:
                                     self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + (20.0 * combo_multiplier))
 
                             continue
+                        elif hazard.kind == "lightning_rod":
+                            charge = getattr(hazard, "charge", 0.0)
+                            if charge >= 5.0:
+                                self.world.events.append(('visual_effect', {'type': 'emp_blast', 'x': hazard.x, 'y': hazard.y}))
+                                for target in self.world.get_nearby_entities(hazard, 300.0):
+                                    target.emp_timer = max(getattr(target, "emp_timer", 0.0), 5.0)
+                                    target.silence_timer = max(getattr(target, "silence_timer", 0.0), 5.0)
+                                    if hasattr(target, "shield"): target.shield = 0.0
+                                    if hasattr(target, "weather_shield"): target.weather_shield = False
+                                    if hasattr(target, "active_skill"): target.skill_timer = getattr(target, "skill_cooldown", 10.0)
+                                    self._attempt_damage(self.ball if hasattr(self, 'ball') else hazard, target, 20.0)
+                                hazard.duration = 0.0
+                                hazard.explodes = True
                         elif hazard.kind == "healing_spring":
                             # In Siege mode, attackers can capture and destroy healing springs
                             if getattr(self.world.arena, "__class__", None).__name__ == "SiegeArena" and getattr(self.ball, "team", "") == "Attackers":
@@ -10835,7 +10867,18 @@ class Action:
                 if skill_name == "lightning_strike":
                     nearby = self.world.get_nearby_entities(self.ball, 300)
                     local_enemies = getattr(nearby, 'get', lambda k, d: [])('enemies', [])
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        for h in self.world.arena.hazards:
+                            if getattr(h, "kind", "") == "lightning_rod" and getattr(h, "active", True):
+                                dist = (h.x - self.ball.x)**2 + (h.y - self.ball.y)**2
+                                if dist <= 300**2:
+                                    target = h
+                                    h.charge = getattr(h, "charge", 0.0) + 1.0
+                                    break
+
                     for local_enemy in local_enemies:
+
                         a_type = getattr(local_enemy, "ball_type", getattr(type(local_enemy), "BALL_TYPE", "")).lower()
                         if a_type == "lightning_rod":
                             # Retarget towards lightning rod
