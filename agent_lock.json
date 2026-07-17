@@ -179,17 +179,17 @@
     "agent-22": {
       "name": "Jules Worker 22",
       "area": "behaviors",
-      "status": "working",
-      "task_id": "idea-1053",
-      "started_at": "2026-07-17T01:33:50.010308+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 1
     },
     "agent-23": {
       "name": "Jules Worker 23",
       "area": "tests",
-      "status": "working",
-      "task_id": "idea-1054",
-      "started_at": "2026-07-17T02:17:48.663639+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 0
     },
     "agent-24": {
