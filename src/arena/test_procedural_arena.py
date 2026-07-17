@@ -43,3 +43,12 @@ def test_siege_arena():
     hazards_types = [h.kind for h in arena.hazards]
     assert "healing_spring" in hazards_types
     assert "bumper" in hazards_types
+
+def test_ice_arena():
+    from arena.arena_types import IceArena
+    arena = IceArena(arena_size=2000.0)
+    arena.generate()
+    assert arena.is_snowing
+    assert arena.weather == "ice"
+    ice_patches = [h for h in arena.hazards if getattr(h, "kind", "") == "ice_patches"]
+    assert len(ice_patches) >= 5

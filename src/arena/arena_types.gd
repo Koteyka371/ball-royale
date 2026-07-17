@@ -648,8 +648,26 @@ class SpringArena extends ProceduralArena:
 			pad.set_meta("vy", randf_range(-10.0, 10.0))
 			hazards.append(pad)
 
+class IceArena extends ProceduralArena:
+	func _init(arena_size: float = 2000.0, seed_val = null).(arena_size, 5, seed_val):
+		self.is_snowing = true
+		self.weather = "ice"
+		self.base_friction = 0.2
+
+	func generate():
+		.generate()
+		var cx = self.width / 2.0
+		var cy = self.height / 2.0
+		for i in range(5):
+			var hx = randf_range(cx - 300.0, cx + 300.0)
+			var hy = randf_range(cy - 300.0, cy + 300.0)
+			var radius = randf_range(150.0, 300.0)
+			var h = ProceduralArena.Hazard.new(self.hazards.size() + 500, hx, hy, radius, "ice_patches", 0.0)
+			self.hazards.append(h)
+
 const ARENAS = [
 	"falling_panels",
+	"ice",
     "spring",
     "shrinking_hazards",
 
