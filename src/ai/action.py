@@ -3026,6 +3026,69 @@ class Action:
                         if hasattr(self.ball, "take_damage"):
                             self.ball.take_damage(getattr(hazard, "damage", 10.0) * delta)
 
+
+                elif getattr(hazard, "kind", "") == "nemesis_hunter":
+                    # Find nearest nemesis to ANYONE in the match
+                    nearest_nemesis = None
+                    min_dist_sq = float('inf')
+                    pm = getattr(self.world, "profile_manager", None)
+                    if pm and hasattr(pm, "is_nemesis") and hasattr(self.world, "balls"):
+                        for potential_victim in self.world.balls:
+                            if getattr(potential_victim, "alive", False) and getattr(potential_victim, "ball_type", "") != "spectator":
+                                is_nemesis = False
+                                for other in self.world.balls:
+                                    if other != potential_victim and getattr(other, "alive", False) and getattr(other, "ball_type", "") != "spectator":
+                                        if pm.is_nemesis(other.ball_type, potential_victim.ball_type):
+                                            is_nemesis = True
+                                            break
+                                if is_nemesis:
+                                    dx = potential_victim.x - hazard.x
+                                    dy = potential_victim.y - hazard.y
+                                    dist_sq = dx*dx + dy*dy
+                                    if dist_sq < min_dist_sq:
+                                        min_dist_sq = dist_sq
+                                        nearest_nemesis = potential_victim
+
+                    if nearest_nemesis:
+                        import math
+                        dist = math.sqrt(min_dist_sq)
+                        if dist > 0:
+                            nx, ny = (nearest_nemesis.x - hazard.x) / dist, (nearest_nemesis.y - hazard.y) / dist
+                            hunter_speed = 150.0 * delta
+                            # Only update hazard position if this is the first time we process it this tick
+                            if getattr(hazard, "last_updated_tick", -1) != getattr(self.world, "tick", 0):
+                                hazard.x += nx * hunter_speed
+                                hazard.y += ny * hunter_speed
+
+                    dist_to_me = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist_to_me <= getattr(hazard, "radius", 15.0) + getattr(self.ball, "radius", 10.0):
+                        # Damage whoever it touches
+                        dmg = getattr(hazard, "damage", 40.0) * delta
+                        if hasattr(self.ball, "take_damage"):
+                            self.ball.take_damage(dmg)
+                        else:
+                            self.ball.hp -= dmg
+                            if self.ball.hp <= 0:
+                                self.ball.hp = 0
+                                self.ball.alive = False
+
+                        # Chain reaction if a nemesis dies
+                        if not getattr(self.ball, "alive", False):
+                            # Was this ball a nemesis to anyone?
+                            is_nemesis = False
+                            if pm and hasattr(pm, "is_nemesis") and hasattr(self.world, "balls"):
+                                for other in self.world.balls:
+                                    if pm.is_nemesis(other.ball_type, self.ball.ball_type):
+                                        is_nemesis = True
+                                        break
+                            if is_nemesis:
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "alive", False) and b != self.ball and getattr(b, "ball_type", "") != "spectator":
+                                            b.scrambled_movement_timer = 3.0
+                                hazard.duration = 0.0 # Destroy hazard after successful kill
+                    hazard.last_updated_tick = getattr(self.world, 'tick', 0)
+
                 elif getattr(hazard, "kind", "") == "vampiric_puddle":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= getattr(hazard, "radius", 0.0) + getattr(self.ball, "radius", 10.0):
@@ -3042,6 +3105,19 @@ class Action:
                         self.ball._vampiric_drained = True
 
         # Temporal rift logic to modify local delta
+
+        if getattr(self.ball, "scrambled_movement_timer", 0.0) > 0.0:
+            self.ball.scrambled_movement_timer -= delta
+            if self.ball.scrambled_movement_timer < 0.0:
+                self.ball.scrambled_movement_timer = 0.0
+
+            # Reverse movement
+            # We must subtract 2x the velocity that was just added during this tick's movement phase
+            bvx = getattr(self.ball, "vx", 0.0)
+            bvy = getattr(self.ball, "vy", 0.0)
+            self.ball.x -= bvx * delta * 2.0
+            self.ball.y -= bvy * delta * 2.0
+
         if getattr(self.ball, "empowerment_boost_timer", 0.0) > 0:
             self.ball.empowerment_boost_timer -= delta
             if self.ball.empowerment_boost_timer <= 0:

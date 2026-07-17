@@ -1,0 +1,4 @@
+{
+    "title": "Bounty Hunter Tag",
+    "description": "A new hazard type similar to Nemesis Hunter, but instead of chasing nemeses, it chases the player with the highest current kill streak in the match. If it kills them, it drops a large pile of XP and boosters for anyone to pick up."
+}
