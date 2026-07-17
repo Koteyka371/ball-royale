@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zone Mutator",
-  "description": "A battle royale mutator where the safe zone doesn't just shrink steadily, but periodically shifts its center point randomly across the map, forcing players to constantly adapt their positioning and creating chaotic chokepoints."
-}

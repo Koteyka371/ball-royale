@@ -1,4 +1,0 @@
-{
-  "title": "Orbital Debris Mutator",
-  "description": "Introduces a game mode mutator where indestructible debris clusters orbit the center gravity well. The debris blocks projectiles and damages entities upon high-speed collision, forcing players to time their approaches and manage their slingshot trajectories carefully."
-}

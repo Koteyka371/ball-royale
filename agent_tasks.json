@@ -29175,6 +29175,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1705",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shifting Gravity Mode",
+      "description": "Gravity randomly shifts directions every 10 seconds.",
+      "allowed_paths": [
+        "src/ai/shifting_gravity.py",
+        "src/ai/shifting_gravity.gd",
+        "tests/test_shifting_gravity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1706",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chaos Orbs Mode",
+      "description": "Every player periodically spawns orbiting chaos orbs.",
+      "allowed_paths": [
+        "src/ai/chaos_orbs.py",
+        "src/ai/chaos_orbs.gd",
+        "tests/test_chaos_orbs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

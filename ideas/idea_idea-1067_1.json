@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Zones Speed Modifier",
-  "description": "Players outside the shrinking safe zone should not only take damage, but also be affected by a significant speed penalty (e.g., -50% speed) which makes it harder for them to return to the safe area if they wander too far off. This encourages early positioning."
-}

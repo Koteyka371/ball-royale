@@ -1,4 +1,0 @@
-{
-  "title": "Holographic projection traps",
-  "description": "Traps that, when triggered, spawn 3 fake holographic clones of the player that triggered it. The clones mirror the player's inputs but cannot deal damage. Any enemy attacking a hologram is revealed on the minimap and takes minor feedback damage."
-}
