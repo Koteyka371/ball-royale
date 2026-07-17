@@ -16333,6 +16333,78 @@ class TickingPayloadMode(GameMode):
 
 
 
+
+class HauntedEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Haunted Event"
+        self.description = "A random arena event where the entire map becomes dark and 'haunted'. Players lose UI info, leave trails, and spectral clones appear."
+        self.trail_timer = 0.0
+        self.clone_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.is_night = True
+        self.trail_timer = 0.0
+        self.clone_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if hasattr(world, "arena"):
+            world.arena.is_night = True
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                b.hide_hp_bar = True
+                b.hide_team_color = True
+
+        self.trail_timer += delta
+        self.clone_timer += delta
+
+        if self.trail_timer >= 0.5:
+            self.trail_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                import random
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                        bvx = getattr(b, "vx", 0.0)
+                        bvy = getattr(b, "vy", 0.0)
+                        if abs(bvx) > 5.0 or abs(bvy) > 5.0:
+                            h_id = "phantom_trail_" + str(random.randint(10000, 99999))
+                            class DummyTrail: pass
+                            trail = DummyTrail()
+                            trail.id = h_id
+                            trail.x = getattr(b, "x", 0.0)
+                            trail.y = getattr(b, "y", 0.0)
+                            trail.radius = 15.0
+                            trail.kind = "phantom_trail"
+                            trail.active = True
+                            trail.duration = 2.0
+                            trail.damage = 0.0
+                            world.arena.hazards.append(trail)
+
+        if self.clone_timer >= 5.0:
+            self.clone_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                import random
+                h_id = "spectral_clone_" + str(random.randint(10000, 99999))
+                class DummyClone: pass
+                clone = DummyClone()
+                clone.id = h_id
+                clone.x = random.uniform(100, getattr(world.arena, "width", 1000) - 100)
+                clone.y = random.uniform(100, getattr(world.arena, "height", 1000) - 100)
+                clone.radius = 20.0
+                clone.kind = "fireball"
+                clone.cosmetic = "spectral"
+                clone.active = True
+                clone.duration = 10.0
+                clone.damage = 0.0
+                clone.vx = random.uniform(-100, 100)
+                clone.vy = random.uniform(-100, 100)
+                world.arena.hazards.append(clone)
+
+
 class BlackoutEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -21302,6 +21374,7 @@ class SolarFlareMode(GameMode):
 GAME_MODES["solar_flare"] = SolarFlareMode()
 
 GAME_MODES["blackout_event"] = BlackoutEventMode()
+GAME_MODES["haunted_event"] = HauntedEventMode()
 
 
 class UndergroundTunnelMode(GameMode):
