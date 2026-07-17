@@ -18155,7 +18155,7 @@
     },
     {
       "id": "idea-1058",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Core Booster",
@@ -29323,6 +29323,91 @@
         "src/arena/chain_swap.py",
         "src/arena/chain_swap.gd",
         "tests/test_chain_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1714",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nightmare Hazard",
+      "description": "During the Haunted Event, a new hazard called Nightmare appears. It specifically targets players with low stamina, chasing them at high speeds. If it catches them, it inflicts a 'Feared' status effect, making their controls inverted for a short duration.",
+      "allowed_paths": [
+        "src/arena/nightmare.py",
+        "src/arena/nightmare.gd",
+        "tests/test_nightmare.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1715",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbiting Moons Item",
+      "description": "An item that spawns 3 small moons orbiting the player, dealing damage on touch.",
+      "allowed_paths": [
+        "src/ai/orbiting_moons_item.py",
+        "src/ai/orbiting_moons_item.gd",
+        "tests/test_orbiting_moons_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1716",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Doppelganger Mirror Mode",
+      "description": "A chaotic new game mode where periodically every player on the map is instantly swapped in position with their nearest active decoy or clone. If they do not have a decoy active, one is spawned for them at their location moments before the swap.",
+      "allowed_paths": [
+        "src/ai/doppelganger_mirror.py",
+        "src/ai/doppelganger_mirror.gd",
+        "tests/test_doppelganger_mirror.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1717",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Leap Boots (Booster)",
+      "description": "A booster that allows the player to perform a short, instantaneous dash ignoring all collision and hazards (like walls, traps, and enemies) along the path. After the dash, a temporary shockwave is emitted at the starting point, staggering enemies left behind.",
+      "allowed_paths": [
+        "src/ai/quantum_leap_boots_booster.py",
+        "src/ai/quantum_leap_boots_booster.gd",
+        "tests/test_quantum_leap_boots_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1718",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Banshee Shriek Trap",
+      "description": "A new deployable trap that emits a deafening shriek when triggered. It reduces the perception radius of all nearby players to near zero for a few seconds and temporarily reveals all invisible or stealthy entities in the area.",
+      "allowed_paths": [
+        "src/arena/banshee_shriek_trap.py",
+        "src/arena/banshee_shriek_trap.gd",
+        "tests/test_banshee_shriek_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

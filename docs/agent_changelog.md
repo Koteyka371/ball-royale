@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1058] Tornado Core Booster — *2026-07-17 19:45:16 UTC*
+
+A booster that allows the player to briefly become a mini-tornado, ignoring mud slows and pulling enemies toward them.
+
+---
+
 ## [idea-1078] Ghost Mode Environment Event — *2026-07-17 19:00:34 UTC*
 
 A random arena event where the entire map becomes dark and 'haunted'. All players lose the ability to see other players' HP bars and team colors. Footsteps (or ball rolling sounds/trails) become faintly visible to encourage hunting by tracking. Occasionally, spectral hazard clones will appear to disorient players, dealing no damage but behaving like real projectiles.
