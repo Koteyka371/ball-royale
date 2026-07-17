@@ -18837,7 +18837,100 @@ class InfiltrationMode(GameMode):
                 b.stealth_booster_timer = 9999.0
 
 
+
+class MeteorBombardmentMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Meteor Bombardment"
+        self.description = "Periodically bombards the entire arena with meteor strikes. Watch for warning circles! Impacts leave temporary burning craters."
+        self.bombard_timer = 0.0
+        self.active_meteors = []
+        self.craters = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is None:
+            world.arena.hazards = []
+        self.bombard_timer = 0.0
+        self.active_meteors = []
+        self.craters = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.bombard_timer += delta
+
+        if self.bombard_timer >= 10.0:
+            self.bombard_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000) if getattr(world, "arena", None) is not None else 1000
+            arena_height = getattr(world.arena, "height", 1000) if getattr(world, "arena", None) is not None else 1000
+
+            num_meteors = random.randint(5, 10)
+            for _ in range(num_meteors):
+                x = random.uniform(50, arena_width - 50)
+                y = random.uniform(50, arena_height - 50)
+
+                self.active_meteors.append({
+                    "id": f"meteor_{random.randint(10000, 99999)}",
+                    "x": x,
+                    "y": y,
+                    "delay": 3.0,
+                    "radius": 40.0
+                })
+
+        still_active = []
+        for m in self.active_meteors:
+            m["delay"] -= delta
+            if m["delay"] <= 0:
+                self.craters.append({
+                    "id": f"crater_{random.randint(10000, 99999)}",
+                    "x": m["x"],
+                    "y": m["y"],
+                    "radius": m["radius"],
+                    "duration": 10.0
+                })
+
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        if math.hypot(getattr(b, "x", 0.0) - m["x"], getattr(b, "y", 0.0) - m["y"]) <= m["radius"]:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(50.0)
+                            else:
+                                b.hp = getattr(b, "hp", 100) - 50.0
+            else:
+                still_active.append(m)
+
+        self.active_meteors = still_active
+
+        still_craters = []
+        for c in self.craters:
+            c["duration"] -= delta
+            if c["duration"] > 0:
+                still_craters.append(c)
+
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        if math.hypot(getattr(b, "x", 0.0) - c["x"], getattr(b, "y", 0.0) - c["y"]) <= c["radius"]:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(20.0 * delta)
+                            else:
+                                b.hp = getattr(b, "hp", 100) - 20.0 * delta
+        self.craters = still_craters
+
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is not None:
+            world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") not in ["meteor_indicator", "meteor_crater"]]
+
+            from arena.procedural_arena import Hazard
+            for m in self.active_meteors:
+                world.arena.hazards.append(Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor_indicator", 0))
+            for c in self.craters:
+                world.arena.hazards.append(Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
+
+
 GAME_MODES = {
+    "meteor_bombardment": MeteorBombardmentMode(),
     "infiltration": InfiltrationMode(),
     "parallel_dimensions": ParallelDimensionsMode(),
     'time_loop_field': TimeLoopFieldMode(),

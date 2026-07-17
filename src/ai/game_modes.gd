@@ -34978,6 +34978,126 @@ class TimeStutterHazardMode extends GameMode:
 						"hp": hp
 					}
 
+
+class MeteorBombardmentMode extends GameMode:
+	var bombard_timer: float = 0.0
+	var active_meteors: Array = []
+	var craters: Array = []
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		super()
+		name = "Meteor Bombardment"
+		description = "Periodically bombards the entire arena with meteor strikes. Watch for warning circles! Impacts leave temporary burning craters."
+		rng.randomize()
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		bombard_timer = 0.0
+		active_meteors = []
+		craters = []
+
+	func _get_prop(b, prop_name, default_val):
+		if prop_name in b:
+			return b[prop_name]
+		elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta(prop_name):
+			return b.get_meta(prop_name)
+		return default_val
+
+	func _set_prop(b, prop_name, val):
+		if typeof(b) == TYPE_DICTIONARY:
+			b[prop_name] = val
+		elif typeof(b) == TYPE_OBJECT:
+			if prop_name in b:
+				b.set(prop_name, val)
+			elif b.has_method("set_meta"):
+				b.set_meta(prop_name, val)
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		bombard_timer += delta
+
+		if bombard_timer >= 10.0:
+			bombard_timer = 0.0
+			var arena_width = world.arena.width if "width" in world.arena else 1000.0
+			var arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+			var num_meteors = rng.randi_range(5, 10)
+			for i in range(num_meteors):
+				var x = rng.randf_range(50.0, arena_width - 50.0)
+				var y = rng.randf_range(50.0, arena_height - 50.0)
+
+				active_meteors.append({
+					"id": "meteor_" + str(rng.randi_range(10000, 99999)),
+					"x": x,
+					"y": y,
+					"delay": 3.0,
+					"radius": 40.0
+				})
+
+		var still_active = []
+		for m in active_meteors:
+			m["delay"] -= delta
+			if m["delay"] <= 0:
+				craters.append({
+					"id": "crater_" + str(rng.randi_range(10000, 99999)),
+					"x": m["x"],
+					"y": m["y"],
+					"radius": m["radius"],
+					"duration": 10.0
+				})
+
+				for b in balls:
+					if _get_prop(b, "alive", false):
+						var bx = _get_prop(b, "x", 0.0)
+						var by = _get_prop(b, "y", 0.0)
+						var dist = sqrt(pow(bx - m["x"], 2) + pow(by - m["y"], 2))
+						if dist <= m["radius"]:
+							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+								b.take_damage(50.0)
+							else:
+								var cur_hp = _get_prop(b, "hp", 100.0)
+								_set_prop(b, "hp", cur_hp - 50.0)
+			else:
+				still_active.append(m)
+
+		active_meteors = still_active
+
+		var still_craters = []
+		for c in craters:
+			c["duration"] -= delta
+			if c["duration"] > 0:
+				still_craters.append(c)
+				for b in balls:
+					if _get_prop(b, "alive", false):
+						var bx = _get_prop(b, "x", 0.0)
+						var by = _get_prop(b, "y", 0.0)
+						var dist = sqrt(pow(bx - c["x"], 2) + pow(by - c["y"], 2))
+						if dist <= c["radius"]:
+							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+								b.take_damage(20.0 * delta)
+							else:
+								var cur_hp = _get_prop(b, "hp", 100.0)
+								_set_prop(b, "hp", cur_hp - 20.0 * delta)
+		craters = still_craters
+
+		if "arena" in world and "hazards" in world.arena:
+			var filtered_hazards = []
+			for h in world.arena.hazards:
+				if _get_prop(h, "kind", "") != "meteor_indicator" and _get_prop(h, "kind", "") != "meteor_crater":
+					filtered_hazards.append(h)
+			world.arena.hazards = filtered_hazards
+
+			var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+			for m in active_meteors:
+				world.arena.hazards.append(HazardObj.new(m["id"], m["x"], m["y"], m["radius"], "meteor_indicator", 0))
+			for c in craters:
+				world.arena.hazards.append(HazardObj.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
+
+
 GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode.new()
 GAME_MODES['clan_war'] = ClanWarMode.new()
 GAME_MODES['paint_splatter'] = PaintSplatterMode.new()
@@ -36503,6 +36623,8 @@ class EdgeSlingshotsMode:
 
 					grabbed_state.erase(b.id)
 
+
+GAME_MODES["meteor_bombardment"] = MeteorBombardmentMode.new()
 
 GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode.new()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
