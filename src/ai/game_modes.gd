@@ -31753,7 +31753,176 @@ class InfiltrationMode extends GameMode:
 					elif b.has_method("set_meta"): b.set_meta("stealth_booster_timer", 9999.0)
 
 
+class HauntedArenaMode extends GameMode:
+	var trail_timer: float = 0.0
+	var spectral_timer: float = 0.0
+
+	class PhantomTrailHazard:
+		var id: String
+		var x: float
+		var y: float
+		var radius: float = 15.0
+		var kind: String = "phantom_trail"
+		var active: bool = true
+		var duration: float = 2.0
+
+		func _init(px: float, py: float):
+			id = "phantom_trail_" + str(px) + "_" + str(py) + "_" + str(randi() % 9999)
+			x = px
+			y = py
+
+	class SpectralCloneHazard:
+		var id: String
+		var x: float
+		var y: float
+		var vx: float
+		var vy: float
+		var radius: float = 20.0
+		var kind: String = "spectral_clone"
+		var active: bool = true
+		var duration: float = 5.0
+		var damage: float = 0.0
+
+		func _init(px: float, py: float, pvx: float, pvy: float):
+			id = "spectral_clone_" + str(px) + "_" + str(py) + "_" + str(randi() % 9999)
+			x = px
+			y = py
+			vx = pvx
+			vy = pvy
+
+	func _init() -> void:
+		name = "Haunted Arena"
+		description = "The arena becomes dark and haunted. Players lose the ability to see HP bars and team colors. Footsteps are faintly visible, and spectral hazard clones randomly appear to disorient players."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		trail_timer += delta
+		spectral_timer += delta
+
+		var spawn_trail = false
+		if trail_timer >= 1.0:
+			trail_timer = 0.0
+			spawn_trail = true
+
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", "")
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+				b_type = b.get("ball_type") if "ball_type" in b else ""
+
+			if is_alive and b_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hide_hp_bar"] = true
+					b["hide_team_color"] = true
+				else:
+					if b.has_method("set_meta"):
+						b.set_meta("hide_hp_bar", true)
+						b.set_meta("hide_team_color", true)
+					if "hide_hp_bar" in b:
+						b.hide_hp_bar = true
+					if "hide_team_color" in b:
+						b.hide_team_color = true
+
+				if spawn_trail and world != null:
+					var arena = null
+					if typeof(world) == TYPE_DICTIONARY:
+						arena = world.get("arena")
+					else:
+						arena = world.get("arena") if "arena" in world else null
+
+					if arena != null:
+						var hazards = null
+						if typeof(arena) == TYPE_DICTIONARY:
+							hazards = arena.get("hazards")
+						else:
+							hazards = arena.get("hazards") if "hazards" in arena else null
+
+						if hazards != null:
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							hazards.append(PhantomTrailHazard.new(bx, by))
+
+		if spectral_timer >= 5.0:
+			spectral_timer = 0.0
+			if world != null:
+				var arena = null
+				if typeof(world) == TYPE_DICTIONARY:
+					arena = world.get("arena")
+				else:
+					arena = world.get("arena") if "arena" in world else null
+
+				if arena != null:
+					var hazards = null
+					if typeof(arena) == TYPE_DICTIONARY:
+						hazards = arena.get("hazards")
+					else:
+						hazards = arena.get("hazards") if "hazards" in arena else null
+
+					if hazards != null:
+						var aw = arena.get("width", 1000.0) if typeof(arena) == TYPE_DICTIONARY else (arena.get("width") if "width" in arena else 1000.0)
+						var ah = arena.get("height", 1000.0) if typeof(arena) == TYPE_DICTIONARY else (arena.get("height") if "height" in arena else 1000.0)
+						var sx = randf_range(50.0, aw - 50.0)
+						var sy = randf_range(50.0, ah - 50.0)
+						var svx = randf_range(-150.0, 150.0)
+						var svy = randf_range(-150.0, 150.0)
+						hazards.append(SpectralCloneHazard.new(sx, sy, svx, svy))
+
+		if world != null:
+			var arena = null
+			if typeof(world) == TYPE_DICTIONARY:
+				arena = world.get("arena")
+			else:
+				arena = world.get("arena") if "arena" in world else null
+
+			if arena != null:
+				var hazards = null
+				if typeof(arena) == TYPE_DICTIONARY:
+					hazards = arena.get("hazards")
+				else:
+					hazards = arena.get("hazards") if "hazards" in arena else null
+
+				if hazards != null and typeof(hazards) == TYPE_ARRAY:
+					for i in range(hazards.size() - 1, -1, -1):
+						var h = hazards[i]
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY:
+							kind = h.get("kind", "")
+						else:
+							kind = h.get("kind") if "kind" in h else ""
+
+						if kind == "phantom_trail" or kind == "spectral_clone":
+							if kind == "spectral_clone":
+								var hx = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.get("x")
+								var hy = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.get("y")
+								var hvx = h.get("vx", 0.0) if typeof(h) == TYPE_DICTIONARY else h.get("vx")
+								var hvy = h.get("vy", 0.0) if typeof(h) == TYPE_DICTIONARY else h.get("vy")
+
+								hx += hvx * delta
+								hy += hvy * delta
+
+								if typeof(h) == TYPE_DICTIONARY:
+									h["x"] = hx
+									h["y"] = hy
+								else:
+									if "x" in h: h.x = hx
+									if "y" in h: h.y = hy
+
+							var duration = h.get("duration", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.get("duration") if "duration" in h else 0.0)
+							duration -= delta
+							if typeof(h) == TYPE_DICTIONARY:
+								h["duration"] = duration
+							else:
+								if "duration" in h: h.duration = duration
+
+							if duration <= 0.0:
+								hazards.remove_at(i)
+
+
 GAME_MODES = {
+	"haunted_arena": HauntedArenaMode.new(),
 	"infiltration": InfiltrationMode.new(),
 	"parallel_dimensions": ParallelDimensionsMode.new(),
 	'time_loop_field': TimeLoopFieldMode.new(),

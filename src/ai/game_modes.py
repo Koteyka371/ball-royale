@@ -23443,3 +23443,85 @@ GAME_MODES['quantum_shifting_hazards'] = QuantumShiftingHazardsMode()
 GAME_MODES['flooding_arena'] = FloodingArenaMode()
 import ai.slingshot
 GAME_MODES['slingshot'] = ai.slingshot.SlingshotMode()
+
+class HauntedArenaMode(GameMode):
+    class PhantomTrailHazard:
+        def __init__(self, x, y):
+            import random
+            self.id = "phantom_trail_" + str(int(x)) + "_" + str(int(y)) + "_" + str(random.randint(0, 9999))
+            self.x = x
+            self.y = y
+            self.radius = 15.0
+            self.kind = "phantom_trail"
+            self.active = True
+            self.duration = 2.0
+
+    class SpectralCloneHazard:
+        def __init__(self, x, y, vx, vy):
+            import random
+            self.id = "spectral_clone_" + str(int(x)) + "_" + str(int(y)) + "_" + str(random.randint(0, 9999))
+            self.x = x
+            self.y = y
+            self.vx = vx
+            self.vy = vy
+            self.radius = 20.0
+            self.kind = "spectral_clone"
+            self.active = True
+            self.duration = 5.0
+            self.damage = 0.0
+
+    def __init__(self):
+        super().__init__()
+        self.name = "Haunted Arena"
+        self.description = "The arena becomes dark and haunted. Players lose the ability to see HP bars and team colors. Footsteps are faintly visible, and spectral hazard clones randomly appear to disorient players."
+        self.trail_timer = 0.0
+        self.spectral_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        self.trail_timer += delta
+        self.spectral_timer += delta
+
+        spawn_trail = False
+        if self.trail_timer >= 1.0:
+            self.trail_timer = 0.0
+            spawn_trail = True
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                b.hide_hp_bar = True
+                b.hide_team_color = True
+
+                if spawn_trail and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    world.arena.hazards.append(self.PhantomTrailHazard(b.x, b.y))
+
+        if self.spectral_timer >= 5.0:
+            self.spectral_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                aw = getattr(world.arena, "width", 1000.0)
+                ah = getattr(world.arena, "height", 1000.0)
+                sx = random.uniform(50.0, aw - 50.0)
+                sy = random.uniform(50.0, ah - 50.0)
+                svx = random.uniform(-150.0, 150.0)
+                svy = random.uniform(-150.0, 150.0)
+                world.arena.hazards.append(self.SpectralCloneHazard(sx, sy, svx, svy))
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            to_remove = []
+            for h in world.arena.hazards:
+                kind = getattr(h, "kind", "")
+                if kind in ["phantom_trail", "spectral_clone"]:
+                    if kind == "spectral_clone":
+                        h.x += getattr(h, "vx", 0.0) * delta
+                        h.y += getattr(h, "vy", 0.0) * delta
+
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0.0:
+                            to_remove.append(h)
+
+            for h in to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
+GAME_MODES['haunted_arena'] = HauntedArenaMode()
