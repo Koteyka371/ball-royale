@@ -31997,7 +31997,79 @@ class InfiltrationMode extends GameMode:
 					elif b.has_method("set_meta"): b.set_meta("stealth_booster_timer", 9999.0)
 
 
+
+class FrictionlessArenaModifierMode extends GameMode:
+	var random: RandomNumberGenerator
+	var event_timer: float
+	var duration_timer: float
+	var is_active: bool
+
+	func _init():
+		super()
+		name = "Frictionless Arena Modifier"
+		description = "Introduces an arena modifier that completely removes friction for a random duration, forcing players to perfectly balance their momentum and making collisions much more impactful and chaotic."
+		random = RandomNumberGenerator.new()
+		random.randomize()
+		event_timer = random.randf_range(5.0, 15.0)
+		duration_timer = 0.0
+		is_active = false
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		apply_dynamic_traits(world, balls, delta)
+
+		if is_active:
+			duration_timer -= delta
+			if duration_timer <= 0:
+				is_active = false
+				event_timer = random.randf_range(10.0, 20.0)
+				# Remove frictionless effect
+				for b in balls:
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("frictionless_modifier_applied") and b["frictionless_modifier_applied"]:
+							b.erase("frictionless_modifier_applied")
+							b["is_frictionless"] = false
+					elif typeof(b) == TYPE_OBJECT:
+						if b.has_meta("frictionless_modifier_applied") and b.get_meta("frictionless_modifier_applied"):
+							b.remove_meta("frictionless_modifier_applied")
+							if "is_frictionless" in b:
+								b.is_frictionless = false
+							else:
+								b.set_meta("is_frictionless", false)
+			else:
+				# Continuously apply frictionless
+				for b in balls:
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.get("alive", false):
+							b["is_frictionless"] = true
+							b["frictionless_modifier_applied"] = true
+					elif typeof(b) == TYPE_OBJECT:
+						if b.get("alive") if "alive" in b else false:
+							b.set_meta("is_frictionless", true)
+							if "is_frictionless" in b:
+								b.is_frictionless = true
+							b.set_meta("frictionless_modifier_applied", true)
+		else:
+			event_timer -= delta
+			if event_timer <= 0:
+				is_active = true
+				duration_timer = random.randf_range(5.0, 10.0)
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("frictionless_arena_start", {})
+				for b in balls:
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.get("alive", false):
+							b["is_frictionless"] = true
+							b["frictionless_modifier_applied"] = true
+					elif typeof(b) == TYPE_OBJECT:
+						if b.get("alive") if "alive" in b else false:
+							b.set_meta("is_frictionless", true)
+							if "is_frictionless" in b:
+								b.is_frictionless = true
+							b.set_meta("frictionless_modifier_applied", true)
+
+
 GAME_MODES = {
+	"frictionless_arena_modifier": FrictionlessArenaModifierMode.new(),
 	"bounty_contract_event": BountyContractEventMode.new(),
 	"infiltration": InfiltrationMode.new(),
 	"parallel_dimensions": ParallelDimensionsMode.new(),

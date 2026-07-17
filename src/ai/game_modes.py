@@ -19734,7 +19734,52 @@ class GravityReversalMutatorMode(GameMode):
             return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
         return None
 
+
+class FrictionlessArenaModifierMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Frictionless Arena Modifier"
+        self.description = "Introduces an arena modifier that completely removes friction for a random duration, forcing players to perfectly balance their momentum and making collisions much more impactful and chaotic."
+        import random
+        self.random = random.Random()
+        self.event_timer = self.random.uniform(5.0, 15.0)
+        self.duration_timer = 0.0
+        self.is_active = False
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.apply_dynamic_traits(world, balls, delta)
+
+        if self.is_active:
+            self.duration_timer -= delta
+            if self.duration_timer <= 0:
+                self.is_active = False
+                self.event_timer = self.random.uniform(10.0, 20.0)
+                # Remove frictionless effect
+                for b in balls:
+                    if getattr(b, "frictionless_modifier_applied", False):
+                        b.is_frictionless = False
+                        b.frictionless_modifier_applied = False
+            else:
+                # Continuously apply frictionless
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        b.is_frictionless = True
+                        b.frictionless_modifier_applied = True
+        else:
+            self.event_timer -= delta
+            if self.event_timer <= 0:
+                self.is_active = True
+                self.duration_timer = self.random.uniform(5.0, 10.0)
+                if hasattr(world, "add_event"):
+                    world.add_event("frictionless_arena_start", {})
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        b.is_frictionless = True
+                        b.frictionless_modifier_applied = True
+
+
 GAME_MODES = {
+    'frictionless_arena_modifier': FrictionlessArenaModifierMode(),
     'gravity_reversal_mutator': GravityReversalMutatorMode(),
     'platformer': PlatformerMode(),
     "meteor_bombardment": MeteorBombardmentMode(),
