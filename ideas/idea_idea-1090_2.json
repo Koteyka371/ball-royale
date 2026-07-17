@@ -1,0 +1,4 @@
+{
+    "title": "Shrinking Tether Mutator",
+    "description": "A mutator where pairs of players are tethered together by a laser beam. The tether slowly shrinks over time, forcing players closer together. If the tether shrinks to zero, both players are stunned and take damage. To break the tether, players must coordinate to snap it on an arena obstacle or run in opposite directions with enough momentum."
+}

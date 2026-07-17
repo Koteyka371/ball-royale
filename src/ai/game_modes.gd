@@ -37632,3 +37632,51 @@ class EyeOfTheStormMode extends SafeZoneMode:
                     b["hp"] = min(float(b.get("hp", 100.0)) + heal_rate * delta, max_hp)
 
 GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode.new()
+
+class FrictionlessEventMode extends GameMode:
+	var event_timer: float = 0.0
+	var event_active: bool = false
+	var event_duration: float = 0.0
+
+	func _init() -> void:
+		name = "Frictionless Event"
+		description = "A random arena event that completely removes friction for a random duration, forcing players to perfectly balance their momentum and making collisions much more impactful and chaotic."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 20.0:
+			if randf() < 0.2:  # 20% chance every 20s
+				event_active = true
+				event_duration = randf_range(5.0, 15.0)
+				event_timer = 0.0
+				if world.has_method("add_event"):
+					world.add_event("frictionless_event", {"active": true, "message": "Friction removed! Watch your momentum!"})
+			else:
+				event_timer = 0.0
+
+		if event_active:
+			event_duration -= delta
+			if event_duration <= 0:
+				event_active = false
+				event_timer = 0.0
+				if world.has_method("add_event"):
+					world.add_event("frictionless_event", {"active": false, "message": "Friction restored."})
+				for b in balls:
+					if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
+						b.set_meta("is_frictionless", false)
+						if "is_frictionless" in b:
+							b.is_frictionless = false
+					elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
+						b["is_frictionless"] = false
+			else:
+				for b in balls:
+					if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
+						b.set_meta("is_frictionless", true)
+						if "is_frictionless" in b:
+							b.is_frictionless = true
+					elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
+						b["is_frictionless"] = true
+
+GAME_MODES["frictionless_event"] = FrictionlessEventMode.new()

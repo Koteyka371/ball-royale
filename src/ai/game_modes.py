@@ -24574,3 +24574,46 @@ class EyeOfTheStormMode(SafeZoneMode):
                     b.hp = min(b.hp + self.heal_rate * delta, max_hp)
 
 GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode()
+
+class FrictionlessEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Frictionless Event"
+        self.description = "A random arena event that completely removes friction for a random duration, forcing players to perfectly balance their momentum and making collisions much more impactful and chaotic."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 20.0:
+            import random
+            if random.random() < 0.2:  # 20% chance every 20s
+                self.event_active = True
+                self.event_duration = random.uniform(5.0, 15.0)
+                self.event_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("frictionless_event", {"active": True, "message": "Friction removed! Watch your momentum!"})
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            if self.event_duration <= 0:
+                self.event_active = False
+                self.event_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("frictionless_event", {"active": False, "message": "Friction restored."})
+                for b in balls:
+                    if not getattr(b, "alive", True) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+                    b.is_frictionless = False
+            else:
+                for b in balls:
+                    if not getattr(b, "alive", True) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+                    b.is_frictionless = True
+
+GAME_MODES["frictionless_event"] = FrictionlessEventMode()

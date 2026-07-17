@@ -1,0 +1,4 @@
+{
+    "title": "Sticky Bomb Modifier",
+    "description": "An arena modifier where occasionally sticky bombs spawn around the map. When a player touches a sticky bomb, it attaches to them and detonates after a short delay, dealing area of effect damage. Players can pass the bomb to others by colliding with them before it explodes, creating a chaotic hot-potato dynamic."
+}
