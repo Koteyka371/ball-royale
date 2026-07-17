@@ -17934,7 +17934,7 @@
     },
     {
       "id": "idea-1045",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Well Hazard",
@@ -28830,6 +28830,40 @@
         "src/ai/healing_turret.py",
         "src/ai/healing_turret.gd",
         "tests/test_healing_turret.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1685",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Idea 2: Phantom Walk",
+      "description": "A new skill that allows the ball to ignore walls and pass through enemies while dealing heavy tick damage for 3 seconds.",
+      "allowed_paths": [
+        "src/ai/idea_2_phantom_walk.py",
+        "src/ai/idea_2_phantom_walk.gd",
+        "tests/test_idea_2_phantom_walk.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1686",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Idea 1: Laser Mirror Arena",
+      "description": "Arena borders are replaced with laser mirrors. Projectiles bounce infinitely but grow stronger with each bounce.",
+      "allowed_paths": [
+        "src/arena/idea_1_laser_mirror_arena.py",
+        "src/arena/idea_1_laser_mirror_arena.gd",
+        "tests/test_idea_1_laser_mirror_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

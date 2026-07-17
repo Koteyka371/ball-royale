@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1045] Gravity Well Hazard — *2026-07-17 03:08:54 UTC*
+
+A new arena hazard that periodically pulls all nearby balls towards its center, slowing movement away from it and accelerating movement towards it, making positioning critical near the edge of the arena.
+
+---
+
 ## [idea-1070] Slingshot Mode — *2026-07-17 02:51:22 UTC*
 
 Players can only move by dragging and releasing a slingshot mechanism, and deal damage based on speed upon collision with other players.
