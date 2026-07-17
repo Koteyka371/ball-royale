@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1047] Gravity Well Arena — *2026-07-17 01:35:56 UTC*
+
+An arena with a massive gravity well in the center that slowly pulls everything towards it, requiring players to constantly fight the pull or use it for slingshot maneuvers.
+
+---
+
 ## [idea-1061] Shadow Monster Pet — *2026-07-16 21:55:10 UTC*
 
 If a player survives multiple dark phases, they can unlock a 'Shadow Monster Pet' cosmetic that follows them around and occasionally boosts their speed in dark areas.
