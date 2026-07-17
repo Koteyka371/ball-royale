@@ -18291,7 +18291,7 @@
     },
     {
       "id": "idea-1066",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Random Sponsor Drops",
@@ -29204,6 +29204,74 @@
         "src/ai/chaos_orbs.py",
         "src/ai/chaos_orbs.gd",
         "tests/test_chaos_orbs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1707",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Loop Event",
+      "description": "An event where every 30 seconds the arena resets state (hazard positions, player positions, hp), but the players retain any items picked up. Allows for strategic routing and resource gathering.",
+      "allowed_paths": [
+        "src/ai/time_loop.py",
+        "src/ai/time_loop.gd",
+        "tests/test_time_loop.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1708",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravitational Mine",
+      "description": "A trap that slowly pulls nearby enemies towards its center before detonating.",
+      "allowed_paths": [
+        "src/ai/gravitational_mine.py",
+        "src/ai/gravitational_mine.gd",
+        "tests/test_gravitational_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1709",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chrono Shift Booster",
+      "description": "A consumable item that accelerates cooldowns for allies and slows them for enemies within an aura.",
+      "allowed_paths": [
+        "src/ai/chrono_shift_booster.py",
+        "src/ai/chrono_shift_booster.gd",
+        "tests/test_chrono_shift_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1710",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Flashbang Grenade",
+      "description": "An explosive item that blinds enemies caught in its radius for a few seconds. Blinded enemies have zero perception radius and are briefly stunned, allowing for escapes or counter-attacks.",
+      "allowed_paths": [
+        "src/ai/flashbang_grenade.py",
+        "src/ai/flashbang_grenade.gd",
+        "tests/test_flashbang_grenade.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1066] Random Sponsor Drops — *2026-07-17 18:32:45 UTC*
+
+During the match, special drop boxes appear periodically. Destroying them grants a permanent sponsor buff to the ball that lands the final hit.
+
+---
+
 ## [idea-991] Reverse Gravitational Pull Mutator — *2026-07-17 18:03:12 UTC*
 
 A mutator that intermittently reverses the gravitational pull of hazards and game modes, causing elements that usually attract (like Black Holes or Inverse Safe Zones) to suddenly repel for short, chaotic durations.
