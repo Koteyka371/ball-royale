@@ -126,7 +126,7 @@ class Perception:
         bx_curr, by_curr = getattr(self.ball, "x", 0), getattr(self.ball, "y", 0)
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
-                if getattr(h, "kind", "") in ["smokescreen", "breakable_wall"]:
+                if getattr(h, "kind", "") in ["smokescreen", "breakable_wall", "smoke_zone"]:
                     smoke_hazards.append(h)
                     dist = math.sqrt((getattr(h, "x", 0) - bx_curr)**2 + (getattr(h, "y", 0) - by_curr)**2)
                     if dist <= getattr(h, "radius", 0):

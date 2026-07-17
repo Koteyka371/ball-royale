@@ -2482,6 +2482,20 @@ class Action:
                         self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": self.ball.x, "y": self.ball.y, "tx": nemesis.x, "ty": nemesis.y, "color": "red"}})
             self.ball.inventory.remove("nemesis_compass_item")
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "smoke_grenade" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                smoke = type("Hazard", (), {})()
+                smoke.id = len(self.world.arena.hazards) + 20000
+                smoke.x = self.ball.x
+                smoke.y = self.ball.y
+                smoke.radius = 100.0
+                smoke.kind = "smoke_zone"
+                smoke.damage = 0.0
+                setattr(smoke, "duration", 8.0)
+                setattr(smoke, "owner_id", getattr(self.ball, "id", None))
+                self.world.arena.hazards.append(smoke)
+                self.ball.inventory.remove("smoke_grenade")
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "weather_scanner" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 try:
@@ -10930,6 +10944,15 @@ class Action:
                     if "thermal_boots" not in self.ball.inventory:
                         self.ball.inventory.append("thermal_boots")
                     self.ball.thermal_boots_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "smoke_grenade":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("smoke_grenade")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
