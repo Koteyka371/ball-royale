@@ -5763,6 +5763,40 @@ class Action:
                                     push_strength *= 0.5
                                 self.ball.x += nx * push_strength
                                 self.ball.y += ny * push_strength
+                    elif hazard.kind == "gravity_pulse":
+                        if getattr(hazard, "active", True):
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq <= hazard.radius * hazard.radius:
+                                dist = math.sqrt(dist_sq) if dist_sq > 0 else 1.0
+                                nx = dx / dist
+                                ny = dy / dist
+
+                                pull_strength = getattr(hazard, "pull_strength", 60.0) * delta
+
+                                # Apply pull
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                    mod = 0.5 if c == "grounded_boots" else 1.0
+
+                                    # Always pull towards the center
+                                    self.ball.x += nx * pull_strength * mod
+                                    self.ball.y += ny * pull_strength * mod
+
+                                # Calculate moving towards or away
+                                moving_towards = (self.ball.vx * nx + self.ball.vy * ny) > 0
+
+                                # Adjust speed
+                                if moving_towards:
+                                    # Accelerate when moving towards
+                                    self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 1.5
+                                    # Also ensure no friction overrides this if it's evaluated later
+                                else:
+                                    # Slow down when moving away
+                                    self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.5
+                                    if hasattr(self.ball, 'status_effects'):
+                                        self.ball.status_effects.append({"type": "slow", "duration": delta})
                     elif hazard.kind == "gravity_well":
                         # Cosmetics: gravity anomaly already implemented
                         dx = hazard.x - self.ball.x
@@ -7850,6 +7884,28 @@ class Action:
                 self._use_skill()
         else:
             self._idle(delta)
+
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in getattr(self.world.arena, "hazards", []):
+                if getattr(hazard, "kind", "") == "gravity_pulse" and getattr(hazard, "active", True):
+                    dx = hazard.x - self.ball.x
+                    dy = hazard.y - self.ball.y
+                    dist_sq = dx * dx + dy * dy
+                    if dist_sq <= getattr(hazard, "radius", 0)**2:
+                        b_vx = getattr(self.ball, "vx", 0.0)
+                        b_vy = getattr(self.ball, "vy", 0.0)
+                        if getattr(hazard, "radius", 0) > 0:
+                            dist = math.sqrt(dist_sq) if dist_sq > 0 else 1.0
+                            nx = dx / dist
+                            ny = dy / dist
+
+                            moving_towards = (b_vx * nx + b_vy * ny) > 0
+                            if moving_towards:
+                                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 1.5
+                            else:
+                                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.5
+                                if hasattr(self.ball, 'status_effects'):
+                                    self.ball.status_effects.append({"type": "slow", "duration": delta})
 
         bounced_col = self._resolve_collisions()
         bounced_wall = self._clamp_position()

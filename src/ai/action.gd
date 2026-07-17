@@ -10478,6 +10478,65 @@ func execute(strategy: String, delta: float):
 
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
+                elif hazard.kind == "gravity_pulse":
+                    var is_active = true
+                    if "active" in hazard:
+                        is_active = hazard.active
+                    elif hazard.has_method("get_meta") and hazard.has_meta("active"):
+                        is_active = hazard.get_meta("active")
+
+                    if is_active:
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var dist_sq = dx * dx + dy * dy
+                        if dist_sq <= hazard.radius * hazard.radius:
+                            var dist = sqrt(dist_sq)
+                            if dist == 0: dist = 1.0
+                            var nx = dx / dist
+                            var ny = dy / dist
+
+                            var p_str = 60.0
+                            if "pull_strength" in hazard: p_str = hazard.pull_strength
+                            elif hazard.has_method("get_meta") and hazard.has_meta("pull_strength"): p_str = hazard.get_meta("pull_strength")
+                            var pull_strength = p_str * delta
+
+                            var anchor = 0.0
+                            if self.ball.has_method("get_meta") and self.ball.has_meta("anchor_booster_timer"): anchor = self.ball.get_meta("anchor_booster_timer")
+                            elif "anchor_booster_timer" in self.ball: anchor = self.ball.anchor_booster_timer
+
+                            if anchor <= 0:
+                                var c = ""
+                                if "cosmetic" in self.ball: c = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): c = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+                                var mod = 1.0
+                                if c == "grounded_boots": mod = 0.5
+
+                                if "x" in self.ball: self.ball.x += nx * pull_strength * mod
+                                elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength * mod)
+
+                                if "y" in self.ball: self.ball.y += ny * pull_strength * mod
+                                elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * pull_strength * mod)
+
+                            var b_vx = 0.0
+                            var b_vy = 0.0
+                            if "vx" in self.ball: b_vx = self.ball.vx
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("vx"): b_vx = self.ball.get_meta("vx")
+                            if "vy" in self.ball: b_vy = self.ball.vy
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"): b_vy = self.ball.get_meta("vy")
+
+                            var moving_towards = (b_vx * nx + b_vy * ny) > 0
+
+                            var base_spd = 100.0
+                            if "base_speed" in self.ball: base_spd = self.ball.base_speed
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"): base_spd = self.ball.get_meta("base_speed")
+
+                            if moving_towards:
+                                if "speed" in self.ball: self.ball.speed = base_spd * 1.5
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_spd * 1.5)
+                            else:
+                                if "speed" in self.ball: self.ball.speed = base_spd * 0.5
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_spd * 0.5)
                 elif hazard.kind == "gravity_well":
                     # Cosmetics: gravity anomaly already implemented
                     var dx = hazard.x - self.ball.x
@@ -14399,6 +14458,46 @@ func execute(strategy: String, delta: float):
             _use_skill()
     else:
         _idle(delta)
+
+    if "arena" in self.world and "hazards" in self.world.arena:
+        for hazard in self.world.arena.hazards:
+            if "kind" in hazard and hazard.kind == "gravity_pulse":
+                var is_active = true
+                if "active" in hazard:
+                    is_active = hazard.active
+                elif typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("get_meta") and hazard.has_meta("active"):
+                    is_active = hazard.get_meta("active")
+
+                if is_active:
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    var h_rad = 0.0
+                    if "radius" in hazard: h_rad = hazard.radius
+                    if dist_sq <= h_rad * h_rad:
+                        var b_vx = 0.0
+                        var b_vy = 0.0
+                        if "vx" in self.ball: b_vx = self.ball.vx
+                        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("vx"): b_vx = self.ball.get_meta("vx")
+                        if "vy" in self.ball: b_vy = self.ball.vy
+                        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("vy"): b_vy = self.ball.get_meta("vy")
+
+                        var dist = sqrt(dist_sq)
+                        if dist == 0: dist = 1.0
+                        var nx = dx / dist
+                        var ny = dy / dist
+
+                        var moving_towards = (b_vx * nx + b_vy * ny) > 0
+                        var base_spd = 100.0
+                        if "base_speed" in self.ball: base_spd = self.ball.base_speed
+                        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"): base_spd = self.ball.get_meta("base_speed")
+
+                        if moving_towards:
+                            if "speed" in self.ball: self.ball.speed = base_spd * 1.5
+                            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_spd * 1.5)
+                        else:
+                            if "speed" in self.ball: self.ball.speed = base_spd * 0.5
+                            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_spd * 0.5)
 
     var bounced_col = _resolve_collisions()
     var bounced_wall = _clamp_position()
