@@ -5769,8 +5769,19 @@ func execute(strategy: String, delta: float):
 			elif world != null and "entities" in world:
 				balls = world.entities
 
-			var target = null
-			var min_dist_sq = -1.0
+			var my_team = ""
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"):
+				my_team = self.ball.get_meta("team")
+			elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+				my_team = self.ball["team"]
+			elif "team" in self.ball:
+				my_team = self.ball.team
+			elif "ball_type" in self.ball:
+				my_team = self.ball.ball_type
+
+			var valid_targets = []
+			var enemy_targets = []
+
 			for b in balls:
 				var is_alive = true
 				if "alive" in b: is_alive = b.alive
@@ -5779,10 +5790,27 @@ func execute(strategy: String, delta: float):
 				elif "is_decoy" in b: is_decoy = b.is_decoy
 
 				if is_alive and b != self.ball and not is_decoy:
-					var dist_sq = (b.x - self.ball.x)*(b.x - self.ball.x) + (b.y - self.ball.y)*(b.y - self.ball.y)
-					if min_dist_sq < 0.0 or dist_sq < min_dist_sq:
-						min_dist_sq = dist_sq
-						target = b
+					valid_targets.append(b)
+
+					var b_team = ""
+					if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"):
+						b_team = b.get_meta("team")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("team"):
+						b_team = b["team"]
+					elif "team" in b:
+						b_team = b.team
+					elif "ball_type" in b:
+						b_team = b.ball_type
+
+					if b_team != my_team:
+						enemy_targets.append(b)
+
+			if enemy_targets.size() > 0:
+				valid_targets = enemy_targets
+
+			var target = null
+			if valid_targets.size() > 0:
+				target = valid_targets[randi() % valid_targets.size()]
 
 			if target != null:
 				var temp_x = target.x

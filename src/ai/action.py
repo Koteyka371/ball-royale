@@ -2561,8 +2561,15 @@ class Action:
         if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "position_swap" in self.ball.inventory:
             balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
             valid_targets = [b for b in balls if getattr(b, "alive", True) and b != self.ball and not getattr(b, "is_decoy", False)]
+
+            my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+            enemy_targets = [b for b in valid_targets if getattr(b, "team", getattr(b, "ball_type", "")) != my_team]
+            if enemy_targets:
+                valid_targets = enemy_targets
+
             if valid_targets:
-                target = min(valid_targets, key=lambda b: (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)
+                import random
+                target = random.choice(valid_targets)
                 # Swap coordinates
                 temp_x, temp_y = target.x, target.y
                 target.x, target.y = self.ball.x, self.ball.y

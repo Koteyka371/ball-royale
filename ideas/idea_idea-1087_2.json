@@ -1,0 +1,4 @@
+{
+  "title": "Chain Swap Hazard",
+  "description": "A hazard that periodically swaps the positions of all entities caught within its radius in a random permutation."
+}
