@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1097] Nemesis Faction War — *2026-07-17 22:36:06 UTC*
+
+Introduces a global faction war event where players align with either Light or Dark factions. Completing nemesis revenge kills earns points for the chosen faction. The winning faction at the end of the season unlocks a unique, faction-themed ball type for all its participants.
+
+---
+
 ## [idea-1100] Earthquake Weather Event — *2026-07-17 22:27:36 UTC*
 
 A new weather event in ExtremeWeatherMode where the ground shakes violently, randomly applying forces to players in random directions and temporarily disabling standard steering controls.

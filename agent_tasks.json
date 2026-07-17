@@ -18818,7 +18818,7 @@
     },
     {
       "id": "idea-1097",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Faction War",
@@ -29646,6 +29646,57 @@
         "src/ai/affected_ai_vision.py",
         "src/ai/affected_ai_vision.gd",
         "tests/test_affected_ai_vision.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1733",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Geyser Hazard",
+      "description": "Add a new geyser hazard that erupts periodically, launching players high into the air (disabling ground friction and granting temporary immunity to ground hazards) but dealing fall damage upon landing.",
+      "allowed_paths": [
+        "src/arena/geyser.py",
+        "src/arena/geyser.gd",
+        "tests/test_geyser.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1734",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Bomb Relay Mode",
+      "description": "A game mode where at least one sticky bomb is always active in the arena. Players must constantly pass it to avoid elimination, turning the match into a frantic game of hot potato.",
+      "allowed_paths": [
+        "src/ai/sticky_bomb_relay.py",
+        "src/ai/sticky_bomb_relay.gd",
+        "tests/test_sticky_bomb_relay.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1735",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Storm Weather",
+      "description": "Add a magnetic storm weather event that aggressively pulls metallic balls (like metal_drone) toward each other and disables tracking projectiles.",
+      "allowed_paths": [
+        "src/ai/magnetic_storm.py",
+        "src/ai/magnetic_storm.gd",
+        "tests/test_magnetic_storm.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
