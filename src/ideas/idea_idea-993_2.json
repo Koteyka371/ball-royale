@@ -1,0 +1,4 @@
+{
+    "title": "Weapon Recoil Mechanics",
+    "description": "Implement recoil mechanics for heavy weapons and attachments where attacking pushes the ball backwards, which players could use strategically for evasive maneuvers, repositioning, or crossing gaps in platformer-style maps."
+}
