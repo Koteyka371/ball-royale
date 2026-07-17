@@ -36509,3 +36509,4 @@ GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
 
 GAME_MODES['flooding_arena'] = FloodingArenaMode.new()
+GAME_MODES["slingshot"] = preload("res://src/ai/slingshot.gd").SlingshotMode.new()

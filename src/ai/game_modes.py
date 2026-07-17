@@ -23218,3 +23218,5 @@ GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
 
 GAME_MODES['flooding_arena'] = FloodingArenaMode()
+import ai.slingshot
+GAME_MODES['slingshot'] = ai.slingshot.SlingshotMode()
