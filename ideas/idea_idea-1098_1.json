@@ -1,0 +1,4 @@
+{
+  "title": "Weather-Specific Boosters",
+  "description": "Introduce a new class of boosters that only spawn during certain weather conditions (e.g., 'Lightning Rod Booster' during thunderstorms that absorbs electric attacks to heal the player, or 'Snowshoes' during blizzards that negate slipping and provide a speed boost)."
+}

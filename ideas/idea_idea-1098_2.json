@@ -1,0 +1,4 @@
+{
+  "title": "Weather-Affected AI Vision",
+  "description": "Adjust AI perception ranges dynamically based on severe weather. For example, fog or blizzards drastically reduce the perception_radius of standard AIs, making stealth builds more viable, while clear weather increases it."
+}

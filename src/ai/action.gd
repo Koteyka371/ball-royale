@@ -11901,6 +11901,18 @@ func execute(strategy: String, delta: float):
                             if hazard.has_meta("trap_variant"):
                                 trap_variant = hazard.get_meta("trap_variant")
 
+                            var weather = ""
+                            if self.world != null and "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode:
+                                weather = self.world.game_mode.weather
+                            elif self.world != null and "arena" in self.world and self.world.arena != null and "weather" in self.world.arena:
+                                weather = self.world.arena.weather
+
+                            if trap_variant == "normal":
+                                if weather == "blizzard" or weather == "snow":
+                                    trap_variant = "freeze"
+                                elif weather == "thunderstorm":
+                                    trap_variant = "emp_trap"
+
                             if trap_variant == "poison":
                                 var poison_damage = 5.0 * delta
                                 if self.ball.has_method("take_damage"):

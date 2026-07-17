@@ -6376,6 +6376,20 @@ class Action:
                                 continue
                             if ball_type != "sniper":
                                 trap_variant = getattr(hazard, "trap_variant", "normal")
+
+                                # Dynamic weather-based trap modification
+                                weather = getattr(self.world, "game_mode", None)
+                                if weather:
+                                    weather = getattr(weather, "weather", "")
+                                if not weather and hasattr(self.world, "arena"):
+                                    weather = getattr(self.world.arena, "weather", "")
+
+                                if trap_variant == "normal":
+                                    if weather in ["blizzard", "snow"]:
+                                        trap_variant = "freeze"
+                                    elif weather == "thunderstorm":
+                                        trap_variant = "emp_trap"
+
                                 if trap_variant == "poison":
                                     # Poison: no slow, but take DoT (e.g. 5 damage per second)
                                     poison_damage = 10.0 * delta if getattr(self.ball, "is_in_quicksand", False) else 5.0 * delta
