@@ -1433,6 +1433,13 @@ class Action:
         if getattr(self.ball, "amnesia_timer", 0.0) > 0:
             self.ball.amnesia_timer -= delta
 
+        if hasattr(self.ball, "quantum_link_timer"):
+            if self.ball.quantum_link_timer > 0.0:
+                self.ball.quantum_link_timer = max(0.0, self.ball.quantum_link_timer - delta)
+                if self.ball.quantum_link_timer <= 0.0:
+                    if hasattr(self.ball, "inventory") and "quantum_link_booster" in self.ball.inventory:
+                        self.ball.inventory.remove("quantum_link_booster")
+
         if hasattr(self.ball, "overclock_timer"):
             if self.ball.overclock_timer > 0.0:
                 self.ball.overclock_timer = max(0.0, self.ball.overclock_timer - delta)
@@ -5176,6 +5183,8 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             cooldown = 30 if hazard.kind == "quantum_teleporter" else 10
+                            if hazard.kind == "quantum_teleporter" and getattr(self.ball, "quantum_link_timer", 0.0) > 0.0:
+                                cooldown = 15
 
                             if hazard.kind == "quantum_teleporter":
                                 ent_tick = getattr(hazard, "entangled_until_tick", 0)
@@ -5210,6 +5219,15 @@ class Action:
 
                                         if hasattr(self.world, "events"):
                                             self.world.events.append({'type': 'visual_effect', 'data': {'x': old_x, 'y': old_y, 'target_x': self.ball.x, 'target_y': self.ball.y, 'kind': 'quantum_trail'}})
+                                            if getattr(self.ball, "quantum_link_timer", 0.0) > 0.0:
+                                                # Shared short-range teleport when near
+                                                for b in getattr(self.world, "balls", []):
+                                                    if b != self.ball and getattr(b, "team", -1) == getattr(self.ball, "team", -2) and getattr(b, "alive", True):
+                                                        b_dist_sq = (b.x - old_x)**2 + (b.y - old_y)**2
+                                                        if b_dist_sq < 22500.0:  # 150 radius near pre-teleport location
+                                                            b.x = getattr(hazard, "target_x")
+                                                            b.y = getattr(hazard, "target_y")
+                                                            b.last_teleport_tick = current_tick
 
                                         # Apply quantum instability buff/debuff if the event mode is active
                                         mode_name = getattr(self.world, "game_mode", None)
@@ -9889,6 +9907,18 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "quantum_link_booster":
+                    if "quantum_link_booster" not in getattr(self.ball, "inventory", []):
+                        if not hasattr(self.ball, "inventory"):
+                            self.ball.inventory = []
+                        self.ball.inventory.append("quantum_link_booster")
+                    self.ball.quantum_link_timer = 10.0
+                    self.world.events.append({"type": "quantum_link_start", "x": self.ball.x, "y": self.ball.y})
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "overclock_booster":
                     if "overclock_booster" not in self.ball.inventory:
                         self.ball.inventory.append("overclock_booster")

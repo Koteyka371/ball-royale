@@ -2663,6 +2663,25 @@ func execute(strategy: String, delta: float):
 
 
 
+
+	var quantum_link_timer = 0.0
+	if "quantum_link_timer" in self.ball: quantum_link_timer = self.ball.quantum_link_timer
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("quantum_link_timer"): quantum_link_timer = self.ball.get_meta("quantum_link_timer")
+
+	if quantum_link_timer > 0.0:
+	    quantum_link_timer -= delta
+	    if quantum_link_timer <= 0.0:
+	        quantum_link_timer = 0.0
+	        var inv2 = []
+	        if "inventory" in self.ball: inv2 = self.ball.inventory
+	        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv2 = self.ball.get_meta("inventory")
+	        if typeof(inv2) == TYPE_ARRAY:
+	            if inv2.has("quantum_link_booster"):
+	                inv2.erase("quantum_link_booster")
+	    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+	        self.ball.set_meta("quantum_link_timer", quantum_link_timer)
+	    else:
+	        self.ball.quantum_link_timer = quantum_link_timer
 	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
 		if self.ball.has_meta("overclock_timer"):
 			var ot_timer = self.ball.get_meta("overclock_timer")
@@ -9533,9 +9552,29 @@ func execute(strategy: String, delta: float):
                         var cooldown = 10
                         if hazard.kind == "quantum_teleporter":
                             cooldown = 30
+                            var q_link_timer = 0.0
+                            if "quantum_link_timer" in self.ball: q_link_timer = self.ball.quantum_link_timer
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_link_timer"): q_link_timer = self.ball.get_meta("quantum_link_timer")
+                            if q_link_timer > 0.0:
+                                cooldown = 15
+                            var q_link_timer = 0.0
+                            if "quantum_link_timer" in self.ball: q_link_timer = self.ball.quantum_link_timer
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_link_timer"): q_link_timer = self.ball.get_meta("quantum_link_timer")
+                            if q_link_timer > 0.0:
+                                cooldown = 15
 
                         if hazard.kind == "quantum_teleporter":
-                            var ent_tick = 0
+                            cooldown = 30
+                            var q_link_timer = 0.0
+                            if "quantum_link_timer" in self.ball: q_link_timer = self.ball.quantum_link_timer
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_link_timer"): q_link_timer = self.ball.get_meta("quantum_link_timer")
+                            if q_link_timer > 0.0:
+                                cooldown = 15
+                            var q_link_timer = 0.0
+                            if "quantum_link_timer" in self.ball: q_link_timer = self.ball.quantum_link_timer
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_link_timer"): q_link_timer = self.ball.get_meta("quantum_link_timer")
+                            if q_link_timer > 0.0:
+                                cooldown = 15
                             if hazard.has_meta("entangled_until_tick"): ent_tick = hazard.get_meta("entangled_until_tick")
                             var ent_user_id = -1
                             if hazard.has_meta("entangled_user_id"): ent_user_id = hazard.get_meta("entangled_user_id")
@@ -9617,6 +9656,104 @@ func execute(strategy: String, delta: float):
                                     if self.world.get("events") != null:
                                         var eff = {"type": "visual_effect", "data": {"x": old_x, "y": old_y, "target_x": self.ball.x, "target_y": self.ball.y, "kind": "quantum_trail"}}
                                         self.world.events.append(eff)
+                                        var q_link_timer2 = 0.0
+                                        if "quantum_link_timer" in self.ball: q_link_timer2 = self.ball.quantum_link_timer
+                                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_link_timer"): q_link_timer2 = self.ball.get_meta("quantum_link_timer")
+
+                                        if q_link_timer2 > 0.0:
+                                            var world_balls = []
+                                            if self.world != null and "balls" in self.world: world_balls = self.world.balls
+                                            elif self.world != null and typeof(self.world) == TYPE_OBJECT and self.world.has_method("get") and self.world.get("balls") != null: world_balls = self.world.get("balls")
+
+                                            var my_team = -2
+                                            if "team" in self.ball: my_team = self.ball.team
+                                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+
+                                            for b in world_balls:
+                                                if typeof(b) != TYPE_OBJECT and typeof(b) != TYPE_DICTIONARY: continue
+                                                var b_id = -1
+                                                if "id" in b: b_id = b.id
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+                                                var my_id = -2
+                                                if "id" in self.ball: my_id = self.ball.id
+                                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+                                                if b_id != my_id:
+                                                    var is_alive = true
+                                                    if "alive" in b: is_alive = b.alive
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                                                    var b_team = -1
+                                                    if "team" in b: b_team = b.team
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+                                                    if is_alive and b_team == my_team:
+                                                        var bx = 0.0
+                                                        if "x" in b: bx = b.x
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                                                        var by = 0.0
+                                                        if "y" in b: by = b.y
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+                                                        var b_dist_sq = pow(bx - old_x, 2) + pow(by - old_y, 2)
+                                                        if b_dist_sq < 22500.0: # 150 radius
+                                                            var targ_x = hazard.get_meta("target_x")
+                                                            var targ_y = hazard.get_meta("target_y")
+                                                            if "x" in b: b.x = targ_x
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("x", targ_x)
+                                                            if "y" in b: b.y = targ_y
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("y", targ_y)
+                                                            if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                                                b.set_meta("last_teleport_tick", current_tick)
+                                                            else:
+                                                                b.last_teleport_tick = current_tick
+                                        var q_link_timer2 = 0.0
+                                        if "quantum_link_timer" in self.ball: q_link_timer2 = self.ball.quantum_link_timer
+                                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("quantum_link_timer"): q_link_timer2 = self.ball.get_meta("quantum_link_timer")
+
+                                        if q_link_timer2 > 0.0:
+                                            var world_balls = []
+                                            if self.world != null and "balls" in self.world: world_balls = self.world.balls
+                                            elif self.world != null and typeof(self.world) == TYPE_OBJECT and self.world.has_method("get") and self.world.get("balls") != null: world_balls = self.world.get("balls")
+
+                                            var my_team = -2
+                                            if "team" in self.ball: my_team = self.ball.team
+                                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+
+                                            for b in world_balls:
+                                                if typeof(b) != TYPE_OBJECT and typeof(b) != TYPE_DICTIONARY: continue
+                                                var b_id = -1
+                                                if "id" in b: b_id = b.id
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+                                                var my_id = -2
+                                                if "id" in self.ball: my_id = self.ball.id
+                                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+                                                if b_id != my_id:
+                                                    var is_alive = true
+                                                    if "alive" in b: is_alive = b.alive
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                                                    var b_team = -1
+                                                    if "team" in b: b_team = b.team
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+                                                    if is_alive and b_team == my_team:
+                                                        var bx = 0.0
+                                                        if "x" in b: bx = b.x
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                                                        var by = 0.0
+                                                        if "y" in b: by = b.y
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+                                                        var b_dist_sq = pow(bx - old_x, 2) + pow(by - old_y, 2)
+                                                        if b_dist_sq < 22500.0: # 150 radius
+                                                            var targ_x = hazard.get_meta("target_x")
+                                                            var targ_y = hazard.get_meta("target_y")
+                                                            if "x" in b: b.x = targ_x
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("x", targ_x)
+                                                            if "y" in b: b.y = targ_y
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("y", targ_y)
+                                                            if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                                                b.set_meta("last_teleport_tick", current_tick)
+                                                            else:
+                                                                b.last_teleport_tick = current_tick
 
                                     var mode_name = ""
                                     if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
@@ -18317,6 +18454,42 @@ func _collect_booster(delta: float):
                 elif typeof(self.world) == TYPE_OBJECT and "arena" in self.world and "hazards" in self.world.arena:
                     self.world.arena.hazards.erase(nearest)
 
+            elif "kind" in nearest and nearest.kind == "quantum_link_booster":
+		var inv = []
+		if "inventory" in self.ball: inv = self.ball.inventory
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+		if typeof(inv) == TYPE_ARRAY and not inv.has("quantum_link_booster"): inv.append("quantum_link_booster")
+		if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+			self.ball.set_meta("quantum_link_timer", 10.0)
+		else:
+			self.ball.quantum_link_timer = 10.0
+		if self.world != null and "events" in self.world:
+			var eff = {"type": "quantum_link_start", "x": self.ball.x, "y": self.ball.y}
+			self.world.events.append(eff)
+		if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+			if nearest in self.world.arena.hazards:
+				self.world.arena.hazards.erase(nearest)
+		if self.world != null and "boosters" in self.world:
+			if nearest in self.world.boosters:
+				self.world.boosters.erase(nearest)
+            elif "kind" in nearest and nearest.kind == "quantum_link_booster":
+		var inv = []
+		if "inventory" in self.ball: inv = self.ball.inventory
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+		if typeof(inv) == TYPE_ARRAY and not inv.has("quantum_link_booster"): inv.append("quantum_link_booster")
+		if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+			self.ball.set_meta("quantum_link_timer", 10.0)
+		else:
+			self.ball.quantum_link_timer = 10.0
+		if self.world != null and "events" in self.world:
+			var eff = {"type": "quantum_link_start", "x": self.ball.x, "y": self.ball.y}
+			self.world.events.append(eff)
+		if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+			if nearest in self.world.arena.hazards:
+				self.world.arena.hazards.erase(nearest)
+		if self.world != null and "boosters" in self.world:
+			if nearest in self.world.boosters:
+				self.world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "overclock_booster":
 				var inv = []
 				if "inventory" in self.ball: inv = self.ball.inventory
