@@ -18869,7 +18869,7 @@
     },
     {
       "id": "idea-1100",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Earthquake Weather Event",
@@ -29578,6 +29578,74 @@
         "src/ai/mirror_image.py",
         "src/ai/mirror_image.gd",
         "tests/test_mirror_image.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1729",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Swarm Skill",
+      "description": "An active skill that instantly deploys 3 fake balls around the user and briefly cloaks the user for 2 seconds, causing immense confusion during chaotic team fights.",
+      "allowed_paths": [
+        "src/ai/decoy_swarm_skill.py",
+        "src/ai/decoy_swarm_skill.gd",
+        "tests/test_decoy_swarm_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1730",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Specific Boosters",
+      "description": "Introduce a new class of boosters that only spawn during certain weather conditions (e.g., 'Lightning Rod Booster' during thunderstorms that absorbs electric attacks to heal the player, or 'Snowshoes' during blizzards that negate slipping and provide a speed boost).",
+      "allowed_paths": [
+        "src/ai/specific_boosters.py",
+        "src/ai/specific_boosters.gd",
+        "tests/test_specific_boosters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1731",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Explosion Booster",
+      "description": "A booster that allows a player's fake ball decoys (or any decoy they produce) to explode on death, dealing small area-of-effect damage to nearby enemies and pushing them back.",
+      "allowed_paths": [
+        "src/ai/decoy_explosion_booster.py",
+        "src/ai/decoy_explosion_booster.gd",
+        "tests/test_decoy_explosion_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1732",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Affected AI Vision",
+      "description": "Adjust AI perception ranges dynamically based on severe weather. For example, fog or blizzards drastically reduce the perception_radius of standard AIs, making stealth builds more viable, while clear weather increases it.",
+      "allowed_paths": [
+        "src/ai/affected_ai_vision.py",
+        "src/ai/affected_ai_vision.gd",
+        "tests/test_affected_ai_vision.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1100] Earthquake Weather Event — *2026-07-17 22:27:36 UTC*
+
+A new weather event in ExtremeWeatherMode where the ground shakes violently, randomly applying forces to players in random directions and temporarily disabling standard steering controls.
+
+---
+
 ## [idea-1074] Decoy Distraction Event — *2026-07-17 22:12:42 UTC*
 
 Periodically spawn harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked. This confuses targeting systems and provides cover for sneaky maneuvers.
