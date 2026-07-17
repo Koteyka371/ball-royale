@@ -17951,7 +17951,7 @@
     },
     {
       "id": "idea-1046",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Starlight Celestial Boss",
@@ -29289,6 +29289,40 @@
         "src/ai/sniper_drone_pet.py",
         "src/ai/sniper_drone_pet.gd",
         "tests/test_sniper_drone_pet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1712",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Swap Item",
+      "description": "An item that allows a ball to instantly swap positions with their deployed decoy, allowing for tricky escapes or offensive misdirection.",
+      "allowed_paths": [
+        "src/ai/decoy_swap_item.py",
+        "src/ai/decoy_swap_item.gd",
+        "tests/test_decoy_swap_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1713",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Swap Hazard",
+      "description": "A hazard that periodically swaps the positions of all entities caught within its radius in a random permutation.",
+      "allowed_paths": [
+        "src/arena/chain_swap.py",
+        "src/arena/chain_swap.gd",
+        "tests/test_chain_swap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
