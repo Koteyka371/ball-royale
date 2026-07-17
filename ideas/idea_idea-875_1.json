@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Trampoline Hazard",
+  "description": "A dark purple trampoline hazard that acts as a gravity well. When an entity steps on it, instead of bouncing them away, it significantly slows them down and pulls them towards its center for 2 seconds, making them vulnerable to incoming attacks and projectiles."
+}

@@ -214,6 +214,8 @@ func generate():
             kind = "bumper" if randf() < 0.8 else "chain_reaction_bumper"
         elif r < 0.985:
             kind = "quicksand"
+        elif r < 0.987:
+            kind = "trampoline"
         elif r < 0.990:
             kind = "magnet_booster"
         elif r < 0.992:
@@ -266,6 +268,9 @@ func generate():
             damage = 20.0
         elif kind == "mirage_safe_zone":
             radius = 150.0
+            damage = 0.0
+        elif kind == "trampoline":
+            radius = rng.randf_range(20.0, 40.0)
             damage = 0.0
         elif kind == "lava":
             radius = rng.randf_range(30.0, 60.0)

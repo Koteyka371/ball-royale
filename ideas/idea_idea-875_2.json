@@ -1,0 +1,4 @@
+{
+  "title": "Chain Trampoline Combo",
+  "description": "Trampolines that are procedurally linked. Bouncing on one trampoline instantly flings the ball directly towards a linked trampoline, chaining massive speed boosts. If a player chains three bounces in a row, they gain an explosive aura that deals damage to any entity they touch."
+}

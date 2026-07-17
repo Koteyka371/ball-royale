@@ -7056,6 +7056,21 @@ class Action:
                                 d_target = math.hypot(self.ball.fly_target_x - self.ball.x, self.ball.fly_target_y - self.ball.y)
                                 self.ball.fly_timer = max(0.5, d_target / 1500.0)
                             continue
+                        elif hazard.kind == "trampoline":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            import math
+                            dist = math.hypot(dx, dy)
+                            if dist < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 10.0)) and dist > 0.0001:
+                                nx, ny = dx / dist, dy / dist
+                                self.ball.vx = nx * 1200.0
+                                self.ball.vy = ny * 1200.0
+                                self.ball.x += nx * 20.0
+                                self.ball.y += ny * 20.0
+                                self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 2.0)
+                                self.ball.hazard_immunity_timer = max(getattr(self.ball, "hazard_immunity_timer", 0.0), 2.0)
+                            continue
+
                         elif hazard.kind == "bounce_pad":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y

@@ -12644,6 +12644,44 @@ func execute(strategy: String, delta: float):
                                 self.ball.fly_target_y = h_ty
                                 self.ball.fly_timer = fly_t
                         continue
+                    elif hazard.kind == "trampoline":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+                        if d < (b_rad + hazard.radius) and d > 0.0001:
+                            var nx = dx / d
+                            var ny = dy / d
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("vx", nx * 1200.0)
+                                self.ball.set_meta("vy", ny * 1200.0)
+                                self.ball.x += nx * 20.0
+                                self.ball.y += ny * 20.0
+                                var sbt = 0.0
+                                if self.ball.has_meta("speed_boost_timer"):
+                                    sbt = float(self.ball.get_meta("speed_boost_timer"))
+                                self.ball.set_meta("speed_boost_timer", max(sbt, 2.0))
+                                var hit = 0.0
+                                if self.ball.has_meta("hazard_immunity_timer"):
+                                    hit = float(self.ball.get_meta("hazard_immunity_timer"))
+                                self.ball.set_meta("hazard_immunity_timer", max(hit, 2.0))
+                            elif "vx" in self.ball:
+                                self.ball.vx = nx * 1200.0
+                                self.ball.vy = ny * 1200.0
+                                self.ball.x += nx * 20.0
+                                self.ball.y += ny * 20.0
+                                var sbt = 0.0
+                                if "speed_boost_timer" in self.ball:
+                                    sbt = float(self.ball.speed_boost_timer)
+                                self.ball.speed_boost_timer = max(sbt, 2.0)
+                                var hit = 0.0
+                                if "hazard_immunity_timer" in self.ball:
+                                    hit = float(self.ball.hazard_immunity_timer)
+                                self.ball.hazard_immunity_timer = max(hit, 2.0)
+                        continue
+
                     elif hazard.kind == "bounce_pad":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
