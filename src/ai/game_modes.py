@@ -4297,17 +4297,9 @@ class MassiveGravityWellMode(GameMode):
             self.mgw_y = arena_height - self.mgw_radius
             self.mgw_vy *= -1
 
-        if not hasattr(world, "dead_balls"):
-            world.dead_balls = []
-
         # Pull players
         for b in balls:
             if not getattr(b, "alive", False):
-                if b not in world.dead_balls:
-                    b.time_since_death = 0.0
-                    world.dead_balls.append(b)
-                else:
-                    b.time_since_death += delta
                 continue
 
             if getattr(b, "ball_type", None) == "spectator":
@@ -16078,6 +16070,127 @@ class CenterVortexMode(GameMode):
 
         # Apply to other entities if needed, but balls are the main entities
 
+
+class CenterGravityWellMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Center Gravity Well"
+        self.description = "A massive gravity well in the center that slowly pulls everything towards it, requiring players to constantly fight the pull or use it for slingshot maneuvers."
+        self.cgw_id = 1000000
+        self.pull_strength_base = 5000000.0  # Constant for inverse square law
+        self.horizon_radius = 50.0
+        self.pull_radius = 2000.0
+        self.damage = 25.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        pass  # No special trait interactions for now
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        # Center coordinates
+        cx = world.arena.width / 2.0
+        cy = world.arena.height / 2.0
+
+        existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "center_gravity_well" and getattr(h, "id", None) == self.cgw_id), None)
+        if not existing:
+            try:
+                from arena.procedural_arena import Hazard
+                bh = Hazard(
+                    id=self.cgw_id,
+                    x=cx,
+                    y=cy,
+                    radius=self.horizon_radius,
+                    kind="center_gravity_well",
+                    damage=self.damage
+                )
+                world.arena.hazards.append(bh)
+            except ImportError:
+                # Mock hazard for testing without arena module
+                class DummyHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                world.arena.hazards.append(DummyHazard(self.cgw_id, cx, cy, self.horizon_radius, "center_gravity_well", self.damage))
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        if not hasattr(world.arena, "hazards"):
+            return
+
+        cgw = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "center_gravity_well" and getattr(h, "id", None) == self.cgw_id), None)
+        if not cgw:
+            return
+
+        cx = cgw.x
+        cy = cgw.y
+
+        # Pull players
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dx = cx - b.x
+            dy = cy - b.y
+            dist = math.hypot(dx, dy)
+
+            if dist < self.horizon_radius:
+                # Inside the event horizon, take heavy damage
+                if hasattr(b, "hp"):
+                    b.hp -= self.damage * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+            elif dist > 0 and dist < self.pull_radius:
+                # Pull strength is inversely proportional to square of distance (gravity)
+                pull_strength = self.pull_strength_base / (dist * dist)
+                # Cap max pull force right at the edge of the event horizon
+                max_pull = self.pull_strength_base / (self.horizon_radius * self.horizon_radius)
+                pull_strength = min(pull_strength, max_pull)
+
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.vx += (dx / dist) * pull_strength * delta
+                    b.vy += (dy / dist) * pull_strength * delta
+                else:
+                    # Direct position update if no velocity
+                    b.x += (dx / dist) * pull_strength * delta * delta
+                    b.y += (dy / dist) * pull_strength * delta * delta
+
+        # Pull other hazards slightly
+        for h in world.arena.hazards:
+            if h is cgw:
+                continue
+
+            h_kind = getattr(h, "kind", "")
+            if h_kind in ["trap", "spike", "mine", "bomb", "thrown_bomb"]:
+                dx = cx - h.x
+                dy = cy - h.y
+                dist = math.hypot(dx, dy)
+
+                if dist > self.horizon_radius and dist < self.pull_radius:
+                    pull_strength = self.pull_strength_base * 0.5 / (dist * dist)
+                    max_pull = self.pull_strength_base * 0.5 / (self.horizon_radius * self.horizon_radius)
+                    pull_strength = min(pull_strength, max_pull)
+
+                    if hasattr(h, "vx") and hasattr(h, "vy"):
+                        h.vx += (dx / dist) * pull_strength * delta
+                        h.vy += (dy / dist) * pull_strength * delta
+                    else:
+                        h.x += (dx / dist) * pull_strength * delta * delta
+                        h.y += (dy / dist) * pull_strength * delta * delta
+
+
 class CenterBlackHoleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -18745,6 +18858,7 @@ GAME_MODES = {
     "entanglement_mutator": EntanglementMutatorMode(),
     "spiked_walls": SpikedWallsMode(),
     "center_vortex": CenterVortexMode(),
+    "center_gravity_well": CenterGravityWellMode(),
     "center_black_hole": CenterBlackHoleMode(),
     "extreme_weather": ExtremeWeatherMode(),
     "weather_station": WeatherStationMode(),
