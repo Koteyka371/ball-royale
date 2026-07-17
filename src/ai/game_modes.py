@@ -23217,6 +23217,92 @@ GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
 
+class QuantumShiftingHazardsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Shifting Hazards"
+        self.description = "A game mode where every basic hazard (like spike traps or puddles) randomly shifts into a quantum teleporter for 5 seconds when activated, creating chaotic movement possibilities."
+        self.shifted_hazards = {}
+        self.shift_duration = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        # Restore expired hazards
+        expired_hazards = []
+        for h_id, state in self.shifted_hazards.items():
+            state["timer"] -= delta
+            if state["timer"] <= 0:
+                expired_hazards.append(h_id)
+                # Find hazard and restore it
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        if getattr(h, "id", None) == h_id:
+                            h.kind = state["original_kind"]
+                            h.damage = state["original_damage"]
+                            if hasattr(h, "target_x"):
+                                delattr(h, "target_x")
+                            if hasattr(h, "target_y"):
+                                delattr(h, "target_y")
+                            if "original_target_x" in state:
+                                h.target_x = state["original_target_x"]
+                            if "original_target_y" in state:
+                                h.target_y = state["original_target_y"]
+                            break
+
+        for h_id in expired_hazards:
+            del self.shifted_hazards[h_id]
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        arena_width = getattr(world.arena, "width", 1000.0)
+        arena_height = getattr(world.arena, "height", 1000.0)
+
+        basic_hazards = ["spikes", "puddle", "ice_patch", "lava", "quicksand", "mud_puddle", "molten_rock", "proximity_trap"]
+
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", True):
+                continue
+
+            for h in world.arena.hazards:
+                if not getattr(h, "active", True):
+                    continue
+
+                h_kind = getattr(h, "kind", "")
+                h_id = getattr(h, "id", None)
+                if h_id is None:
+                    continue
+
+                if h_kind in basic_hazards and h_id not in self.shifted_hazards:
+                    dx = h.x - b.x
+                    dy = h.y - b.y
+                    dist = math.hypot(dx, dy)
+
+                    if dist < h.radius:
+                        if random.random() >= 0.25:
+                            continue
+                        self.shifted_hazards[h_id] = {
+                            "timer": self.shift_duration,
+                            "original_kind": h_kind,
+                            "original_damage": getattr(h, "damage", 0.0)
+                        }
+                        if hasattr(h, "target_x"):
+                            self.shifted_hazards[h_id]["original_target_x"] = h.target_x
+                        if hasattr(h, "target_y"):
+                            self.shifted_hazards[h_id]["original_target_y"] = h.target_y
+
+                        h.kind = "quantum_teleporter"
+                        h.damage = 0.0
+                        h.target_x = random.uniform(100.0, arena_width - 100.0)
+                        h.target_y = random.uniform(100.0, arena_height - 100.0)
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("quantum_shift", {"message": f"Hazard shifted to quantum teleporter at ({h.x:.1f}, {h.y:.1f})!"})
+
+
+GAME_MODES['quantum_shifting_hazards'] = QuantumShiftingHazardsMode()
 GAME_MODES['flooding_arena'] = FloodingArenaMode()
 import ai.slingshot
 GAME_MODES['slingshot'] = ai.slingshot.SlingshotMode()

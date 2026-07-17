@@ -36508,5 +36508,128 @@ GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode.new()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
 
+class QuantumShiftingHazardsMode extends GameMode:
+	var shifted_hazards = {}
+	var shift_duration = 5.0
+
+	func _init() -> void:
+		name = "Quantum Shifting Hazards"
+		description = "A game mode where every basic hazard randomly shifts into a quantum teleporter for 5 seconds when activated."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var expired_hazards = []
+		for h_id in shifted_hazards.keys():
+			var state = shifted_hazards[h_id]
+			state["timer"] -= delta
+			if state["timer"] <= 0:
+				expired_hazards.append(h_id)
+				if world != null and "arena" in world and "hazards" in world.arena:
+					for h in world.arena.hazards:
+						if "id" in h and h.id == h_id:
+							h.kind = state["original_kind"]
+							h.damage = state["original_damage"]
+							if "original_target_x" in state:
+								if typeof(h) == TYPE_DICTIONARY:
+									h["target_x"] = state["original_target_x"]
+								elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+									h.set_meta("target_x", state["original_target_x"])
+								elif typeof(h) == TYPE_OBJECT and "target_x" in h:
+									h.target_x = state["original_target_x"]
+							if "original_target_y" in state:
+								if typeof(h) == TYPE_DICTIONARY:
+									h["target_y"] = state["original_target_y"]
+								elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+									h.set_meta("target_y", state["original_target_y"])
+								elif typeof(h) == TYPE_OBJECT and "target_y" in h:
+									h.target_y = state["original_target_y"]
+							break
+
+		for h_id in expired_hazards:
+			shifted_hazards.erase(h_id)
+
+		if world == null or not "arena" in world or not "hazards" in world.arena:
+			return
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "width" in world.arena: arena_width = world.arena.width
+		if "height" in world.arena: arena_height = world.arena.height
+
+		var basic_hazards = ["spikes", "puddle", "ice_patch", "lava", "quicksand", "mud_puddle", "molten_rock", "proximity_trap"]
+
+		for b in balls:
+			var is_spectator = false
+			if "ball_type" in b and b.ball_type == "spectator": is_spectator = true
+			var is_alive = true
+			if "alive" in b: is_alive = b.alive
+			if is_spectator or not is_alive:
+				continue
+
+			for h in world.arena.hazards:
+				var is_active = true
+				if "active" in h: is_active = h.active
+				if not is_active:
+					continue
+
+				var h_kind = ""
+				if "kind" in h: h_kind = h.kind
+
+				var h_id = null
+				if "id" in h: h_id = h.id
+				if h_id == null:
+					continue
+
+				if basic_hazards.has(h_kind) and not shifted_hazards.has(h_id):
+					var dx = h.x - b.x
+					var dy = h.y - b.y
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist < h.radius:
+						if randf() >= 0.25:
+							continue
+						var state = {
+							"timer": shift_duration,
+							"original_kind": h_kind,
+							"original_damage": 0.0
+						}
+						if "damage" in h:
+							state["original_damage"] = h.damage
+
+						if typeof(h) == TYPE_DICTIONARY and h.has("target_x"):
+							state["original_target_x"] = h["target_x"]
+						elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("target_x"):
+							state["original_target_x"] = h.get_meta("target_x")
+						elif typeof(h) == TYPE_OBJECT and "target_x" in h:
+							state["original_target_x"] = h.target_x
+
+						if typeof(h) == TYPE_DICTIONARY and h.has("target_y"):
+							state["original_target_y"] = h["target_y"]
+						elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("target_y"):
+							state["original_target_y"] = h.get_meta("target_y")
+						elif typeof(h) == TYPE_OBJECT and "target_y" in h:
+							state["original_target_y"] = h.target_y
+
+						shifted_hazards[h_id] = state
+						h.kind = "quantum_teleporter"
+						h.damage = 0.0
+
+						var rand_x = 100.0 + (randf() * (arena_width - 200.0))
+						var rand_y = 100.0 + (randf() * (arena_height - 200.0))
+
+						if typeof(h) == TYPE_DICTIONARY:
+							h["target_x"] = rand_x
+							h["target_y"] = rand_y
+						elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+							h.set_meta("target_x", rand_x)
+							h.set_meta("target_y", rand_y)
+						elif typeof(h) == TYPE_OBJECT and "target_x" in h:
+							h.target_x = rand_x
+							h.target_y = rand_y
+
+						if world.get("events") != null and typeof(world.events) == TYPE_ARRAY:
+							world.events.append({"type": "quantum_shift", "data": {"message": "Hazard shifted to quantum teleporter!"}})
+
+
+GAME_MODES['quantum_shifting_hazards'] = QuantumShiftingHazardsMode.new()
 GAME_MODES['flooding_arena'] = FloodingArenaMode.new()
 GAME_MODES["slingshot"] = preload("res://src/ai/slingshot.gd").SlingshotMode.new()
