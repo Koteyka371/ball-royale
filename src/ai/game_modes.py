@@ -8819,6 +8819,38 @@ class WindstormMode(GameMode):
                     b.time_since_death += delta
 
 
+        # Wind Current logic
+        if not hasattr(self, 'wind_current_timer'):
+            self.wind_current_timer = 3.0
+
+        self.wind_current_timer -= delta
+        if self.wind_current_timer <= 0.0:
+            if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                from arena.procedural_arena import Hazard
+                hx = self.random.uniform(200.0, 800.0)
+                hy = self.random.uniform(200.0, 800.0)
+                wind_current = Hazard(id=getattr(world, 'next_id', 99999), x=hx, y=hy, radius=120.0, kind="wind_current", damage=0.0)
+
+                angle = self.random.uniform(0, 3.14159 * 2)
+                import math
+                setattr(wind_current, 'wind_dir_x', math.cos(angle))
+                setattr(wind_current, 'wind_dir_y', math.sin(angle))
+                setattr(wind_current, 'wind_strength', self.random.uniform(150.0, 300.0))
+                setattr(wind_current, 'duration', self.random.uniform(5.0, 8.0))
+
+                world.arena.hazards.append(wind_current)
+            self.wind_current_timer = self.random.uniform(6.0, 12.0)
+
+        # Cleanup expired wind currents
+        if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+            for h in list(world.arena.hazards):
+                if getattr(h, 'kind', '') == 'wind_current':
+                    dur = getattr(h, 'duration', 0.0) - delta
+                    if dur <= 0:
+                        world.arena.hazards.remove(h)
+                    else:
+                        setattr(h, 'duration', dur)
+
         # Tornado logic
         self.tornado_timer -= delta
         if self.tornado_timer <= 0.0:

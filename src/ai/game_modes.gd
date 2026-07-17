@@ -13924,6 +13924,90 @@ class WindstormMode extends GameMode:
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
 
 
+		# Wind Current logic
+		if not self.has_meta("wind_current_timer"):
+			self.set_meta("wind_current_timer", 3.0)
+
+		var wind_timer = self.get_meta("wind_current_timer") - delta
+		self.set_meta("wind_current_timer", wind_timer)
+
+		if wind_timer <= 0.0:
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				var hx = randf_range(200.0, 800.0)
+				var hy = randf_range(200.0, 800.0)
+				var angle = randf_range(0.0, 2.0 * PI)
+
+				var HazardClass = null
+				if ResourceLoader.exists("res://src/arena/Hazard.gd"):
+					HazardClass = load("res://src/arena/Hazard.gd")
+
+				var wind_current = null
+				if HazardClass != null:
+					wind_current = HazardClass.new(99999, hx, hy, 120.0, "wind_current", 0.0)
+					if wind_current.has_method("set_meta"):
+						wind_current.set_meta("wind_dir_x", cos(angle))
+						wind_current.set_meta("wind_dir_y", sin(angle))
+						wind_current.set_meta("wind_strength", randf_range(150.0, 300.0))
+						wind_current.set_meta("duration", randf_range(5.0, 8.0))
+					else:
+						wind_current.wind_dir_x = cos(angle)
+						wind_current.wind_dir_y = sin(angle)
+						wind_current.wind_strength = randf_range(150.0, 300.0)
+						wind_current.duration = randf_range(5.0, 8.0)
+				else:
+					wind_current = {
+						"id": 99999,
+						"x": hx,
+						"y": hy,
+						"radius": 120.0,
+						"kind": "wind_current",
+						"damage": 0.0,
+						"wind_dir_x": cos(angle),
+						"wind_dir_y": sin(angle),
+						"wind_strength": randf_range(150.0, 300.0),
+						"duration": randf_range(5.0, 8.0)
+					}
+
+				if typeof(world.arena.hazards) == TYPE_ARRAY:
+					world.arena.hazards.append(wind_current)
+				elif world.arena.hazards.has_method("append"):
+					world.arena.hazards.append(wind_current)
+
+			self.set_meta("wind_current_timer", randf_range(6.0, 12.0))
+
+		# Cleanup expired wind currents
+		if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+			var hazards_to_keep = []
+			for h in world.arena.hazards:
+				var h_kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+				elif typeof(h) == TYPE_OBJECT:
+					if "kind" in h:
+						h_kind = h.kind
+					elif h.has_method("get_meta") and h.has_meta("kind"):
+						h_kind = h.get_meta("kind")
+
+				if h_kind == "wind_current":
+					var dur = 0.0
+					if typeof(h) == TYPE_DICTIONARY:
+						dur = h.get("duration", 0.0) - delta
+						h["duration"] = dur
+					else:
+						if h.has_method("get_meta") and h.has_meta("duration"):
+							dur = h.get_meta("duration") - delta
+							h.set_meta("duration", dur)
+						elif "duration" in h:
+							dur = h.duration - delta
+							h.duration = dur
+
+					if dur > 0:
+						hazards_to_keep.append(h)
+				else:
+					hazards_to_keep.append(h)
+
+			world.arena.hazards = hazards_to_keep
+
 		# Tornado logic
 		tornado_timer -= delta
 		if tornado_timer <= 0.0:
