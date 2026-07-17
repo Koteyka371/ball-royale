@@ -5252,6 +5252,8 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             cooldown = 30 if hazard.kind == "quantum_teleporter" else 10
+                            if hazard.kind == "quantum_teleporter" and getattr(self.ball, "quantum_link_timer", 0.0) > 0:
+                                cooldown = 15
 
                             if hazard.kind == "quantum_teleporter":
                                 ent_tick = getattr(hazard, "entangled_until_tick", 0)
@@ -5283,6 +5285,16 @@ class Action:
                                                 h.entangled_user_id = getattr(self.ball, "id", None)
                                                 h.entangled_until_tick = current_tick + int(10.0 / delta)
                                                 break
+
+                                        if getattr(self.ball, "quantum_link_timer", 0.0) > 0:
+                                            for ally in getattr(self.world, "balls", []):
+                                                if ally != self.ball and getattr(ally, "team", None) == getattr(self.ball, "team", None):
+                                                    adx = ally.x - old_x
+                                                    ady = ally.y - old_y
+                                                    if adx * adx + ady * ady < 2500.0:
+                                                        ally.x = getattr(hazard, "target_x")
+                                                        ally.y = getattr(hazard, "target_y")
+                                                        ally.last_teleport_tick = current_tick
 
                                         if hasattr(self.world, "events"):
                                             self.world.events.append({'type': 'visual_effect', 'data': {'x': old_x, 'y': old_y, 'target_x': self.ball.x, 'target_y': self.ball.y, 'kind': 'quantum_trail'}})
@@ -10020,6 +10032,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "quantum_link_booster":
+                    self.ball.quantum_link_timer = 20.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "ghost_mode_booster":
                     self.ball.ghost_mode_timer = 5.0
                     self.ball.intangible = True
@@ -15464,6 +15484,9 @@ class Action:
 
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta * cooldown_mult
+
+        if getattr(self.ball, "quantum_link_timer", 0.0) > 0:
+            self.ball.quantum_link_timer -= delta
 
         if hasattr(self.ball, "quantum_entanglement_timer") and self.ball.quantum_entanglement_timer > 0:
             self.ball.quantum_entanglement_timer -= delta

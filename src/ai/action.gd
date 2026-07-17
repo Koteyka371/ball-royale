@@ -9710,6 +9710,9 @@ func execute(strategy: String, delta: float):
                         var cooldown = 10
                         if hazard.kind == "quantum_teleporter":
                             cooldown = 30
+                            var ql_timer = self.ball.get("quantum_link_timer", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.quantum_link_timer if "quantum_link_timer" in self.ball else 0.0)
+                            if ql_timer > 0:
+                                cooldown = 15
 
                         if hazard.kind == "quantum_teleporter":
                             var ent_tick = 0
@@ -9790,6 +9793,29 @@ func execute(strategy: String, delta: float):
                                             h.set_meta("entangled_user_id", b_id)
                                             h.set_meta("entangled_until_tick", current_tick + int(10.0 / delta))
                                             break
+
+                                    var ql_timer = self.ball.get("quantum_link_timer", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.quantum_link_timer if "quantum_link_timer" in self.ball else 0.0)
+                                    if ql_timer > 0 and self.world != null and "balls" in self.world:
+                                        for b in self.world.balls:
+                                            if b != self.ball:
+                                                var b_team = b.get("team", -1) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else -1)
+                                                var my_team = self.ball.get("team", -1) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.team if "team" in self.ball else -1)
+                                                if b_team == my_team:
+                                                    var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+                                                    var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+                                                    var bdx = bx - old_x
+                                                    var bdy = by - old_y
+                                                    var bdist_sq = bdx * bdx + bdy * bdy
+                                                    if bdist_sq < 2500.0:
+                                                        if typeof(b) == TYPE_DICTIONARY:
+                                                            b["x"] = hazard.get_meta("target_x")
+                                                            b["y"] = hazard.get_meta("target_y")
+                                                            b["last_teleport_tick"] = current_tick
+                                                        else:
+                                                            if "x" in b: b.x = hazard.get_meta("target_x")
+                                                            if "y" in b: b.y = hazard.get_meta("target_y")
+                                                            if "last_teleport_tick" in b: b.last_teleport_tick = current_tick
+                                                            elif b.has_method("set_meta"): b.set_meta("last_teleport_tick", current_tick)
 
                                     if self.world.get("events") != null:
                                         var eff = {"type": "visual_effect", "data": {"x": old_x, "y": old_y, "target_x": self.ball.x, "target_y": self.ball.y, "kind": "quantum_trail"}}
@@ -18774,6 +18800,22 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx >= 0:
                         self.world.boosters.remove_at(idx)
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "quantum_link_booster":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["quantum_link_timer"] = 20.0
+                else:
+                    self.ball.set_meta("quantum_link_timer", 20.0)
+                    if "quantum_link_timer" in self.ball: self.ball.quantum_link_timer = 20.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var h_idx = self.world.arena.hazards.find(nearest)
+                    if h_idx >= 0:
+                        self.world.arena.hazards.remove_at(h_idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx >= 0:
+                        self.world.boosters.remove_at(idx)
+
             elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "ghost_mode_booster":
                 if typeof(self.ball) == TYPE_DICTIONARY:
                     self.ball["ghost_mode_timer"] = 5.0
@@ -28838,6 +28880,13 @@ func _update_skill_timer(delta: float):
         im_timer -= delta
         if "geyser_immunity_timer" in self.ball: self.ball.geyser_immunity_timer = im_timer
         elif self.ball.has_method("set_meta"): self.ball.set_meta("geyser_immunity_timer", im_timer)
+
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        if self.ball.get("quantum_link_timer", 0.0) > 0.0:
+            self.ball["quantum_link_timer"] -= delta
+    else:
+        if "quantum_link_timer" in self.ball and self.ball.quantum_link_timer > 0.0:
+            self.ball.quantum_link_timer -= delta
 
     var q_ent_timer = 0.0
     if "quantum_entanglement_timer" in self.ball: q_ent_timer = self.ball.quantum_entanglement_timer

@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Anchor Booster",
+  "description": "A booster that allows you to set a 'quantum anchor' at your current location. Activating it again within 10 seconds teleports you back to the anchor and restores your health to what it was at the time of setting."
+}

@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Mine",
+  "description": "A deployable mine that, when triggered, instantly swaps the positions of the two closest players and confuses their movement inputs for 2 seconds."
+}
