@@ -7089,6 +7089,21 @@ class Action:
                                 # Trigger some logic if needed
                             continue
 
+                        elif hazard.kind == "trampoline":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            import math
+                            dist = math.hypot(dx, dy)
+                            if dist < (self.ball.radius + hazard.radius) and dist > 0.0001:
+                                nx, ny = dx / dist, dy / dist
+                                self.ball.vx = nx * 1500.0
+                                self.ball.vy = ny * 1500.0
+                                self.ball.x += nx * 20.0
+                                self.ball.y += ny * 20.0
+                                self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 2.0)
+                                self.ball.hazard_immunity_timer = max(getattr(self.ball, "hazard_immunity_timer", 0.0), 2.0)
+                            continue
+
 
                         elif hazard.kind == "orbital_accelerator":
                             dx = self.ball.x - hazard.x
