@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1083] Storm Eye Safe Zone — *2026-07-17 20:18:00 UTC*
+
+The safe zone has a fast-moving 'eye'. Inside the eye, health regenerates rapidly, but the outer safe zone acts normally. This encourages high-risk fights for the very center.
+
+---
+
 ## [idea-1085] Black Hole Singularity Hazard — *2026-07-17 20:04:54 UTC*
 
 A new hazard that appears in the center of the arena during the late game. It slowly pulls all balls towards it. Balls that get too close are instantly eliminated.
