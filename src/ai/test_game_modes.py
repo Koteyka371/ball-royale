@@ -2092,3 +2092,6 @@ def test_molten_rock_slows_and_burns():
     ball.x = -1000.0
     action.execute("idle", 0.1)
     assert ball.hp < 100.0
+def test_frictionless_arena_modifier_registered_internal():
+    from ai.game_modes import GAME_MODES
+    assert "frictionless_arena_modifier" in GAME_MODES
