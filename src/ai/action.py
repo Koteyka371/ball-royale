@@ -2576,6 +2576,13 @@ class Action:
                 self.ball.x, self.ball.y = temp_x, temp_y
                 self.ball.inventory.remove("position_swap")
 
+                # Apply minor damage and slow effect to the swapped enemy
+                if hasattr(target, "take_damage"):
+                    target.take_damage(5.0)
+                elif hasattr(target, "hp"):
+                    target.hp -= 5.0
+
+                target.slow_timer = getattr(target, "slow_timer", 0.0) + 2.0
 
 
         # Check inventory for hookshot

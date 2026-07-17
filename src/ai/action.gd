@@ -5822,6 +5822,27 @@ func execute(strategy: String, delta: float):
 				inv.erase("position_swap")
 				self.ball.set_meta("inventory", inv)
 
+				if typeof(target) != TYPE_DICTIONARY and target.has_method("take_damage"):
+					target.take_damage(5.0)
+				elif "hp" in target:
+					target.hp -= 5.0
+				elif typeof(target) == TYPE_DICTIONARY and target.has("hp"):
+					target["hp"] -= 5.0
+
+				if typeof(target) == TYPE_DICTIONARY:
+					target["slow_timer"] = target.get("slow_timer", 0.0) + 2.0
+				elif typeof(target) == TYPE_OBJECT:
+					var curr_slow = 0.0
+					if "slow_timer" in target:
+						curr_slow = target.slow_timer
+					elif target.has_method("has_meta") and target.has_meta("slow_timer"):
+						curr_slow = target.get_meta("slow_timer")
+
+					if "slow_timer" in target:
+						target.slow_timer = curr_slow + 2.0
+					elif target.has_method("set_meta"):
+						target.set_meta("slow_timer", curr_slow + 2.0)
+
 
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
