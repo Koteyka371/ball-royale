@@ -24426,18 +24426,164 @@ class ExtremeWeatherMode extends GameMode:
 					else:
 						b.perception_radius = 50.0
 			elif current_weather == "celestial_alignment":
-				if randf() < 0.05:
-					if typeof(world) != TYPE_DICTIONARY and "events" in world:
+				pass
+
+		if current_weather == "celestial_alignment":
+			var boss = null
+			var targets = []
+			for b in balls:
+				var b_team = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("team"): b_team = b.team
+				elif "team" in b: b_team = b.team
+				if b_team == "boss":
+					var b_name = ""
+					if typeof(b) == TYPE_DICTIONARY and b.has("name"): b_name = b.name
+					elif "name" in b: b_name = b.name
+					if b_name == "Starlight Boss":
+						boss = b
+				else:
+					if (typeof(b) == TYPE_DICTIONARY and b.get("alive", false)) or ("alive" in b and b.alive):
+						targets.append(b)
+
+			if boss != null and targets.size() > 0:
+				var fire_timer = 0.0
+				if typeof(boss) == TYPE_DICTIONARY:
+					fire_timer = boss.get("starlight_fire_timer", 0.0)
+				elif "starlight_fire_timer" in boss:
+					fire_timer = boss.starlight_fire_timer
+				elif boss.has_method("has_meta") and boss.has_meta("starlight_fire_timer"):
+					fire_timer = boss.get_meta("starlight_fire_timer")
+
+				fire_timer -= delta
+				if fire_timer <= 0:
+					var bx = 0.0
+					var by = 0.0
+					if typeof(boss) == TYPE_DICTIONARY:
+						bx = boss.get("x", 0.0)
+						by = boss.get("y", 0.0)
+					else:
+						if "x" in boss: bx = boss.x
+						if "y" in boss: by = boss.y
+
+					var nearest = null
+					var min_d = 9999999.0
+					for t in targets:
+						var tx = 0.0
+						var ty = 0.0
+						if typeof(t) == TYPE_DICTIONARY:
+							tx = t.get("x", 0.0)
+							ty = t.get("y", 0.0)
+						else:
+							if "x" in t: tx = t.x
+							if "y" in t: ty = t.y
+						var d = (bx-tx)*(bx-tx) + (by-ty)*(by-ty)
+						if d < min_d:
+							min_d = d
+							nearest = t
+					if nearest != null:
 						var t_id = 0
-						if "id" in b: t_id = b.id
-						var team = ""
-						if "team" in b: team = b.team
-						if team != "boss":
-							world.events.append({"type": "starlight_projectile", "data": {"target_id": t_id, "damage": 15.0}})
-							if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"):
-								b.take_damage(15.0 * delta)
-							elif "hp" in b:
-								b.hp -= 15.0 * delta
+						if typeof(nearest) == TYPE_DICTIONARY: t_id = nearest.get("id", 0)
+						elif "id" in nearest: t_id = nearest.id
+
+						if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+							if load("res://src/ai/game_modes.gd"):
+								var HazardType = load("res://src/ai/game_modes.gd").Hazard
+								var p = HazardType.new(randi()%90000 + 10000, bx, by, 15.0, "starlight_projectile", 15.0)
+								p.set_meta("target_id", t_id)
+								world.arena.hazards.append(p)
+							else:
+								world.arena.hazards.append({
+									"id": randi()%90000 + 10000,
+									"x": bx, "y": by, "radius": 15.0,
+									"kind": "starlight_projectile", "damage": 15.0,
+									"target_id": t_id, "active": true
+								})
+					fire_timer = 2.0
+
+				if typeof(boss) == TYPE_DICTIONARY:
+					boss["starlight_fire_timer"] = fire_timer
+				elif "starlight_fire_timer" in boss:
+					boss.starlight_fire_timer = fire_timer
+				elif boss.has_method("set_meta"):
+					boss.set_meta("starlight_fire_timer", fire_timer)
+
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				var h_to_remove = []
+				for h in world.arena.hazards:
+					var h_kind = ""
+					if typeof(h) == TYPE_DICTIONARY: h_kind = h.get("kind", "")
+					elif "kind" in h: h_kind = h.kind
+
+					if h_kind == "starlight_projectile":
+						var t_id = null
+						if typeof(h) == TYPE_DICTIONARY: t_id = h.get("target_id", null)
+						elif h.has_method("has_meta") and h.has_meta("target_id"): t_id = h.get_meta("target_id")
+						elif "target_id" in h: t_id = h.target_id
+
+						var hx = 0.0
+						var hy = 0.0
+						if typeof(h) == TYPE_DICTIONARY:
+							hx = h.get("x", 0)
+							hy = h.get("y", 0)
+						else:
+							if "x" in h: hx = h.x
+							if "y" in h: hy = h.y
+
+						var target = null
+						for t in targets:
+							var pt_id = 0
+							if typeof(t) == TYPE_DICTIONARY: pt_id = t.get("id", 0)
+							elif "id" in t: pt_id = t.id
+							if pt_id == t_id:
+								target = t
+								break
+
+						if target != null:
+							var tx = 0.0
+							var ty = 0.0
+							if typeof(target) == TYPE_DICTIONARY:
+								tx = target.get("x", 0)
+								ty = target.get("y", 0)
+							else:
+								if "x" in target: tx = target.x
+								if "y" in target: ty = target.y
+
+							var dx = tx - hx
+							var dy = ty - hy
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist > 0:
+								var move_dist = 200.0 * delta
+								hx += (dx/dist) * move_dist
+								hy += (dy/dist) * move_dist
+								if typeof(h) == TYPE_DICTIONARY:
+									h["x"] = hx
+									h["y"] = hy
+								else:
+									if "x" in h: h.x = hx
+									if "y" in h: h.y = hy
+
+							var t_rad = 10.0
+							if typeof(target) == TYPE_DICTIONARY: t_rad = target.get("radius", 10.0)
+							elif "radius" in target: t_rad = target.radius
+
+							var h_rad = 15.0
+							if typeof(h) == TYPE_DICTIONARY: h_rad = h.get("radius", 15.0)
+							elif "radius" in h: h_rad = h.radius
+
+							if dist < (t_rad + h_rad):
+								if typeof(world) != TYPE_DICTIONARY and "events" in world:
+									world.events.append({"type": "starlight_projectile", "data": {"target_id": t_id, "damage": 15.0}})
+								if typeof(target) != TYPE_DICTIONARY and target.has_method("take_damage"):
+									target.take_damage(15.0 * delta)
+								elif "hp" in target:
+									target.hp -= 15.0 * delta
+								h_to_remove.append(h)
+						else:
+							h_to_remove.append(h) # remove if target dead
+
+				for h in h_to_remove:
+					world.arena.hazards.erase(h)
 
 		if current_weather == "earthquake" and world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
 			for h in world.arena.hazards:

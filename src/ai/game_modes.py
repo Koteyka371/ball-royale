@@ -15587,14 +15587,76 @@ class ExtremeWeatherMode(GameMode):
                 if not getattr(b, "vision_booster_timer", 0.0) > 0 and not getattr(b, "mega_vision_booster_timer", 0.0) > 0:
                     b.perception_radius = 50.0
             elif self.current_weather == "celestial_alignment":
-                if self.random.random() < 0.05:
-                    if hasattr(world, "events"):
-                        target_id = getattr(b, "id", 0)
-                        # Ensure we don't accidentally attack boss
-                        if getattr(b, "team", "") != "boss":
-                            world.events.append({"type": "starlight_projectile", "data": {"target_id": target_id, "damage": 15.0}})
-                            if hasattr(b, "take_damage"): b.take_damage(15.0 * delta)
-                            elif hasattr(b, "hp"): b.hp -= 15.0 * delta
+                pass # Logic moved to outside the ball loop
+
+        if self.current_weather == "celestial_alignment":
+            boss = None
+            targets = []
+            for b in balls:
+                if getattr(b, "team", "") == "boss" and getattr(b, "name", "") == "Starlight Boss":
+                    boss = b
+                else:
+                    if getattr(b, "alive", False):
+                        targets.append(b)
+
+            if boss and targets:
+                fire_timer = getattr(boss, "starlight_fire_timer", 0.0) - delta
+                if fire_timer <= 0:
+                    import math
+                    nearest = min(targets, key=lambda t: (getattr(boss, "x", 0)-getattr(t, "x", 0))**2 + (getattr(boss, "y", 0)-getattr(t, "y", 0))**2, default=None)
+                    if nearest:
+                        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                            try:
+                                from arena.procedural_arena import Hazard
+                                p = Hazard(self.random.randint(10000, 99999), getattr(boss, "x", 0), getattr(boss, "y", 0), 15.0, "starlight_projectile", 15.0)
+                                setattr(p, "target_id", getattr(nearest, "id", 0))
+                                world.arena.hazards.append(p)
+                            except ImportError:
+                                class MockHazard:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                                        self.active = True
+                                p = MockHazard(self.random.randint(10000, 99999), getattr(boss, "x", 0), getattr(boss, "y", 0), 15.0, "starlight_projectile", 15.0)
+                                setattr(p, "target_id", getattr(nearest, "id", 0))
+                                world.arena.hazards.append(p)
+                    fire_timer = 2.0
+                boss.starlight_fire_timer = fire_timer
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                h_to_remove = []
+                import math
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "starlight_projectile":
+                        t_id = getattr(h, "target_id", None)
+                        target = next((t for t in targets if getattr(t, "id", 0) == t_id), None)
+                        if target:
+                            hx = getattr(h, "x", 0)
+                            hy = getattr(h, "y", 0)
+                            tx = getattr(target, "x", 0)
+                            ty = getattr(target, "y", 0)
+                            dx, dy = tx - hx, ty - hy
+                            dist = math.hypot(dx, dy)
+                            if dist > 0:
+                                move_dist = 200.0 * delta
+                                h.x = hx + (dx/dist) * move_dist
+                                h.y = hy + (dy/dist) * move_dist
+
+                            t_rad = getattr(target, "radius", 10.0)
+                            h_rad = getattr(h, "radius", 15.0)
+                            if dist < (t_rad + h_rad):
+                                if hasattr(world, "add_event"):
+                                    world.add_event("starlight_projectile", {"target_id": t_id, "damage": 15.0})
+                                elif hasattr(world, "events"):
+                                    world.events.append({"type": "starlight_projectile", "data": {"target_id": t_id, "damage": 15.0}})
+
+                                if hasattr(target, "take_damage"): target.take_damage(15.0 * delta)
+                                else: target.hp = getattr(target, "hp", 100) - 15.0 * delta
+                                h_to_remove.append(h)
+                        else:
+                            h_to_remove.append(h)
+                for h in h_to_remove:
+                    if h in world.arena.hazards:
+                        world.arena.hazards.remove(h)
 
         if self.current_weather == "earthquake" and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
