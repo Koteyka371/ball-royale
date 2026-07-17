@@ -1561,7 +1561,33 @@ class IceArena(ProceduralArena):
             h_id = len(self.hazards) + 500
             self.hazards.append(Hazard(id=h_id, x=x, y=y, radius=radius, kind="ice_patches", damage=0.0))
 
+
+class PlatformerArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(10000.0, 1, seed)
+        self.height = 1000.0
+        self.name = "platformer"
+
+    def generate(self):
+        self.rooms.clear()
+        self.corridors.clear()
+        self.hazards.clear()
+
+        # Start platform
+        self.rooms.append(Room(0.0, 400.0, 500.0, 200.0))
+
+        # Generate platforms and gaps
+        for i in range(1, 15):
+            x = i * 650.0
+            self.rooms.append(Room(x, 400.0, 400.0, 200.0))
+            # Put a bounce pad or grapple point between platforms
+            if i % 2 == 0:
+                self.hazards.append(Hazard(100+i, x - 125.0, 500.0, 20.0, "grapple_node", 0.0))
+            else:
+                self.hazards.append(Hazard(200+i, x - 200.0, 450.0, 40.0, "bounce_pad", 0.0))
+
 ARENAS = {
+    'platformer': PlatformerArena,
     'falling_panels': FallingPanelsArena,
     'ice': IceArena,
     'spring': SpringArena,

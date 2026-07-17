@@ -18929,7 +18929,26 @@ class MeteorBombardmentMode(GameMode):
                 world.arena.hazards.append(Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
 
 
+
+class PlatformerMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Platformer Mode"
+        self.description = "A side-scrolling platformer mode where balls navigate using bounce pads, grapple points, and low gravity to reach the end."
+        self.mutators_active = True
+        self.mutators = ["zero_gravity"]
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if getattr(b, "alive", False):
+                if getattr(b, "y", 0.0) < 0.0 or getattr(b, "y", 0.0) > 1000.0:
+                    b.hp = 0.0
+                    b.alive = False
+                    b.killer = "fall_damage"
+
 GAME_MODES = {
+    'platformer': PlatformerMode(),
     "meteor_bombardment": MeteorBombardmentMode(),
     "infiltration": InfiltrationMode(),
     "parallel_dimensions": ParallelDimensionsMode(),
