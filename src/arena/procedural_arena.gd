@@ -809,7 +809,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                                     other_hazard.set_meta("active", false)
                                 else:
                                     other_hazard.active = false
-                            elif other_hazard.kind != "sinkhole" and other_hazard.kind != "massive_sinkhole":
+                            elif other_hazard.kind != "sinkhole" and other_hazard.kind != "massive_sinkhole" and other_hazard.kind != "void_panel":
                                 var is_active = true
                                 if other_hazard.has_method("has_meta") and other_hazard.has_meta("active"):
                                     is_active = other_hazard.get_meta("active")

@@ -60,7 +60,7 @@ func update_zone(current_tick: int, delta: float) -> void:
 					var cy = p.y + panel_size / 2.0
 					var radius = panel_size / 2.0
 
-					var h_id = 10000 + hazards.size()
+					var h_id = -10000 - hazards.size()
 					var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
 					if ProceduralArenaScript and ProceduralArenaScript.has_source_code():
 						var new_hazard = ProceduralArenaScript.Hazard.new(h_id, cx, cy, radius, "void_panel", 10000.0)

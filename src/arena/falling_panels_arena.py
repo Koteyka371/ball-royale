@@ -65,7 +65,7 @@ class FallingPanelsArena(ProceduralArena):
                         cy = panel["y"] + self.panel_size / 2.0
                         radius = self.panel_size / 2.0
                         # Needs to instantly kill
-                        void_hazard = Hazard(id=len(self.hazards) + 10000, x=cx, y=cy, radius=radius, kind="void_panel", damage=10000.0)
+                        void_hazard = Hazard(id=-10000 - len(self.hazards), x=cx, y=cy, radius=radius, kind="void_panel", damage=10000.0)
                         # We use square bounds for real check, but Hazard is a circle. We can use a custom kind that we check later in action.py or we can use multiple small hazards, or in action.py we handle it
                         # Let's add it
                         self.hazards.append(void_hazard)

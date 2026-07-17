@@ -701,7 +701,7 @@ class ProceduralArena:
                                     hazard.kind = "massive_sinkhole"
                                     hazard.radius += other_hazard.radius * 0.5
                                     other_hazard.active = False
-                                elif other_hazard.kind not in ("sinkhole", "massive_sinkhole") and getattr(other_hazard, "active", True):
+                                elif other_hazard.kind not in ("sinkhole", "massive_sinkhole", "void_panel") and getattr(other_hazard, "active", True):
                                     hazard.radius += other_hazard.radius * 0.1
                                     other_hazard.active = False
 
