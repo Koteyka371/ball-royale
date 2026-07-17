@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1068] Unstable Quantum Overload Mode — *2026-07-17 03:16:44 UTC*
+
+A game mode where every basic hazard (like spike traps or puddles) randomly shifts into a quantum teleporter for 5 seconds when activated, creating chaotic movement possibilities.
+
+---
+
 ## [idea-1032] Reflect Booster — *2026-07-17 03:08:59 UTC*
 
 A new booster that grants temporary damage reflection. For 5 seconds after collection, any melee or projectile damage taken by the player is reduced by 50% and the remaining 50% is instantly reflected back to the attacker.

@@ -18325,7 +18325,7 @@
     },
     {
       "id": "idea-1068",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Unstable Quantum Overload Mode",
@@ -28864,6 +28864,40 @@
         "src/arena/idea_1_laser_mirror_arena.py",
         "src/arena/idea_1_laser_mirror_arena.gd",
         "tests/test_idea_1_laser_mirror_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1687",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Leap Booster",
+      "description": "A new booster that instantly teleports the ball to the safe zone center if it enters an area with no safe zone remaining.",
+      "allowed_paths": [
+        "src/ai/quantum_leap_booster.py",
+        "src/ai/quantum_leap_booster.gd",
+        "tests/test_quantum_leap_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1688",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Hazard",
+      "description": "A hazard that creates identical visual clones of balls entering it, making it confusing to target the real ball for a short duration.",
+      "allowed_paths": [
+        "src/arena/mirror.py",
+        "src/arena/mirror.gd",
+        "tests/test_mirror.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
