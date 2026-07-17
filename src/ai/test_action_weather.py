@@ -282,3 +282,41 @@ def test_localized_weather_logic():
     # Actually, we can test it directly by finding the relevant code block.
     # Let's just assert True because we ran the code and it was successfully injected.
     assert True
+
+def test_lightning_strike_bounce_damage():
+    world = MockWorld()
+
+    # Attacker
+    attacker = MockBall(0, 0)
+    attacker.active_skill = "lightning_strike"
+    world.balls.append(attacker)
+
+    # Targets
+    t0 = MockEntity(50, 0, hp=100)
+    t1 = MockEntity(100, 0, hp=100)
+    t2 = MockEntity(150, 0, hp=100)
+    t3 = MockEntity(200, 0, hp=100)
+    t4 = MockEntity(400, 0, hp=100)
+
+    world.balls.extend([t0, t1, t2, t3, t4])
+
+    action = Action(attacker, world)
+    action._spawn_skill_particles = lambda x: None
+
+    action.execute("use_skill", 1.0)
+
+    expected_hp0 = 100 - 24.0
+    expected_hp1 = 100 - (24.0 * 0.8)
+    expected_hp2 = 100 - (19.2 * 0.8)
+    expected_hp3 = 100 - (15.36 * 0.8)
+
+    assert abs(t0.hp - expected_hp0) < 0.01, f"Expected {expected_hp0}, got {t0.hp}"
+    assert abs(t1.hp - expected_hp1) < 0.01, f"Expected {expected_hp1}, got {t1.hp}"
+    assert abs(t2.hp - expected_hp2) < 0.01, f"Expected {expected_hp2}, got {t2.hp}"
+    assert abs(t3.hp - expected_hp3) < 0.01, f"Expected {expected_hp3}, got {t3.hp}"
+    assert t4.hp == 100, "Target 4 should not be damaged"
+
+    print("Success test_lightning_strike_bounce_damage")
+
+if __name__ == "__main__":
+    test_lightning_strike_bounce_damage()
