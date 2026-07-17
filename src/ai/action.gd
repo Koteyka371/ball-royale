@@ -13574,6 +13574,112 @@ func execute(strategy: String, delta: float):
                                     self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y}})
 
                         continue
+                    elif hazard.kind == "link_bumper":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        if d < 0.0001: d = 0.0001
+
+                        var b_rad = 10.0
+                        if "radius" in self.ball: b_rad = self.ball.radius
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_rad = self.ball.get_meta("radius")
+
+                        var h_rad = 10.0
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            if hazard.has("radius"): h_rad = hazard.radius
+                        elif "radius" in hazard: h_rad = hazard.radius
+
+                        if d < (b_rad + h_rad):
+                            var last_hit_tick = -100
+                            if "link_bumper_last_hit" in self.ball: last_hit_tick = self.ball.link_bumper_last_hit
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("link_bumper_last_hit"): last_hit_tick = self.ball.get_meta("link_bumper_last_hit")
+
+                            var current_tick = 0
+                            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("tick"): current_tick = self.world.tick
+                            elif "tick" in self.world: current_tick = self.world.tick
+
+                            if current_tick - last_hit_tick > 10:
+                                if "link_bumper_last_hit" in self.ball: self.ball.link_bumper_last_hit = current_tick
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("link_bumper_last_hit", current_tick)
+
+                                var nx = dx / d
+                                var ny = dy / d
+                                var bounce_strength = 1200.0 * delta
+                                self.ball.x += nx * bounce_strength
+                                self.ball.y += ny * bounce_strength
+
+                                self.ball.vx = nx * 4000.0
+                                self.ball.vy = ny * 4000.0
+
+                                var my_team = ""
+                                if "team" in self.ball: my_team = self.ball.team
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                                elif "ball_type" in self.ball: my_team = self.ball.ball_type
+
+                                var valid_targets = []
+                                if "balls" in self.world:
+                                    for b in self.world.balls:
+                                        if _get_id(b) != _get_id(self.ball):
+                                            var is_alive = true
+                                            if "alive" in b: is_alive = b.alive
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                                            var is_decoy = false
+                                            if "is_decoy" in b: is_decoy = b.is_decoy
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy"): is_decoy = b.get_meta("is_decoy")
+
+                                            if is_alive and not is_decoy:
+                                                var b_team = ""
+                                                if "team" in b: b_team = b.team
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+                                                elif "ball_type" in b: b_team = b.ball_type
+
+                                                if b_team != my_team:
+                                                    var bx = 0.0
+                                                    if "x" in b: bx = b.x
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                                                    var by = 0.0
+                                                    if "y" in b: by = b.y
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                                                    var dist_to_b = sqrt((bx - self.ball.x)*(bx - self.ball.x) + (by - self.ball.y)*(by - self.ball.y))
+                                                    if dist_to_b <= 600.0:
+                                                        valid_targets.append(b)
+
+                                if valid_targets.size() > 0:
+                                    var target = valid_targets[randi() % valid_targets.size()]
+
+                                    if "vx" in target: target.vx = self.ball.vx
+                                    elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("vx", self.ball.vx)
+                                    if "vy" in target: target.vy = self.ball.vy
+                                    elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("vy", self.ball.vy)
+
+                                    var current_boost = 0.0
+                                    if "speed_boost_timer" in self.ball: current_boost = self.ball.speed_boost_timer
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("speed_boost_timer"): current_boost = self.ball.get_meta("speed_boost_timer")
+                                    if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = current_boost + 2.0
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_boost_timer", current_boost + 2.0)
+
+                                    var target_boost = 0.0
+                                    if "speed_boost_timer" in target: target_boost = target.speed_boost_timer
+                                    elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("speed_boost_timer"): target_boost = target.get_meta("speed_boost_timer")
+                                    if "speed_boost_timer" in target: target.speed_boost_timer = target_boost + 2.0
+                                    elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("speed_boost_timer", target_boost + 2.0)
+
+                                    var target_x = 0.0
+                                    if "x" in target: target_x = target.x
+                                    elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("x"): target_x = target.get_meta("x")
+                                    var target_y = 0.0
+                                    if "y" in target: target_y = target.y
+                                    elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("y"): target_y = target.get_meta("y")
+
+                                    if "events" in self.world:
+                                        var events = self.world.events
+                                        if typeof(events) == TYPE_OBJECT and events.has_method("append"):
+                                            events.append({'type': 'visual_effect', 'data': {'type': 'link_line', 'x': self.ball.x, 'y': self.ball.y, 'target_x': target_x, 'target_y': target_y, 'color': 'purple'}})
+                                        elif typeof(events) == TYPE_ARRAY:
+                                            events.append({'type': 'visual_effect', 'data': {'type': 'link_line', 'x': self.ball.x, 'y': self.ball.y, 'target_x': target_x, 'target_y': target_y, 'color': 'purple'}})
+
                     elif hazard.kind in ["bumper", "chain_reaction_bumper"]:
 
                         var dx = self.ball.x - hazard.x
