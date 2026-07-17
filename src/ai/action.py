@@ -13040,7 +13040,7 @@ class Action:
 
                         hit_entities = [self.ball, target]
                         current_target = target
-                        chain_damage = base_dmg * 1.5
+                        chain_damage = base_dmg * 0.5
 
                         max_jumps = 3
                         if is_raining:
@@ -13095,7 +13095,7 @@ class Action:
 
                             hit_entities.append(next_entity)
                             current_target = next_entity
-                            chain_damage *= 1.5
+                            chain_damage *= 0.5
                             jumps += 1
 
             elif skill_name == "elemental_burst":

@@ -1,0 +1,4 @@
+{
+  "title": "Lightning Rod Trap Item",
+  "description": "A deployable hazard trap called 'Lightning Rod'. When placed, it harmlessly absorbs any nearby chain lightning bounces, redirecting them away from allies. If the trap absorbs enough damage, it overloads and detonates, stunning enemies in a wide radius."
+}
