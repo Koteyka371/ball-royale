@@ -9909,6 +9909,163 @@ class DynamicHazardsMode extends GameMode:
 
 				world.arena.hazards.append(new_hazard)
 
+# Lightning Strike Event during rain/thunderstorm
+		var is_raining = false
+		if world != null and typeof(world) == TYPE_OBJECT and world.get("arena"):
+			is_raining = world.arena.get("is_raining") if "is_raining" in world.arena else false
+		elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY:
+				is_raining = arena.get("is_raining", false)
+			else:
+				is_raining = arena.get("is_raining") if "is_raining" in arena else false
+
+		if is_raining:
+			var timer = 0.0
+			if typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and world.has_meta("lightning_strike_timer"):
+				timer = world.get_meta("lightning_strike_timer")
+			elif typeof(world) == TYPE_DICTIONARY and world.has("lightning_strike_timer"):
+				timer = world.get("lightning_strike_timer")
+
+			timer += delta
+
+			if timer >= 15.0:
+				if randf() < 0.5:
+					var alive_balls = []
+					for b in balls:
+						var balive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							balive = b.get("alive", false)
+						else:
+							balive = b.get("alive") if "alive" in b else false
+
+						var btype = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							btype = b.get("ball_type", "")
+						else:
+							btype = b.get("ball_type") if "ball_type" in b else ""
+
+						if balive and btype != "spectator":
+							alive_balls.append(b)
+
+					if alive_balls.size() > 0:
+						var best_target = null
+						var max_cluster = -1
+						var cluster_radius_sq = 150.0 * 150.0
+
+						for b in alive_balls:
+							var cluster_count = 0
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+							for other in alive_balls:
+								var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else (other.get("x") if "x" in other else 0.0)
+								var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else (other.get("y") if "y" in other else 0.0)
+								var dx = ox - bx
+								var dy = oy - by
+								if dx*dx + dy*dy <= cluster_radius_sq:
+									cluster_count += 1
+							if cluster_count > max_cluster:
+								max_cluster = cluster_count
+								best_target = b
+
+						if best_target:
+							var strike_x = best_target.get("x", 0.0) if typeof(best_target) == TYPE_DICTIONARY else (best_target.get("x") if "x" in best_target else 0.0)
+							var strike_y = best_target.get("y", 0.0) if typeof(best_target) == TYPE_DICTIONARY else (best_target.get("y") if "y" in best_target else 0.0)
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("lightning_strike", {"x": strike_x, "y": strike_y})
+
+							var arena = world.get("arena") if typeof(world) == TYPE_DICTIONARY else (world.arena if "arena" in world else null)
+							if arena != null:
+								var hazards = arena.get("hazards", []) if typeof(arena) == TYPE_DICTIONARY else (arena.hazards if "hazards" in arena else null)
+								if hazards != null:
+									var hazard_class = load("res://src/arena/procedural_arena.gd").Hazard
+									if hazard_class:
+										var h_id = randi() % 1000000 + 900000
+										var strike = hazard_class.new(h_id, strike_x, strike_y, 100.0, "lightning_strike_aoe", 0.0)
+										if strike.has_method("set"): strike.set("duration", 0.5)
+										hazards.append(strike)
+
+							for b in alive_balls:
+								var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+								var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+								var dx = bx - strike_x
+								var dy = by - strike_y
+								if dx*dx + dy*dy <= 100.0 * 100.0:
+									if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+										b.take_damage(60.0)
+									else:
+										var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.get("hp") if "hp" in b else 100.0)
+										bhp -= 60.0
+										if typeof(b) == TYPE_DICTIONARY:
+											b["hp"] = bhp
+											if bhp <= 0:
+												b["hp"] = 0
+												b["alive"] = false
+										else:
+											if "hp" in b: b.hp = bhp
+											if bhp <= 0:
+												if "hp" in b: b.hp = 0
+												if "alive" in b: b.alive = false
+
+									var cur_otimer = 0.0
+									if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("overcharge_timer"):
+										cur_otimer = b.get_meta("overcharge_timer")
+									elif typeof(b) == TYPE_DICTIONARY and b.has("overcharge_timer"):
+										cur_otimer = b.get("overcharge_timer")
+
+									if cur_otimer <= 0.0:
+										if typeof(b) == TYPE_DICTIONARY:
+											b["speed_multiplier"] = b.get("speed_multiplier", 1.0) * 1.5
+											b["cooldown_multiplier"] = b.get("cooldown_multiplier", 1.0) * 0.5
+										else:
+											if "speed_multiplier" in b: b.speed_multiplier *= 1.5
+											if "cooldown_multiplier" in b: b.cooldown_multiplier *= 0.5
+
+									if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+										b.set_meta("overcharge_timer", 5.0)
+									elif typeof(b) == TYPE_DICTIONARY:
+										b["overcharge_timer"] = 5.0
+
+				timer = 0.0
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("set_meta"):
+				world.set_meta("lightning_strike_timer", timer)
+			elif typeof(world) == TYPE_DICTIONARY:
+				world["lightning_strike_timer"] = timer
+
+		for b in balls:
+			var balive = false
+			if typeof(b) == TYPE_DICTIONARY: balive = b.get("alive", false)
+			else: balive = b.get("alive") if "alive" in b else false
+
+			if balive:
+				var otimer = 0.0
+				if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("overcharge_timer"):
+					otimer = b.get_meta("overcharge_timer")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("overcharge_timer"):
+					otimer = b.get("overcharge_timer")
+
+				if otimer > 0.0:
+					otimer -= delta
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("overcharge_timer", otimer)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["overcharge_timer"] = otimer
+
+					var sm = 1.0
+					if otimer <= 0.0:
+						if typeof(b) == TYPE_DICTIONARY:
+							var sm = b.get("speed_multiplier", 1.0)
+							b["speed_multiplier"] = sm / 1.5
+							var cm = b.get("cooldown_multiplier", 1.0)
+							b["cooldown_multiplier"] = cm / 0.5
+						else:
+							if "speed_multiplier" in b:
+								b.speed_multiplier = b.speed_multiplier / 1.5
+							if "cooldown_multiplier" in b:
+								b.cooldown_multiplier = b.cooldown_multiplier / 0.5
+
 		var hazards_to_keep = []
 		var current_tick = world.get("current_tick") if "current_tick" in world else 0
 		var current_time = current_tick * delta

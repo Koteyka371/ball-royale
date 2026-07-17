@@ -510,6 +510,87 @@ class GameMode:
             if isinstance(cooldown, (int, float)) and cooldown > 0:
                 b.aura_explosion_cooldown = max(0.0, cooldown - delta)
 
+        # Lightning Strike Event during rain/thunderstorm
+        if getattr(world.arena, "is_raining", False) if hasattr(world, "arena") else False:
+            if not hasattr(world, "lightning_strike_timer"):
+                world.lightning_strike_timer = 0.0
+
+            try:
+                world.lightning_strike_timer += delta
+            except Exception:
+                world.lightning_strike_timer = delta
+
+            # Base interval of 10-20 seconds (checked randomly)
+            import random
+            try:
+                should_strike = world.lightning_strike_timer >= 15.0
+            except Exception:
+                should_strike = False
+
+            if should_strike:
+                if random.random() < 0.5: # 50% chance to trigger strike
+                    # Find highest cluster of balls
+                    alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+                    if alive_balls:
+                        best_target = None
+                        max_cluster = -1
+                        cluster_radius_sq = 150.0 ** 2
+
+                        for b in alive_balls:
+                            cluster_count = sum(1 for other in alive_balls if (getattr(other, "x", 0) - getattr(b, "x", 0))**2 + (getattr(other, "y", 0) - getattr(b, "y", 0))**2 <= cluster_radius_sq)
+                            if cluster_count > max_cluster:
+                                max_cluster = cluster_count
+                                best_target = b
+
+                        if best_target:
+                            strike_x, strike_y = getattr(best_target, "x", 0), getattr(best_target, "y", 0)
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("lightning_strike", {"x": strike_x, "y": strike_y})
+
+                            try:
+                                from arena.procedural_arena import Hazard
+                                strike_id = getattr(world, "next_id", random.randint(100000, 999999))
+                                if hasattr(world, "next_id"): world.next_id += 1
+                                strike = Hazard(id=strike_id, x=strike_x, y=strike_y, radius=100.0, kind="lightning_strike_aoe", damage=0.0)
+                                setattr(strike, "duration", 0.5)
+                                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                                    world.arena.hazards.append(strike)
+                            except ImportError:
+                                pass
+
+                            # Apply effects
+                            for b in alive_balls:
+                                dist_sq = (getattr(b, "x", 0) - strike_x)**2 + (getattr(b, "y", 0) - strike_y)**2
+                                if dist_sq <= 100.0 ** 2:
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(60.0)
+                                    else:
+                                        b.hp = getattr(b, "hp", 100.0) - 60.0
+                                        if b.hp <= 0:
+                                            b.hp = 0
+                                            b.alive = False
+
+                                    # Overcharge Buff
+                                    if getattr(b, "overcharge_timer", 0.0) <= 0:
+                                        b.speed_multiplier = getattr(b, "speed_multiplier", 1.0) * 1.5
+                                        b.cooldown_multiplier = getattr(b, "cooldown_multiplier", 1.0) * 0.5
+                                    b.overcharge_timer = 5.0
+                world.lightning_strike_timer = 0.0
+
+        for b in balls:
+            if getattr(b, "alive", False):
+                try:
+                    otimer = getattr(b, "overcharge_timer", 0.0)
+                    if otimer > 0:
+                        b.overcharge_timer = otimer - delta
+                        if b.overcharge_timer <= 0:
+                            b.overcharge_timer = 0.0
+                            b.speed_multiplier = getattr(b, "speed_multiplier", 1.0) / 1.5
+                            b.cooldown_multiplier = getattr(b, "cooldown_multiplier", 1.0) / 0.5
+                except Exception:
+                    pass
+
         # Gather balls with high-level auras
         aura_balls = []
         for b in balls:
