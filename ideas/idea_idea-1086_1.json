@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Bomb",
+  "description": "An active item that deploys a stationary decoy resembling the player. When attacked by an enemy, it explodes, dealing area-of-effect damage and briefly stunning the attacker."
+}

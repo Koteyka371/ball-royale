@@ -2553,6 +2553,18 @@ class Action:
                 temp_x, temp_y = target.x, target.y
                 target.x, target.y = self.ball.x, self.ball.y
                 self.ball.x, self.ball.y = temp_x, temp_y
+
+                # Deal minor damage and briefly slow target
+                if hasattr(target, "take_damage"):
+                    target.take_damage(5)
+                else:
+                    target.hp = getattr(target, "hp", 100) - 5
+                    if target.hp <= 0:
+                        target.hp = 0
+                        target.alive = False
+
+                target.speed_debuff_timer = 2.0
+
                 self.ball.inventory.remove("position_swap")
 
 

@@ -5779,6 +5779,20 @@ func execute(strategy: String, delta: float):
 				target.y = self.ball.y
 				self.ball.x = temp_x
 				self.ball.y = temp_y
+
+				if target.has_method("take_damage"):
+					target.take_damage(5.0)
+				elif "hp" in target:
+					target.hp -= 5.0
+					if target.hp <= 0:
+						target.hp = 0
+						target.alive = false
+
+				if target.has_method("set_meta"):
+					target.set_meta("speed_debuff_timer", 2.0)
+				else:
+					target.speed_debuff_timer = 2.0
+
 				inv.erase("position_swap")
 				self.ball.set_meta("inventory", inv)
 
