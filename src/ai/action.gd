@@ -5387,6 +5387,18 @@ func execute(strategy: String, delta: float):
 			self.ball.silence_timer = max(0.0, st)
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("smoke_grenade"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var smoke_id = arena.hazards.size() + 20000
+				var smoke = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					smoke = load("res://src/arena/procedural_arena.gd").Hazard.new(smoke_id, self.ball.x, self.ball.y, 100.0, "smoke_zone", 0.0)
+					smoke.set_meta("duration", 8.0)
+					if "id" in self.ball: smoke.set_meta("owner_id", self.ball.id)
+					arena.hazards.append(smoke)
+					inv.erase("smoke_grenade")
+					self.ball.set_meta("inventory", inv)
 		if inv.has("deployable_black_hole"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -20237,6 +20249,21 @@ func _collect_booster(delta: float):
                 if "inventory" in self.ball: inv = self.ball.inventory
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
                 inv.append("aura_inverter_trap_booster")
+                if "inventory" in self.ball: self.ball.inventory = inv
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "smoke_grenade":
+                var inv = []
+                if "inventory" in self.ball: inv = self.ball.inventory
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                inv.append("smoke_grenade")
                 if "inventory" in self.ball: self.ball.inventory = inv
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
