@@ -24392,3 +24392,108 @@ class SponsorDropMode(GameMode):
                     world.balls.remove(b)
 
 GAME_MODES["sponsor_drop"] = SponsorDropMode()
+
+
+class PhantomSwarmMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Phantom Swarm"
+        self.description = "Periodically spawn harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked. This confuses targeting systems and provides cover for sneaky maneuvers."
+        self.timer = 0.0
+        self.spawn_interval = 15.0
+
+    class PhantomDecoy:
+        def __init__(self, target_ball, spawn_x, spawn_y):
+            self.owner_id = getattr(target_ball, "id", 0)
+            self.x = spawn_x
+            self.y = spawn_y
+            self.vx = getattr(target_ball, "vx", 0.0)
+            self.vy = getattr(target_ball, "vy", 0.0)
+            self.radius = getattr(target_ball, "radius", 15.0)
+            self.hp = 1.0
+            self.max_hp = 1.0
+            self.alive = True
+            self.kind = "phantom_decoy"
+            self.duration = 10.0
+            self.is_decoy = True
+            self.team = getattr(target_ball, "team", "neutral")
+            self.ball_type = getattr(target_ball, "ball_type", "basic")
+            self.damage = 0.0
+            self.base_damage = 0.0
+            self.speed = getattr(target_ball, "speed", 100.0)
+            self.base_speed = getattr(target_ball, "base_speed", 100.0)
+            self.perception_radius = getattr(target_ball, "perception_radius", 150.0)
+            self.base_perception_radius = getattr(target_ball, "base_perception_radius", 150.0)
+
+        def update(self, delta):
+            self.duration -= delta
+            if self.duration <= 0.0:
+                self.alive = False
+                return
+
+            # Imitate movement pattern: just move straight with same velocity for simplicity in this tick function
+            self.x += self.vx * delta
+            self.y += self.vy * delta
+
+        def take_damage(self, amount):
+            self.hp = 0.0
+            self.alive = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        self.timer += delta
+
+        # Update existing phantoms
+        to_remove = []
+        for b in balls:
+            if getattr(b, "kind", "") == "phantom_decoy":
+                if getattr(b, "alive", True):
+                    b.update(delta)
+                else:
+                    to_remove.append(b)
+
+        if hasattr(world, "balls"):
+            for b in to_remove:
+                if b in world.balls:
+                    world.balls.remove(b)
+
+        # Spawn new phantoms
+        if self.timer >= self.spawn_interval:
+            self.timer = 0.0
+
+            alive_players = [b for b in balls if getattr(b, "alive", False) and not getattr(b, "is_decoy", False) and getattr(b, "ball_type", "") != "spectator" and getattr(b, "kind", "") != "phantom_decoy"]
+            if not alive_players:
+                return
+
+            arena_width = 1000.0
+            arena_height = 1000.0
+            if getattr(world, "arena", None) is not None:
+                arena_width = getattr(world.arena, "width", 1000.0)
+                arena_height = getattr(world.arena, "height", 1000.0)
+
+            num_to_spawn = min(3, len(alive_players) * 2)
+
+            for _ in range(num_to_spawn):
+                target = random.choice(alive_players)
+                spawn_x = random.uniform(100.0, arena_width - 100.0)
+                spawn_y = random.uniform(100.0, arena_height - 100.0)
+
+                phantom = self.PhantomDecoy(target, spawn_x, spawn_y)
+
+                if hasattr(world, "next_id"):
+                    phantom.id = world.next_id
+                    world.next_id += 1
+                else:
+                    phantom.id = random.randint(100000, 999999)
+
+                if hasattr(world, "balls"):
+                    world.balls.append(phantom)
+
+            if hasattr(world, "add_event"):
+                world.add_event("phantom_swarm_spawn", {"message": "A swarm of phantoms has appeared!"})
+
+GAME_MODES["phantom_swarm"] = PhantomSwarmMode()

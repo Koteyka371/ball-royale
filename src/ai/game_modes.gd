@@ -37353,3 +37353,182 @@ class SponsorDropMode extends GameMode:
                     world.balls.erase(b)
 
 GAME_MODES["sponsor_drop"] = SponsorDropMode.new()
+
+
+class PhantomSwarmMode extends GameMode:
+    var timer: float = 0.0
+    var spawn_interval: float = 15.0
+
+    class PhantomDecoy:
+        var owner_id = 0
+        var x: float = 0.0
+        var y: float = 0.0
+        var vx: float = 0.0
+        var vy: float = 0.0
+        var radius: float = 15.0
+        var hp: float = 1.0
+        var max_hp: float = 1.0
+        var alive: bool = true
+        var kind: String = "phantom_decoy"
+        var duration: float = 10.0
+        var is_decoy: bool = true
+        var team: String = "neutral"
+        var ball_type: String = "basic"
+        var damage: float = 0.0
+        var base_damage: float = 0.0
+        var speed: float = 100.0
+        var base_speed: float = 100.0
+        var perception_radius: float = 150.0
+        var base_perception_radius: float = 150.0
+        var id = 0
+
+        func _init(target_ball, spawn_x: float, spawn_y: float):
+            if typeof(target_ball) == TYPE_DICTIONARY:
+                self.owner_id = target_ball.get("id", 0)
+                self.vx = float(target_ball.get("vx", 0.0))
+                self.vy = float(target_ball.get("vy", 0.0))
+                self.radius = float(target_ball.get("radius", 15.0))
+                self.team = target_ball.get("team", "neutral")
+                self.ball_type = target_ball.get("ball_type", "basic")
+                self.speed = float(target_ball.get("speed", 100.0))
+                self.base_speed = float(target_ball.get("base_speed", 100.0))
+                self.perception_radius = float(target_ball.get("perception_radius", 150.0))
+                self.base_perception_radius = float(target_ball.get("base_perception_radius", 150.0))
+            else:
+                self.owner_id = target_ball.id if "id" in target_ball else 0
+                self.vx = float(target_ball.vx) if "vx" in target_ball else 0.0
+                self.vy = float(target_ball.vy) if "vy" in target_ball else 0.0
+                self.radius = float(target_ball.radius) if "radius" in target_ball else 15.0
+                self.team = target_ball.team if "team" in target_ball else "neutral"
+                self.ball_type = target_ball.ball_type if "ball_type" in target_ball else "basic"
+                self.speed = float(target_ball.speed) if "speed" in target_ball else 100.0
+                self.base_speed = float(target_ball.base_speed) if "base_speed" in target_ball else 100.0
+                self.perception_radius = float(target_ball.perception_radius) if "perception_radius" in target_ball else 150.0
+                self.base_perception_radius = float(target_ball.base_perception_radius) if "base_perception_radius" in target_ball else 150.0
+
+            self.x = spawn_x
+            self.y = spawn_y
+
+        func update(delta: float):
+            self.duration -= delta
+            if self.duration <= 0.0:
+                self.alive = false
+                return
+
+            self.x += self.vx * delta
+            self.y += self.vy * delta
+
+        func take_damage(amount: float, source = null):
+            self.hp = 0.0
+            self.alive = false
+
+    func _init():
+        self.name = "Phantom Swarm"
+        self.description = "Periodically spawn harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked. This confuses targeting systems and provides cover for sneaky maneuvers."
+        self.timer = 0.0
+        self.spawn_interval = 15.0
+
+    func setup(world, balls: Array):
+        super.setup(world, balls)
+        self.timer = 0.0
+
+    func tick(world, balls: Array, delta: float = 0.016):
+        self.timer += delta
+
+        var to_remove = []
+        for b in balls:
+            var kind = ""
+            if typeof(b) == TYPE_DICTIONARY:
+                kind = b.get("kind", "")
+            elif "kind" in b:
+                kind = b.kind
+
+            if kind == "phantom_decoy":
+                var alive = true
+                if typeof(b) == TYPE_DICTIONARY:
+                    alive = b.get("alive", true)
+                elif "alive" in b:
+                    alive = b.alive
+
+                if alive and typeof(b) == TYPE_OBJECT and b.has_method("update"):
+                    b.update(delta)
+                else:
+                    to_remove.append(b)
+
+        if typeof(world) == TYPE_OBJECT and "balls" in world:
+            for b in to_remove:
+                if world.balls.has(b):
+                    world.balls.erase(b)
+        elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+            for b in to_remove:
+                if world.balls.has(b):
+                    world.balls.erase(b)
+
+        if self.timer >= self.spawn_interval:
+            self.timer = 0.0
+
+            var alive_players = []
+            for b in balls:
+                var alive = false
+                var is_decoy = false
+                var ball_type = ""
+                var kind = ""
+
+                if typeof(b) == TYPE_DICTIONARY:
+                    alive = b.get("alive", false)
+                    is_decoy = b.get("is_decoy", false)
+                    ball_type = b.get("ball_type", "")
+                    kind = b.get("kind", "")
+                else:
+                    alive = b.alive if "alive" in b else false
+                    is_decoy = b.is_decoy if "is_decoy" in b else false
+                    ball_type = b.ball_type if "ball_type" in b else ""
+                    kind = b.kind if "kind" in b else ""
+
+                if alive and not is_decoy and ball_type != "spectator" and kind != "phantom_decoy":
+                    alive_players.append(b)
+
+            if alive_players.size() == 0:
+                return
+
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+                arena_width = float(world.arena.width)
+                arena_height = float(world.arena.height)
+            elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+                arena_width = float(world.arena.width)
+                arena_height = float(world.arena.height)
+
+            var num_to_spawn = 3
+            if alive_players.size() * 2 < 3:
+                num_to_spawn = alive_players.size() * 2
+
+            for i in range(num_to_spawn):
+                var target_idx = randi() % alive_players.size()
+                var target = alive_players[target_idx]
+                var spawn_x = randf_range(100.0, arena_width - 100.0)
+                var spawn_y = randf_range(100.0, arena_height - 100.0)
+
+                var phantom = PhantomDecoy.new(target, spawn_x, spawn_y)
+
+                if typeof(world) == TYPE_OBJECT and "next_id" in world:
+                    phantom.id = world.next_id
+                    world.next_id += 1
+                elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+                    phantom.id = world["next_id"]
+                    world["next_id"] += 1
+                else:
+                    phantom.id = randi() % 900000 + 100000
+
+                if typeof(world) == TYPE_OBJECT and "balls" in world:
+                    world.balls.append(phantom)
+                elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                    world.balls.append(phantom)
+                else:
+                    balls.append(phantom)
+
+            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                world.add_event("phantom_swarm_spawn", {"message": "A swarm of phantoms has appeared!"})
+
+GAME_MODES["phantom_swarm"] = PhantomSwarmMode.new()
