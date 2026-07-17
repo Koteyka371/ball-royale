@@ -2015,6 +2015,32 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var _is_turret = false
+    if "is_turret" in self.ball: _is_turret = self.ball.is_turret
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_turret"): _is_turret = self.ball.get_meta("is_turret")
+
+    var _is_oc = false
+    if "is_overclocked" in self.ball: _is_oc = self.ball.is_overclocked
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_overclocked"): _is_oc = self.ball.get_meta("is_overclocked")
+
+    var _alive = true
+    if "alive" in self.ball: _alive = self.ball.alive
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("alive"): _alive = self.ball.get_meta("alive")
+
+    if _is_turret and _is_oc and _alive:
+        var _hp = 0.0
+        if "hp" in self.ball: _hp = self.ball.hp
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): _hp = self.ball.get_meta("hp")
+
+        _hp -= 10.0 * delta
+        if _hp <= 0:
+            _hp = 0
+            if "alive" in self.ball: self.ball.alive = false
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+
+        if "hp" in self.ball: self.ball.hp = _hp
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", _hp)
+
     var wall_stick = false
     var ws_timer = 0.0
     if typeof(self.ball) == TYPE_DICTIONARY:
@@ -19803,6 +19829,38 @@ func _use_skill():
                         if h_owner_id != null and b_id != null and h_owner_id == b_id:
                             can_recast = true
                             break
+    elif skill_timer > 0.0 and skill_name == "deploy_turret":
+        if self.world.has("balls"):
+            for b in self.world.balls:
+                var is_turret = false
+                if "is_turret" in b: is_turret = b.is_turret
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_turret"): is_turret = b.get_meta("is_turret")
+
+                var b_owner_id = null
+                if "owner_id" in b: b_owner_id = b.owner_id
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("owner_id"): b_owner_id = b.get_meta("owner_id")
+
+                var my_id = null
+                if "id" in self.ball: my_id = self.ball.id
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                if is_turret and b_owner_id != null and my_id != null and b_owner_id == my_id:
+                    var is_oc = false
+                    if "is_overclocked" in b: is_oc = b.is_overclocked
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_overclocked"): is_oc = b.get_meta("is_overclocked")
+                    if not is_oc:
+                        var b_x = 0.0
+                        if "x" in b: b_x = b.x
+                        var b_y = 0.0
+                        if "y" in b: b_y = b.y
+                        var my_x = 0.0
+                        if "x" in self.ball: my_x = self.ball.x
+                        var my_y = 0.0
+                        if "y" in self.ball: my_y = self.ball.y
+                        var dist_sq = (b_x - my_x) * (b_x - my_x) + (b_y - my_y) * (b_y - my_y)
+                        if dist_sq < 22500.0: # 150 squared
+                            can_recast = true
+                            break
 
     if skill_timer <= 0.0 or can_recast:
         if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
@@ -21011,6 +21069,63 @@ func _use_skill():
                 else:
                     self.ball.skill_timer = 5.0
         elif skill_name == "deploy_turret":
+            if can_recast:
+                if self.world.has("balls"):
+                    for b in self.world.balls:
+                        var is_turret = false
+                        if "is_turret" in b: is_turret = b.is_turret
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_turret"): is_turret = b.get_meta("is_turret")
+
+                        var b_owner_id = null
+                        if "owner_id" in b: b_owner_id = b.owner_id
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("owner_id"): b_owner_id = b.get_meta("owner_id")
+
+                        var my_id = null
+                        if "id" in self.ball: my_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                        if is_turret and b_owner_id != null and my_id != null and b_owner_id == my_id:
+                            var is_oc = false
+                            if "is_overclocked" in b: is_oc = b.is_overclocked
+                            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_overclocked"): is_oc = b.get_meta("is_overclocked")
+                            if not is_oc:
+                                var b_x = 0.0
+                                if "x" in b: b_x = b.x
+                                var b_y = 0.0
+                                if "y" in b: b_y = b.y
+                                var my_x = 0.0
+                                if "x" in self.ball: my_x = self.ball.x
+                                var my_y = 0.0
+                                if "y" in self.ball: my_y = self.ball.y
+                                var dist_sq = (b_x - my_x) * (b_x - my_x) + (b_y - my_y) * (b_y - my_y)
+                                if dist_sq < 22500.0: # 150 squared
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        b.is_overclocked = true
+                                        b.attack_timer = 0.0
+                                        if b.has("base_attack_time"): b.base_attack_time = b.base_attack_time * 0.5
+                                        else: b.base_attack_time = 0.5
+                                    elif typeof(b) == TYPE_OBJECT:
+                                        if "is_overclocked" in b: b.is_overclocked = true
+                                        elif b.has_method("set_meta"): b.set_meta("is_overclocked", true)
+                                        if "attack_timer" in b: b.attack_timer = 0.0
+                                        elif b.has_method("set_meta"): b.set_meta("attack_timer", 0.0)
+
+                                        var b_at = 1.0
+                                        if "base_attack_time" in b: b_at = b.base_attack_time
+                                        elif b.has_method("has_meta") and b.has_meta("base_attack_time"): b_at = b.get_meta("base_attack_time")
+                                        if "base_attack_time" in b: b.base_attack_time = b_at * 0.5
+                                        elif b.has_method("set_meta"): b.set_meta("base_attack_time", b_at * 0.5)
+
+                                    if self.has_method("_spawn_skill_particles"):
+                                        self._spawn_skill_particles("overclock")
+
+                                    var cd = 15.0
+                                    if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+                                    if "skill_timer" in self.ball: self.ball.skill_timer = cd
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
+                                    return
             var turret = null
             if self.ball.has_method("duplicate"): turret = self.ball.duplicate()
             elif typeof(self.ball) == TYPE_DICTIONARY: turret = self.ball.duplicate()
@@ -28443,6 +28558,11 @@ func _kite(delta: float):
                             optimal_target.memory = mem
 
                 var cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
+                var is_oc = false
+                if "is_overclocked" in self.ball: is_oc = self.ball.is_overclocked
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_overclocked"): is_oc = self.ball.get_meta("is_overclocked")
+                if is_oc:
+                    cooldown *= 0.5
                 if "attack_timer" in self.ball:
                     self.ball.attack_timer = cooldown
                     if cooldown >= 0.8:
@@ -28565,6 +28685,11 @@ func _escort(delta: float) -> void:
                         if "speed" in ball:
                             s_speed = ball.speed
                         var new_cd = max(0.2, 2.0 / s_speed if s_speed > 0 else 1.0)
+                        var is_oc = false
+                        if "is_overclocked" in ball: is_oc = ball.is_overclocked
+                        elif typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("is_overclocked"): is_oc = ball.get_meta("is_overclocked")
+                        if is_oc:
+                            new_cd *= 0.5
                         ball.attack_timer = new_cd
 
 func _intercept(delta: float) -> void:
@@ -28671,6 +28796,11 @@ func _intercept(delta: float) -> void:
                 if "speed" in ball:
                     s_speed = ball.speed
                 var new_cd = max(0.2, 2.0 / s_speed if s_speed > 0 else 1.0)
+                var is_oc = false
+                if "is_overclocked" in ball: is_oc = ball.is_overclocked
+                elif typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("is_overclocked"): is_oc = ball.get_meta("is_overclocked")
+                if is_oc:
+                    new_cd *= 0.5
                 ball.attack_timer = new_cd
 
 func _hide_behind(delta: float):
