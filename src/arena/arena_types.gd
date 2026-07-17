@@ -665,7 +665,29 @@ class IceArena extends ProceduralArena:
 			var h = ProceduralArena.Hazard.new(self.hazards.size() + 500, hx, hy, radius, "ice_patches", 0.0)
 			self.hazards.append(h)
 
+
+class PlatformerArena extends ProceduralArena:
+	func _init(size: float = 2000.0, seed_val = null):
+		super(10000.0, 1, seed_val)
+		self.height = 1000.0
+		self.name = "platformer"
+
+	func generate():
+		super.generate()
+		rooms.clear()
+		corridors.clear()
+		hazards.clear()
+		rooms.append(ProceduralArena.Room.new(0.0, 400.0, 500.0, 200.0))
+		for i in range(1, 15):
+			var x = i * 650.0
+			rooms.append(ProceduralArena.Room.new(x, 400.0, 400.0, 200.0))
+			if i % 2 == 0:
+				hazards.append(ProceduralArena.Hazard.new(100+i, x - 125.0, 500.0, 20.0, "grapple_node", 0.0))
+			else:
+				hazards.append(ProceduralArena.Hazard.new(200+i, x - 200.0, 450.0, 40.0, "bounce_pad", 0.0))
+
 const ARENAS = [
+	"platformer",
 	"falling_panels",
 	"ice",
     "spring",

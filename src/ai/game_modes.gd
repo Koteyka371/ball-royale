@@ -36852,5 +36852,41 @@ class QuantumShiftingHazardsMode extends GameMode:
 
 
 GAME_MODES['quantum_shifting_hazards'] = QuantumShiftingHazardsMode.new()
+
+class PlatformerMode extends GameMode:
+	func _init():
+		super()
+		name = "Platformer Mode"
+		description = "A side-scrolling platformer mode where balls navigate using bounce pads, grapple points, and low gravity to reach the end."
+		self.set_meta("mutators_active", true)
+		self.set_meta("mutators", ["zero_gravity"])
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if is_alive:
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					by = b.get("y", 0.0)
+				else:
+					by = b.get("y") if "y" in b else 0.0
+
+				if by < 0.0 or by > 1000.0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = 0.0
+						b["alive"] = false
+						b["killer"] = "fall_damage"
+					elif typeof(b) == TYPE_OBJECT:
+						if "hp" in b: b.hp = 0.0
+						if "alive" in b: b.alive = false
+						if "killer" in b: b.killer = "fall_damage"
+
+GAME_MODES['platformer'] = PlatformerMode.new()
 GAME_MODES['flooding_arena'] = FloodingArenaMode.new()
 GAME_MODES["slingshot"] = preload("res://src/ai/slingshot.gd").SlingshotMode.new()
