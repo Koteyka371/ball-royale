@@ -37575,3 +37575,60 @@ class SponsorDropMode extends GameMode:
                     world.balls.erase(b)
 
 GAME_MODES["sponsor_drop"] = SponsorDropMode.new()
+
+class EyeOfTheStormMode extends SafeZoneMode:
+    var eye_x: float = 500.0
+    var eye_y: float = 500.0
+    var eye_target_x: float = 500.0
+    var eye_target_y: float = 500.0
+    var eye_radius: float = 100.0
+    var eye_speed: float = 100.0
+    var heal_rate: float = 50.0
+
+    func _init() -> void:
+        super._init()
+        name = "Eye of the Storm"
+        description = "The safe zone has a fast-moving 'eye'. Inside the eye, health regenerates rapidly, but the outer safe zone acts normally. This encourages high-risk fights for the very center."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        eye_x = zone_x
+        eye_y = zone_y
+        eye_target_x = zone_x
+        eye_target_y = zone_y
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
+        var dx = eye_target_x - eye_x
+        var dy = eye_target_y - eye_y
+        var dist = sqrt(dx*dx + dy*dy)
+
+        if dist > 5.0:
+            eye_x += (dx / dist) * eye_speed * delta
+            eye_y += (dy / dist) * eye_speed * delta
+        else:
+            var angle = randf() * PI * 2.0
+            var r = randf() * (max(0.0, zone_radius * 0.8))
+            eye_target_x = zone_x + cos(angle) * r
+            eye_target_y = zone_y + sin(angle) * r
+
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
+                var b_x = b.get("x")
+                var b_y = b.get("y")
+                var dist_to_eye = sqrt(pow(b_x - eye_x, 2) + pow(b_y - eye_y, 2))
+
+                if dist_to_eye <= eye_radius:
+                    var max_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0
+                    b.hp = min(b.hp + heal_rate * delta, max_hp)
+            elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
+                var b_x = float(b.get("x", 0.0))
+                var b_y = float(b.get("y", 0.0))
+                var dist_to_eye = sqrt(pow(b_x - eye_x, 2) + pow(b_y - eye_y, 2))
+
+                if dist_to_eye <= eye_radius:
+                    var max_hp = float(b.get("max_hp", 100.0))
+                    b["hp"] = min(float(b.get("hp", 100.0)) + heal_rate * delta, max_hp)
+
+GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode.new()
