@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-991] Reverse Gravitational Pull Mutator — *2026-07-17 18:03:12 UTC*
+
+A mutator that intermittently reverses the gravitational pull of hazards and game modes, causing elements that usually attract (like Black Holes or Inverse Safe Zones) to suddenly repel for short, chaotic durations.
+
+---
+
 ## [idea-1048] EMP Pulse Item — *2026-07-17 18:03:07 UTC*
 
 A new active item that disables the abilities and HUD of nearby enemies for a short duration when triggered, allowing for tactical ambushes.
