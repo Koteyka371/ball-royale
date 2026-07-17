@@ -25608,6 +25608,81 @@ class TickingPayloadMode extends GameMode:
 
 
 
+
+class HauntedEventMode extends GameMode:
+	var trail_timer = 0.0
+	var clone_timer = 0.0
+
+	func _init():
+		name = "Haunted Event"
+		description = "A random arena event where the entire map becomes dark and 'haunted'."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world != null and "arena" in world:
+			world.arena.is_night = true
+		trail_timer = 0.0
+		clone_timer = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null and "arena" in world:
+			world.arena.is_night = true
+
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				if b.get("alive") and b.get("ball_type") != "spectator":
+					b.set("hide_hp_bar", true)
+					b.set("hide_team_color", true)
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+					b["hide_hp_bar"] = true
+					b["hide_team_color"] = true
+
+		trail_timer += delta
+		clone_timer += delta
+
+		if trail_timer >= 0.5:
+			trail_timer = 0.0
+			if world != null and "arena" in world and "hazards" in world.arena:
+				for b in balls:
+					var b_alive = false
+					var b_type = ""
+					var bx = 0.0
+					var by = 0.0
+					var bvx = 0.0
+					var bvy = 0.0
+					if typeof(b) == TYPE_OBJECT:
+						b_alive = b.get("alive")
+						b_type = b.get("ball_type")
+						bx = b.get("x")
+						by = b.get("y")
+						bvx = b.get("vx")
+						bvy = b.get("vy")
+					elif typeof(b) == TYPE_DICTIONARY:
+						b_alive = b.get("alive", false)
+						b_type = b.get("ball_type", "")
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+						bvx = b.get("vx", 0.0)
+						bvy = b.get("vy", 0.0)
+
+					if b_alive and b_type != "spectator" and (abs(bvx) > 5.0 or abs(bvy) > 5.0):
+						var h_id = "phantom_trail_" + str(randi() % 100000)
+						var trail = {"id": h_id, "x": bx, "y": by, "radius": 15.0, "kind": "phantom_trail", "active": true, "duration": 2.0, "damage": 0.0}
+						world.arena.hazards.append(trail)
+
+		if clone_timer >= 5.0:
+			clone_timer = 0.0
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var h_id = "spectral_clone_" + str(randi() % 100000)
+				var width = 1000.0
+				var height = 1000.0
+				if "width" in world.arena: width = world.arena.width
+				if "height" in world.arena: height = world.arena.height
+				var clone = {"id": h_id, "x": randf_range(100, width - 100), "y": randf_range(100, height - 100), "radius": 20.0, "kind": "fireball", "cosmetic": "spectral", "active": true, "duration": 10.0, "damage": 0.0, "vx": randf_range(-100, 100), "vy": randf_range(-100, 100)}
+				world.arena.hazards.append(clone)
+
+
 class BlackoutEventMode extends GameMode:
 	var timer: float = 0.0
 	var is_blackout: bool = false
@@ -31810,6 +31885,7 @@ GAME_MODES = {
 	"freeze_tag": FreezeTagMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
 	"blackout_event": BlackoutEventMode.new(),
+	"haunted_event": HauntedEventMode.new(),
 	"solar_flare": SolarFlareMode.new(),
 	"center_vortex": CenterVortexMode.new(),
 	"center_gravity_well": CenterGravityWellMode.new(),
