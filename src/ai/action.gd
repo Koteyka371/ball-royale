@@ -2167,6 +2167,27 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var t_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT:
+        if "tracker_booster_timer" in self.ball: t_timer = self.ball.tracker_booster_timer
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("tracker_booster_timer"): t_timer = self.ball.get_meta("tracker_booster_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("tracker_booster_timer"):
+        t_timer = self.ball["tracker_booster_timer"]
+    if t_timer > 0:
+        t_timer -= delta
+        if t_timer <= 0:
+            t_timer = 0.0
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "tracker_booster_target" in self.ball: self.ball.tracker_booster_target = null
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("tracker_booster_target", null)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["tracker_booster_target"] = null
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "tracker_booster_timer" in self.ball: self.ball.tracker_booster_timer = t_timer
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("tracker_booster_timer", t_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["tracker_booster_timer"] = t_timer
+
     var _is_turret = false
     if "is_turret" in self.ball: _is_turret = self.ball.is_turret
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_turret"): _is_turret = self.ball.get_meta("is_turret")
@@ -15791,6 +15812,27 @@ func _get_enemies_internal() -> Array:
                             if dx*dx + dy*dy <= target_pr*target_pr:
                                 enemies.append(e)
 
+    var t_timer = 0.0
+    var t_target = null
+    if typeof(self.ball) == TYPE_OBJECT:
+        if "tracker_booster_timer" in self.ball: t_timer = self.ball.tracker_booster_timer
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("tracker_booster_timer"): t_timer = self.ball.get_meta("tracker_booster_timer")
+        if "tracker_booster_target" in self.ball: t_target = self.ball.tracker_booster_target
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("tracker_booster_target"): t_target = self.ball.get_meta("tracker_booster_target")
+    elif typeof(self.ball) == TYPE_DICTIONARY:
+        t_timer = self.ball.get("tracker_booster_timer", 0.0)
+        t_target = self.ball.get("tracker_booster_target", null)
+
+    if t_timer > 0 and t_target != null:
+        if self.world != null and "balls" in self.world:
+            for b in self.world.balls:
+                var b_id = b.id if "id" in b else null
+                var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else true)
+                if b_id == t_target and b_alive:
+                    if not enemies.has(b):
+                        enemies.append(b)
+                    break
+
     var filtered_enemies = []
     for e in enemies:
         var is_decoy = false
@@ -15921,6 +15963,27 @@ func _get_enemies_internal() -> Array:
                         if dx*dx + dy*dy <= perception_radius*perception_radius:
                             enemies.append(h)
 
+    var t_timer = 0.0
+    var t_target = null
+    if typeof(self.ball) == TYPE_OBJECT:
+        if "tracker_booster_timer" in self.ball: t_timer = self.ball.tracker_booster_timer
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("tracker_booster_timer"): t_timer = self.ball.get_meta("tracker_booster_timer")
+        if "tracker_booster_target" in self.ball: t_target = self.ball.tracker_booster_target
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("tracker_booster_target"): t_target = self.ball.get_meta("tracker_booster_target")
+    elif typeof(self.ball) == TYPE_DICTIONARY:
+        t_timer = self.ball.get("tracker_booster_timer", 0.0)
+        t_target = self.ball.get("tracker_booster_target", null)
+
+    if t_timer > 0 and t_target != null:
+        if self.world != null and "balls" in self.world:
+            for b in self.world.balls:
+                var b_id = b.id if "id" in b else null
+                var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else true)
+                if b_id == t_target and b_alive:
+                    if not enemies.has(b):
+                        enemies.append(b)
+                    break
+
     var filtered_enemies = []
     for e in enemies:
         var enemy_stealth_zones = []
@@ -16023,7 +16086,17 @@ func _get_enemies_internal() -> Array:
         elif my_stealth_zones.size() > 0:
             is_visible = false
 
-        if is_visible:
+        var tracked = false
+        if t_timer > 0 and t_target != null:
+            var e_id = e.id if "id" in e else null
+            if typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("id"):
+                e_id = e.get_meta("id")
+            elif typeof(e) == TYPE_DICTIONARY and e.has("id"):
+                e_id = e.id
+            if e_id == t_target:
+                tracked = true
+
+        if is_visible or tracked:
             filtered_enemies.append(e)
 
     return filtered_enemies
@@ -19930,6 +20003,41 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "tracker_booster":
+                var all_enemies = []
+                if self.world != null and "balls" in self.world:
+                    for b in self.world.balls:
+                        var b_team = b.team if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else (b.ball_type if "ball_type" in b else ""))
+                        var my_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if self.ball.has_method("has_meta") and self.ball.has_meta("team") else (self.ball.ball_type if "ball_type" in self.ball else ""))
+                        var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else true)
+                        var b_decoy = b.is_decoy if "is_decoy" in b else (b.get_meta("is_decoy") if b.has_method("has_meta") and b.has_meta("is_decoy") else false)
+                        var b_illusion = b.is_illusion if "is_illusion" in b else (b.get_meta("is_illusion") if b.has_method("has_meta") and b.has_meta("is_illusion") else false)
+                        if b != self.ball and b_team != my_team and b_alive and not b_decoy and not b_illusion:
+                            all_enemies.append(b)
+                if all_enemies.size() > 0:
+                    var closest_enemy = all_enemies[0]
+                    var min_enemy_dist = INF
+                    for b in all_enemies:
+                        var dsq = pow(b.x - self.ball.x, 2) + pow(b.y - self.ball.y, 2)
+                        if dsq < min_enemy_dist:
+                            min_enemy_dist = dsq
+                            closest_enemy = b
+                    var t_id = closest_enemy.id if "id" in closest_enemy else null
+                    if typeof(self.ball) == TYPE_OBJECT:
+                        if "tracker_booster_target" in self.ball: self.ball.tracker_booster_target = t_id
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("tracker_booster_target", t_id)
+                        if "tracker_booster_timer" in self.ball: self.ball.tracker_booster_timer = 20.0
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("tracker_booster_timer", 20.0)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["tracker_booster_target"] = t_id
+                        self.ball["tracker_booster_timer"] = 20.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "placeable_trap_booster":
                 var inv = []
                 if "inventory" in self.ball: inv = self.ball.inventory

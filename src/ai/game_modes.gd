@@ -2571,7 +2571,7 @@ class BattleRoyaleMode extends GameMode:
 					if "height" in world.arena: arena_height = world.arena.height
 
 				rng.randomize()
-				var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item"]
+				var booster_kinds = ["tracker_booster", "cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item"]
 				var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
 				var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
 				var b_x = rng.randf_range(100, arena_width - 100)
@@ -3353,7 +3353,7 @@ class BattleRoyaleMode extends GameMode:
 						boosters_array = world.boosters
 
 					if boosters_array != null:
-						var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item"]
+						var booster_kinds = ["tracker_booster", "cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item"]
 						for i in range(3):
 							var b_id = 9100 + boosters_array.size() + rng.randi() % 1000
 							var b_x = bx + rng.randf_range(-30, 30)
@@ -15222,7 +15222,7 @@ class SupernovaMode extends GameMode:
 					boosters_array = world.boosters
 
 				if boosters_array != null:
-					var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
+					var booster_kinds = ["tracker_booster", "cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
 					var rng = RandomNumberGenerator.new()
 					rng.randomize()
 					for i in range(10):
@@ -33177,7 +33177,7 @@ class ItemMorphMode extends GameMode:
 	var morph_timer: float = 0.0
 	var morph_interval: float = 10.0
 	var rng = RandomNumberGenerator.new()
-	var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
+	var booster_kinds = ["tracker_booster", "cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
 
 	func _init().():
 		name = "Item Morph"
