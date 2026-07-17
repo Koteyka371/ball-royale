@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1063] Hazard Weather Synergy — *2026-07-17 01:36:03 UTC*
+
+If a weather event like a thunderstorm hits the arena, puddles become electrified, dealing a new type of 'Shock' damage that stalls the player's movement for 0.5s.
+
+---
+
 ## [idea-1044] Winter Wonderland Arena — *2026-07-17 01:35:59 UTC*
 
 A new permanent arena themed entirely around ice. The ground has a much lower base friction for all balls, and large permanent ice patches exist near the center, forcing a highly mobile, slippery combat style.
