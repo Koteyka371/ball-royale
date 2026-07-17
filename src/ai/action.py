@@ -1182,6 +1182,11 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "is_turret", False) and getattr(self.ball, "is_overclocked", False) and getattr(self.ball, "alive", True):
+            self.ball.hp -= 10.0 * delta
+            if self.ball.hp <= 0:
+                self.ball.hp = 0
+                self.ball.alive = False
         if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
             self.ball.wall_stick_timer -= delta
             if self.ball.wall_stick_timer <= 0.0:
@@ -10843,6 +10848,15 @@ class Action:
                     if getattr(h, "kind", "") == "fireball" and getattr(h, "owner_id", None) == self.ball.id:
                         can_recast = True
                         break
+        elif skill_timer > 0 and skill_name == "deploy_turret":
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == self.ball.id:
+                        if not getattr(b, "is_overclocked", False):
+                            import math
+                            if math.hypot(b.x - self.ball.x, b.y - self.ball.y) < 150.0:
+                                can_recast = True
+                                break
 
         if skill_timer <= 0 or can_recast:
             if hasattr(self.ball, "use_skill") and skill_timer <= 0:
@@ -11541,6 +11555,20 @@ class Action:
                     self.world.arena.hazards.append(p2)
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
             elif skill_name == "deploy_turret":
+                if can_recast:
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == self.ball.id:
+                                if not getattr(b, "is_overclocked", False):
+                                    import math
+                                    if math.hypot(b.x - self.ball.x, b.y - self.ball.y) < 150.0:
+                                        b.is_overclocked = True
+                                        b.attack_timer = 0.0
+                                        b.base_attack_time = getattr(b, "base_attack_time", 1.0) * 0.5
+                                        if hasattr(self, "_spawn_skill_particles"):
+                                            self._spawn_skill_particles("overclock")
+                                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 15.0)
+                                        return
                 import copy
                 import random
                 if hasattr(self.world, "balls"):
@@ -15296,6 +15324,8 @@ class Action:
 
                 b_speed = getattr(self.ball, "speed", 2.0)
                 new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
+                if getattr(self.ball, "is_overclocked", False):
+                    new_cooldown *= 0.5
                 self.ball.attack_timer = new_cooldown
                 if new_cooldown >= 0.8:
                     self.ball.stutter_timer = min(new_cooldown * 0.4, 0.4)
