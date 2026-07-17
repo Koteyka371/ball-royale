@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1076] Decoy Bomb Upgrade — *2026-07-17 04:39:43 UTC*
+
+A feature where player decoys automatically detonate upon touching an enemy, creating a large blast radius that deals significant damage and briefly stuns all enemies hit.
+
+---
+
 ## [idea-1080] Bounty Contract Event — *2026-07-17 04:39:38 UTC*
 
 A random arena event where one ball is marked as a bounty for all other players. The marked ball gains temporary buffs to survive, while others get bonus XP for defeating them.
