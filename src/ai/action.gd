@@ -1381,6 +1381,132 @@ func _attempt_damage(attacker, target) -> void:
 				elif typeof(attacker) == TYPE_DICTIONARY:
 					attacker["damage"] = old_dmg_final
 
+
+		var fire_timer = 0.0
+		if "fire_attachment_timer" in attacker: fire_timer = attacker.fire_attachment_timer
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("fire_attachment_timer"): fire_timer = attacker.get_meta("fire_attachment_timer")
+		if fire_timer > 0:
+			var curr_dot = 0.0
+			if "dot_duration" in target: curr_dot = target.dot_duration
+			elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("dot_duration"): curr_dot = target.get_meta("dot_duration")
+			if "dot_duration" in target: target.dot_duration = curr_dot + 2.0
+			elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("dot_duration", curr_dot + 2.0)
+			var curr_dot_dmg = 0.0
+			if "dot_damage_per_tick" in target: curr_dot_dmg = target.dot_damage_per_tick
+			elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("dot_damage_per_tick"): curr_dot_dmg = target.get_meta("dot_damage_per_tick")
+			if "dot_damage_per_tick" in target: target.dot_damage_per_tick = curr_dot_dmg + 2.0
+			elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("dot_damage_per_tick", curr_dot_dmg + 2.0)
+
+		var ice_timer = 0.0
+		if "ice_attachment_timer" in attacker: ice_timer = attacker.ice_attachment_timer
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("ice_attachment_timer"): ice_timer = attacker.get_meta("ice_attachment_timer")
+		if ice_timer > 0:
+			var curr_slow = 0.0
+			if "slow_timer" in target: curr_slow = target.slow_timer
+			elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("slow_timer"): curr_slow = target.get_meta("slow_timer")
+			if "slow_timer" in target: target.slow_timer = curr_slow + 2.0
+			elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("slow_timer", curr_slow + 2.0)
+
+		var spread_timer = 0.0
+		if "spread_attachment_timer" in attacker: spread_timer = attacker.spread_attachment_timer
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("spread_attachment_timer"): spread_timer = attacker.get_meta("spread_attachment_timer")
+		if spread_timer > 0 and self.world != null and "balls" in self.world:
+			for other in self.world.balls:
+				var is_alive = false
+				if "alive" in other: is_alive = other.alive
+				elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("alive"): is_alive = other.get_meta("alive")
+
+				var o_id = -1
+				if "id" in other: o_id = other.id
+				elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("id"): o_id = other.get_meta("id")
+
+				var t_id = -1
+				if "id" in target: t_id = target.id
+				elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("id"): t_id = target.get_meta("id")
+
+				var a_id = -1
+				if "id" in attacker: a_id = attacker.id
+				elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("id"): a_id = attacker.get_meta("id")
+
+				if is_alive and str(o_id) != str(t_id) and str(o_id) != str(a_id):
+					var a_team = ""
+					if "team" in attacker: a_team = attacker.team
+					elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("team"): a_team = attacker.get_meta("team")
+
+					var o_team = ""
+					if "team" in other: o_team = other.team
+					elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("team"): o_team = other.get_meta("team")
+
+					if str(a_team) != str(o_team):
+						var dx = (other.x if "x" in other else 0.0) - (target.x if "x" in target else 0.0)
+						var dy = (other.y if "y" in other else 0.0) - (target.y if "y" in target else 0.0)
+						if sqrt(dx*dx + dy*dy) <= 60.0:
+							if typeof(other) == TYPE_OBJECT and other.has_method("take_damage"):
+								other.take_damage(original_damage * 0.5)
+							elif "hp" in other:
+								other.hp -= original_damage * 0.5
+								if other.hp <= 0:
+									if "alive" in other: other.alive = false
+									elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("alive", false)
+
+		var pierce_timer = 0.0
+		if "pierce_attachment_timer" in attacker: pierce_timer = attacker.pierce_attachment_timer
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("pierce_attachment_timer"): pierce_timer = attacker.get_meta("pierce_attachment_timer")
+		if pierce_timer > 0 and self.world != null and "balls" in self.world:
+			var ax = attacker.x if "x" in attacker else 0.0
+			var ay = attacker.y if "y" in attacker else 0.0
+			var tx = target.x if "x" in target else 0.0
+			var ty = target.y if "y" in target else 0.0
+			var dx = tx - ax
+			var dy = ty - ay
+			var dist_at = sqrt(dx*dx + dy*dy)
+			if dist_at > 0.001:
+				var nx = dx / dist_at
+				var ny = dy / dist_at
+				for other in self.world.balls:
+					var is_alive = false
+					if "alive" in other: is_alive = other.alive
+					elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("alive"): is_alive = other.get_meta("alive")
+
+					var o_id = -1
+					if "id" in other: o_id = other.id
+					elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("id"): o_id = other.get_meta("id")
+
+					var t_id = -1
+					if "id" in target: t_id = target.id
+					elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("id"): t_id = target.get_meta("id")
+
+					var a_id = -1
+					if "id" in attacker: a_id = attacker.id
+					elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("id"): a_id = attacker.get_meta("id")
+
+					if is_alive and str(o_id) != str(t_id) and str(o_id) != str(a_id):
+						var a_team = ""
+						if "team" in attacker: a_team = attacker.team
+						elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("team"): a_team = attacker.get_meta("team")
+
+						var o_team = ""
+						if "team" in other: o_team = other.team
+						elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("team"): o_team = other.get_meta("team")
+
+						if str(a_team) != str(o_team):
+							var ox = other.x if "x" in other else 0.0
+							var oy = other.y if "y" in other else 0.0
+							var odx = ox - tx
+							var ody = oy - ty
+							var dist_ot = sqrt(odx*odx + ody*ody)
+							if dist_ot > 0.001 and dist_ot <= 100.0:
+								var onx = odx / dist_ot
+								var ony = ody / dist_ot
+								var dot_prod = nx*onx + ny*ony
+								if dot_prod > 0.7:
+									if typeof(other) == TYPE_OBJECT and other.has_method("take_damage"):
+										other.take_damage(original_damage * 0.5)
+									elif "hp" in other:
+										other.hp -= original_damage * 0.5
+										if other.hp <= 0:
+											if "alive" in other: other.alive = false
+											elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("alive", false)
 		var leech_timer = 0.0
 		if "leech_booster_timer" in attacker: leech_timer = float(attacker.leech_booster_timer)
 		elif typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("get_meta") and attacker.has_meta("leech_booster_timer"): leech_timer = float(attacker.get_meta("leech_booster_timer"))
@@ -20127,6 +20253,42 @@ func _collect_booster(delta: float):
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1: self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "fire_attachment":
+                if self.ball.has_method("set_meta"): self.ball.set_meta("fire_attachment_timer", 15.0)
+                else: self.ball.fire_attachment_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "ice_attachment":
+                if self.ball.has_method("set_meta"): self.ball.set_meta("ice_attachment_timer", 15.0)
+                else: self.ball.ice_attachment_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "spread_attachment":
+                if self.ball.has_method("set_meta"): self.ball.set_meta("spread_attachment_timer", 15.0)
+                else: self.ball.spread_attachment_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "pierce_attachment":
+                if self.ball.has_method("set_meta"): self.ball.set_meta("pierce_attachment_timer", 15.0)
+                else: self.ball.pierce_attachment_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "chain_lightning":
                 var dur = 5.0
                 if "duration" in nearest: dur = nearest.duration
@@ -28242,6 +28404,38 @@ func _update_skill_timer(delta: float):
                     self.ball.base_perception_radius = bp
                     self.ball.perception_radius = bp
                     self.ball.modified_scope_applied = false
+    var f_timer = 0.0
+    if "fire_attachment_timer" in self.ball: f_timer = self.ball.fire_attachment_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("fire_attachment_timer"): f_timer = self.ball.get_meta("fire_attachment_timer")
+    if f_timer > 0.0:
+        f_timer -= delta
+        if self.ball.has_method("set_meta"): self.ball.set_meta("fire_attachment_timer", f_timer)
+        else: self.ball.fire_attachment_timer = f_timer
+
+    var i_timer = 0.0
+    if "ice_attachment_timer" in self.ball: i_timer = self.ball.ice_attachment_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("ice_attachment_timer"): i_timer = self.ball.get_meta("ice_attachment_timer")
+    if i_timer > 0.0:
+        i_timer -= delta
+        if self.ball.has_method("set_meta"): self.ball.set_meta("ice_attachment_timer", i_timer)
+        else: self.ball.ice_attachment_timer = i_timer
+
+    var sp_timer = 0.0
+    if "spread_attachment_timer" in self.ball: sp_timer = self.ball.spread_attachment_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("spread_attachment_timer"): sp_timer = self.ball.get_meta("spread_attachment_timer")
+    if sp_timer > 0.0:
+        sp_timer -= delta
+        if self.ball.has_method("set_meta"): self.ball.set_meta("spread_attachment_timer", sp_timer)
+        else: self.ball.spread_attachment_timer = sp_timer
+
+    var p_timer = 0.0
+    if "pierce_attachment_timer" in self.ball: p_timer = self.ball.pierce_attachment_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("pierce_attachment_timer"): p_timer = self.ball.get_meta("pierce_attachment_timer")
+    if p_timer > 0.0:
+        p_timer -= delta
+        if self.ball.has_method("set_meta"): self.ball.set_meta("pierce_attachment_timer", p_timer)
+        else: self.ball.pierce_attachment_timer = p_timer
+
 
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         var is_sf = false

@@ -760,6 +760,57 @@ class Action:
             if getattr(attacker, "leech_booster_timer", 0.0) > 0:
                 target.leech_seed_timer = 5.0
                 target.leech_seed_attacker_id = getattr(attacker, "id", None)
+            if getattr(attacker, "fire_attachment_timer", 0.0) > 0:
+                target.dot_duration = getattr(target, 'dot_duration', 0.0) + 2.0
+                target.dot_damage_per_tick = getattr(target, 'dot_damage_per_tick', 0.0) + 2.0
+
+            if getattr(attacker, "ice_attachment_timer", 0.0) > 0:
+                target.slow_timer = getattr(target, "slow_timer", 0.0) + 2.0
+
+            if getattr(attacker, "spread_attachment_timer", 0.0) > 0:
+                for other in getattr(self.world, "balls", []):
+                    if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(target, "id", None) and getattr(other, "id", None) != getattr(attacker, "id", None):
+                        # only damage enemies
+                        a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
+                        o_team = getattr(other, "team", getattr(other, "ball_type", ""))
+                        if a_team != o_team:
+                            import math
+                            dx = getattr(other, "x", 0) - getattr(target, "x", 0)
+                            dy = getattr(other, "y", 0) - getattr(target, "y", 0)
+                            if math.sqrt(dx*dx + dy*dy) <= 60.0:
+                                if hasattr(other, "take_damage"):
+                                    other.take_damage(original_damage * 0.5)
+                                elif hasattr(other, "hp"):
+                                    other.hp -= original_damage * 0.5
+                                    if other.hp <= 0:
+                                        other.alive = False
+
+            if getattr(attacker, "pierce_attachment_timer", 0.0) > 0:
+                import math
+                ax, ay = getattr(attacker, "x", 0), getattr(attacker, "y", 0)
+                tx, ty = getattr(target, "x", 0), getattr(target, "y", 0)
+                dx, dy = tx - ax, ty - ay
+                dist_at = math.sqrt(dx*dx + dy*dy)
+                if dist_at > 0.001:
+                    nx, ny = dx/dist_at, dy/dist_at
+                    for other in getattr(self.world, "balls", []):
+                        if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(target, "id", None) and getattr(other, "id", None) != getattr(attacker, "id", None):
+                            a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
+                            o_team = getattr(other, "team", getattr(other, "ball_type", ""))
+                            if a_team != o_team:
+                                ox, oy = getattr(other, "x", 0), getattr(other, "y", 0)
+                                odx, ody = ox - tx, oy - ty
+                                dist_ot = math.sqrt(odx*odx + ody*ody)
+                                if dist_ot > 0.001 and dist_ot <= 100.0:
+                                    onx, ony = odx/dist_ot, ody/dist_ot
+                                    dot_prod = nx*onx + ny*ony
+                                    if dot_prod > 0.7:  # roughly behind target
+                                        if hasattr(other, "take_damage"):
+                                            other.take_damage(original_damage * 0.5)
+                                        elif hasattr(other, "hp"):
+                                            other.hp -= original_damage * 0.5
+                                            if other.hp <= 0:
+                                                other.alive = False
 
             if getattr(attacker, "bomb_booster_timer", 0.0) > 0:
                 target.time_bomb_timer = 5.0
@@ -9915,6 +9966,30 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "fire_attachment":
+                    self.ball.fire_attachment_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "ice_attachment":
+                    self.ball.ice_attachment_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "spread_attachment":
+                    self.ball.spread_attachment_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "pierce_attachment":
+                    self.ball.pierce_attachment_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "extended_mag_attachment":
                     self.ball.extended_mag_timer = 15.0
                     self.ball.stamina = min(getattr(self.ball, "stamina", 100.0) + 50.0, getattr(self.ball, "max_stamina", 100.0) + 50.0)
@@ -15156,6 +15231,14 @@ class Action:
                     self.ball.base_perception_radius /= 1.5
                     self.ball.perception_radius = self.ball.base_perception_radius
                     self.ball.modified_scope_applied = False
+        if getattr(self.ball, "fire_attachment_timer", 0.0) > 0:
+            self.ball.fire_attachment_timer -= delta
+        if getattr(self.ball, "ice_attachment_timer", 0.0) > 0:
+            self.ball.ice_attachment_timer -= delta
+        if getattr(self.ball, "spread_attachment_timer", 0.0) > 0:
+            self.ball.spread_attachment_timer -= delta
+        if getattr(self.ball, "pierce_attachment_timer", 0.0) > 0:
+            self.ball.pierce_attachment_timer -= delta
 
 
         if getattr(self.ball, "cursed_relic_timer", 0.0) > 0.0:
