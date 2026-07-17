@@ -70,6 +70,8 @@ func scan() -> Dictionary:
             perception_radius = max(perception_radius, 2000.0)
         elif "is_eclipse" in self.world.arena and self.world.arena.is_eclipse:
             perception_radius = min(perception_radius, 20.0)
+        elif "is_haunted" in self.world.arena and self.world.arena.is_haunted:
+            perception_radius = min(perception_radius, 150.0)
         elif "is_night" in self.world.arena and self.world.arena.is_night:
             if not has_night_vision:
                 var night_ratio = 1.0

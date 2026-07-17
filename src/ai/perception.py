@@ -71,6 +71,8 @@ class Perception:
                 perception_radius = max(perception_radius, 2000.0)
             elif getattr(self.world.arena, "is_eclipse", False):
                 perception_radius = min(perception_radius, 20.0)
+            elif getattr(self.world.arena, "is_haunted", False):
+                perception_radius = min(perception_radius, 150.0)
             elif has_flare_vision:
                 perception_radius = max(perception_radius, 2000.0)
             elif getattr(self.world.arena, 'is_night', False):

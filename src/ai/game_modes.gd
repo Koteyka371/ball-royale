@@ -29627,6 +29627,134 @@ class CollapsingBubblesMode extends GameMode:
 		})
 
 
+class HauntedArenaEventMode extends GameMode:
+	var event_timer = 0.0
+	var event_active = false
+	var event_duration = 0.0
+	var spawn_timer = 0.0
+
+	func _init():
+		pass
+		name = "Haunted Arena Event"
+		description = "A spooky event where the arena turns dark, HP bars and team colors are hidden, and players track each other via faint footsteps. Spectral hazard clones occasionally appear to disorient players."
+
+	func tick(world: Object, balls: Array, delta: float = 0.016):
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 30.0:
+			if randf() < 0.2:
+				event_active = true
+				event_duration = 30.0
+				event_timer = 0.0
+				spawn_timer = 0.0
+				if world != null and world.has_method("add_event"):
+					world.add_event("haunted_arena_warning", {"type": "weather_warning", "message": "THE ARENA IS HAUNTED!"})
+					world.add_event("visual_effect", {"type": "haunted_arena", "duration": 30.0})
+
+				if world != null and "arena" in world:
+					world.arena.is_night = true
+					world.arena.is_haunted = true
+					if "balls" in world:
+						for b in world.balls:
+							if b.has_method("set_meta"):
+								b.set_meta("hide_hp", true)
+								b.set_meta("hide_team_color", true)
+			else:
+				event_timer = 0.0
+
+		if event_active:
+			event_duration -= delta
+			if world != null and "arena" in world:
+				world.arena.is_night = true
+				world.arena.is_haunted = true
+
+			if world != null and "balls" in world:
+				for b in world.balls:
+					if b.has_method("get") and b.get("alive"):
+						var vx = b.get("vx") if b.has_meta("vx") else 0.0
+						if not b.has_meta("vx") and "vx" in b: vx = b.vx
+						var vy = b.get("vy") if b.has_meta("vy") else 0.0
+						if not b.has_meta("vy") and "vy" in b: vy = b.vy
+						if sqrt(vx*vx + vy*vy) > 5.0:
+							if randf() < 0.2 and world.has_method("add_event"):
+								world.add_event("footstep_trail", {"x": b.x, "y": b.y, "ball_id": b.get("id")})
+
+			spawn_timer += delta
+			if spawn_timer > 5.0:
+				spawn_timer = 0.0
+				if world != null and "arena" in world and "hazards" in world.arena:
+					var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+					var arena_w = 1000.0
+					if "width" in world.arena: arena_w = float(world.arena.width)
+					var arena_h = 1000.0
+					if "height" in world.arena: arena_h = float(world.arena.height)
+
+					var bx = randf_range(100.0, arena_w - 100.0)
+					var by = randf_range(100.0, arena_h - 100.0)
+					var clone = HazardObj.new(70000 + (randi() % 10000), bx, by, 20.0, "spectral_clone", 0.0)
+
+					var dx = randf_range(-1.0, 1.0)
+					var dy = randf_range(-1.0, 1.0)
+					var mag = sqrt(dx*dx + dy*dy)
+					if mag > 0:
+						dx /= mag
+						dy /= mag
+					clone.set_meta("dx", dx)
+					clone.set_meta("dy", dy)
+
+					world.arena.hazards.append(clone)
+
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena_w = 1000.0
+				if "width" in world.arena: arena_w = float(world.arena.width)
+				var arena_h = 1000.0
+				if "height" in world.arena: arena_h = float(world.arena.height)
+
+				for h in world.arena.hazards:
+					if typeof(h) == TYPE_OBJECT and h.kind == "spectral_clone":
+						var speed = 150.0 * delta
+						var h_dx = h.get_meta("dx") if h.has_meta("dx") else 1.0
+						var h_dy = h.get_meta("dy") if h.has_meta("dy") else 0.0
+
+						h.x += h_dx * speed
+						h.y += h_dy * speed
+
+						var r = h.radius if "radius" in h else 20.0
+						if h.x - r < 0:
+							h.x = r
+							h.set_meta("dx", h_dx * -1)
+						elif h.x + r > arena_w:
+							h.x = arena_w - r
+							h.set_meta("dx", h_dx * -1)
+						if h.y - r < 0:
+							h.y = r
+							h.set_meta("dy", h_dy * -1)
+						elif h.y + r > arena_h:
+							h.y = arena_h - r
+							h.set_meta("dy", h_dy * -1)
+
+			if event_duration <= 0:
+				event_active = false
+				if world != null and "arena" in world:
+					world.arena.is_night = false
+					world.arena.is_haunted = false
+					if "balls" in world:
+						for b in world.balls:
+							if b.has_method("set_meta"):
+								b.set_meta("hide_hp", false)
+								b.set_meta("hide_team_color", false)
+					if "hazards" in world.arena:
+						var new_hazards = []
+						for h in world.arena.hazards:
+							if typeof(h) == TYPE_OBJECT and h.kind == "spectral_clone":
+								continue
+							new_hazards.append(h)
+						world.arena.hazards = new_hazards
+				if world != null and world.has_method("add_event"):
+					world.add_event("haunted_arena_end", {"type": "weather_warning", "message": "The haunting has ended."})
+
+
 class SolarEclipseEventMode extends GameMode:
 	var event_timer = 0.0
 	var event_active = false
@@ -31880,6 +32008,7 @@ GAME_MODES = {
 	"prestige_weather_mutator": PrestigeWeatherMutatorMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
 	"solar_eclipse_event": SolarEclipseEventMode.new(),
+	"haunted_arena_event": HauntedArenaEventMode.new(),
 	"domination": DominationMode.new(),
 	"black_hole": BlackHoleMode.new(),
 	"sweeping_black_hole": SweepingBlackHoleMode.new(),

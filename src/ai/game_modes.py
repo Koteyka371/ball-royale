@@ -17777,6 +17777,128 @@ class BountyTagMode(GameMode):
         return None
 
 
+class HauntedArenaEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Haunted Arena Event"
+        self.description = "A spooky event where the arena turns dark, HP bars and team colors are hidden, and players track each other via faint footsteps. Spectral hazard clones occasionally appear to disorient players."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+        self.spawn_timer = 0.0
+        import random
+        self.random = random
+
+    def tick(self, world, balls, delta=0.016):
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 30.0:
+            if self.random.random() < 0.2:
+                self.event_active = True
+                self.event_duration = 30.0
+                self.event_timer = 0.0
+                self.spawn_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("haunted_arena_warning", {"type": "weather_warning", "message": "THE ARENA IS HAUNTED!"})
+                    world.add_event("visual_effect", {"type": "haunted_arena", "duration": 30.0})
+
+                if hasattr(world, "arena"):
+                    world.arena.is_night = True
+                    world.arena.is_haunted = True
+                    if hasattr(world, "balls"):
+                        for b in world.balls:
+                            if hasattr(b, "set_meta"):
+                                b.set_meta("hide_hp", True)
+                                b.set_meta("hide_team_color", True)
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            if hasattr(world, "arena"):
+                world.arena.is_night = True
+                world.arena.is_haunted = True
+
+            # Emit faint footsteps/trails for all moving balls
+            if hasattr(world, "balls"):
+                for b in world.balls:
+                    if getattr(b, "alive", False):
+                        vx = getattr(b, "vx", 0.0)
+                        vy = getattr(b, "vy", 0.0)
+                        import math
+                        if math.hypot(vx, vy) > 5.0:
+                            if hasattr(world, "add_event") and self.random.random() < 0.2:
+                                world.add_event("footstep_trail", {"x": b.x, "y": b.y, "ball_id": getattr(b, "id", None)})
+
+            # Spectral hazard clones
+            self.spawn_timer += delta
+            if self.spawn_timer > 5.0:
+                self.spawn_timer = 0.0
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                        HClass = Hazard
+                    except ImportError:
+                        class HClass:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    bx, by = self.random.uniform(100, arena_w-100), self.random.uniform(100, arena_h-100)
+                    clone = HClass(id=70000+self.random.randint(0,9999), x=bx, y=by, radius=20.0, kind="spectral_clone", damage=0.0)
+                    setattr(clone, "dx", self.random.uniform(-1, 1))
+                    setattr(clone, "dy", self.random.uniform(-1, 1))
+                    import math
+                    mag = math.hypot(getattr(clone, "dx", 1), getattr(clone, "dy", 0))
+                    if mag > 0:
+                        clone.dx /= mag
+                        clone.dy /= mag
+                    world.arena.hazards.append(clone)
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "spectral_clone":
+                        speed = 150.0 * delta
+                        dx = getattr(h, "dx", 1.0)
+                        dy = getattr(h, "dy", 0.0)
+                        h.x += dx * speed
+                        h.y += dy * speed
+
+                        # Bounce off walls
+                        arena_w = getattr(world.arena, "width", 1000)
+                        arena_h = getattr(world.arena, "height", 1000)
+                        r = getattr(h, "radius", 20.0)
+                        if h.x - r < 0:
+                            h.x = r
+                            h.dx *= -1
+                        elif h.x + r > arena_w:
+                            h.x = arena_w - r
+                            h.dx *= -1
+                        if h.y - r < 0:
+                            h.y = r
+                            h.dy *= -1
+                        elif h.y + r > arena_h:
+                            h.y = arena_h - r
+                            h.dy *= -1
+
+            if self.event_duration <= 0:
+                self.event_active = False
+                if hasattr(world, "arena"):
+                    world.arena.is_night = False
+                    world.arena.is_haunted = False
+                    if hasattr(world, "balls"):
+                        for b in world.balls:
+                            if hasattr(b, "set_meta"):
+                                b.set_meta("hide_hp", False)
+                                b.set_meta("hide_team_color", False)
+                    if hasattr(world.arena, "hazards"):
+                        world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "spectral_clone"]
+                if hasattr(world, "add_event"):
+                    world.add_event("haunted_arena_end", {"type": "weather_warning", "message": "The haunting has ended."})
+
+
 class SolarEclipseEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -19097,6 +19219,7 @@ GAME_MODES = {
     "prestige_weather_mutator": PrestigeWeatherMutatorMode(),
     "lunar_eclipse_event": LunarEclipseEventMode(),
     "solar_eclipse_event": SolarEclipseEventMode(),
+    "haunted_arena_event": HauntedArenaEventMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
     "sweeping_black_hole": SweepingBlackHoleMode(),
