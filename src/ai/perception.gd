@@ -218,7 +218,8 @@ func scan() -> Dictionary:
             if "y" in f: fy = f.y
             var fr = 0.0
             if "radius" in f: fr = f.radius
-            if pow(ex - fx, 2) + pow(ey - fy, 2) <= pow(fr, 2):
+            var illumination_radius_sq = max(pow(fr, 2), 900.0)
+            if pow(ex - fx, 2) + pow(ey - fy, 2) <= illumination_radius_sq:
                 revealed_by_flare = true
                 break
 

@@ -735,6 +735,21 @@ class GameMode:
 					elif "height" in world.arena: target_y = world.arena.height / 2.0
 
 				var min_dist = 9999999.0
+
+				# Check flares
+				if "hazards" in world.arena:
+					for h in world.arena.hazards:
+						var h_kind = ""
+						if "kind" in h: h_kind = h.kind
+						if h_kind == "flare":
+							var hx = h.x if typeof(h) != TYPE_DICTIONARY else h.get("x", 0.0)
+							var hy = h.y if typeof(h) != TYPE_DICTIONARY else h.get("y", 0.0)
+							var dist = sqrt(pow(hx - mx, 2) + pow(hy - my, 2))
+							if dist < min_dist:
+								min_dist = dist
+								target_x = hx
+								target_y = hy
+
 				for b in balls:
 					var b_alive = b.alive if typeof(b) != TYPE_DICTIONARY else b.get("alive", false)
 					if not b_alive: continue
@@ -2548,7 +2563,7 @@ class BattleRoyaleMode extends GameMode:
 					if "height" in world.arena: arena_height = world.arena.height
 
 				rng.randomize()
-				var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
+				var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item"]
 				var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
 				var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
 				var b_x = rng.randf_range(100, arena_width - 100)
@@ -3330,7 +3345,7 @@ class BattleRoyaleMode extends GameMode:
 						boosters_array = world.boosters
 
 					if boosters_array != null:
-						var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster"]
+						var booster_kinds = ["cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item"]
 						for i in range(3):
 							var b_id = 9100 + boosters_array.size() + rng.randi() % 1000
 							var b_x = bx + rng.randf_range(-30, 30)
@@ -24606,7 +24621,7 @@ class SolarFlareMode extends GameMode:
 	var flare_interval: float = 20.0
 	var flare_duration: float = 5.0
 	var is_flaring: bool = false
-	var excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node"]
+	var excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "decoy_flare_item"]
 
 	func _init():
 		super()
