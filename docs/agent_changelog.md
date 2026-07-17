@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1052] Dynamic Wind Currents — *2026-07-17 03:56:54 UTC*
+
+Introduce dynamic wind currents into arenas that alter the trajectory of projectiles and affect movement speed based on ball weight traits, creating new positional strategies.
+
+---
+
 ## [idea-1065] Aura Syphoning Trap — *2026-07-17 03:56:49 UTC*
 
 A hazard that doesn't deal immediate damage, but instead slowly drains any active buffs, combo multipliers, or powerup durations (like shields or speed boosts) from nearby balls and redistributes them to the trap owner or closest ally.
