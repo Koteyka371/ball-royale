@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-993] Weapon Attachments System — *2026-07-17 04:27:56 UTC*
+
+Introduce weapon attachments that can be found in the arena, allowing players to customize their attacks on the fly, such as adding elemental damage (fire/ice) or altering attack patterns (spread/pierce) to their primary weapons.
+
+---
+
 ## [idea-1067] Shrinking Hazard Mode — *2026-07-17 04:22:06 UTC*
 
 A battle royale mode where the safe zone slowly shrinks. Any balls outside the safe zone continuously take damage until they return or die.

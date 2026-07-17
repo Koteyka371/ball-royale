@@ -17050,7 +17050,7 @@
     },
     {
       "id": "idea-993",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weapon Attachments System",
@@ -29000,6 +29000,74 @@
         "src/ai/thermo_optic_camouflage.py",
         "src/ai/thermo_optic_camouflage.gd",
         "tests/test_thermo_optic_camouflage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1695",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Zones Speed Modifier",
+      "description": "Players outside the shrinking safe zone should not only take damage, but also be affected by a significant speed penalty (e.g., -50% speed) which makes it harder for them to return to the safe area if they wander too far off. This encourages early positioning.",
+      "allowed_paths": [
+        "src/ai/shrinking_zones_speed.py",
+        "src/ai/shrinking_zones_speed.gd",
+        "tests/test_shrinking_zones_speed.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1696",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Safe Zone Radar Item",
+      "description": "Introduce a rare consumable item (e.g., Safe Zone Radar) that briefly reveals the exact location where the safe zone will shrink to next, giving players a strategic advantage to reposition ahead of time.",
+      "allowed_paths": [
+        "src/ai/safe_zone_radar_item.py",
+        "src/ai/safe_zone_radar_item.gd",
+        "tests/test_safe_zone_radar_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1697",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grapple Hook Only Mode",
+      "description": "All balls start with a grapple hook and zero friction, relying entirely on grapple points and walls to navigate the arena.",
+      "allowed_paths": [
+        "src/ai/grapple_hook_only.py",
+        "src/ai/grapple_hook_only.gd",
+        "tests/test_grapple_hook_only.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1698",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vertical Platformer Mode",
+      "description": "A vertical-scrolling platformer where balls must outrun a rising lava pool using jump pads and low gravity to reach the top.",
+      "allowed_paths": [
+        "src/ai/vertical_platformer.py",
+        "src/ai/vertical_platformer.gd",
+        "tests/test_vertical_platformer.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
