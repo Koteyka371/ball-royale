@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1090] Frictionless Arena Modifier — *2026-07-17 21:44:52 UTC*
+
+Introduce an arena modifier that completely removes friction for a random duration, forcing players to perfectly balance their momentum and making collisions much more impactful and chaotic.
+
+---
+
 ## [idea-1082] Chain Lightning Ricochet — *2026-07-17 21:29:25 UTC*
 
 Allow lightning strike attacks to bounce from the first target to up to 3 nearby enemies, dealing reduced damage per bounce, making it more effective against grouped enemies.

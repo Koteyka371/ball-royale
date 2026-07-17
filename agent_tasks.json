@@ -18699,7 +18699,7 @@
     },
     {
       "id": "idea-1090",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Frictionless Arena Modifier",
@@ -29527,6 +29527,40 @@
         "src/ai/time_dilation_bumper.py",
         "src/ai/time_dilation_bumper.gd",
         "tests/test_time_dilation_bumper.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1726",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Enhancer",
+      "description": "A new booster that increases the bounce limit and damage modifier of lightning strikes.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_enhancer.py",
+        "src/ai/chain_lightning_enhancer.gd",
+        "tests/test_chain_lightning_enhancer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1727",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grounding Field",
+      "description": "A deployable hazard that acts as a lightning rod, absorbing incoming lightning strikes and converting them into a healing aura for nearby allies.",
+      "allowed_paths": [
+        "src/ai/grounding_field.py",
+        "src/ai/grounding_field.gd",
+        "tests/test_grounding_field.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
