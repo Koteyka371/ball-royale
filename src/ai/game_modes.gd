@@ -24141,6 +24141,7 @@ class ExtremeWeatherMode extends GameMode:
 	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse", "celestial_alignment"]
 
 	func _init():
+		self.set_meta("tsunami_wave", null)
 		name = "Extreme Weather"
 		description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
 
@@ -24181,6 +24182,11 @@ class ExtremeWeatherMode extends GameMode:
 			weather_timer = 0.0
 			var old_weather = current_weather
 			current_weather = weathers[randi() % weathers.size()]
+
+			if current_weather == "tsunami":
+				self.set_meta("tsunami_wave", {"x": 0.0, "y": 500.0, "speed": 300.0, "radius": 5000.0})
+			else:
+				self.set_meta("tsunami_wave", null)
 
 			for b in balls:
 				if "forecast_booster_active" in b and b.forecast_booster_active:
@@ -24389,12 +24395,14 @@ class ExtremeWeatherMode extends GameMode:
 					b.y += sin(angle) * 100.0 * delta
 			elif current_weather == "tsunami":
 				if not has_life_jacket:
-					b.x += 300.0 * delta
-					var arena_w = 1000
-					if world != null and "arena" in world and world.arena != null and "width" in world.arena:
-						arena_w = world.arena.width
-					if b.x >= arena_w - 20:
-						b.hp -= 20.0 * delta
+					var tw2 = self.get_meta("tsunami_wave")
+					if tw2 != null and "x" in b and b.x <= tw2["x"] + 100:
+						b.x += 300.0 * delta
+						var arena_w = 1000
+						if world != null and "arena" in world and world.arena != null and "width" in world.arena:
+							arena_w = world.arena.width
+						if b.x >= arena_w - 20:
+							b.hp -= 20.0 * delta
 			elif current_weather == "ice":
 				if not is_immune:
 					if b.has_method("set_meta"):
@@ -24427,6 +24435,23 @@ class ExtremeWeatherMode extends GameMode:
 						b.perception_radius = 50.0
 			elif current_weather == "celestial_alignment":
 				pass
+
+		if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+			var new_hazards = []
+			for h in world.arena.hazards:
+				if typeof(h) == TYPE_OBJECT and h.get("kind") != "tsunami_wave":
+					new_hazards.append(h)
+				elif typeof(h) == TYPE_DICTIONARY and h.get("kind", "") != "tsunami_wave":
+					new_hazards.append(h)
+			world.arena.hazards = new_hazards
+
+		var tw = self.get_meta("tsunami_wave")
+		if tw != null and current_weather == "tsunami":
+			tw["x"] += tw["speed"] * delta
+			self.set_meta("tsunami_wave", tw)
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				var new_h = {"id": 99998, "x": tw["x"], "y": tw["y"], "radius": tw["radius"], "kind": "tsunami_wave", "damage": 0}
+				world.arena.hazards.append(new_h)
 
 		if current_weather == "celestial_alignment":
 			var boss = null

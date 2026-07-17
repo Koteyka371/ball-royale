@@ -15339,6 +15339,7 @@ class ExtremeWeatherMode(GameMode):
         self.weather_timer = 0.0
         self.current_weather = "clear"
         self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse", "celestial_alignment"]
+        self.tsunami_wave = None
         import random
         self.random = random
 
@@ -15369,6 +15370,11 @@ class ExtremeWeatherMode(GameMode):
             self.weather_timer = 0.0
             old_weather = self.current_weather
             self.current_weather = self.random.choice(self.weathers)
+
+            if self.current_weather == "tsunami":
+                self.tsunami_wave = {"x": 0.0, "y": 500.0, "speed": 300.0, "radius": 5000.0}
+            else:
+                self.tsunami_wave = None
 
             for b in balls:
                 if getattr(b, "forecast_booster_active", False):
@@ -15561,7 +15567,7 @@ class ExtremeWeatherMode(GameMode):
                         b.y += math.sin(angle) * 100.0 * delta
             elif self.current_weather == "tsunami":
                 if not has_life_jacket:
-                    if hasattr(b, "x"):
+                    if hasattr(b, "x") and self.tsunami_wave and b.x <= self.tsunami_wave["x"] + 100:
                         b.x += 300.0 * delta
                         arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
                         if b.x >= arena_w - 20:
@@ -15588,6 +15594,26 @@ class ExtremeWeatherMode(GameMode):
                     b.perception_radius = 50.0
             elif self.current_weather == "celestial_alignment":
                 pass # Logic moved to outside the ball loop
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "tsunami_wave"]
+
+        if self.tsunami_wave and self.current_weather == "tsunami":
+            self.tsunami_wave["x"] += self.tsunami_wave["speed"] * delta
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+
+                world.arena.hazards.append(Hazard(99998, self.tsunami_wave["x"], self.tsunami_wave["y"], self.tsunami_wave["radius"], "tsunami_wave", 0))
 
         if self.current_weather == "celestial_alignment":
             boss = None

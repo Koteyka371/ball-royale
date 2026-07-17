@@ -137,26 +137,32 @@ def test_extreme_weather_mode_effects():
 
     # Test tsunami
     mode.current_weather = "tsunami"
-    b1.x = 500
+    mode.tsunami_wave = {"x": 500.0, "y": 500.0, "speed": 300.0, "radius": 5000.0}
+    b1.x = 550
     b1.hp = 100.0
-    b2.x = 500
+    b2.x = 550
     b2.hp = 100.0
     b2.life_jacket_booster_timer = 10.0
 
     mode.tick(world, balls, 1.0)
-    assert b1.x == 800.0 # 500 + 300 * 1.0
-    assert b2.x == 500.0 # b2 is protected
+    assert b1.x == 850.0 # 550 + 300 * 1.0
+    assert b2.x == 550.0 # b2 is protected
 
     # Test wall hit damage
     b1.x = 980
     b1.hp = 100.0
+    mode.tsunami_wave["x"] = 980
     mode.tick(world, balls, 1.0)
     assert b1.hp == 80.0 # 100 - 20 * 1.0
     assert b1.x == 1280.0
 
     # Test meteor shower
-    mode.current_weather = "meteor_shower"
-    world.arena.hazards = []
+    # Simulate the timer ticking over to properly reset tsunami_wave
+    mode.weather_timer = 15.0
+    mode.random.choice = lambda x: "meteor_shower"
+    mode.tick(world, balls, 1.0)
+    world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "tsunami_wave"]
+    # Re-run tick to ensure meteor logic runs properly in the new state
     mode.tick(world, balls, 1.0)
     assert len(world.arena.hazards) >= 1
     assert getattr(world.arena.hazards[0], "kind", "") == "meteor"
