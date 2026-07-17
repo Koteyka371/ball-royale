@@ -37575,3 +37575,151 @@ class SponsorDropMode extends GameMode:
                     world.balls.erase(b)
 
 GAME_MODES["sponsor_drop"] = SponsorDropMode.new()
+
+class WanderingDecoy:
+    var id = 0
+    var x = 0.0
+    var y = 0.0
+    var vx = 0.0
+    var vy = 0.0
+    var radius = 15.0
+    var hp = 1.0
+    var max_hp = 1.0
+    var alive = true
+    var ball_type = "basic"
+    var team = "neutral"
+    var speed = 2.0
+    var base_speed = 100.0
+    var damage = 0.0
+    var base_damage = 0.0
+    var perception_radius = 200.0
+    var is_decoy = true
+    var kind = "wandering_decoy"
+    var duration = 15.0
+    var timer = 0.0
+    var target_x = 0.0
+    var target_y = 0.0
+
+    func _init(id_val, start_x, start_y, target_ball):
+        self.id = id_val
+        self.x = start_x
+        self.y = start_y
+        self.target_x = start_x
+        self.target_y = start_y
+
+        if typeof(target_ball) == TYPE_OBJECT:
+            if "radius" in target_ball: self.radius = target_ball.radius
+            if "ball_type" in target_ball: self.ball_type = target_ball.ball_type
+            if "team" in target_ball: self.team = target_ball.team
+            if "speed" in target_ball: self.speed = target_ball.speed
+            if "base_speed" in target_ball: self.base_speed = target_ball.base_speed
+        elif typeof(target_ball) == TYPE_DICTIONARY:
+            if target_ball.has("radius"): self.radius = target_ball.radius
+            if target_ball.has("ball_type"): self.ball_type = target_ball.ball_type
+            if target_ball.has("team"): self.team = target_ball.team
+            if target_ball.has("speed"): self.speed = target_ball.speed
+            if target_ball.has("base_speed"): self.base_speed = target_ball.base_speed
+
+    func update(delta: float):
+        self.timer += delta
+        self.duration -= delta
+        if self.duration <= 0.0:
+            self.alive = false
+            return
+
+        if randf() < delta * 0.5 or (abs(self.x - self.target_x) < 5.0 and abs(self.y - self.target_y) < 5.0):
+            self.target_x = self.x + randf_range(-200.0, 200.0)
+            self.target_y = self.y + randf_range(-200.0, 200.0)
+
+        var dx = self.target_x - self.x
+        var dy = self.target_y - self.y
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist > 0.0001:
+            var nx = dx / dist
+            var ny = dy / dist
+            var step = self.speed * delta * 60.0
+            self.x += nx * min(step, dist)
+            self.y += ny * min(step, dist)
+
+    func take_damage(amount, source=null):
+        self.alive = false
+        self.hp = 0.0
+
+class WanderingDecoysMode extends GameMode:
+    var spawn_timer = 0.0
+    var spawn_interval = 10.0
+
+    func _init():
+        name = "Wandering Decoys"
+        description = "Periodically spawn harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        spawn_timer = 0.0
+
+    func tick(world, balls, delta):
+        spawn_timer += delta
+
+        var to_remove = []
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT and "kind" in b and b.kind == "wandering_decoy":
+                if "alive" in b and b.alive:
+                    if b.has_method("update"):
+                        b.update(delta)
+                else:
+                    to_remove.append(b)
+
+        for b in to_remove:
+            if typeof(world) == TYPE_OBJECT and "balls" in world:
+                if world.balls.has(b):
+                    world.balls.erase(b)
+            elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                if world.balls.has(b):
+                    world.balls.erase(b)
+            else:
+                if balls.has(b):
+                    balls.erase(b)
+
+        if spawn_timer >= spawn_interval:
+            spawn_timer = 0.0
+
+            var real_balls = []
+            for b in balls:
+                var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+                var is_decoy = b.get("is_decoy", false) if typeof(b) == TYPE_DICTIONARY else (b.is_decoy if "is_decoy" in b else false)
+                if is_alive and not is_decoy:
+                    real_balls.append(b)
+
+            if real_balls.size() == 0:
+                return
+
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+                arena_width = float(world.arena.width)
+                arena_height = float(world.arena.height)
+            elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+                arena_width = float(world.arena.width)
+                arena_height = float(world.arena.height)
+
+            var num_decoys = randi() % 3 + 1
+            for i in range(num_decoys):
+                var target_ball = real_balls[randi() % real_balls.size()]
+                var spawn_x = randf_range(50.0, arena_width - 50.0)
+                var spawn_y = randf_range(50.0, arena_height - 50.0)
+
+                var decoy_id = randi() % 900000 + 100000
+                if typeof(world) == TYPE_OBJECT and "next_id" in world:
+                    decoy_id = world.next_id
+                    world.next_id += 1
+                elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+                    decoy_id = world["next_id"]
+                    world["next_id"] += 1
+
+                var decoy = WanderingDecoy.new(decoy_id, spawn_x, spawn_y, target_ball)
+                if typeof(world) == TYPE_OBJECT and "balls" in world:
+                    world.balls.append(decoy)
+                elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                    world.balls.append(decoy)
+
+GAME_MODES["wandering_decoys"] = WanderingDecoysMode.new()
