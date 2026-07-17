@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1032] Reflect Booster — *2026-07-17 03:08:59 UTC*
+
+A new booster that grants temporary damage reflection. For 5 seconds after collection, any melee or projectile damage taken by the player is reduced by 50% and the remaining 50% is instantly reflected back to the attacker.
+
+---
+
 ## [idea-1045] Gravity Well Hazard — *2026-07-17 03:08:54 UTC*
 
 A new arena hazard that periodically pulls all nearby balls towards its center, slowing movement away from it and accelerating movement towards it, making positioning critical near the edge of the arena.
