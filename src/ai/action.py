@@ -2825,6 +2825,63 @@ class Action:
                             self.world.arena.hazards.append(bh)
 
 
+                if getattr(hazard, "kind", "") == "sticky_bomb":
+                    attached_id = getattr(hazard, "attached_id", None)
+                    if attached_id is None:
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True):
+                                    dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                    if dist_sq < 30.0**2:
+                                        hazard.attached_id = getattr(b, "id", None)
+                                        hazard.duration = 3.0
+                                        break
+                    else:
+                        current_attached = None
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "id", None) == attached_id:
+                                    current_attached = b
+                                    break
+                        if current_attached and getattr(current_attached, "alive", True):
+                            hazard.x = current_attached.x
+                            hazard.y = current_attached.y
+
+                            if hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True) and getattr(b, "id", None) != attached_id:
+                                        dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                        if dist_sq < 40.0**2:
+                                            hazard.attached_id = getattr(b, "id", None)
+                                            hazard.duration = 3.0
+                                            break
+                        else:
+                            hazard.attached_id = None
+
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+                            explosion_radius = 100.0
+                            explosion_damage = 100.0
+                            if hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True):
+                                        dx = hazard.x - b.x
+                                        dy = hazard.y - b.y
+                                        if dx*dx + dy*dy <= explosion_radius**2:
+                                            if hasattr(b, "take_damage"):
+                                                b.take_damage(explosion_damage)
+                                            elif hasattr(b, "hp"):
+                                                b.hp -= explosion_damage
+                                                if b.hp <= 0:
+                                                    b.alive = False
+                                                    b.killer = getattr(hazard, "owner_id", None)
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': explosion_radius}})
+
                 if getattr(hazard, "kind", "") == "sticky_mine":
                     if getattr(hazard, "duration", 0.0) > 0:
                         hazard.duration -= delta
@@ -10053,6 +10110,25 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "sticky_bomb_booster":
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            bomb = Hazard(len(self.world.arena.hazards) + 50000, self.ball.x, self.ball.y, 20.0, "sticky_bomb", 0.0)
+                        except ImportError:
+                            class TempHazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                            bomb = TempHazard(len(self.world.arena.hazards) + 50000, self.ball.x, self.ball.y, 20.0, "sticky_bomb", 0.0)
+                        setattr(bomb, "duration", 0.0)
+                        setattr(bomb, "owner_id", getattr(self.ball, "id", None))
+                        setattr(bomb, "attached_id", None)
+                        self.world.arena.hazards.append(bomb)
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "sticky_mine_booster":
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         try:
