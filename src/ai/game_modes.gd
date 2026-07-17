@@ -31770,6 +31770,7 @@ class InfiltrationMode extends GameMode:
 
 
 GAME_MODES = {
+	"bounty_contract_event": BountyContractEventMode.new(),
 	"infiltration": InfiltrationMode.new(),
 	"parallel_dimensions": ParallelDimensionsMode.new(),
 	'time_loop_field': TimeLoopFieldMode.new(),
@@ -36906,3 +36907,163 @@ class PlatformerMode extends GameMode:
 GAME_MODES['platformer'] = PlatformerMode.new()
 GAME_MODES['flooding_arena'] = FloodingArenaMode.new()
 GAME_MODES["slingshot"] = preload("res://src/ai/slingshot.gd").SlingshotMode.new()
+
+
+class BountyContractEventMode extends GameMode:
+	var timer = 0.0
+	var bounty_id = null
+
+	func _init():
+		super()
+		name = "Bounty Contract Event"
+		description = "A random arena event where one ball is marked as a bounty for all other players. The marked ball gains temporary buffs to survive, while others get bonus XP for defeating them."
+		active = false
+		id = "bounty_contract_event"
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		var alive_balls = []
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive if "alive" in b else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			else:
+				b_type = b.ball_type if "ball_type" in b else ""
+
+			if is_alive and b_type != "spectator":
+				alive_balls.append(b)
+
+		if alive_balls.size() == 0:
+			return
+
+		if not active:
+			if randf() < 0.02 * delta:
+				active = true
+				timer = 20.0
+				var bounty_ball = alive_balls[randi() % alive_balls.size()]
+
+				if typeof(bounty_ball) == TYPE_DICTIONARY:
+					bounty_id = bounty_ball.get("id", null)
+					bounty_ball["is_bounty_contract"] = true
+					bounty_ball["base_speed"] = bounty_ball.get("base_speed", 100.0) * 1.5
+					bounty_ball["max_hp"] = bounty_ball.get("max_hp", 100.0) + 100.0
+					bounty_ball["hp"] = bounty_ball["max_hp"]
+					bounty_ball["bounty_contract_xp_reward"] = 500
+				elif bounty_ball.has_method("set_meta"):
+					bounty_id = bounty_ball.get("id") if "id" in bounty_ball else null
+					bounty_ball.set_meta("is_bounty_contract", true)
+					var bs = bounty_ball.get("base_speed") if "base_speed" in bounty_ball else 100.0
+					if "base_speed" in bounty_ball:
+						bounty_ball.base_speed = bs * 1.5
+					else:
+						bounty_ball.set_meta("base_speed", bs * 1.5)
+
+					var mhp = bounty_ball.get("max_hp") if "max_hp" in bounty_ball else 100.0
+					if "max_hp" in bounty_ball:
+						bounty_ball.max_hp = mhp + 100.0
+					else:
+						bounty_ball.set_meta("max_hp", mhp + 100.0)
+
+					if "hp" in bounty_ball:
+						bounty_ball.hp = (mhp + 100.0)
+					else:
+						bounty_ball.set_meta("hp", mhp + 100.0)
+					bounty_ball.set_meta("bounty_contract_xp_reward", 500)
+				else:
+					bounty_id = bounty_ball.id if "id" in bounty_ball else null
+					bounty_ball.is_bounty_contract = true
+					bounty_ball.base_speed = (bounty_ball.base_speed if "base_speed" in bounty_ball else 100.0) * 1.5
+					bounty_ball.max_hp = (bounty_ball.max_hp if "max_hp" in bounty_ball else 100.0) + 100.0
+					bounty_ball.hp = bounty_ball.max_hp
+					bounty_ball.bounty_contract_xp_reward = 500
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("bounty_contract_start", {"message": "A bounty contract has been placed on ball " + str(bounty_id) + "!", "bounty_id": bounty_id})
+		else:
+			timer -= delta
+			var bounty_ball = null
+			for b in alive_balls:
+				var bid = null
+				if typeof(b) == TYPE_DICTIONARY:
+					bid = b.get("id")
+				elif b.has_method("get_meta"):
+					bid = b.get("id") if "id" in b else (b.get_meta("id") if b.has_meta("id") else null)
+				else:
+					bid = b.id if "id" in b else null
+
+				if bid == bounty_id:
+					bounty_ball = b
+					break
+
+			if bounty_ball == null or timer <= 0:
+				active = false
+
+				if bounty_ball != null:
+					if typeof(bounty_ball) == TYPE_DICTIONARY:
+						bounty_ball["is_bounty_contract"] = false
+						bounty_ball["base_speed"] = bounty_ball.get("base_speed", 150.0) / 1.5
+						if bounty_ball.has("xp"):
+							bounty_ball["xp"] += 250
+					elif bounty_ball.has_method("set_meta"):
+						bounty_ball.set_meta("is_bounty_contract", false)
+						var bs = bounty_ball.get("base_speed") if "base_speed" in bounty_ball else (bounty_ball.get_meta("base_speed") if bounty_ball.has_meta("base_speed") else 150.0)
+						if "base_speed" in bounty_ball:
+							bounty_ball.base_speed = bs / 1.5
+						else:
+							bounty_ball.set_meta("base_speed", bs / 1.5)
+						if "xp" in bounty_ball:
+							bounty_ball.xp += 250
+						elif bounty_ball.has_meta("xp"):
+							bounty_ball.set_meta("xp", bounty_ball.get_meta("xp") + 250)
+					else:
+						bounty_ball.is_bounty_contract = false
+						if "base_speed" in bounty_ball:
+							bounty_ball.base_speed = bounty_ball.base_speed / 1.5
+						if "xp" in bounty_ball:
+							bounty_ball.xp += 250
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("bounty_contract_end", {"message": "Ball " + str(bounty_id) + " survived the bounty!", "bounty_id": bounty_id})
+				else:
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("bounty_contract_failed", {"message": "The bounty on ball " + str(bounty_id) + " was claimed!", "bounty_id": bounty_id})
+
+	func on_ball_died(world, ball, killer):
+		if active:
+			var bid = null
+			var b_reward = 500
+			if typeof(ball) == TYPE_DICTIONARY:
+				bid = ball.get("id")
+				b_reward = ball.get("bounty_contract_xp_reward", 500)
+			elif ball.has_method("get_meta"):
+				bid = ball.get("id") if "id" in ball else (ball.get_meta("id") if ball.has_meta("id") else null)
+				b_reward = ball.get("bounty_contract_xp_reward") if "bounty_contract_xp_reward" in ball else (ball.get_meta("bounty_contract_xp_reward") if ball.has_meta("bounty_contract_xp_reward") else 500)
+			else:
+				bid = ball.id if "id" in ball else null
+				b_reward = ball.bounty_contract_xp_reward if "bounty_contract_xp_reward" in ball else 500
+
+			if bid == bounty_id:
+				if killer != null:
+					var k_alive = false
+					if typeof(killer) == TYPE_DICTIONARY:
+						k_alive = killer.get("alive", false)
+						if k_alive and killer.has("xp"):
+							killer["xp"] += b_reward
+					elif killer.has_method("get_meta"):
+						k_alive = killer.get("alive") if "alive" in killer else (killer.get_meta("alive") if killer.has_meta("alive") else false)
+						if k_alive:
+							if "xp" in killer:
+								killer.xp += b_reward
+							elif killer.has_meta("xp"):
+								killer.set_meta("xp", killer.get_meta("xp") + b_reward)
+					else:
+						k_alive = killer.alive if "alive" in killer else false
+						if k_alive and "xp" in killer:
+							killer.xp += b_reward
