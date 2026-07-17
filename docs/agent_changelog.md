@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1009] Engineer Synergies: Overclock — *2026-07-17 02:12:03 UTC*
+
+If an Engineer is near one of their deployed turrets and activates their skill while it is on cooldown, the turret gets 'overclocked'—firing twice as fast but slowly losing HP over time.
+
+---
+
 ## [idea-875] Bouncy Terrain Feature — *2026-07-17 01:36:11 UTC*
 
 Add dynamic terrain objects that act as trampolines. Balls colliding with them gain a temporary speed boost and ignore ground hazards for 2 seconds.

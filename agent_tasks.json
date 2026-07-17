@@ -17322,7 +17322,7 @@
     },
     {
       "id": "idea-1009",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Engineer Synergies: Overclock",
@@ -28660,6 +28660,142 @@
         "src/ai/abyssal_labyrinth.py",
         "src/ai/abyssal_labyrinth.gd",
         "tests/test_abyssal_labyrinth.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1675",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Debris Mutator",
+      "description": "Introduces a game mode mutator where indestructible debris clusters orbit the center gravity well. The debris blocks projectiles and damages entities upon high-speed collision, forcing players to time their approaches and manage their slingshot trajectories carefully.",
+      "allowed_paths": [
+        "src/ai/orbital_debris_mutator.py",
+        "src/ai/orbital_debris_mutator.gd",
+        "tests/test_orbital_debris_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1676",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Conveyor Belts",
+      "description": "Moving paths on the arena that linearly accelerate entities in one fixed direction.",
+      "allowed_paths": [
+        "src/ai/conveyor_belts.py",
+        "src/ai/conveyor_belts.gd",
+        "tests/test_conveyor_belts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1677",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Wall Modification",
+      "description": "Balls striking sticky walls stick to them for up to 3 seconds before sliding off.",
+      "allowed_paths": [
+        "src/ai/sticky_wall_modification.py",
+        "src/ai/sticky_wall_modification.gd",
+        "tests/test_sticky_wall_modification.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1678",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Snowball Fight Mode",
+      "description": "Balls turn into snowballs that grow as they move across ice patches and deal damage based on size.",
+      "allowed_paths": [
+        "src/ai/snowball_fight.py",
+        "src/ai/snowball_fight.gd",
+        "tests/test_snowball_fight.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1679",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Holographic Decoy Modules",
+      "description": "Players can equip a holographic decoy module that periodically spawns illusory clones which perfectly mimic the player's movements and attacks, but deal zero damage. They explode into a small blinding flash when destroyed, confusing enemies.",
+      "allowed_paths": [
+        "src/ai/holographic_decoy_modules.py",
+        "src/ai/holographic_decoy_modules.gd",
+        "tests/test_holographic_decoy_modules.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1680",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Blast Trap",
+      "description": "A deployable trap that, when triggered, releases an electromagnetic pulse. This pulse temporarily disables the thermal vision, advanced optics, and stealth drones of caught enemies, returning their perception back to standard visual range.",
+      "allowed_paths": [
+        "src/arena/emp_blast_trap.py",
+        "src/arena/emp_blast_trap.gd",
+        "tests/test_emp_blast_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1681",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Curling Mode",
+      "description": "A mode where balls have to land as close to a target as possible with ultra-low friction.",
+      "allowed_paths": [
+        "src/ai/curling.py",
+        "src/ai/curling.gd",
+        "tests/test_curling.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1682",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Anti-Gravity Repulsor Booster",
+      "description": "A new booster item that grants temporary immunity to all pull-based physics forces (like gravity wells and tornadoes) and emits a small repulsor field, pushing away nearby hazards and enemies for a short duration.",
+      "allowed_paths": [
+        "src/ai/anti_gravity_repulsor_booster.py",
+        "src/ai/anti_gravity_repulsor_booster.gd",
+        "tests/test_anti_gravity_repulsor_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
