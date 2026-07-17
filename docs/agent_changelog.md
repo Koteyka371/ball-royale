@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1088] Reflect Shield — *2026-07-17 23:05:48 UTC*
+
+A temporary shield that bounces any projectiles or damage-dealing effects back at the attacker, creating defensive and counter-attacking opportunities in high-chaos situations.
+
+---
+
 ## [idea-1097] Nemesis Faction War — *2026-07-17 22:36:06 UTC*
 
 Introduces a global faction war event where players align with either Light or Dark factions. Completing nemesis revenge kills earns points for the chosen faction. The winning faction at the end of the season unlocks a unique, faction-themed ball type for all its participants.

@@ -18665,7 +18665,7 @@
     },
     {
       "id": "idea-1088",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reflect Shield",
@@ -29697,6 +29697,40 @@
         "src/ai/magnetic_storm.py",
         "src/ai/magnetic_storm.gd",
         "tests/test_magnetic_storm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1736",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Faction Mercenaries",
+      "description": "Players can hire AI mercenaries from the opposing faction using skill points to fight alongside them temporarily.",
+      "allowed_paths": [
+        "src/ai/faction_mercenaries.py",
+        "src/ai/faction_mercenaries.gd",
+        "tests/test_faction_mercenaries.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1737",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Faction Superweapons",
+      "description": "If a faction is losing heavily, they get access to a global superweapon that can instantly eliminate half of the enemy team's players.",
+      "allowed_paths": [
+        "src/ai/faction_superweapons.py",
+        "src/ai/faction_superweapons.gd",
+        "tests/test_faction_superweapons.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
