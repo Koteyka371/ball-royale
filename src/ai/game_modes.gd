@@ -32083,6 +32083,7 @@ class FrictionlessArenaModifierMode extends GameMode:
 
 
 GAME_MODES = {
+	"faction_war": FactionWarMode.new(),
 	"frictionless_arena_modifier": FrictionlessArenaModifierMode.new(),
 	"bounty_contract_event": BountyContractEventMode.new(),
 	"infiltration": InfiltrationMode.new(),
@@ -37849,3 +37850,89 @@ class FakeBallsMode extends GameMode:
                     world.balls.erase(b)
 
 GAME_MODES["fake_balls"] = FakeBallsMode.new()
+
+
+class FactionWarMode extends GameMode:
+	var light_points: int = 0
+	var dark_points: int = 0
+	var season_ended: bool = false
+	var winning_faction = null
+	var season_timer: float = 300.0
+
+	func _init():
+		super()
+		name = "Faction War"
+		description = "Players align with Light or Dark factions. Completing nemesis revenge kills earns points for the chosen faction."
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		if not season_ended:
+			season_timer -= delta
+			if season_timer <= 0:
+				end_season(world)
+
+	func on_ball_died(world, ball, killer):
+		if super.has_method("on_ball_died"):
+			super.on_ball_died(world, ball, killer)
+
+		if killer == null or season_ended: return
+		var pm = null
+		if typeof(world) == TYPE_OBJECT and "profile_manager" in world:
+			pm = world.profile_manager
+		elif typeof(world) == TYPE_DICTIONARY and world.has("profile_manager"):
+			pm = world["profile_manager"]
+
+		if pm != null and typeof(pm) == TYPE_OBJECT and pm.has_method("is_nemesis"):
+			var k_type = ""
+			if "ball_type" in killer: k_type = killer.ball_type
+			elif typeof(killer) == TYPE_OBJECT and killer.has_method("get") and killer.get("ball_type") != null: k_type = killer.get("ball_type")
+			elif typeof(killer) == TYPE_DICTIONARY and killer.has("ball_type"): k_type = killer["ball_type"]
+
+			var v_type = ""
+			if "ball_type" in ball: v_type = ball.ball_type
+			elif typeof(ball) == TYPE_OBJECT and ball.has_method("get") and ball.get("ball_type") != null: v_type = ball.get("ball_type")
+			elif typeof(ball) == TYPE_DICTIONARY and ball.has("ball_type"): v_type = ball["ball_type"]
+
+			if pm.is_nemesis(v_type, k_type):
+				var faction = null
+				if k_type == "local_player" and pm.has_method("get_faction"):
+					faction = pm.get_faction()
+				elif "faction" in killer:
+					faction = killer.faction
+				elif typeof(killer) == TYPE_DICTIONARY and killer.has("faction"):
+					faction = killer["faction"]
+
+				if faction == null:
+					if k_type.hash() % 2 == 0: faction = "Light"
+					else: faction = "Dark"
+
+				if faction == "Light":
+					light_points += 1
+				elif faction == "Dark":
+					dark_points += 1
+
+	func end_season(world):
+		season_ended = true
+		var pm = null
+		if typeof(world) == TYPE_OBJECT and "profile_manager" in world:
+			pm = world.profile_manager
+		elif typeof(world) == TYPE_DICTIONARY and world.has("profile_manager"):
+			pm = world["profile_manager"]
+
+		if light_points > dark_points:
+			winning_faction = "Light"
+		elif dark_points > light_points:
+			winning_faction = "Dark"
+		else:
+			winning_faction = "Tie"
+
+		if pm != null and winning_faction != "Tie" and pm.has_method("get_faction"):
+			var player_faction = pm.get_faction()
+			if player_faction == winning_faction:
+				var ball_to_unlock = winning_faction.to_lower() + "_champion"
+				if not pm.data.has("unlocked_balls"):
+					pm.data["unlocked_balls"] = []
+				if not pm.data["unlocked_balls"].has(ball_to_unlock):
+					pm.data["unlocked_balls"].append(ball_to_unlock)
+					if pm.has_method("save_profile"):
+						pm.save_profile()

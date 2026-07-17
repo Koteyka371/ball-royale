@@ -152,6 +152,16 @@ func add_skill_points(points: int):
     save_profile()
 
 
+
+func join_faction(faction_name: String) -> void:
+    data["faction"] = faction_name
+    save_profile()
+
+func get_faction():
+    if data.has("faction"):
+        return data["faction"]
+    return null
+
 func get_unlocked_balls() -> Array:
     var unlocked = []
     if data.has("unlocked_balls"):
