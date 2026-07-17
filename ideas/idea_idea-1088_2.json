@@ -1,0 +1,4 @@
+{
+  "title": "Stasis Bubble Booster",
+  "description": "A booster that deploys a stasis bubble around the ball. The bubble completely stops time within a 50-radius around the ball for 3 seconds, freezing projectiles and other balls, but the ball itself can still move freely."
+}
