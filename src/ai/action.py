@@ -9827,6 +9827,8 @@ class Action:
             nearest = min(boosters, key=lambda b: (get_bx(b) - self.ball.x) ** 2 + (get_by(b) - self.ball.y) ** 2)
             nx_target = get_bx(nearest)
             ny_target = get_by(nearest)
+            self.ball._pre_teleport_x = self.ball.x
+            self.ball._pre_teleport_y = self.ball.y
             dx, dy = nx_target - self.ball.x, ny_target - self.ball.y
             dist_sq = dx * dx + dy * dy
             if dist_sq > 0.0001:
@@ -10213,6 +10215,67 @@ class Action:
                 elif getattr(nearest, "kind", None) == "debuff_booster":
                     # Applies debuffs
                     self.ball.slow_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "teleport_booster":
+                    # Store original position BEFORE teleporting and BEFORE moving towards the booster
+                    old_x = getattr(self.ball, "_pre_teleport_x", self.ball.x)
+                    old_y = getattr(self.ball, "_pre_teleport_y", self.ball.y)
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "safe_zone_center"):
+                        # Teleport to a random safe location
+                        import math
+                        import random
+                        cx, cy = self.world.arena.safe_zone_center
+                        radius = getattr(self.world.arena, "safe_zone_radius", 500.0)
+                        # Pick a random point within the safe zone radius (with a small buffer)
+                        angle = random.uniform(0, 2 * math.pi)
+                        r = random.uniform(0, max(0, radius - 50.0))
+                        target_x = cx + math.cos(angle) * r
+                        target_y = cy + math.sin(angle) * r
+
+                        # Clamp to arena bounds
+                        arena_width = getattr(self.world.arena, "width", 1000.0)
+                        arena_height = getattr(self.world.arena, "height", 1000.0)
+                        self.ball.x = max(10, min(arena_width - 10, target_x))
+                        self.ball.y = max(10, min(arena_height - 10, target_y))
+
+                    self.ball.immunity_timer = max(getattr(self.ball, "immunity_timer", 0.0), 3.0)
+
+                    # Leave behind an explosive decoy
+                    import copy
+                    import random
+                    if hasattr(self.world, "balls"):
+                        decoy = copy.copy(self.ball)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        decoy.x = old_x
+                        decoy.y = old_y
+
+                        decoy.hp = getattr(self.ball, "max_hp", 100)
+                        decoy.max_hp = decoy.hp
+                        decoy.damage = 0
+                        if hasattr(decoy, "base_damage"): decoy.base_damage = 0
+                        decoy.owner_id = getattr(self.ball, "id", None)
+                        decoy.is_decoy = True
+                        decoy.decoy_type = "explosive"
+                        decoy.decoy_timer = 5.0
+                        decoy.skill_timer = 9999.0
+                        decoy.attack_timer = 9999.0
+                        decoy.SKILL = None
+                        decoy.skill = None
+                        decoy.active_skill = None
+
+                        self.world.balls.append(decoy)
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
+
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -14079,6 +14142,43 @@ class Action:
 
 
                 if getattr(other, "team", None) != getattr(self.ball, "team", None):
+                    if getattr(self.ball, "is_decoy", False) and getattr(self.ball, "decoy_type", "") == "explosive":
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 150.0, "damage": 50.0})
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if b != self.ball and getattr(b, "alive", True):
+                                    dist = ((self.ball.x - b.x)**2 + (self.ball.y - b.y)**2)**0.5
+                                    if dist <= 150.0:
+                                        if hasattr(self.world, "_deal_damage"):
+                                            # We need to temporarily add damage to self.ball
+                                            old_dmg = getattr(self.ball, "damage", 10.0)
+                                            self.ball.damage = 50.0
+                                            self.world._deal_damage(self.ball, b)
+                                            self.ball.damage = old_dmg
+                                        elif hasattr(b, "hp"):
+                                            b.hp -= 50.0
+                        self.ball.hp = 0
+                        self.ball.alive = False
+
+                    if getattr(other, "is_decoy", False) and getattr(other, "decoy_type", "") == "explosive":
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("explosion", {"x": other.x, "y": other.y, "radius": 150.0, "damage": 50.0})
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if b != other and getattr(b, "alive", True):
+                                    dist = ((other.x - b.x)**2 + (other.y - b.y)**2)**0.5
+                                    if dist <= 150.0:
+                                        if hasattr(self.world, "_deal_damage"):
+                                            old_dmg = getattr(other, "damage", 10.0)
+                                            other.damage = 50.0
+                                            self.world._deal_damage(other, b)
+                                            other.damage = old_dmg
+                                        elif hasattr(b, "hp"):
+                                            b.hp -= 50.0
+                        other.hp = 0
+                        other.alive = False
+
                     setattr(other, "_last_hit_by_id", getattr(self.ball, "id", None))
                     setattr(other, "_last_hit_by_timer", 2.0)
                     setattr(self.ball, "_last_hit_by_id", getattr(other, "id", None))

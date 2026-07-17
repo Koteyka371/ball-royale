@@ -18949,6 +18949,107 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "teleport_booster":
+                var old_x = self.ball.x
+                if "pre_teleport_x" in self.ball: old_x = self.ball.pre_teleport_x
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("pre_teleport_x"): old_x = self.ball.get_meta("pre_teleport_x")
+
+                var old_y = self.ball.y
+                if "pre_teleport_y" in self.ball: old_y = self.ball.pre_teleport_y
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("pre_teleport_y"): old_y = self.ball.get_meta("pre_teleport_y")
+
+                if self.world != null and "arena" in self.world and "safe_zone_center" in self.world.arena:
+                    var cx = self.world.arena.safe_zone_center[0] if typeof(self.world.arena.safe_zone_center) == TYPE_ARRAY else self.world.arena.safe_zone_center.x
+                    var cy = self.world.arena.safe_zone_center[1] if typeof(self.world.arena.safe_zone_center) == TYPE_ARRAY else self.world.arena.safe_zone_center.y
+
+                    var radius = 500.0
+                    if "safe_zone_radius" in self.world.arena:
+                        radius = self.world.arena.safe_zone_radius
+
+                    var angle = randf() * 2 * PI
+                    var r = randf() * max(0.0, radius - 50.0)
+                    var target_x = cx + cos(angle) * r
+                    var target_y = cy + sin(angle) * r
+
+                    var arena_width = 1000.0
+                    if "width" in self.world.arena: arena_width = self.world.arena.width
+                    var arena_height = 1000.0
+                    if "height" in self.world.arena: arena_height = self.world.arena.height
+
+                    self.ball.x = clamp(target_x, 10.0, arena_width - 10.0)
+                    self.ball.y = clamp(target_y, 10.0, arena_height - 10.0)
+
+                var current_imm = 0.0
+                if "immunity_timer" in self.ball: current_imm = self.ball.immunity_timer
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("immunity_timer"): current_imm = self.ball.get_meta("immunity_timer")
+                if current_imm < 3.0:
+                    if "immunity_timer" in self.ball: self.ball.immunity_timer = 3.0
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("immunity_timer", 3.0)
+
+                # Leave behind an explosive decoy
+                if self.world != null and "balls" in self.world:
+                    # GDScript object duplication might be tricky, let's create a minimal decoy if possible, or use duplicate
+                    var decoy = null
+                    if self.ball.has_method("duplicate"):
+                        decoy = self.ball.duplicate()
+                    elif self.ball.has_method("clone"):
+                        decoy = self.ball.clone()
+
+                    if decoy != null:
+                        var new_id = randi() % 90000 + 10000
+                        if "next_id" in self.world:
+                            new_id = self.world.next_id
+                            self.world.next_id += 1
+
+                        if "id" in decoy: decoy.id = new_id
+                        elif decoy.has_method("set_meta"): decoy.set_meta("id", new_id)
+
+                        if "x" in decoy: decoy.x = old_x
+                        elif decoy.has_method("set_meta"): decoy.set_meta("x", old_x)
+                        if "y" in decoy: decoy.y = old_y
+                        elif decoy.has_method("set_meta"): decoy.set_meta("y", old_y)
+
+                        var mhp = 100
+                        if "max_hp" in self.ball: mhp = self.ball.max_hp
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): mhp = self.ball.get_meta("max_hp")
+
+                        if "hp" in decoy: decoy.hp = mhp
+                        elif decoy.has_method("set_meta"): decoy.set_meta("hp", mhp)
+                        if "max_hp" in decoy: decoy.max_hp = mhp
+                        elif decoy.has_method("set_meta"): decoy.set_meta("max_hp", mhp)
+
+                        if "damage" in decoy: decoy.damage = 0
+                        elif decoy.has_method("set_meta"): decoy.set_meta("damage", 0)
+
+                        var b_id = null
+                        if "id" in self.ball: b_id = self.ball.id
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                        if "owner_id" in decoy: decoy.owner_id = b_id
+                        elif decoy.has_method("set_meta"): decoy.set_meta("owner_id", b_id)
+
+                        if "is_decoy" in decoy: decoy.is_decoy = true
+                        elif decoy.has_method("set_meta"): decoy.set_meta("is_decoy", true)
+
+                        if "decoy_type" in decoy: decoy.decoy_type = "explosive"
+                        elif decoy.has_method("set_meta"): decoy.set_meta("decoy_type", "explosive")
+
+                        if "decoy_timer" in decoy: decoy.decoy_timer = 5.0
+                        elif decoy.has_method("set_meta"): decoy.set_meta("decoy_timer", 5.0)
+
+                        self.world.balls.append(decoy)
+
+                if self.world != null and "events" in self.world:
+                    self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "cleanse_booster":
                 if "immunity_timer" in self.ball: self.ball.immunity_timer = 15.0
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("immunity_timer", 15.0)
