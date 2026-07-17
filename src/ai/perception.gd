@@ -38,18 +38,39 @@ func scan() -> Dictionary:
             has_night_vision = true
         if "cosmetic" in self.ball:
             var c_val = str(self.ball.cosmetic).to_lower().replace(" ", "_")
-            if c_val == "night_vision_goggles" or c_val == "lantern":
+            if c_val == "night_vision_goggles" or c_val == "lantern" or c_val == "thermal_goggles" or c_val == "infrared_goggles":
                 has_night_vision = true
+        if "has_thermal_vision" in self.ball and self.ball.has_thermal_vision:
+            has_night_vision = true
         if "light_source_booster_timer" in self.ball and float(self.ball.light_source_booster_timer) > 0.0:
             has_night_vision = true
         elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("light_source_booster_timer") and float(self.ball.get_meta("light_source_booster_timer")) > 0.0:
             has_night_vision = true
 
+        # Dynamic vision enhancements based on items and cosmetics
+        var local_has_thermal = false
+        if "has_thermal_vision" in self.ball and self.ball.has_thermal_vision:
+            local_has_thermal = true
+        elif "cosmetic" in self.ball:
+            var c_val = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+            if c_val == "thermal_goggles" or c_val == "infrared_goggles":
+                local_has_thermal = true
+
+        if local_has_thermal and "is_night" in self.world.arena and self.world.arena.is_night:
+            perception_radius = max(perception_radius, 1000.0)
+
+        var has_advanced_optics = false
+        if "advanced_optics_active" in self.ball and self.ball.advanced_optics_active:
+            has_advanced_optics = true
+
+        if has_advanced_optics:
+            perception_radius = max(perception_radius, 1500.0)
+
         if "is_lunar_eclipse" in self.world.arena and self.world.arena.is_lunar_eclipse:
             perception_radius = max(perception_radius, 2000.0)
         elif "is_eclipse" in self.world.arena and self.world.arena.is_eclipse:
             perception_radius = min(perception_radius, 20.0)
-        elif self.world.arena.is_night:
+        elif "is_night" in self.world.arena and self.world.arena.is_night:
             if not has_night_vision:
                 var night_ratio = 1.0
                 if "night_ratio" in self.world.arena:
@@ -64,6 +85,11 @@ func scan() -> Dictionary:
     var cosmetic = ""
     if "cosmetic" in self.ball:
         cosmetic = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+    var has_thermal_vision = false
+    if "has_thermal_vision" in self.ball and self.ball.has_thermal_vision:
+        has_thermal_vision = true
+    elif cosmetic == "thermal_goggles" or cosmetic == "infrared_goggles":
+        has_thermal_vision = true
     var ignores_fog = cosmetic == "thermal_goggles"
     var ignores_sandstorm = cosmetic in ["desert_goggles", "sand_goggles"]
     var ignores_snow = cosmetic in ["snow_goggles", "ski_goggles"]
@@ -123,13 +149,16 @@ func scan() -> Dictionary:
                 var dist = sqrt(pow(hx - bx_curr, 2) + pow(hy - by_curr, 2))
                 if dist <= hr:
                     in_smoke = true
-    if in_smoke:
+    if in_smoke and not has_thermal_vision:
         perception_radius = min(perception_radius, 50.0)
 
     var entities = self.world.get_nearby_entities(self.ball, perception_radius)
 
     var intersects_smoke = func(ent):
         if has_sonar: return false
+
+        if has_thermal_vision: return false
+
         var ex = 0.0
         var ey = 0.0
         if "x" in ent: ex = ent.x
@@ -165,6 +194,8 @@ func scan() -> Dictionary:
                 elif h.has_method("has_meta") and h.has_meta("active"): h_active = h.get_meta("active")
                 if h_active:
                     active_flares.append(h)
+
+    var ball_has_thermal_vision = has_thermal_vision
 
     data["enemies"] = []
     for e in entities.get("enemies", []):
@@ -222,14 +253,19 @@ func scan() -> Dictionary:
 
             if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster:
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
-                if (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
-                    continue
-                elif is_sand_cloaked and dist > 40.0:
-                    continue
-                elif e_has_shadow and dist > 30.0:
-                    continue
-                elif e_has_stealth and dist > 80.0:
-                    continue
+
+                if ball_has_thermal_vision:
+                    if dist > 500.0:
+                        continue
+                else:
+                    if (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
+                        continue
+                    elif is_sand_cloaked and dist > 40.0:
+                        continue
+                    elif e_has_shadow and dist > 30.0:
+                        continue
+                    elif e_has_stealth and dist > 80.0:
+                        continue
 
         data["enemies"].append(e)
     data["allies"] = []

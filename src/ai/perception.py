@@ -19,6 +19,9 @@ class Perception:
         """
         perception_radius = getattr(self.ball, "perception_radius", 300.0)
 
+        # Global cosmetics string for checks
+        cosmetic_val = str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_")
+
         has_sonar = getattr(self.ball, "sonar_ping_timer", 0.0) > 0
         if has_sonar:
             perception_radius = max(perception_radius, 1500.0)
@@ -49,11 +52,20 @@ class Perception:
                 has_night_vision = True
             if getattr(self.ball, "ball_type", "") == "vampire":
                 has_night_vision = True
-            cosmetic_val = str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_")
-            if cosmetic_val in ["night_vision_goggles", "lantern"]:
+            if cosmetic_val in ["night_vision_goggles", "lantern", "thermal_goggles", "infrared_goggles"]:
+                has_night_vision = True
+            if getattr(self.ball, "has_thermal_vision", False):
                 has_night_vision = True
             if getattr(self.ball, "light_source_booster_timer", 0.0) > 0:
                 has_night_vision = True
+
+            # Dynamic vision enhancements based on items and cosmetics
+            has_thermal_vision = getattr(self.ball, "has_thermal_vision", False) or cosmetic_val in ["thermal_goggles", "infrared_goggles"]
+            if has_thermal_vision and getattr(self.world.arena, 'is_night', False):
+                perception_radius = max(perception_radius, 1000.0)
+            has_advanced_optics = getattr(self.ball, "advanced_optics_active", False)
+            if has_advanced_optics:
+                perception_radius = max(perception_radius, 1500.0)
 
             if getattr(self.world.arena, "is_lunar_eclipse", False):
                 perception_radius = max(perception_radius, 2000.0)
@@ -61,7 +73,7 @@ class Perception:
                 perception_radius = min(perception_radius, 20.0)
             elif has_flare_vision:
                 perception_radius = max(perception_radius, 2000.0)
-            elif self.world.arena.is_night:
+            elif getattr(self.world.arena, 'is_night', False):
                 if not has_night_vision:
                     night_ratio = getattr(self.world.arena, "night_ratio", 1.0)
                     perception_radius = max(100.0, perception_radius * (1.0 - night_ratio * 0.8))
@@ -70,11 +82,10 @@ class Perception:
 
         is_lunar = hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False)
 
-        cosmetic = str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_")
-        ignores_fog = cosmetic == "thermal_goggles"
-        ignores_sandstorm = cosmetic in ["desert_goggles", "sand_goggles"]
-        ignores_snow = cosmetic in ["snow_goggles", "ski_goggles"]
-        ignores_rain = cosmetic in ["rain_goggles", "waterproof_goggles"]
+        ignores_fog = cosmetic_val == "thermal_goggles"
+        ignores_sandstorm = cosmetic_val in ["desert_goggles", "sand_goggles"]
+        ignores_snow = cosmetic_val in ["snow_goggles", "ski_goggles"]
+        ignores_rain = cosmetic_val in ["rain_goggles", "waterproof_goggles"]
 
         if hasattr(self.world, "arena") and getattr(self.world.arena, "is_foggy", None) is not None:
             if self.world.arena.is_foggy and not ignores_fog and not is_lunar:
@@ -120,12 +131,16 @@ class Perception:
                     dist = math.sqrt((getattr(h, "x", 0) - bx_curr)**2 + (getattr(h, "y", 0) - by_curr)**2)
                     if dist <= getattr(h, "radius", 0):
                         in_smoke = True
-        if in_smoke:
+        has_thermal = getattr(self.ball, "has_thermal_vision", False) or cosmetic_val in ["thermal_goggles", "infrared_goggles"]
+        if in_smoke and not has_thermal:
             perception_radius = min(perception_radius, 50.0)
 
         entities = self.world.get_nearby_entities(self.ball, perception_radius)
         def intersects_smoke(ent):
             if has_sonar:
+                return False
+            has_thermal_internal = getattr(self.ball, "has_thermal_vision", False) or cosmetic_val in ["thermal_goggles", "infrared_goggles"]
+            if has_thermal_internal:
                 return False
             ex, ey = getattr(ent, "x", 0), getattr(ent, "y", 0)
             for h in smoke_hazards:
@@ -151,6 +166,9 @@ class Perception:
         active_flares = []
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             active_flares = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == "flare" and getattr(h, "active", True)]
+
+        # Determine if ball has thermal vision to detect invisible hazards/entities
+        has_thermal_vision = getattr(self.ball, "has_thermal_vision", False) or cosmetic_val in ["thermal_goggles", "infrared_goggles"]
 
         for e in entities.get("enemies", []):
             if getattr(e, "underground", False): continue
@@ -202,14 +220,20 @@ class Perception:
 
                 if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster:
                     dist = math.sqrt((ex - bx_curr)**2 + (ey - by_curr)**2)
-                    if (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
-                        continue
-                    elif is_sand_cloaked and dist > 40.0:
-                        continue
-                    elif e_has_shadow and dist > 30.0:
-                        continue
-                    elif e_has_stealth and dist > 80.0:
-                        continue
+
+                    if has_thermal_vision:
+                        # Thermal vision bypasses most cloaking up to a certain range
+                        if dist > 500.0:
+                            continue
+                    else:
+                        if (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
+                            continue
+                        elif is_sand_cloaked and dist > 40.0:
+                            continue
+                        elif e_has_shadow and dist > 30.0:
+                            continue
+                        elif e_has_stealth and dist > 80.0:
+                            continue
             filtered_enemies.append(e)
 
         data["enemies"] = filtered_enemies
