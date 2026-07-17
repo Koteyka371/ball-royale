@@ -1194,6 +1194,12 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "tracker_booster_timer", 0.0) > 0:
+            self.ball.tracker_booster_timer -= delta
+            if self.ball.tracker_booster_timer <= 0:
+                self.ball.tracker_booster_timer = 0.0
+                self.ball.tracker_booster_target = None
+
         if getattr(self.ball, "is_turret", False) and getattr(self.ball, "is_overclocked", False) and getattr(self.ball, "alive", True):
             self.ball.hp -= 10.0 * delta
             if self.ball.hp <= 0:
@@ -8593,8 +8599,17 @@ class Action:
                     if dx*dx + dy*dy <= perception_radius*perception_radius:
                         enemies.append(h)
 
+        if getattr(self.ball, "tracker_booster_timer", 0.0) > 0:
+            tracker_target = getattr(self.ball, "tracker_booster_target", None)
+            if tracker_target is not None:
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "id", None) == tracker_target and getattr(b, "alive", True):
+                            if b not in enemies:
+                                enemies.append(b)
+                            break
         # Filter enemies by visibility
-        enemies = [e for e in enemies if is_visible(e)]
+        enemies = [e for e in enemies if is_visible(e) or (getattr(self.ball, "tracker_booster_timer", 0.0) > 0 and getattr(e, "id", None) == getattr(self.ball, "tracker_booster_target", None))]
 
         return enemies
 
@@ -10142,6 +10157,21 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("nemesis_compass_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "tracker_booster":
+                    all_enemies = []
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if b != self.ball and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")) and getattr(b, "alive", True) and not getattr(b, "is_decoy", False) and not getattr(b, "is_illusion", False):
+                                all_enemies.append(b)
+                    if all_enemies:
+                        closest_enemy = min(all_enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        self.ball.tracker_booster_target = getattr(closest_enemy, "id", None)
+                        self.ball.tracker_booster_timer = 20.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
