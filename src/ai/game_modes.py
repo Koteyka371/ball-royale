@@ -24527,3 +24527,50 @@ class SponsorDropMode(GameMode):
                     world.balls.remove(b)
 
 GAME_MODES["sponsor_drop"] = SponsorDropMode()
+
+class EyeOfTheStormMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Eye of the Storm"
+        self.description = "The safe zone has a fast-moving 'eye'. Inside the eye, health regenerates rapidly, but the outer safe zone acts normally. This encourages high-risk fights for the very center."
+        self.eye_x = 500.0
+        self.eye_y = 500.0
+        self.eye_target_x = 500.0
+        self.eye_target_y = 500.0
+        self.eye_radius = 100.0
+        self.eye_speed = 100.0
+        self.heal_rate = 50.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.eye_x = self.zone_x
+        self.eye_y = self.zone_y
+        self.eye_target_x = self.zone_x
+        self.eye_target_y = self.zone_y
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        dx = self.eye_target_x - self.eye_x
+        dy = self.eye_target_y - self.eye_y
+        dist = math.sqrt(dx*dx + dy*dy)
+
+        if dist > 5.0:
+            self.eye_x += (dx / dist) * self.eye_speed * delta
+            self.eye_y += (dy / dist) * self.eye_speed * delta
+        else:
+            angle = random.uniform(0, 2 * math.pi)
+            r = random.uniform(0, max(0.0, self.zone_radius * 0.8))
+            self.eye_target_x = self.zone_x + math.cos(angle) * r
+            self.eye_target_y = self.zone_y + math.sin(angle) * r
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dist_to_eye = math.sqrt((b.x - self.eye_x)**2 + (b.y - self.eye_y)**2)
+                if dist_to_eye <= self.eye_radius:
+                    max_hp = getattr(b, "max_hp", 100.0)
+                    b.hp = min(b.hp + self.heal_rate * delta, max_hp)
+
+GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode()
