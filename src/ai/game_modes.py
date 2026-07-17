@@ -24304,3 +24304,10 @@ class VengefulDecoysMode(GameMode):
             self.recordings.clear()
 
 GAME_MODES['vengeful_decoys'] = VengefulDecoysMode()
+
+try:
+    from .frictionless_modifier_mode import FrictionlessArenaModifierMode
+except ImportError:
+    from frictionless_modifier_mode import FrictionlessArenaModifierMode
+
+GAME_MODES["frictionless_modifier"] = FrictionlessArenaModifierMode()

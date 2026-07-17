@@ -35895,6 +35895,7 @@ GAME_MODES["invisible_mines"] = InvisibleMinesMode.new()
 
 GAME_MODES["phantom_juggernaut"] = PhantomJuggernautMode.new()
 GAME_MODES["chicken_curse"] = ChickenCurseMode.new()
+GAME_MODES["frictionless_modifier"] = preload("res://src/ai/frictionless_modifier_mode.gd").new()
 
 GAME_MODES["magnetic_bumpers"] = MagneticBumpersMode.new()
 
