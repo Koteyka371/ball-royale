@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1074] Decoy Distraction Event — *2026-07-17 22:12:42 UTC*
+
+Periodically spawn harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked. This confuses targeting systems and provides cover for sneaky maneuvers.
+
+---
+
 ## [idea-1098] Weather Reactive Traps — *2026-07-17 22:12:39 UTC*
 
 Introduce generic trap objects in procedural arenas that change their behavior based on the current weather. For instance, a basic proximity mine could become a frost mine during blizzards, freezing enemies instead of dealing pure damage, or turn into an electric tether during thunderstorms.
