@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1075] Invisible Tracker Booster — *2026-07-17 04:32:06 UTC*
+
+A booster that attaches a hidden tracker to the nearest enemy, allowing the player to permanently see them through walls and stealth until the tracker duration expires.
+
+---
+
 ## [idea-993] Weapon Attachments System — *2026-07-17 04:27:56 UTC*
 
 Introduce weapon attachments that can be found in the arena, allowing players to customize their attacks on the fly, such as adding elemental damage (fire/ice) or altering attack patterns (spread/pierce) to their primary weapons.
