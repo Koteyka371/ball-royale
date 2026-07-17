@@ -21,7 +21,9 @@ def test_void_mage_summon_black_hole():
     mage.team = "blue"
     mage.radius = 10.0
 
-    enemy = MagicMock()
+    class MockEnemy:
+        pass
+    enemy = MockEnemy()
     enemy.id = 2
     enemy.x = 500.0
     enemy.y = 100.0
@@ -81,6 +83,12 @@ def test_void_mage_summon_black_hole():
 
     # Execute physics step and verify it moves towards the enemy
     action._process_physics = lambda delta: None # Disable standard physics to test just the action tick which processes hazards
+    world.tick = 2
+
+    # Reset any stun/wall_stick state caused by the first execute so the second execute doesn't early return
+    mage.wall_stick_timer = 0.0
+    mage.is_stunned = False
+
     action.execute("none", 1.0)
 
     # Since it was updated once, it should move
