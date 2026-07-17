@@ -2938,6 +2938,130 @@ func execute(strategy: String, delta: float):
 				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): kind = hazard["kind"]
 				elif typeof(hazard) == TYPE_OBJECT and "kind" in hazard: kind = hazard.kind
 
+				if kind == "buff_siphon_trap":
+					var hx = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]
+					elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: hx = hazard.x
+					var hy = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): hy = hazard["y"]
+					elif typeof(hazard) == TYPE_OBJECT and "y" in hazard: hy = hazard.y
+					var rad = 60.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): rad = hazard["radius"]
+					elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: rad = hazard.radius
+
+					var bx = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bx = self.ball["x"]
+					elif typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: bx = self.ball.x
+					var by = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): by = self.ball["y"]
+					elif typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: by = self.ball.y
+					var brad = 10.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): brad = self.ball["radius"]
+					elif typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: brad = self.ball.radius
+
+					var dist = sqrt(pow(hx - bx, 2) + pow(hy - by, 2))
+					if dist <= rad + brad:
+						var trap_owner_id = null
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id"): trap_owner_id = hazard["owner_id"]
+						elif typeof(hazard) == TYPE_OBJECT and "owner_id" in hazard: trap_owner_id = hazard.owner_id
+
+						var trap_owner_team = null
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_team"): trap_owner_team = hazard["owner_team"]
+						elif typeof(hazard) == TYPE_OBJECT and "owner_team" in hazard: trap_owner_team = hazard.owner_team
+
+						var bid = null
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): bid = self.ball["id"]
+						elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: bid = self.ball.id
+
+						var bteam = null
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): bteam = self.ball["team"]
+						elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: bteam = self.ball.team
+						elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): bteam = self.ball["ball_type"]
+						elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: bteam = self.ball.ball_type
+
+						var is_ally = false
+						if trap_owner_id != null and trap_owner_id == bid:
+							is_ally = true
+						elif trap_owner_team != null and bteam == trap_owner_team:
+							is_ally = true
+
+						if not is_ally:
+							var drain_rate = 2.0 * delta
+							var combo_drain = 0.5 * delta
+							var siphoned_timers = 0.0
+							var siphoned_combo = 0.0
+
+							var buffs = ["speed_boost_timer", "shield_duration", "stealth_timer", "overclock_timer"]
+							for buff in buffs:
+								var val = 0.0
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has(buff): val = self.ball[buff]
+								elif typeof(self.ball) == TYPE_OBJECT and buff in self.ball: val = self.ball.get(buff)
+
+								if val > 0:
+									var drain = min(val, drain_rate)
+									if typeof(self.ball) == TYPE_DICTIONARY: self.ball[buff] = val - drain
+									elif typeof(self.ball) == TYPE_OBJECT: self.ball.set(buff, val - drain)
+									siphoned_timers += drain
+
+							var combo = 1.0
+							if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("combo_multiplier"): combo = self.ball["combo_multiplier"]
+							elif typeof(self.ball) == TYPE_OBJECT and "combo_multiplier" in self.ball: combo = self.ball.combo_multiplier
+
+							if combo > 1.0:
+								var drain = min(combo - 1.0, combo_drain)
+								if typeof(self.ball) == TYPE_DICTIONARY: self.ball["combo_multiplier"] = combo - drain
+								elif typeof(self.ball) == TYPE_OBJECT: self.ball.combo_multiplier = combo - drain
+								siphoned_combo += drain
+
+							if (siphoned_timers > 0 or siphoned_combo > 0) and trap_owner_id != null:
+								var owner = null
+								for ob in arena_ref.balls:
+									var ob_id = null
+									if typeof(ob) == TYPE_DICTIONARY and ob.has("id"): ob_id = ob["id"]
+									elif typeof(ob) == TYPE_OBJECT and "id" in ob: ob_id = ob.id
+									if ob_id == trap_owner_id:
+										owner = ob
+										break
+
+								var owner_alive = true
+								if owner != null:
+									if typeof(owner) == TYPE_DICTIONARY and owner.has("alive"): owner_alive = owner["alive"]
+									elif typeof(owner) == TYPE_OBJECT and "alive" in owner: owner_alive = owner.alive
+
+								if owner == null or not owner_alive:
+									for ob in arena_ref.balls:
+										var ob_alive = true
+										if typeof(ob) == TYPE_DICTIONARY and ob.has("alive"): ob_alive = ob["alive"]
+										elif typeof(ob) == TYPE_OBJECT and "alive" in ob: ob_alive = ob.alive
+										var ob_team = null
+										if typeof(ob) == TYPE_DICTIONARY and ob.has("team"): ob_team = ob["team"]
+										elif typeof(ob) == TYPE_OBJECT and "team" in ob: ob_team = ob.team
+										elif typeof(ob) == TYPE_DICTIONARY and ob.has("ball_type"): ob_team = ob["ball_type"]
+										elif typeof(ob) == TYPE_OBJECT and "ball_type" in ob: ob_team = ob.ball_type
+
+										if ob_alive and ob_team == trap_owner_team:
+											owner = ob
+											break
+
+								if owner != null:
+									if siphoned_timers > 0:
+										var buffs_tgt = ["speed_boost_timer", "shield_duration"]
+										var target_buff = buffs_tgt[randi() % buffs_tgt.size()]
+										var c_val = 0.0
+										if typeof(owner) == TYPE_DICTIONARY and owner.has(target_buff): c_val = owner[target_buff]
+										elif typeof(owner) == TYPE_OBJECT and target_buff in owner: c_val = owner.get(target_buff)
+
+										if typeof(owner) == TYPE_DICTIONARY: owner[target_buff] = c_val + siphoned_timers
+										elif typeof(owner) == TYPE_OBJECT: owner.set(target_buff, c_val + siphoned_timers)
+
+									if siphoned_combo > 0:
+										var c_combo = 1.0
+										if typeof(owner) == TYPE_DICTIONARY and owner.has("combo_multiplier"): c_combo = owner["combo_multiplier"]
+										elif typeof(owner) == TYPE_OBJECT and "combo_multiplier" in owner: c_combo = owner.combo_multiplier
+
+										if typeof(owner) == TYPE_DICTIONARY: owner["combo_multiplier"] = c_combo + siphoned_combo
+										elif typeof(owner) == TYPE_OBJECT: owner.combo_multiplier = c_combo + siphoned_combo
+
 				if kind == "sniper_nest":
 					var hx = 0.0
 					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]

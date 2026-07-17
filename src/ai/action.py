@@ -14721,6 +14721,52 @@ class Action:
                             elif effect == "stun":
                                 self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 3.0)
                             hazard.duration = 0.0
+                if getattr(hazard, "kind", "") == "buff_siphon_trap":
+                    import math
+                    dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
+                    if dist <= getattr(hazard, "radius", 60.0) + getattr(self.ball, "radius", 10.0):
+                        trap_owner_id = getattr(hazard, "owner_id", None)
+                        trap_owner_team = getattr(hazard, "owner_team", None)
+                        ball_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+
+                        is_ally = False
+                        if trap_owner_id == getattr(self.ball, "id", None):
+                            is_ally = True
+                        elif trap_owner_team is not None and ball_team == trap_owner_team:
+                            is_ally = True
+
+                        if not is_ally:
+                            drain_rate = 2.0 * delta
+                            combo_drain = 0.5 * delta
+
+                            siphoned_timers = 0.0
+                            siphoned_combo = 0.0
+
+                            for buff in ["speed_boost_timer", "shield_duration", "stealth_timer", "overclock_timer"]:
+                                val = getattr(self.ball, buff, 0.0)
+                                if val > 0:
+                                    drain = min(val, drain_rate)
+                                    setattr(self.ball, buff, val - drain)
+                                    siphoned_timers += drain
+
+                            combo = getattr(self.ball, "combo_multiplier", 1.0)
+                            if combo > 1.0:
+                                drain = min(combo - 1.0, combo_drain)
+                                self.ball.combo_multiplier -= drain
+                                siphoned_combo += drain
+
+                            if (siphoned_timers > 0 or siphoned_combo > 0) and trap_owner_id is not None and hasattr(self.world, "balls"):
+                                owner = next((b for b in self.world.balls if getattr(b, "id", None) == trap_owner_id), None)
+                                if owner is None or not getattr(owner, "alive", True):
+                                    owner = next((b for b in self.world.balls if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) == trap_owner_team), None)
+
+                                if owner:
+                                    if siphoned_timers > 0:
+                                        target_buffs = ["speed_boost_timer", "shield_duration"]
+                                        buff_to_add = getattr(self, "random", __import__("random")).choice(target_buffs)
+                                        setattr(owner, buff_to_add, getattr(owner, buff_to_add, 0.0) + siphoned_timers)
+                                    if siphoned_combo > 0:
+                                        owner.combo_multiplier = getattr(owner, "combo_multiplier", 1.0) + siphoned_combo
                 if getattr(hazard, "kind", "") == "polarity_inverter":
                     dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                     if dist_sq < getattr(hazard, "radius", 50.0)**2:
