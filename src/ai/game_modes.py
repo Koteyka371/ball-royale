@@ -23473,3 +23473,65 @@ GAME_MODES['quantum_shifting_hazards'] = QuantumShiftingHazardsMode()
 GAME_MODES['flooding_arena'] = FloodingArenaMode()
 import ai.slingshot
 GAME_MODES['slingshot'] = ai.slingshot.SlingshotMode()
+
+
+class BountyContractEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bounty Contract Event"
+        self.description = "A random arena event where one ball is marked as a bounty for all other players. The marked ball gains temporary buffs to survive, while others get bonus XP for defeating them."
+        self.active = False
+        self.timer = 0.0
+        self.bounty_id = None
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+        if not alive_balls:
+            return
+
+        if not self.active:
+            if random.random() < 0.02 * delta:
+                self.active = True
+                self.timer = 20.0
+                bounty_ball = random.choice(alive_balls)
+                self.bounty_id = getattr(bounty_ball, "id", None)
+
+                # Apply buffs
+                bounty_ball.is_bounty_contract = True
+                bounty_ball.base_speed = getattr(bounty_ball, "base_speed", 100.0) * 1.5
+                bounty_ball.max_hp = getattr(bounty_ball, "max_hp", 100.0) + 100.0
+                bounty_ball.hp = bounty_ball.max_hp
+                bounty_ball.bounty_contract_xp_reward = 500  # Bonus XP for killer
+
+                if hasattr(world, "add_event"):
+                    world.add_event("bounty_contract_start", {"message": f"A bounty contract has been placed on ball {self.bounty_id}!", "bounty_id": self.bounty_id})
+        else:
+            self.timer -= delta
+            bounty_ball = next((b for b in alive_balls if getattr(b, "id", None) == self.bounty_id), None)
+
+            if not bounty_ball or self.timer <= 0:
+                self.active = False
+
+                if bounty_ball:
+                    # Survived! Remove buffs and maybe reward the survivor
+                    bounty_ball.is_bounty_contract = False
+                    bounty_ball.base_speed = getattr(bounty_ball, "base_speed", 150.0) / 1.5
+                    if hasattr(bounty_ball, "xp"):
+                        bounty_ball.xp += 250
+                    if hasattr(world, "add_event"):
+                        world.add_event("bounty_contract_end", {"message": f"Ball {self.bounty_id} survived the bounty!", "bounty_id": self.bounty_id})
+                else:
+                    if hasattr(world, "add_event"):
+                        world.add_event("bounty_contract_failed", {"message": f"The bounty on ball {self.bounty_id} was claimed!", "bounty_id": self.bounty_id})
+
+    def on_ball_died(self, world, ball, killer):
+        if self.active and getattr(ball, "id", None) == self.bounty_id:
+            if killer and getattr(killer, "alive", False):
+                reward = getattr(ball, "bounty_contract_xp_reward", 500)
+                if hasattr(killer, "xp"):
+                    killer.xp += reward
+
+GAME_MODES['bounty_contract_event'] = BountyContractEventMode()
