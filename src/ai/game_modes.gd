@@ -37226,3 +37226,123 @@ class VengefulDecoysMode extends GameMode:
             self.recordings.clear()
 
 GAME_MODES["vengeful_decoys"] = VengefulDecoysMode.new()
+
+class SponsorDropBox:
+    var id = 0
+    var x = 0.0
+    var y = 0.0
+    var vx = 0.0
+    var vy = 0.0
+    var radius = 25.0
+    var hp = 100.0
+    var max_hp = 100.0
+    var alive = true
+    var ball_type = "sponsor_drop_box"
+    var team = "neutral"
+    var speed = 0.0
+    var base_speed = 0.0
+    var damage = 0.0
+    var base_damage = 0.0
+    var perception_radius = 0.0
+    var base_perception_radius = 0.0
+
+    func _init(id_val, start_x, start_y):
+        self.id = id_val
+        self.x = start_x
+        self.y = start_y
+
+    func take_damage(amount, source=null):
+        self.hp -= amount
+        if self.hp <= 0:
+            self.alive = false
+
+class SponsorDropMode extends GameMode:
+    var drop_timer = 0.0
+    var drop_interval = 15.0
+
+    func _init():
+        name = "Sponsor Drop"
+        description = "During the match, special drop boxes appear periodically. Destroying them grants a permanent sponsor buff to the ball that lands the final hit."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        drop_timer = 0.0
+
+    func tick(world, balls, delta):
+        drop_timer += delta
+        if drop_timer >= drop_interval:
+            drop_timer = 0.0
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+                arena_width = float(world.arena.width)
+                arena_height = float(world.arena.height)
+            elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+                arena_width = float(world.arena.width)
+                arena_height = float(world.arena.height)
+
+            var drop_x = randf_range(100.0, arena_width - 100.0)
+            var drop_y = randf_range(100.0, arena_height - 100.0)
+            var box_id = randi() % 900000 + 100000
+            if typeof(world) == TYPE_OBJECT and "next_id" in world:
+                box_id = world.next_id
+                world.next_id += 1
+            elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+                box_id = world["next_id"]
+                world["next_id"] += 1
+
+            var box = SponsorDropBox.new(box_id, drop_x, drop_y)
+            if typeof(world) == TYPE_OBJECT and "balls" in world:
+                world.balls.append(box)
+            elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                world.balls.append(box)
+
+            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                world.add_event("drop_box_spawned", {"message": "A Sponsor Drop Box has landed!"})
+
+        var to_remove = []
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT and b.get("ball_type") == "sponsor_drop_box" and not b.get("alive"):
+                var last_hit_id = null
+                if b.has_meta("_last_hit_by_id"):
+                    last_hit_id = b.get_meta("_last_hit_by_id")
+                elif "_last_hit_by_id" in b:
+                    last_hit_id = b.get("_last_hit_by_id")
+
+                if last_hit_id != null:
+                    for ball in balls:
+                        var ball_id = null
+                        if typeof(ball) == TYPE_OBJECT and "id" in ball:
+                            ball_id = ball.id
+                        elif typeof(ball) == TYPE_DICTIONARY and ball.has("id"):
+                            ball_id = ball.id
+
+                        if ball_id == last_hit_id:
+                            if typeof(ball) == TYPE_OBJECT:
+                                ball.set("has_sponsor_buff", true)
+                                if "base_speed" in ball: ball.base_speed *= 1.2
+                                if "speed" in ball: ball.speed *= 1.2
+                                if "base_damage" in ball: ball.base_damage *= 1.2
+                                if "damage" in ball: ball.damage *= 1.2
+                            elif typeof(ball) == TYPE_DICTIONARY:
+                                ball["has_sponsor_buff"] = true
+                                if ball.has("base_speed"): ball["base_speed"] *= 1.2
+                                if ball.has("speed"): ball["speed"] *= 1.2
+                                if ball.has("base_damage"): ball["base_damage"] *= 1.2
+                                if ball.has("damage"): ball["damage"] *= 1.2
+
+                            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                                world.add_event("sponsor_buff", {"message": "A player claimed the Sponsor Buff!"})
+                            break
+                to_remove.append(b)
+
+        if typeof(world) == TYPE_OBJECT and "balls" in world:
+            for b in to_remove:
+                if world.balls.has(b):
+                    world.balls.erase(b)
+        elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+            for b in to_remove:
+                if world.balls.has(b):
+                    world.balls.erase(b)
+
+GAME_MODES["sponsor_drop"] = SponsorDropMode.new()

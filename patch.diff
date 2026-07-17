@@ -1,0 +1,11 @@
+<<<<<<< SEARCH
+    func take_damage(amount):
+        self.hp -= amount
+        if self.hp <= 0:
+            self.alive = false
+=======
+    func take_damage(amount, source=null):
+        self.hp -= amount
+        if self.hp <= 0:
+            self.alive = false
+>>>>>>> REPLACE
