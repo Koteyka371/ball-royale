@@ -24619,3 +24619,65 @@ class EyeOfTheStormMode(SafeZoneMode):
                     b.hp = min(b.hp + self.heal_rate * delta, max_hp)
 
 GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode()
+
+class MimicCloneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mimic Clone"
+        self.description = "Every player spawns with a clone that perfectly mimics their inputs, but deals half damage and takes double damage. If the real player dies, they swap into their clone, reviving with halved stats."
+        self.id = "mimic_clone_mode"
+        self.clones = {}
+
+    def tick(self, world, balls, delta=0.016):
+        import copy
+        for b in balls:
+            if not getattr(b, "alive", True): continue
+            if getattr(b, "is_mimic_clone_mode", False) or getattr(b, "mimic_swapped", False): continue
+
+            if getattr(b, "id", None) not in self.clones:
+                clone = type('CloneBall', (object,), {})()
+                clone.__dict__ = copy.deepcopy(b.__dict__)
+                if hasattr(world, "next_id"):
+                    clone.id = world.next_id
+                    world.next_id += 1
+                else:
+                    clone.id = 999999 + getattr(b, "id", 0)
+
+                clone.x = getattr(b, "x", 0.0) + 30
+                clone.y = getattr(b, "y", 0.0) + 30
+                clone.is_mimic_clone_mode = True
+                clone.mimic_owner = getattr(b, "id", None)
+                clone.base_damage_multiplier = 0.5
+                clone.prev_hp = getattr(clone, "hp", 100.0)
+                world.balls.append(clone)
+                self.clones[getattr(b, "id", None)] = clone
+
+        for b in balls:
+            if getattr(b, "is_mimic_clone_mode", False) and getattr(b, "alive", False):
+                owner_id = getattr(b, "mimic_owner", -1)
+                owner = next((o for o in balls if getattr(o, "id", None) == owner_id), None)
+                if owner:
+                    if hasattr(owner, "vx"): b.vx = owner.vx
+                    if hasattr(owner, "vy"): b.vy = owner.vy
+                    if hasattr(owner, "active_skill"): b.active_skill = owner.active_skill
+                    if hasattr(owner, "strategy"): b.strategy = owner.strategy
+
+                    prev_hp = getattr(b, "prev_hp", getattr(b, "hp", 100.0))
+                    if prev_hp > getattr(b, "hp", 100.0):
+                        b.hp -= (prev_hp - b.hp)
+                    b.prev_hp = getattr(b, "hp", 100.0)
+
+                    if not getattr(owner, "alive", True) or getattr(owner, "hp", 100.0) <= 0:
+                        owner.alive = True
+                        owner.hp = getattr(b, "hp", 100.0)
+                        owner.x = getattr(b, "x", 0.0)
+                        owner.y = getattr(b, "y", 0.0)
+
+                        current_max_hp = getattr(owner, "max_hp", 100.0)
+                        owner.max_hp = current_max_hp / 2.0
+                        owner.hp = min(owner.hp, owner.max_hp)
+                        owner.base_damage_multiplier = getattr(owner, "base_damage_multiplier", 1.0) * 0.5
+                        owner.mimic_swapped = True
+                        b.alive = False
+
+GAME_MODES["mimic_clone_mode"] = MimicCloneMode()

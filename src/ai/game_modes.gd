@@ -37704,3 +37704,82 @@ class EyeOfTheStormMode extends SafeZoneMode:
                     b["hp"] = min(float(b.get("hp", 100.0)) + heal_rate * delta, max_hp)
 
 GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode.new()
+
+class MimicCloneMode extends GameMode:
+    var clones = {}
+
+    func _init():
+        name = "Mimic Clone"
+        description = "Every player spawns with a clone that perfectly mimics their inputs, but deals half damage and takes double damage. If the real player dies, they swap into their clone, reviving with halved stats."
+        id = "mimic_clone_mode"
+
+    func tick(world, balls, delta=0.016):
+        for b in balls:
+            if not ("alive" in b and b.alive): continue
+            if b.get("is_mimic_clone_mode", false) or b.get("mimic_swapped", false): continue
+
+            if not b.id in clones:
+                var clone = {}
+                if typeof(b) == TYPE_OBJECT and b.has_method("duplicate"): clone = b.duplicate()
+                else:
+                    clone = {"id": 999999 + b.id, "x": b.x + 30, "y": b.y + 30, "hp": b.hp, "max_hp": b.get("max_hp", 100.0), "alive": true}
+
+                if typeof(clone) == TYPE_OBJECT:
+                    clone.set("is_mimic_clone_mode", true)
+                    clone.set("mimic_owner", b.id)
+                    clone.set("base_damage_multiplier", 0.5)
+                    clone.set("prev_hp", clone.hp)
+                else:
+                    clone["is_mimic_clone_mode"] = true
+                    clone["mimic_owner"] = b.id
+                    clone["base_damage_multiplier"] = 0.5
+                    clone["prev_hp"] = clone["hp"]
+
+                if typeof(world) == TYPE_OBJECT and "balls" in world: world.balls.append(clone)
+                elif typeof(world) == TYPE_DICTIONARY and world.has("balls"): world.balls.append(clone)
+
+                clones[b.id] = clone
+
+        for b in balls:
+            if b.get("is_mimic_clone_mode", false) and b.get("alive", false):
+                var owner = null
+                var owner_id = b.get("mimic_owner", -1)
+                for o in balls:
+                    if o.id == owner_id: owner = o; break
+
+                if owner:
+                    if "vx" in owner: b["vx"] = owner["vx"]
+                    if "vy" in owner: b["vy"] = owner["vy"]
+                    if "active_skill" in owner: b["active_skill"] = owner["active_skill"]
+                    if "strategy" in owner: b["strategy"] = owner["strategy"]
+
+                    var prev_hp = b.get("prev_hp", b.hp)
+                    if prev_hp > b.hp: b.hp -= (prev_hp - b.hp)
+                    if typeof(b) == TYPE_OBJECT: b.set("prev_hp", b.hp)
+                    else: b["prev_hp"] = b.hp
+
+                    var owner_alive = owner.get("alive", true)
+                    if not owner_alive or owner.hp <= 0:
+                        if typeof(owner) == TYPE_OBJECT:
+                            owner.set("alive", true)
+                            owner.hp = b.hp
+                            owner.x = b.x
+                            owner.y = b.y
+                            owner.set("max_hp", owner.get("max_hp", 100.0) / 2.0)
+                            owner.hp = min(owner.hp, owner.get("max_hp", 100.0))
+                            owner.set("base_damage_multiplier", owner.get("base_damage_multiplier", 1.0) * 0.5)
+                            owner.set("mimic_swapped", true)
+                        else:
+                            owner["alive"] = true
+                            owner["hp"] = b.hp
+                            owner["x"] = b.x
+                            owner["y"] = b.y
+                            owner["max_hp"] = owner.get("max_hp", 100.0) / 2.0
+                            owner["hp"] = min(owner.hp, owner["max_hp"])
+                            owner["base_damage_multiplier"] = owner.get("base_damage_multiplier", 1.0) * 0.5
+                            owner["mimic_swapped"] = true
+
+                        if typeof(b) == TYPE_OBJECT: b.set("alive", false)
+                        else: b["alive"] = false
+
+GAME_MODES["mimic_clone_mode"] = MimicCloneMode.new()
