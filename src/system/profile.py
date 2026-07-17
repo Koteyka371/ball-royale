@@ -144,6 +144,14 @@ class ProfileManager:
         self.save()
 
 
+
+    def join_faction(self, faction_name):
+        self.data["faction"] = faction_name
+        self.save()
+
+    def get_faction(self):
+        return self.data.get("faction", None)
+
     def get_unlocked_balls(self):
         unlocked = list(self.data.get("unlocked_balls", []))
         if self.data.get("prestige_upgrades", {}).get("unlock_time_mage", 0) > 0:

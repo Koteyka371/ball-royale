@@ -24718,3 +24718,65 @@ class FakeBallsMode(GameMode):
                     world.balls.remove(b)
 
 GAME_MODES["fake_balls"] = FakeBallsMode()
+
+
+class FactionWarMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Faction War"
+        self.description = "Players align with Light or Dark factions. Completing nemesis revenge kills earns points for the chosen faction."
+        self.light_points = 0
+        self.dark_points = 0
+        self.season_ended = False
+        self.winning_faction = None
+        self.season_timer = 300.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if not self.season_ended:
+            self.season_timer -= delta
+            if self.season_timer <= 0:
+                self.end_season(world)
+
+    def on_ball_died(self, world, ball, killer):
+        if hasattr(super(), "on_ball_died"):
+            super().on_ball_died(world, ball, killer)
+
+        if not killer or self.season_ended: return
+        pm = getattr(world, "profile_manager", None)
+        if pm and hasattr(pm, "is_nemesis"):
+            k_type = getattr(killer, "ball_type", "")
+            v_type = getattr(ball, "ball_type", "")
+
+            if pm.is_nemesis(v_type, k_type):
+                faction = pm.get_faction() if k_type == "local_player" else getattr(killer, "faction", None)
+                if not faction:
+                    faction = "Light" if hash(k_type) % 2 == 0 else "Dark"
+
+                if faction == "Light":
+                    self.light_points += 1
+                elif faction == "Dark":
+                    self.dark_points += 1
+
+    def end_season(self, world):
+        self.season_ended = True
+        pm = getattr(world, "profile_manager", None)
+
+        if self.light_points > self.dark_points:
+            self.winning_faction = "Light"
+        elif self.dark_points > self.light_points:
+            self.winning_faction = "Dark"
+        else:
+            self.winning_faction = "Tie"
+
+        if pm and self.winning_faction != "Tie":
+            player_faction = pm.get_faction() if hasattr(pm, "get_faction") else None
+            if player_faction == self.winning_faction:
+                ball_to_unlock = f"{self.winning_faction.lower()}_champion"
+                if "unlocked_balls" not in pm.data:
+                    pm.data["unlocked_balls"] = []
+                if ball_to_unlock not in pm.data["unlocked_balls"]:
+                    pm.data["unlocked_balls"].append(ball_to_unlock)
+                    pm.save()
+
+GAME_MODES['faction_war'] = FactionWarMode()
