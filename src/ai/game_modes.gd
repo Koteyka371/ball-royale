@@ -24138,7 +24138,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse", "celestial_alignment"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment"]
 
 	func _init():
 		name = "Extreme Weather"
@@ -24221,6 +24221,7 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "tsunami": booster_kind = "life_jacket_booster"
 			elif current_weather == "ice": booster_kind = "thermal_booster"
 			elif current_weather == "earthquake": booster_kind = "seismic_booster"
+			elif current_weather == "violent_quake": booster_kind = "seismic_booster"
 			elif current_weather == "giant_flood": booster_kind = "life_jacket_booster"
 			elif current_weather == "solar_eclipse": booster_kind = "vision_booster"
 			elif current_weather == "celestial_alignment": booster_kind = "starlight_booster"
@@ -24234,6 +24235,7 @@ class ExtremeWeatherMode extends GameMode:
 				"meteor_shower": "Astral Destroyer",
 				"ice": "Frost Titan",
 				"earthquake": "Tremor Behemoth",
+				"violent_quake": "Tectonic Lord",
 				"giant_flood": "Ocean Overlord",
 				"solar_eclipse": "Umbra Lord",
 				"celestial_alignment": "Starlight Boss"
@@ -24305,6 +24307,8 @@ class ExtremeWeatherMode extends GameMode:
 
 			if b.has_meta("base_speed"): b.speed = b.get_meta("base_speed")
 			if b.has_meta("base_damage"): b.damage = b.get_meta("base_damage")
+			if "steering_mult" in b: b.steering_mult = 1.0
+			elif b.has_method("set_meta"): b.set_meta("steering_mult", 1.0)
 
 			var has_thermal = (b.has_meta("thermal_booster_timer") and b.get_meta("thermal_booster_timer") > 0.0) or (b.has_meta("mega_thermal_booster_timer") and b.get_meta("mega_thermal_booster_timer") > 0.0)
 			var has_cooling = (b.has_meta("cooling_booster_timer") and b.get_meta("cooling_booster_timer") > 0.0) or (b.has_meta("mega_cooling_booster_timer") and b.get_meta("mega_cooling_booster_timer") > 0.0)
@@ -24411,6 +24415,16 @@ class ExtremeWeatherMode extends GameMode:
 					var angle = randf_range(0, 2 * PI)
 					b.x += cos(angle) * 150.0 * delta
 					b.y += sin(angle) * 150.0 * delta
+			elif current_weather == "violent_quake":
+				var has_seismic = (b.has_meta("seismic_booster_timer") and b.get_meta("seismic_booster_timer") > 0.0) or (b.has_meta("mega_seismic_booster_timer") and b.get_meta("mega_seismic_booster_timer") > 0.0)
+				if not has_seismic:
+					var angle = randf_range(0, 2 * PI)
+					b.x += cos(angle) * 300.0 * delta
+					b.y += sin(angle) * 300.0 * delta
+					if "steering_mult" in b:
+						b.steering_mult = 0.0
+					elif b.has_method("set_meta"):
+						b.set_meta("steering_mult", 0.0)
 			elif current_weather == "giant_flood":
 				if not has_life_jacket:
 					b.speed = b.get_meta("base_speed") * 0.3
@@ -24585,7 +24599,7 @@ class ExtremeWeatherMode extends GameMode:
 				for h in h_to_remove:
 					world.arena.hazards.erase(h)
 
-		if current_weather == "earthquake" and world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+		if (current_weather == "earthquake" or current_weather == "violent_quake") and world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
 			for h in world.arena.hazards:
 				var h_kind = ""
 				if typeof(h) == TYPE_DICTIONARY:

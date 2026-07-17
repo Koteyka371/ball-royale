@@ -1,0 +1,4 @@
+{
+  "title": "Geyser Hazard",
+  "description": "Add a new geyser hazard that erupts periodically, launching players high into the air (disabling ground friction and granting temporary immunity to ground hazards) but dealing fall damage upon landing."
+}
