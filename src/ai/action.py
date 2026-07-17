@@ -7416,6 +7416,60 @@ class Action:
                                     self.ball.y -= ny * pull_strength
                                     self.ball.vx -= nx * 500.0 * delta
                                     self.ball.vy -= ny * 500.0 * delta
+                        elif hazard.kind == "link_bumper":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist2 = dx*dx + dy*dy
+                            dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
+
+                            b_rad = getattr(self.ball, "radius", 10.0)
+
+                            if dist < (b_rad + getattr(hazard, "radius", 10.0)):
+                                # Ensure we don't trigger multiple times in a row for the same hazard
+                                last_hit_tick = getattr(self.ball, "link_bumper_last_hit", -100)
+                                current_tick = getattr(self.world, "tick", 0)
+
+                                if current_tick - last_hit_tick > 10:  # Cooldown
+                                    self.ball.link_bumper_last_hit = current_tick
+
+                                    # Reflect ball
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    bounce_strength = 1200.0 * delta
+                                    self.ball.x += nx * bounce_strength
+                                    self.ball.y += ny * bounce_strength
+
+                                    self.ball.vx = nx * 4000.0
+                                    self.ball.vy = ny * 4000.0
+
+                                    # Find nearby random opponent
+                                    import random as _rnd
+                                    my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                                    valid_targets = []
+                                    for b in getattr(self.world, "balls", []):
+                                        if b != self.ball and getattr(b, "alive", True) and not getattr(b, "is_decoy", False):
+                                            b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                            if b_team != my_team:
+                                                # Check if nearby (e.g., within 600 pixels)
+                                                dist_to_b = math.hypot(b.x - self.ball.x, b.y - self.ball.y)
+                                                if dist_to_b <= 600.0:
+                                                    valid_targets.append(b)
+
+                                    if valid_targets:
+                                        target = _rnd.choice(valid_targets)
+                                        # Mirror velocity
+                                        target.vx = self.ball.vx
+                                        target.vy = self.ball.vy
+
+                                        # Apply temporary speed boost to both to force movement/collisions
+                                        self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 2.0
+                                        target.speed_boost_timer = getattr(target, "speed_boost_timer", 0.0) + 2.0
+
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append({
+                                                'type': 'visual_effect',
+                                                'data': {'type': 'link_line', 'x': self.ball.x, 'y': self.ball.y, 'target_x': target.x, 'target_y': target.y, 'color': 'purple'}
+                                            })
                         elif hazard.kind in ["bumper", "chain_reaction_bumper"]:
 
                             dx = self.ball.x - hazard.x
