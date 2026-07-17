@@ -24304,3 +24304,91 @@ class VengefulDecoysMode(GameMode):
             self.recordings.clear()
 
 GAME_MODES['vengeful_decoys'] = VengefulDecoysMode()
+
+class SponsorDropBox:
+    def __init__(self, id_val, start_x, start_y):
+        self.id = id_val
+        self.x = start_x
+        self.y = start_y
+        self.vx = 0.0
+        self.vy = 0.0
+        self.radius = 25.0
+        self.hp = 100.0
+        self.max_hp = 100.0
+        self.alive = True
+        self.ball_type = "sponsor_drop_box"
+        self.team = "neutral"
+        self.speed = 0.0
+        self.base_speed = 0.0
+        self.damage = 0.0
+        self.base_damage = 0.0
+        self.perception_radius = 0.0
+        self.base_perception_radius = 0.0
+
+    def take_damage(self, amount, source=None):
+        self.hp -= amount
+        if self.hp <= 0:
+            self.alive = False
+
+class SponsorDropMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sponsor Drop"
+        self.description = "During the match, special drop boxes appear periodically. Destroying them grants a permanent sponsor buff to the ball that lands the final hit."
+        self.drop_timer = 0.0
+        self.drop_interval = 15.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.drop_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        self.drop_timer += delta
+        if self.drop_timer >= self.drop_interval:
+            self.drop_timer = 0.0
+            arena_width = 1000.0
+            arena_height = 1000.0
+            if getattr(world, "arena", None) is not None:
+                arena_width = getattr(world.arena, "width", 1000.0)
+                arena_height = getattr(world.arena, "height", 1000.0)
+
+            drop_x = random.uniform(100.0, arena_width - 100.0)
+            drop_y = random.uniform(100.0, arena_height - 100.0)
+
+            box_id = random.randint(100000, 999999)
+            if hasattr(world, "next_id"):
+                box_id = world.next_id
+                world.next_id += 1
+
+            box = SponsorDropBox(box_id, drop_x, drop_y)
+            if hasattr(world, "balls"):
+                world.balls.append(box)
+
+            if hasattr(world, "add_event"):
+                world.add_event("drop_box_spawned", {"message": "A Sponsor Drop Box has landed!"})
+
+        to_remove = []
+        for b in balls:
+            if getattr(b, "ball_type", "") == "sponsor_drop_box" and not getattr(b, "alive", True):
+                last_hit_id = getattr(b, "_last_hit_by_id", None)
+                if last_hit_id is not None:
+                    for ball in balls:
+                        if getattr(ball, "id", None) == last_hit_id:
+                            setattr(ball, "has_sponsor_buff", True)
+                            ball.base_speed = getattr(ball, "base_speed", 100.0) * 1.2
+                            ball.speed = getattr(ball, "speed", 100.0) * 1.2
+                            ball.base_damage = getattr(ball, "base_damage", 10.0) * 1.2
+                            ball.damage = getattr(ball, "damage", 10.0) * 1.2
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("sponsor_buff", {"message": "A player claimed the Sponsor Buff!"})
+                            break
+                to_remove.append(b)
+
+        if hasattr(world, "balls"):
+            for b in to_remove:
+                if b in world.balls:
+                    world.balls.remove(b)
+
+GAME_MODES["sponsor_drop"] = SponsorDropMode()
