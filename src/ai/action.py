@@ -5431,8 +5431,17 @@ class Action:
                                     self.ball.hp -= hazard_damage
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
-                                if getattr(self, "random", __import__("random")).random() < 0.1 * delta:
-                                    self.ball.stun_timer = 0.5 # Stunned by electricity
+
+                                # Electrified puddle stalls player for 0.5s due to Shock
+                                if getattr(self.ball, "shock_cooldown", 0.0) <= 0:
+                                    self.ball.stun_timer = 0.5
+                                    self.ball.shock_cooldown = 2.0
+                                    if hasattr(self.ball, "vx"):
+                                        self.ball.vx = 0.0
+                                    if hasattr(self.ball, "vy"):
+                                        self.ball.vy = 0.0
+                                else:
+                                    self.ball.shock_cooldown -= delta
                             elif weather == "ice":
                                 self.ball.is_frictionless = True
                                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):

@@ -9983,13 +9983,39 @@ func execute(strategy: String, delta: float):
                                 self.ball.hp -= hazard_damage
                                 if self.ball.hp <= 0:
                                     if "alive" in self.ball: self.ball.alive = false
-                            if randf() < 0.1 * delta:
+
+                            # Electrified puddle stalls player for 0.5s due to Shock
+                            var cd = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+                                cd = self.ball.get_meta("shock_cooldown") if self.ball.has_meta("shock_cooldown") else 0.0
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("shock_cooldown"):
+                                cd = self.ball["shock_cooldown"]
+                            elif "shock_cooldown" in self.ball:
+                                cd = self.ball.shock_cooldown
+
+                            if cd <= 0.0:
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                                     self.ball.set_meta("stun_timer", 0.5)
+                                    self.ball.set_meta("shock_cooldown", 2.0)
+                                    if "vx" in self.ball: self.ball.vx = 0.0
+                                    if "vy" in self.ball: self.ball.vy = 0.0
                                 elif typeof(self.ball) == TYPE_DICTIONARY:
                                     self.ball["stun_timer"] = 0.5
+                                    self.ball["shock_cooldown"] = 2.0
+                                    if self.ball.has("vx"): self.ball["vx"] = 0.0
+                                    if self.ball.has("vy"): self.ball["vy"] = 0.0
                                 elif "stun_timer" in self.ball:
                                     self.ball.stun_timer = 0.5
+                                    self.ball.shock_cooldown = 2.0
+                                    if "vx" in self.ball: self.ball.vx = 0.0
+                                    if "vy" in self.ball: self.ball.vy = 0.0
+                            else:
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("shock_cooldown", cd - delta)
+                                elif typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["shock_cooldown"] = cd - delta
+                                elif "shock_cooldown" in self.ball:
+                                    self.ball.shock_cooldown -= delta
                         elif weather == "ice":
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                                 self.ball.set_meta("is_frictionless", true)
