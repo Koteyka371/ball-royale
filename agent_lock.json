@@ -84,8 +84,8 @@
       "name": "Jules Worker 10",
       "area": "meta",
       "task_id": "idea-1046",
-      "status": "assigned",
-      "started_at": "2026-07-17T06:51:02.064108+00:00",
+      "status": "working",
+      "started_at": "2026-07-17T07:01:33.440613+00:00",
       "cycles_today": 0
     },
     "agent-11": {
