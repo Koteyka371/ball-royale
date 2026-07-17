@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1062] Day/Night Vision Modules — *2026-07-17 01:36:07 UTC*
+
+Add vision enhancement modules that dynamically adjust player's perception radius during different weather and time of day (e.g. night vision goggles for dark phases, thermal vision for finding invisible hazards).
+
+---
+
 ## [idea-1063] Hazard Weather Synergy — *2026-07-17 01:36:03 UTC*
 
 If a weather event like a thunderstorm hits the arena, puddles become electrified, dealing a new type of 'Shock' damage that stalls the player's movement for 0.5s.
