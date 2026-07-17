@@ -36508,4 +36508,119 @@ GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode.new()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
 
+
+class ShrinkingSafeZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 1000.0
+	var shrink_rate: float = 15.0
+
+	func _init() -> void:
+		name = "Shrinking Safe Zone"
+		description = "A battle royale mode where the safe zone slowly shrinks. Any balls outside the safe zone continuously take damage until they return or die."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_width = float(world.arena.width)
+				if world.arena.has("height"): arena_height = float(world.arena.height)
+			else:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_radius = max(arena_width, arena_height)
+
+		for b in balls:
+			if b.get("ball_type") != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = b.get("ball_type")
+				elif typeof(b) == TYPE_OBJECT:
+					if "team" in b: b.team = b.get("ball_type")
+					elif b.has_method("set_meta"): b.set_meta("team", b.get("ball_type"))
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if zone_radius > 0:
+			zone_radius -= shrink_rate * delta
+			if zone_radius < 0:
+				zone_radius = 0.0
+
+		var damage_per_second = 30.0
+		var damage_this_tick = damage_per_second * delta
+
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+			else: b_alive = b.get("alive") if b.get("alive") != null else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY: b_type = b.get("ball_type", "")
+			else: b_type = b.get("ball_type") if b.get("ball_type") != null else ""
+
+			if b_alive and b_type != "spectator":
+				var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+				var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+
+				var dx = b_x - zone_x
+				var dy = b_y - zone_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > zone_radius:
+					if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"):
+						b.take_damage(damage_this_tick)
+					else:
+						var hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 0.0)
+						hp -= damage_this_tick
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = hp
+							if hp <= 0:
+								b["hp"] = 0
+								b["alive"] = false
+						else:
+							if "hp" in b: b.hp = hp
+							if hp <= 0:
+								if "hp" in b: b.hp = 0
+								if "alive" in b: b.alive = false
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+			else: b_alive = b.get("alive") if b.get("alive") != null else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY: b_type = b.get("ball_type", "")
+			else: b_type = b.get("ball_type") if b.get("ball_type") != null else ""
+
+			if b_alive and b_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var team = b.get("ball_type")
+			if typeof(b) == TYPE_DICTIONARY and b.has("team"): team = b["team"]
+			elif typeof(b) == TYPE_OBJECT and "team" in b: team = b.team
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): team = b.get_meta("team")
+			teams_alive[team] = true
+
+		if teams_alive.size() == 1:
+			return teams_alive.keys()[0]
+
+		if alive.size() == 1:
+			var team = alive[0].get("ball_type")
+			if typeof(alive[0]) == TYPE_DICTIONARY and alive[0].has("team"): team = alive[0]["team"]
+			elif typeof(alive[0]) == TYPE_OBJECT and "team" in alive[0]: team = alive[0].team
+			return team
+
+		return null
+
 GAME_MODES['flooding_arena'] = FloodingArenaMode.new()
+GAME_MODES['shrinking_safe_zone'] = ShrinkingSafeZoneMode.new()

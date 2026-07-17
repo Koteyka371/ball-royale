@@ -23217,4 +23217,68 @@ GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
 
+
+class ShrinkingSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shrinking Safe Zone"
+        self.description = "A battle royale mode where the safe zone slowly shrinks. Any balls outside the safe zone continuously take damage until they return or die."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 1000.0
+        self.shrink_rate = 15.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_radius = max(arena_width, arena_height)
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for b in valid_balls:
+            b.team = b.ball_type
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if self.zone_radius > 0:
+            self.zone_radius -= self.shrink_rate * delta
+            if self.zone_radius < 0:
+                self.zone_radius = 0
+
+        damage_per_second = 30.0
+        damage_this_tick = damage_per_second * delta
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = getattr(b, "x", 0.0) - self.zone_x
+                dy = getattr(b, "y", 0.0) - self.zone_y
+                dist = math.hypot(dx, dy)
+
+                if dist > self.zone_radius:
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(damage_this_tick)
+                    else:
+                        b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
+
+        return None
+
 GAME_MODES['flooding_arena'] = FloodingArenaMode()
+GAME_MODES['shrinking_safe_zone'] = ShrinkingSafeZoneMode()
