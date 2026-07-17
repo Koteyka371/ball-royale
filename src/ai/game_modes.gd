@@ -7224,6 +7224,13 @@ class BlackHoleMode extends GameMode:
 
 					# Cap max pull to avoid crazy speeds
 					pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+					var grav_rev = false
+					if "gravity_reversal_active" in world:
+						grav_rev = world.gravity_reversal_active
+					elif world.has_method("get") and world.get("gravity_reversal_active") != null:
+						grav_rev = world.get("gravity_reversal_active")
+					if grav_rev:
+						pull_strength = -pull_strength
 
 					b.x += (dx / dist) * pull_strength * delta
 					b.y += (dy / dist) * pull_strength * delta

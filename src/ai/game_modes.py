@@ -31,6 +31,17 @@ class GameMode:
         self.description = "Base game mode"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -177,6 +188,7 @@ class GameMode:
             1: {"type": "double_damage"},
             2: {"type": "high_speed"},
             3: {"type": "vampirism"},
+            4: {"type": "gravity_reversal"},
         }
         week_index = current_week % len(weekly_mutators)
         week_mod = weekly_mutators[week_index]
@@ -688,6 +700,17 @@ class DraftRoyaleMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -897,6 +920,17 @@ class BattleRoyaleMode(GameMode):
         self.random_event_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -2814,6 +2848,17 @@ class TeamDeathmatchMode(GameMode):
         self.description = "Two teams fight until one is eliminated."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -2889,6 +2934,17 @@ class ZombieInfectionMode(GameMode):
         self.bounty_base_reward = 5
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -3012,6 +3068,17 @@ class GuildBossFightMode(GameMode):
         self.tier = tier
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -3152,6 +3219,17 @@ class BossFightMode(GameMode):
         self.description = "One giant boss ball faces off against a team of weaker hunters."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -3280,6 +3358,17 @@ class DualPayloadMode(GameMode):
         self.payload_blue = None
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -3501,6 +3590,17 @@ class EscortMode(GameMode):
         self.hazard_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -3758,6 +3858,17 @@ class VIPDefenseMode(GameMode):
         self.bounty_base_reward = 25
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -3840,6 +3951,17 @@ class SurvivalMode(GameMode):
         self.description = "Players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -3992,6 +4114,17 @@ class CaptureTheFlagMode(GameMode):
         self.description = "Teams try to steal the enemy's flag (a special booster) and return it to their base."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -4090,6 +4223,17 @@ class EvolutionarySimulationMode(GameMode):
         self.description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -4228,6 +4372,17 @@ class MassiveGravityWellMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -4399,6 +4554,17 @@ class KingOfTheHillMode(GameMode):
         self.game_time = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -4538,6 +4704,17 @@ class SweepingBlackHoleMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -4737,6 +4914,8 @@ class BlackHoleMode(GameMode):
 
                     # Cap max pull to avoid crazy speeds, but scale the cap too
                     pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+                    if getattr(world, 'gravity_reversal_active', False):
+                        pull_strength = -pull_strength
 
                     b.x += (dx / dist) * pull_strength * delta
                     b.y += (dy / dist) * pull_strength * delta
@@ -4770,6 +4949,17 @@ class WeatherChaosMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -5568,6 +5758,17 @@ class DominationMode(GameMode):
             pt.owner = None
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -5836,6 +6037,17 @@ class MemoryTrapsMode(GameMode):
         self.traps = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -5959,6 +6171,17 @@ class CustomMatchMode(GameMode):
         self._rewards_given = False
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -6190,6 +6413,17 @@ class EcholocationMode(GameMode):
         self.current_flash_time = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -6316,6 +6550,17 @@ class PitchBlackMode(GameMode):
         self.description = "The screen is completely dark. AI relies entirely on a narrow cone of light matching its perception radius."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -6427,6 +6672,17 @@ class VisionReducedMode(GameMode):
         self.pulse_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -6548,6 +6804,17 @@ class EMPBurstMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -6639,6 +6906,17 @@ class DynamicHazardsMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -7820,6 +8098,17 @@ class MirrorMatchMode(GameMode):
         self.world = None
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -7906,6 +8195,17 @@ class VolatileClonesMode(GameMode):
         self.clone_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -8103,6 +8403,17 @@ class CloneChaosMode(GameMode):
         self.clone_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -8320,6 +8631,17 @@ class BumperBallsMode(GameMode):
         self.description = "Balls deal zero damage but bounce each other with much higher knockback. Try to push opponents off the arena!"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -8569,6 +8891,17 @@ class ModifierZonesMode(GameMode):
         self.zones = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -8745,6 +9078,17 @@ class WindstormMode(GameMode):
         self.tornado_timer = 5.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -9060,6 +9404,17 @@ class BountyHuntMode(GameMode):
         self.bounty_multiplier = 2.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -9417,6 +9772,17 @@ class GravityWellMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -10178,6 +10544,17 @@ class MagneticCollisionsMode(GameMode):
         self.polarity_flip_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -10480,6 +10857,17 @@ class PinballMode(GameMode):
         self.description = "Lots of bouncy bumpers and physics-based knockback logic to push balls around the arena."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -11807,6 +12195,17 @@ class StaminaSpeedMode(GameMode):
         self.description = "Max stamina dictates base speed. Everyone starts with 200 max stamina but taking damage permanently reduces maximum stamina for the rest of the round."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -11929,6 +12328,17 @@ class HazardBilliardsMode(GameMode):
         self.description = "Every ball starts with a reflect shield and no standard attacks work. Players must push map hazards into each other to deal damage!"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -12279,6 +12689,8 @@ class InverseSafeZoneMode(GameMode):
                 # Push players away from the center
                 if dist > 0.1:
                     push_strength = 2000.0 * (1.0 - min(1.0, dist / self.max_danger_radius)) # Stronger push closer to center
+                    if getattr(world, 'gravity_reversal_active', False):
+                        push_strength = -push_strength
                     if not hasattr(b, "vx"): b.vx = 0.0
                     if not hasattr(b, "vy"): b.vy = 0.0
                     b.vx += (dx / dist) * push_strength * delta
@@ -12612,6 +13024,17 @@ class DailyMutatorMode(GameMode):
         self._rewards_given = False
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -12726,6 +13149,17 @@ class BlackMarketMode(GameMode):
         self.currency_spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -13077,6 +13511,17 @@ class BlizzardMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -13222,6 +13667,17 @@ class MeteorShowerMode(GameMode):
         self.craters = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -13396,6 +13852,17 @@ class CursedBuffZoneMode(GameMode):
         self.zone_radius = 150.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -13524,6 +13991,17 @@ class RhythmPanelsMode(GameMode):
         self.beat_interval = 2.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -14013,6 +14491,17 @@ class ArtifactUpgraderMode(GameMode):
         self.description = "Protect the wandering crafter NPC from hazards for 30 seconds to upgrade your artifacts!"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -14206,6 +14695,17 @@ class SweepingPaddlesMode(GameMode):
         self.sweep_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -14734,6 +15234,17 @@ class InvisibleDecoysMode(GameMode):
         self.description = "The arena is seeded with invisible explosive decoys. Be careful not to trigger a chain reaction!"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -15188,6 +15699,17 @@ class JuggernautMode(GameMode):
         self.description = "Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -15572,6 +16094,17 @@ class TickingPayloadMode(GameMode):
         self.winner = None
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -15920,6 +16453,17 @@ class WeaponCollectionMode(GameMode):
         self.weapon_spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -16132,9 +16676,6 @@ class CenterGravityWellMode(GameMode):
         self.pull_radius = 2000.0
         self.damage = 25.0
 
-    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
-        pass  # No special trait interactions for now
-
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
         if not hasattr(world.arena, "hazards"):
@@ -16252,6 +16793,17 @@ class CenterBlackHoleMode(GameMode):
         self.damage = 10.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -19002,7 +19554,54 @@ class PlatformerMode(GameMode):
                     b.alive = False
                     b.killer = "fall_damage"
 
+
+class GravityReversalMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Gravity Reversal Mutator"
+        self.description = "Intermittently reverses the gravitational pull of hazards and game modes, causing elements that usually attract (like Black Holes or Inverse Safe Zones) to suddenly repel for short, chaotic durations."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        timer = getattr(self, "showcase_timer", 0.0) + delta
+        if timer > 15.0:
+            timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                import random
+                cx = world.arena.width / 2.0 + random.uniform(-200, 200) if hasattr(world.arena, "width") else 500.0 + random.uniform(-200, 200)
+                cy = world.arena.height / 2.0 + random.uniform(-200, 200) if hasattr(world.arena, "height") else 500.0 + random.uniform(-200, 200)
+                try:
+                    from arena.procedural_arena import Hazard
+                    h = Hazard(id=len(world.arena.hazards) + 9000 + random.randint(0, 1000), x=cx, y=cy, radius=50.0, kind="massive_black_hole", damage=50.0)
+                    setattr(h, 'duration', 10.0)
+                    world.arena.hazards.append(h)
+                except Exception:
+                    pass
+        self.showcase_timer = timer
+
+    def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
+        return None
+
 GAME_MODES = {
+    'gravity_reversal_mutator': GravityReversalMutatorMode(),
     'platformer': PlatformerMode(),
     "meteor_bombardment": MeteorBombardmentMode(),
     "infiltration": InfiltrationMode(),
@@ -19162,6 +19761,17 @@ class RollingBouldersMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -19407,6 +20017,17 @@ class SoulLinkMode(GameMode):
         self.prev_state[b.id] = state
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -19666,6 +20287,17 @@ class TagTeamMode(GameMode):
         self.team_counter = 1
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -19876,6 +20508,17 @@ class CrossfireMode(GameMode):
         self.description = "Balls are divided into two teams on opposite sides of a center line. Players cannot cross the line but can throw hazards and boosters."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -19984,6 +20627,17 @@ class TeleporterHubMode(GameMode):
         self.peripheral_zones = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
@@ -20707,6 +21361,17 @@ class FreezeTagMode(GameMode):
         self.description = "Players can freeze enemies upon collision. Frozen enemies cannot move or attack until an ally collides with them to unfreeze them. The game ends when one team is completely frozen."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
+            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
+            if timer > 10.0:
+                timer = 0.0
+                current = getattr(world, "gravity_reversal_active", False)
+                world.gravity_reversal_active = not current
+                if hasattr(world, "add_event"):
+                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
+                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
+            world.gravity_reversal_timer = timer
+
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
