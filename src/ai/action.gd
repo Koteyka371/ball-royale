@@ -24232,7 +24232,7 @@ func _use_skill():
                     hit_entities.append(self.ball)
                     hit_entities.append(target)
                     var current_target = target
-                    var chain_damage = dmg * 1.5
+                    var chain_damage = dmg * 0.8
 
                     var max_jumps = 3
                     if is_raining:
@@ -24314,7 +24314,7 @@ func _use_skill():
 
                         hit_entities.append(next_entity)
                         current_target = next_entity
-                        chain_damage *= 1.5
+                        chain_damage *= 0.8
                         jumps += 1
 
         elif skill_name == "elemental_burst":
