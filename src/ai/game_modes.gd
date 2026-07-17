@@ -37704,3 +37704,134 @@ class EyeOfTheStormMode extends SafeZoneMode:
                     b["hp"] = min(float(b.get("hp", 100.0)) + heal_rate * delta, max_hp)
 
 GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode.new()
+
+
+class FakeBall:
+    var id = 0
+    var x = 0.0
+    var y = 0.0
+    var vx = 0.0
+    var vy = 0.0
+    var radius = 15.0
+    var hp = 1.0
+    var max_hp = 1.0
+    var alive = true
+    var ball_type = "basic"
+    var team = "neutral"
+    var speed = 150.0
+    var base_speed = 150.0
+    var damage = 0.0
+    var base_damage = 0.0
+    var perception_radius = 0.0
+    var base_perception_radius = 0.0
+    var is_fake = true
+    var target_x = 0.0
+    var target_y = 0.0
+    var move_timer = 0.0
+
+    func _init(id_val, start_x, start_y):
+        self.id = id_val
+        self.x = start_x
+        self.y = start_y
+        self.target_x = start_x
+        self.target_y = start_y
+
+    func update(delta, arena_width, arena_height):
+        self.move_timer -= delta
+        if self.move_timer <= 0.0:
+            self.move_timer = randf_range(1.0, 3.0)
+            self.target_x = self.x + randf_range(-200.0, 200.0)
+            self.target_y = self.y + randf_range(-200.0, 200.0)
+            self.target_x = max(15.0, min(arena_width - 15.0, self.target_x))
+            self.target_y = max(15.0, min(arena_height - 15.0, self.target_y))
+
+        var dx = self.target_x - self.x
+        var dy = self.target_y - self.y
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            self.vx = (dx / dist) * self.speed
+            self.vy = (dy / dist) * self.speed
+        else:
+            self.vx = 0.0
+            self.vy = 0.0
+
+        self.x += self.vx * delta
+        self.y += self.vy * delta
+        self.x = max(15.0, min(arena_width - 15.0, self.x))
+        self.y = max(15.0, min(arena_height - 15.0, self.y))
+
+    func take_damage(amount, source=null):
+        self.hp -= amount
+        if self.hp <= 0:
+            self.alive = false
+
+class FakeBallsMode extends GameMode:
+    var spawn_timer = 0.0
+    var spawn_interval = 10.0
+
+    func _init():
+        name = "Fake Balls"
+        description = "Periodically spawns harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked."
+
+    func tick(world, balls, delta):
+        spawn_timer += delta
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+
+        if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+            arena_width = float(world.arena.width)
+            arena_height = float(world.arena.height)
+        elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+            arena_width = float(world.arena.width)
+            arena_height = float(world.arena.height)
+
+        if spawn_timer >= spawn_interval:
+            spawn_timer = 0.0
+            var spawn_x = randf_range(100.0, arena_width - 100.0)
+            var spawn_y = randf_range(100.0, arena_height - 100.0)
+
+            var fb_id = randi() % 900000 + 100000
+            if typeof(world) == TYPE_OBJECT and "next_id" in world:
+                fb_id = world.next_id
+                world.next_id += 1
+            elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+                fb_id = world["next_id"]
+                world["next_id"] += 1
+
+            var fake_ball = FakeBall.new(fb_id, spawn_x, spawn_y)
+            if typeof(world) == TYPE_OBJECT and "balls" in world:
+                world.balls.append(fake_ball)
+            elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                world.balls.append(fake_ball)
+
+        var to_remove = []
+        for b in balls:
+            var is_fake = false
+            if typeof(b) == TYPE_OBJECT and "is_fake" in b:
+                is_fake = b.is_fake
+            elif typeof(b) == TYPE_DICTIONARY and b.has("is_fake"):
+                is_fake = b.is_fake
+
+            if is_fake:
+                var alive = true
+                if typeof(b) == TYPE_OBJECT and "alive" in b:
+                    alive = b.alive
+                elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+                    alive = b.alive
+
+                if alive:
+                    if typeof(b) == TYPE_OBJECT and b.has_method("update"):
+                        b.update(delta, arena_width, arena_height)
+                else:
+                    to_remove.append(b)
+
+        if typeof(world) == TYPE_OBJECT and "balls" in world:
+            for b in to_remove:
+                if world.balls.has(b):
+                    world.balls.erase(b)
+        elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+            for b in to_remove:
+                if world.balls.has(b):
+                    world.balls.erase(b)
+
+GAME_MODES["fake_balls"] = FakeBallsMode.new()

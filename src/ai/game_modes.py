@@ -24619,3 +24619,102 @@ class EyeOfTheStormMode(SafeZoneMode):
                     b.hp = min(b.hp + self.heal_rate * delta, max_hp)
 
 GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode()
+
+
+class FakeBall:
+    def __init__(self, id_val, start_x, start_y):
+        self.id = id_val
+        self.x = start_x
+        self.y = start_y
+        self.vx = 0.0
+        self.vy = 0.0
+        self.radius = 15.0
+        self.hp = 1.0
+        self.max_hp = 1.0
+        self.alive = True
+        self.ball_type = "basic"
+        self.team = "neutral"
+        self.speed = 150.0
+        self.base_speed = 150.0
+        self.damage = 0.0
+        self.base_damage = 0.0
+        self.perception_radius = 0.0
+        self.is_fake = True
+        self.target_x = start_x
+        self.target_y = start_y
+        self.move_timer = 0.0
+
+    def update(self, delta, arena_width, arena_height):
+        import math
+        import random
+        self.move_timer -= delta
+        if self.move_timer <= 0.0:
+            self.move_timer = random.uniform(1.0, 3.0)
+            self.target_x = self.x + random.uniform(-200.0, 200.0)
+            self.target_y = self.y + random.uniform(-200.0, 200.0)
+            self.target_x = max(15.0, min(arena_width - 15.0, self.target_x))
+            self.target_y = max(15.0, min(arena_height - 15.0, self.target_y))
+
+        dx = self.target_x - self.x
+        dy = self.target_y - self.y
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            self.vx = (dx / dist) * self.speed
+            self.vy = (dy / dist) * self.speed
+        else:
+            self.vx = 0.0
+            self.vy = 0.0
+
+        self.x += self.vx * delta
+        self.y += self.vy * delta
+        self.x = max(15.0, min(arena_width - 15.0, self.x))
+        self.y = max(15.0, min(arena_height - 15.0, self.y))
+
+    def take_damage(self, amount, source=None):
+        self.hp -= amount
+        if self.hp <= 0:
+            self.alive = False
+
+class FakeBallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Fake Balls"
+        self.description = "Periodically spawns harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked."
+        self.spawn_timer = 0.0
+        self.spawn_interval = 10.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        self.spawn_timer += delta
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0.0
+            spawn_x = random.uniform(100.0, arena_width - 100.0)
+            spawn_y = random.uniform(100.0, arena_height - 100.0)
+
+            fb_id = random.randint(100000, 999999)
+            if hasattr(world, "next_id"):
+                fb_id = world.next_id
+                world.next_id += 1
+
+            fake_ball = FakeBall(fb_id, spawn_x, spawn_y)
+            if hasattr(world, "balls"):
+                world.balls.append(fake_ball)
+
+        to_remove = []
+        for b in balls:
+            if getattr(b, "is_fake", False):
+                if getattr(b, "alive", True):
+                    if hasattr(b, "update"):
+                        b.update(delta, arena_width, arena_height)
+                else:
+                    to_remove.append(b)
+
+        if hasattr(world, "balls"):
+            for b in to_remove:
+                if b in world.balls:
+                    world.balls.remove(b)
+
+GAME_MODES["fake_balls"] = FakeBallsMode()
