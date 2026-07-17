@@ -18359,7 +18359,7 @@
     },
     {
       "id": "idea-1070",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slingshot Mode",
@@ -28796,6 +28796,40 @@
         "src/ai/anti_gravity_repulsor_booster.py",
         "src/ai/anti_gravity_repulsor_booster.gd",
         "tests/test_anti_gravity_repulsor_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1683",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Turret Overload",
+      "description": "Turrets explode when destroyed.",
+      "allowed_paths": [
+        "src/ai/turret_overload.py",
+        "src/ai/turret_overload.gd",
+        "tests/test_turret_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1684",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Healing Turret",
+      "description": "Turrets can heal allies.",
+      "allowed_paths": [
+        "src/ai/healing_turret.py",
+        "src/ai/healing_turret.gd",
+        "tests/test_healing_turret.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
