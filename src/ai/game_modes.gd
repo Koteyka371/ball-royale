@@ -1935,6 +1935,14 @@ class BattleRoyaleMode extends GameMode:
 						b.take_damage(damage_amount)
 					elif "hp" in b:
 						b.hp -= damage_amount  # Apply continuous safe zone damage
+						if b.hp <= 0:
+							b.hp = 0
+							b.alive = false
+							if not "killer" in b or b.killer == null or b.killer == "":
+								if b.has_method("set_meta"):
+									b.set_meta("killer", "safe_zone")
+								else:
+									b.killer = "safe_zone"
 
 					if typeof(b) == TYPE_OBJECT:
 						if "burn_timer" in b:
@@ -28059,6 +28067,14 @@ class LavaRoyaleMode extends GameMode:
 						b.take_damage(damage_amount)
 					elif "hp" in b:
 						b.hp -= damage_amount
+						if b.hp <= 0:
+							b.hp = 0
+							b.alive = false
+							if not "killer" in b or b.killer == null or b.killer == "":
+								if b.has_method("set_meta"):
+									b.set_meta("killer", "lava_zone")
+								else:
+									b.killer = "lava_zone"
 
 					if "burn_timer" in b:
 						b.burn_timer = max(b.burn_timer, 2.0)
