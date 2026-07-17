@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1085] Black Hole Singularity Hazard — *2026-07-17 20:04:54 UTC*
+
+A new hazard that appears in the center of the arena during the late game. It slowly pulls all balls towards it. Balls that get too close are instantly eliminated.
+
+---
+
 ## [idea-1058] Tornado Core Booster — *2026-07-17 19:45:16 UTC*
 
 A booster that allows the player to briefly become a mini-tornado, ignoring mud slows and pulling enemies toward them.

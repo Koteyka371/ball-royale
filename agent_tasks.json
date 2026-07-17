@@ -18614,7 +18614,7 @@
     },
     {
       "id": "idea-1085",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Singularity Hazard",
@@ -29408,6 +29408,40 @@
         "src/arena/banshee_shriek_trap.py",
         "src/arena/banshee_shriek_trap.gd",
         "tests/test_banshee_shriek_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1719",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ice Rink Arena Modifier",
+      "description": "A random procedural arena event that freezes the ground, reducing friction drastically. Balls take much longer to stop and turn, creating chaotic collisions and making hazards harder to dodge.",
+      "allowed_paths": [
+        "src/arena/ice_rink_arena.py",
+        "src/arena/ice_rink_arena.gd",
+        "tests/test_ice_rink_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1720",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grapple Hook Momentum",
+      "description": "A new skill or item that lets a player grapple onto static arena elements or hazards and swing around them to gain momentum and close gaps quickly.",
+      "allowed_paths": [
+        "src/ai/grapple_hook_momentum.py",
+        "src/ai/grapple_hook_momentum.gd",
+        "tests/test_grapple_hook_momentum.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
