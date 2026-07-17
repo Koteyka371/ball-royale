@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1053] Tactical Smoke Grenades — *2026-07-17 18:03:02 UTC*
+
+Add a new item 'smoke_grenade' that creates a temporary smoke zone hazard. While inside the smoke zone, a ball's perception radius is severely reduced, and enemies outside cannot target those inside. It allows for stealthy escapes and tactical ambushes.
+
+---
+
 ## [idea-1073] Bait and Switch Mode — *2026-07-17 06:51:57 UTC*
 
 A new chaotic game mode where all players occasionally leave behind a decoy that perfectly replicates their health and movement history for 5 seconds. Attacking a decoy reflects 50% of the damage back to the attacker.
