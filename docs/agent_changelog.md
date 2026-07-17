@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1098] Weather Reactive Traps — *2026-07-17 22:12:39 UTC*
+
+Introduce generic trap objects in procedural arenas that change their behavior based on the current weather. For instance, a basic proximity mine could become a frost mine during blizzards, freezing enemies instead of dealing pure damage, or turn into an electric tether during thunderstorms.
+
+---
+
 ## [idea-1086] Quantum Teleportation Module — *2026-07-17 22:02:32 UTC*
 
 An active item that allows the player to instantly swap positions with a targeted enemy, dealing minor damage and briefly slowing the enemy upon arrival. Useful for escaping bad situations or pulling an enemy into a hazard.
