@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1060] Platformer Mode — *2026-07-17 04:22:03 UTC*
+
+A side-scrolling platformer mode where balls navigate using bounce pads, grapple points, and low gravity to reach the end of a long, treacherous level.
+
+---
+
 ## [idea-1052] Dynamic Wind Currents — *2026-07-17 03:56:54 UTC*
 
 Introduce dynamic wind currents into arenas that alter the trajectory of projectiles and affect movement speed based on ball weight traits, creating new positional strategies.

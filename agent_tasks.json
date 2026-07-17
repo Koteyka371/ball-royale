@@ -18189,7 +18189,7 @@
     },
     {
       "id": "idea-1060",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Platformer Mode",
@@ -28932,6 +28932,74 @@
         "src/ai/anti_gravity_zone.py",
         "src/ai/anti_gravity_zone.gd",
         "tests/test_anti_gravity_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1691",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Weather Event",
+      "description": "An intense extreme weather variant where tornadoes move unpredictably across the arena. They apply heavy push forces inside their radius, and lighter balls could be thrown farther.",
+      "allowed_paths": [
+        "src/ai/tornado.py",
+        "src/ai/tornado.gd",
+        "tests/test_tornado.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1692",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Radar Jammer",
+      "description": "A gadget that permanently scrambles homing missiles and AI perception in a large area.",
+      "allowed_paths": [
+        "src/ai/radar_jammer.py",
+        "src/ai/radar_jammer.gd",
+        "tests/test_radar_jammer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1693",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Link Trap",
+      "description": "Links multiple balls, mirroring any damage taken by one to all others",
+      "allowed_paths": [
+        "src/arena/nemesis_link_trap.py",
+        "src/arena/nemesis_link_trap.gd",
+        "tests/test_nemesis_link_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1694",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Thermo-Optic Camouflage",
+      "description": "An active stealth system that rapidly drains stamina but grants complete invisibility to radar and heat sensors.",
+      "allowed_paths": [
+        "src/ai/thermo_optic_camouflage.py",
+        "src/ai/thermo_optic_camouflage.gd",
+        "tests/test_thermo_optic_camouflage.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
