@@ -29447,6 +29447,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1721",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Moving Black Hole",
+      "description": "A mode where a black hole moves around the map.",
+      "allowed_paths": [
+        "src/ai/moving_black_hole.py",
+        "src/ai/moving_black_hole.gd",
+        "tests/test_moving_black_hole.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1722",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Heal or Hurt Zone",
+      "description": "A zone that alternates between healing and hurting.",
+      "allowed_paths": [
+        "src/ai/heal_or_hurt_zone.py",
+        "src/ai/heal_or_hurt_zone.gd",
+        "tests/test_heal_or_hurt_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

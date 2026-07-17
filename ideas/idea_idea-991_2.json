@@ -1,4 +1,0 @@
-{
-  "title": "Time Loop Event",
-  "description": "An event where every 30 seconds the arena resets state (hazard positions, player positions, hp), but the players retain any items picked up. Allows for strategic routing and resource gathering."
-}
