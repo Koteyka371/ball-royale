@@ -4114,6 +4114,23 @@ class Action:
         if hasattr(self.world, "balls"):
             for b in self.world.balls:
                 if getattr(b, "is_decoy", False):
+                    # Proximity detonation check
+                    if getattr(b, "alive", True) and getattr(b, "hp", 1.0) > 0 and getattr(b, "decoy_timer", 1.0) > 0:
+                        b_radius = getattr(b, "radius", 10.0)
+                        for other in self.world.balls:
+                            if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(b, "id", None):
+                                is_enemy = getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "")
+                                if is_enemy:
+                                    dist = math.hypot(other.x - b.x, other.y - b.y)
+                                    if dist <= (b_radius + getattr(other, "radius", 10.0)):
+                                        b.hp = 0  # Force detonation
+                                        b.amplified_explosion = True
+                                        if not hasattr(b, "traits"):
+                                            b.traits = []
+                                        if "volatile_decoy" not in b.traits:
+                                            b.traits.append("volatile_decoy")
+                                        b.proximity_detonated = True
+                                        break
                     if getattr(b, "hp", 1.0) <= 0 or getattr(b, "decoy_timer", 1.0) <= 0 or not getattr(b, "alive", True):
                         if not getattr(b, "_decoy_exploded", False):
                             owner_id = getattr(b, "owner_id", None)
@@ -4196,12 +4213,16 @@ class Action:
                                                     actual_damage *= 1.25
                                                 other.hp -= actual_damage
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
+                                                if getattr(b, "proximity_detonated", False):
+                                                    other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 3.0
                                             else:
                                                 actual_damage = explosion_damage
                                                 if getattr(b, "rearm_damage_boost", False):
                                                     actual_damage *= 1.25
                                                 other.hp -= actual_damage
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
+                                                if getattr(b, "proximity_detonated", False):
+                                                    other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 3.0
 
                                             import random
                                             import math
