@@ -29736,6 +29736,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1738",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stasis Bubble Booster",
+      "description": "A booster that deploys a stasis bubble around the ball. The bubble completely stops time within a 50-radius around the ball for 3 seconds, freezing projectiles and other balls, but the ball itself can still move freely.",
+      "allowed_paths": [
+        "src/ai/stasis_bubble_booster.py",
+        "src/ai/stasis_bubble_booster.gd",
+        "tests/test_stasis_bubble_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
