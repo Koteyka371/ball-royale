@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1071] Meteor Shower Event Mode — *2026-07-17 03:45:56 UTC*
+
+A new game mode where periodically the entire arena is bombarded by meteor strikes (red warning circles appear on the ground before impact). Players must constantly dodge these strikes while fighting, and the meteors leave behind burning craters that act as temporary lava hazards.
+
+---
+
 ## [idea-1068] Unstable Quantum Overload Mode — *2026-07-17 03:16:44 UTC*
 
 A game mode where every basic hazard (like spike traps or puddles) randomly shifts into a quantum teleporter for 5 seconds when activated, creating chaotic movement possibilities.
