@@ -17560,7 +17560,7 @@
     },
     {
       "id": "idea-1023",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Flare Gadget",
@@ -28898,6 +28898,40 @@
         "src/arena/mirror.py",
         "src/arena/mirror.gd",
         "tests/test_mirror.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1689",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Anomaly Mode",
+      "description": "Periodically spawns mini black holes that pull in players and hazards.",
+      "allowed_paths": [
+        "src/ai/black_hole_anomaly.py",
+        "src/ai/black_hole_anomaly.gd",
+        "tests/test_black_hole_anomaly.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1690",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Anti-Gravity Zone Event",
+      "description": "Certain parts of the arena periodically lose gravity, causing friction to drop and speed to skyrocket.",
+      "allowed_paths": [
+        "src/ai/anti_gravity_zone.py",
+        "src/ai/anti_gravity_zone.gd",
+        "tests/test_anti_gravity_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1023] Decoy Flare Gadget — *2026-07-17 03:56:45 UTC*
+
+A new gadget that creates a flare that functions like a decoy. It continuously pings on radar systems, attracting heat-seeking projectiles and certain AI behaviors, while slightly illuminating a small area for players using stealth.
+
+---
+
 ## [idea-1071] Meteor Shower Event Mode — *2026-07-17 03:45:56 UTC*
 
 A new game mode where periodically the entire arena is bombarded by meteor strikes (red warning circles appear on the ground before impact). Players must constantly dodge these strikes while fighting, and the meteors leave behind burning craters that act as temporary lava hazards.
