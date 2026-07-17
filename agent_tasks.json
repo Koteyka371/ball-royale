@@ -29481,6 +29481,57 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1723",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Ricochet Hazard",
+      "description": "A new hazard type that acts like a mirror for incoming damage or projectiles, but applying a random multiplier (0.5x to 2x) based on the speed of the entity hitting it. It rewards fast, high-risk maneuvers with potentially devastating offensive plays against enemies caught in the crossfire.",
+      "allowed_paths": [
+        "src/arena/quantum_ricochet.py",
+        "src/arena/quantum_ricochet.gd",
+        "tests/test_quantum_ricochet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1724",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Controls Booster",
+      "description": "An active item that, when used, shoots out an EMP wave. Any enemy caught in the wave will have their movement controls scrambled (reversed) for 3 seconds, heavily disorienting them and making it hard for them to dodge incoming attacks or hazards.",
+      "allowed_paths": [
+        "src/ai/reverse_controls_booster.py",
+        "src/ai/reverse_controls_booster.gd",
+        "tests/test_reverse_controls_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1725",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time-Dilation Bumper",
+      "description": "A variant of the standard bumper that, upon collision, not only knocks the player back but temporarily slows down the game time in a localized area around the bumper. It creates a matrix-style slow-motion zone, letting players plan their next bounce or dodge precisely while inside the bubble.",
+      "allowed_paths": [
+        "src/ai/time_dilation_bumper.py",
+        "src/ai/time_dilation_bumper.gd",
+        "tests/test_time_dilation_bumper.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

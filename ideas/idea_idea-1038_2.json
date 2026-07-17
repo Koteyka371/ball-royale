@@ -1,4 +1,0 @@
-{
-  "title": "Time-Dilation Bumper",
-  "description": "A variant of the standard bumper that, upon collision, not only knocks the player back but temporarily slows down the game time in a localized area around the bumper. It creates a matrix-style slow-motion zone, letting players plan their next bounce or dodge precisely while inside the bubble."
-}

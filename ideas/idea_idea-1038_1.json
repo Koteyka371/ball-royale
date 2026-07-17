@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Ricochet Hazard",
-  "description": "A new hazard type that acts like a mirror for incoming damage or projectiles, but applying a random multiplier (0.5x to 2x) based on the speed of the entity hitting it. It rewards fast, high-risk maneuvers with potentially devastating offensive plays against enemies caught in the crossfire."
-}
