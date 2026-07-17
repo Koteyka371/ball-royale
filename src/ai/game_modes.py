@@ -1415,7 +1415,7 @@ class BattleRoyaleMode(GameMode):
                             h.damage = getattr(h, "damage", 10.0) * 1.5
                             h.radius = getattr(h, "radius", 20.0) * 2.0
                             if hasattr(h, "target_radius"): h.target_radius = h.radius
-                        elif kind in ["spinning_laser", "laser_wall"]:
+                        elif kind in ["spinning_laser", "laser_wall", "rotating_laser_wall"]:
                             h.damage = getattr(h, "damage", 10.0) * 2.0
                         elif kind in ["tornado", "black_hole", "gravity_well", "singularity", "vortex"]:
                             h.radius = getattr(h, "radius", 20.0) * 1.5
@@ -18800,14 +18800,6 @@ class RotatingLasersMode(GameMode):
             aw = getattr(world.arena, "width", 1000.0)
             ah = getattr(world.arena, "height", 1000.0)
 
-            positions = [
-                (aw * 0.25, ah * 0.25),
-                (aw * 0.75, ah * 0.25),
-                (aw * 0.25, ah * 0.75),
-                (aw * 0.75, ah * 0.75),
-                (aw * 0.5, ah * 0.5)
-            ]
-
             import math
             try:
                 from arena.procedural_arena import Hazard
@@ -18825,12 +18817,12 @@ class RotatingLasersMode(GameMode):
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
-            for i, (x, y) in enumerate(positions):
-                h_id = f"rot_laser_{i}"
-                h = Hazard(id=h_id, x=x, y=y, radius=300.0, kind="spinning_laser", damage=50.0)
-                h.angle = (i * math.pi / 2.0)
-                h.duration = 9999.0 # Permanent for the mode
-                world.arena.hazards.append(h)
+            h_id = "rot_laser_wall_center"
+            h = Hazard(id=h_id, x=aw*0.5, y=ah*0.5, radius=1500.0, kind="rotating_laser_wall", damage=50.0)
+            h.angle = 0.0
+            h.rotation_speed = 0.5
+            h.duration = 9999.0 # Permanent for the mode
+            world.arena.hazards.append(h)
 
 class ElementalWandererMode(GameMode):
     def __init__(self):

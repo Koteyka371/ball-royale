@@ -2014,7 +2014,7 @@ class BattleRoyaleMode extends GameMode:
 							elif kind in ["poison_cloud", "lava", "fire_zone", "poison_nova", "fire_ring"]:
 								new_damage = h_damage * 1.5
 								new_radius = h_rad * 2.0
-							elif kind in ["spinning_laser", "laser_wall"]:
+							elif kind in ["spinning_laser", "laser_wall", "rotating_laser_wall"]:
 								new_damage = h_damage * 2.0
 							elif kind in ["tornado", "black_hole", "gravity_well", "singularity", "vortex"]:
 								new_radius = h_rad * 1.5
@@ -30746,14 +30746,6 @@ class RotatingLasersMode extends GameMode:
 			if "height" in world.arena: ah = world.arena.height
 			elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"): ah = world.arena["height"]
 
-			var positions = [
-				Vector2(aw * 0.25, ah * 0.25),
-				Vector2(aw * 0.75, ah * 0.25),
-				Vector2(aw * 0.25, ah * 0.75),
-				Vector2(aw * 0.75, ah * 0.75),
-				Vector2(aw * 0.5, ah * 0.5)
-			]
-
 			var arena_ref = world.arena
 			var has_hazards = false
 			if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("hazards"): has_hazards = true
@@ -30766,28 +30758,27 @@ class RotatingLasersMode extends GameMode:
 					arena_ref.hazards = []
 
 			var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
-			for i in range(positions.size()):
-				var pos = positions[i]
-				var h_id = "rot_laser_" + str(i)
-				var h = null
-				if ProceduralArenaScript != null:
-					h = ProceduralArenaScript.Hazard.new(h_id, pos.x, pos.y, 300.0, "spinning_laser", 50.0)
-					h.set_meta("angle", i * PI / 2.0)
-					h.set_meta("duration", 9999.0)
-				else:
-					h = {
-						"id": h_id,
-						"x": pos.x,
-						"y": pos.y,
-						"radius": 300.0,
-						"kind": "spinning_laser",
-						"damage": 50.0,
-						"active": true
-					}
-				if typeof(arena_ref) == TYPE_DICTIONARY:
-					arena_ref["hazards"].append(h)
-				else:
-					arena_ref.hazards.append(h)
+			var h_id = "rot_laser_wall_center"
+			var h = null
+			if ProceduralArenaScript != null:
+				h = ProceduralArenaScript.Hazard.new(h_id, aw * 0.5, ah * 0.5, 1500.0, "rotating_laser_wall", 50.0)
+				h.set_meta("angle", 0.0)
+				h.set_meta("rotation_speed", 0.5)
+				h.set_meta("duration", 9999.0)
+			else:
+				h = {
+					"id": h_id,
+					"x": aw * 0.5,
+					"y": ah * 0.5,
+					"radius": 1500.0,
+					"kind": "rotating_laser_wall",
+					"damage": 50.0,
+					"active": true
+				}
+			if typeof(arena_ref) == TYPE_DICTIONARY:
+				arena_ref["hazards"].append(h)
+			else:
+				arena_ref.hazards.append(h)
 
 class ElementalWandererMode extends GameMode:
 	var npc = null

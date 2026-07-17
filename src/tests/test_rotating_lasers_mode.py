@@ -31,9 +31,11 @@ def test_rotating_lasers_mode_spawn():
     mode.setup(world, balls)
     mode.tick(world, balls, 1.0)
 
-    assert len(world.arena.hazards) == 5
+    assert len(world.arena.hazards) == 1
 
-    for h in world.arena.hazards:
-        assert h.kind == "spinning_laser"
-        assert h.damage == 50.0
-        assert h.radius == 300.0
+    h = world.arena.hazards[0]
+    assert h.kind == "rotating_laser_wall"
+    assert h.damage == 50.0
+    assert h.radius == 1500.0
+    assert h.rotation_speed == 0.5
+    assert h.angle == 0.0

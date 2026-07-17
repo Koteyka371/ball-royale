@@ -206,6 +206,8 @@ func generate():
             kind = "proximity_trap"
         elif r < 0.9:
             kind = "spinning_laser"
+        elif r < 0.91:
+            kind = "rotating_laser_wall"
         elif r < 0.92:
             kind = "hidden_trap"
         elif r < 0.96:
@@ -409,6 +411,9 @@ func generate():
         elif kind == "spinning_laser":
             radius = rng.randf_range(100.0, 150.0)
             damage = 100.0
+        elif kind == "rotating_laser_wall":
+            radius = 800.0
+            damage = 40.0
         else:
             radius = 15.0
             damage = 50.0
