@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1082] Chain Lightning Ricochet — *2026-07-17 21:29:25 UTC*
+
+Allow lightning strike attacks to bounce from the first target to up to 3 nearby enemies, dealing reduced damage per bounce, making it more effective against grouped enemies.
+
+---
+
 ## [idea-1094] Nemesis Nemesis Chain Reaction — *2026-07-17 20:41:34 UTC*
 
 A new hazard type that only targets players who are currently designated as nemeses to someone else in the match. When a nemesis is destroyed by this hazard, they explode in a 'Chain Reaction' that briefly scrambles the movement controls of all other players in the arena.
