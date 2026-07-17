@@ -4258,6 +4258,10 @@ class Action:
                                                 # Trickster decoy specific logic
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 1.5
 
+                                                # Temporarily blind nearby opponents
+                                                other.is_blinded = True
+                                                other.blindness_timer = max(getattr(other, "blindness_timer", 0.0), 3.0)
+
                                                 # Minor visual noise
                                                 if hasattr(self.world, "events"):
                                                     self.world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})

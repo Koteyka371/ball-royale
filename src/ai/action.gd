@@ -8034,6 +8034,24 @@ func execute(strategy: String, delta: float):
                                             elif other.has_method("set_meta"):
                                                 other.set_meta("stutter_timer", 1.5)
 
+                                            if "is_blinded" in other:
+                                                other.is_blinded = true
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("is_blinded", true)
+                                            elif typeof(other) == TYPE_DICTIONARY:
+                                                other["is_blinded"] = true
+
+                                            var btimer = 0.0
+                                            if "blindness_timer" in other: btimer = other.blindness_timer
+                                            elif other.has_method("get_meta") and other.has_meta("blindness_timer"): btimer = other.get_meta("blindness_timer")
+                                            elif typeof(other) == TYPE_DICTIONARY and other.has("blindness_timer"): btimer = other["blindness_timer"]
+
+                                            btimer = max(btimer, 3.0)
+
+                                            if "blindness_timer" in other: other.blindness_timer = btimer
+                                            elif other.has_method("set_meta"): other.set_meta("blindness_timer", btimer)
+                                            elif typeof(other) == TYPE_DICTIONARY: other["blindness_timer"] = btimer
+
                                             if world != null and "events" in world:
                                                 world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
 
