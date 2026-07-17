@@ -11328,16 +11328,24 @@ func execute(strategy: String, delta: float):
                                         var bnx = bdx / bdist
                                         var bny = bdy / bdist
 
-                                        var damage_amount = 5000.0 if is_supernova else 500.0
-
-                                        if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
-                                            b.take_damage(damage_amount)
-                                        elif "hp" in b:
-                                            b.hp -= damage_amount
-                                            if b.hp <= 0:
+                                        if hazard.kind == "massive_black_hole":
+                                            if "hp" in b:
                                                 b.hp = 0
+                                            if "alive" in b:
                                                 b.alive = false
-                                                if "killer" in b: b.killer = "supernova_explosion" if is_supernova else "black_hole_explosion"
+                                            if "killer" in b:
+                                                b.killer = "massive_black_hole"
+                                        else:
+                                                var damage_amount = 5000.0 if is_supernova else 500.0
+
+                                                if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                                    b.take_damage(damage_amount)
+                                                elif "hp" in b:
+                                                    b.hp -= damage_amount
+                                                    if b.hp <= 0:
+                                                        b.hp = 0
+                                                        b.alive = false
+                                                        if "killer" in b: b.killer = "supernova_explosion" if is_supernova else "black_hole_explosion"
 
                                         var push_strength = 2000.0
                                         var has_vx = false
@@ -11499,6 +11507,30 @@ func execute(strategy: String, delta: float):
                                 var orbital_strength = pull_strength * 1.5
                                 self.ball.x += tx * orbital_strength
                                 self.ball.y += ty * orbital_strength
+
+                            if hazard.kind in ["black_hole", "massive_black_hole", "mini_black_hole"] and dist_sq < hazard.radius * hazard.radius:
+                                if hazard.kind == "massive_black_hole":
+                                    if "hp" in self.ball:
+                                        self.ball.hp = 0
+                                    self.ball.alive = false
+                                    if "killer" in self.ball:
+                                        self.ball.killer = "massive_black_hole"
+                                else:
+                                    var lifetime_mult = 1.0
+                                    if hazard.has_meta("lifetime"):
+                                        lifetime_mult = 1.0 + (hazard.get_meta("lifetime") / 10.0)
+                                    var damage_val = 10.0
+                                    if "damage" in hazard: damage_val = hazard.damage
+                                    damage_val = damage_val * delta * lifetime_mult
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+                                        self.ball.take_damage(damage_val)
+                                    elif "hp" in self.ball:
+                                        self.ball.hp -= damage_val
+                                        if self.ball.hp <= 0:
+                                            self.ball.hp = 0
+                                            self.ball.alive = false
+                                            if "killer" in self.ball:
+                                                self.ball.killer = "black_hole"
 
         if "hazards" in self.world.arena:
             var alive_hazards = []
