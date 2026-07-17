@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1067] Shrinking Hazard Mode — *2026-07-17 04:22:06 UTC*
+
+A battle royale mode where the safe zone slowly shrinks. Any balls outside the safe zone continuously take damage until they return or die.
+
+---
+
 ## [idea-1060] Platformer Mode — *2026-07-17 04:22:03 UTC*
 
 A side-scrolling platformer mode where balls navigate using bounce pads, grapple points, and low gravity to reach the end of a long, treacherous level.
