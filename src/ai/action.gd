@@ -18734,7 +18734,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
+                var skills = ['place_fake_healing_orb', 'place_fake_powerup', 'ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -19976,71 +19976,106 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
-            elif "kind" in nearest and (nearest.kind == "fake_booster" or nearest.kind == "dummy_item" or nearest.kind == "fake_flare"):
-                var explosion_radius = 45.0
-                if "radius" in nearest:
-                    explosion_radius = nearest.radius * 3
-                var dmg = 50.0
-                if "damage" in nearest: dmg = nearest.damage
-                var stun_dur = 2.0
-                if "stun_duration" in nearest: stun_dur = nearest.stun_duration
+            elif "kind" in nearest and (nearest.kind == "fake_booster" or nearest.kind == "dummy_item" or nearest.kind == "fake_flare" or nearest.kind == "fake_healing_orb" or nearest.kind == "fake_powerup"):
+                var is_enemy = true
+                var owner_id = null
+                if "owner_id" in nearest:
+                    owner_id = nearest.owner_id
 
-                if self.world != null and "balls" in self.world:
+                var my_id = null
+                if "id" in self.ball:
+                    my_id = self.ball.id
+
+                if owner_id != null and my_id != null and owner_id == my_id:
+                    is_enemy = false
+                elif owner_id != null and self.world != null and "balls" in self.world:
+                    var owner_team = null
                     for b in self.world.balls:
-                        var bx = 0.0
-                        var by = 0.0
-                        if "x" in b: bx = b.x
-                        elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
-                        if "y" in b: by = b.y
-                        elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
-                        var nx = 0.0
-                        var ny = 0.0
-                        if "x" in nearest: nx = nearest.x
-                        if "y" in nearest: ny = nearest.y
+                        var b_id = null
+                        if "id" in b: b_id = b.id
+                        if b_id == owner_id:
+                            if "team" in b: owner_team = b.team
+                            elif "ball_type" in b: owner_team = b.ball_type
+                            elif b.has_method("get_meta") and b.has_meta("team"): owner_team = b.get_meta("team")
+                            elif b.has_method("get_meta") and b.has_meta("ball_type"): owner_team = b.get_meta("ball_type")
+                            break
+                    var my_team = null
+                    if "team" in self.ball: my_team = self.ball.team
+                    elif "ball_type" in self.ball: my_team = self.ball.ball_type
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): my_team = self.ball.get_meta("ball_type")
+                    if owner_team != null and my_team != null and owner_team == my_team:
+                        is_enemy = false
 
-                        var dx = bx - nx
-                        var dy = by - ny
-                        var dist = sqrt(dx*dx + dy*dy)
-                        if dist <= explosion_radius:
-                            if b.has_method("take_damage"):
-                                b.take_damage(dmg)
-                            if b.has_method("set_meta"):
-                                b.set_meta("stun_timer", stun_dur)
-                            else:
-                                b.stun_timer = stun_dur
-                            # Apply knockback using velocity if possible
-                            if dist > 0.0001:
-                                var knockback_force = 1500.0
-                                if "vx" in b and "vy" in b:
-                                    b.vx += (dx / dist) * knockback_force
-                                    b.vy += (dy / dist) * knockback_force
+                if is_enemy or (nearest.kind != "fake_healing_orb" and nearest.kind != "fake_powerup"):
+                    var explosion_radius = 45.0
+                    if "radius" in nearest:
+                        explosion_radius = nearest.radius * 3
+                    var dmg = 50.0
+                    if nearest.kind == "fake_healing_orb" or nearest.kind == "fake_powerup":
+                        dmg = 100.0
+                    elif "damage" in nearest:
+                        dmg = nearest.damage
+                    var stun_dur = 2.0
+                    if "stun_duration" in nearest: stun_dur = nearest.stun_duration
+
+                    if self.world != null and "balls" in self.world:
+                        for b in self.world.balls:
+                            var bx = 0.0
+                            var by = 0.0
+                            if "x" in b: bx = b.x
+                            elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                            if "y" in b: by = b.y
+                            elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+                            var nx = 0.0
+                            var ny = 0.0
+                            if "x" in nearest: nx = nearest.x
+                            if "y" in nearest: ny = nearest.y
+
+                            var dx = bx - nx
+                            var dy = by - ny
+                            var dist = sqrt(dx*dx + dy*dy)
+                            if dist <= explosion_radius:
+                                if b.has_method("take_damage"):
+                                    b.take_damage(dmg)
+                                if b.has_method("set_meta"):
+                                    b.set_meta("stun_timer", stun_dur)
                                 else:
-                                    # Fallback clamped
-                                    if "x" in b:
-                                        b.x += (dx / dist) * 15.0
-                                    elif b.has_method("set_meta") and b.has_meta("x"):
-                                        b.set_meta("x", b.get_meta("x") + (dx / dist) * 15.0)
-                                    if "y" in b:
-                                        b.y += (dy / dist) * 15.0
-                                    elif b.has_method("set_meta") and b.has_meta("y"):
-                                        b.set_meta("y", b.get_meta("y") + (dy / dist) * 15.0)
+                                    b.stun_timer = stun_dur
+                                # Apply knockback using velocity if possible
+                                if dist > 0.0001:
+                                    var knockback_force = 1500.0
+                                    if "vx" in b and "vy" in b:
+                                        b.vx += (dx / dist) * knockback_force
+                                        b.vy += (dy / dist) * knockback_force
+                                    else:
+                                        # Fallback clamped
+                                        if "x" in b:
+                                            b.x += (dx / dist) * 15.0
+                                        elif b.has_method("set_meta") and b.has_meta("x"):
+                                            b.set_meta("x", b.get_meta("x") + (dx / dist) * 15.0)
+                                        if "y" in b:
+                                            b.y += (dy / dist) * 15.0
+                                        elif b.has_method("set_meta") and b.has_meta("y"):
+                                            b.set_meta("y", b.get_meta("y") + (dy / dist) * 15.0)
+
+                    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                        var num_shrapnel = randi() % 3 + 3 # 3 to 5
+                        for i in range(num_shrapnel):
+                            var shrapnel = {}
+                            shrapnel.kind = "shrapnel"
+                            shrapnel.x = nearest.x if "x" in nearest else 0.0
+                            shrapnel.y = nearest.y if "y" in nearest else 0.0
+                            var angle = randf() * 2.0 * PI
+                            var speed = randf() * 200.0 + 200.0 # 200 to 400
+                            shrapnel.vx = cos(angle) * speed
+                            shrapnel.vy = sin(angle) * speed
+                            shrapnel.radius = 5.0
+                            shrapnel.duration = 5.0
+                            shrapnel.damage = 10.0
+                            self.world.arena.hazards.append(shrapnel)
 
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
-                    var num_shrapnel = randi() % 3 + 3 # 3 to 5
-                    for i in range(num_shrapnel):
-                        var shrapnel = {}
-                        shrapnel.kind = "shrapnel"
-                        shrapnel.x = nearest.x if "x" in nearest else 0.0
-                        shrapnel.y = nearest.y if "y" in nearest else 0.0
-                        var angle = randf() * 2.0 * PI
-                        var speed = randf() * 200.0 + 200.0 # 200 to 400
-                        shrapnel.vx = cos(angle) * speed
-                        shrapnel.vy = sin(angle) * speed
-                        shrapnel.radius = 5.0
-                        shrapnel.duration = 5.0
-                        shrapnel.damage = 10.0
-                        self.world.arena.hazards.append(shrapnel)
-
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
@@ -23214,7 +23249,7 @@ func _use_skill():
                         var h_dist = sqrt(hx*hx + hy*hy)
                         if h_dist <= explosion_radius + hazard.radius:
                             if "kind" in hazard:
-                                if hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item" or hazard.kind == "fake_flare":
+                                if hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item" or hazard.kind == "fake_flare" or hazard.kind == "fake_healing_orb" or hazard.kind == "fake_powerup":
                                     hazards_to_remove.append(hazard)
                                 elif (hazard.kind == "lava" or hazard.kind == "poison_cloud") and hazard.active:
                                     explosion_radius = 200.0
@@ -24357,19 +24392,23 @@ func _use_skill():
                         enemy.silence_timer = 5.0
                     elif enemy.has_method("set_meta"):
                         enemy.set_meta("silence_timer", 5.0)
-        elif skill_name == "place_fake_booster" or skill_name == "place_dummy_item" or skill_name == "place_fake_flare":
+        elif skill_name == "place_fake_booster" or skill_name == "place_dummy_item" or skill_name == "place_fake_flare" or skill_name == "place_fake_healing_orb" or skill_name == "place_fake_powerup":
             if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                 var fb = {}
                 if skill_name == "place_dummy_item":
                     fb.kind = "dummy_item"
                 elif skill_name == "place_fake_flare":
                     fb.kind = "fake_flare"
+                elif skill_name == "place_fake_healing_orb":
+                    fb.kind = "fake_healing_orb"
+                elif skill_name == "place_fake_powerup":
+                    fb.kind = "fake_powerup"
                 else:
                     fb.kind = "fake_booster"
                 fb.x = self.ball.x
                 fb.y = self.ball.y
                 fb.radius = 15.0
-                fb.damage = 50.0
+                fb.damage = 100.0 if skill_name in ["place_fake_healing_orb", "place_fake_powerup"] else 50.0
                 fb.stun_duration = 2.0
                 fb.active = true # Important for collection
                 if "id" in self.ball: fb.owner_id = self.ball.id
@@ -24784,7 +24823,7 @@ func _use_skill():
                         var hy = hazard.y - self.ball.y
                         var h_dist = sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + (hazard.radius if "radius" in hazard else 0):
-                            if "kind" in hazard and (hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item" or hazard.kind == "fake_flare"):
+                            if "kind" in hazard and (hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item" or hazard.kind == "fake_flare" or hazard.kind == "fake_healing_orb" or hazard.kind == "fake_powerup"):
                                 hazards_to_remove.append(hazard)
 
                     for h in hazards_to_remove:

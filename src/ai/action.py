@@ -10056,7 +10056,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
+                    skills = ['place_fake_healing_orb', 'place_fake_powerup', 'ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -10763,52 +10763,70 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
-                elif getattr(nearest, "kind", None) in ["fake_booster", "dummy_item", "fake_flare"]:
-                    import math
-                    import random
-                    explosion_radius = getattr(nearest, "radius", 15.0) * 3
-                    dmg = getattr(nearest, "damage", 50.0)
-                    stun_dur = getattr(nearest, "stun_duration", 2.0)
-                    if hasattr(self.world, "balls"):
+                elif getattr(nearest, "kind", None) in ["fake_booster", "dummy_item", "fake_flare", "fake_healing_orb", "fake_powerup"]:
+                    is_enemy = True
+                    owner_id = getattr(nearest, "owner_id", None)
+                    if owner_id == self.ball.id:
+                        is_enemy = False
+                    elif owner_id is not None and hasattr(self.world, "balls"):
+                        owner_team = None
                         for b in self.world.balls:
-                            bx = getattr(b, "x", 0)
-                            by = getattr(b, "y", 0)
-                            nx = getattr(nearest, "x", 0)
-                            ny = getattr(nearest, "y", 0)
-                            dx = bx - nx
-                            dy = by - ny
-                            dist = math.sqrt(dx*dx + dy*dy)
-                            if dist <= explosion_radius:
-                                if hasattr(b, "take_damage"):
-                                    b.take_damage(dmg)
-                                b.stun_timer = stun_dur
-                                # Apply knockback using velocities if possible
-                                if dist > 0.0001:
-                                    knockback_force = 1500.0
-                                    if hasattr(b, "vx") and hasattr(b, "vy"):
-                                        b.vx += (dx / dist) * knockback_force
-                                        b.vy += (dy / dist) * knockback_force
-                                    else:
-                                        # Fallback but clamped
-                                        b.x += (dx / dist) * 15.0
-                                        b.y += (dy / dist) * 15.0
+                            if getattr(b, "id", None) == owner_id:
+                                owner_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                break
+                        collector_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                        if owner_team and collector_team and owner_team == collector_team:
+                            is_enemy = False
+
+                    if is_enemy or getattr(nearest, "kind", None) not in ["fake_healing_orb", "fake_powerup"]:
+                        import math
+                        import random
+                        explosion_radius = getattr(nearest, "radius", 15.0) * 3
+                        dmg = getattr(nearest, "damage", 100.0) if getattr(nearest, "kind", None) in ["fake_healing_orb", "fake_powerup"] else getattr(nearest, "damage", 50.0)
+                        stun_dur = getattr(nearest, "stun_duration", 2.0)
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                bx = getattr(b, "x", 0)
+                                by = getattr(b, "y", 0)
+                                nx = getattr(nearest, "x", 0)
+                                ny = getattr(nearest, "y", 0)
+                                dx = bx - nx
+                                dy = by - ny
+                                dist = math.sqrt(dx*dx + dy*dy)
+                                if dist <= explosion_radius:
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(dmg)
+                                    b.stun_timer = stun_dur
+                                    # Apply knockback using velocities if possible
+                                    if dist > 0.0001:
+                                        knockback_force = 1500.0
+                                        if hasattr(b, "vx") and hasattr(b, "vy"):
+                                            b.vx += (dx / dist) * knockback_force
+                                            b.vy += (dy / dist) * knockback_force
+                                        else:
+                                            # Fallback but clamped
+                                            b.x += (dx / dist) * 15.0
+                                            b.y += (dy / dist) * 15.0
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            num_shrapnel = random.randint(3, 5)
+                            class Shrapnel:
+                                pass
+                            for _ in range(num_shrapnel):
+                                shrapnel = Shrapnel()
+                                shrapnel.kind = "shrapnel"
+                                shrapnel.x = getattr(nearest, "x", 0)
+                                shrapnel.y = getattr(nearest, "y", 0)
+                                angle = random.uniform(0, 2 * math.pi)
+                                speed = random.uniform(200.0, 400.0)
+                                shrapnel.vx = math.cos(angle) * speed
+                                shrapnel.vy = math.sin(angle) * speed
+                                shrapnel.radius = 5.0
+                                shrapnel.duration = 5.0
+                                shrapnel.damage = 10.0
+                                self.world.arena.hazards.append(shrapnel)
+
+                    # Remove it unconditionally
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                        num_shrapnel = random.randint(3, 5)
-                        class Shrapnel:
-                            pass
-                        for _ in range(num_shrapnel):
-                            shrapnel = Shrapnel()
-                            shrapnel.kind = "shrapnel"
-                            shrapnel.x = getattr(nearest, "x", 0)
-                            shrapnel.y = getattr(nearest, "y", 0)
-                            angle = random.uniform(0, 2 * math.pi)
-                            speed = random.uniform(200.0, 400.0)
-                            shrapnel.vx = math.cos(angle) * speed
-                            shrapnel.vy = math.sin(angle) * speed
-                            shrapnel.radius = 5.0
-                            shrapnel.duration = 5.0
-                            shrapnel.damage = 10.0
-                            self.world.arena.hazards.append(shrapnel)
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
@@ -13327,7 +13345,7 @@ class Action:
                     for enemy in enemies:
                         if math.hypot(enemy.x - self.ball.x, enemy.y - self.ball.y) < 150.0:
                             enemy.silence_timer = 5.0
-            elif skill_name in ["place_fake_booster", "place_dummy_item", "place_fake_flare"]:
+            elif skill_name in ["place_fake_booster", "place_dummy_item", "place_fake_flare", "place_fake_healing_orb", "place_fake_powerup"]:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     class FakeBooster:
                         def __init__(self, x, y, owner_id):
@@ -13335,12 +13353,16 @@ class Action:
                                 self.kind = "dummy_item"
                             elif skill_name == "place_fake_flare":
                                 self.kind = "fake_flare"
+                            elif skill_name == "place_fake_healing_orb":
+                                self.kind = "fake_healing_orb"
+                            elif skill_name == "place_fake_powerup":
+                                self.kind = "fake_powerup"
                             else:
                                 self.kind = "fake_booster"
                             self.x = x
                             self.y = y
                             self.radius = 15.0
-                            self.damage = 50.0
+                            self.damage = 100.0 if skill_name in ["place_fake_healing_orb", "place_fake_powerup"] else 50.0
                             self.stun_duration = 2.0
                             self.owner_id = owner_id
                             self.active = True # Important for collection
@@ -13543,7 +13565,7 @@ class Action:
                         h_dist = math.sqrt(hx*hx + hy*hy)
                         if h_dist <= explosion_radius + getattr(hazard, "radius", 0):
                             if hasattr(hazard, "kind"):
-                                if hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare"]:
+                                if hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare", "fake_healing_orb", "fake_powerup"]:
                                     hazards_to_remove.append(hazard)
                                 elif hazard.kind in ["lava", "poison_cloud"] and getattr(hazard, "active", True):
                                     # Trigger secondary explosion: larger radius, hazard-specific effect
@@ -13747,7 +13769,7 @@ class Action:
                         hy = getattr(hazard, "y", 0) - getattr(self.ball, "y", 0)
                         h_dist = math.sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + getattr(hazard, "radius", 0):
-                            if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare"]:
+                            if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare", "fake_healing_orb", "fake_powerup"]:
                                 hazards_to_remove.append(hazard)
 
                     for h in hazards_to_remove:
