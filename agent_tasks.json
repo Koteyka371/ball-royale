@@ -18410,7 +18410,7 @@
     },
     {
       "id": "idea-1073",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bait and Switch Mode",
@@ -29136,6 +29136,40 @@
         "src/arena/holographic_projection_traps.py",
         "src/arena/holographic_projection_traps.gd",
         "tests/test_holographic_projection_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1703",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Teleportation Zone",
+      "description": "A hazard zone that instantly teleports a ball to a paired zone on the other side of the arena, maintaining their exact velocity and direction, which can be used defensively or aggressively.",
+      "allowed_paths": [
+        "src/ai/quantum_teleportation_zone.py",
+        "src/ai/quantum_teleportation_zone.gd",
+        "tests/test_quantum_teleportation_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1704",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Well Booster",
+      "description": "A consumable booster that allows the ball to generate a temporary small gravity well around itself, pulling in nearby enemies and projectiles towards it for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/gravity_well_booster.py",
+        "src/ai/gravity_well_booster.gd",
+        "tests/test_gravity_well_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

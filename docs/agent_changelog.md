@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1073] Bait and Switch Mode — *2026-07-17 06:51:57 UTC*
+
+A new chaotic game mode where all players occasionally leave behind a decoy that perfectly replicates their health and movement history for 5 seconds. Attacking a decoy reflects 50% of the damage back to the attacker.
+
+---
+
 ## [idea-1064] Quantum Entanglement Bumper — *2026-07-17 04:47:04 UTC*
 
 A bumper that links two balls together dynamically. When one ball hits the bumper, its movement and physics properties are temporarily mirrored or synchronized with a random nearby opponent, forcing them to coordinate or face collisions.
