@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1057] Quantum Teleportation Booster — *2026-07-17 19:00:29 UTC*
+
+A rare booster that upon collection instantly teleports the player to a random safe location on the map, granting brief invulnerability and leaving behind a decoy that explodes on enemy contact.
+
+---
+
 ## [idea-1046] Starlight Celestial Boss — *2026-07-17 19:00:24 UTC*
 
 A new neutral boss entity that spawns during the 'Celestial Alignment' weather event. The Starlight Boss fires tracking star projectiles and drops a permanent movement speed boost for the entire team that defeats it.
