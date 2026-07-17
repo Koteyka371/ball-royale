@@ -23639,3 +23639,118 @@ class VengefulDecoysMode(GameMode):
             self.recordings.clear()
 
 GAME_MODES['vengeful_decoys'] = VengefulDecoysMode()
+
+
+class MirageSwarmMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mirage Swarm"
+        self.description = "Periodically spawns harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked. This confuses targeting systems and provides cover for sneaky maneuvers."
+        self.spawn_timer = 0.0
+        self.spawn_interval = 15.0
+        self.mirages = []
+        self.recordings = {}
+
+    class MirageBall:
+        def __init__(self, target_ball, path):
+            self.owner_id = target_ball.id
+            self.path = path
+            self.timer = 0.0
+            self.x = path[0][1] if path else target_ball.x
+            self.y = path[0][2] if path else target_ball.y
+            self.radius = getattr(target_ball, "radius", 15.0)
+            self.hp = 1.0
+            self.max_hp = getattr(target_ball, "max_hp", 100.0)
+            self.alive = True
+            self.kind = "mirage_ball"
+            self.duration = 10.0
+            self.is_decoy = True
+            self.team = getattr(target_ball, "team", "neutral")
+            self.ball_type = getattr(target_ball, "ball_type", "basic")
+            self.damage = 0.0
+            self.base_damage = 0.0
+            self.speed = 0.0
+
+        def update(self, delta):
+            self.timer += delta
+            self.duration -= delta
+            if self.duration <= 0.0 or not self.path:
+                self.alive = False
+                return
+            if self.timer >= self.path[-1][0]:
+                self.x = self.path[-1][1]
+                self.y = self.path[-1][2]
+                self.alive = False
+                return
+            for i in range(len(self.path) - 1):
+                t1, x1, y1 = self.path[i]
+                t2, x2, y2 = self.path[i+1]
+                if t1 <= self.timer <= t2:
+                    if t2 == t1:
+                        self.x, self.y = x1, y1
+                    else:
+                        ratio = (self.timer - t1) / (t2 - t1)
+                        self.x = x1 + (x2 - x1) * ratio
+                        self.y = y1 + (y2 - y1) * ratio
+                    break
+
+        def take_damage(self, amount):
+            self.hp -= amount
+            if self.hp <= 0:
+                self.alive = False
+                self.hp = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.spawn_timer = 0.0
+        self.recordings.clear()
+
+    def tick(self, world, balls, delta=0.016):
+        self.spawn_timer += delta
+
+        # Record movements
+        for b in balls:
+            if getattr(b, "alive", False) and not getattr(b, "is_decoy", False):
+                if b.id not in self.recordings:
+                    self.recordings[b.id] = []
+                self.recordings[b.id].append((self.spawn_timer, b.x, b.y))
+
+                while len(self.recordings[b.id]) > 0 and self.spawn_timer - self.recordings[b.id][0][0] > 10.0:
+                    self.recordings[b.id].pop(0)
+
+        for b in balls:
+            if getattr(b, "kind", "") == "mirage_ball" and getattr(b, "alive", True):
+                b.update(delta)
+
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0.0
+
+            for b in balls:
+                if getattr(b, "alive", False) and not getattr(b, "is_decoy", False):
+                    if b.id in self.recordings and self.recordings[b.id]:
+                        start_time = self.recordings[b.id][0][0]
+                        path = [(t - start_time, x, y) for t, x, y in self.recordings[b.id]]
+
+                        import random
+                        # Spawn multiple mirages around the player
+                        num_mirages = random.randint(2, 4)
+                        for _ in range(num_mirages):
+                            offset_x = random.uniform(-100, 100)
+                            offset_y = random.uniform(-100, 100)
+
+                            # Add random offset to path
+                            shifted_path = [(t, x + offset_x, y + offset_y) for t, x, y in path]
+
+                            mirage = self.MirageBall(b, shifted_path)
+
+                            if hasattr(world, "next_id"):
+                                mirage.id = world.next_id
+                                world.next_id += 1
+                            else:
+                                mirage.id = random.randint(100000, 999999)
+
+                            world.balls.append(mirage)
+
+            self.recordings.clear()
+
+GAME_MODES['mirage_swarm'] = MirageSwarmMode()

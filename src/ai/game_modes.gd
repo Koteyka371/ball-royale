@@ -31770,6 +31770,7 @@ class InfiltrationMode extends GameMode:
 
 
 GAME_MODES = {
+	"mirage_swarm": MirageSwarmMode.new(),
 	"bounty_contract_event": BountyContractEventMode.new(),
 	"infiltration": InfiltrationMode.new(),
 	"parallel_dimensions": ParallelDimensionsMode.new(),
@@ -37226,3 +37227,182 @@ class VengefulDecoysMode extends GameMode:
             self.recordings.clear()
 
 GAME_MODES["vengeful_decoys"] = VengefulDecoysMode.new()
+
+
+class MirageSwarmMode extends GameMode:
+	var spawn_timer: float = 0.0
+	var spawn_interval: float = 15.0
+	var recordings: Dictionary = {}
+
+	class MirageBall:
+		var id: int
+		var owner_id: int
+		var path: Array
+		var timer: float = 0.0
+		var x: float
+		var y: float
+		var radius: float = 15.0
+		var hp: float = 1.0
+		var max_hp: float = 100.0
+		var alive: bool = true
+		var kind: String = "mirage_ball"
+		var duration: float = 10.0
+		var is_decoy: bool = true
+		var team: String = "neutral"
+		var ball_type: String = "basic"
+		var damage: float = 0.0
+		var base_damage: float = 0.0
+		var speed: float = 0.0
+
+		func _init(target_ball, p_path: Array):
+			self.owner_id = target_ball.id if "id" in target_ball else 0
+			self.path = p_path
+			self.timer = 0.0
+
+			if self.path.size() > 0:
+				self.x = self.path[0][1]
+				self.y = self.path[0][2]
+			else:
+				self.x = target_ball.x if "x" in target_ball else 0.0
+				self.y = target_ball.y if "y" in target_ball else 0.0
+
+			if "radius" in target_ball: self.radius = target_ball.radius
+			if "max_hp" in target_ball: self.max_hp = target_ball.max_hp
+			if "team" in target_ball: self.team = target_ball.team
+			if "ball_type" in target_ball: self.ball_type = target_ball.ball_type
+
+		func update(delta: float):
+			self.timer += delta
+			self.duration -= delta
+			if self.duration <= 0.0 or self.path.size() == 0:
+				self.alive = false
+				return
+			if self.timer >= self.path[self.path.size() - 1][0]:
+				self.x = self.path[self.path.size() - 1][1]
+				self.y = self.path[self.path.size() - 1][2]
+				self.alive = false
+				return
+			for i in range(self.path.size() - 1):
+				var t1 = self.path[i][0]
+				var x1 = self.path[i][1]
+				var y1 = self.path[i][2]
+				var t2 = self.path[i+1][0]
+				var x2 = self.path[i+1][1]
+				var y2 = self.path[i+1][2]
+
+				if t1 <= self.timer and self.timer <= t2:
+					if t2 == t1:
+						self.x = x1
+						self.y = y1
+					else:
+						var ratio = (self.timer - t1) / (t2 - t1)
+						self.x = x1 + (x2 - x1) * ratio
+						self.y = y1 + (y2 - y1) * ratio
+					break
+
+		func take_damage(amount: float):
+			self.hp -= amount
+			if self.hp <= 0:
+				self.alive = false
+				self.hp = 0.0
+
+	func _init() -> void:
+		name = "Mirage Swarm"
+		description = "Periodically spawns harmless AI-controlled fake balls around the arena that imitate movement patterns of real players but dissipate instantly when attacked. This confuses targeting systems and provides cover for sneaky maneuvers."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		self.spawn_timer = 0.0
+		self.recordings.clear()
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		self.spawn_timer += delta
+
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+			else:
+				alive = b.alive if "alive" in b else false
+
+			var is_decoy = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_decoy = b.get("is_decoy", false)
+			else:
+				is_decoy = b.is_decoy if "is_decoy" in b else false
+
+			if alive and not is_decoy:
+				var bid = b.id if "id" in b else (b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else 0)
+				var bx = b.x if "x" in b else (b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+				var by = b.y if "y" in b else (b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+
+				if not self.recordings.has(bid):
+					self.recordings[bid] = []
+				self.recordings[bid].append([self.spawn_timer, bx, by])
+
+				while self.recordings[bid].size() > 0 and self.spawn_timer - self.recordings[bid][0][0] > 10.0:
+					self.recordings[bid].pop_front()
+
+		for b in balls:
+			var kind = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				kind = b.get("kind", "")
+			else:
+				kind = b.kind if "kind" in b else ""
+
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", true)
+			else:
+				alive = b.alive if "alive" in b else true
+
+			if kind == "mirage_ball" and alive:
+				if typeof(b) == TYPE_OBJECT and b.has_method("update"):
+					b.update(delta)
+
+		if self.spawn_timer >= self.spawn_interval:
+			self.spawn_timer = 0.0
+			var rand = RandomNumberGenerator.new()
+			rand.randomize()
+
+			for b in balls:
+				var alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", false)
+				else:
+					alive = b.alive if "alive" in b else false
+
+				var is_decoy = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_decoy = b.get("is_decoy", false)
+				else:
+					is_decoy = b.is_decoy if "is_decoy" in b else false
+
+				if alive and not is_decoy:
+					var bid = b.id if "id" in b else (b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else 0)
+					if self.recordings.has(bid) and self.recordings[bid].size() > 0:
+						var start_time = self.recordings[bid][0][0]
+						var base_path = []
+						for rec in self.recordings[bid]:
+							base_path.append([rec[0] - start_time, rec[1], rec[2]])
+
+						var num_mirages = rand.randi_range(2, 4)
+						for _i in range(num_mirages):
+							var offset_x = rand.randf_range(-100.0, 100.0)
+							var offset_y = rand.randf_range(-100.0, 100.0)
+
+							var shifted_path = []
+							for p in base_path:
+								shifted_path.append([p[0], p[1] + offset_x, p[2] + offset_y])
+
+							var mirage = MirageBall.new(b, shifted_path)
+
+							if typeof(world) == TYPE_OBJECT and "next_id" in world:
+								mirage.id = world.next_id
+								world.next_id += 1
+							else:
+								mirage.id = rand.randi_range(100000, 999999)
+
+							balls.append(mirage)
+
+			self.recordings.clear()
