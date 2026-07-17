@@ -15338,7 +15338,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "giant_flood", "solar_eclipse", "celestial_alignment"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment"]
         import random
         self.random = random
 
@@ -15395,6 +15395,7 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "meteor_shower": booster_kind = "meteor_shield_booster"
             elif self.current_weather == "ice": booster_kind = "thermal_booster"
             elif self.current_weather == "earthquake": booster_kind = "seismic_booster"
+            elif self.current_weather == "violent_quake": booster_kind = "seismic_booster"
             elif self.current_weather == "giant_flood": booster_kind = "life_jacket_booster"
             elif self.current_weather == "solar_eclipse": booster_kind = "vision_booster"
             elif self.current_weather == "celestial_alignment": booster_kind = "starlight_booster"
@@ -15410,6 +15411,7 @@ class ExtremeWeatherMode(GameMode):
                     "meteor_shower": "Astral Destroyer",
                     "ice": "Frost Titan",
                     "earthquake": "Tremor Behemoth",
+                    "violent_quake": "Tectonic Lord",
                     "giant_flood": "Ocean Overlord",
                     "solar_eclipse": "Umbra Lord",
                     "celestial_alignment": "Starlight Boss"
@@ -15491,6 +15493,7 @@ class ExtremeWeatherMode(GameMode):
 
             b.speed = getattr(b, "base_speed", 100.0)
             b.damage = getattr(b, "base_damage", 10.0)
+            b.steering_mult = 1.0
 
             has_thermal = getattr(b, "thermal_booster_timer", 0.0) > 0 or getattr(b, "mega_thermal_booster_timer", 0.0) > 0
             has_cooling = getattr(b, "cooling_booster_timer", 0.0) > 0 or getattr(b, "mega_cooling_booster_timer", 0.0) > 0
@@ -15579,6 +15582,13 @@ class ExtremeWeatherMode(GameMode):
                     angle = self.random.uniform(0, 2 * math.pi)
                     if hasattr(b, "x"): b.x += math.cos(angle) * 150.0 * delta
                     if hasattr(b, "y"): b.y += math.sin(angle) * 150.0 * delta
+            elif self.current_weather == "violent_quake":
+                if not getattr(b, "seismic_booster_timer", 0.0) > 0 and not getattr(b, "mega_seismic_booster_timer", 0.0) > 0:
+                    import math
+                    angle = self.random.uniform(0, 2 * math.pi)
+                    if hasattr(b, "x"): b.x += math.cos(angle) * 300.0 * delta
+                    if hasattr(b, "y"): b.y += math.sin(angle) * 300.0 * delta
+                    b.steering_mult = 0.0
             elif self.current_weather == "giant_flood":
                 if not has_life_jacket:
                     b.speed = b.base_speed * 0.3
@@ -15658,7 +15668,7 @@ class ExtremeWeatherMode(GameMode):
                     if h in world.arena.hazards:
                         world.arena.hazards.remove(h)
 
-        if self.current_weather == "earthquake" and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+        if self.current_weather in ["earthquake", "violent_quake"] and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
                 if getattr(h, "kind", "") in ["wall", "breakable_wall"]:
                     if hasattr(h, "x"): h.x += self.random.uniform(-100.0 * delta, 100.0 * delta)
