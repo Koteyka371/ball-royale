@@ -7530,13 +7530,74 @@ func execute(strategy: String, delta: float):
             elif b.has_method("get_meta") and b.has_meta("is_decoy"): b_is_decoy = b.get_meta("is_decoy")
 
             if b_is_decoy:
+                # Proximity detonation check
+                var b_alive = true
+                if "alive" in b: b_alive = b.alive
+                elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
                 var b_hp = 1.0
                 if "hp" in b: b_hp = b.hp
+
                 var b_dt = 1.0
                 if "decoy_timer" in b: b_dt = b.decoy_timer
                 elif b.has_method("get_meta") and b.has_meta("decoy_timer"): b_dt = b.get_meta("decoy_timer")
 
-                var b_alive = true
+                if b_alive and b_hp > 0.0 and b_dt > 0.0:
+                    var b_radius = 10.0
+                    if "radius" in b: b_radius = b.radius
+                    elif b.has_method("get_meta") and b.has_meta("radius"): b_radius = b.get_meta("radius")
+
+                    var b_team = ""
+                    if "team" in b: b_team = b.team
+                    elif b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+                    var b_id = -1
+                    if "id" in b: b_id = b.id
+                    elif b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+                    for other in world.balls:
+                        var other_alive = false
+                        if "alive" in other: other_alive = other.alive
+                        elif other.has_method("get_meta") and other.has_meta("alive"): other_alive = other.get_meta("alive")
+
+                        var other_id = -1
+                        if "id" in other: other_id = other.id
+                        elif other.has_method("get_meta") and other.has_meta("id"): other_id = other.get_meta("id")
+
+                        if other_alive and other_id != b_id:
+                            var other_team = ""
+                            if "team" in other: other_team = other.team
+                            elif other.has_method("get_meta") and other.has_meta("team"): other_team = other.get_meta("team")
+
+                            var is_enemy = (other_team != b_team)
+                            if is_enemy:
+                                var dx = other.x - b.x
+                                var dy = other.y - b.y
+                                var dist = sqrt(dx*dx + dy*dy)
+
+                                var other_radius = 10.0
+                                if "radius" in other: other_radius = other.radius
+                                elif other.has_method("get_meta") and other.has_meta("radius"): other_radius = other.get_meta("radius")
+
+                                if dist <= (b_radius + other_radius):
+                                    b_hp = 0.0
+                                    if "hp" in b: b.hp = 0.0
+                                    elif b.has_method("set_meta"): b.set_meta("hp", 0.0)
+
+                                    if "amplified_explosion" in b: b.amplified_explosion = true
+                                    elif b.has_method("set_meta"): b.set_meta("amplified_explosion", true)
+
+                                    var b_traits = []
+                                    if "traits" in b: b_traits = b.traits
+                                    elif b.has_method("get_meta") and b.has_meta("traits"): b_traits = b.get_meta("traits")
+                                    if typeof(b_traits) == TYPE_ARRAY and not b_traits.has("volatile_decoy"):
+                                        b_traits.append("volatile_decoy")
+                                        if "traits" in b: b.traits = b_traits
+                                        elif b.has_method("set_meta"): b.set_meta("traits", b_traits)
+
+                                    if "proximity_detonated" in b: b.proximity_detonated = true
+                                    elif b.has_method("set_meta"): b.set_meta("proximity_detonated", true)
+                                    break
                 if "alive" in b: b_alive = b.alive
                 elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
 
@@ -7725,12 +7786,18 @@ func execute(strategy: String, delta: float):
 
                                             if "hp" in other:
                                                 other.hp -= actual_damage
+
+                                            var b_prox = false
+                                            if "proximity_detonated" in b and b.proximity_detonated: b_prox = true
+                                            elif b.has_method("has_meta") and b.has_meta("proximity_detonated") and b.get_meta("proximity_detonated"): b_prox = true
+                                            var extra_stun = 3.0 if b_prox else 0.0
+
                                             if "stutter_timer" in other:
-                                                other.stutter_timer += 2.0
+                                                other.stutter_timer += 2.0 + extra_stun
                                             elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
-                                                other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0)
+                                                other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0 + extra_stun)
                                             elif other.has_method("set_meta"):
-                                                other.set_meta("stutter_timer", 2.0)
+                                                other.set_meta("stutter_timer", 2.0 + extra_stun)
                                         else:
                                             var actual_damage2 = explosion_damage
                                             var has_rearm_boost2 = false
@@ -7745,12 +7812,18 @@ func execute(strategy: String, delta: float):
 
                                             if "hp" in other:
                                                 other.hp -= actual_damage2
+
+                                            var b_prox2 = false
+                                            if "proximity_detonated" in b and b.proximity_detonated: b_prox2 = true
+                                            elif b.has_method("has_meta") and b.has_meta("proximity_detonated") and b.get_meta("proximity_detonated"): b_prox2 = true
+                                            var extra_stun2 = 3.0 if b_prox2 else 0.0
+
                                             if "stutter_timer" in other:
-                                                other.stutter_timer += 2.0
+                                                other.stutter_timer += 2.0 + extra_stun2
                                             elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
-                                                other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0)
+                                                other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 2.0 + extra_stun2)
                                             elif other.has_method("set_meta"):
-                                                other.set_meta("stutter_timer", 2.0)
+                                                other.set_meta("stutter_timer", 2.0 + extra_stun2)
 
                                     if "hp" in other:
                                         var rng = RandomNumberGenerator.new()
