@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1087] Swap Positions Item — *2026-07-17 18:43:21 UTC*
+
+A consumable item that allows a ball to instantly swap positions with a randomly targeted enemy, useful for escaping bad situations or pulling an enemy into a trap.
+
+---
+
 ## [idea-1066] Random Sponsor Drops — *2026-07-17 18:32:45 UTC*
 
 During the match, special drop boxes appear periodically. Destroying them grants a permanent sponsor buff to the ball that lands the final hit.

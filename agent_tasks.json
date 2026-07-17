@@ -18648,7 +18648,7 @@
     },
     {
       "id": "idea-1087",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Swap Positions Item",
@@ -29272,6 +29272,23 @@
         "src/ai/flashbang_grenade.py",
         "src/ai/flashbang_grenade.gd",
         "tests/test_flashbang_grenade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1711",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sniper Drone Pet",
+      "description": "A pet that stays behind the player and occasionally fires high-damage shots at distant enemies.",
+      "allowed_paths": [
+        "src/ai/sniper_drone_pet.py",
+        "src/ai/sniper_drone_pet.gd",
+        "tests/test_sniper_drone_pet.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
