@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1094] Nemesis Nemesis Chain Reaction — *2026-07-17 20:41:34 UTC*
+
+A new hazard type that only targets players who are currently designated as nemeses to someone else in the match. When a nemesis is destroyed by this hazard, they explode in a 'Chain Reaction' that briefly scrambles the movement controls of all other players in the arena.
+
+---
+
 ## [idea-1083] Storm Eye Safe Zone — *2026-07-17 20:18:00 UTC*
 
 The safe zone has a fast-moving 'eye'. Inside the eye, health regenerates rapidly, but the outer safe zone acts normally. This encourages high-risk fights for the very center.
