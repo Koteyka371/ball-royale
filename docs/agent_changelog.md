@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1065] Aura Syphoning Trap — *2026-07-17 03:56:49 UTC*
+
+A hazard that doesn't deal immediate damage, but instead slowly drains any active buffs, combo multipliers, or powerup durations (like shields or speed boosts) from nearby balls and redistributes them to the trap owner or closest ally.
+
+---
+
 ## [idea-1023] Decoy Flare Gadget — *2026-07-17 03:56:45 UTC*
 
 A new gadget that creates a flare that functions like a decoy. It continuously pings on radar systems, attracting heat-seeking projectiles and certain AI behaviors, while slightly illuminating a small area for players using stealth.
