@@ -1,0 +1,4 @@
+{
+  "title": "Mirage Field Trap",
+  "description": "A new deployable trap that, instead of dealing damage, creates a persistent 100-radius area for 10 seconds. Any player walking into the field appears to other players as if they are multiplying into 3 overlapping versions of themselves, making it very difficult to track the real player."
+}

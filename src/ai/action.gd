@@ -8225,12 +8225,67 @@ func execute(strategy: String, delta: float):
                                                 other.set_meta("confusion_timer", 3.0)
 
                                         if b_type == "trickster" or b_team_check == "trickster":
+                                            if "hp" in other:
+                                                if typeof(other) == TYPE_DICTIONARY:
+                                                    other["hp"] -= 20.0
+                                                else:
+                                                    other.hp -= 20.0
+                                            elif other.has_method("get_meta") and other.has_meta("hp"):
+                                                other.set_meta("hp", other.get_meta("hp") - 20.0)
+
                                             if "stutter_timer" in other:
                                                 other.stutter_timer += 1.5
                                             elif other.has_method("set_meta") and other.has_meta("stutter_timer"):
                                                 other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 1.5)
                                             elif other.has_method("set_meta"):
                                                 other.set_meta("stutter_timer", 1.5)
+
+                                            var other_is_blinded = false
+                                            if "is_blinded" in other:
+                                                other_is_blinded = other.is_blinded
+                                            elif other.has_method("get_meta") and other.has_meta("is_blinded"):
+                                                other_is_blinded = other.get_meta("is_blinded")
+
+                                            if not other_is_blinded:
+                                                if "is_blinded" in other:
+                                                    other.is_blinded = true
+                                                    other.blindness_timer = 3.0
+                                                elif other.has_method("set_meta"):
+                                                    other.set_meta("is_blinded", true)
+                                                    other.set_meta("blindness_timer", 3.0)
+                                                elif typeof(other) == TYPE_DICTIONARY:
+                                                    other["is_blinded"] = true
+                                                    other["blindness_timer"] = 3.0
+
+                                                var base_perc = 250.0
+                                                if "base_perception_radius" in other:
+                                                    base_perc = float(other.base_perception_radius)
+                                                elif other.has_method("get_meta") and other.has_meta("base_perception_radius"):
+                                                    base_perc = float(other.get_meta("base_perception_radius"))
+                                                else:
+                                                    if "perception_radius" in other:
+                                                        base_perc = float(other.perception_radius)
+                                                    if other.has_method("set_meta"):
+                                                        other.set_meta("base_perception_radius", base_perc)
+                                                    elif typeof(other) == TYPE_DICTIONARY:
+                                                        other["base_perception_radius"] = base_perc
+                                                    elif "base_perception_radius" in other:
+                                                        other.base_perception_radius = base_perc
+
+                                                if "perception_radius" in other:
+                                                    other.perception_radius = base_perc * 0.2
+                                                elif typeof(other) == TYPE_DICTIONARY:
+                                                    other["perception_radius"] = base_perc * 0.2
+                                            else:
+                                                var current_timer = 0.0
+                                                if "blindness_timer" in other:
+                                                    current_timer = other.blindness_timer
+                                                    other.blindness_timer = max(current_timer, 3.0)
+                                                elif other.has_method("get_meta") and other.has_meta("blindness_timer"):
+                                                    current_timer = other.get_meta("blindness_timer")
+                                                    other.set_meta("blindness_timer", max(current_timer, 3.0))
+                                                elif typeof(other) == TYPE_DICTIONARY and "blindness_timer" in other:
+                                                    other["blindness_timer"] = max(other["blindness_timer"], 3.0)
 
                                             if world != null and "events" in world:
                                                 world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})

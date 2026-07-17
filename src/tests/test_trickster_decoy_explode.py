@@ -44,6 +44,34 @@ def test_decoy_explosion_trickster_confuse():
     assert getattr(decoy, "_decoy_exploded", False) is True
     assert enemy.is_confused is True
     assert enemy.confusion_timer == 3.0
+    assert getattr(enemy, "is_blinded", False) is True
+    assert enemy.blindness_timer == 3.0
+    assert enemy.perception_radius < 250.0
+    assert enemy.hp < 100.0
+
+    # Test the blindness ticking down via Action execute loop
+    class DummyArena:
+        def __init__(self):
+            self.hazards = []
+            self.width = 1000
+            self.height = 1000
+        def clamp_position(self, x, y, radius):
+            return x, y, False
+        def update_zone(self, tick, delta):
+            pass
+
+    world.arena = DummyArena()
+    enemy.vx = 0
+    enemy.vy = 0
+    enemy.speed = 100
+    enemy.base_speed = 100
+    enemy.radius = 15.0
+    enemy.alive = True
+    action_enemy = Action(enemy, world)
+    action_enemy.execute("idle", 3.0)
+
+    assert getattr(enemy, "is_blinded", False) is False
+    assert enemy.perception_radius >= 250.0
 
 def test_decoy_explosion_no_confuse():
     owner = MockBall(x=10, y=10)
