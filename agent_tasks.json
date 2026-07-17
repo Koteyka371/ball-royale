@@ -18529,7 +18529,7 @@
     },
     {
       "id": "idea-1080",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Contract Event",
@@ -29068,6 +29068,23 @@
         "src/ai/vertical_platformer.py",
         "src/ai/vertical_platformer.gd",
         "tests/test_vertical_platformer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1699",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stasis Bubble",
+      "description": "A deployable bubble that freezes projectiles and entities in time when they enter it, creating a brief safe zone or trapping enemies.",
+      "allowed_paths": [
+        "src/ai/stasis_bubble.py",
+        "src/ai/stasis_bubble.gd",
+        "tests/test_stasis_bubble.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

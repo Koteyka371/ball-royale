@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1080] Bounty Contract Event — *2026-07-17 04:39:38 UTC*
+
+A random arena event where one ball is marked as a bounty for all other players. The marked ball gains temporary buffs to survive, while others get bonus XP for defeating them.
+
+---
+
 ## [idea-1075] Invisible Tracker Booster — *2026-07-17 04:32:06 UTC*
 
 A booster that attaches a hidden tracker to the nearest enemy, allowing the player to permanently see them through walls and stealth until the tracker duration expires.
