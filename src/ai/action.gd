@@ -6190,8 +6190,6 @@ func execute(strategy: String, delta: float):
 			if closest_target != null and closest_target_dist_sq < (closest_wall_dist * closest_wall_dist):
 				var dist = sqrt(closest_target_dist_sq)
 				if dist > 0.0001:
-					self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
-					self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
 					if closest_target.type == "ball":
 						var b = closest_target.target
 						var bx = 0.0
@@ -6210,6 +6208,9 @@ func execute(strategy: String, delta: float):
 						else:
 							b.x = bx
 							b.y = by
+					else:
+						self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
+						self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
 			else:
 				if closest_wall == "left":
 					self.ball.x = max(0.0, self.ball.x - pull_dist)
@@ -24581,6 +24582,7 @@ func _use_skill():
             var pull_dist = 200.0
 
             var closest_target = null
+            var closest_target_type = ""
             var closest_target_dist_sq = 1e9
 
             if "balls" in self.world:
@@ -24593,6 +24595,7 @@ func _use_skill():
                             var dist_sq = (b.x - self.ball.x) * (b.x - self.ball.x) + (b.y - self.ball.y) * (b.y - self.ball.y)
                             if dist_sq < closest_target_dist_sq:
                                 closest_target = b
+                                closest_target_type = "ball"
                                 closest_target_dist_sq = dist_sq
 
             if "items" in self.world:
@@ -24600,6 +24603,7 @@ func _use_skill():
                     var dist_sq = (i.x - self.ball.x) * (i.x - self.ball.x) + (i.y - self.ball.y) * (i.y - self.ball.y)
                     if dist_sq < closest_target_dist_sq:
                         closest_target = i
+                        closest_target_type = "item"
                         closest_target_dist_sq = dist_sq
 
             if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
@@ -24617,6 +24621,7 @@ func _use_skill():
                     var dist_sq = (h.x - self.ball.x) * (h.x - self.ball.x) + (h.y - self.ball.y) * (h.y - self.ball.y)
                     if dist_sq < closest_target_dist_sq:
                         closest_target = h
+                        closest_target_type = "hazard"
                         closest_target_dist_sq = dist_sq
 
             var dist_left = self.ball.x
@@ -24629,10 +24634,17 @@ func _use_skill():
             if closest_target != null and closest_target_dist_sq < (min_dist * min_dist):
                 var dist = sqrt(closest_target_dist_sq)
                 if dist > 0.0001:
-                    self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
-                    self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
-                    self.ball.x = max(0.0, min(arena_width, self.ball.x))
-                    self.ball.y = max(0.0, min(arena_height, self.ball.y))
+                    var dx = closest_target.x - self.ball.x
+                    var dy = closest_target.y - self.ball.y
+
+                    if closest_target_type == "ball":
+                        closest_target.x -= (dx / dist) * pull_dist
+                        closest_target.y -= (dy / dist) * pull_dist
+                    else:
+                        self.ball.x += (dx / dist) * pull_dist
+                        self.ball.y += (dy / dist) * pull_dist
+                        self.ball.x = max(0.0, min(arena_width, self.ball.x))
+                        self.ball.y = max(0.0, min(arena_height, self.ball.y))
             else:
                 if min_dist == dist_left:
                     self.ball.x = max(0.0, self.ball.x - pull_dist)
