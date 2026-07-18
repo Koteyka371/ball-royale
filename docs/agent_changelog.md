@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1118] Reverse Tag — *2026-07-18 18:58:05 UTC*
+
+Instead of avoiding the 'IT' player, being 'IT' gives passive points. When a player collides with 'IT', they steal the status. To prevent stalling, the 'IT' status drains max HP slowly, forcing them to tag someone else eventually.
+
+---
+
 ## [idea-1115] Chain Reaction Game Mode — *2026-07-18 18:37:31 UTC*
 
 A game mode where every kill triggers an explosion that scales in radius and damage based on the killed ball's current killstreak. Players must carefully manage their spacing to avoid chain wipes.
