@@ -234,6 +234,7 @@ class Action:
             attacker.in_bush = False # Reveal after attack
             multiplier = 1.5
 
+
         a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
         t_team = getattr(target, "team", getattr(target, "ball_type", ""))
         if a_team == t_team and a_team != -1 and getattr(attacker, "id", None) != getattr(target, "id", None):
@@ -274,6 +275,9 @@ class Action:
                                 a.take_damage(original_damage)
                                 return
         import random
+        if getattr(target, "spotlight_damage_multiplier", 1.0) > 1.0:
+            multiplier *= getattr(target, "spotlight_damage_multiplier", 1.0)
+
         # Check if blocked by energy barrier for ranged attacks
         import math
         a_x = getattr(attacker, 'x', 0.0)
@@ -516,6 +520,7 @@ class Action:
 
         # Slight damage reduction if target is on ice patch
         damage_reduction = 1.0
+
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
                 if getattr(h, 'is_disabled_by_flare', False):

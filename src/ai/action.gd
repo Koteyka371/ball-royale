@@ -923,6 +923,11 @@ func _attempt_damage(attacker, target) -> void:
 	if "damage" in attacker: base_dmg = float(attacker.damage)
 	var original_damage = base_dmg * damage_reduction
 
+	if target.has_method("get_meta") and target.has_meta("spotlight_damage_multiplier"):
+		original_damage *= float(target.get_meta("spotlight_damage_multiplier"))
+	elif "spotlight_damage_multiplier" in target:
+		original_damage *= float(target.spotlight_damage_multiplier)
+
 	# Damage multiplier if attacker is sliding on ice patch
 	if "arena" in world and world.arena != null and "hazards" in world.arena:
 		for h in world.arena.hazards:
