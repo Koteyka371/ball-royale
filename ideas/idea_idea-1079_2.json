@@ -1,0 +1,4 @@
+{
+    "title": "Tether Snapper Hazard",
+    "description": "A new hazard that slices through any active tethers (like the enemy_tether_booster, leech tether, magnet tether) if a tether line intersects it, breaking the link and dealing burst damage to the affected parties."
+}

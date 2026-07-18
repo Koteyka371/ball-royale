@@ -11659,6 +11659,24 @@ class Action:
                     # If it's stored in world.boosters, _collect_booster handles it, but just in case
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "enemy_tether_booster":
+                    enemies = self._get_enemies()
+                    if enemies:
+                        enemy_target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        allies = [b for b in getattr(self.world, 'balls', []) if getattr(b, 'team', None) == getattr(self.ball, 'team', None) and getattr(b, 'id', None) != getattr(self.ball, 'id', None)]
+                        if allies:
+                            ally_target = min(allies, key=lambda a: (a.x - enemy_target.x)**2 + (a.y - enemy_target.y)**2)
+                        else:
+                            ally_target = self.ball
+
+                        enemy_target.enemy_tether_timer = 10.0
+                        enemy_target.enemy_tether_target = ally_target
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 else:
                     if hasattr(self.world, "_collect_booster"):
                         self.world._collect_booster(self.ball, nearest)
@@ -15958,6 +15976,35 @@ class Action:
                     self.ball.x += self.ball.vx * delta
                     self.ball.y += self.ball.vy * delta
             self.ball.magnet_tether_timer = magnet_tether_timer - delta
+
+        enemy_tether_timer = getattr(self.ball, "enemy_tether_timer", 0.0)
+        if enemy_tether_timer > 0:
+            target = getattr(self.ball, "enemy_tether_target", None)
+            if target and getattr(target, "alive", True):
+                import math
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                dist = math.hypot(dx, dy)
+
+                # Apply pull logic similar to magnet tether but without overriding vx/vy completely if we don't want to
+                # Actually, forcing them into hazards implies overriding movement or applying a strong force
+                tether_speed = getattr(self.ball, "speed", 2.0) * 1.5
+                if dist > 30.0:  # Don't pull if they are already on top of each other
+                    if not hasattr(self.ball, "vx"): self.ball.vx = 0
+                    if not hasattr(self.ball, "vy"): self.ball.vy = 0
+                    self.ball.vx += (dx / dist) * tether_speed
+                    self.ball.vy += (dy / dist) * tether_speed
+                    self.ball.x += (dx / dist) * tether_speed * delta
+                    self.ball.y += (dy / dist) * tether_speed * delta
+
+                # Take continuous tick damage
+                damage_tick = 10.0 * delta
+                if hasattr(self.ball, "hp"):
+                    self.ball.hp -= damage_tick
+            else:
+                self.ball.enemy_tether_timer = 0.0
+
+            self.ball.enemy_tether_timer = max(0.0, getattr(self.ball, "enemy_tether_timer", 0.0) - delta)
 
 
         if hasattr(self.ball, "friendly_fire_reflect_timer") and self.ball.friendly_fire_reflect_timer > 0.0:
