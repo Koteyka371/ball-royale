@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1077] Reverse Gravity Gun — *2026-07-18 03:27:40 UTC*
+
+A new booster that, when collected, temporarily reverses gravity for all other opponents on the map. This causes them to slide in the opposite direction of their input for 3 seconds.
+
+---
+
 ## [idea-1049] Laser Walls — *2026-07-18 02:58:44 UTC*
 
 Introduce rotating laser walls that sweep across the arena, forcing players to move in specific patterns to avoid damage.
