@@ -1,6 +1,8 @@
+from typing import Tuple
 from arena.procedural_arena import Hazard
 
 import random
+
 
 from arena.falling_panels_arena import FallingPanelsArena
 from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
@@ -1330,6 +1332,7 @@ class DayNightArena(ProceduralArena):
             self.time_until_eclipse = self.rng.uniform(20.0, 40.0)
         else:
             import random
+
             self.time_until_eclipse = random.uniform(20.0, 40.0)
 
     def generate(self):
@@ -1340,6 +1343,7 @@ class DayNightArena(ProceduralArena):
             self.time_until_eclipse = self.rng.uniform(20.0, 40.0)
         else:
             import random
+
             self.time_until_eclipse = random.uniform(20.0, 40.0)
 
     def update_zone(self, current_tick: int, delta: float):
@@ -1359,6 +1363,7 @@ class DayNightArena(ProceduralArena):
                     self.time_until_eclipse = self.rng.uniform(20.0, 40.0)
                 else:
                     import random
+
                     self.time_until_eclipse = random.uniform(20.0, 40.0)
         else:
             self.time_until_eclipse -= delta
@@ -1398,6 +1403,7 @@ class ThunderstormArena(ProceduralArena):
         if self.lightning_timer >= self.strike_interval:
             self.lightning_timer = 0.0
             import random
+
             # Spawn lightning strike
             x = random.uniform(50, self.width - 50)
             y = random.uniform(50, self.height - 50)
@@ -1474,6 +1480,7 @@ class PinballArena(ProceduralArena):
         self.corridors.append(Corridor(cx + 300, cy + 100, w - 200 - (cx + 300), 100))
 
         import random
+
         import math
 
         # Place Bumpers
@@ -1497,6 +1504,7 @@ class PinballArena(ProceduralArena):
     def update_zone(self, current_tick: int, delta: float):
         super().update_zone(current_tick, delta)
         import random
+
         for h in self.hazards:
             if getattr(h, "kind", "") == "pinball_flipper":
                 ft = getattr(h, "flip_timer", 0.0)
@@ -1523,6 +1531,7 @@ class SpringArena(ProceduralArena):
         # Add numerous bounce pads
         for i in range(15):
             import random
+
             x = random.uniform(100.0, width - 100.0)
             y = random.uniform(100.0, height - 100.0)
             h_id = 3500 + len(self.hazards)
@@ -1552,6 +1561,7 @@ class IceArena(ProceduralArena):
         super().generate()
         # Add massive ice patches near center
         import random
+
         cx = self.width / 2.0
         cy = self.height / 2.0
         for _ in range(5):
@@ -1656,6 +1666,7 @@ class SummerArena(ProceduralArena):
     def generate(self):
         super().generate()
         import random
+
         # Add sun flares
         for _ in range(4):
             x = random.uniform(100, self.width - 100)
@@ -1688,6 +1699,7 @@ class SummerArena(ProceduralArena):
     def update_zone(self, current_tick: int, delta: float):
         super().update_zone(current_tick, delta)
         import random
+
         if getattr(self, "is_heatwave", False) and current_tick % 300 == 0 and random.random() < 0.3:
             # Spawn localized heatwave
             x = random.uniform(100, self.width - 100)
@@ -1715,6 +1727,7 @@ class LavaArena(ProceduralArena):
         super().generate()
         # Add lava cracks
         import random
+
         for _ in range(5):
             x = random.uniform(100, self.width - 100)
             y = random.uniform(100, self.height - 100)
@@ -1739,6 +1752,7 @@ class NeonArena(ProceduralArena):
         super().generate()
         # Add neon speed pads (using conveyor belt or custom speed boost)
         import random
+
         for _ in range(5):
             x = random.uniform(100, self.width - 100)
             y = random.uniform(100, self.height - 100)
@@ -1763,6 +1777,7 @@ class AutumnArena(ProceduralArena):
         super().generate()
         # Add wind tornados
         import random
+
         for _ in range(3):
             x = random.uniform(100, self.width - 100)
             y = random.uniform(100, self.height - 100)
@@ -1781,6 +1796,7 @@ class AutumnArena(ProceduralArena):
     def update_zone(self, current_tick: int, delta: float):
         super().update_zone(current_tick, delta)
         import random
+
         if getattr(self, "is_windy", False) and current_tick % 300 == 0 and random.random() < 0.5:
             # Spawn dynamic tornado occasionally
             x = random.uniform(100, self.width - 100)
@@ -1802,6 +1818,7 @@ class WinterArena(ProceduralArena):
         super().generate()
         # Add ice patches
         import random
+
         for _ in range(5):
             x = random.uniform(100, self.width - 100)
             y = random.uniform(100, self.height - 100)
@@ -1834,6 +1851,7 @@ class WinterArena(ProceduralArena):
     def update_zone(self, current_tick: int, delta: float):
         super().update_zone(current_tick, delta)
         import random
+
         if getattr(self, "is_snowing", False) and current_tick % 300 == 0 and random.random() < 0.3:
             # Spawn localized blizzard
             x = random.uniform(100, self.width - 100)
@@ -1863,3 +1881,105 @@ def get_arena(arena_type: str, arena_size: float = 2000.0, seed: int | None = No
     if arena_class == ProceduralArena:
         return ProceduralArena(arena_size=arena_size, num_rooms=5, seed=seed)
     return arena_class(arena_size=arena_size, seed=seed)
+
+class ShiftingBoundariesArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int | None = None):
+        super().__init__(arena_size=arena_size, num_rooms=num_rooms, seed=seed)
+        self.min_x = 0.0
+        self.min_y = 0.0
+        self.max_x = self.width
+        self.max_y = self.height
+
+        self.target_min_x = 0.0
+        self.target_min_y = 0.0
+        self.target_max_x = self.width
+        self.target_max_y = self.height
+
+        self.shift_speed = 50.0
+
+    def generate(self):
+        super().generate()
+        self._pick_new_targets()
+
+    def _pick_new_targets(self):
+        # Pick new targets but ensure the arena stays at least 500x500
+        min_size = 500.0
+        self.target_min_x = random.uniform(0.0, self.width - min_size)
+        self.target_max_x = random.uniform(self.target_min_x + min_size, self.width)
+
+        self.target_min_y = random.uniform(0.0, self.height - min_size)
+        self.target_max_y = random.uniform(self.target_min_y + min_size, self.height)
+
+    def update_zone(self, current_tick: int, delta: float):
+        is_new_tick = current_tick != self.last_tick
+        super().update_zone(current_tick, delta)
+
+        if is_new_tick:
+            # Move bounds towards targets
+            step = self.shift_speed * delta
+
+            def move_towards(current, target, max_step):
+                if current < target:
+                    return min(current + max_step, target)
+                elif current > target:
+                    return max(current - max_step, target)
+                return current
+
+            self.min_x = move_towards(self.min_x, self.target_min_x, step)
+            self.max_x = move_towards(self.max_x, self.target_max_x, step)
+            self.min_y = move_towards(self.min_y, self.target_min_y, step)
+            self.max_y = move_towards(self.max_y, self.target_max_y, step)
+
+            # Check if all reached
+            if (self.min_x == self.target_min_x and
+                self.max_x == self.target_max_x and
+                self.min_y == self.target_min_y and
+                self.max_y == self.target_max_y):
+                self._pick_new_targets()
+
+            # Push hazards/platforms inside
+            if hasattr(self, "hazards"):
+                for hazard in self.hazards:
+                    hazard.x = max(self.min_x + hazard.radius, min(self.max_x - hazard.radius, hazard.x))
+                    hazard.y = max(self.min_y + hazard.radius, min(self.max_y - hazard.radius, hazard.y))
+
+            if hasattr(self, "platforms"):
+                for platform in self.platforms:
+                    pw_half = platform.width / 2.0
+                    ph_half = platform.height / 2.0
+                    platform.x = max(self.min_x + pw_half, min(self.max_x - pw_half, platform.x))
+                    platform.y = max(self.min_y + ph_half, min(self.max_y - ph_half, platform.y))
+
+    def is_point_inside(self, x: float, y: float, radius: float) -> bool:
+        if not (self.min_x + radius <= x <= self.max_x - radius and self.min_y + radius <= y <= self.max_y - radius):
+            return False
+        return super().is_point_inside(x, y, radius)
+
+    def clamp_position(self, x: float, y: float, radius: float) -> Tuple[float, float, bool]:
+        bounced = False
+        new_x = x
+        new_y = y
+
+        if new_x < self.min_x + radius:
+            new_x = self.min_x + radius
+            bounced = True
+        elif new_x > self.max_x - radius:
+            new_x = self.max_x - radius
+            bounced = True
+
+        if new_y < self.min_y + radius:
+            new_y = self.min_y + radius
+            bounced = True
+        elif new_y > self.max_y - radius:
+            new_y = self.max_y - radius
+            bounced = True
+
+        res_x, res_y, proc_bounced = super().clamp_position(new_x, new_y, radius)
+
+        final_x = max(self.min_x + radius, min(self.max_x - radius, res_x))
+        final_y = max(self.min_y + radius, min(self.max_y - radius, res_y))
+
+        if final_x != res_x or final_y != res_y:
+            proc_bounced = True
+
+        return final_x, final_y, bounced or proc_bounced
