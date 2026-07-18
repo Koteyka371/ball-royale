@@ -781,25 +781,68 @@ func update_zone(current_tick: int, delta: float) -> void:
                             elif "active" in other_hazard:
                                 is_active = other_hazard.active
 
-                            if is_active and other_hazard.kind in ["fire_zone", "lava", "fire_ring", "poison_cloud", "poison_nova"]:
+                            var trap_variant = ""
+                            if other_hazard.kind in ["trap", "hidden_trap"]:
+                                if other_hazard.has_method("get_meta") and other_hazard.has_meta("trap_variant"):
+                                    trap_variant = other_hazard.get_meta("trap_variant")
+                                elif "trap_variant" in other_hazard:
+                                    trap_variant = other_hazard.trap_variant
+                            if is_active and (other_hazard.kind in ["fire_zone", "lava", "fire_ring", "poison_cloud", "poison_nova"] or (other_hazard.kind in ["trap", "hidden_trap"] and trap_variant == "elemental_mine")):
                                 var dist = Vector2(hazard.x, hazard.y).distance_to(Vector2(other_hazard.x, other_hazard.y))
                                 var other_rad = other_hazard.radius if "radius" in other_hazard else 10.0
                                 if dist < hazard.radius + other_rad:
-                                    if other_hazard.kind in ["fire_zone", "lava", "fire_ring"]:
+                                    if other_hazard.kind in ["trap", "hidden_trap"] and trap_variant == "elemental_mine":
+                                        var element = "fire" if randf() > 0.5 else "poison"
+                                        if other_hazard.has_method("set_meta"):
+                                            other_hazard.set_meta("active", false)
+                                            other_hazard.set_meta("duration", 0.0)
+                                        elif "active" in other_hazard:
+                                            other_hazard.active = false
+                                            if "duration" in other_hazard:
+                                                other_hazard.duration = 0.0
+
+                                        var explosion = Hazard.new()
+                                        explosion.id = hazards.size() + (randi() % 5000 + 9000)
+                                        explosion.x = other_hazard.x
+                                        explosion.y = other_hazard.y
+                                        explosion.radius = 150.0
+                                        explosion.set_meta("duration", 5.0)
+
+                                        if element == "fire":
+                                            if hazard.has_method("set_meta"):
+                                                hazard.set("kind", "firenado" if hazard.kind == "tornado" else "local_firenado")
+                                            else:
+                                                hazard.kind = "firenado" if hazard.kind == "tornado" else "local_firenado"
+                                            explosion.kind = "fire_zone"
+                                            explosion.damage = 30.0
+                                        else:
+                                            if hazard.has_method("set_meta"):
+                                                hazard.set("kind", "poison_tornado" if hazard.kind == "tornado" else "local_poison_tornado")
+                                            else:
+                                                hazard.kind = "poison_tornado" if hazard.kind == "tornado" else "local_poison_tornado"
+                                            explosion.kind = "poison_cloud"
+                                            explosion.damage = 20.0
+                                        hazards.append(explosion)
+
+                                    elif other_hazard.kind in ["fire_zone", "lava", "fire_ring"]:
                                         if hazard.has_method("set_meta"):
                                             hazard.set("kind", "firenado" if hazard.kind == "tornado" else "local_firenado")
                                         else:
                                             hazard.kind = "firenado" if hazard.kind == "tornado" else "local_firenado"
+                                        if other_hazard.has_method("set_meta"):
+                                            other_hazard.set_meta("active", false)
+                                        elif "active" in other_hazard:
+                                            other_hazard.active = false
                                     else:
                                         if hazard.has_method("set_meta"):
                                             hazard.set("kind", "poison_tornado" if hazard.kind == "tornado" else "local_poison_tornado")
                                         else:
                                             hazard.kind = "poison_tornado" if hazard.kind == "tornado" else "local_poison_tornado"
+                                        if other_hazard.has_method("set_meta"):
+                                            other_hazard.set_meta("active", false)
+                                        elif "active" in other_hazard:
+                                            other_hazard.active = false
 
-                                    if other_hazard.has_method("set_meta"):
-                                        other_hazard.set_meta("active", false)
-                                    else:
-                                        other_hazard.active = false
                                     break
 
                 if hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":

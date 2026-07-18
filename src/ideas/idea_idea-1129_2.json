@@ -1,0 +1,4 @@
+{
+  "title": "Volatile Core Item",
+  "description": "A new equippable item that acts as a ticking time bomb. When a player collects it, they gain massive speed and damage boosts but begin to rapidly lose health. The only way to remove it is to collide with another player, transferring the core to them. If a player holds it when it detonates, it creates a massive arena-wide shockwave."
+}

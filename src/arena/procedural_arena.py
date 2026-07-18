@@ -677,17 +677,45 @@ class ProceduralArena:
                         for other_hazard in self.hazards:
                             if getattr(hazard, "id", None) == getattr(other_hazard, "id", None):
                                 continue
-                            if getattr(other_hazard, "active", True) and other_hazard.kind in ("fire_zone", "lava", "fire_ring", "poison_cloud", "poison_nova"):
+                            if getattr(other_hazard, "active", True) and (other_hazard.kind in ("fire_zone", "lava", "fire_ring", "poison_cloud", "poison_nova") or (other_hazard.kind in ("trap", "hidden_trap") and getattr(other_hazard, "trap_variant", "") == "elemental_mine")):
                                 import math
                                 hx_diff = hazard.x - other_hazard.x
                                 hy_diff = hazard.y - other_hazard.y
                                 dist = math.hypot(hx_diff, hy_diff)
                                 if dist < hazard.radius + getattr(other_hazard, "radius", 10.0):
-                                    if other_hazard.kind in ("fire_zone", "lava", "fire_ring"):
+                                    if other_hazard.kind in ("trap", "hidden_trap") and getattr(other_hazard, "trap_variant", "") == "elemental_mine":
+                                        import random
+                                        element = random.choice(["fire", "poison"])
+                                        other_hazard.active = False
+                                        other_hazard.duration = 0.0
+                                        if element == "fire":
+                                            hazard.kind = "firenado" if hazard.kind == "tornado" else "local_firenado"
+                                            explosion = type("Hazard", (object,), {})()
+                                            explosion.id = len(self.hazards) + getattr(self, "random", __import__("random")).randint(9000, 9999)
+                                            explosion.x = other_hazard.x
+                                            explosion.y = other_hazard.y
+                                            explosion.radius = 150.0
+                                            explosion.kind = "fire_zone"
+                                            explosion.damage = 30.0
+                                            explosion.duration = 5.0
+                                            self.hazards.append(explosion)
+                                        else:
+                                            hazard.kind = "poison_tornado" if hazard.kind == "tornado" else "local_poison_tornado"
+                                            explosion = type("Hazard", (object,), {})()
+                                            explosion.id = len(self.hazards) + getattr(self, "random", __import__("random")).randint(9000, 9999)
+                                            explosion.x = other_hazard.x
+                                            explosion.y = other_hazard.y
+                                            explosion.radius = 150.0
+                                            explosion.kind = "poison_cloud"
+                                            explosion.damage = 20.0
+                                            explosion.duration = 5.0
+                                            self.hazards.append(explosion)
+                                    elif other_hazard.kind in ("fire_zone", "lava", "fire_ring"):
                                         hazard.kind = "firenado" if hazard.kind == "tornado" else "local_firenado"
+                                        other_hazard.active = False
                                     else:
                                         hazard.kind = "poison_tornado" if hazard.kind == "tornado" else "local_poison_tornado"
-                                    other_hazard.active = False
+                                        other_hazard.active = False
                                     break
 
                     if hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
