@@ -1,4 +1,0 @@
-{
-    "title": "Magnetic Mine",
-    "description": "A trap item that can be deployed on the ground. When an enemy gets within a certain radius, the mine slowly pulls them towards its center. If they reach the center, it detonates for moderate damage and applies a short EMP effect. If the enemy escapes the pull radius, the mine resets and can trigger again."
-}

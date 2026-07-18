@@ -1,4 +1,0 @@
-{
-  "title": "Kinetic Overload Mutator",
-  "description": "A global event/mutator where all kinetic forces are amplified. Bumpers deal twice the knockback, moving walls travel much faster, and taking impact damage builds up an 'overload' meter for each player, which can be unleashed as an AoE burst when full."
-}
