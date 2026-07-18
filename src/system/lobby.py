@@ -21,7 +21,7 @@ class PreGameLobby:
             profile.add_quest(quest["description"], quest["reward"])
 
     def select_trap_variant(self, ball_id, variant):
-        if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "decoy", "mine", "warp", "clone", "tar", "link"]:
+        if variant in ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "decoy", "mine", "warp", "clone", "tar", "link", "singularity"]:
             self.selections[ball_id] = variant
 
     def get_trap_variant(self, ball_id):
@@ -141,7 +141,7 @@ class PreGameLobby:
             unlocked_balls = ["basic"]
 
         ball_type = random.choice(unlocked_balls)
-        trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "chain_lightning", "decoy", "mine", "warp", "siphon", "clone", "tar", "link"]
+        trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "chain_lightning", "decoy", "mine", "warp", "siphon", "clone", "tar", "link", "singularity"]
         trap_variant = random.choice(trap_variants)
 
         self.select_trap_variant(ball_id, trap_variant)

@@ -26308,6 +26308,10 @@ func _use_skill():
                         self.ball.ricochet_barrier_timer = 3.0
                     elif self.ball.has_method("set_meta"):
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
+                elif trap_variant == "singularity":
+                    trap.kind = "singularity_trap"
+                    trap.duration = 5.0
+                    trap.radius = 150.0
 
                 self.world.arena.hazards.append(trap)
         elif skill_name == "deployable_thumper":
@@ -30512,6 +30516,136 @@ func _update_skill_timer(delta: float):
                                 hazard["duration"] = 0.0
                             elif "duration" in hazard:
                                 hazard.duration = 0.0
+                if h_kind == "singularity_trap":
+                    var hrad = 150.0
+                    if typeof(hazard) == TYPE_OBJECT and "radius" in hazard: hrad = hazard.radius
+                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): hrad = hazard["radius"]
+
+                    var hx = hazard.x if typeof(hazard) != TYPE_DICTIONARY else hazard.get("x", 0)
+                    var hy = hazard.y if typeof(hazard) != TYPE_DICTIONARY else hazard.get("y", 0)
+                    var bx = self.ball.x if typeof(self.ball) != TYPE_DICTIONARY else self.ball.get("x", 0)
+                    var by = self.ball.y if typeof(self.ball) != TYPE_DICTIONARY else self.ball.get("y", 0)
+                    var dx = hx - bx
+                    var dy = hy - by
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hrad * hrad and dist_sq > 0.0001:
+                        var dist = sqrt(dist_sq)
+                        var nx = dx / dist
+                        var ny = dy / dist
+                        var pull_strength = 200.0 * delta
+
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["x"] += nx * pull_strength
+                            self.ball["y"] += ny * pull_strength
+                        else:
+                            self.ball.x += nx * pull_strength
+                            self.ball.y += ny * pull_strength
+
+                        var bspeed = 2.0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"):
+                            bspeed = self.ball["base_speed"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "base_speed" in self.ball:
+                            bspeed = self.ball.base_speed
+
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["speed"] = bspeed * 0.5
+                            var cur_rad = self.ball.get("radiation_multiplier", 1.0)
+                            self.ball["radiation_multiplier"] = cur_rad + 0.1 * delta
+                        elif typeof(self.ball) == TYPE_OBJECT:
+                            if "speed" in self.ball:
+                                self.ball.speed = bspeed * 0.5
+                            if "radiation_multiplier" in self.ball:
+                                self.ball.radiation_multiplier += 0.1 * delta
+                            elif self.ball.has_method("set_meta"):
+                                var cur_rad = self.ball.get_meta("radiation_multiplier") if self.ball.has_meta("radiation_multiplier") else 1.0
+                                self.ball.set_meta("radiation_multiplier", cur_rad + 0.1 * delta)
+
+                        var damage_val = 10.0 * delta * (1.0 - dist / hrad)
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+                            self.ball.take_damage(damage_val)
+                        else:
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"):
+                                self.ball["hp"] -= damage_val
+                                if self.ball["hp"] <= 0:
+                                    self.ball["hp"] = 0
+                                    self.ball["alive"] = false
+                                    self.ball["killer"] = "singularity_trap"
+                            elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball:
+                                self.ball.hp -= damage_val
+                                if self.ball.hp <= 0:
+                                    self.ball.hp = 0
+                                    self.ball.alive = false
+                                    if "killer" in self.ball:
+                                        self.ball.killer = "singularity_trap"
+
+                    var first_alive_ball = null
+                    if "balls" in self.world:
+                        for b in self.world.balls:
+                            var alive = true
+                            if typeof(b) == TYPE_DICTIONARY:
+                                alive = b.get("alive", true)
+                            elif typeof(b) == TYPE_OBJECT:
+                                alive = b.get("alive") if "alive" in b else true
+                            if alive:
+                                first_alive_ball = b
+                                break
+
+                    if self.ball == first_alive_ball:
+                        var hdur = hazard.duration if "duration" in hazard else (hazard.get_meta("duration") if typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") else 0.0)
+                        if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): hdur = hazard["duration"]
+                        if hdur > 0:
+                            hdur -= delta
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                hazard.set_meta("duration", hdur)
+                            elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"):
+                                hazard["duration"] = hdur
+                            elif "duration" in hazard:
+                                hazard.duration = hdur
+
+                            if hdur <= 0:
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    hazard.set_meta("marked_for_removal", true)
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["marked_for_removal"] = true
+                                else:
+                                    if not "marked_for_removal" in hazard:
+                                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                            hazard.set_meta("marked_for_removal", true)
+                                    else:
+                                        hazard.marked_for_removal = true
+
+                                if "balls" in self.world:
+                                    for b in self.world.balls:
+                                        var alive = true
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            alive = b.get("alive", true)
+                                        elif typeof(b) == TYPE_OBJECT:
+                                            alive = b.get("alive") if "alive" in b else true
+                                        if alive:
+                                            var ebx = b.x if typeof(b) != TYPE_DICTIONARY else b.get("x", 0)
+                                            var eby = b.y if typeof(b) != TYPE_DICTIONARY else b.get("y", 0)
+                                            var edx = hx - ebx
+                                            var edy = hy - eby
+                                            if edx * edx + edy * edy < hrad * hrad:
+                                                if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                                    b.take_damage(50.0)
+                                                else:
+                                                    if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+                                                        b["hp"] -= 50.0
+                                                        if b["hp"] <= 0:
+                                                            b["hp"] = 0
+                                                            b["alive"] = false
+                                                            b["killer"] = "singularity_explosion"
+                                                    elif typeof(b) == TYPE_OBJECT and "hp" in b:
+                                                        b.hp -= 50.0
+                                                        if b.hp <= 0:
+                                                            b.hp = 0
+                                                            b.alive = false
+                                                            if "killer" in b:
+                                                                b.killer = "singularity_explosion"
+
+                                if "events" in self.world:
+                                    self.world.events.append({'type': 'explosion', 'data': {'x': hx, 'y': hy, 'radius': hrad}})
                 if h_kind == "booster_trap":
                     var h_owner_id = null
                     if "owner_id" in hazard: h_owner_id = hazard.owner_id
@@ -31788,6 +31922,10 @@ func _kite(delta: float):
                                     self.ball.ricochet_barrier_timer = 3.0
                                 elif self.ball.has_method("set_meta"):
                                     self.ball.set_meta("ricochet_barrier_timer", 3.0)
+                            elif trap_variant == "singularity":
+                                trap.kind = "singularity_trap"
+                                trap.duration = 5.0
+                                trap.radius = 150.0
 
                             self.world.arena.hazards.append(trap)
 
