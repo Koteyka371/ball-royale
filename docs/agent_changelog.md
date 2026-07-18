@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1108] Weather Stations — *2026-07-18 03:41:01 UTC*
+
+Add capture-able weather stations in the arena that let a team control the weather in their sector.
+
+---
+
 ## [idea-1072] Decoy Explosion Traps — *2026-07-18 03:40:57 UTC*
 
 Trickster's decoys will explode upon being destroyed by an enemy, causing area-of-effect damage and temporarily blinding nearby opponents, further enhancing the baiting playstyle.
