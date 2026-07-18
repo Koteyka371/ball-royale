@@ -826,6 +826,176 @@ class GameMode:
 					if typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena:
 						world.arena.hazards.erase(m)
 
+			if typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena:
+				var player_mines = []
+				for h in world.arena.hazards:
+					var kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						kind = h.get("kind", "")
+					elif "kind" in h:
+						kind = h.kind
+					if kind == "player_orbital_mine":
+						player_mines.append(h)
+
+				for m in player_mines:
+					var owner_id = null
+					if typeof(m) == TYPE_DICTIONARY:
+						owner_id = m.get("owner_id")
+					elif "owner_id" in m:
+						owner_id = m.owner_id
+					elif m.has_method("get_meta") and m.has_meta("owner_id"):
+						owner_id = m.get_meta("owner_id")
+
+					var owner = null
+					for b in balls:
+						var bid = b.id if typeof(b) != TYPE_DICTIONARY else b.get("id")
+						if bid == owner_id:
+							owner = b
+							break
+
+					var owner_alive = false
+					if owner != null:
+						owner_alive = owner.alive if typeof(owner) != TYPE_DICTIONARY else owner.get("alive", false)
+
+					if owner == null or not owner_alive:
+						world.arena.hazards.erase(m)
+						continue
+
+					var mine_state = "orbiting"
+					if typeof(m) == TYPE_DICTIONARY:
+						mine_state = m.get("mine_state", "orbiting")
+					elif "mine_state" in m:
+						mine_state = m.mine_state
+					elif m.has_method("get_meta") and m.has_meta("mine_state"):
+						mine_state = m.get_meta("mine_state")
+
+					var mx = m.x if typeof(m) != TYPE_DICTIONARY else m.get("x", 0.0)
+					var my = m.y if typeof(m) != TYPE_DICTIONARY else m.get("y", 0.0)
+					var m_radius = m.radius if typeof(m) != TYPE_DICTIONARY else m.get("radius", 8.0)
+					var m_damage = m.damage if typeof(m) != TYPE_DICTIONARY else m.get("damage", 20.0)
+
+					if mine_state == "orbiting":
+						var orbit_speed = 3.0
+						var orbit_angle = 0.0
+						var orbit_radius = 60.0
+
+						if typeof(m) == TYPE_DICTIONARY:
+							orbit_angle = m.get("orbit_angle", 0.0)
+							orbit_radius = m.get("orbit_radius", 60.0)
+						elif "orbit_angle" in m:
+							orbit_angle = m.orbit_angle
+							orbit_radius = m.orbit_radius
+						elif m.has_method("get_meta"):
+							if m.has_meta("orbit_angle"): orbit_angle = m.get_meta("orbit_angle")
+							if m.has_meta("orbit_radius"): orbit_radius = m.get_meta("orbit_radius")
+
+						orbit_angle += orbit_speed * delta
+
+						var ox = owner.x if typeof(owner) != TYPE_DICTIONARY else owner.get("x", 0.0)
+						var oy = owner.y if typeof(owner) != TYPE_DICTIONARY else owner.get("y", 0.0)
+
+						mx = ox + cos(orbit_angle) * orbit_radius
+						my = oy + sin(orbit_angle) * orbit_radius
+
+						if typeof(m) == TYPE_DICTIONARY:
+							m["orbit_angle"] = orbit_angle
+							m["x"] = mx
+							m["y"] = my
+						else:
+							if "orbit_angle" in m: m.orbit_angle = orbit_angle
+							elif m.has_method("set_meta"): m.set_meta("orbit_angle", orbit_angle)
+							if "x" in m: m.x = mx
+							if "y" in m: m.y = my
+
+						var target_enemy = null
+						var min_dist_sq = 22500.0
+
+						for b in balls:
+							var b_alive = b.alive if typeof(b) != TYPE_DICTIONARY else b.get("alive", false)
+							if not b_alive: continue
+							var bid = b.id if typeof(b) != TYPE_DICTIONARY else b.get("id")
+							if bid == owner_id: continue
+
+							var bx = b.x if typeof(b) != TYPE_DICTIONARY else b.get("x", 0.0)
+							var by = b.y if typeof(b) != TYPE_DICTIONARY else b.get("y", 0.0)
+							var dist_sq = pow(bx - mx, 2) + pow(by - my, 2)
+
+							if dist_sq < min_dist_sq:
+								min_dist_sq = dist_sq
+								target_enemy = b
+
+						if target_enemy != null:
+							var target_id = target_enemy.id if typeof(target_enemy) != TYPE_DICTIONARY else target_enemy.get("id")
+							if typeof(m) == TYPE_DICTIONARY:
+								m["mine_state"] = "seeking"
+								m["target_id"] = target_id
+							else:
+								if "mine_state" in m: m.mine_state = "seeking"
+								elif m.has_method("set_meta"): m.set_meta("mine_state", "seeking")
+								if "target_id" in m: m.target_id = target_id
+								elif m.has_method("set_meta"): m.set_meta("target_id", target_id)
+
+					elif mine_state == "seeking":
+						var target_id = null
+						if typeof(m) == TYPE_DICTIONARY:
+							target_id = m.get("target_id")
+						elif "target_id" in m:
+							target_id = m.target_id
+						elif m.has_method("get_meta") and m.has_meta("target_id"):
+							target_id = m.get_meta("target_id")
+
+						var target = null
+						for b in balls:
+							var bid = b.id if typeof(b) != TYPE_DICTIONARY else b.get("id")
+							if bid == target_id:
+								target = b
+								break
+
+						var target_alive = false
+						if target != null:
+							target_alive = target.alive if typeof(target) != TYPE_DICTIONARY else target.get("alive", false)
+
+						if target == null or not target_alive:
+							if typeof(m) == TYPE_DICTIONARY:
+								m["mine_state"] = "orbiting"
+							else:
+								if "mine_state" in m: m.mine_state = "orbiting"
+								elif m.has_method("set_meta"): m.set_meta("mine_state", "orbiting")
+							continue
+
+						var tx = target.x if typeof(target) != TYPE_DICTIONARY else target.get("x", 0.0)
+						var ty = target.y if typeof(target) != TYPE_DICTIONARY else target.get("y", 0.0)
+
+						var dx = tx - mx
+						var dy = ty - my
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist > 0:
+							var speed = 300.0 * delta
+							mx += (dx/dist) * speed
+							my += (dy/dist) * speed
+
+							if typeof(m) == TYPE_DICTIONARY:
+								m["x"] = mx
+								m["y"] = my
+							else:
+								if "x" in m: m.x = mx
+								if "y" in m: m.y = my
+
+						var target_radius = target.radius if typeof(target) != TYPE_DICTIONARY else target.get("radius", 15.0)
+						if dist < m_radius + target_radius:
+							if typeof(target) == TYPE_OBJECT and target.has_method("take_damage"):
+								target.take_damage(m_damage)
+							elif typeof(target) == TYPE_DICTIONARY:
+								target["hp"] -= m_damage
+							elif "hp" in target:
+								target.hp -= m_damage
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("explosion", {"x": mx, "y": my, "radius": 40.0, "damage": 0.0})
+
+							world.arena.hazards.erase(m)
+
 	func on_ball_died(world, ball, killer = null) -> void:
 		if killer != null and "id" in ball and "id" in killer:
 			var pm = null

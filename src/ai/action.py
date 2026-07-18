@@ -10399,7 +10399,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -14266,6 +14266,24 @@ class Action:
                     m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0)
                     m.owner_id = getattr(self.ball, "id", None)
                     self.world.arena.hazards.append(m)
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
+            elif skill_name == "orbital_mines":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random
+                    import math
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        Hazard = type('Hazard', (), {}) # dummy
+
+                    for i in range(3):
+                        m_id = f"om_{getattr(self.ball, 'id', 'x')}_{random.randint(0,99999)}"
+                        mine = Hazard(id=m_id, x=self.ball.x, y=self.ball.y, radius=8.0, kind="player_orbital_mine", damage=20.0)
+                        setattr(mine, 'owner_id', getattr(self.ball, "id", None))
+                        setattr(mine, 'orbit_angle', (2 * math.pi / 3) * i)
+                        setattr(mine, 'orbit_radius', 60.0)
+                        setattr(mine, 'mine_state', "orbiting")
+                        self.world.arena.hazards.append(mine)
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
             elif skill_name == "target_strong":
                 import math

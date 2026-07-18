@@ -19668,7 +19668,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -26327,6 +26327,44 @@ func _use_skill():
                 else:
                     m.owner_id = bid
                 self.world.arena.hazards.append(m)
+        elif skill_name == "orbital_mines":
+            if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
+                var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+                var bid = -1
+                var bx = 0.0
+                var by = 0.0
+                if typeof(self.ball) == TYPE_OBJECT:
+                    bid = self.ball.id
+                    bx = self.ball.x
+                    by = self.ball.y
+                    if "skill_timer" in self.ball:
+                        self.ball.skill_timer = 4.0
+                else:
+                    bid = self.ball.get("id", -1)
+                    bx = self.ball.get("x", 0.0)
+                    by = self.ball.get("y", 0.0)
+
+                for i in range(3):
+                    var m_id = "om_" + str(bid) + "_" + str(randi() % 100000)
+                    var mine = HazardObj.new()
+                    mine.id = m_id
+                    mine.x = bx
+                    mine.y = by
+                    mine.radius = 8.0
+                    mine.kind = "player_orbital_mine"
+                    mine.damage = 20.0
+
+                    if mine.has_method("set_meta"):
+                        mine.set_meta("owner_id", bid)
+                        mine.set_meta("orbit_angle", (2.0 * PI / 3.0) * float(i))
+                        mine.set_meta("orbit_radius", 60.0)
+                        mine.set_meta("mine_state", "orbiting")
+                    else:
+                        mine.owner_id = bid
+                        mine.orbit_angle = (2.0 * PI / 3.0) * float(i)
+                        mine.orbit_radius = 60.0
+                        mine.mine_state = "orbiting"
+                    self.world.arena.hazards.append(mine)
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
             if enemies.size() > 0:
