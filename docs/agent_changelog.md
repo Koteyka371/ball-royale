@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1105] Grappling Hook Refactor — *2026-07-18 14:23:41 UTC*
+
+Make the grappling hook pull you towards geometry if it hits a wall instead of another player.
+
+---
+
 ## [idea-1117] Decoy Network Passive — *2026-07-18 04:38:20 UTC*
 
 A new passive ability that connects all active decoys on the field via an energy beam. Enemies that cross the beam take constant low damage and have their movement speed reduced by 30%.
