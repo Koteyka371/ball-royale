@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1139] Sabotage Zone in Escort — *2026-07-18 22:44:48 UTC*
+
+In Escort and Dual Payload modes, an 'anti-payload' hazard zone sporadically spawns on the map. If a payload passes through this zone, its speed is temporarily halved, regardless of how many allies are near it. Attackers can strategically use push/pull tools to force payloads into these zones to buy more time.
+
+---
+
 ## [idea-1116] Holo-Decoy Augment — *2026-07-18 22:44:43 UTC*
 
 An advanced deploy_decoy variant where the decoys phase out immediately upon taking fatal damage, blinding all enemies in a 300 unit radius for 3 seconds instead of exploding, turning defensive plays into aggressive counter-attacks.
