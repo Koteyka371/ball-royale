@@ -35,6 +35,7 @@ def test_trap_link_status():
     world.arena.is_in_safe_zone.return_value = True
     world.arena.clamp_position.return_value = (0, 0, False)
     world.arena.danger_grid = {}
+    world.flare_light_timer = 0.0
 
     action = Action(ball, world)
     ball.trap_link_target = enemy
@@ -69,6 +70,7 @@ def test_trap_link_damage():
     world.arena.is_in_safe_zone.return_value = True
     world.arena.clamp_position.return_value = (0, 0, False)
     world.arena.danger_grid = {}
+    world.flare_light_timer = 0.0
 
     action = Action(ball, world)
     ball.trap_link_target = enemy
