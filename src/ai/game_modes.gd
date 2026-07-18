@@ -39922,6 +39922,12 @@ class DynamicDangerZonesMode extends GameMode:
 			else:
 				if zone["timer"] > 0:
 					active_zones.append(zone)
+
+					var shrink_rate = 10.0 * delta
+					zone["radius"] = max(10.0, zone["radius"] - shrink_rate)
+					if zone.has("hazard") and zone["hazard"] != null and "radius" in zone["hazard"]:
+						zone["hazard"].radius = zone["radius"]
+
 					for b in balls:
 						if typeof(b) == TYPE_OBJECT:
 							if b.get("alive") if "alive" in b else false:
