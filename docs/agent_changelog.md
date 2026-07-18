@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1133] VIP Bodyguard Bounties — *2026-07-18 20:28:07 UTC*
+
+Players can dynamically purchase a 'Bodyguard Bounty' using score or in-game resources, placing a massive reward on a chosen ally to incentivize the entire team to protect them while drawing enemies.
+
+---
+
 ## [idea-1131] Tornado Spawning Anomaly Event — *2026-07-18 19:50:43 UTC*
 
 An arena-wide event where miniature tornadoes spawn periodically across the map for a limited time. They last 10 seconds and have high velocity, causing utter chaos. These miniature tornadoes can also combine with elemental hazards to become mini-firenados or mini-poison tornadoes.
