@@ -3683,6 +3683,12 @@ class Action:
                 self.ball.hp = 0
 
         # Confusion timer logic
+        if getattr(self.ball, "umbrella_booster_timer", 0.0) > 0:
+            self.ball.umbrella_booster_timer -= delta
+        if getattr(self.ball, "snow_globe_booster_timer", 0.0) > 0:
+            self.ball.snow_globe_booster_timer -= delta
+            self.ball.frozen_timer = 0.0
+
         if getattr(self.ball, "confusion_timer", 0.0) > 0:
             self.ball.confusion_timer -= delta
             if self.ball.confusion_timer <= 0:
@@ -3823,8 +3829,8 @@ class Action:
         # Weather friction
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-            ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
-            ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", []))
+            ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"] or getattr(self.ball, "umbrella_booster_timer", 0.0) > 0
+            ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", []) or getattr(self.ball, "snow_globe_booster_timer", 0.0) > 0) or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", []))
             ignores_wind = cosmetic in ["heavy_boots", "lead_boots"] or (hasattr(self.ball, "inventory") and "gravity_boots" in getattr(self.ball, "inventory", []))
             is_kite = cosmetic == "kite"
 
@@ -10098,6 +10104,36 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "umbrella_booster":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    if "umbrella_booster" not in self.ball.inventory:
+                        self.ball.inventory.append("umbrella_booster")
+                    self.ball.umbrella_booster_timer = 15.0
+                    if not hasattr(self.world, "events"):
+                        self.world.events = []
+                    self.world.events.append({"type": "umbrella_booster_collected", "x": self.ball.x, "y": self.ball.y})
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "snow_globe_booster":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    if "snow_globe_booster" not in self.ball.inventory:
+                        self.ball.inventory.append("snow_globe_booster")
+                    self.ball.snow_globe_booster_timer = 15.0
+                    if not hasattr(self.world, "events"):
+                        self.world.events = []
+                    self.world.events.append({"type": "snow_globe_booster_collected", "x": self.ball.x, "y": self.ball.y})
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "overclock_booster":
                     if "overclock_booster" not in self.ball.inventory:
                         self.ball.inventory.append("overclock_booster")
@@ -15057,7 +15093,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "umbrella_booster", "snow_globe_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

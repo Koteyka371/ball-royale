@@ -6987,9 +6987,9 @@ func execute(strategy: String, delta: float):
         var cosmetic = ""
         if "cosmetic" in my_ball:
             cosmetic = str(my_ball.cosmetic).to_lower().replace(" ", "_")
-        var ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
+        var ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"] or (typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("umbrella_booster_timer") and my_ball["umbrella_booster_timer"] > 0) or (typeof(my_ball) == TYPE_OBJECT and my_ball.get("umbrella_booster_timer") != null and my_ball.get("umbrella_booster_timer") > 0)
         var ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"]
-        if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get") and my_ball.get("inventory") != null and typeof(my_ball.get("inventory")) == TYPE_ARRAY and my_ball.get("inventory").has("thermal_boots"):
+        if (typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get") and my_ball.get("inventory") != null and typeof(my_ball.get("inventory")) == TYPE_ARRAY and my_ball.get("inventory").has("thermal_boots")) or (typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("snow_globe_booster_timer") and my_ball["snow_globe_booster_timer"] > 0) or (typeof(my_ball) == TYPE_OBJECT and my_ball.get("snow_globe_booster_timer") != null and my_ball.get("snow_globe_booster_timer") > 0):
             ignores_snow_ice = true
         elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("inventory") and typeof(my_ball["inventory"]) == TYPE_ARRAY and my_ball["inventory"].has("thermal_boots"):
             ignores_snow_ice = true

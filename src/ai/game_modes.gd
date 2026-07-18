@@ -2572,6 +2572,15 @@ class BattleRoyaleMode extends GameMode:
 
 				rng.randomize()
 				var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster"]
+				var arena_weather = ""
+				if world.has("arena") and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("weather"):
+						arena_weather = world.arena.weather
+					elif typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get"):
+						arena_weather = world.arena.get("weather")
+						if arena_weather == null: arena_weather = ""
+				if arena_weather in ["blizzard", "snow"]: booster_kinds.append("snow_globe_booster")
+				if arena_weather in ["heavy_rain", "acid_rain", "thunderstorm", "rain"]: booster_kinds.append("umbrella_booster")
 				var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
 				var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
 				var b_x = rng.randf_range(100, arena_width - 100)
@@ -3358,6 +3367,15 @@ class BattleRoyaleMode extends GameMode:
 							var b_id = 9100 + boosters_array.size() + rng.randi() % 1000
 							var b_x = bx + rng.randf_range(-30, 30)
 							var b_y = by + rng.randf_range(-30, 30)
+							var arena_weather = ""
+							if world.has("arena") and world.arena != null:
+								if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("weather"):
+									arena_weather = world.arena.weather
+								elif typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get"):
+									arena_weather = world.arena.get("weather")
+									if arena_weather == null: arena_weather = ""
+							if arena_weather in ["blizzard", "snow"]: booster_kinds.append("snow_globe_booster")
+							if arena_weather in ["heavy_rain", "acid_rain", "thunderstorm", "rain"]: booster_kinds.append("umbrella_booster")
 							var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
 
 							var dropped_booster = {
@@ -15236,6 +15254,15 @@ class SupernovaMode extends GameMode:
 						var b_id = 9100 + boosters_array.size() + rng.randi() % 1000
 						var b_x = center_x + rng.randf_range(-100, 100)
 						var b_y = center_y + rng.randf_range(-100, 100)
+						var arena_weather = ""
+						if world.has("arena") and world.arena != null:
+							if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("weather"):
+								arena_weather = world.arena.weather
+							elif typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get"):
+								arena_weather = world.arena.get("weather")
+								if arena_weather == null: arena_weather = ""
+						if arena_weather in ["blizzard", "snow"]: booster_kinds.append("snow_globe_booster")
+						if arena_weather in ["heavy_rain", "acid_rain", "thunderstorm", "rain"]: booster_kinds.append("umbrella_booster")
 						var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
 
 						var dropped_booster = {
@@ -33516,7 +33543,17 @@ class ItemMorphMode extends GameMode:
 						if "active" in b: active = b.get("active")
 
 					if active:
-						var new_kind = booster_kinds[rng.randi() % booster_kinds.size()]
+						var arena_weather = ""
+						if world.has("arena") and world.arena != null:
+							if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("weather"):
+								arena_weather = world.arena.weather
+							elif typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get"):
+								arena_weather = world.arena.get("weather")
+								if arena_weather == null: arena_weather = ""
+						var temp_kinds = booster_kinds.duplicate()
+						if arena_weather in ["blizzard", "snow"]: temp_kinds.append("snow_globe_booster")
+						if arena_weather in ["heavy_rain", "acid_rain", "thunderstorm", "rain"]: temp_kinds.append("umbrella_booster")
+						var new_kind = temp_kinds[rng.randi() % temp_kinds.size()]
 						if typeof(b) == TYPE_DICTIONARY:
 							b["kind"] = new_kind
 						elif typeof(b) == TYPE_OBJECT:
@@ -33538,7 +33575,17 @@ class ItemMorphMode extends GameMode:
 						if "active" in b: active = b.get("active")
 
 					if active:
-						var new_kind = booster_kinds[rng.randi() % booster_kinds.size()]
+						var arena_weather = ""
+						if world.has("arena") and world.arena != null:
+							if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("weather"):
+								arena_weather = world.arena.weather
+							elif typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get"):
+								arena_weather = world.arena.get("weather")
+								if arena_weather == null: arena_weather = ""
+						var temp_kinds = booster_kinds.duplicate()
+						if arena_weather in ["blizzard", "snow"]: temp_kinds.append("snow_globe_booster")
+						if arena_weather in ["heavy_rain", "acid_rain", "thunderstorm", "rain"]: temp_kinds.append("umbrella_booster")
+						var new_kind = temp_kinds[rng.randi() % temp_kinds.size()]
 						if typeof(b) == TYPE_DICTIONARY:
 							b["kind"] = new_kind
 						elif typeof(b) == TYPE_OBJECT:

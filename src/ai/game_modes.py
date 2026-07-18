@@ -1712,6 +1712,9 @@ class BattleRoyaleMode(GameMode):
                         self.active = True
 
                 booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster"]
+                arena_weather = getattr(world.arena, "weather", "") if hasattr(world, "arena") else ""
+                if arena_weather in ["blizzard", "snow"]: booster_kinds.append("snow_globe_booster")
+                if arena_weather in ["heavy_rain", "acid_rain", "thunderstorm", "rain"]: booster_kinds.append("umbrella_booster")
                 chosen_kind = rnd.choice(booster_kinds)
                 b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
                 b_x = rnd.uniform(100, arena_width - 100)
@@ -2449,6 +2452,9 @@ class BattleRoyaleMode(GameMode):
                             b_id = 9100 + len(world.boosters) + getattr(self, "random", __import__("random")).randint(0, 1000)
                             b_x = b.x + getattr(self, "random", __import__("random")).uniform(-30, 30)
                             b_y = b.y + getattr(self, "random", __import__("random")).uniform(-30, 30)
+                            arena_weather = getattr(world.arena, "weather", "") if hasattr(world, "arena") else ""
+                            if arena_weather in ["blizzard", "snow"]: booster_kinds.append("snow_globe_booster")
+                            if arena_weather in ["heavy_rain", "acid_rain", "thunderstorm", "rain"]: booster_kinds.append("umbrella_booster")
                             chosen_kind = getattr(self, "random", __import__("random")).choice(booster_kinds)
                             world.boosters.append(DroppedBooster(b_id, b_x, b_y, chosen_kind))
 
@@ -9970,6 +9976,9 @@ class SupernovaMode(GameMode):
                         b_id = 9100 + len(world.boosters) + random.randint(0, 1000)
                         b_x = center_x + random.uniform(-100, 100)
                         b_y = center_y + random.uniform(-100, 100)
+                        arena_weather = getattr(world.arena, "weather", "") if hasattr(world, "arena") else ""
+                        if arena_weather in ["blizzard", "snow"]: booster_kinds.append("snow_globe_booster")
+                        if arena_weather in ["heavy_rain", "acid_rain", "thunderstorm", "rain"]: booster_kinds.append("umbrella_booster")
                         chosen_kind = random.choice(booster_kinds)
                         world.boosters.append(DroppedBooster(b_id, b_x, b_y, chosen_kind))
 
@@ -21195,7 +21204,11 @@ class ItemMorphMode(GameMode):
                 morphed = False
                 for b in world.boosters:
                     if getattr(b, "active", True):
-                        new_kind = self.random.choice(self.booster_kinds)
+                        arena_weather = getattr(world.arena, "weather", "") if hasattr(world, "arena") else ""
+                        temp_kinds = list(self.booster_kinds)
+                        if arena_weather in ["blizzard", "snow"]: temp_kinds.append("snow_globe_booster")
+                        if arena_weather in ["heavy_rain", "acid_rain", "thunderstorm", "rain"]: temp_kinds.append("umbrella_booster")
+                        new_kind = self.random.choice(temp_kinds)
                         b.kind = new_kind
                         morphed = True
 
