@@ -11358,7 +11358,10 @@ class Action:
                         self.world.boosters.remove(nearest)
 
                 elif getattr(nearest, "kind", None) == "reverse_gravity_booster":
-                    self.ball.reverse_gravity_booster_timer = 5.0
+                    if hasattr(self.world, "balls"):
+                        for other in self.world.balls:
+                            if getattr(other, "team", -1) != getattr(self.ball, "team", -2) and getattr(other, "hp", 0) > 0:
+                                other.invert_timer = 3.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -15048,35 +15051,7 @@ class Action:
                 if getattr(self.ball, "speed", 0.0) < getattr(self.ball, "base_speed", 2.0):
                     self.ball.speed = getattr(self.ball, "base_speed", 2.0)
 
-        if hasattr(self.ball, "reverse_gravity_booster_timer") and self.ball.reverse_gravity_booster_timer > 0:
-            self.ball.reverse_gravity_booster_timer -= delta
-            if self.ball.reverse_gravity_booster_timer < 0:
-                self.ball.reverse_gravity_booster_timer = 0.0
-            else:
-                if hasattr(self.world, "balls"):
-                    arena_width = getattr(self.world.arena, "width", getattr(self.world, "width", 1000.0)) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000.0)
-                    arena_height = getattr(self.world.arena, "height", getattr(self.world, "height", 1000.0)) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000.0)
-                    for other in self.world.balls:
-                        if getattr(other, "id", None) != getattr(self.ball, "id", None) and getattr(other, "team", -1) != getattr(self.ball, "team", -1):
-                            dist_sq = (other.x - self.ball.x)**2 + (other.y - self.ball.y)**2
-                            if 0 < dist_sq < 22500: # 150 range
-                                dists = {
-                                    "left": other.x,
-                                    "right": arena_width - other.x,
-                                    "top": other.y,
-                                    "bottom": arena_height - other.y
-                                }
-                                closest_wall = min(dists, key=dists.get)
-                                push_strength = 500.0 * delta
 
-                                if closest_wall == "left":
-                                    if hasattr(other, "x"): other.x -= push_strength
-                                elif closest_wall == "right":
-                                    if hasattr(other, "x"): other.x += push_strength
-                                elif closest_wall == "top":
-                                    if hasattr(other, "y"): other.y -= push_strength
-                                elif closest_wall == "bottom":
-                                    if hasattr(other, "y"): other.y += push_strength
 
 
         if getattr(self.ball, "insulator_timer", 0.0) > 0:

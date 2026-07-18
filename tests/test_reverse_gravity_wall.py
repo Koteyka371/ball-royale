@@ -1,5 +1,4 @@
 from ai.action import Action
-from ai.action import Action
 
 class MockBall:
     def __init__(self, x=0, y=0, team=1):
@@ -31,33 +30,37 @@ class MockWorld:
         return {
             "enemies": [b for b in self.balls if b != entity and getattr(b, "team", -1) != getattr(entity, "team", -1)],
             "allies": [b for b in self.balls if b != entity and getattr(b, "team", -1) == getattr(entity, "team", -1)],
-            "boosters": self.boosters
+            "boosters": [b for b in self.boosters if (b.x - entity.x)**2 + (b.y - entity.y)**2 <= radius**2]
         }
 
 
-def test_reverse_gravity_booster_wall():
+def test_reverse_gravity_booster():
     ball = MockBall(x=500.0, y=500.0, team=1)
     ball.id = 1
-    ball.reverse_gravity_booster_timer = 5.0
 
-    enemy1 = MockBall(x=550.0, y=550.0, team=2) # close enough to ball
+    enemy1 = MockBall(x=-550.0, y=-550.0, team=2) # Place far enough away so collection happens! If enemy is < 30 dist, ball flees instead
     enemy1.id = 2
 
-    enemy2 = MockBall(x=800.0, y=500.0, team=2) # far from ball
+    enemy2 = MockBall(x=800.0, y=500.0, team=2)
     enemy2.id = 3
 
-    ally = MockBall(x=10.0, y=10.0, team=1) # close ally
+    ally = MockBall(x=10.0, y=10.0, team=1)
     ally.id = 4
 
     world = MockWorld()
     world.balls = [ball, enemy1, enemy2, ally]
-    world.arena = type('MockArena', (), {'hazards': [], 'width': 1000, 'height': 1000})()
+    world.arena = type('MockArena', (), {'hazards': [], 'width': 1000, 'height': 1000, 'safe_zone_center': (500, 500), 'safe_zone_radius': 500})()
     world.game_mode = None
 
+    booster = type('MockBooster', (), {'x': 500.0, 'y': 500.0, 'kind': 'reverse_gravity_booster', 'radius': 10})()
+    world.boosters.append(booster)
+
+    # We explicitly call the _collect_booster method like in action.py logic
     action = Action(ball, world)
-    action.execute("none", 1.0)
+    # the Action class logic first calls _collect_boosters in its execute function
+    action._collect_booster(1.0)
 
     # Assertions
-    assert enemy1.x > 550.0 or enemy1.x < 550.0 or enemy1.y > 550.0 or enemy1.y < 550.0, "Enemy1 should have moved"
-    assert enemy2.x == 800.0 and enemy2.y == 500.0, "Enemy2 should not have moved"
-    assert ally.x == 10.0 and ally.y == 10.0, "Ally should not have moved"
+    assert getattr(enemy1, "invert_timer", 0.0) == 3.0, f"Enemy1 should have invert_timer set to 3.0, but got {getattr(enemy1, 'invert_timer', 0.0)}"
+    assert getattr(enemy2, "invert_timer", 0.0) == 3.0, f"Enemy2 should have invert_timer set to 3.0, but got {getattr(enemy2, 'invert_timer', 0.0)}"
+    assert getattr(ally, "invert_timer", 0.0) == 0.0, f"Ally should not have invert_timer set, but got {getattr(ally, 'invert_timer', 0.0)}"
