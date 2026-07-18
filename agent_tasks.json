@@ -30127,6 +30127,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1761",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones with Multiple Cores",
+      "description": "Instead of a single large safe zone shrinking, spawn 3-4 smaller safe zones that slowly shrink and merge together over time. Encourages early-game skirmishes in multiple areas before the final showdown.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones_with_multiple_cores.py",
+        "src/ai/shrinking_safe_zones_with_multiple_cores.gd",
+        "tests/test_shrinking_safe_zones_with_multiple_cores.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1762",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tethered Teams Mode",
+      "description": "A duos or squads mode where players on the same team are physically tethered together by an elastic band. If they move too far apart, they are pulled back. The tether itself can deal damage to enemies passing through it.",
+      "allowed_paths": [
+        "src/ai/tethered_teams.py",
+        "src/ai/tethered_teams.gd",
+        "tests/test_tethered_teams.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
