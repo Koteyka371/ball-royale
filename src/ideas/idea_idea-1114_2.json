@@ -1,0 +1,4 @@
+{
+  "title": "Mirror Image Swap",
+  "description": "A survival mechanism where a player spawns 4 mirrored decoys in a square formation. After 3 seconds, all decoys converge to the middle and explode, and the player is instantly relocated to the middle if they are within a certain radius, providing a high-risk healing zone."
+}
