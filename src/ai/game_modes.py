@@ -25077,3 +25077,65 @@ class ChainReactionMode(GameMode):
 GAME_MODES['chain_reaction'] = ChainReactionMode()
 
 GAME_MODES['faction_war'] = FactionWarMode()
+
+class KillstreakExplosionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Killstreak Explosion"
+        self.description = "Every kill triggers an explosion that scales in radius and damage based on the killed ball's current killstreak."
+        self.pending_explosions = []
+
+    def on_ball_died(self, world, ball, killer):
+        if hasattr(super(), "on_ball_died"):
+            super().on_ball_died(world, ball, killer)
+
+        killstreak = getattr(ball, "kills", 0)
+
+        # Scale explosion based on killstreak
+        radius = 100.0 + (killstreak * 20.0)
+        damage = 30.0 + (killstreak * 15.0)
+
+        self.pending_explosions.append({
+            "x": ball.x,
+            "y": ball.y,
+            "timer": 0.5,
+            "radius": radius,
+            "damage": damage,
+            "killer": killer.id if killer else None
+        })
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        remaining_explosions = []
+        current_explosions = list(self.pending_explosions)
+        self.pending_explosions = []
+
+        for explosion in current_explosions:
+            explosion["timer"] -= delta
+            if explosion["timer"] <= 0.0:
+                if hasattr(world, "add_event"):
+                    world.add_event("killstreak_explosion", {
+                        "x": explosion["x"],
+                        "y": explosion["y"],
+                        "radius": explosion["radius"]
+                    })
+
+                import math
+                for b in balls:
+                    if getattr(b, "alive", True):
+                        dist = math.hypot(b.x - explosion["x"], b.y - explosion["y"])
+                        if dist <= explosion["radius"]:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(explosion["damage"])
+                            else:
+                                b.hp = getattr(b, "hp", 100) - explosion["damage"]
+                                if b.hp <= 0:
+                                    b.alive = False
+                                    self.on_ball_died(world, b, None)
+            else:
+                remaining_explosions.append(explosion)
+
+        self.pending_explosions = remaining_explosions + self.pending_explosions
+
+GAME_MODES['killstreak_explosion'] = KillstreakExplosionMode()
