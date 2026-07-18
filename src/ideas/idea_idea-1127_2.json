@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Anomaly",
+  "description": "A new hazard that occasionally spawns in the center of the arena. It slowly pulls all balls, hazards, and items towards it. If an entity gets too close, it is teleported to a random location on the map, resetting their momentum but destroying any items they are holding."
+}
