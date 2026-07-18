@@ -1,5 +1,5 @@
 import pytest
-from ai.test_action_advanced import MockWorld, MockBall
+from tests.test_action import MockWorld, MockBall
 from ai.action import Action
 
 def test_trickster_clone_skill():

@@ -1,4 +1,4 @@
-from ai.test_action_advanced import MockWorld, MockBall
+from tests.test_action import MockWorld, MockBall
 from ai.action import Action
 import pytest
 
