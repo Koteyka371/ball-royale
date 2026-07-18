@@ -2295,6 +2295,50 @@ func execute(strategy: String, delta: float):
                             if "y" in b: b.y = ty
                             elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("y", ty)
 
+                            # Apply confusion
+                            var my_team = ""
+                            if "team" in self.ball: my_team = str(self.ball.team)
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = str(self.ball["team"])
+                            elif "ball_type" in self.ball: my_team = str(self.ball.ball_type)
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_team = str(self.ball["ball_type"])
+
+                            for enemy in self.world.balls:
+                                var e_alive = true
+                                if "alive" in enemy: e_alive = enemy.alive
+                                elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("get_meta") and enemy.has_meta("alive"): e_alive = enemy.get_meta("alive")
+
+                                if not e_alive: continue
+
+                                var e_team = ""
+                                if "team" in enemy: e_team = str(enemy.team)
+                                elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = str(enemy["team"])
+                                elif "ball_type" in enemy: e_team = str(enemy.ball_type)
+                                elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("ball_type"): e_team = str(enemy["ball_type"])
+
+                                if e_team != my_team:
+                                    var e_x = 0.0
+                                    var e_y = 0.0
+                                    if "x" in enemy: e_x = enemy.x
+                                    elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): e_x = enemy["x"]
+                                    if "y" in enemy: e_y = enemy.y
+                                    elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): e_y = enemy["y"]
+
+                                    var dist_sq = (e_x - self.ball.x) * (e_x - self.ball.x) + (e_y - self.ball.y) * (e_y - self.ball.y)
+                                    if dist_sq <= 150.0 * 150.0:
+                                        if "is_confused" in enemy: enemy.is_confused = true
+                                        elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("set_meta"): enemy.set_meta("is_confused", true)
+                                        elif typeof(enemy) == TYPE_DICTIONARY: enemy["is_confused"] = true
+
+                                        var cur_conf = 0.0
+                                        if "confusion_timer" in enemy: cur_conf = enemy.confusion_timer
+                                        elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("get_meta") and enemy.has_meta("confusion_timer"): cur_conf = enemy.get_meta("confusion_timer")
+                                        elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("confusion_timer"): cur_conf = enemy["confusion_timer"]
+
+                                        var new_conf = max(cur_conf, 3.0)
+                                        if "confusion_timer" in enemy: enemy.confusion_timer = new_conf
+                                        elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("set_meta"): enemy.set_meta("confusion_timer", new_conf)
+                                        elif typeof(enemy) == TYPE_DICTIONARY: enemy["confusion_timer"] = new_conf
+
                             if "hp" in b: b.hp = 0
                             elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("hp", 0)
 
@@ -23462,6 +23506,7 @@ func _use_skill():
                         "skill_timer": 9999.0,
                         "attack_timer": 9999.0,
                         "is_decoy": true,
+                        "_decoy_exploded": true,
                         "decoy_timer": 3.5,
                         "alive": true,
                         "skill": null,

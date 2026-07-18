@@ -1293,6 +1293,13 @@ class Action:
                             tx, ty = self.ball.x, self.ball.y
                             self.ball.x, self.ball.y = b.x, b.y
                             b.x, b.y = tx, ty
+                            # Apply confusion
+                            for enemy in [e for e in getattr(self.world, "balls", []) if getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]:
+                                dist_sq = (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2
+                                if dist_sq <= 150.0**2:
+                                    enemy.is_confused = True
+                                    enemy.confusion_timer = max(getattr(enemy, "confusion_timer", 0.0), 3.0)
+
                             # Remove decoy
                             b.hp = 0
                             b.alive = False
@@ -12533,6 +12540,7 @@ class Action:
                         decoy.skill_timer = 9999.0
                         decoy.attack_timer = 9999.0
                         decoy.is_decoy = True
+                        decoy._decoy_exploded = True  # Prevent explosion logic from triggering when timer runs out or hp=0
                         decoy.decoy_timer = 3.5  # Give it a bit more than 3 seconds so it lives past the swap
                         decoy.SKILL = None
                         decoy.skill = None
