@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1079] Traitor's Tether — *2026-07-18 22:44:54 UTC*
+
+A new booster that, when picked up, forces an enemy ball to become tethered to one of your teammates. The enemy takes continuous tick damage while tethered and can be dragged into hazards against their will.
+
+---
+
 ## [idea-1139] Sabotage Zone in Escort — *2026-07-18 22:44:48 UTC*
 
 In Escort and Dual Payload modes, an 'anti-payload' hazard zone sporadically spawns on the map. If a payload passes through this zone, its speed is temporarily halved, regardless of how many allies are near it. Attackers can strategically use push/pull tools to force payloads into these zones to buy more time.
