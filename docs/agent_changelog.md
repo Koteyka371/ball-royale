@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1112] Orbital Minefield Utility Skill — *2026-07-18 19:09:26 UTC*
+
+A skill that spawns 3 small mines that orbit the player ball continuously. If an enemy comes within a small radius, the mines detach and seek the enemy before detonating.
+
+---
+
 ## [idea-1118] Reverse Tag — *2026-07-18 18:58:05 UTC*
 
 Instead of avoiding the 'IT' player, being 'IT' gives passive points. When a player collides with 'IT', they steal the status. To prevent stalling, the 'IT' status drains max HP slowly, forcing them to tag someone else eventually.
