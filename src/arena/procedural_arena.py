@@ -1237,6 +1237,9 @@ class ProceduralArena:
                     kind = "placeable_trap_item"
                     damage = 0.0
                 elif random.random() < 0.05:
+                    kind = "deployable_warp_trap"
+                    damage = 0.0
+                elif random.random() < 0.05:
                     kind = "mirage_safe_zone"
                     damage = 0.0
                 elif random.random() < 0.05:

@@ -2403,6 +2403,21 @@ class Action:
                     setattr(bh, 'owner_id', getattr(self.ball, 'id', None))
                     self.world.arena.hazards.append(bh)
                 self.ball.inventory.remove("deployable_black_hole")
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_warp_trap" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    pass
+                else:
+                    import random
+                    wt_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                    wt = Hazard(wt_id, self.ball.x, self.ball.y, 15.0, "trap", 0.0)
+                    setattr(wt, 'duration', 10.0)
+                    setattr(wt, 'trap_variant', 'warp')
+                    setattr(wt, 'owner_id', getattr(self.ball, 'id', None))
+                    self.world.arena.hazards.append(wt)
+                self.ball.inventory.remove("deployable_warp_trap")
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_gravity_well" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 try:
@@ -6949,6 +6964,7 @@ class Action:
 
                                     self.ball.x = clamped_x
                                     self.ball.y = clamped_y
+                                    self.ball.invert_timer = 2.0  # Disorient the player
 
                                     if hasattr(self.world, "events"):
                                         self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
@@ -11400,6 +11416,15 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("smoke_grenade")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_warp_trap":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_warp_trap")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
