@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1101] Lava Interactions for Skills — *2026-07-18 01:35:28 UTC*
+
+Expand elemental terrain interactions to lava hazards. For example, using a water-based skill like Elemental Burst over lava could create a steam cloud that provides temporary stealth to nearby allies, or using Earth-based attacks could temporarily solidify the lava into walkable ground.
+
+---
+
 ## [idea-1088] Reflect Shield — *2026-07-17 23:05:48 UTC*
 
 A temporary shield that bounces any projectiles or damage-dealing effects back at the attacker, creating defensive and counter-attacking opportunities in high-chaos situations.
