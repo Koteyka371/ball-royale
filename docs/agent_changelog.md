@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1096] Bone Wall Hazard — *2026-07-18 02:25:37 UTC*
+
+Necromancer can summon a Bone Wall hazard that blocks enemy movement and projectiles, but can be broken by taking enough damage.
+
+---
+
 ## [idea-1028] Acoustic Mine Trap — *2026-07-18 02:18:25 UTC*
 
 A new type of hazard that is invisible by default but triggers a high-damage explosion if a ball uses Dash, Sonar Ping, or other noisy skills within its radius.

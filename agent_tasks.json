@@ -18801,7 +18801,7 @@
     },
     {
       "id": "idea-1096",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bone Wall Hazard",
@@ -29782,6 +29782,74 @@
         "src/ai/molten_rock_golem_entity.py",
         "src/ai/molten_rock_golem_entity.gd",
         "tests/test_molten_rock_golem_entity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1741",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Mine",
+      "description": "A hazard that pulses and damages players around it based on the amount of noise they make while moving",
+      "allowed_paths": [
+        "src/ai/echo_mine.py",
+        "src/ai/echo_mine.gd",
+        "tests/test_echo_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1742",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "White Hole Repulsor Mode",
+      "description": "A massive white hole sits in the center of the arena, constantly repelling players towards the outer boundary. Players must fight to stay in the center as the arena slowly shrinks from the edges.",
+      "allowed_paths": [
+        "src/ai/white_hole_repulsor.py",
+        "src/ai/white_hole_repulsor.gd",
+        "tests/test_white_hole_repulsor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1743",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wormhole Portals",
+      "description": "Pairs of connected wormholes spawn randomly in the arena. Entering one immediately teleports the player to the other, maintaining their momentum.",
+      "allowed_paths": [
+        "src/ai/wormhole_portals.py",
+        "src/ai/wormhole_portals.gd",
+        "tests/test_wormhole_portals.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1744",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Silent Steps Mutator",
+      "description": "A game mutator that makes all players completely silent, disabling sound-based traps and effects.",
+      "allowed_paths": [
+        "src/ai/silent_steps_mutator.py",
+        "src/ai/silent_steps_mutator.gd",
+        "tests/test_silent_steps_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
