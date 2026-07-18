@@ -1281,7 +1281,7 @@ class Action:
                 self.ball.hp = 0
                 self.ball.alive = False
         if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
-            self.ball.wall_stick_timer -= delta
+            self.ball.wall_stick_timer = max(0.0, self.ball.wall_stick_timer - delta)
             if self.ball.wall_stick_timer <= 0.0:
                 if getattr(self.ball, "stun_timer", 0.0) <= 0.0:
                     self.ball.is_stunned = False
@@ -4629,7 +4629,7 @@ class Action:
             self._update_skill_timer(delta)
             self._resolve_collisions()
             bounced_wall = self._clamp_position()
-            if bounced_wall:
+            if bounced_wall and (getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2 > 1.0):
                 if getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0:
                     self.ball.wall_stick_timer = 2.0
                     self.ball.is_stunned = True
@@ -8052,7 +8052,7 @@ class Action:
                 self.ball.is_emped = False
 
         if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
-            self.ball.wall_stick_timer -= delta
+            self.ball.wall_stick_timer = max(0.0, self.ball.wall_stick_timer - delta)
             if self.ball.wall_stick_timer <= 0.0:
                 self.ball.is_stunned = False
 
@@ -8330,7 +8330,7 @@ class Action:
         bounced_col = self._resolve_collisions()
         bounced_wall = self._clamp_position()
 
-        if bounced_wall:
+        if bounced_wall and (getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2 > 1.0):
             if getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0:
                 self.ball.wall_stick_timer = 2.0
                 self.ball.is_stunned = True
@@ -11664,6 +11664,7 @@ class Action:
                     bh = Hazard(trap_id, self.ball.x, self.ball.y, 40.0, "black_hole", 20.0)
                     bh.vx = nx * 50.0
                     bh.vy = ny * 50.0
+                    bh.target_radius = 0.0
                     bh.duration = 5.0
                     self.world.arena.hazards.append(bh)
             elif skill_name == "meteor_strike":
