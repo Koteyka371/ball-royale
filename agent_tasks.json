@@ -19090,7 +19090,7 @@
     },
     {
       "id": "idea-1113",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirage Mine",
@@ -29986,6 +29986,40 @@
         "src/ai/trickster_mirror_image_dash.py",
         "src/ai/trickster_mirror_image_dash.gd",
         "tests/test_trickster_mirror_image_dash.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1753",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Shifting Map",
+      "description": "An arena mode where the map starts very small and expands over time, with new elements and hazards revealed as it grows.",
+      "allowed_paths": [
+        "src/ai/reverse_shifting_map.py",
+        "src/ai/reverse_shifting_map.gd",
+        "tests/test_reverse_shifting_map.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1754",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Auras",
+      "description": "Players drop a temporary vampiric aura upon elimination that slowly drains health from enemies standing inside it while healing allies.",
+      "allowed_paths": [
+        "src/ai/vampiric_auras.py",
+        "src/ai/vampiric_auras.gd",
+        "tests/test_vampiric_auras.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

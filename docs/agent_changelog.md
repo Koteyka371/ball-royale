@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1113] Mirage Mine — *2026-07-18 04:13:24 UTC*
+
+A trap that looks like a high-tier healing spring or booster. When collected, instead of granting the effect, it creates a temporary fake clone of the player that taunts enemy AI into attacking it while granting the player brief invisibility.
+
+---
+
 ## [idea-1107] Evolving Arena Mode — *2026-07-18 04:07:44 UTC*
 
 The arena boundaries constantly shift and evolve, forcing players to adapt to an ever-changing layout while avoiding hazards.
