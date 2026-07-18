@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1120] Weather-Adaptive Hazard Types — *2026-07-18 19:30:09 UTC*
+
+Introduce generic trap objects that change their literal 'kind' string and visual appearance (e.g. into 'ice_patch' or 'quicksand') based on weather changes, standardizing trap behaviors across modes.
+
+---
+
 ## [idea-1112] Orbital Minefield Utility Skill — *2026-07-18 19:09:26 UTC*
 
 A skill that spawns 3 small mines that orbit the player ball continuously. If an enemy comes within a small radius, the mines detach and seek the enemy before detonating.
