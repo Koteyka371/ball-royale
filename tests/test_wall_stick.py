@@ -35,6 +35,8 @@ def test_wall_stick():
 
     # Run again, wall_stick_timer should decrease, and should not move (stunned)
     old_x = ball.x
+    ball.vx = 0.0
+    ball.vy = 0.0
     action.execute("target_weak", 0.5)
 
     assert ball.wall_stick_timer == 1.5
