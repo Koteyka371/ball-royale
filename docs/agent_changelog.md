@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1056] Laser Sight Attachment — *2026-07-18 21:42:55 UTC*
+
+Introduce a 'laser_sight_attachment' drop that increases the ball's attack range or accuracy for its abilities. When collected, the skill cooldown slightly decreases on successful hits, rewarding precise gameplay.
+
+---
+
 ## [idea-1033] Doppelganger Match Mode — *2026-07-18 21:19:12 UTC*
 
 Every player spawns with a clone that perfectly mimics their inputs, but it only deals half damage and takes double damage. If the real player is killed, they immediately swap into their clone, reviving but with halved stats for the rest of the game.
