@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1136] Magnetic Repulsion Field Mode — *2026-07-18 22:29:03 UTC*
+
+A game mode where all balls naturally repel each other slightly. The strength of repulsion increases as they get closer, making it difficult to land melee attacks and creating a pinball-like arena effect during high-speed collisions.
+
+---
+
 ## [idea-1127] Portal Gun Trap — *2026-07-18 22:01:56 UTC*
 
 A deployable trap that shoots players to a random location in the arena, disorienting them and potentially dropping them into hazards.
