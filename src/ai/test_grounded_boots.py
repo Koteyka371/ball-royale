@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock, patch
-from action import Action
+from ai.action import Action
 
 def test_grounded_boots():
     class MockBall:

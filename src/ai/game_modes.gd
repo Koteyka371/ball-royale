@@ -38040,3 +38040,5 @@ class FactionWarMode extends GameMode:
 					pm.data["unlocked_balls"].append(ball_to_unlock)
 					if pm.has_method("save_profile"):
 						pm.save_profile()
+const WeatherStationsMode = preload("res://src/ai/stations.gd")
+GAME_MODES['weather_stations'] = WeatherStationsMode.new()
