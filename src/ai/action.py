@@ -14908,6 +14908,65 @@ class Action:
             if has_minion:
                 self.ball.speed = base_s * 1.5
 
+        # Decoy Network Logic
+        if hasattr(self.world, "balls"):
+            # Find all active decoys
+            active_decoys = [b for b in self.world.balls if getattr(b, "is_decoy", False) and getattr(b, "alive", True)]
+            if active_decoys:
+                # Group decoys by owner_id
+                decoys_by_owner = {}
+                for d in active_decoys:
+                    oid = getattr(d, "owner_id", None)
+                    if oid is not None:
+                        if oid not in decoys_by_owner:
+                            decoys_by_owner[oid] = []
+                        decoys_by_owner[oid].append(d)
+
+                # Find owners with 'decoy_network' trait
+                network_owners = set()
+                for b in self.world.balls:
+                    if getattr(b, "alive", True) and "decoy_network" in getattr(b, "traits", []):
+                        network_owners.add(getattr(b, "id", None))
+
+                for oid, decoys in decoys_by_owner.items():
+                    if oid in network_owners and len(decoys) > 1:
+                        # Check if self.ball is an enemy
+                        if getattr(self.ball, "id", None) != oid and getattr(self.ball, "team", "") != getattr(decoys[0], "team", ""):
+                            # Evaluate distance to line segments connecting decoys
+                            in_beam = False
+                            for i in range(len(decoys)):
+                                for j in range(i + 1, len(decoys)):
+                                    d1, d2 = decoys[i], decoys[j]
+                                    px, py = self.ball.x, self.ball.y
+                                    ax, ay = d1.x, d1.y
+                                    bx, by = d2.x, d2.y
+
+                                    l2 = (bx - ax)**2 + (by - ay)**2
+                                    if l2 == 0:
+                                        dist = ((px - ax)**2 + (py - ay)**2)**0.5
+                                    else:
+                                        t = max(0, min(1, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2))
+                                        proj_x = ax + t * (bx - ax)
+                                        proj_y = ay + t * (by - ay)
+                                        dist = ((px - proj_x)**2 + (py - proj_y)**2)**0.5
+
+                                    if dist <= getattr(self.ball, "radius", 10.0) + 5.0: # beam width margin
+                                        in_beam = True
+                                        break
+                                if in_beam:
+                                    break
+
+                            if in_beam:
+                                dmg = 5.0 * delta
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(dmg)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= dmg
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+
+                                self.ball.speed = getattr(self.ball, "speed", 0.0) * 0.7
+
     def _update_skill_timer(self, delta: float) -> None:
         if getattr(self.ball, "blood_magic_timer", 0.0) > 0.0:
             current_st = getattr(self.ball, "skill_timer", 0.0)

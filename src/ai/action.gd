@@ -27874,6 +27874,155 @@ func _apply_friendly_aura(delta: float):
                 if "speed" in self.ball:
                     self.ball.speed = base_s * 1.5
 
+    if "balls" in world:
+        var active_decoys = []
+        for b in world.balls:
+            var b_is_decoy = false
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.has("is_decoy"): b_is_decoy = b.is_decoy
+            elif "is_decoy" in b:
+                b_is_decoy = b.is_decoy
+
+            var b_alive = true
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.has("alive"): b_alive = b.alive
+            elif "alive" in b:
+                b_alive = b.alive
+
+            if b_is_decoy and b_alive:
+                active_decoys.append(b)
+
+        if active_decoys.size() > 0:
+            var decoys_by_owner = {}
+            for d in active_decoys:
+                var oid = null
+                if typeof(d) == TYPE_DICTIONARY:
+                    if d.has("owner_id"): oid = d.owner_id
+                elif "owner_id" in d:
+                    oid = d.owner_id
+
+                if oid != null:
+                    if not decoys_by_owner.has(oid):
+                        decoys_by_owner[oid] = []
+                    decoys_by_owner[oid].append(d)
+
+            var network_owners = []
+            for b in world.balls:
+                var b_alive = true
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("alive"): b_alive = b.alive
+                elif "alive" in b:
+                    b_alive = b.alive
+
+                if b_alive:
+                    var b_traits = []
+                    if typeof(b) == TYPE_DICTIONARY:
+                        if b.has("traits"): b_traits = b.traits
+                    elif "traits" in b:
+                        b_traits = b.traits
+
+                    if b_traits.has("decoy_network"):
+                        var bid = null
+                        if typeof(b) == TYPE_DICTIONARY:
+                            if b.has("id"): bid = b.id
+                        elif "id" in b:
+                            bid = b.id
+                        if bid != null and not network_owners.has(bid):
+                            network_owners.append(bid)
+
+            for oid in decoys_by_owner.keys():
+                var decoys = decoys_by_owner[oid]
+                if network_owners.has(oid) and decoys.size() > 1:
+                    var my_id = null
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        if self.ball.has("id"): my_id = self.ball.id
+                    elif "id" in self.ball:
+                        my_id = self.ball.id
+
+                    var my_team = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        if self.ball.has("team"): my_team = self.ball.team
+                    elif "team" in self.ball:
+                        my_team = self.ball.team
+
+                    var d0_team = ""
+                    if typeof(decoys[0]) == TYPE_DICTIONARY:
+                        if decoys[0].has("team"): d0_team = decoys[0].team
+                    elif "team" in decoys[0]:
+                        d0_team = decoys[0].team
+
+                    if my_id != oid and my_team != d0_team:
+                        var in_beam = false
+                        for i in range(decoys.size()):
+                            for j in range(i + 1, decoys.size()):
+                                var d1 = decoys[i]
+                                var d2 = decoys[j]
+                                var px = 0.0
+                                var py = 0.0
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    if self.ball.has("x"): px = self.ball.x
+                                    if self.ball.has("y"): py = self.ball.y
+                                else:
+                                    if "x" in self.ball: px = self.ball.x
+                                    if "y" in self.ball: py = self.ball.y
+
+                                var ax = 0.0
+                                var ay = 0.0
+                                if typeof(d1) == TYPE_DICTIONARY:
+                                    if d1.has("x"): ax = d1.x
+                                    if d1.has("y"): ay = d1.y
+                                else:
+                                    if "x" in d1: ax = d1.x
+                                    if "y" in d1: ay = d1.y
+
+                                var bx = 0.0
+                                var by = 0.0
+                                if typeof(d2) == TYPE_DICTIONARY:
+                                    if d2.has("x"): bx = d2.x
+                                    if d2.has("y"): by = d2.y
+                                else:
+                                    if "x" in d2: bx = d2.x
+                                    if "y" in d2: by = d2.y
+
+                                var l2 = (bx - ax)*(bx - ax) + (by - ay)*(by - ay)
+                                var dist = 0.0
+                                if l2 == 0.0:
+                                    dist = sqrt((px - ax)*(px - ax) + (py - ay)*(py - ay))
+                                else:
+                                    var t = max(0.0, min(1.0, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2))
+                                    var proj_x = ax + t * (bx - ax)
+                                    var proj_y = ay + t * (by - ay)
+                                    dist = sqrt((px - proj_x)*(px - proj_x) + (py - proj_y)*(py - proj_y))
+
+                                var my_rad = 10.0
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    if self.ball.has("radius"): my_rad = self.ball.radius
+                                elif "radius" in self.ball:
+                                    my_rad = self.ball.radius
+
+                                if dist <= my_rad + 5.0:
+                                    in_beam = true
+                                    break
+                            if in_beam:
+                                break
+
+                        if in_beam:
+                            var dmg = 5.0 * delta
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+                                self.ball.take_damage(dmg)
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"):
+                                self.ball.hp -= dmg
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
+                            elif "hp" in self.ball:
+                                self.ball.hp -= dmg
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
+
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"):
+                                self.ball.speed *= 0.7
+                            elif "speed" in self.ball:
+                                self.ball.speed *= 0.7
 
 func _update_skill_timer(delta: float):
     var bm_timer = 0.0

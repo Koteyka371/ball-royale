@@ -678,7 +678,7 @@ class MockBallForChaosLink:
             self.alive = False
 
 def test_chaos_link_skill():
-    from action import Action
+    from ai.action import Action
     world = MockWorldForChaosLink()
     world.width = 1000
     world.height = 1000
@@ -1198,3 +1198,36 @@ def test_decoy_transmutation():
     assert decoy2.decoy_type in ["explosive", "stun_trap", "healing", "swap_trap", "siren"]
 
     assert ball.skill_timer == 5.0
+
+def test_decoy_network():
+    owner = MockBall(x=0, y=0)
+    owner.id = 111
+    owner.team = "A"
+    owner.traits = ["decoy_network"]
+
+    decoy1 = MockBall(x=0, y=0)
+    decoy1.is_decoy = True
+    decoy1.owner_id = 111
+    decoy1.team = "A"
+
+    decoy2 = MockBall(x=100, y=0)
+    decoy2.is_decoy = True
+    decoy2.owner_id = 111
+    decoy2.team = "A"
+
+    enemy = MockBall(x=50, y=0)
+    enemy.team = "B"
+    enemy.hp = 100.0
+    enemy.speed = 10.0
+    enemy.base_speed = 10.0
+    enemy.radius = 10.0
+
+    arena = type("MockArena", (), {})()
+    arena.hazards = []
+    world = type("MockWorld", (), {})()
+    world.balls = [owner, decoy1, decoy2, enemy]
+    action = Action(enemy, world)
+    action._apply_friendly_aura(0.1)
+
+    assert enemy.hp < 100.0
+    assert enemy.speed == 7.0

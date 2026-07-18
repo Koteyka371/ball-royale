@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A trap hazard that periodically teleports the nearest entity into it, swapping its position with a random hazard on the map."
+}
