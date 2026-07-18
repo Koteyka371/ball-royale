@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1131] Tornado Spawning Anomaly Event — *2026-07-18 19:50:43 UTC*
+
+An arena-wide event where miniature tornadoes spawn periodically across the map for a limited time. They last 10 seconds and have high velocity, causing utter chaos. These miniature tornadoes can also combine with elemental hazards to become mini-firenados or mini-poison tornadoes.
+
+---
+
 ## [idea-1109] Hazard Traps System — *2026-07-18 19:35:07 UTC*
 
 Introduce a new system where certain ball types can place invisible traps that trigger status effects on enemies when they come too close, allowing for more strategic area control.

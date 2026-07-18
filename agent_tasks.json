@@ -19396,7 +19396,7 @@
     },
     {
       "id": "idea-1131",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Spawning Anomaly Event",
@@ -30156,6 +30156,23 @@
         "src/ai/tethered_teams.py",
         "src/ai/tethered_teams.gd",
         "tests/test_tethered_teams.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1763",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Mine",
+      "description": "A new trap type that, when triggered, swaps the triggering ball's position with the ball that deployed the trap. Can be used for surprise escapes or aggressive positioning.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_mine.py",
+        "src/ai/quantum_swap_mine.gd",
+        "tests/test_quantum_swap_mine.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
