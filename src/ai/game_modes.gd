@@ -38478,3 +38478,103 @@ const WeatherStationsMode = preload("res://src/ai/stations.gd")
 GAME_MODES['weather_stations'] = WeatherStationsMode.new()
 
 GAME_MODES['chain_reaction'] = ChainReactionMode.new()
+
+class KillstreakExplosionMode extends GameMode:
+	var pending_explosions = []
+
+	func _init():
+		super._init()
+		name = "Killstreak Explosion"
+		description = "Every kill triggers an explosion that scales in radius and damage based on the killed ball's current killstreak."
+
+	func on_ball_died(world, ball, killer = null):
+		if super.has_method("on_ball_died"):
+			super.on_ball_died(world, ball, killer)
+
+		var ex_pos_x = 0.0
+		var ex_pos_y = 0.0
+		var killstreak = 0
+
+		if typeof(ball) == TYPE_DICTIONARY:
+			ex_pos_x = ball.get("x", 0.0)
+			ex_pos_y = ball.get("y", 0.0)
+			killstreak = ball.get("kills", 0)
+		else:
+			ex_pos_x = ball.x
+			ex_pos_y = ball.y
+			if "kills" in ball:
+				killstreak = ball.kills
+			elif ball.has_method("has_meta") and ball.has_meta("kills"):
+				killstreak = ball.get_meta("kills")
+
+		var radius = 100.0 + (killstreak * 20.0)
+		var damage = 30.0 + (killstreak * 15.0)
+
+		pending_explosions.append({
+			"x": ex_pos_x,
+			"y": ex_pos_y,
+			"timer": 0.5,
+			"radius": radius,
+			"damage": damage
+		})
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		var remaining_explosions = []
+		var current_explosions = pending_explosions.duplicate()
+		pending_explosions.clear()
+
+		for explosion in current_explosions:
+			explosion["timer"] -= delta
+			if explosion["timer"] <= 0.0:
+				if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+					world.add_event("killstreak_explosion", {
+						"x": explosion["x"],
+						"y": explosion["y"],
+						"radius": explosion["radius"]
+					})
+
+				for b in balls:
+					var b_alive = true
+					var b_x = 0.0
+					var b_y = 0.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b_alive = b.get("alive", true)
+						b_x = b.get("x", 0.0)
+						b_y = b.get("y", 0.0)
+					else:
+						b_alive = b.alive
+						b_x = b.x
+						b_y = b.y
+
+					if b_alive:
+						var dx = b_x - explosion["x"]
+						var dy = b_y - explosion["y"]
+						var dist = sqrt(dx * dx + dy * dy)
+
+						if dist <= explosion["radius"]:
+							if typeof(b) == TYPE_DICTIONARY:
+								var hp = b.get("hp", 100.0)
+								hp -= explosion["damage"]
+								b["hp"] = hp
+								if hp <= 0.0:
+									b["alive"] = false
+									self.on_ball_died(world, b, null)
+							else:
+								if b.has_method("take_damage"):
+									b.take_damage(explosion["damage"], null)
+								else:
+									b.hp -= explosion["damage"]
+									if b.hp <= 0.0:
+										b.alive = false
+										self.on_ball_died(world, b, null)
+			else:
+				remaining_explosions.append(explosion)
+
+		for e in pending_explosions:
+			remaining_explosions.append(e)
+		pending_explosions = remaining_explosions
+
+GAME_MODES['killstreak_explosion'] = KillstreakExplosionMode.new()

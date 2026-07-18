@@ -2095,3 +2095,53 @@ def test_molten_rock_slows_and_burns():
 def test_frictionless_arena_modifier_registered_internal():
     from ai.game_modes import GAME_MODES
     assert "frictionless_arena_modifier" in GAME_MODES
+
+def test_killstreak_explosion_mode():
+    from ai.game_modes import GAME_MODES
+    assert "killstreak_explosion" in GAME_MODES
+
+    mode = GAME_MODES["killstreak_explosion"]
+
+    class MockWorld:
+        def __init__(self):
+            self.events = []
+        def add_event(self, event_type, data):
+            self.events.append((event_type, data))
+
+    class MockBall:
+        def __init__(self, bid, x, y, kills):
+            self.id = bid
+            self.x = x
+            self.y = y
+            self.kills = kills
+            self.alive = True
+            self.hp = 100.0
+
+    world = MockWorld()
+    killer = MockBall(1, 0.0, 0.0, 0)
+
+    # Test 1: Killstreak 0
+    victim = MockBall(2, 50.0, 50.0, 0)
+    mode.on_ball_died(world, victim, killer)
+    assert len(mode.pending_explosions) == 1
+    exp1 = mode.pending_explosions[0]
+    assert exp1["radius"] == 100.0  # 100 + (0 * 20)
+    assert exp1["damage"] == 30.0   # 30 + (0 * 15)
+
+    mode.pending_explosions.clear()
+
+    # Test 2: Killstreak 3
+    victim2 = MockBall(3, 150.0, 150.0, 3)
+    mode.on_ball_died(world, victim2, killer)
+    assert len(mode.pending_explosions) == 1
+    exp2 = mode.pending_explosions[0]
+    assert exp2["radius"] == 160.0  # 100 + (3 * 20)
+    assert exp2["damage"] == 75.0   # 30 + (3 * 15)
+
+    # Test 3: Tick triggers explosion and damages nearby ball
+    bystander = MockBall(4, 150.0, 150.0, 0)
+    balls = [killer, bystander]
+    mode.tick(world, [bystander], 0.6) # Timer is 0.5, so 0.6 will trigger it
+
+    assert len(mode.pending_explosions) == 0
+    assert bystander.hp == 25.0 # 100 - 75
