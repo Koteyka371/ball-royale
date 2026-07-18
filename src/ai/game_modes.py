@@ -12659,6 +12659,35 @@ class _MinefieldHazard:
         self.duration = duration
         self.active = True
 
+class MutantSafeZoneMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mutant Safe Zone"
+        self.description = "A battle royale zone where being in the danger zone not only deals DoT but also applies random positive and negative mutations to ball stats (speed, damage, perception)."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = b.x - self.zone_x
+                dy = b.y - self.zone_y
+                distance_to_center = math.sqrt(dx*dx + dy*dy)
+
+                if distance_to_center > self.zone_radius:
+                    # Random mutations
+                    if random.random() < 0.3 * delta:
+                        mut_type = random.choice(["speed", "damage", "perception"])
+                        mut_val = random.uniform(0.8, 1.2)
+                        if mut_type == "speed":
+                            b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * mut_val
+                        elif mut_type == "damage":
+                            b.base_damage_multiplier = getattr(b, "base_damage_multiplier", 1.0) * mut_val
+                        elif mut_type == "perception":
+                            b.base_perception_radius = getattr(b, "base_perception_radius", getattr(b, "perception_radius", 150.0)) * mut_val
+
 class MinefieldSafeZoneMode(SafeZoneMode):
     def __init__(self):
         super().__init__()
@@ -20094,6 +20123,7 @@ GAME_MODES = {
     "shrinking_boundary": ShrinkingBoundaryMode(),
     "inverse_safe_zone": InverseSafeZoneMode(),
     "safe_zone": SafeZoneMode(),
+    "mutant_safe_zone": MutantSafeZoneMode(),
     "micro_safe_zones": MicroSafeZonesMode(),
     "hex_grid_royale": HexGridRoyaleMode(),
     "minefield_safe_zone": MinefieldSafeZoneMode(),

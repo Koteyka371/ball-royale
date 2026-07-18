@@ -11667,6 +11667,75 @@ class ModifierZonesSafeZoneMode extends GameMode:
 		return null
 
 
+class MutantSafeZoneMode extends SafeZoneMode:
+	func _init() -> void:
+		name = "Mutant Safe Zone"
+		description = "A battle royale zone where being in the danger zone not only deals DoT but also applies random positive and negative mutations to ball stats (speed, damage, perception)."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = str(b.get("ball_type", ""))
+			else:
+				if "ball_type" in b:
+					b_type = str(b.ball_type)
+
+			if b_type == "spectator":
+				continue
+
+			var b_x = 0.0
+			var b_y = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				b_x = b.get("x", 0.0)
+				b_y = b.get("y", 0.0)
+			else:
+				b_x = b.get("position").x if b.get("position") != null else b.get("x")
+				b_y = b.get("position").y if b.get("position") != null else b.get("y")
+
+			var dx = b_x - zone_x
+			var dy = b_y - zone_y
+			var distance_to_center = sqrt(dx*dx + dy*dy)
+
+			if distance_to_center > zone_radius:
+				if randf() < 0.3 * delta:
+					var mut_options = ["speed", "damage", "perception"]
+					var mut_type = mut_options[randi() % mut_options.size()]
+					var mut_val = randf_range(0.8, 1.2)
+
+					if mut_type == "speed":
+						if typeof(b) == TYPE_DICTIONARY:
+							var cur_base_speed = b.get("base_speed", b.get("speed", 100.0))
+							b["base_speed"] = cur_base_speed * mut_val
+						else:
+							var cur_base_speed = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+							b.set("base_speed", cur_base_speed * mut_val)
+					elif mut_type == "damage":
+						if typeof(b) == TYPE_DICTIONARY:
+							var cur_base_dmg_mult = b.get("base_damage_multiplier", 1.0)
+							b["base_damage_multiplier"] = cur_base_dmg_mult * mut_val
+						else:
+							var cur_base_dmg_mult = b.get("base_damage_multiplier") if "base_damage_multiplier" in b else 1.0
+							b.set("base_damage_multiplier", cur_base_dmg_mult * mut_val)
+					elif mut_type == "perception":
+						if typeof(b) == TYPE_DICTIONARY:
+							var cur_base_perc = b.get("base_perception_radius", b.get("perception_radius", 150.0))
+							b["base_perception_radius"] = cur_base_perc * mut_val
+						else:
+							var cur_base_perc = b.get("base_perception_radius") if "base_perception_radius" in b else b.get("perception_radius", 150.0)
+							b.set("base_perception_radius", cur_base_perc * mut_val)
+
+
 class SafeZoneMode extends GameMode:
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -32521,6 +32590,7 @@ GAME_MODES = {
 	"shrinking_boundary": ShrinkingBoundaryMode.new(),
 	"inverse_safe_zone": InverseSafeZoneMode.new(),
 	"safe_zone": SafeZoneMode.new(),
+	"mutant_safe_zone": MutantSafeZoneMode.new(),
 	"micro_safe_zones": MicroSafeZonesMode.new(),
 	"hex_grid_royale": HexGridRoyaleMode.new(),
 	"minefield_safe_zone": MinefieldSafeZoneMode.new(),
