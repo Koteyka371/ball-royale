@@ -565,11 +565,37 @@ func _attempt_damage(attacker, target) -> void:
 
 		for h in world.arena.hazards:
 			var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
-			if h_kind == "orbital_debris":
+			if h_kind == "orbital_debris" or h_kind == "bone_wall":
 				var hx = float(h.x if "x" in h else h.get_meta("x"))
 				var hy = float(h.y if "y" in h else h.get_meta("y"))
 				var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 40.0))
-				if sqrt((t_x2 - hx)*(t_x2 - hx) + (t_y2 - hy)*(t_y2 - hy)) <= hr:
+
+				var l2 = (t_x2 - a_x2)*(t_x2 - a_x2) + (t_y2 - a_y2)*(t_y2 - a_y2)
+				var dist_to_line = 0.0
+				if l2 == 0.0:
+					dist_to_line = sqrt((hx - a_x2)*(hx - a_x2) + (hy - a_y2)*(hy - a_y2))
+				else:
+					var t = max(0.0, min(1.0, ((hx - a_x2) * (t_x2 - a_x2) + (hy - a_y2) * (t_y2 - a_y2)) / l2))
+					var proj_x = a_x2 + t * (t_x2 - a_x2)
+					var proj_y = a_y2 + t * (t_y2 - a_y2)
+					dist_to_line = sqrt((hx - proj_x)*(hx - proj_x) + (hy - proj_y)*(hy - proj_y))
+
+				if dist_to_line <= hr:
+					if h_kind == "bone_wall":
+						var dmg = 10.0
+						if "damage" in attacker: dmg = attacker.damage
+						elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"): dmg = attacker["damage"]
+
+						if typeof(h) == TYPE_DICTIONARY and h.has("hp"):
+							h["hp"] -= dmg
+							if h["hp"] <= 0:
+								h["active"] = false
+						elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+							var current_hp = h.get_meta("hp") if h.has_meta("hp") else 300.0
+							var new_hp = current_hp - dmg
+							h.set_meta("hp", new_hp)
+							if new_hp <= 0:
+								h.set_meta("active", false)
 					return
 			elif h_kind == "slow_motion_zone" or h_kind == "time_bubble":
 				var hx = float(h.x if "x" in h else h.get_meta("x"))
@@ -13479,6 +13505,67 @@ func execute(strategy: String, delta: float):
                                 else:
                                     if self.ball.has_method("set_meta"):
                                         self.ball.set_meta("stutter_timer", 1.0)
+                        continue
+                    elif hazard.kind == "bone_wall":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+                        if d < (b_rad + hazard.radius) and d > 0:
+                            var nx = dx / d
+                            var ny = dy / d
+                            var overlap = (b_rad + hazard.radius) - d
+
+                            var b_type = ""
+                            if "ball_type" in self.ball: b_type = str(self.ball.ball_type).to_lower()
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = str(self.ball["ball_type"]).to_lower()
+
+                            var is_projectile = (b_type == "projectile" or b_type == "spell")
+                            if "is_projectile" in self.ball and self.ball.is_projectile: is_projectile = true
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_projectile") and self.ball["is_projectile"]: is_projectile = true
+
+                            if is_projectile:
+                                if "alive" in self.ball: self.ball.alive = false
+                                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["alive"] = false
+                                if "hp" in self.ball: self.ball.hp = 0
+                                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = 0
+
+                                var dmg = 10.0
+                                if "damage" in self.ball: dmg = self.ball.damage
+                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"): dmg = self.ball["damage"]
+
+                                if typeof(hazard) == TYPE_DICTIONARY and hazard.has("hp"):
+                                    hazard["hp"] -= dmg
+                                    if hazard["hp"] <= 0:
+                                        hazard["active"] = false
+                                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    var current_hp = hazard.get_meta("hp") if hazard.has_meta("hp") else 300.0
+                                    var new_hp = current_hp - dmg
+                                    hazard.set_meta("hp", new_hp)
+                                    if new_hp <= 0:
+                                        hazard.active = false
+                                        hazard.set_meta("active", false)
+                            else:
+                                self.ball.x += nx * overlap
+                                self.ball.y += ny * overlap
+
+                                var dmg = 10.0
+                                if "damage" in self.ball: dmg = self.ball.damage
+                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"): dmg = self.ball["damage"]
+
+                                if typeof(hazard) == TYPE_DICTIONARY and hazard.has("hp"):
+                                    hazard["hp"] -= dmg * delta * 5.0
+                                    if hazard["hp"] <= 0:
+                                        hazard["active"] = false
+                                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    var current_hp = hazard.get_meta("hp") if hazard.has_meta("hp") else 300.0
+                                    var new_hp = current_hp - dmg * delta * 5.0
+                                    hazard.set_meta("hp", new_hp)
+                                    if new_hp <= 0:
+                                        hazard.active = false
+                                        hazard.set_meta("active", false)
                         continue
                     elif hazard.kind == "breakable_wall":
                         var dx = self.ball.x - hazard.x
