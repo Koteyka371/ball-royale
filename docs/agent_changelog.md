@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1049] Laser Walls — *2026-07-18 02:58:44 UTC*
+
+Introduce rotating laser walls that sweep across the arena, forcing players to move in specific patterns to avoid damage.
+
+---
+
 ## [idea-1081] Sticky Bomb Hazard — *2026-07-18 02:36:05 UTC*
 
 Introduce a new 'Sticky Bomb' item or hazard. If a player touches it, it attaches to them. They have 3 seconds to pass it to another player before it explodes, dealing heavy damage.
