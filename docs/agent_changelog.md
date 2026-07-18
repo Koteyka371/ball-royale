@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1117] Decoy Network Passive — *2026-07-18 04:38:20 UTC*
+
+A new passive ability that connects all active decoys on the field via an energy beam. Enemies that cross the beam take constant low damage and have their movement speed reduced by 30%.
+
+---
+
 ## [idea-1095] Necromancer Soul Siphon Aura — *2026-07-18 04:32:21 UTC*
 
 Necromancer emits an aura that deals damage to nearby enemies over time and converts a portion of the damage dealt into bone armor stacks or heals the Necromancer.

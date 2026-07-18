@@ -19158,7 +19158,7 @@
     },
     {
       "id": "idea-1117",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Network Passive",
@@ -30088,6 +30088,23 @@
         "src/ai/friction_zone.py",
         "src/ai/friction_zone.gd",
         "tests/test_friction_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1759",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetize Booster",
+      "description": "A booster that applies a magnetic aura to the player, gradually pulling in nearby boosters and enemies towards them.",
+      "allowed_paths": [
+        "src/ai/magnetize_booster.py",
+        "src/ai/magnetize_booster.gd",
+        "tests/test_magnetize_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
