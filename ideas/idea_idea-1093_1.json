@@ -1,0 +1,4 @@
+{
+  "title": "Sticky Bomb Booster",
+  "description": "A new booster that when collected attaches a ticking bomb to the player's next target upon hitting them. The bomb deals area damage when it goes off."
+}
