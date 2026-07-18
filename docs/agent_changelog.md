@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1138] Dynamic Spotlight Hazards — *2026-07-18 22:29:07 UTC*
+
+In blackout mode or night stages, introduce 'spotlight' hazards that roam the arena. Standing in a spotlight grants a massive vision boost and restores stamina, but reveals your position to all players and makes you take 1.5x damage from attacks.
+
+---
+
 ## [idea-1136] Magnetic Repulsion Field Mode — *2026-07-18 22:29:03 UTC*
 
 A game mode where all balls naturally repel each other slightly. The strength of repulsion increases as they get closer, making it difficult to land melee attacks and creating a pinball-like arena effect during high-speed collisions.
