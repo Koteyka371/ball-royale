@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Mode",
+  "description": "A game mode where balls are randomly paired up. Any damage or healing applied to one ball is also applied to its paired partner. If one ball dies, the other receives a massive temporary boost in stats but begins taking damage over time."
+}
