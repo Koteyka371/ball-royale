@@ -14946,7 +14946,71 @@ class BlackoutMode extends GameMode:
 					var shadow = load("res://src/arena/procedural_arena.gd").Hazard.new(world.arena.hazards.size() + 9000, bx, by, 15.0, "shadow_booster", 0.0)
 					world.arena.hazards.append(shadow)
 
+			if not self.has_meta("spotlight_timer"):
+				self.set_meta("spotlight_timer", 0.0)
+
+			var stimer = float(self.get_meta("spotlight_timer"))
+			stimer += delta
+			if stimer >= 3.0:
+				stimer = 0.0
+				if world != null and "arena" in world and "hazards" in world.arena:
+					var spotlight_count = 0
+					for h in world.arena.hazards:
+						if "kind" in h and h.kind == "spotlight":
+							spotlight_count += 1
+					if spotlight_count < 3 and randf() < 0.5:
+						var bx = randf_range(100.0, world.arena.width - 100.0) if "width" in world.arena else randf_range(100.0, 900.0)
+						var by = randf_range(100.0, world.arena.height - 100.0) if "height" in world.arena else randf_range(100.0, 900.0)
+						var spotlight = load("res://src/arena/procedural_arena.gd").Hazard.new(world.arena.hazards.size() + 9500, bx, by, 60.0, "spotlight", 0.0)
+						spotlight.set_meta("vx", randf_range(-50.0, 50.0))
+						spotlight.set_meta("vy", randf_range(-50.0, 50.0))
+						world.arena.hazards.append(spotlight)
+			self.set_meta("spotlight_timer", stimer)
+
+			if world != null and "arena" in world and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					if "kind" in h and h.kind == "spotlight":
+						var vx = float(h.get_meta("vx")) if h.has_method("get_meta") and h.has_meta("vx") else 0.0
+						var vy = float(h.get_meta("vy")) if h.has_method("get_meta") and h.has_meta("vy") else 0.0
+						h.x += vx * delta
+						h.y += vy * delta
+						var aw = world.arena.width if "width" in world.arena else 1000.0
+						var ah = world.arena.height if "height" in world.arena else 1000.0
+						if h.x - h.radius < 0:
+							h.x = h.radius
+							if h.has_method("set_meta"): h.set_meta("vx", -vx)
+						elif h.x + h.radius > aw:
+							h.x = aw - h.radius
+							if h.has_method("set_meta"): h.set_meta("vx", -vx)
+						if h.y - h.radius < 0:
+							h.y = h.radius
+							if h.has_method("set_meta"): h.set_meta("vy", -vy)
+						elif h.y + h.radius > ah:
+							h.y = ah - h.radius
+							if h.has_method("set_meta"): h.set_meta("vy", -vy)
+
 		for b in balls:
+			var in_spotlight = false
+			if world != null and "arena" in world and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					if "kind" in h and h.kind == "spotlight":
+						var dx = b.x - h.x
+						var dy = b.y - h.y
+						var dist = sqrt(dx*dx + dy*dy)
+						var brad = b.radius if "radius" in b else 15.0
+						if dist <= h.radius + brad:
+							in_spotlight = true
+							if "stamina" in b and "max_stamina" in b:
+								b.stamina = min(b.max_stamina, b.stamina + 50.0 * delta)
+							if b.has_method("set_meta"):
+								b.set_meta("position_revealed", true)
+								b.set_meta("spotlight_damage_multiplier", 1.5)
+							break
+
+			if not in_spotlight and b.has_method("set_meta"):
+				b.set_meta("position_revealed", false)
+				b.set_meta("spotlight_damage_multiplier", 1.0)
+
 			if b.alive and b.ball_type != "spectator":
 				if is_blackout:
 					var has_night_vision = false
@@ -14955,7 +15019,7 @@ class BlackoutMode extends GameMode:
 					if "night_vision_active" in b and b.night_vision_active:
 						has_night_vision = true
 
-					if has_night_vision:
+					if has_night_vision or in_spotlight:
 						var base_perc = 250.0
 						if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
 							base_perc = float(b.get_meta("base_perception_radius"))
