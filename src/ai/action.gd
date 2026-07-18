@@ -8283,6 +8283,25 @@ func execute(strategy: String, delta: float):
                                             elif other.has_method("set_meta"):
                                                 other.set_meta("stutter_timer", 1.5)
 
+                                            if "is_blinded" in other:
+                                                other.is_blinded = true
+                                                var current_bt = 0.0
+                                                if "blindness_timer" in other: current_bt = other.blindness_timer
+                                                other.blindness_timer = max(current_bt, 3.0)
+                                                if "perception_radius" in other:
+                                                    if not "base_perception_radius" in other:
+                                                        other.base_perception_radius = other.perception_radius
+                                                    other.perception_radius = other.base_perception_radius * 0.2
+                                            elif other.has_method("set_meta"):
+                                                other.set_meta("is_blinded", true)
+                                                var current_bt = 0.0
+                                                if other.has_meta("blindness_timer"): current_bt = other.get_meta("blindness_timer")
+                                                other.set_meta("blindness_timer", max(current_bt, 3.0))
+                                                if other.has_meta("perception_radius"):
+                                                    if not other.has_meta("base_perception_radius"):
+                                                        other.set_meta("base_perception_radius", other.get_meta("perception_radius"))
+                                                    other.set_meta("perception_radius", other.get_meta("base_perception_radius") * 0.2)
+
                                             if world != null and "events" in world:
                                                 world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": other.x, "y": other.y, "intensity": 0.5}})
 

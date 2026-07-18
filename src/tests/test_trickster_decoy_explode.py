@@ -26,6 +26,9 @@ def test_decoy_explosion_trickster_confuse():
     enemy.stutter_timer = 0.0
     enemy.is_confused = False
     enemy.confusion_timer = 0.0
+    enemy.is_blinded = False
+    enemy.blindness_timer = 0.0
+    enemy.perception_radius = 250.0
 
     world = MockWorld()
     world.balls = [owner, decoy, enemy]
@@ -44,6 +47,9 @@ def test_decoy_explosion_trickster_confuse():
     assert getattr(decoy, "_decoy_exploded", False) is True
     assert enemy.is_confused is True
     assert enemy.confusion_timer == 3.0
+    assert enemy.is_blinded is True
+    assert enemy.blindness_timer == 3.0
+    assert enemy.perception_radius == 50.0
 
 def test_decoy_explosion_no_confuse():
     owner = MockBall(x=10, y=10)
@@ -69,6 +75,9 @@ def test_decoy_explosion_no_confuse():
     enemy.stutter_timer = 0.0
     enemy.is_confused = False
     enemy.confusion_timer = 0.0
+    enemy.is_blinded = False
+    enemy.blindness_timer = 0.0
+    enemy.perception_radius = 250.0
 
     world = MockWorld()
     world.balls = [owner, decoy, enemy]
@@ -86,6 +95,9 @@ def test_decoy_explosion_no_confuse():
     assert getattr(decoy, "_decoy_exploded", False) is True
     assert enemy.is_confused is True
     assert enemy.confusion_timer == 2.0
+    assert enemy.is_blinded is True
+    assert enemy.blindness_timer == 3.0
+    assert enemy.perception_radius == 50.0
 
 def test_decoy_explosion_all_confuse():
     owner = MockBall(x=10, y=10)
@@ -153,6 +165,9 @@ def test_decoy_explosion_trickster_fragments():
     enemy.stutter_timer = 0.0
     enemy.is_confused = False
     enemy.confusion_timer = 0.0
+    enemy.is_blinded = False
+    enemy.blindness_timer = 0.0
+    enemy.perception_radius = 250.0
 
     class MockArena:
         def __init__(self):
@@ -173,6 +188,9 @@ def test_decoy_explosion_trickster_fragments():
         random.random = original_random
 
     assert getattr(decoy, "_decoy_exploded", False) is True
+    assert getattr(enemy, "is_blinded", False) is True
+    assert getattr(enemy, "blindness_timer", 0.0) == 3.0
+    assert getattr(enemy, "perception_radius", 250.0) == 50.0
 
     # Verify fragmentation traps are spawned
     fragment_traps = [h for h in world.arena.hazards if getattr(h, "kind", "") == "fragmentation_trap"]

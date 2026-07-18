@@ -1,0 +1,4 @@
+{
+  "title": "Holo-Decoy Relay System",
+  "description": "Trickster decoys act as relay nodes for skills and projectiles. If a Trickster fires a projectile through their decoy, the decoy also fires a secondary, slightly weaker version of the projectile in the same direction, allowing for intricate crossfires and area denial."
+}
