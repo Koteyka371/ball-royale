@@ -25515,7 +25515,7 @@ class MimicCloneSwapMode(GameMode):
             # Halve stats permanently
             ball.max_hp = getattr(ball, "max_hp", 100.0) / 2.0
             ball.hp = ball.max_hp
-            ball.base_speed = getattr(ball, "base_speed", 100.0)
+            ball.base_speed = getattr(ball, "base_speed", 100.0) / 2.0
             ball.base_damage_multiplier = getattr(ball, "base_damage_multiplier", 1.0) / 2.0
             ball.has_used_mimic_revive = True
 

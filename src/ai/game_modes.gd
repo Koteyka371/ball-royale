@@ -39431,6 +39431,8 @@ class MimicCloneSwapMode extends GameMode:
 				ball["hp"] = max_hp
 				var base_dmg = ball.get("base_damage_multiplier", 1.0) / 2.0
 				ball["base_damage_multiplier"] = base_dmg
+				var base_spd = ball.get("base_speed", 100.0) / 2.0
+				ball["base_speed"] = base_spd
 				ball["has_used_mimic_revive"] = true
 			else:
 				if "alive" in ball: ball.alive = true
@@ -39446,6 +39448,11 @@ class MimicCloneSwapMode extends GameMode:
 				if "base_damage_multiplier" in ball:
 					base_dmg = ball.base_damage_multiplier / 2.0
 					ball.base_damage_multiplier = base_dmg
+
+				var base_spd = 100.0
+				if "base_speed" in ball:
+					base_spd = ball.base_speed / 2.0
+					ball.base_speed = base_spd
 
 				if "has_used_mimic_revive" in ball: ball.has_used_mimic_revive = true
 				elif ball.has_method("set_meta"): ball.set_meta("has_used_mimic_revive", true)

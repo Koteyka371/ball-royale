@@ -43,6 +43,7 @@ def test_damage_link_booster_collection():
     world.arena.is_in_safe_zone.return_value = True
     world.arena.clamp_position.return_value = (0, 0, False)
     world.arena.danger_grid = {}
+    world.flare_light_timer = 0.0
 
     booster = FakeHazard("damage_link_booster", 5.0, 0.0)
     world.arena.hazards = [booster]
@@ -72,6 +73,7 @@ def test_damage_link_booster_damage_sharing():
     world.arena.is_in_safe_zone.return_value = True
     world.arena.clamp_position.return_value = (0, 0, False)
     world.arena.danger_grid = {}
+    world.flare_light_timer = 0.0
 
     action = Action(ball, world)
 

@@ -67,6 +67,7 @@ def test_mimic_clone_swap_mode():
     assert b1.max_hp == 50.0
     assert b1.hp == 50.0
     assert b1.base_damage_multiplier == 0.5
+    assert b1.base_speed == 50.0
     assert getattr(b1, "has_used_mimic_revive", False) == True
 
     # Clone is dead

@@ -1,4 +1,4 @@
 {
-  "title": "Quantum Entanglement Skill",
-  "description": "A new active skill that allows a player to briefly link their physics state with a targeted enemy. For the next 3 seconds, any damage taken, momentum gained, or status effects applied to the player are also applied to the entangled enemy, creating high-risk, high-reward plays."
+  "title": "Doppelganger Infection Mode",
+  "description": "Players can infect other players with a Doppelganger virus. When an infected player dies, they spawn an AI clone of themselves that fights for the team that infected them. If a team is completely wiped out, the clones will go rogue and attack anyone."
 }
