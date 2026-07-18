@@ -21338,6 +21338,9 @@ class SoulLinkMode extends GameMode:
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		.tick(world, balls, delta)
 
+		var hp_diffs = {}
+		var eff_diffs = {}
+
 		for b in balls:
 			var is_alive = b.alive if "alive" in b else false
 			if not is_alive:
@@ -21352,6 +21355,32 @@ class SoulLinkMode extends GameMode:
 
 			var state = prev_state[b_id]
 
+			var curr_hp = b.hp if "hp" in b else 100.0
+			if curr_hp < state.hp:
+				hp_diffs[b_id] = state.hp - curr_hp
+
+			eff_diffs[b_id] = {}
+			for eff in status_effects:
+				var prev_val = state[eff] if state.has(eff) else 0.0
+
+				var curr_val = 0.0
+				if eff in b:
+					curr_val = b[eff]
+				elif b.has_meta(eff):
+					curr_val = b.get_meta(eff)
+
+				if curr_val > prev_val:
+					eff_diffs[b_id][eff] = curr_val - prev_val
+
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			if not is_alive:
+				continue
+
+			var b_id = b.id if "id" in b else null
+			if b_id == null:
+				continue
+
 			var target = null
 			if b is Object and b.has_meta("soul_link_target"):
 				target = b.get_meta("soul_link_target")
@@ -21363,10 +21392,8 @@ class SoulLinkMode extends GameMode:
 				target_alive = target.alive if "alive" in target else false
 
 			if target != null and target_alive:
-				# Check HP
-				var curr_hp = b.hp if "hp" in b else 100.0
-				if curr_hp < state.hp:
-					var damage = state.hp - curr_hp
+				if hp_diffs.has(b_id):
+					var damage = hp_diffs[b_id]
 					var target_curr_hp = target.hp if "hp" in target else 100.0
 					if target_curr_hp > 0:
 						if target is Object:
@@ -21388,24 +21415,10 @@ class SoulLinkMode extends GameMode:
 								else:
 									target["killer"] = "soul_link"
 
-						var target_id = target.id if "id" in target else null
-						if target_id != null and prev_state.has(target_id):
-							var target_hp_now = target.hp if "hp" in target else 0.0
-							prev_state[target_id].hp = target_hp_now
-
-				# Check Status Effects
-				for eff in status_effects:
-					var prev_val = state[eff] if state.has(eff) else 0.0
-
-					var curr_val = 0.0
-					if eff in b:
-						curr_val = b[eff]
-					elif b.has_meta(eff):
-						curr_val = b.get_meta(eff)
-
-					if curr_val > prev_val:
-						var diff = curr_val - prev_val
-
+				if eff_diffs.has(b_id):
+					var diffs_for_b = eff_diffs[b_id]
+					for eff in diffs_for_b.keys():
+						var diff = diffs_for_b[eff]
 						var target_val = 0.0
 						if eff in target:
 							target_val = target[eff]
@@ -21420,17 +21433,23 @@ class SoulLinkMode extends GameMode:
 						else:
 							target[eff] = target_val + diff
 
-						var target_id = target.id if "id" in target else null
-						if target_id != null and prev_state.has(target_id):
-							prev_state[target_id][eff] = target_val + diff
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			if not is_alive:
+				continue
 
-			# Update current state
-			state.hp = b.hp if "hp" in b else 100.0
-			for eff in status_effects:
-				if eff in b:
-					state[eff] = b[eff]
-				elif b.has_meta(eff):
-					state[eff] = b.get_meta(eff)
+			var b_id = b.id if "id" in b else null
+			if b_id == null:
+				continue
+
+			if prev_state.has(b_id):
+				var state = prev_state[b_id]
+				state.hp = b.hp if "hp" in b else 100.0
+				for eff in status_effects:
+					if eff in b:
+						state[eff] = b[eff]
+					elif b.has_meta(eff):
+						state[eff] = b.get_meta(eff)
 				else:
 					state[eff] = 0.0
 

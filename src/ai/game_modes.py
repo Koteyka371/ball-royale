@@ -20346,6 +20346,9 @@ class SoulLinkMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
 
+        hp_diffs = {}
+        eff_diffs = {}
+
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
@@ -20356,13 +20359,26 @@ class SoulLinkMode(GameMode):
                 self._init_prev_state(b)
 
             state = self.prev_state[b.id]
-            target = getattr(b, "soul_link_target", None)
 
+            curr_hp = getattr(b, "hp", 100.0)
+            if curr_hp < state.hp:
+                hp_diffs[b.id] = state.hp - curr_hp
+
+            eff_diffs[b.id] = {}
+            for eff in self.status_effects:
+                prev_val = getattr(state, eff, 0.0)
+                curr_val = getattr(b, eff, 0.0)
+                if curr_val > prev_val:
+                    eff_diffs[b.id][eff] = curr_val - prev_val
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            target = getattr(b, "soul_link_target", None)
             if target and getattr(target, "alive", False):
-                # Check HP
-                curr_hp = getattr(b, "hp", 100.0)
-                if curr_hp < state.hp:
-                    damage = state.hp - curr_hp
+                if b.id in hp_diffs:
+                    damage = hp_diffs[b.id]
                     target_curr_hp = getattr(target, "hp", 100.0)
                     if target_curr_hp > 0:
                         target.hp = target_curr_hp - damage
@@ -20371,24 +20387,19 @@ class SoulLinkMode(GameMode):
                             target.alive = False
                             target.killer = getattr(b, "killer", "soul_link")
 
-                        if target.id in self.prev_state:
-                            self.prev_state[target.id].hp = target.hp
-
-                # Check Status Effects
-                for eff in self.status_effects:
-                    prev_val = getattr(state, eff, 0.0)
-                    curr_val = getattr(b, eff, 0.0)
-                    if curr_val > prev_val:
-                        diff = curr_val - prev_val
+                if b.id in eff_diffs:
+                    for eff, diff in eff_diffs[b.id].items():
                         target_val = getattr(target, eff, 0.0)
                         setattr(target, eff, target_val + diff)
-                        if target.id in self.prev_state:
-                            setattr(self.prev_state[target.id], eff, target_val + diff)
 
-            # Update current state
-            state.hp = getattr(b, "hp", 100.0)
-            for eff in self.status_effects:
-                setattr(state, eff, getattr(b, eff, 0.0))
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            if getattr(b, "id", None) in self.prev_state:
+                state = self.prev_state[b.id]
+                state.hp = getattr(b, "hp", 100.0)
+                for eff in self.status_effects:
+                    setattr(state, eff, getattr(b, eff, 0.0))
 
 
 class ClanTournamentMode(GameMode):

@@ -98,3 +98,32 @@ def test_soul_link_tick_status_sharing():
     # Check no reflection back
     mode.tick(world, balls, 0.1)
     assert b1.stun_timer == 2.0
+
+def test_soul_link_tick_simultaneous_damage():
+    mode = SoulLinkMode()
+    world = MagicMock()
+    del world.leaderboard_manager
+    del world.profile_manager
+
+    b1 = MockBall(1)
+    b2 = MockBall(2)
+    balls = [b1, b2]
+
+    mode.setup(world, balls)
+
+    # Both take 20 damage on the same tick
+    b1.hp = 80.0
+    b2.hp = 80.0
+    mode.tick(world, balls, 0.1)
+
+    # Both should have taken the 20 damage from their partner, resulting in 60.0
+    assert b1.hp == 60.0
+    assert b2.hp == 60.0
+
+    # Ensure status effects don't bounce infinitely either
+    b1.stun_timer = 2.0
+    b2.stun_timer = 2.0
+    mode.tick(world, balls, 0.1)
+
+    assert b1.stun_timer == 4.0
+    assert b2.stun_timer == 4.0
