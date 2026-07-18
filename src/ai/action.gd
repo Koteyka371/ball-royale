@@ -28416,37 +28416,56 @@ func _update_skill_timer(delta: float):
                                 hazard.x = cax
                                 hazard.y = cay
 
-                            if self.world != null and "balls" in self.world:
-                                for b in self.world.balls:
-                                    var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
-                                    if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
-                                    var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
-                                    if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
-                                    if b_alive and bid != attached_id:
-                                        var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
-                                        var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
-                                        if typeof(b) == TYPE_DICTIONARY:
-                                            bx = b.get("x", 0.0)
-                                            by = b.get("y", 0.0)
-                                        var hx = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
-                                        var hy = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
-                                        if typeof(hazard) == TYPE_DICTIONARY:
-                                            hx = hazard.get("x", 0.0)
-                                            hy = hazard.get("y", 0.0)
+                            var pass_cooldown = hazard.pass_cooldown if "pass_cooldown" in hazard else (hazard.get_meta("pass_cooldown") if hazard.has_method("get_meta") and hazard.has_meta("pass_cooldown") else 0.0)
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                pass_cooldown = hazard.get("pass_cooldown", 0.0)
 
-                                        var dx = hx - bx
-                                        var dy = hy - by
-                                        if dx * dx + dy * dy < 40.0 * 40.0:
+                            if pass_cooldown > 0:
+                                pass_cooldown -= delta
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["pass_cooldown"] = pass_cooldown
+                                elif hazard.has_method("set_meta"):
+                                    hazard.set_meta("pass_cooldown", pass_cooldown)
+                                elif "pass_cooldown" in hazard:
+                                    hazard.pass_cooldown = pass_cooldown
+                            else:
+                                if self.world != null and "balls" in self.world:
+                                    for b in self.world.balls:
+                                        var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+                                        if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
+                                        var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
+                                        if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+                                        if b_alive and bid != attached_id:
+                                            var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+                                            var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                bx = b.get("x", 0.0)
+                                                by = b.get("y", 0.0)
+                                            var hx = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
+                                            var hy = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
                                             if typeof(hazard) == TYPE_DICTIONARY:
-                                                hazard["attached_id"] = bid
-                                                hazard["duration"] = 3.0
-                                            elif hazard.has_method("set_meta"):
-                                                hazard.set_meta("attached_id", bid)
-                                                hazard.set_meta("duration", 3.0)
-                                            elif "attached_id" in hazard:
-                                                hazard.attached_id = bid
-                                                hazard.duration = 3.0
-                                            break
+                                                hx = hazard.get("x", 0.0)
+                                                hy = hazard.get("y", 0.0)
+
+                                            var dx = hx - bx
+                                            var dy = hy - by
+                                            if dx * dx + dy * dy < 40.0 * 40.0:
+                                                if typeof(hazard) == TYPE_DICTIONARY:
+                                                    hazard["attached_id"] = bid
+                                                    hazard["duration"] = 3.0
+                                                    hazard["pass_cooldown"] = 0.5
+                                                elif hazard.has_method("set_meta"):
+                                                    hazard.set_meta("attached_id", bid)
+                                                    hazard.set_meta("duration", 3.0)
+                                                    hazard.set_meta("pass_cooldown", 0.5)
+                                                elif "attached_id" in hazard:
+                                                    hazard.attached_id = bid
+                                                    hazard.duration = 3.0
+                                                    if "pass_cooldown" in hazard:
+                                                        hazard.pass_cooldown = 0.5
+                                                    elif hazard.has_method("set_meta"):
+                                                        hazard.set_meta("pass_cooldown", 0.5)
+                                                break
                         else:
                             if typeof(hazard) == TYPE_DICTIONARY: hazard["attached_id"] = null
                             elif hazard.has_method("set_meta"): hazard.set_meta("attached_id", null)

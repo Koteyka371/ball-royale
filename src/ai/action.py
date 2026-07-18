@@ -2871,14 +2871,19 @@ class Action:
                             hazard.x = current_attached.x
                             hazard.y = current_attached.y
 
-                            if hasattr(self.world, "balls"):
-                                for b in self.world.balls:
-                                    if getattr(b, "alive", True) and getattr(b, "id", None) != attached_id:
-                                        dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
-                                        if dist_sq < 40.0**2:
-                                            hazard.attached_id = getattr(b, "id", None)
-                                            hazard.duration = 3.0
-                                            break
+                            pass_cooldown = getattr(hazard, "pass_cooldown", 0.0)
+                            if pass_cooldown > 0:
+                                hazard.pass_cooldown = pass_cooldown - delta
+                            else:
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "alive", True) and getattr(b, "id", None) != attached_id:
+                                            dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                            if dist_sq < 40.0**2:
+                                                hazard.attached_id = getattr(b, "id", None)
+                                                hazard.duration = 3.0
+                                                hazard.pass_cooldown = 0.5
+                                                break
                         else:
                             hazard.attached_id = None
 
