@@ -12188,10 +12188,17 @@ func execute(strategy: String, delta: float):
                                 weather = self.world.arena.weather
 
                             if trap_variant == "normal":
-                                if weather == "blizzard" or weather == "snow":
+                                if weather == "blizzard" or weather == "snow" or weather == "ice":
                                     trap_variant = "freeze"
+                                    hazard.kind = "ice_patch"
                                 elif weather == "thunderstorm":
                                     trap_variant = "emp_trap"
+                                elif weather == "sandstorm" or weather == "desert":
+                                    hazard.kind = "quicksand"
+                                elif weather == "rain":
+                                    hazard.kind = "mud_puddle"
+                                elif weather == "heatwave":
+                                    hazard.kind = "lava_pool"
 
                             if trap_variant == "poison":
                                 var poison_damage = 5.0 * delta

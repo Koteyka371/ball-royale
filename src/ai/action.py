@@ -6536,10 +6536,17 @@ class Action:
                                     weather = getattr(self.world.arena, "weather", "")
 
                                 if trap_variant == "normal":
-                                    if weather in ["blizzard", "snow"]:
+                                    if weather in ["blizzard", "snow", "ice"]:
                                         trap_variant = "freeze"
+                                        hazard.kind = "ice_patch"
                                     elif weather == "thunderstorm":
                                         trap_variant = "emp_trap"
+                                    elif weather in ["sandstorm", "desert"]:
+                                        hazard.kind = "quicksand"
+                                    elif weather == "rain":
+                                        hazard.kind = "mud_puddle"
+                                    elif weather == "heatwave":
+                                        hazard.kind = "lava_pool"
 
                                 if trap_variant == "poison":
                                     # Poison: no slow, but take DoT (e.g. 5 damage per second)
