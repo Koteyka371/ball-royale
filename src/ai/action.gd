@@ -21482,6 +21482,45 @@ func _use_skill():
         if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
             self.ball.use_skill()
 
+        if skill_name in ["dash", "sonar_ping", "arena_shout", "explosion", "yeti_roar", "thumper", "stamina_dash"]:
+            if typeof(world) == TYPE_OBJECT and world.has_method("get_arena"):
+                var arena = world.call("get_arena")
+                if arena != null and "hazards" in arena:
+                    for h in arena.hazards:
+                        var kind = ""
+                        if typeof(h) == TYPE_DICTIONARY and "kind" in h: kind = h.kind
+                        elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+
+                        if kind == "sound_mine":
+                            var active = true
+                            if typeof(h) == TYPE_DICTIONARY and "active" in h: active = h.active
+                            elif typeof(h) == TYPE_OBJECT and "active" in h: active = h.active
+                            if active:
+                                var h_x = 0.0
+                                if typeof(h) == TYPE_DICTIONARY and "x" in h: h_x = h.x
+                                elif typeof(h) == TYPE_OBJECT and "x" in h: h_x = h.x
+                                var h_y = 0.0
+                                if typeof(h) == TYPE_DICTIONARY and "y" in h: h_y = h.y
+                                elif typeof(h) == TYPE_OBJECT and "y" in h: h_y = h.y
+                                var radius = 50.0
+                                if typeof(h) == TYPE_DICTIONARY and "radius" in h: radius = h.radius
+                                elif typeof(h) == TYPE_OBJECT and "radius" in h: radius = h.radius
+
+                                var my_x = 0.0
+                                if "x" in self.ball: my_x = self.ball.x
+                                var my_y = 0.0
+                                if "y" in self.ball: my_y = self.ball.y
+
+                                if (h_x - my_x) * (h_x - my_x) + (h_y - my_y) * (h_y - my_y) < radius * radius:
+                                    if typeof(h) == TYPE_DICTIONARY:
+                                        h.active = false
+                                        h.is_exploded = true
+                                    elif typeof(h) == TYPE_OBJECT:
+                                        if "active" in h: h.active = false
+                                        if "is_exploded" in h: h.is_exploded = true
+                                    if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                                        world.add_event("explosion", {"x": h_x, "y": h_y, "radius": radius + 30.0, "damage": 50.0})
+
         # Synergy Logic
         var allies = []
         if self.world.has("balls"):

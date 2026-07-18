@@ -11524,6 +11524,16 @@ class Action:
             if hasattr(self.ball, "active_skill"):
                 skill_name = self.ball.active_skill
 
+            if skill_name in ("dash", "sonar_ping", "arena_shout", "explosion", "yeti_roar", "thumper", "stamina_dash"):
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for hazard in self.world.arena.hazards:
+                        if getattr(hazard, "kind", "") == "sound_mine" and getattr(hazard, "active", True):
+                            if (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2 < getattr(hazard, "radius", 50.0)**2:
+                                hazard.active = False
+                                hazard.is_exploded = True
+                                if hasattr(self.world, "add_event"):
+                                    self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": getattr(hazard, "radius", 50.0) + 30.0, "damage": 50.0})
+
             # Synergy Logic
             allies = [b for b in getattr(self.world, "balls", []) if getattr(b, "id", None) != self.ball.id and getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True)]
             synergy_multiplier = 1.0
