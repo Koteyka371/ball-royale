@@ -1284,7 +1284,8 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
-        if getattr(self.world, 'flare_light_timer', 0.0) > 0.0:
+        flare_timer = getattr(self.world, 'flare_light_timer', 0.0)
+        if isinstance(flare_timer, (int, float)) and flare_timer > 0.0:
             # We decrement based on number of active balls so the total drain matches delta roughly
             ball_count = max(1, len(getattr(self.world, 'balls', [1])))
             self.world.flare_light_timer -= delta / ball_count
