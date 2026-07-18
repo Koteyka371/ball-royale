@@ -10330,6 +10330,17 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "tether_booster":
+                    enemies = self._get_enemies()
+                    if enemies:
+                        target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        self.ball.tether_booster_timer = 3.0
+                        self.ball.tether_booster_target = target
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "decoy_trap_booster":
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = max(getattr(self.ball, 'stealth_drone_timer', 0.0), 3.0)
@@ -16068,6 +16079,22 @@ class Action:
                 else:
                     self.ball.leech_tether_timer = 0.0
             self.ball.leech_tether_timer = max(0.0, getattr(self.ball, "leech_tether_timer", 0.0) - delta)
+
+        tether_booster_timer = getattr(self.ball, "tether_booster_timer", 0.0)
+        if tether_booster_timer > 0:
+            target = getattr(self.ball, "tether_booster_target", None)
+            if target and getattr(target, "alive", True):
+                import math
+                dx = self.ball.x - target.x
+                dy = self.ball.y - target.y
+                dist = math.hypot(dx, dy)
+                if dist > 0:
+                    pull_strength = 150.0 * delta
+                    if dist < pull_strength:
+                        pull_strength = dist
+                    target.x += (dx / dist) * pull_strength
+                    target.y += (dy / dist) * pull_strength
+            self.ball.tether_booster_timer = tether_booster_timer - delta
 
         magnet_tether_timer = getattr(self.ball, "magnet_tether_timer", 0.0)
         if magnet_tether_timer > 0:
