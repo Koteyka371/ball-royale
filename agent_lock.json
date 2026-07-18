@@ -222,7 +222,7 @@
       "status": "working",
       "task_id": "idea-1130",
       "started_at": "2026-07-18T20:25:31.586274+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-28": {
       "name": "Jules Worker 28",
