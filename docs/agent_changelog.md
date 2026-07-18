@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1107] Evolving Arena Mode — *2026-07-18 04:07:44 UTC*
+
+The arena boundaries constantly shift and evolve, forcing players to adapt to an ever-changing layout while avoiding hazards.
+
+---
+
 ## [idea-1093] Chain Reaction — *2026-07-18 04:07:39 UTC*
 
 Every elimination sets off a delayed explosion around the eliminated player. Surviving players can chain these explosions to eliminate multiple enemies.
