@@ -38936,3 +38936,228 @@ class KillstreakExplosionMode extends GameMode:
 		pending_explosions = remaining_explosions
 
 GAME_MODES['killstreak_explosion'] = KillstreakExplosionMode.new()
+
+class TornadoSwarmEventMode extends GameMode:
+	var tornado_spawn_timer: float = 0.0
+	var tornado_spawn_interval: float = 2.0
+	var active_event: bool = false
+	var event_timer: float = 15.0
+
+	func _init():
+		super._init()
+		name = "Tornado Swarm Event"
+		description = "An arena-wide event where miniature tornadoes spawn periodically across the map for a limited time. They last 10 seconds and have high velocity, causing utter chaos. These miniature tornadoes can also combine with elemental hazards to become mini-firenados or mini-poison tornadoes."
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		event_timer -= delta
+		if event_timer <= 0.0:
+			active_event = not active_event
+			if active_event:
+				event_timer = 20.0
+			else:
+				event_timer = 40.0
+
+		if active_event:
+			tornado_spawn_timer -= delta
+			if tornado_spawn_timer <= 0.0:
+				tornado_spawn_timer = tornado_spawn_interval
+
+				var arena_width = 2000.0
+				var arena_height = 2000.0
+				if typeof(world) == TYPE_OBJECT and "arena" in world:
+					if "width" in world.arena: arena_width = world.arena.width
+					if "height" in world.arena: arena_height = world.arena.height
+				elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+					if world.arena.has("width"): arena_width = world.arena.width
+					if world.arena.has("height"): arena_height = world.arena.height
+
+				var x = randf_range(50.0, arena_width - 50.0)
+				var y = randf_range(50.0, arena_height - 50.0)
+
+				var HazardClass = null
+				if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+					var pa = load("res://src/arena/procedural_arena.gd")
+					if pa != null and "Hazard" in pa:
+						HazardClass = pa.Hazard
+
+				var hazards = []
+				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+					hazards = world.arena.hazards
+				elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena.has("hazards"):
+					hazards = world.arena.hazards
+
+				var t_id = hazards.size() + (randi() % 90000 + 10000)
+
+				var tornado = null
+				if HazardClass != null:
+					tornado = HazardClass.new(t_id, x, y, 30.0, "mini_tornado", 15.0)
+					if tornado.has_method("set_meta"):
+						tornado.set_meta("duration", 10.0)
+						tornado.set_meta("vx", randf_range(-300.0, 300.0))
+						tornado.set_meta("vy", randf_range(-300.0, 300.0))
+					else:
+						tornado.duration = 10.0
+						tornado.vx = randf_range(-300.0, 300.0)
+						tornado.vy = randf_range(-300.0, 300.0)
+				else:
+					tornado = {
+						"id": t_id, "x": x, "y": y, "radius": 30.0, "kind": "mini_tornado", "damage": 15.0,
+						"duration": 10.0, "vx": randf_range(-300.0, 300.0), "vy": randf_range(-300.0, 300.0), "active": true
+					}
+
+				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+					world.arena.hazards.append(tornado)
+				elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena.has("hazards"):
+					world.arena.hazards.append(tornado)
+
+		var hazards = []
+		if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+			hazards = world.arena.hazards
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena.has("hazards"):
+			hazards = world.arena.hazards
+
+		var to_remove = []
+		var arena_width = 2000.0
+		var arena_height = 2000.0
+		if typeof(world) == TYPE_OBJECT and "arena" in world:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if world.arena.has("width"): arena_width = world.arena.width
+			if world.arena.has("height"): arena_height = world.arena.height
+
+		for h in hazards:
+			var kind = ""
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h.kind
+			elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+
+			if kind in ["mini_tornado", "mini_firenado", "mini_poison_tornado"]:
+				var vx = 0.0
+				var vy = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					vx = h.get("vx", 0.0)
+					vy = h.get("vy", 0.0)
+					h["x"] += vx * delta
+					h["y"] += vy * delta
+				elif typeof(h) == TYPE_OBJECT:
+					if h.has_method("get_meta") and h.has_meta("vx"): vx = h.get_meta("vx")
+					elif "vx" in h: vx = h.vx
+					if h.has_method("get_meta") and h.has_meta("vy"): vy = h.get_meta("vy")
+					elif "vy" in h: vy = h.vy
+					h.x += vx * delta
+					h.y += vy * delta
+
+				var x = 0.0
+				var y = 0.0
+				var radius = 30.0
+				if typeof(h) == TYPE_DICTIONARY:
+					x = h.get("x", 0.0)
+					y = h.get("y", 0.0)
+					radius = h.get("radius", 30.0)
+				else:
+					x = h.x
+					y = h.y
+					if "radius" in h: radius = h.radius
+
+				if x < radius:
+					x = radius
+					vx *= -1.0
+				elif x > arena_width - radius:
+					x = arena_width - radius
+					vx *= -1.0
+
+				if y < radius:
+					y = radius
+					vy *= -1.0
+				elif y > arena_height - radius:
+					y = arena_height - radius
+					vy *= -1.0
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = x
+					h["y"] = y
+					h["vx"] = vx
+					h["vy"] = vy
+				elif typeof(h) == TYPE_OBJECT:
+					h.x = x
+					h.y = y
+					if h.has_method("set_meta"):
+						h.set_meta("vx", vx)
+						h.set_meta("vy", vy)
+					else:
+						h.vx = vx
+						h.vy = vy
+
+				var duration = -1.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("duration"):
+					duration = h.duration
+				elif typeof(h) == TYPE_OBJECT:
+					if h.has_method("get_meta") and h.has_meta("duration"): duration = h.get_meta("duration")
+					elif "duration" in h: duration = h.duration
+
+				if duration > 0.0:
+					duration -= delta
+					if typeof(h) == TYPE_DICTIONARY:
+						h["duration"] = duration
+					elif typeof(h) == TYPE_OBJECT:
+						if h.has_method("set_meta"): h.set_meta("duration", duration)
+						else: h.duration = duration
+
+					if duration <= 0.0:
+						to_remove.append(h)
+						continue
+
+				if kind == "mini_tornado":
+					for other in hazards:
+						if other == h: continue
+
+						var other_active = true
+						if typeof(other) == TYPE_DICTIONARY and other.has("active"): other_active = other.active
+						elif typeof(other) == TYPE_OBJECT and "active" in other: other_active = other.active
+						if not other_active: continue
+
+						var other_kind = ""
+						if typeof(other) == TYPE_DICTIONARY and other.has("kind"): other_kind = other.kind
+						elif typeof(other) == TYPE_OBJECT and "kind" in other: other_kind = other.kind
+
+						if other_kind in ["fire_zone", "lava", "poison_cloud", "poison_nova", "fire_ring"]:
+							var other_x = 0.0
+							var other_y = 0.0
+							var other_radius = 50.0
+							if typeof(other) == TYPE_DICTIONARY:
+								other_x = other.get("x", 0.0)
+								other_y = other.get("y", 0.0)
+								other_radius = other.get("radius", 50.0)
+							else:
+								other_x = other.x
+								other_y = other.y
+								if "radius" in other: other_radius = other.radius
+
+							var dx = x - other_x
+							var dy = y - other_y
+							var dist = sqrt(dx*dx + dy*dy)
+
+							if dist < radius + other_radius:
+								if other_kind in ["fire_zone", "lava", "fire_ring"]:
+									if typeof(h) == TYPE_DICTIONARY:
+										h["kind"] = "mini_firenado"
+										h["damage"] = 30.0
+									else:
+										h.kind = "mini_firenado"
+										if "damage" in h: h.damage = 30.0
+								elif other_kind in ["poison_cloud", "poison_nova"]:
+									if typeof(h) == TYPE_DICTIONARY:
+										h["kind"] = "mini_poison_tornado"
+										h["damage"] = 25.0
+									else:
+										h.kind = "mini_poison_tornado"
+										if "damage" in h: h.damage = 25.0
+								break
+
+		for h in to_remove:
+			if hazards.has(h):
+				hazards.erase(h)
+
+GAME_MODES['tornado_swarm_event'] = TornadoSwarmEventMode.new()

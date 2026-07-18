@@ -25298,3 +25298,121 @@ class KillstreakExplosionMode(GameMode):
         self.pending_explosions = remaining_explosions + self.pending_explosions
 
 GAME_MODES['killstreak_explosion'] = KillstreakExplosionMode()
+
+class TornadoSwarmEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Tornado Swarm Event"
+        self.description = "An arena-wide event where miniature tornadoes spawn periodically across the map for a limited time. They last 10 seconds and have high velocity, causing utter chaos. These miniature tornadoes can also combine with elemental hazards to become mini-firenados or mini-poison tornadoes."
+        self.tornado_spawn_timer = 0.0
+        self.tornado_spawn_interval = 2.0
+        self.active_event = False
+        self.event_timer = 15.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        self.event_timer -= delta
+        if self.event_timer <= 0.0:
+            self.active_event = not self.active_event
+            if self.active_event:
+                self.event_timer = 20.0
+            else:
+                self.event_timer = 40.0
+
+        if self.active_event:
+            self.tornado_spawn_timer -= delta
+            if self.tornado_spawn_timer <= 0.0:
+                self.tornado_spawn_timer = self.tornado_spawn_interval
+
+                arena_width = getattr(world.arena, "width", 2000.0) if hasattr(world, "arena") else 2000.0
+                arena_height = getattr(world.arena, "height", 2000.0) if hasattr(world, "arena") else 2000.0
+
+                import random
+                x = random.uniform(50.0, arena_width - 50.0)
+                y = random.uniform(50.0, arena_height - 50.0)
+
+                try:
+                    from arena.procedural_arena import Hazard
+                    HazardClass = Hazard
+                except ImportError:
+                    class FallbackHazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+                            self.target_radius = 0.0
+                    HazardClass = FallbackHazard
+
+                hazards = getattr(getattr(world, "arena", None), "hazards", [])
+                t_id = len(hazards) + random.randint(10000, 99999)
+                tornado = HazardClass(id=t_id, x=x, y=y, radius=30.0, kind="mini_tornado", damage=15.0)
+                setattr(tornado, "duration", 10.0)
+                setattr(tornado, "vx", random.uniform(-300.0, 300.0))
+                setattr(tornado, "vy", random.uniform(-300.0, 300.0))
+
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    world.arena.hazards.append(tornado)
+
+        # Handle tornado logic (movement, combination with elements, expiration)
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            to_remove = []
+            for h in list(world.arena.hazards):  # Iterate over copy just in case
+                kind = getattr(h, "kind", "")
+                if kind in ("mini_tornado", "mini_firenado", "mini_poison_tornado"):
+                    # Move
+                    h.x += getattr(h, "vx", 0.0) * delta
+                    h.y += getattr(h, "vy", 0.0) * delta
+
+                    # Bounce off walls
+                    arena_width = getattr(world.arena, "width", 2000.0) if hasattr(world, "arena") else 2000.0
+                    arena_height = getattr(world.arena, "height", 2000.0) if hasattr(world, "arena") else 2000.0
+
+                    if h.x < getattr(h, "radius", 30.0):
+                        h.x = getattr(h, "radius", 30.0)
+                        setattr(h, "vx", getattr(h, "vx", 0.0) * -1.0)
+                    elif h.x > arena_width - getattr(h, "radius", 30.0):
+                        h.x = arena_width - getattr(h, "radius", 30.0)
+                        setattr(h, "vx", getattr(h, "vx", 0.0) * -1.0)
+
+                    if h.y < getattr(h, "radius", 30.0):
+                        h.y = getattr(h, "radius", 30.0)
+                        setattr(h, "vy", getattr(h, "vy", 0.0) * -1.0)
+                    elif h.y > arena_height - getattr(h, "radius", 30.0):
+                        h.y = arena_height - getattr(h, "radius", 30.0)
+                        setattr(h, "vy", getattr(h, "vy", 0.0) * -1.0)
+
+                    # Expiration
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0.0:
+                            to_remove.append(h)
+                            continue
+
+                    # Combination with elements
+                    if kind == "mini_tornado":
+                        for other in world.arena.hazards:
+                            if other is h or not getattr(other, "active", True): continue
+
+                            other_kind = getattr(other, "kind", "")
+                            if other_kind in ("fire_zone", "lava", "poison_cloud", "poison_nova", "fire_ring"):
+                                import math
+                                dist = math.hypot(h.x - other.x, h.y - other.y)
+                                if dist < getattr(h, "radius", 30.0) + getattr(other, "radius", 50.0):
+                                    if other_kind in ("fire_zone", "lava", "fire_ring"):
+                                        h.kind = "mini_firenado"
+                                        h.damage = 30.0
+                                    elif other_kind in ("poison_cloud", "poison_nova"):
+                                        h.kind = "mini_poison_tornado"
+                                        h.damage = 25.0
+                                    break
+
+            for h in to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
+GAME_MODES['tornado_swarm_event'] = TornadoSwarmEventMode()
