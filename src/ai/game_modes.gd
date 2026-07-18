@@ -39945,3 +39945,53 @@ class DynamicDangerZonesMode extends GameMode:
 GAME_MODES['dynamic_danger_zones'] = DynamicDangerZonesMode.new()
 const RandomTeleporterModeClass = preload("res://src/ai/random_teleporter.gd")
 GAME_MODES['random_teleporter'] = RandomTeleporterModeClass.new()
+
+class RepulsionFieldMode extends GameMode:
+	func _init():
+		super._init()
+		name = "Repulsion Field"
+		description = "All balls naturally repel each other slightly. The strength of repulsion increases as they get closer, making it difficult to land melee attacks and creating a pinball-like arena effect during high-speed collisions."
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		for i in range(balls.size()):
+			var b1 = balls[i]
+			if typeof(b1) == TYPE_OBJECT:
+				if not (b1.get("alive") if "alive" in b1 else false):
+					continue
+				if (b1.get("ball_type") if "ball_type" in b1 else "") == "spectator":
+					continue
+
+				for j in range(i + 1, balls.size()):
+					var b2 = balls[j]
+					if typeof(b2) == TYPE_OBJECT:
+						if not (b2.get("alive") if "alive" in b2 else false):
+							continue
+						if (b2.get("ball_type") if "ball_type" in b2 else "") == "spectator":
+							continue
+
+						var dx = b1.x - b2.x
+						var dy = b1.y - b2.y
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist < 1.0:
+							dx = 1.0
+							dy = 0.0
+							dist = 1.0
+
+						var max_dist = 300.0
+						if dist < max_dist:
+							var force = (max_dist - dist) / max_dist
+							force = force * force * 1000.0 * delta
+
+							var nx = dx / dist
+							var ny = dy / dist
+
+							b1.vx += nx * force
+							b1.vy += ny * force
+
+							b2.vx -= nx * force
+							b2.vy -= ny * force
+
+GAME_MODES['repulsion_field'] = RepulsionFieldMode.new()

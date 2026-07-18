@@ -25810,3 +25810,53 @@ class DynamicDangerZonesMode(GameMode):
         self.zones = active_zones
 
 GAME_MODES['dynamic_danger_zones'] = DynamicDangerZonesMode()
+
+class RepulsionFieldMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Repulsion Field"
+        self.description = "All balls naturally repel each other slightly. The strength of repulsion increases as they get closer, making it difficult to land melee attacks and creating a pinball-like arena effect during high-speed collisions."
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        super().tick(world, balls, delta)
+
+        # Apply repulsion between all pairs of alive balls
+        for i in range(len(balls)):
+            b1 = balls[i]
+            if not getattr(b1, "alive", False) or getattr(b1, "ball_type", None) == "spectator":
+                continue
+
+            for j in range(i + 1, len(balls)):
+                b2 = balls[j]
+                if not getattr(b2, "alive", False) or getattr(b2, "ball_type", None) == "spectator":
+                    continue
+
+                dx = b1.x - b2.x
+                dy = b1.y - b2.y
+                dist = math.hypot(dx, dy)
+
+                # Minimum distance to prevent division by zero
+                if dist < 1.0:
+                    dx = 1.0
+                    dy = 0.0
+                    dist = 1.0
+
+                # Calculate repulsion force
+                # Strength increases as distance decreases
+                max_dist = 300.0
+                if dist < max_dist:
+                    # Inverse relationship, capped to prevent insane velocities at point-blank
+                    force = (max_dist - dist) / max_dist
+                    force = force * force * 1000.0 * delta # base strength
+
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    b1.vx += nx * force
+                    b1.vy += ny * force
+
+                    b2.vx -= nx * force
+                    b2.vy -= ny * force
+
+GAME_MODES['repulsion_field'] = RepulsionFieldMode()
