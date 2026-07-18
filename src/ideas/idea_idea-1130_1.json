@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Amplifier Trap",
+  "description": "A trap that doesn't damage players, but instead multiplies their current velocity by 3x when they pass over it, potentially launching them into hazards or out of bounds."
+}
