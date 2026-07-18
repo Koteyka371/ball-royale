@@ -1285,6 +1285,7 @@ class Action:
             if self.ball.wall_stick_timer <= 0.0:
                 if getattr(self.ball, "stun_timer", 0.0) <= 0.0:
                     self.ball.is_stunned = False
+                self.ball.wall_stick_timer = 0.0
 
         if getattr(self.ball, "is_stunned", False):
             if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
