@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1122] Random Teleporter Mode — *2026-07-18 21:13:45 UTC*
+
+Periodically, portals randomly appear on the map and teleport balls to random locations, breaking positioning strategies.
+
+---
+
 ## [idea-1133] VIP Bodyguard Bounties — *2026-07-18 20:28:07 UTC*
 
 Players can dynamically purchase a 'Bodyguard Bounty' using score or in-game resources, placing a massive reward on a chosen ally to incentivize the entire team to protect them while drawing enemies.

@@ -19243,7 +19243,7 @@
     },
     {
       "id": "idea-1122",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Random Teleporter Mode",
@@ -30173,6 +30173,125 @@
         "src/ai/quantum_swap_mine.py",
         "src/ai/quantum_swap_mine.gd",
         "tests/test_quantum_swap_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1764",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Eclipse Trap Booster",
+      "description": "A deployable booster that creates a localized 'eclipse' zone. Any enemies inside the zone suffer from the same blackout debuffs (reduced speed and damage), acting as a powerful tactical counter-measure for light-dependent enemies.",
+      "allowed_paths": [
+        "src/arena/eclipse_trap_booster.py",
+        "src/arena/eclipse_trap_booster.gd",
+        "tests/test_eclipse_trap_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1765",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aggro Redirect Traps",
+      "description": "Introduce a trap type that spawns a decoy on activation, instantly drawing aggro from nearby AI and forcing them to attack the decoy instead of the player.",
+      "allowed_paths": [
+        "src/arena/aggro_redirect_traps.py",
+        "src/arena/aggro_redirect_traps.gd",
+        "tests/test_aggro_redirect_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1766",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Swap Decoy Overload",
+      "description": "When multiple decoys are active during the survival swap skill, trigger a chain electrical surge between them instead of just a simple swap, confusing and damaging a larger area.",
+      "allowed_paths": [
+        "src/ai/swap_decoy_overload.py",
+        "src/ai/swap_decoy_overload.gd",
+        "tests/test_swap_decoy_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1767",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corrosive Fog Mode",
+      "description": "A thick green fog rolls into the arena at set intervals. While the fog is present, players' maximum HP is temporarily reduced by 30%, and all healing effects are nullified. It requires defensive positioning until the fog clears.",
+      "allowed_paths": [
+        "src/ai/corrosive_fog.py",
+        "src/ai/corrosive_fog.gd",
+        "tests/test_corrosive_fog.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1768",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blizzard Tornado Event",
+      "description": "A variant of the tornado swarm where mini-tornadoes combine with ice patches to become mini-blizzards that slow down and slowly freeze nearby players.",
+      "allowed_paths": [
+        "src/ai/blizzard_tornado.py",
+        "src/ai/blizzard_tornado.gd",
+        "tests/test_blizzard_tornado.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1769",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar Storm Weather Event",
+      "description": "A new weather event where bursts of solar radiation occasionally flare up, granting massive buffs to solar_bot while significantly damaging and blinding other characters in the open. Players must seek shade behind indestructible walls to avoid the effects.",
+      "allowed_paths": [
+        "src/ai/solar_storm.py",
+        "src/ai/solar_storm.gd",
+        "tests/test_solar_storm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1770",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunnels Mode",
+      "description": "Pairs of tunnels spawn across the map. Traveling through a tunnel immediately teleports you to the other end, but also applies a temporary speed boost and leaves a damaging energy trail behind the player.",
+      "allowed_paths": [
+        "src/ai/quantum_tunnels.py",
+        "src/ai/quantum_tunnels.gd",
+        "tests/test_quantum_tunnels.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
