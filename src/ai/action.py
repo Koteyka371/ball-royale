@@ -12722,7 +12722,7 @@ class Action:
                         self.ball.survival_swap_target_id = decoy.id
                         self.ball.survival_swap_timer = 3.0
 
-            elif skill_name in ["deploy_decoy", "deploy_decoy_flash"]:
+            elif skill_name in ["deploy_decoy", "deploy_decoy_flash", "deploy_decoy_advanced"]:
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
                 if active_decoys:
@@ -12802,7 +12802,7 @@ class Action:
                         decoy.x += offset_x
                         decoy.y += offset_y
 
-                        if skill_name == "deploy_decoy_flash":
+                        if skill_name in ["deploy_decoy_flash", "deploy_decoy_advanced"]:
                             decoy.decoy_type = "flash"
                         elif getattr(self.ball, "ball_type", "") == "trickster":
                             if random.random() < 0.5:

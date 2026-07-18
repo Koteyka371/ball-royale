@@ -1,4 +1,1 @@
-{
-    "title": "Quantum Entanglement Mine",
-    "description": "A trap that links the next enemy who steps on it with the ball that deployed it. For 5 seconds, any damage taken by one is shared 50/50 with the other, allowing risky plays where the deployer can intentionally take map hazard damage to hurt the entangled enemy."
-}
+{"title": "Decoy Network", "description": "Deploying multiple decoys links them together, and when one takes damage, the damage is distributed among all linked decoys, drastically increasing their overall survivability and confusion."}
