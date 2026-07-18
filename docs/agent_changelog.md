@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1132] Shrinking Danger Zones Arena — *2026-07-18 22:33:31 UTC*
+
+A dynamic procedural arena element where circular 'danger zones' periodically appear on the map. After a warning delay, any balls caught within the zone take heavy damage. The zones gradually shrink in size over the course of the match, forcing close-quarters combat.
+
+---
+
 ## [idea-1138] Dynamic Spotlight Hazards — *2026-07-18 22:29:07 UTC*
 
 In blackout mode or night stages, introduce 'spotlight' hazards that roam the arena. Standing in a spotlight grants a massive vision boost and restores stamina, but reveals your position to all players and makes you take 1.5x damage from attacks.
