@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1095] Necromancer Soul Siphon Aura — *2026-07-18 04:32:21 UTC*
+
+Necromancer emits an aura that deals damage to nearby enemies over time and converts a portion of the damage dealt into bone armor stacks or heals the Necromancer.
+
+---
+
 ## [idea-1091] Decoy Bomb Skill — *2026-07-18 04:32:16 UTC*
 
 A new skill where the player drops a fake powerup or healing orb that explodes for heavy damage when collected by enemies.
