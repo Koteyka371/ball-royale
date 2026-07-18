@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1116] Holo-Decoy Augment — *2026-07-18 22:44:43 UTC*
+
+An advanced deploy_decoy variant where the decoys phase out immediately upon taking fatal damage, blinding all enemies in a 300 unit radius for 3 seconds instead of exploding, turning defensive plays into aggressive counter-attacks.
+
+---
+
 ## [idea-1129] Elemental Resonance Trap — *2026-07-18 22:37:45 UTC*
 
 A new trap that behaves like a normal mine, but instead of dealing damage, it forcefully spawns a random elemental hazard (fire zone or poison cloud) at its location upon triggering. If a tornado touches it, it creates a massive elemental explosion before converting the tornado into an elemental storm.
