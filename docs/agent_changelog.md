@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1028] Acoustic Mine Trap — *2026-07-18 02:18:25 UTC*
+
+A new type of hazard that is invisible by default but triggers a high-damage explosion if a ball uses Dash, Sonar Ping, or other noisy skills within its radius.
+
+---
+
 ## [idea-1089] Black Hole Singularity Mode — *2026-07-18 02:18:20 UTC*
 
 A game mode where the entire arena slowly pulls all players toward a massive black hole in the center. The gravitational pull becomes stronger as time progresses. Players must use their movement skills and boosters to avoid getting sucked in while trying to push their enemies into the event horizon. This mode focuses on positioning and displacement.
