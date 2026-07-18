@@ -39685,3 +39685,106 @@ class TornadoSwarmEventMode extends GameMode:
 				hazards.erase(h)
 
 GAME_MODES['tornado_swarm_event'] = TornadoSwarmEventMode.new()
+
+class DynamicDangerZonesMode extends GameMode:
+	var zones = []
+	var zone_spawn_timer = 0.0
+	var zone_spawn_interval = 15.0
+	var match_time = 0.0
+	var max_match_time = 300.0
+	var base_zone_radius = 200.0
+
+	func _init():
+		super._init()
+		name = "Dynamic Danger Zones"
+		description = "A dynamic procedural arena element where circular 'danger zones' periodically appear on the map. After a warning delay, any balls caught within the zone take heavy damage. The zones gradually shrink in size over the course of the match, forcing close-quarters combat."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		zones.clear()
+		zone_spawn_timer = 5.0
+		match_time = 0.0
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		match_time += delta
+		zone_spawn_timer -= delta
+
+		var shrink_factor = max(0.2, 1.0 - (match_time / max_match_time))
+		var current_max_radius = base_zone_radius * shrink_factor
+
+		if zone_spawn_timer <= 0:
+			zone_spawn_timer = zone_spawn_interval
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world.get("arena") != null:
+				arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+				arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+			var x = randf_range(current_max_radius, arena_width - current_max_radius)
+			var y = randf_range(current_max_radius, arena_height - current_max_radius)
+
+			zones.append({
+				"x": x,
+				"y": y,
+				"radius": current_max_radius,
+				"timer": 5.0,
+				"active": false,
+				"duration": 10.0
+			})
+
+			if world.has_method("add_event"):
+				world.add_event("danger_zone_warning", {"x": x, "y": y, "radius": current_max_radius, "message": "Danger zone appearing!"})
+
+		var active_zones = []
+		for zone in zones:
+			zone["timer"] -= delta
+			if not zone["active"]:
+				if zone["timer"] <= 0:
+					zone["active"] = true
+					zone["timer"] = zone["duration"]
+					if world.has_method("add_event"):
+						world.add_event("danger_zone_active", {"x": zone["x"], "y": zone["y"], "radius": zone["radius"], "message": "Danger zone active!"})
+
+					var hazard_class = null
+					if world.get("arena") != null and "hazards" in world.arena:
+						if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+							var script = load("res://src/arena/procedural_arena.gd")
+							if script != null and script.get_script_constant_map().has("Hazard"):
+								hazard_class = script.Hazard
+
+					if hazard_class != null:
+						var z_id = randi() % 1000000
+						if "next_id" in world:
+							z_id = world.next_id
+							world.next_id += 1
+
+						var zone_hazard = hazard_class.new(z_id, zone["x"], zone["y"], zone["radius"], "danger_zone", 50.0)
+						zone_hazard.duration = zone["duration"]
+						world.arena.hazards.append(zone_hazard)
+						zone["hazard"] = zone_hazard
+				active_zones.append(zone)
+			else:
+				if zone["timer"] > 0:
+					active_zones.append(zone)
+					for b in balls:
+						if typeof(b) == TYPE_OBJECT:
+							if b.get("alive") if "alive" in b else false:
+								if (b.get("ball_type") if "ball_type" in b else "") != "spectator":
+									var dist = sqrt(pow(b.x - zone["x"], 2) + pow(b.y - zone["y"], 2))
+									if dist <= zone["radius"]:
+										var damage = 50.0 * delta
+										if b.has_method("take_damage"):
+											b.take_damage(damage)
+										else:
+											b.hp -= damage
+											if b.hp <= 0:
+												b.alive = false
+				else:
+					if zone.has("hazard") and world.get("arena") != null and "hazards" in world.arena:
+						if world.arena.hazards.has(zone["hazard"]):
+							world.arena.hazards.erase(zone["hazard"])
+
+		zones = active_zones
+
+GAME_MODES['dynamic_danger_zones'] = DynamicDangerZonesMode.new()

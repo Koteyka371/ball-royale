@@ -25643,3 +25643,113 @@ class TornadoSwarmEventMode(GameMode):
                     world.arena.hazards.remove(h)
 
 GAME_MODES['tornado_swarm_event'] = TornadoSwarmEventMode()
+
+class DynamicDangerZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Danger Zones"
+        self.description = "A dynamic procedural arena element where circular 'danger zones' periodically appear on the map. After a warning delay, any balls caught within the zone take heavy damage. The zones gradually shrink in size over the course of the match, forcing close-quarters combat."
+        self.zones = []
+        self.zone_spawn_timer = 0.0
+        self.zone_spawn_interval = 15.0
+        self.match_time = 0.0
+        self.max_match_time = 300.0 # 5 minutes to shrink fully
+        self.base_zone_radius = 200.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.zones = []
+        self.zone_spawn_timer = 5.0
+        self.match_time = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        super().tick(world, balls, delta)
+        self.match_time += delta
+        self.zone_spawn_timer -= delta
+
+        # Calculate current max radius based on match time
+        shrink_factor = max(0.2, 1.0 - (self.match_time / self.max_match_time))
+        current_max_radius = self.base_zone_radius * shrink_factor
+
+        if self.zone_spawn_timer <= 0:
+            self.zone_spawn_timer = self.zone_spawn_interval
+
+            arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+            arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+            x = random.uniform(current_max_radius, arena_width - current_max_radius)
+            y = random.uniform(current_max_radius, arena_height - current_max_radius)
+
+            self.zones.append({
+                "x": x,
+                "y": y,
+                "radius": current_max_radius,
+                "timer": 5.0, # Warning delay
+                "active": False,
+                "duration": 10.0 # Active duration
+            })
+
+            if hasattr(world, "add_event"):
+                world.add_event("danger_zone_warning", {"x": x, "y": y, "radius": current_max_radius, "message": "Danger zone appearing!"})
+
+        active_zones = []
+        for zone in self.zones:
+            zone["timer"] -= delta
+            if not zone["active"]:
+                if zone["timer"] <= 0:
+                    zone["active"] = True
+                    zone["timer"] = zone["duration"]
+                    if hasattr(world, "add_event"):
+                        world.add_event("danger_zone_active", {"x": zone["x"], "y": zone["y"], "radius": zone["radius"], "message": "Danger zone active!"})
+
+                    # Spawn hazard
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            HazardClass = Hazard
+                        except ImportError:
+                            class FallbackHazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                                    self.active = True
+                            HazardClass = FallbackHazard
+
+                        zone_hazard = HazardClass(
+                            id=getattr(world, "next_id", random.randint(100000, 999999)),
+                            x=zone["x"],
+                            y=zone["y"],
+                            radius=zone["radius"],
+                            kind="danger_zone",
+                            damage=50.0
+                        )
+                        setattr(zone_hazard, "duration", zone["duration"])
+                        world.arena.hazards.append(zone_hazard)
+                        zone["hazard"] = zone_hazard
+                        if hasattr(world, "next_id"):
+                            world.next_id += 1
+                active_zones.append(zone)
+            else:
+                if zone["timer"] > 0:
+                    active_zones.append(zone)
+                    # Apply heavy damage
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                            dist = math.hypot(b.x - zone["x"], b.y - zone["y"])
+                            if dist <= zone["radius"]:
+                                damage = 50.0 * delta
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(damage)
+                                else:
+                                    b.hp = getattr(b, "hp", 100) - damage
+                                    if b.hp <= 0:
+                                        b.alive = False
+                else:
+                    if "hazard" in zone and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        if zone["hazard"] in world.arena.hazards:
+                            world.arena.hazards.remove(zone["hazard"])
+
+        self.zones = active_zones
+
+GAME_MODES['dynamic_danger_zones'] = DynamicDangerZonesMode()
