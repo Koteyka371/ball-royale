@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1111] Tether Pull Booster — *2026-07-18 22:45:46 UTC*
+
+A booster that grants the ability to shoot a tether at an enemy. The enemy is pulled towards the user for 3 seconds, making them easier targets for melee balls or environmental hazards.
+
+---
+
 ## [idea-1079] Traitor's Tether — *2026-07-18 22:44:54 UTC*
 
 A new booster that, when picked up, forces an enemy ball to become tethered to one of your teammates. The enemy takes continuous tick damage while tethered and can be dragged into hazards against their will.
