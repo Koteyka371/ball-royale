@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1033] Doppelganger Match Mode — *2026-07-18 21:19:12 UTC*
+
+Every player spawns with a clone that perfectly mimics their inputs, but it only deals half damage and takes double damage. If the real player is killed, they immediately swap into their clone, reviving but with halved stats for the rest of the game.
+
+---
+
 ## [idea-1135] Payload Turret Attachment — *2026-07-18 21:19:08 UTC*
 
 Allow specific defensive or supportive entities to be 'attached' to payloads in Escort and Dual Payload modes. When a payload gathers enough players around it to reach a certain speed threshold, it temporarily spawns an automated defensive turret that damages or repels approaching enemies, making coordination even more rewarding.
