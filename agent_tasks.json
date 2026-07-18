@@ -30365,6 +30365,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1775",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Drain Field Event",
+      "description": "An arena-wide event where a localized field appears that slowly drains the stamina of any ball caught inside it, forcing players to avoid the area or risk losing their abilities.",
+      "allowed_paths": [
+        "src/ai/stamina_drain_field.py",
+        "src/ai/stamina_drain_field.gd",
+        "tests/test_stamina_drain_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1776",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Overload Mod",
+      "description": "An arena mutator where the payload's damage aura exponentially increases in radius if it is continuously pushed by players. If the pushers step away for too long, the payload vents the built-up heat in a massive explosion, damaging everyone nearby.",
+      "allowed_paths": [
+        "src/ai/payload_overload_mod.py",
+        "src/ai/payload_overload_mod.gd",
+        "tests/test_payload_overload_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
