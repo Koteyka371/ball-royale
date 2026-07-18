@@ -795,6 +795,10 @@ class Action:
             if getattr(attacker, "leech_booster_timer", 0.0) > 0:
                 target.leech_seed_timer = 5.0
                 target.leech_seed_attacker_id = getattr(attacker, "id", None)
+            if getattr(attacker, "laser_sight_timer", 0.0) > 0:
+                if hasattr(attacker, "skill_timer"):
+                    attacker.skill_timer = max(0.0, attacker.skill_timer - 0.5)
+
             if getattr(attacker, "fire_attachment_timer", 0.0) > 0:
                 target.dot_duration = getattr(target, 'dot_duration', 0.0) + 2.0
                 target.dot_damage_per_tick = getattr(target, 'dot_damage_per_tick', 0.0) + 2.0
@@ -10493,6 +10497,17 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "laser_sight_attachment":
+                    self.ball.laser_sight_timer = 15.0
+                    if not getattr(self.ball, "laser_sight_applied", False):
+                        if not hasattr(self.ball, "base_attack_range"):
+                            self.ball.base_attack_range = getattr(self.ball, "attack_range", 150.0)
+                        self.ball.attack_range = self.ball.base_attack_range * 1.5
+                        self.ball.laser_sight_applied = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "fire_attachment":
                     self.ball.fire_attachment_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
@@ -16137,6 +16152,13 @@ class Action:
 
         if getattr(self.ball, "extended_mag_timer", 0.0) > 0:
             self.ball.extended_mag_timer -= delta
+
+        if getattr(self.ball, "laser_sight_timer", 0.0) > 0:
+            self.ball.laser_sight_timer -= delta
+            if self.ball.laser_sight_timer <= 0.0:
+                if hasattr(self.ball, "base_attack_range") and getattr(self.ball, "laser_sight_applied", False):
+                    self.ball.attack_range = self.ball.base_attack_range
+                    self.ball.laser_sight_applied = False
 
         if getattr(self.ball, "modified_scope_timer", 0.0) > 0:
             self.ball.modified_scope_timer -= delta

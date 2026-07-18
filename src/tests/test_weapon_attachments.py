@@ -115,3 +115,80 @@ def test_timer_decrement():
     assert b1.ice_attachment_timer == 14.0
     assert b1.spread_attachment_timer == 14.0
     assert b1.pierce_attachment_timer == 14.0
+import pytest
+
+def test_laser_sight_attachment():
+    from ai.action import Action
+
+    class MockEntity:
+        def __init__(self, kind, x=0, y=0):
+            self.kind = kind
+            self.x = x
+            self.y = y
+
+    class MockArena:
+        def __init__(self, hazards):
+            self.hazards = hazards
+            self.is_foggy = False
+            self.width = 1000.0
+            self.height = 1000.0
+            self.safe_zone_center = (500.0, 500.0)
+            self.safe_zone_radius = 500.0
+        def get(self, key, default=None):
+            return getattr(self, key, default)
+
+    class MockWorld:
+        def __init__(self, arena, boosters):
+            self.arena = arena
+            self.boosters = boosters
+            self.balls = []
+            self.current_mode_name = "default"
+        def _deal_damage(self, attacker, target):
+            pass
+
+    class MockBall:
+        def __init__(self):
+            self.x = 0
+            self.y = 0
+            self.radius = 10
+            self.attack_range = 150.0
+            self.id = 1
+            self.team = "blue"
+            self.ball_type = "default"
+            self.alive = True
+            self.speed = 2.0
+            self.traits = []
+
+    laser_sight = MockEntity("laser_sight_attachment")
+    arena = MockArena([laser_sight])
+    world = MockWorld(arena, [laser_sight])
+    ball = MockBall()
+
+    action = Action(ball, world)
+
+    action._get_enemies_internal = lambda: []
+    action._get_boosters = lambda: [laser_sight]
+    action._collect_booster(1.0)
+
+    assert getattr(ball, "laser_sight_timer", 0.0) == 15.0
+    assert getattr(ball, "laser_sight_applied", False) is True
+    assert getattr(ball, "base_attack_range", 150.0) == 150.0
+    assert getattr(ball, "attack_range", 150.0) == 225.0
+    assert laser_sight not in world.boosters
+
+    ball.skill_timer = 5.0
+    enemy = MockBall()
+    enemy.id = 2
+    enemy.team = "red"
+    enemy.in_mirror_dimension = False
+    ball.in_mirror_dimension = False
+
+    action._attempt_damage(ball, enemy)
+
+    assert getattr(ball, "skill_timer", 5.0) == 4.5
+
+    action.execute("flee", 16.0)
+
+    assert getattr(ball, "laser_sight_timer", 0.0) <= 0.0
+    assert getattr(ball, "laser_sight_applied", True) is False
+    assert getattr(ball, "attack_range", 0.0) == 150.0

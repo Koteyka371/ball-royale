@@ -1459,6 +1459,17 @@ func _attempt_damage(attacker, target) -> void:
 					attacker["damage"] = old_dmg_final
 
 
+		var ls_timer = 0.0
+		if "laser_sight_timer" in attacker: ls_timer = attacker.laser_sight_timer
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("laser_sight_timer"): ls_timer = attacker.get_meta("laser_sight_timer")
+		if ls_timer > 0:
+			var s_timer = 0.0
+			if "skill_timer" in attacker: s_timer = attacker.skill_timer
+			elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("skill_timer"): s_timer = attacker.get_meta("skill_timer")
+			s_timer = max(0.0, s_timer - 0.5)
+			if "skill_timer" in attacker: attacker.skill_timer = s_timer
+			elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"): attacker.set_meta("skill_timer", s_timer)
+
 		var fire_timer = 0.0
 		if "fire_attachment_timer" in attacker: fire_timer = attacker.fire_attachment_timer
 		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("fire_attachment_timer"): fire_timer = attacker.get_meta("fire_attachment_timer")
@@ -21632,6 +21643,39 @@ func _collect_booster(delta: float):
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1: self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "laser_sight_attachment":
+                if self.ball.has_method("set_meta"): self.ball.set_meta("laser_sight_timer", 15.0)
+                else: self.ball.laser_sight_timer = 15.0
+
+                var ls_applied = false
+                if "laser_sight_applied" in self.ball: ls_applied = self.ball.laser_sight_applied
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("laser_sight_applied"): ls_applied = self.ball.get_meta("laser_sight_applied")
+
+                if not ls_applied:
+                    var cur_ar = 150.0
+                    if "attack_range" in self.ball: cur_ar = self.ball.attack_range
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("attack_range"): cur_ar = self.ball.get_meta("attack_range")
+
+                    var ba = cur_ar
+                    if "base_attack_range" in self.ball: ba = self.ball.base_attack_range
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("base_attack_range"): ba = self.ball.get_meta("base_attack_range")
+
+                    ba *= 1.5
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("base_attack_range", ba)
+                        self.ball.set_meta("attack_range", ba)
+                        self.ball.set_meta("laser_sight_applied", true)
+                    else:
+                        self.ball.base_attack_range = ba
+                        self.ball.attack_range = ba
+                        self.ball.laser_sight_applied = true
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "placeable_trap_booster":
                 var inv = []
                 if "inventory" in self.ball: inv = self.ball.inventory
@@ -30769,6 +30813,30 @@ func _update_skill_timer(delta: float):
         sil_timer -= delta
         if self.ball.has_method("set_meta"): self.ball.set_meta("silencer_timer", sil_timer)
         else: self.ball.silencer_timer = sil_timer
+
+    var ls_timer = 0.0
+    if "laser_sight_timer" in self.ball: ls_timer = self.ball.laser_sight_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("laser_sight_timer"): ls_timer = self.ball.get_meta("laser_sight_timer")
+    if ls_timer > 0.0:
+        ls_timer -= delta
+        if self.ball.has_method("set_meta"): self.ball.set_meta("laser_sight_timer", ls_timer)
+        else: self.ball.laser_sight_timer = ls_timer
+
+        if ls_timer <= 0.0:
+            var ls_applied = false
+            if "laser_sight_applied" in self.ball: ls_applied = self.ball.laser_sight_applied
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("laser_sight_applied"): ls_applied = self.ball.get_meta("laser_sight_applied")
+
+            if ls_applied:
+                var ba = 150.0
+                if "base_attack_range" in self.ball: ba = self.ball.base_attack_range
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("base_attack_range"): ba = self.ball.get_meta("base_attack_range")
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("attack_range", ba)
+                    self.ball.set_meta("laser_sight_applied", false)
+                else:
+                    self.ball.attack_range = ba
+                    self.ball.laser_sight_applied = false
 
     var ms_timer = 0.0
     if "modified_scope_timer" in self.ball: ms_timer = self.ball.modified_scope_timer
