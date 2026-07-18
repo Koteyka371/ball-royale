@@ -24792,3 +24792,94 @@ class FactionWarMode(GameMode):
                     pm.save()
 
 GAME_MODES['faction_war'] = FactionWarMode()
+
+class CaptureableWeatherStation(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Weather Station Capture"
+        self.description = "Capture weather stations to control the weather in your sector!"
+        import random
+        self.random = random
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "weather_stations"):
+            world.weather_stations = []
+
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        # Create 4 stations in 4 quadrants
+        positions = [
+            (arena_w * 0.25, arena_h * 0.25),
+            (arena_w * 0.75, arena_h * 0.25),
+            (arena_w * 0.25, arena_h * 0.75),
+            (arena_w * 0.75, arena_h * 0.75)
+        ]
+
+        class TempStation:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+                self.owner_team = "neutral"
+                self.capture_progress = 0.0
+                self.radius = 150.0
+
+        for x, y in positions:
+            world.weather_stations.append(TempStation(x, y))
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "weather_stations"):
+            return
+
+        for station in world.weather_stations:
+            # Check balls near station
+            balls_near = []
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                dx = b.x - station.x
+                dy = b.y - station.y
+                if dx * dx + dy * dy <= station.radius * station.radius:
+                    balls_near.append(b)
+
+            # Determine capture
+            if balls_near:
+                # simplify: if only one team is near, capture progress moves towards them
+                teams = list(set([getattr(b, "team", "") for b in balls_near]))
+                if len(teams) == 1:
+                    team = teams[0]
+                    if station.owner_team != team:
+                        # capturing
+                        station.capture_progress += 20.0 * delta
+                        if station.capture_progress >= 100.0:
+                            station.capture_progress = 100.0
+                            station.owner_team = team
+                    else:
+                        # already owned, keep at 100
+                        station.capture_progress = 100.0
+                else:
+                    # contested, maybe slowly revert to neutral or stay
+                    pass
+
+            # apply effects to balls in sector
+            # sector is 500x500 around station
+            if station.owner_team != "neutral" and station.capture_progress >= 100.0:
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+                    if abs(b.x - station.x) <= 250.0 and abs(b.y - station.y) <= 250.0:
+                        if getattr(b, "team", "") == station.owner_team:
+                            if hasattr(b, "base_speed"):
+                                b.speed = b.base_speed * 1.5
+                            if hasattr(b, "base_damage_multiplier"):
+                                b.damage_multiplier = b.base_damage_multiplier * 1.5
+                        else:
+                            if hasattr(b, "base_speed"):
+                                b.speed = b.base_speed * 0.5
+                            if hasattr(b, "hp"):
+                                b.hp -= 5.0 * delta
+
+
+GAME_MODES['weather_station'] = CaptureableWeatherStation()

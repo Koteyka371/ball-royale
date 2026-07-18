@@ -37853,6 +37853,7 @@ class FakeBallsMode extends GameMode:
                     world.balls.erase(b)
 
 GAME_MODES["fake_balls"] = FakeBallsMode.new()
+GAME_MODES["weather_station"] = CaptureableWeatherStation.new()
 
 
 class FactionWarMode extends GameMode:
@@ -37939,3 +37940,136 @@ class FactionWarMode extends GameMode:
 					pm.data["unlocked_balls"].append(ball_to_unlock)
 					if pm.has_method("save_profile"):
 						pm.save_profile()
+
+class CaptureableWeatherStation extends GameMode:
+	func _init():
+		name = "Weather Station Capture"
+		description = "Capture weather stations to control the weather in your sector!"
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "weather_stations" in world:
+			world.weather_stations = []
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_w = float(world.arena.width)
+			if "height" in world.arena:
+				arena_h = float(world.arena.height)
+
+		var positions = [
+			Vector2(arena_w * 0.25, arena_h * 0.25),
+			Vector2(arena_w * 0.75, arena_h * 0.25),
+			Vector2(arena_w * 0.25, arena_h * 0.75),
+			Vector2(arena_w * 0.75, arena_h * 0.75)
+		]
+
+		for pos in positions:
+			world.weather_stations.append({
+				"x": pos.x,
+				"y": pos.y,
+				"owner_team": "neutral",
+				"capture_progress": 0.0,
+				"radius": 150.0
+			})
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		if not "weather_stations" in world:
+			return
+
+		for station in world.weather_stations:
+			var balls_near = []
+			for b in balls:
+				var alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", false)
+				else:
+					alive = b.alive
+
+				if not alive:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				else:
+					bx = b.x
+					by = b.y
+
+				var dx = bx - station.x
+				var dy = by - station.y
+				if dx * dx + dy * dy <= station.radius * station.radius:
+					balls_near.append(b)
+
+			if balls_near.size() > 0:
+				var teams = []
+				for b in balls_near:
+					var team = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						team = b.get("team", "")
+					else:
+						team = b.team
+					if not teams.has(team):
+						teams.append(team)
+
+				if teams.size() == 1:
+					var team = teams[0]
+					if station.owner_team != team:
+						station.capture_progress += 20.0 * delta
+						if station.capture_progress >= 100.0:
+							station.capture_progress = 100.0
+							station.owner_team = team
+					else:
+						station.capture_progress = 100.0
+
+			if station.owner_team != "neutral" and station.capture_progress >= 100.0:
+				for b in balls:
+					var alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						alive = b.get("alive", false)
+					else:
+						alive = b.alive
+
+					if not alive:
+						continue
+
+					var bx = 0.0
+					var by = 0.0
+					var team = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+						team = b.get("team", "")
+					else:
+						bx = b.x
+						by = b.y
+						team = b.team
+
+					if abs(bx - station.x) <= 250.0 and abs(by - station.y) <= 250.0:
+						if team == station.owner_team:
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("base_speed"):
+									b.speed = b.base_speed * 1.5
+								if b.has("base_damage_multiplier"):
+									b.damage_multiplier = b.base_damage_multiplier * 1.5
+							else:
+								if "base_speed" in b:
+									b.speed = b.base_speed * 1.5
+								if "base_damage_multiplier" in b:
+									b.damage_multiplier = b.base_damage_multiplier * 1.5
+						else:
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("base_speed"):
+									b.speed = b.base_speed * 0.5
+								if b.has("hp"):
+									b.hp -= 5.0 * delta
+							else:
+								if "base_speed" in b:
+									b.speed = b.base_speed * 0.5
+								if "hp" in b:
+									b.hp -= 5.0 * delta

@@ -9860,6 +9860,21 @@ class Action:
             target_y = getattr(game_mode, "zone_y", target_y)
             zone_radius = getattr(game_mode, "zone_radius", zone_radius)
 
+        if hasattr(self.world, "weather_stations") and self.world.weather_stations:
+            best_station = None
+            best_dist = float('inf')
+            my_team = getattr(self.ball, "team", "")
+            for station in self.world.weather_stations:
+                if station.owner_team != my_team or station.capture_progress < 100.0:
+                    dist = (self.ball.x - station.x)**2 + (self.ball.y - station.y)**2
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_station = station
+            if best_station:
+                target_x = best_station.x
+                target_y = best_station.y
+                zone_radius = best_station.radius
+
         dx = target_x - self.ball.x
         dy = target_y - self.ball.y
         dist = math.sqrt(dx * dx + dy * dy)

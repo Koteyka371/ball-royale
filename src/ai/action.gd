@@ -18419,6 +18419,24 @@ func _hold_zone(delta: float):
         if "zone_y" in self.world.game_mode: target_y = float(self.world.game_mode.zone_y)
         if "zone_radius" in self.world.game_mode: zone_radius = float(self.world.game_mode.zone_radius)
 
+    if self.world != null and "weather_stations" in self.world and self.world.weather_stations != null and self.world.weather_stations.size() > 0:
+        var best_station = null
+        var best_dist = 999999999.0
+        var my_team = ""
+        if "team" in self.ball:
+            my_team = self.ball.team
+        for station in self.world.weather_stations:
+            if station.owner_team != my_team or station.capture_progress < 100.0:
+                var s_dist = (self.ball.x - station.x) * (self.ball.x - station.x) + (self.ball.y - station.y) * (self.ball.y - station.y)
+                if s_dist < best_dist:
+                    best_dist = s_dist
+                    best_station = station
+        if best_station != null:
+            target_x = float(best_station.x)
+            target_y = float(best_station.y)
+            if "radius" in best_station:
+                zone_radius = float(best_station.radius)
+
     var dx = target_x - self.ball.x
     var dy = target_y - self.ball.y
     var dist = sqrt(dx * dx + dy * dy)

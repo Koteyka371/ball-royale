@@ -78,6 +78,8 @@ def test_alchemist_immunity_and_speed():
     assert b.hp == 90 # immune to direct hazard damage from poison
 
 def test_alchemist_apply_poison_on_attack():
+    import random
+    random.seed(1)
     w = MockWorld()
     b = Alchemist(1, 0.0, 0.0)
     w.balls.append(b)
