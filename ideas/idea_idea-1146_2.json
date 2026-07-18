@@ -1,0 +1,4 @@
+{
+    "title": "Payload Overload Mod",
+    "description": "An arena mutator where the payload's damage aura exponentially increases in radius if it is continuously pushed by players. If the pushers step away for too long, the payload vents the built-up heat in a massive explosion, damaging everyone nearby."
+}

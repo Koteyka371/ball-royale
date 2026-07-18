@@ -1,0 +1,4 @@
+{
+    "title": "Reverse Escort Mode",
+    "description": "In this mode, a single payload starts at the center and both teams fight to pull it towards their own base. The payload acts like a heavy magnet, moving slowly towards the team that has more players near it. If it touches a team's base, they score a point."
+}

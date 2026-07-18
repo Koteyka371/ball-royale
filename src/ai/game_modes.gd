@@ -5717,7 +5717,7 @@ class DualPayloadMode extends GameMode:
 					if typeof(b) == TYPE_OBJECT and typeof(payload_red) == TYPE_OBJECT and b == payload_red:
 						continue
 					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
-					if b_team != payload_team:
+					if b_team == payload_team:
 						continue
 
 					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
@@ -5763,7 +5763,7 @@ class DualPayloadMode extends GameMode:
 						if typeof(b) == TYPE_OBJECT and typeof(payload_red) == TYPE_OBJECT and b == payload_red:
 							continue
 						var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
-						if b_team != "Red":
+						if b_team == "Red":
 							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
 							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
 							var bdx = bx - red_x
@@ -5792,7 +5792,7 @@ class DualPayloadMode extends GameMode:
 					else:
 						payload_red.set("turret_active", false)
 
-				var dx = center_x - red_x
+				var dx = (arena_width - 100.0) - red_x
 				var dy = center_y - red_y
 				var dist = sqrt(dx*dx + dy*dy)
 				if dist > 5.0:
@@ -5827,7 +5827,7 @@ class DualPayloadMode extends GameMode:
 					if typeof(b) == TYPE_OBJECT and typeof(payload_blue) == TYPE_OBJECT and b == payload_blue:
 						continue
 					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
-					if b_team != payload_team:
+					if b_team == payload_team:
 						continue
 
 					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
@@ -5873,7 +5873,7 @@ class DualPayloadMode extends GameMode:
 						if typeof(b) == TYPE_OBJECT and typeof(payload_blue) == TYPE_OBJECT and b == payload_blue:
 							continue
 						var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
-						if b_team != "Blue":
+						if b_team == "Blue":
 							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
 							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
 							var bdx = bx - blue_x
@@ -5902,7 +5902,7 @@ class DualPayloadMode extends GameMode:
 					else:
 						payload_blue.set("turret_active", false)
 
-				var dx = center_x - blue_x
+				var dx = 100.0 - blue_x
 				var dy = center_y - blue_y
 				var dist = sqrt(dx*dx + dy*dy)
 				if dist > 5.0:
@@ -6228,7 +6228,7 @@ class EscortMode extends GameMode:
 						continue
 
 					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
-					if b_team != payload_team:
+					if b_team == payload_team:
 						continue
 
 					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")

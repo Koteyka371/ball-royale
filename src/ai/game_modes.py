@@ -3575,7 +3575,7 @@ class DualPayloadMode(GameMode):
                     continue
                 if not getattr(b, "alive", False) or b == self.payload_red:
                     continue
-                if getattr(b, "team", "") != "Red":
+                if getattr(b, "team", "") != "Blue":
                     continue
 
                 bdx = getattr(b, "x", 0) - getattr(self.payload_red, "x", 0)
@@ -3599,7 +3599,7 @@ class DualPayloadMode(GameMode):
                 for b in balls:
                     if getattr(b, "ball_type", None) == "spectator": continue
                     if not getattr(b, "alive", False) or b == self.payload_red: continue
-                    if getattr(b, "team", "") != "Red":
+                    if getattr(b, "team", "") == "Red":
                         bdx = getattr(b, "x", 0) - getattr(self.payload_red, "x", 0)
                         bdy = getattr(b, "y", 0) - getattr(self.payload_red, "y", 0)
                         dist_to_enemy = math.hypot(bdx, bdy)
@@ -3623,7 +3623,7 @@ class DualPayloadMode(GameMode):
                     if math.hypot(bdx, bdy) <= 150.0:
                         b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
 
-            dx = center_x - getattr(self.payload_red, "x", 0)
+            dx = (arena_width - 100.0) - getattr(self.payload_red, "x", 0)
             dy = center_y - getattr(self.payload_red, "y", 0)
             dist = math.hypot(dx, dy)
             if dist > 5.0:
@@ -3638,7 +3638,7 @@ class DualPayloadMode(GameMode):
                     continue
                 if not getattr(b, "alive", False) or b == self.payload_blue:
                     continue
-                if getattr(b, "team", "") != "Blue":
+                if getattr(b, "team", "") != "Red":
                     continue
 
                 bdx = getattr(b, "x", 0) - getattr(self.payload_blue, "x", 0)
@@ -3662,7 +3662,7 @@ class DualPayloadMode(GameMode):
                 for b in balls:
                     if getattr(b, "ball_type", None) == "spectator": continue
                     if not getattr(b, "alive", False) or b == self.payload_blue: continue
-                    if getattr(b, "team", "") != "Blue":
+                    if getattr(b, "team", "") == "Blue":
                         bdx = getattr(b, "x", 0) - getattr(self.payload_blue, "x", 0)
                         bdy = getattr(b, "y", 0) - getattr(self.payload_blue, "y", 0)
                         dist_to_enemy = math.hypot(bdx, bdy)
@@ -3686,7 +3686,7 @@ class DualPayloadMode(GameMode):
                     if math.hypot(bdx, bdy) <= 150.0:
                         b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
 
-            dx = center_x - getattr(self.payload_blue, "x", 0)
+            dx = 100.0 - getattr(self.payload_blue, "x", 0)
             dy = center_y - getattr(self.payload_blue, "y", 0)
             dist = math.hypot(dx, dy)
             if dist > 5.0:

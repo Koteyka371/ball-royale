@@ -57,6 +57,17 @@ def test_dual_payload_tick():
 
     mode.setup(world, balls)
 
+    # Set up positions to trigger movement
+    # Red Payload (team Red) is at 100.0, 500.0
+    # To move Red Payload to the right (arena_width - 100), we need Blue players near it
+    balls[1].x = 100.0
+    balls[1].y = 500.0
+
+    # Blue Payload (team Blue) is at 900.0, 500.0
+    # To move Blue Payload to the left (100.0), we need Red players near it
+    balls[3].x = 900.0
+    balls[3].y = 500.0
+
     initial_red_x = mode.payload_red.x
     initial_blue_x = mode.payload_blue.x
 
