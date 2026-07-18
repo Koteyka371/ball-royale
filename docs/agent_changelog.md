@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1103] Quantum Tangle Mode — *2026-07-18 04:03:51 UTC*
+
+Players are paired randomly and any damage taken by one player is shared with the other, requiring tight coordination and careful play.
+
+---
+
 ## [idea-1108] Weather Stations — *2026-07-18 03:41:01 UTC*
 
 Add capture-able weather stations in the arena that let a team control the weather in their sector.

@@ -18920,7 +18920,7 @@
     },
     {
       "id": "idea-1103",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tangle Mode",
@@ -29901,6 +29901,91 @@
         "src/ai/laser_reflector_shield_booster.py",
         "src/ai/laser_reflector_shield_booster.gd",
         "tests/test_laser_reflector_shield_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1748",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunneler Booster",
+      "description": "A booster that allows a player to briefly pass through hazards, walls, and bumpers without taking damage or knockback. While active, the player becomes slightly transparent and ignores physical collisions, making it useful for escaping tight corners or bypassing defenses.",
+      "allowed_paths": [
+        "src/ai/quantum_tunneler_booster.py",
+        "src/ai/quantum_tunneler_booster.gd",
+        "tests/test_quantum_tunneler_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1749",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Weather Anomalies",
+      "description": "A rare hazard where weather conditions in a small sector flip between extreme opposites (e.g., heatwave to blizzard) every few seconds, requiring rapid adaptation to moving and fighting.",
+      "allowed_paths": [
+        "src/ai/quantum_anomalies.py",
+        "src/ai/quantum_anomalies.gd",
+        "tests/test_quantum_anomalies.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1750",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Weather Transmitters",
+      "description": "An item that allows a player to place a fake weather station. When an enemy tries to capture it, it instead emits an EMP or a localized debuff storm.",
+      "allowed_paths": [
+        "src/ai/decoy_transmitters.py",
+        "src/ai/decoy_transmitters.gd",
+        "tests/test_decoy_transmitters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1751",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Decoy Resonance",
+      "description": "When Trickster swaps places with a decoy using their skill, it unleashes a small resonance wave at both the origin and destination that briefly slows enemies caught in the radius.",
+      "allowed_paths": [
+        "src/ai/trickster_decoy_resonance.py",
+        "src/ai/trickster_decoy_resonance.gd",
+        "tests/test_trickster_decoy_resonance.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1752",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Mirror Image Dash",
+      "description": "Trickster can dash a short distance and leave behind a temporary mirror image that mimics their previous movement path for 2 seconds before dissipating, adding confusing mobility.",
+      "allowed_paths": [
+        "src/ai/trickster_mirror_image_dash.py",
+        "src/ai/trickster_mirror_image_dash.gd",
+        "tests/test_trickster_mirror_image_dash.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
