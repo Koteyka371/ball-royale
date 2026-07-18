@@ -20439,6 +20439,70 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "tether_booster":
+                var enemies = _get_enemies()
+                var allies = _get_allies_internal()
+
+                var closest_enemy = null
+                var min_enemy_dist = 999999999.0
+                for e in enemies:
+                    var alive = true
+                    if typeof(e) == TYPE_OBJECT:
+                        if "alive" in e: alive = e.alive
+                    elif typeof(e) == TYPE_DICTIONARY:
+                        if e.has("alive"): alive = e.alive
+                    if alive and e != self.ball:
+                        var dx = e.x - self.ball.x
+                        var dy = e.y - self.ball.y
+                        var d = dx*dx + dy*dy
+                        if d < min_enemy_dist:
+                            min_enemy_dist = d
+                            closest_enemy = e
+
+                var closest_ally = null
+                var min_ally_dist = 999999999.0
+                for a in allies:
+                    var alive = true
+                    if typeof(a) == TYPE_OBJECT:
+                        if "alive" in a: alive = a.alive
+                    elif typeof(a) == TYPE_DICTIONARY:
+                        if a.has("alive"): alive = a.alive
+                    if alive and a != self.ball:
+                        var dx = a.x - self.ball.x
+                        var dy = a.y - self.ball.y
+                        var d = dx*dx + dy*dy
+                        if d < min_ally_dist:
+                            min_ally_dist = d
+                            closest_ally = a
+
+                if closest_enemy != null and closest_ally != null:
+                    if typeof(closest_enemy) == TYPE_OBJECT:
+                        if "forced_tether_target" in closest_enemy: closest_enemy.forced_tether_target = closest_ally
+                        elif closest_enemy.has_method("set_meta"): closest_enemy.set_meta("forced_tether_target", closest_ally)
+                        if "forced_tether_timer" in closest_enemy: closest_enemy.forced_tether_timer = 10.0
+                        elif closest_enemy.has_method("set_meta"): closest_enemy.set_meta("forced_tether_timer", 10.0)
+                    elif typeof(closest_enemy) == TYPE_DICTIONARY:
+                        closest_enemy.forced_tether_target = closest_ally
+                        closest_enemy.forced_tether_timer = 10.0
+                elif closest_enemy != null:
+                    if typeof(closest_enemy) == TYPE_OBJECT:
+                        if "forced_tether_target" in closest_enemy: closest_enemy.forced_tether_target = self.ball
+                        elif closest_enemy.has_method("set_meta"): closest_enemy.set_meta("forced_tether_target", self.ball)
+                        if "forced_tether_timer" in closest_enemy: closest_enemy.forced_tether_timer = 10.0
+                        elif closest_enemy.has_method("set_meta"): closest_enemy.set_meta("forced_tether_timer", 10.0)
+                    elif typeof(closest_enemy) == TYPE_DICTIONARY:
+                        closest_enemy.forced_tether_target = self.ball
+                        closest_enemy.forced_tether_timer = 10.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "teleport_booster":
                 var old_x = self.ball.x
                 if "pre_teleport_x" in self.ball: old_x = self.ball.pre_teleport_x
@@ -29591,6 +29655,56 @@ func _update_skill_timer(delta: float):
                             else:
                                 if "x" in b: b.x += nx * pull_strength
                                 if "y" in b: b.y += ny * pull_strength
+
+    var f_tether_timer = 0.0
+    if "forced_tether_timer" in self.ball:
+        f_tether_timer = float(self.ball.forced_tether_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("forced_tether_timer"):
+        f_tether_timer = self.ball.get_meta("forced_tether_timer")
+    if f_tether_timer > 0:
+        f_tether_timer -= delta
+        if "forced_tether_timer" in self.ball:
+            self.ball.forced_tether_timer = f_tether_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("forced_tether_timer", f_tether_timer)
+
+        var target = null
+        if "forced_tether_target" in self.ball:
+            target = self.ball.forced_tether_target
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("forced_tether_target"):
+            target = self.ball.get_meta("forced_tether_target")
+
+        var target_alive = false
+        if target != null:
+            if typeof(target) == TYPE_OBJECT:
+                if "alive" in target: target_alive = target.alive
+            elif typeof(target) == TYPE_DICTIONARY:
+                if target.has("alive"): target_alive = target.alive
+
+        if target != null and target_alive:
+            var damage = 20.0 * delta
+            if "hp" in self.ball:
+                self.ball.hp -= damage
+                if self.ball.hp <= 0:
+                    self.ball.hp = 0
+                    if "alive" in self.ball:
+                        self.ball.alive = false
+
+            var target_x = target.x if typeof(target) == TYPE_OBJECT else target.x
+            var target_y = target.y if typeof(target) == TYPE_OBJECT else target.y
+
+            var dx = target_x - self.ball.x
+            var dy = target_y - self.ball.y
+            var dist_sq = dx*dx + dy*dy
+            if dist_sq > 10000:
+                var dist = sqrt(dist_sq)
+                var nx = dx / dist
+                var ny = dy / dist
+                var pull_speed = 100.0
+                if "speed" in self.ball: pull_speed = self.ball.speed
+                pull_speed = pull_speed * 3.0 * delta
+                self.ball.x += nx * pull_speed
+                self.ball.y += ny * pull_speed
 
     var pull_timer = 0.0
     if "pull_booster_timer" in self.ball:
