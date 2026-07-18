@@ -1,0 +1,4 @@
+{
+  "title": "Shrink Ray Traps",
+  "description": "A deployable trap that, when an enemy touches it, reduces their size (radius), damage, and max health by 50% for 5 seconds, making them highly vulnerable to being bullied or knocked out of the arena."
+}

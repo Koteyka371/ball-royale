@@ -10736,6 +10736,42 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "tether_booster":
+                    # Find closest enemy and closest ally
+                    enemies = self._get_enemies()
+                    allies = self._get_allies()
+
+                    closest_enemy = None
+                    min_enemy_dist = float('inf')
+                    for e in enemies:
+                        if getattr(e, "alive", True) and getattr(e, "id", None) != getattr(self.ball, "id", None):
+                            d = (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2
+                            if d < min_enemy_dist:
+                                min_enemy_dist = d
+                                closest_enemy = e
+
+                    closest_ally = None
+                    min_ally_dist = float('inf')
+                    for a in allies:
+                        if getattr(a, "alive", True) and getattr(a, "id", None) != getattr(self.ball, "id", None):
+                            d = (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2
+                            if d < min_ally_dist:
+                                min_ally_dist = d
+                                closest_ally = a
+
+                    if closest_enemy and closest_ally:
+                        closest_enemy.forced_tether_target = closest_ally
+                        closest_enemy.forced_tether_timer = 10.0
+                    elif closest_enemy:
+                        closest_enemy.forced_tether_target = self.ball
+                        closest_enemy.forced_tether_timer = 10.0
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "teleport_booster":
                     # Store original position BEFORE teleporting and BEFORE moving towards the booster
                     old_x = getattr(self.ball, "_pre_teleport_x", self.ball.x)
@@ -15520,6 +15556,28 @@ class Action:
                                 pull_strength = 150.0 * delta
                                 b.x += nx * pull_strength
                                 b.y += ny * pull_strength
+
+        if hasattr(self.ball, "forced_tether_timer") and getattr(self.ball, "forced_tether_timer", 0.0) > 0:
+            self.ball.forced_tether_timer -= delta
+            target = getattr(self.ball, "forced_tether_target", None)
+            if target and getattr(target, "alive", True):
+                # Damage tick
+                damage = 20.0 * delta
+                if hasattr(self.ball, "hp"):
+                    self.ball.hp -= damage
+                    if self.ball.hp <= 0:
+                        self.ball.hp = 0
+                        self.ball.alive = False
+
+                # Pull
+                dist_sq = (self.ball.x - target.x)**2 + (self.ball.y - target.y)**2
+                if dist_sq > 10000: # 100 range
+                    import math
+                    dist = math.sqrt(dist_sq)
+                    nx, ny = (target.x - self.ball.x) / dist, (target.y - self.ball.y) / dist
+                    pull_speed = getattr(self.ball, "speed", 100.0) * 3.0 * delta
+                    self.ball.x += nx * pull_speed
+                    self.ball.y += ny * pull_speed
 
         if hasattr(self.ball, "pull_booster_timer") and self.ball.pull_booster_timer > 0:
             self.ball.pull_booster_timer -= delta
