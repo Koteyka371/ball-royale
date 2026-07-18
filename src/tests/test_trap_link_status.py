@@ -28,6 +28,7 @@ def test_trap_link_status():
     enemy.team = "enemy"
 
     world = MagicMock()
+    world.flare_light_timer = 0.0
     world.balls = [ball, enemy]
     world.arena.hazards = []
     world.arena.safe_zone_center = (500, 500)
@@ -62,6 +63,7 @@ def test_trap_link_damage():
     enemy.team = "enemy"
 
     world = MagicMock()
+    world.flare_light_timer = 0.0
     world.balls = [ball, enemy]
     world.arena.hazards = []
     world.arena.safe_zone_center = (500, 500)
