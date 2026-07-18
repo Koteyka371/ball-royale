@@ -16370,6 +16370,25 @@ func execute(strategy: String, delta: float):
                 wall_state = self.world.arena.boundary_states[hit_wall]
 
         var speed_sq = vx*vx + vy*vy
+        var speed = 0.0
+        if speed_sq > 0:
+            speed = sqrt(speed_sq)
+
+        if hit_wall != "" and "arena" in self.world and self.world.arena != null and "boundary_health" in self.world.arena and speed > 800.0:
+            var health = 2000.0
+            if self.world.arena.boundary_health.has(hit_wall):
+                health = self.world.arena.boundary_health[hit_wall]
+
+            health -= speed * 0.2
+            self.world.arena.boundary_health[hit_wall] = health
+
+            if health <= 0.0:
+                var new_states = ["abyss", "spikes"]
+                var new_state = new_states[randi() % new_states.size()]
+                self.world.arena.boundary_states[hit_wall] = new_state
+                wall_state = new_state
+            elif health < 1000.0:
+                wall_state = "damaged_bouncy"
 
         if wall_state == "sticky":
             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
@@ -16423,6 +16442,21 @@ func execute(strategy: String, delta: float):
             # Bouncy walls cause high-speed ricochets to make dodging harder and create chaotic collisions
             if wall_state == "bouncy":
                 new_speed = min(speed * 3.5, 4500.0)
+            elif wall_state == "damaged_bouncy":
+                new_speed = min(speed * 2.0, 3000.0)
+            elif wall_state == "abyss":
+                new_speed = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["hp"] = 0
+                    self.ball["alive"] = false
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("hp", 0)
+                    self.ball.set_meta("alive", false)
+                else:
+                    if "hp" in self.ball: self.ball.hp = 0
+                    if "alive" in self.ball: self.ball.alive = false
+            elif wall_state == "spikes":
+                new_speed = speed * 0.5
             elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Extreme Bounciness":
                 new_speed = min(speed * 4.0, 5000.0)
             elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Jump Pad Boundaries":
@@ -16466,8 +16500,34 @@ func execute(strategy: String, delta: float):
             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball["ball_type"]
             var is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-            if wall_state == "bouncy":
+            if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss":
                 pass
+            elif wall_state == "spikes":
+                var dmg = 250.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("is_bleeding", true)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["is_bleeding"] = true
+                if "is_bleeding" in self.ball:
+                    self.ball.is_bleeding = true
+
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+                    self.ball.take_damage(dmg)
+                else:
+                    var cur_hp = 100.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): cur_hp = self.ball["hp"]
+                    elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: cur_hp = self.ball.hp
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): cur_hp = self.ball.get_meta("hp")
+
+                    cur_hp -= dmg
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = cur_hp
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", cur_hp)
+                    elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = cur_hp
+
+                    if cur_hp <= 0:
+                        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["alive"] = false
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+                        elif typeof(self.ball) == TYPE_OBJECT and "alive" in self.ball: self.ball.alive = false
             elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                 var dmg = speed * 0.05
 

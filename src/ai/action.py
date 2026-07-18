@@ -8552,6 +8552,25 @@ class Action:
             if hit_wall and hasattr(self.world, "arena") and hasattr(self.world.arena, "boundary_states"):
                 wall_state = self.world.arena.boundary_states.get(hit_wall, "normal")
 
+                speed_sq = vx*vx + vy*vy
+                if speed_sq > 0:
+                    speed = _math.sqrt(speed_sq)
+                else:
+                    speed = 0.0
+
+                if speed > 800.0 and hasattr(self.world.arena, "boundary_health"):
+                    health = self.world.arena.boundary_health.get(hit_wall, 2000.0)
+                    health -= speed * 0.2
+                    self.world.arena.boundary_health[hit_wall] = health
+
+                    if health <= 0.0:
+                        import random
+                        new_state = random.choice(["abyss", "spikes"])
+                        self.world.arena.boundary_states[hit_wall] = new_state
+                        wall_state = new_state
+                    elif health < 1000.0:
+                        wall_state = "damaged_bouncy"
+
             if wall_state == "sticky":
                 self.ball.vx = 0.0
                 self.ball.vy = 0.0
@@ -8588,6 +8607,14 @@ class Action:
                 # Bouncy walls cause high-speed ricochets to make dodging harder and create chaotic collisions
                 if wall_state == "bouncy":
                     new_speed = min(speed * 3.5, 4500.0)
+                elif wall_state == "damaged_bouncy":
+                    new_speed = min(speed * 2.0, 3000.0)
+                elif wall_state == "abyss":
+                    new_speed = 0.0
+                    self.ball.hp = 0
+                    self.ball.alive = False
+                elif wall_state == "spikes":
+                    new_speed = speed * 0.5
                 elif gm and getattr(gm, "name", "") == "Bouncy Terrain":
                     new_speed = min(speed * 2.5, 3500.0)
                 elif gm and getattr(gm, "name", "") == "Extreme Bounciness":
@@ -8623,8 +8650,18 @@ class Action:
                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                 is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-                if wall_state == "bouncy":
-                    pass # Bouncy walls don't deal damage
+                if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss":
+                    pass # Bouncy walls don't deal damage (abyss is already handled)
+                elif wall_state == "spikes":
+                    damage = 250.0
+                    setattr(self.ball, "is_bleeding", True)
+
+                    if hasattr(self.ball, "take_damage"):
+                        self.ball.take_damage(damage)
+                    elif hasattr(self.ball, "hp"):
+                        self.ball.hp -= damage
+                        if self.ball.hp <= 0:
+                            self.ball.alive = False
                 elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                     damage = speed * 0.05
 
