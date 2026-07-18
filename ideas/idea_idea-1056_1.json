@@ -1,0 +1,4 @@
+{
+  "title": "Homing Beacon Attachment",
+  "description": "A new drop that when collected attaches to the ball. Their basic attacks will now home in slightly towards the nearest enemy within a certain cone, ensuring better accuracy at the cost of reduced raw damage per hit."
+}
