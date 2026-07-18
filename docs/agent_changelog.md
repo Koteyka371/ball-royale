@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1129] Elemental Resonance Trap — *2026-07-18 22:37:45 UTC*
+
+A new trap that behaves like a normal mine, but instead of dealing damage, it forcefully spawns a random elemental hazard (fire zone or poison cloud) at its location upon triggering. If a tornado touches it, it creates a massive elemental explosion before converting the tornado into an elemental storm.
+
+---
+
 ## [idea-1132] Shrinking Danger Zones Arena — *2026-07-18 22:33:31 UTC*
 
 A dynamic procedural arena element where circular 'danger zones' periodically appear on the map. After a warning delay, any balls caught within the zone take heavy damage. The zones gradually shrink in size over the course of the match, forcing close-quarters combat.

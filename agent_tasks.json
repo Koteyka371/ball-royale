@@ -19362,7 +19362,7 @@
     },
     {
       "id": "idea-1129",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Elemental Resonance Trap",
@@ -30309,6 +30309,23 @@
         "src/arena/quantum_shifter_trap.py",
         "src/arena/quantum_shifter_trap.gd",
         "tests/test_quantum_shifter_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1772",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones within Danger Zones",
+      "description": "In large danger zones, small temporary 'safe bubbles' appear. Balls must fight for control of these tiny bubbles to survive the danger zone's massive damage pulses. The bubbles slowly drift around the danger zone, forcing continuous movement.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones_within_danger_zones.py",
+        "src/ai/shrinking_safe_zones_within_danger_zones.gd",
+        "tests/test_shrinking_safe_zones_within_danger_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
