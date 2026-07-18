@@ -1,0 +1,4 @@
+{
+  "title": "Friction Modifier Zone",
+  "description": "Zones that randomly spawn and change the friction of the floor. Some zones are icy (zero friction), while others are like mud (high friction), forcing players to adapt their movement."
+}

@@ -4364,6 +4364,87 @@ class VampireRoyaleMode(GameMode):
         return None
 
 
+class PulsingGravityWellMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pulsing Gravity Well"
+        self.description = "Balls must stay near a central point to earn points. A gravity well pulses every 10 seconds, pushing everyone away."
+        self.tick_timer = 0.0
+        self.pulse_timer = 0.0
+        self.game_time = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        pass
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        self.game_time = 0.0
+        self.pulse_timer = 0.0
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.score = 0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        self.game_time += delta
+        self.tick_timer += delta
+        self.pulse_timer += delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+        zone_radius = 200.0
+
+        if self.tick_timer >= 0.5:
+            self.tick_timer = 0.0
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    dist_sq = (b.x - center_x) ** 2 + (b.y - center_y) ** 2
+                    if dist_sq <= zone_radius ** 2:
+                        b.score = getattr(b, "score", 0) + 1
+
+        if self.pulse_timer >= 10.0:
+            self.pulse_timer = 0.0
+            if hasattr(world, "add_event"):
+                world.add_event("gravity_pulse", {"x": center_x, "y": center_y})
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    import math
+                    dx = b.x - center_x
+                    dy = b.y - center_y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist < 0.001:
+                        dx = 1.0
+                        dy = 0.0
+                        dist = 1.0
+                    nx = dx / dist
+                    ny = dy / dist
+                    push_strength = max(0, 1500.0 - dist)
+                    b.vx = getattr(b, "vx", 0.0) + nx * push_strength
+                    b.vy = getattr(b, "vy", 0.0) + ny * push_strength
+
+    def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            return "Draw"
+
+        best_score = -1
+        best_team = None
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                score = getattr(b, "score", 0)
+                if score >= 100:
+                    return getattr(b, "team", b.ball_type)
+                if score > best_score:
+                    best_score = score
+                    best_team = getattr(b, "team", b.ball_type)  # noqa: F841
+        return None
+
 class MassiveGravityWellMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -19950,6 +20031,7 @@ GAME_MODES = {
     "black_hole": BlackHoleMode(),
     "sweeping_black_hole": SweepingBlackHoleMode(),
     "gravity_well": GravityWellMode(),
+    "pulsing_gravity_well": PulsingGravityWellMode(),
     "massive_gravity_well": MassiveGravityWellMode(),
     "king_of_the_hill": KingOfTheHillMode(),
     "moving_zone": MovingZoneMode(),
