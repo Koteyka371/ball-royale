@@ -39788,3 +39788,5 @@ class DynamicDangerZonesMode extends GameMode:
 		zones = active_zones
 
 GAME_MODES['dynamic_danger_zones'] = DynamicDangerZonesMode.new()
+const RandomTeleporterModeClass = preload("res://src/ai/random_teleporter.gd")
+GAME_MODES['random_teleporter'] = RandomTeleporterModeClass.new()
