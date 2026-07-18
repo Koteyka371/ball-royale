@@ -23843,10 +23843,45 @@ func _use_skill():
                                     elif hazard.kind == "poison_cloud":
                                         elemental_effect = "poison_aura"
 
+
                     for h in hazards_to_remove:
                         var idx = arena.hazards.find(h)
                         if idx != -1:
                             arena.hazards.remove_at(idx)
+
+            if self.has_meta("_rock_spawns"):
+                var spawns = self.get_meta("_rock_spawns")
+                if typeof(spawns) == TYPE_ARRAY:
+                    for s in spawns:
+                        var rock_id = 10000 + (randi() % 1000)
+                        if world != null and "arena" in world and world.arena != null:
+                            var hazards = []
+                            if "hazards" in world.arena:
+                                hazards = world.arena.hazards
+                            elif world.arena.has_method("get_meta") and world.arena.has_meta("hazards"):
+                                hazards = world.arena.get_meta("hazards")
+                            rock_id = hazards.size() + (randi() % 1000)
+                        var rock = null
+                        if world != null and "arena" in world and world.arena != null and typeof(world.arena) == TYPE_DICTIONARY:
+                            rock = {"id": rock_id, "x": s.x, "y": s.y, "radius": s.radius, "kind": "solidified_lava", "damage": 0.0, "duration": 5.0, "active": true}
+                        elif world != null and "arena" in world and world.arena != null and world.arena.has_method("create_hazard"):
+                            rock = world.arena.create_hazard(rock_id, s.x, s.y, s.radius, "solidified_lava", 0.0)
+                        if rock != null:
+                            if "duration" in rock:
+                                rock.duration = 5.0
+                            elif typeof(rock) == TYPE_OBJECT and rock.has_method("set_meta"):
+                                rock.set_meta("duration", 5.0)
+                            if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+                                world.arena.hazards.append(rock)
+                            elif world != null and "arena" in world and world.arena != null and world.arena.has_method("has_meta") and world.arena.has_meta("hazards"):
+                                var hz = world.arena.get_meta("hazards")
+                                hz.append(rock)
+                self.remove_meta("_rock_spawns")
+
+
+
+
+
 
             # Deal damage
             for e in enemies:
@@ -24858,15 +24893,44 @@ func _use_skill():
                         var smoke_id = hazards.size() + (randi() % 9000 + 1000)
                         var smoke = null
                         if typeof(hazards) == TYPE_ARRAY and hazards.size() > 0 and typeof(hazards[0]) == TYPE_DICTIONARY:
-                            smoke = {"id": smoke_id, "x": s.x, "y": s.y, "radius": 80.0, "kind": "smokescreen", "damage": 0.0, "duration": 5.0, "active": true}
+                            smoke = {"id": smoke_id, "x": s.x, "y": s.y, "radius": 80.0, "kind": "steam_cloud", "damage": 0.0, "duration": 5.0, "active": true}
                         elif self.world.arena.has_method("create_hazard"):
-                            smoke = self.world.arena.create_hazard(smoke_id, s.x, s.y, 80.0, "smokescreen", 0.0)
+                            smoke = self.world.arena.create_hazard(smoke_id, s.x, s.y, 80.0, "steam_cloud", 0.0)
                             if smoke != null:
                                 if "duration" in smoke: smoke.duration = 5.0
                                 elif smoke.has_method("set_meta"): smoke.set_meta("duration", 5.0)
 
                         if smoke != null:
                             hazards.append(smoke)
+
+                        # Steam cloud provides stealth to allies
+                        var b_team = -1
+                        if "team" in self.ball: b_team = self.ball.team
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"): b_team = self.ball.get_meta("team")
+
+                        var balls = []
+                        if "balls" in self.world: balls = self.world.balls
+                        elif self.world != null and self.world.has_method("get_meta") and self.world.has_meta("balls"): balls = self.world.get_meta("balls")
+
+                        for ally in balls:
+                            var a_team = -2
+                            if "team" in ally: a_team = ally.team
+                            elif typeof(ally) == TYPE_OBJECT and ally.has_method("get_meta") and ally.has_meta("team"): a_team = ally.get_meta("team")
+
+                            if a_team == b_team:
+                                var dx = ally.x - s.x
+                                var dy = ally.y - s.y
+                                if sqrt(dx*dx + dy*dy) <= 150.0:
+                                    var current_timer = 0.0
+                                    if "stealth_drone_timer" in ally: current_timer = ally.stealth_drone_timer
+                                    elif typeof(ally) == TYPE_OBJECT and ally.has_method("get_meta") and ally.has_meta("stealth_drone_timer"): current_timer = ally.get_meta("stealth_drone_timer")
+
+                                    if current_timer < 5.0:
+                                        if typeof(ally) == TYPE_DICTIONARY:
+                                            ally["stealth_drone_timer"] = 5.0
+                                        elif typeof(ally) == TYPE_OBJECT:
+                                            if "stealth_drone_timer" in ally: ally.stealth_drone_timer = 5.0
+                                            elif ally.has_method("set_meta"): ally.set_meta("stealth_drone_timer", 5.0)
                 self.remove_meta("_smokescreen_spawns")
 
             if is_raining:
@@ -25445,11 +25509,51 @@ func _use_skill():
                                 hazards_to_remove.append(hazard)
                             elif "kind" in hazard and (hazard.kind == "lava" or hazard.kind == "lava_puddle" or hazard.kind == "lava_pit"):
                                 hazards_to_remove.append(hazard)
+                                if not self.has_meta("_rock_spawns"):
+                                    self.set_meta("_rock_spawns", [])
+                                var spawns = self.get_meta("_rock_spawns")
+                                spawns.append({"x": hazard.x, "y": hazard.y, "radius": hazard.radius if "radius" in hazard else 50.0})
+                                self.set_meta("_rock_spawns", spawns)
+
 
                     for h in hazards_to_remove:
                         var idx = arena.hazards.find(h)
                         if idx != -1:
                             arena.hazards.remove_at(idx)
+
+            if self.has_meta("_rock_spawns"):
+                var spawns = self.get_meta("_rock_spawns")
+                if typeof(spawns) == TYPE_ARRAY:
+                    for s in spawns:
+                        var rock_id = 10000 + (randi() % 1000)
+                        if world != null and "arena" in world and world.arena != null:
+                            var hazards = []
+                            if "hazards" in world.arena:
+                                hazards = world.arena.hazards
+                            elif world.arena.has_method("get_meta") and world.arena.has_meta("hazards"):
+                                hazards = world.arena.get_meta("hazards")
+                            rock_id = hazards.size() + (randi() % 1000)
+                        var rock = null
+                        if world != null and "arena" in world and world.arena != null and typeof(world.arena) == TYPE_DICTIONARY:
+                            rock = {"id": rock_id, "x": s.x, "y": s.y, "radius": s.radius, "kind": "solidified_lava", "damage": 0.0, "duration": 5.0, "active": true}
+                        elif world != null and "arena" in world and world.arena != null and world.arena.has_method("create_hazard"):
+                            rock = world.arena.create_hazard(rock_id, s.x, s.y, s.radius, "solidified_lava", 0.0)
+                        if rock != null:
+                            if "duration" in rock:
+                                rock.duration = 5.0
+                            elif typeof(rock) == TYPE_OBJECT and rock.has_method("set_meta"):
+                                rock.set_meta("duration", 5.0)
+                            if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+                                world.arena.hazards.append(rock)
+                            elif world != null and "arena" in world and world.arena != null and world.arena.has_method("has_meta") and world.arena.has_meta("hazards"):
+                                var hz = world.arena.get_meta("hazards")
+                                hz.append(rock)
+                self.remove_meta("_rock_spawns")
+
+
+
+
+
 
 
 

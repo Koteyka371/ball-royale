@@ -13509,9 +13509,17 @@ class Action:
                     from arena.procedural_arena import Hazard # type: ignore
                     for sx, sy in self._smokescreen_spawns:
                         smoke_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
-                        smoke = Hazard(smoke_id, sx, sy, 80.0, "smokescreen", 0.0)
+                        smoke = Hazard(smoke_id, sx, sy, 80.0, "steam_cloud", 0.0)
                         setattr(smoke, 'duration', 5.0)
                         self.world.arena.hazards.append(smoke)
+                        # Steam cloud provides temporary stealth to nearby allies
+                        if hasattr(self.world, "balls"):
+                            for ally in self.world.balls:
+                                if getattr(ally, "team", -1) == getattr(self.ball, "team", -1):
+                                    dx = ally.x - sx
+                                    dy = ally.y - sy
+                                    if math.sqrt(dx*dx + dy*dy) <= 150.0:
+                                        ally.stealth_drone_timer = max(getattr(ally, "stealth_drone_timer", 0.0), 5.0)
                     delattr(self, "_smokescreen_spawns")
 
                 if is_raining:
@@ -14014,10 +14022,23 @@ class Action:
                                 hazards_to_remove.append(hazard)
                             elif hasattr(hazard, "kind") and hazard.kind in ["lava", "lava_puddle", "lava_pit"]:
                                 hazards_to_remove.append(hazard)
+                                if not hasattr(self, "_rock_spawns"):
+                                    self._rock_spawns = []
+                                self._rock_spawns.append((getattr(hazard, "x", 0), getattr(hazard, "y", 0), getattr(hazard, "radius", 50.0)))
 
                     for h in hazards_to_remove:
                         if h in self.world.arena.hazards:
                             self.world.arena.hazards.remove(h)
+
+                if hasattr(self, "_rock_spawns"):
+                    from arena.procedural_arena import Hazard # type: ignore
+                    import random
+                    for sx, sy, sr in self._rock_spawns:
+                        rock_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                        rock = Hazard(rock_id, sx, sy, sr, "solidified_lava", 0.0)
+                        setattr(rock, 'duration', 5.0)
+                        self.world.arena.hazards.append(rock)
+                    delattr(self, "_rock_spawns")
 
             elif skill_name == "toggle_polarity":
                 current_polarity = getattr(self.ball, "polarity", 0)
