@@ -286,9 +286,10 @@ class Perception:
                                 data["boosters"].append(h)
                     else:
                         # Make sure it's not already in there by id
-                        if getattr(h, "kind", "") == "drone_item" or getattr(h, "kind", "") == "stealth_drone_item" or getattr(h, "kind", "") == "shadow_booster" or getattr(h, "kind", "") == "stealth_booster":
-                            if not any(getattr(b, "id", None) == h.id for b in data["boosters"]):
-                                data["boosters"].append(h)
+                        if getattr(h, "kind", "") == "drone_item" or getattr(h, "kind", "") == "stealth_drone_item" or getattr(h, "kind", "") == "shadow_booster" or getattr(h, "kind", "") == "stealth_booster" or getattr(h, "kind", "") == "sound_mine":
+                            if getattr(h, "kind", "") != "sound_mine":
+                                if not any(getattr(b, "id", None) == h.id for b in data["boosters"]):
+                                    data["boosters"].append(h)
                         else:
                             if not any(getattr(t, "id", None) == getattr(h, "id", None) for t in data["traps"]):
                                 data["traps"].append(h)
