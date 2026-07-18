@@ -19790,7 +19790,59 @@ class FrictionlessArenaModifierMode(GameMode):
                         b.frictionless_modifier_applied = True
 
 
+
+class SweepingRotatingLasersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sweeping Rotating Lasers"
+        self.description = "Rotating laser walls sweep across the arena, forcing players to move in specific patterns to avoid damage."
+        self.sweep_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.sweep_timer = 0.0
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+
+        aw = getattr(world.arena, "width", 1000.0)
+        ah = getattr(world.arena, "height", 1000.0)
+
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+
+        h1 = Hazard(id="sweep_rot_1", x=0, y=ah/2, radius=400.0, kind="spinning_laser", damage=50.0)
+        h2 = Hazard(id="sweep_rot_2", x=aw, y=ah/2, radius=400.0, kind="spinning_laser", damage=50.0)
+        h1.duration = 9999.0
+        h2.duration = 9999.0
+        world.arena.hazards.append(h1)
+        world.arena.hazards.append(h2)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"): return
+
+        import math
+        self.sweep_timer += delta
+        aw = getattr(world.arena, "width", 1000.0)
+
+        for h in world.arena.hazards:
+            if getattr(h, "id", "") == "sweep_rot_1":
+                h.x = (aw / 2.0) + math.sin(self.sweep_timer * 0.5) * (aw / 2.0 - 100.0)
+            elif getattr(h, "id", "") == "sweep_rot_2":
+                h.x = (aw / 2.0) - math.sin(self.sweep_timer * 0.5) * (aw / 2.0 - 100.0)
+
 GAME_MODES = {
+    "sweeping_rotating_lasers": SweepingRotatingLasersMode(),
     'frictionless_arena_modifier': FrictionlessArenaModifierMode(),
     'gravity_reversal_mutator': GravityReversalMutatorMode(),
     'platformer': PlatformerMode(),

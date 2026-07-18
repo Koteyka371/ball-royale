@@ -32085,7 +32085,108 @@ class FrictionlessArenaModifierMode extends GameMode:
 							b.set_meta("frictionless_modifier_applied", true)
 
 
+
+class SweepingRotatingLasersMode extends GameMode:
+	var sweep_timer = 0.0
+
+	func _init():
+		super()
+		name = "Sweeping Rotating Lasers"
+		description = "Rotating laser walls sweep across the arena, forcing players to move in specific patterns to avoid damage."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		sweep_timer = 0.0
+
+		if not "arena" in world or not world.arena:
+			return
+
+		var arena_ref = world.arena
+		var has_hazards = false
+		if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("hazards"): has_hazards = true
+		elif typeof(arena_ref) == TYPE_OBJECT and "hazards" in arena_ref: has_hazards = true
+
+		if not has_hazards:
+			if typeof(arena_ref) == TYPE_DICTIONARY:
+				arena_ref["hazards"] = []
+			else:
+				arena_ref.hazards = []
+
+		var aw = 1000.0
+		if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("width"): aw = arena_ref["width"]
+		elif typeof(arena_ref) == TYPE_OBJECT and "width" in arena_ref: aw = arena_ref.width
+
+		var ah = 1000.0
+		if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("height"): ah = arena_ref["height"]
+		elif typeof(arena_ref) == TYPE_OBJECT and "height" in arena_ref: ah = arena_ref.height
+
+		var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+		var h1 = null
+		if ProceduralArenaScript and "Hazard" in ProceduralArenaScript:
+			h1 = ProceduralArenaScript.Hazard.new("sweep_rot_1", 0, ah / 2.0, 400.0, "spinning_laser", 50.0)
+		else:
+			h1 = {"id": "sweep_rot_1", "x": 0, "y": ah / 2.0, "radius": 400.0, "kind": "spinning_laser", "damage": 50.0, "active": true, "duration": 9999.0}
+
+		var h2 = null
+		if ProceduralArenaScript and "Hazard" in ProceduralArenaScript:
+			h2 = ProceduralArenaScript.Hazard.new("sweep_rot_2", aw, ah / 2.0, 400.0, "spinning_laser", 50.0)
+		else:
+			h2 = {"id": "sweep_rot_2", "x": aw, "y": ah / 2.0, "radius": 400.0, "kind": "spinning_laser", "damage": 50.0, "active": true, "duration": 9999.0}
+
+		if typeof(h1) == TYPE_OBJECT:
+			h1.duration = 9999.0
+		if typeof(h2) == TYPE_OBJECT:
+			h2.duration = 9999.0
+
+		if typeof(arena_ref) == TYPE_DICTIONARY:
+			arena_ref["hazards"].append(h1)
+			arena_ref["hazards"].append(h2)
+		else:
+			arena_ref.hazards.append(h1)
+			arena_ref.hazards.append(h2)
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		if not "arena" in world or not world.arena:
+			return
+
+		var arena_ref = world.arena
+		var has_hazards = false
+		if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("hazards"): has_hazards = true
+		elif typeof(arena_ref) == TYPE_OBJECT and "hazards" in arena_ref: has_hazards = true
+
+		if not has_hazards:
+			return
+
+		sweep_timer += delta
+		var aw = 1000.0
+		if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("width"): aw = arena_ref["width"]
+		elif typeof(arena_ref) == TYPE_OBJECT and "width" in arena_ref: aw = arena_ref.width
+
+		var hazards_list = []
+		if typeof(arena_ref) == TYPE_DICTIONARY:
+			hazards_list = arena_ref["hazards"]
+		else:
+			hazards_list = arena_ref.hazards
+
+		for h in hazards_list:
+			var h_id = ""
+			if typeof(h) == TYPE_DICTIONARY and h.has("id"): h_id = h["id"]
+			elif typeof(h) == TYPE_OBJECT and "id" in h: h_id = h.id
+
+			if h_id == "sweep_rot_1":
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = (aw / 2.0) + sin(sweep_timer * 0.5) * (aw / 2.0 - 100.0)
+				else:
+					h.x = (aw / 2.0) + sin(sweep_timer * 0.5) * (aw / 2.0 - 100.0)
+			elif h_id == "sweep_rot_2":
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = (aw / 2.0) - sin(sweep_timer * 0.5) * (aw / 2.0 - 100.0)
+				else:
+					h.x = (aw / 2.0) - sin(sweep_timer * 0.5) * (aw / 2.0 - 100.0)
+
 GAME_MODES = {
+	"sweeping_rotating_lasers": SweepingRotatingLasersMode.new(),
 	"faction_war": FactionWarMode.new(),
 	"frictionless_arena_modifier": FrictionlessArenaModifierMode.new(),
 	"bounty_contract_event": BountyContractEventMode.new(),
