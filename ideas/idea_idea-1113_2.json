@@ -1,0 +1,4 @@
+{
+  "title": "Chameleon Mimic Enemy",
+  "description": "A new AI enemy type that spawns disguised as a random booster or health pack. If a player approaches within a short distance, it transforms into an aggressive fast-moving enemy, forcing players to use perception skills or cautiously approach loot."
+}
