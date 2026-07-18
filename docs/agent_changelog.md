@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1089] Black Hole Singularity Mode — *2026-07-18 02:18:20 UTC*
+
+A game mode where the entire arena slowly pulls all players toward a massive black hole in the center. The gravitational pull becomes stronger as time progresses. Players must use their movement skills and boosters to avoid getting sucked in while trying to push their enemies into the event horizon. This mode focuses on positioning and displacement.
+
+---
+
 ## [idea-1106] Anti-Gravity Hazard Traps — *2026-07-18 02:18:15 UTC*
 
 Introduce a new type of placeable hazard trap that creates a localized zero-gravity or reverse-gravity bubble. Any enemy ball stepping inside loses all friction and gets slowly pushed towards the edge of the arena, making them easy targets for snipers and tricksters.
