@@ -2257,6 +2257,64 @@ func _init(ball_ref, world_ref):
 func execute(strategy: String, delta: float):
 
     if self.world != null:
+        var gm = self.world.get("game_mode")
+        if gm != null:
+            var gm_name = ""
+            var mutators_active = false
+            var mutators = []
+            if typeof(gm) == TYPE_OBJECT:
+                if "name" in gm: gm_name = gm.name
+                if "mutators_active" in gm: mutators_active = gm.mutators_active
+                if "mutators" in gm: mutators = gm.mutators
+            elif typeof(gm) == TYPE_DICTIONARY:
+                if gm.has("name"): gm_name = gm["name"]
+                if gm.has("mutators_active"): mutators_active = gm["mutators_active"]
+                if gm.has("mutators"): mutators = gm["mutators"]
+
+            if gm_name == "Custom Match" and mutators_active and mutators.has("kinetic_ghost"):
+                var vx = 0.0
+                var vy = 0.0
+                var base_speed = 100.0
+                if typeof(self.ball) == TYPE_OBJECT:
+                    if "vx" in self.ball: vx = self.ball.vx
+                    if "vy" in self.ball: vy = self.ball.vy
+                    if "base_speed" in self.ball: base_speed = self.ball.base_speed
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("vx"): vx = self.ball["vx"]
+                    if self.ball.has("vy"): vy = self.ball["vy"]
+                    if self.ball.has("base_speed"): base_speed = self.ball["base_speed"]
+
+                var speed = sqrt(vx*vx + vy*vy)
+                if speed > base_speed * 1.5:
+                    if randf() < 0.2 * delta:
+                        var curr = 0.0
+                        if typeof(self.ball) == TYPE_OBJECT:
+                            if "phase_booster_timer" in self.ball: curr = self.ball.phase_booster_timer
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("phase_booster_timer"): curr = self.ball.get_meta("phase_booster_timer")
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("phase_booster_timer"):
+                            curr = self.ball["phase_booster_timer"]
+
+                        var new_timer = max(curr, 0.5)
+                        if typeof(self.ball) == TYPE_OBJECT:
+                            if "phase_booster_timer" in self.ball: self.ball.phase_booster_timer = new_timer
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("phase_booster_timer", new_timer)
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["phase_booster_timer"] = new_timer
+
+                        var curr_hz = 0.0
+                        if typeof(self.ball) == TYPE_OBJECT:
+                            if "hazard_immunity_timer" in self.ball: curr_hz = self.ball.hazard_immunity_timer
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("hazard_immunity_timer"): curr_hz = self.ball.get_meta("hazard_immunity_timer")
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hazard_immunity_timer"):
+                            curr_hz = self.ball["hazard_immunity_timer"]
+
+                        var new_hz_timer = max(curr_hz, 0.5)
+                        if typeof(self.ball) == TYPE_OBJECT:
+                            if "hazard_immunity_timer" in self.ball: self.ball.hazard_immunity_timer = new_hz_timer
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("hazard_immunity_timer", new_hz_timer)
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["hazard_immunity_timer"] = new_hz_timer
+
         var flare_timer = 0.0
         if "flare_light_timer" in self.world:
             flare_timer = self.world.flare_light_timer

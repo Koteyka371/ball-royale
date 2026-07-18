@@ -1284,6 +1284,17 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        gm = getattr(self.world, 'game_mode', None)
+        if gm and getattr(gm, 'name', '') == 'Custom Match' and getattr(gm, 'mutators_active', False) and 'kinetic_ghost' in getattr(gm, 'mutators', []):
+            vx = getattr(self.ball, 'vx', 0.0)
+            vy = getattr(self.ball, 'vy', 0.0)
+            speed = (vx**2 + vy**2)**0.5
+            if speed > getattr(self.ball, 'base_speed', 100.0) * 1.5:
+                import random
+                if random.random() < 0.2 * delta:
+                    self.ball.phase_booster_timer = max(getattr(self.ball, 'phase_booster_timer', 0.0), 0.5)
+                    self.ball.hazard_immunity_timer = max(getattr(self.ball, 'hazard_immunity_timer', 0.0), 0.5)
+
         flare_timer = getattr(self.world, 'flare_light_timer', 0.0)
         if isinstance(flare_timer, (int, float)) and flare_timer > 0.0:
             # We decrement based on number of active balls so the total drain matches delta roughly
