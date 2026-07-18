@@ -8669,6 +8669,9 @@ func execute(strategy: String, delta: float):
                     radius *= 1.5
                     explosion_damage *= 1.5
 
+                if this_decoy_type == "flash":
+                    radius = 300.0
+
                 if simultaneous:
                     radius *= 2.0
                     explosion_damage *= 2.0
@@ -8738,6 +8741,13 @@ func execute(strategy: String, delta: float):
                                             other.hp = min(max_hp, other.hp + heal_amount)
                                         elif other.has_method("set_meta") and other.has_meta("hp"):
                                             other.set_meta("hp", min(max_hp, other.get_meta("hp") + heal_amount))
+
+                                    elif b_decoy_type == "flash" and is_enemy:
+                                        if "is_blinded" in other: other.is_blinded = true
+                                        elif other.has_method("set_meta"): other.set_meta("is_blinded", true)
+
+                                        if "blindness_timer" in other: other.blindness_timer = 3.0
+                                        elif other.has_method("set_meta"): other.set_meta("blindness_timer", 3.0)
 
                                     elif is_enemy and b_decoy_type != "healing":
                                         var emp_combo = false
@@ -23904,7 +23914,7 @@ func _use_skill():
                         self.ball["survival_swap_target_id"] = next_id
                         self.ball["survival_swap_timer"] = 3.0
 
-        elif skill_name == "deploy_decoy":
+        elif skill_name == "deploy_decoy" or skill_name == "deploy_decoy_flash":
             var active_decoys = []
             var has_swapped_any = false
             if "balls" in self.world:
@@ -24056,6 +24066,21 @@ func _use_skill():
                             var angle = 0.0 if i == 0 else PI
                             decoy.x += cos(angle) * 30.0
                             decoy.y += sin(angle) * 30.0
+
+                            var b_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_meta("ball_type") if self.ball.has_method("has_meta") and self.ball.has_meta("ball_type") else "")
+                            var dtype = "explosive"
+                            if skill_name == "deploy_decoy_flash":
+                                dtype = "flash"
+                            elif b_type == "trickster":
+                                if randf() < 0.5:
+                                    dtype = "stun_trap"
+                                else:
+                                    dtype = "explosive"
+
+                            if decoy.has_method("set_meta"):
+                                decoy.set_meta("decoy_type", dtype)
+                            elif decoy is Dictionary:
+                                decoy["decoy_type"] = dtype
 
                             var has_rearm = false
                             if "rearm_damage_boost" in self.ball and self.ball.rearm_damage_boost:

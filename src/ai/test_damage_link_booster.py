@@ -37,6 +37,7 @@ def test_damage_link_booster_collection():
     enemy.ball_type = "basic2"
 
     world = MagicMock()
+    world.flare_light_timer = 0.0
     world.balls = [ball, enemy]
     world.arena.safe_zone_center = (500, 500)
     world.arena.safe_zone_radius = 2000
@@ -66,6 +67,7 @@ def test_damage_link_booster_damage_sharing():
     enemy.damage_link_target = ball
 
     world = MagicMock()
+    world.flare_light_timer = 0.0
     world.balls = [ball, enemy]
     world.arena.hazards = []
     world.arena.safe_zone_center = (500, 500)

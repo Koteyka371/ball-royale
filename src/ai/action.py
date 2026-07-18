@@ -4506,6 +4506,10 @@ class Action:
                                 radius *= 1.5
                                 explosion_damage *= 1.5
 
+                            b_decoy_type_pre = getattr(b, "decoy_type", "")
+                            if b_decoy_type_pre == "flash":
+                                radius = 300.0
+
                             if simultaneous:
                                 radius *= 2.0
                                 explosion_damage *= 2.0
@@ -4534,6 +4538,9 @@ class Action:
                                         elif decoy_type == "healing" and is_ally:
                                             heal_amount = 30.0
                                             other.hp = min(getattr(other, "max_hp", 100.0), other.hp + heal_amount)
+                                        elif decoy_type == "flash" and is_enemy:
+                                            other.is_blinded = True
+                                            other.blindness_timer = 3.0
                                         elif is_enemy and decoy_type != "healing":
                                             # Check for EMP combo (explosive + stun)
                                             emp_combo = False
@@ -12681,7 +12688,7 @@ class Action:
                         self.ball.survival_swap_target_id = decoy.id
                         self.ball.survival_swap_timer = 3.0
 
-            elif skill_name == "deploy_decoy":
+            elif skill_name in ["deploy_decoy", "deploy_decoy_flash"]:
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
                 if active_decoys:
@@ -12761,7 +12768,9 @@ class Action:
                         decoy.x += offset_x
                         decoy.y += offset_y
 
-                        if getattr(self.ball, "ball_type", "") == "trickster":
+                        if skill_name == "deploy_decoy_flash":
+                            decoy.decoy_type = "flash"
+                        elif getattr(self.ball, "ball_type", "") == "trickster":
                             if random.random() < 0.5:
                                 decoy.decoy_type = "stun_trap"
                             else:
