@@ -2255,6 +2255,87 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var delayed_swap = 0.0
+    if "delayed_swap_timer" in self.ball: delayed_swap = self.ball.delayed_swap_timer
+    elif self.ball is Dictionary and self.ball.has("delayed_swap_timer"): delayed_swap = self.ball.get("delayed_swap_timer")
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("delayed_swap_timer"): delayed_swap = self.ball.get_meta("delayed_swap_timer")
+
+    if delayed_swap > 0.0:
+        delayed_swap -= delta
+        if delayed_swap <= 0.0:
+            delayed_swap = 0.0
+            var target_decoy = null
+            if "delayed_swap_target" in self.ball: target_decoy = self.ball.delayed_swap_target
+            elif self.ball is Dictionary and self.ball.has("delayed_swap_target"): target_decoy = self.ball.get("delayed_swap_target")
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("delayed_swap_target"): target_decoy = self.ball.get_meta("delayed_swap_target")
+
+            var target_alive = false
+            if target_decoy != null:
+                if "alive" in target_decoy: target_alive = target_decoy.alive
+                elif target_decoy is Dictionary and target_decoy.has("alive"): target_alive = target_decoy.get("alive")
+                elif typeof(target_decoy) == TYPE_OBJECT and target_decoy.has_method("has_meta") and target_decoy.has_meta("alive"): target_alive = target_decoy.get_meta("alive")
+
+                var in_balls = false
+                if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                    in_balls = target_decoy in self.world.balls
+
+                if target_alive and in_balls:
+                    # Swap
+                    var tx = target_decoy.x if "x" in target_decoy else target_decoy.get("position").x if target_decoy.get("position") != null else 0.0
+                    var ty = target_decoy.y if "y" in target_decoy else target_decoy.get("position").y if target_decoy.get("position") != null else 0.0
+
+                    var bx = self.ball.x if "x" in self.ball else self.ball.get("position").x if self.ball.get("position") != null else 0.0
+                    var by = self.ball.y if "y" in self.ball else self.ball.get("position").y if self.ball.get("position") != null else 0.0
+
+                    if "x" in self.ball:
+                        self.ball.x = tx
+                        self.ball.y = ty
+                    else:
+                        self.ball.position.x = tx
+                        self.ball.position.y = ty
+
+                    if "x" in target_decoy:
+                        target_decoy.x = bx
+                        target_decoy.y = by
+                    else:
+                        target_decoy.position.x = bx
+                        target_decoy.position.y = by
+
+                    # Apply confusion
+                    var all_entities = []
+                    if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                        all_entities = self.world.balls
+                    for e in all_entities:
+                        var e_team = e.team if "team" in e else e.get("team") if e is Dictionary else e.get_meta("team") if e.has_method("has_meta") and e.has_meta("team") else null
+                        var b_team = self.ball.team if "team" in self.ball else self.ball.get("team") if self.ball is Dictionary else self.ball.get_meta("team") if self.ball.has_method("has_meta") and self.ball.has_meta("team") else null
+
+                        var e_alive = e.alive if "alive" in e else e.get("alive", true) if e is Dictionary else e.get_meta("alive") if e.has_method("has_meta") and e.has_meta("alive") else true
+
+                        if e_team != b_team and e_alive:
+                            var ex = e.x if "x" in e else e.get("position").x if e.get("position") != null else 0.0
+                            var ey = e.y if "y" in e else e.get("position").y if e.get("position") != null else 0.0
+
+                            var bx_curr = self.ball.x if "x" in self.ball else self.ball.get("position").x if self.ball.get("position") != null else 0.0
+                            var by_curr = self.ball.y if "y" in self.ball else self.ball.get("position").y if self.ball.get("position") != null else 0.0
+
+                            var dist_sq = (ex - bx_curr) * (ex - bx_curr) + (ey - by_curr) * (ey - by_curr)
+                            if dist_sq < 22500: # 150 radius
+                                var c_time = e.confusion_timer if "confusion_timer" in e else e.get("confusion_timer", 0.0) if e is Dictionary else e.get_meta("confusion_timer") if e.has_method("has_meta") and e.has_meta("confusion_timer") else 0.0
+                                var new_c = max(c_time, 3.0)
+                                if "confusion_timer" in e: e.confusion_timer = new_c
+                                elif e is Dictionary: e["confusion_timer"] = new_c
+                                elif e.has_method("set_meta"): e.set_meta("confusion_timer", new_c)
+
+            target_decoy = null
+            if "delayed_swap_target" in self.ball: self.ball.delayed_swap_target = null
+            elif self.ball is Dictionary: self.ball["delayed_swap_target"] = null
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("delayed_swap_target", null)
+
+        if "delayed_swap_timer" in self.ball: self.ball.delayed_swap_timer = delayed_swap
+        elif self.ball is Dictionary: self.ball["delayed_swap_timer"] = delayed_swap
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("delayed_swap_timer", delayed_swap)
+
+
 
     if self.world != null:
         var flare_timer = 0.0
@@ -22472,6 +22553,76 @@ func _use_skill():
             else:
                 self.ball.energy_shield_active = true
                 self.ball.energy_shield_timer = 3.0
+        elif skill_name == "delayed_decoy_swap":
+            var decoy = null
+            if self.ball.has_method("duplicate"):
+                decoy = self.ball.duplicate()
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                decoy = self.ball.duplicate()
+
+            if decoy != null:
+                var self_id = self.ball.id if "id" in self.ball else self.ball.get("id") if self.ball is Dictionary else self.ball.get_meta("id") if self.ball.has_method("has_meta") else null
+
+                if "id" in decoy: decoy.id = randi() % 90000 + 10000
+                if "hp" in decoy: decoy.hp = float(self.ball.hp) * 0.5
+                if "max_hp" in decoy: decoy.max_hp = float(self.ball.max_hp) * 0.5
+                if "damage" in decoy: decoy.damage = 0.0
+                if "speed" in decoy: decoy.speed = float(self.ball.get("speed", 5.0))
+                if "skill_timer" in decoy: decoy.skill_timer = 9999.0
+                if "attack_timer" in decoy: decoy.attack_timer = 9999.0
+
+                if typeof(decoy) == TYPE_DICTIONARY:
+                    decoy.owner_id = self_id
+                    decoy.is_decoy = true
+                    decoy.decoy_timer = 3.5
+                    decoy.SKILL = null
+                    decoy.skill = null
+                    decoy.active_skill = null
+                    decoy.x = self.ball.x
+                    decoy.y = self.ball.y
+                    decoy.vx = 0.0
+                    decoy.vy = 0.0
+                elif decoy.has_method("set_meta"):
+                    decoy.set_meta("owner_id", self_id)
+                    decoy.owner_id = self_id
+                    decoy.set_meta("is_decoy", true)
+                    decoy.is_decoy = true
+                    decoy.set_meta("decoy_timer", 3.5)
+                    decoy.decoy_timer = 3.5
+                    decoy.set_meta("SKILL", null)
+                    if "SKILL" in decoy: decoy.SKILL = null
+                    decoy.set_meta("skill", null)
+                    if "skill" in decoy: decoy.skill = null
+                    decoy.set_meta("active_skill", null)
+                    if "active_skill" in decoy: decoy.active_skill = null
+                    decoy.x = self.ball.x
+                    decoy.y = self.ball.y
+                    decoy.vx = 0.0
+                    decoy.vy = 0.0
+
+                if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                    self.world.balls.append(decoy)
+
+                if "delayed_swap_timer" in self.ball:
+                    self.ball.delayed_swap_timer = 3.0
+                elif self.ball is Dictionary:
+                    self.ball["delayed_swap_timer"] = 3.0
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("delayed_swap_timer", 3.0)
+
+                if "delayed_swap_target" in self.ball:
+                    self.ball.delayed_swap_target = decoy
+                elif self.ball is Dictionary:
+                    self.ball["delayed_swap_target"] = decoy
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("delayed_swap_target", decoy)
+
+                var cooldown = 5.0
+                if "SKILL_COOLDOWN" in self.ball: cooldown = self.ball.SKILL_COOLDOWN
+                if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+                elif self.ball is Dictionary: self.ball["skill_timer"] = cooldown
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
         elif skill_name == "trickster_swap":
             var all_entities = []
             if "balls" in self.world:

@@ -1,1 +1,4 @@
-{"title": "Aggro Redirect Traps", "description": "Introduce a trap type that spawns a decoy on activation, instantly drawing aggro from nearby AI and forcing them to attack the decoy instead of the player."}
+{
+  "title": "Kinetic Reversal Shield",
+  "description": "A temporary buff that converts all incoming damage during a 2-second window into health and stamina regeneration instead of taking damage. If the user takes no damage during the shield's duration, it violently shatters, applying a 'vulnerable' debuff to themselves."
+}

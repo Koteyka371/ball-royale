@@ -1284,7 +1284,39 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
-        if getattr(self.world, 'flare_light_timer', 0.0) > 0.0:
+        if getattr(self.ball, "delayed_swap_timer", 0.0) > 0.0:
+            self.ball.delayed_swap_timer -= delta
+            if self.ball.delayed_swap_timer <= 0:
+                self.ball.delayed_swap_timer = 0.0
+                target_decoy = getattr(self.ball, "delayed_swap_target", None)
+                if target_decoy and getattr(target_decoy, "alive", True) and target_decoy in getattr(self.world, "balls", []):
+                    # Swap positions
+                    self.ball.x, target_decoy.x = target_decoy.x, self.ball.x
+                    self.ball.y, target_decoy.y = target_decoy.y, self.ball.y
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'teleport', 'id': getattr(self.ball, 'id', 0)})
+                        self.world.events.append({'type': 'teleport', 'id': getattr(target_decoy, 'id', 0)})
+
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("visual_effect", {"type": "trickster_swap", "x": self.ball.x, "y": self.ball.y})
+
+                    # Apply confusion to nearby enemies
+                    import math
+                    for e in getattr(self.world, "balls", []):
+                        if getattr(e, "team", None) != getattr(self.ball, "team", None) and getattr(e, "alive", True):
+                            if math.hypot(e.x - self.ball.x, e.y - self.ball.y) < 150:
+                                e.confusion_timer = max(getattr(e, "confusion_timer", 0.0), 3.0)
+                self.ball.delayed_swap_target = None
+
+        flare_timer = getattr(self.world, 'flare_light_timer', 0.0)
+        try:
+            if flare_timer > 0.0:
+                pass
+        except TypeError:
+            flare_timer = 0.0
+
+        if flare_timer > 0.0:
             # We decrement based on number of active balls so the total drain matches delta roughly
             ball_count = max(1, len(getattr(self.world, 'balls', [1])))
             self.world.flare_light_timer -= delta / ball_count
@@ -13124,6 +13156,39 @@ class Action:
                     thrown_bomb.team = getattr(self.ball, "team", None)
                     self.world.arena.hazards.append(thrown_bomb)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+            elif skill_name == "delayed_decoy_swap":
+                import copy
+                import random
+                decoy = copy.copy(self.ball)
+                decoy.owner_id = getattr(self.ball, "id", None)
+                decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                if hasattr(self.world, "next_id"):
+                    self.world.next_id += 1
+
+                decoy.hp = getattr(self.ball, "hp", 100) * 0.5
+                decoy.max_hp = getattr(self.ball, "max_hp", 100) * 0.5
+                decoy.damage = 0
+                decoy.speed = getattr(self.ball, "speed", 5.0)
+                decoy.skill_timer = 9999.0
+                decoy.attack_timer = 9999.0
+                decoy.is_decoy = True
+                decoy.decoy_timer = 3.5  # lives long enough for the swap
+                decoy.SKILL = None
+                decoy.skill = None
+                decoy.active_skill = None
+
+                # Place slightly ahead or same pos
+                decoy.x = self.ball.x
+                decoy.y = self.ball.y
+                decoy.vx = 0.0
+                decoy.vy = 0.0
+
+                self.world.balls.append(decoy)
+
+                self.ball.delayed_swap_timer = 3.0
+                self.ball.delayed_swap_target = decoy
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
 
             elif skill_name == "throw_decoy":
                 import copy
