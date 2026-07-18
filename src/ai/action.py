@@ -1280,6 +1280,28 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "trap_disarm_timer", 0.0) > 0:
+            self.ball.trap_disarm_timer -= delta
+            if self.ball.trap_disarm_timer < 0:
+                self.ball.trap_disarm_timer = 0.0
+
+            if self.ball.trap_disarm_timer > 0 and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for hazard in self.world.arena.hazards:
+                    kind = getattr(hazard, "kind", "")
+                    if "trap" in kind or "mine" in kind:
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx*dx + dy*dy
+                        # Reveal invisible traps
+                        if getattr(hazard, "invisible", getattr(hazard, "is_invisible", False)):
+                            if dist_sq <= 500*500: # large radius 500
+                                if hasattr(hazard, "invisible"): hazard.invisible = False
+                                if hasattr(hazard, "is_invisible"): hazard.is_invisible = False
+                        # Destroy traps without triggering if rolled over
+                        radius_sum = getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 10.0)
+                        if dist_sq <= radius_sum*radius_sum:
+                            hazard.duration = 0.0
+
         if getattr(self.ball, "tracker_booster_timer", 0.0) > 0:
             self.ball.tracker_booster_timer -= delta
             if self.ball.tracker_booster_timer <= 0:
@@ -10365,6 +10387,12 @@ class Action:
 
                 elif getattr(nearest, "kind", None) == "silencer_attachment":
                     self.ball.silencer_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "trap_disarm_kit":
+                    self.ball.trap_disarm_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:

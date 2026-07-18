@@ -2244,6 +2244,66 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var trap_disarm = 0.0
+    if typeof(self.ball) == TYPE_OBJECT:
+        if "trap_disarm_timer" in self.ball: trap_disarm = self.ball.trap_disarm_timer
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("trap_disarm_timer"): trap_disarm = self.ball.get_meta("trap_disarm_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("trap_disarm_timer"):
+        trap_disarm = self.ball.trap_disarm_timer
+
+    if trap_disarm > 0.0:
+        trap_disarm -= delta
+        if trap_disarm < 0: trap_disarm = 0.0
+
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "trap_disarm_timer" in self.ball: self.ball.trap_disarm_timer = trap_disarm
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("trap_disarm_timer", trap_disarm)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["trap_disarm_timer"] = trap_disarm
+
+        if trap_disarm > 0.0 and self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+            for hazard in self.world.arena.hazards:
+                var kind = ""
+                if typeof(hazard) == TYPE_OBJECT and "kind" in hazard: kind = hazard.kind
+                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): kind = hazard.kind
+
+                if kind.find("trap") != -1 or kind.find("mine") != -1:
+                    var hx = hazard.x if typeof(hazard) == TYPE_OBJECT else hazard["x"]
+                    var hy = hazard.y if typeof(hazard) == TYPE_OBJECT else hazard["y"]
+                    var dx = hx - self.ball.x
+                    var dy = hy - self.ball.y
+                    var dist_sq = dx*dx + dy*dy
+
+                    var is_invis = false
+                    if typeof(hazard) == TYPE_OBJECT:
+                        if "invisible" in hazard: is_invis = hazard.invisible
+                        elif hazard.has_method("has_meta") and hazard.has_meta("invisible"): is_invis = hazard.get_meta("invisible")
+                        elif "is_invisible" in hazard: is_invis = hazard.is_invisible
+                    elif typeof(hazard) == TYPE_DICTIONARY:
+                        if hazard.has("invisible"): is_invis = hazard.invisible
+                        elif hazard.has("is_invisible"): is_invis = hazard.is_invisible
+
+                    if is_invis and dist_sq <= 500*500:
+                        if typeof(hazard) == TYPE_OBJECT:
+                            if "invisible" in hazard: hazard.invisible = false
+                            elif hazard.has_method("set_meta"): hazard.set_meta("invisible", false)
+                            if "is_invisible" in hazard: hazard.is_invisible = false
+                        elif typeof(hazard) == TYPE_DICTIONARY:
+                            if hazard.has("invisible"): hazard["invisible"] = false
+                            if hazard.has("is_invisible"): hazard["is_invisible"] = false
+
+                    var h_rad = 10.0
+                    if typeof(hazard) == TYPE_OBJECT and "radius" in hazard: h_rad = hazard.radius
+                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): h_rad = hazard.radius
+                    var b_rad = 10.0
+                    if typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: b_rad = self.ball.radius
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): b_rad = self.ball.radius
+
+                    var radius_sum = b_rad + h_rad
+                    if dist_sq <= radius_sum*radius_sum:
+                        if typeof(hazard) == TYPE_OBJECT and "duration" in hazard: hazard.duration = 0.0
+                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): hazard["duration"] = 0.0
+
     var t_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT:
         if "tracker_booster_timer" in self.ball: t_timer = self.ball.tracker_booster_timer
@@ -21202,6 +21262,21 @@ func _collect_booster(delta: float):
                     self.ball.set_meta("charging_shockwave_shield_active", true)
                     self.ball.set_meta("charging_shockwave_shield_timer", 0.0)
 
+                if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "trap_disarm_kit":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["trap_disarm_timer"] = 5.0
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("trap_disarm_timer", 5.0)
+                else:
+                    self.ball.trap_disarm_timer = 5.0
                 if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
