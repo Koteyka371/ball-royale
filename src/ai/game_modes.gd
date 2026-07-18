@@ -32447,6 +32447,193 @@ class SweepingRotatingLasersMode extends GameMode:
 				else:
 					h.x = (aw / 2.0) - sin(sweep_timer * 0.5) * (aw / 2.0 - 100.0)
 
+
+class ReverseTagMode extends GameMode:
+	var scores = {}
+
+	func _init() -> void:
+		name = "Reverse Tag"
+		description = "Instead of avoiding the 'IT' player, being 'IT' gives passive points. When a player collides with 'IT', they steal the status. To prevent stalling, the 'IT' status drains max HP slowly, forcing them to tag someone else eventually."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var valid_balls = []
+		for b in balls:
+			var ball_type = b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else (b.get("ball_type") if "ball_type" in b else null)
+			if ball_type != "spectator":
+				valid_balls.append(b)
+				if typeof(b) == TYPE_DICTIONARY:
+					b["is_reverse_it"] = false
+					b["reverse_tag_cooldown"] = 0.0
+					var bid = b.get("id")
+					if bid != null:
+						scores[bid] = 0.0
+				else:
+					if b.has_method("set_meta"):
+						b.set_meta("is_reverse_it", false)
+						b.set_meta("reverse_tag_cooldown", 0.0)
+					else:
+						if "is_reverse_it" in b: b.is_reverse_it = false
+						if "reverse_tag_cooldown" in b: b.reverse_tag_cooldown = 0.0
+					var bid = b.get("id") if "id" in b else null
+					if bid != null:
+						scores[bid] = 0.0
+
+		if valid_balls.size() > 0:
+			var first_it = valid_balls[randi() % valid_balls.size()]
+			if typeof(first_it) == TYPE_DICTIONARY:
+				first_it["is_reverse_it"] = true
+			elif typeof(first_it) == TYPE_OBJECT and first_it.has_method("set_meta"):
+				first_it.set_meta("is_reverse_it", true)
+			else:
+				if "is_reverse_it" in first_it: first_it.is_reverse_it = true
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		var alive_balls = []
+		var it_balls = []
+
+		for b in balls:
+			var b_alive = b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.get("alive") if "alive" in b else false)
+			var b_type = b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else (b.get("ball_type") if "ball_type" in b else null)
+			if b_alive and b_type != "spectator":
+				alive_balls.append(b)
+				var is_it = b["is_reverse_it"] if typeof(b) == TYPE_DICTIONARY and b.has("is_reverse_it") else (b.get_meta("is_reverse_it") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_reverse_it") else (b.is_reverse_it if typeof(b) == TYPE_OBJECT and "is_reverse_it" in b else false))
+				if is_it:
+					it_balls.append(b)
+
+		if it_balls.size() == 0 and alive_balls.size() > 0:
+			var new_it = alive_balls[randi() % alive_balls.size()]
+			if typeof(new_it) == TYPE_DICTIONARY:
+				new_it["is_reverse_it"] = true
+			elif typeof(new_it) == TYPE_OBJECT and new_it.has_method("set_meta"):
+				new_it.set_meta("is_reverse_it", true)
+			else:
+				if "is_reverse_it" in new_it: new_it.is_reverse_it = true
+			it_balls.append(new_it)
+
+		for b in alive_balls:
+			var cd = b["reverse_tag_cooldown"] if typeof(b) == TYPE_DICTIONARY and b.has("reverse_tag_cooldown") else (b.get_meta("reverse_tag_cooldown") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("reverse_tag_cooldown") else (b.reverse_tag_cooldown if typeof(b) == TYPE_OBJECT and "reverse_tag_cooldown" in b else 0.0))
+			if cd > 0.0:
+				cd -= delta
+				if cd < 0.0: cd = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					b["reverse_tag_cooldown"] = cd
+				elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+					b.set_meta("reverse_tag_cooldown", cd)
+				else:
+					if "reverse_tag_cooldown" in b: b.reverse_tag_cooldown = cd
+
+			var is_it = b["is_reverse_it"] if typeof(b) == TYPE_DICTIONARY and b.has("is_reverse_it") else (b.get_meta("is_reverse_it") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_reverse_it") else (b.is_reverse_it if typeof(b) == TYPE_OBJECT and "is_reverse_it" in b else false))
+			if is_it:
+				var bid = b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.get("id") if "id" in b else null)
+				if bid != null:
+					var sc = 0.0
+					if scores.has(bid): sc = scores[bid]
+					scores[bid] = sc + 10.0 * delta
+
+				var max_hp = b["max_hp"] if typeof(b) == TYPE_DICTIONARY and b.has("max_hp") else (b.get("max_hp") if "max_hp" in b else 100.0)
+				var new_max_hp = max(1.0, max_hp - 5.0 * delta)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["max_hp"] = new_max_hp
+					if b.has("hp") and b["hp"] > new_max_hp:
+						b["hp"] = new_max_hp
+				elif typeof(b) == TYPE_OBJECT:
+					if "max_hp" in b: b.max_hp = new_max_hp
+					if "hp" in b and b.hp > new_max_hp: b.hp = new_max_hp
+
+		var n = alive_balls.size()
+		for i in range(n):
+			for j in range(i + 1, n):
+				var b1 = alive_balls[i]
+				var b2 = alive_balls[j]
+
+				var it1 = b1["is_reverse_it"] if typeof(b1) == TYPE_DICTIONARY and b1.has("is_reverse_it") else (b1.get_meta("is_reverse_it") if typeof(b1) == TYPE_OBJECT and b1.has_method("has_meta") and b1.has_meta("is_reverse_it") else (b1.is_reverse_it if typeof(b1) == TYPE_OBJECT and "is_reverse_it" in b1 else false))
+				var it2 = b2["is_reverse_it"] if typeof(b2) == TYPE_DICTIONARY and b2.has("is_reverse_it") else (b2.get_meta("is_reverse_it") if typeof(b2) == TYPE_OBJECT and b2.has_method("has_meta") and b2.has_meta("is_reverse_it") else (b2.is_reverse_it if typeof(b2) == TYPE_OBJECT and "is_reverse_it" in b2 else false))
+
+				if it1 == it2:
+					continue
+
+				var cd1 = b1["reverse_tag_cooldown"] if typeof(b1) == TYPE_DICTIONARY and b1.has("reverse_tag_cooldown") else (b1.get_meta("reverse_tag_cooldown") if typeof(b1) == TYPE_OBJECT and b1.has_method("has_meta") and b1.has_meta("reverse_tag_cooldown") else (b1.reverse_tag_cooldown if typeof(b1) == TYPE_OBJECT and "reverse_tag_cooldown" in b1 else 0.0))
+				var cd2 = b2["reverse_tag_cooldown"] if typeof(b2) == TYPE_DICTIONARY and b2.has("reverse_tag_cooldown") else (b2.get_meta("reverse_tag_cooldown") if typeof(b2) == TYPE_OBJECT and b2.has_method("has_meta") and b2.has_meta("reverse_tag_cooldown") else (b2.reverse_tag_cooldown if typeof(b2) == TYPE_OBJECT and "reverse_tag_cooldown" in b2 else 0.0))
+
+				var x1 = b1["x"] if typeof(b1) == TYPE_DICTIONARY and b1.has("x") else (b1.get("x") if "x" in b1 else 0.0)
+				var y1 = b1["y"] if typeof(b1) == TYPE_DICTIONARY and b1.has("y") else (b1.get("y") if "y" in b1 else 0.0)
+				var r1 = b1["radius"] if typeof(b1) == TYPE_DICTIONARY and b1.has("radius") else (b1.get("radius") if "radius" in b1 else 10.0)
+
+				var x2 = b2["x"] if typeof(b2) == TYPE_DICTIONARY and b2.has("x") else (b2.get("x") if "x" in b2 else 0.0)
+				var y2 = b2["y"] if typeof(b2) == TYPE_DICTIONARY and b2.has("y") else (b2.get("y") if "y" in b2 else 0.0)
+				var r2 = b2["radius"] if typeof(b2) == TYPE_DICTIONARY and b2.has("radius") else (b2.get("radius") if "radius" in b2 else 10.0)
+
+				var dx = x1 - x2
+				var dy = y1 - y2
+				var dist_sq = dx*dx + dy*dy
+				if dist_sq < (r1 + r2) * (r1 + r2):
+					if cd1 <= 0.0 and cd2 <= 0.0:
+						if typeof(b1) == TYPE_DICTIONARY:
+							b1["is_reverse_it"] = not it1
+							b2["is_reverse_it"] = not it2
+							b1["reverse_tag_cooldown"] = 1.0
+							b2["reverse_tag_cooldown"] = 1.0
+						elif typeof(b1) == TYPE_OBJECT and b1.has_method("set_meta"):
+							b1.set_meta("is_reverse_it", not it1)
+							b2.set_meta("is_reverse_it", not it2)
+							b1.set_meta("reverse_tag_cooldown", 1.0)
+							b2.set_meta("reverse_tag_cooldown", 1.0)
+						else:
+							if "is_reverse_it" in b1: b1.is_reverse_it = not it1
+							if "is_reverse_it" in b2: b2.is_reverse_it = not it2
+							if "reverse_tag_cooldown" in b1: b1.reverse_tag_cooldown = 1.0
+							if "reverse_tag_cooldown" in b2: b2.reverse_tag_cooldown = 1.0
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("reverse_tag", {"message": "Status Stolen!"})
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			var b_alive = b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.get("alive") if "alive" in b else false)
+			var b_type = b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else (b.get("ball_type") if "ball_type" in b else null)
+			if b_alive and b_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			if scores.size() > 0:
+				var best_id = null
+				var max_sc = -1.0
+				for k in scores.keys():
+					if scores[k] > max_sc:
+						max_sc = scores[k]
+						best_id = k
+				return str(best_id)
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else (b.get("team") if "team" in b else null)
+			if t == null: t = b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else (b.get("ball_type") if "ball_type" in b else null)
+			teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			if scores.size() > 0:
+				var best_id = null
+				var max_sc = -1.0
+				for k in scores.keys():
+					if scores[k] > max_sc:
+						max_sc = scores[k]
+						best_id = k
+
+				for b in balls:
+					var b_id = b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.get("id") if "id" in b else null)
+					if str(b_id) == str(best_id):
+						var t = b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else (b.get("team") if "team" in b else null)
+						if t != null: return t
+				return str(best_id)
+			for t in teams_alive.keys(): return t
+
+		return null
+
 GAME_MODES = {
 	"sweeping_rotating_lasers": SweepingRotatingLasersMode.new(),
 	"faction_war": FactionWarMode.new(),
@@ -32463,6 +32650,7 @@ GAME_MODES = {
 
 	"scorching_sun": ScorchingSunMode.new(),
 	"bounty_tag": BountyTagMode.new(),
+	"reverse_tag": ReverseTagMode.new(),
 	"cosmic_storm": CosmicStormMode.new(),
 	"temporal_rifts": TemporalRiftsMode.new(),
 		"sector_collapse": SectorCollapseMode.new(),
