@@ -6011,6 +6011,56 @@ func execute(strategy: String, delta: float):
 		if "magnet_tether_timer" in self.ball: self.ball.magnet_tether_timer = m_tether_timer
 		elif self.ball.has_method("set_meta"): self.ball.set_meta("magnet_tether_timer", m_tether_timer)
 
+		var tether_booster_timer = 0.0
+		if self.ball.has_method("has_meta") and self.ball.has_meta("tether_booster_timer"):
+			tether_booster_timer = self.ball.get_meta("tether_booster_timer")
+		elif "tether_booster_timer" in self.ball:
+			tether_booster_timer = self.ball.tether_booster_timer
+
+		if tether_booster_timer > 0:
+			var target = null
+			if self.ball.has_method("has_meta") and self.ball.has_meta("tether_booster_target"):
+				target = self.ball.get_meta("tether_booster_target")
+			elif "tether_booster_target" in self.ball:
+				target = self.ball.tether_booster_target
+
+			var is_target_alive = true
+			if target != null:
+				if "alive" in target:
+					is_target_alive = target.alive
+				elif target.has_method("has_meta") and target.has_meta("alive"):
+					is_target_alive = target.get_meta("alive")
+
+			if target != null and is_target_alive:
+				var bx = self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else self.ball.x if "x" in self.ball else 0.0
+				var by = self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else self.ball.y if "y" in self.ball else 0.0
+				var tx = target.get_meta("x") if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("x") else target.x if "x" in target else 0.0
+				var ty = target.get_meta("y") if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("y") else target.y if "y" in target else 0.0
+
+				var dx = bx - tx
+				var dy = by - ty
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > 0:
+					var pull_strength = 150.0 * delta
+					if dist < pull_strength:
+						pull_strength = dist
+
+					var nvx = (dx / dist) * pull_strength
+					var nvy = (dy / dist) * pull_strength
+
+					if typeof(target) == TYPE_DICTIONARY:
+						if "x" in target: target.x += nvx
+						if "y" in target: target.y += nvy
+					else:
+						if "x" in target: target.x += nvx
+						elif target.has_method("set_meta") and target.has_meta("x"): target.set_meta("x", target.get_meta("x") + nvx)
+						if "y" in target: target.y += nvy
+						elif target.has_method("set_meta") and target.has_meta("y"): target.set_meta("y", target.get_meta("y") + nvy)
+
+			tether_booster_timer -= delta
+			if "tether_booster_timer" in self.ball: self.ball.tether_booster_timer = tether_booster_timer
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("tether_booster_timer", tether_booster_timer)
+
 	if self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer"):
 		var st = self.ball.get_meta("silence_timer")
 		if st > 0.0:
@@ -19618,6 +19668,35 @@ func _collect_booster(delta: float):
                     var b_id = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("id") if self.ball.has_method("has_meta") and self.ball.has_meta("id") else (self.ball.id if "id" in self.ball else null))
                     self.world.events.append({"type": "time_stop", "data": {"id": b_id}})
 
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "tether_booster":
+                var enemies = self._get_enemies_internal()
+                if enemies.size() > 0:
+                    var min_d = 999999999.0
+                    var closest_enemy = null
+                    var bx = self.ball.get_meta("x") if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("x") else self.ball.x if "x" in self.ball else 0.0
+                    var by = self.ball.get_meta("y") if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("y") else self.ball.y if "y" in self.ball else 0.0
+                    for e in enemies:
+                        var ex = e.get_meta("x") if typeof(e) != TYPE_DICTIONARY and e.has_method("has_meta") and e.has_meta("x") else e.x if "x" in e else 0.0
+                        var ey = e.get_meta("y") if typeof(e) != TYPE_DICTIONARY and e.has_method("has_meta") and e.has_meta("y") else e.y if "y" in e else 0.0
+                        var d = (ex - bx)*(ex - bx) + (ey - by)*(ey - by)
+                        if d < min_d:
+                            min_d = d
+                            closest_enemy = e
+                    if closest_enemy != null:
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("tether_booster_timer", 3.0)
+                            self.ball.set_meta("tether_booster_target", closest_enemy)
+                        else:
+                            self.ball.tether_booster_timer = 3.0
+                            self.ball.tether_booster_target = closest_enemy
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:

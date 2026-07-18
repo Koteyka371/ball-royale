@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Trap",
+  "description": "A deployable trap that, when triggered by an enemy, swaps the positions of the trap layer and the victim, while also disorienting the victim for 2 seconds."
+}
