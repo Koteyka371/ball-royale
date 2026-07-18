@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1127] Portal Gun Trap — *2026-07-18 22:01:56 UTC*
+
+A deployable trap that shoots players to a random location in the arena, disorienting them and potentially dropping them into hazards.
+
+---
+
 ## [idea-1130] Quantum Tunneling Modifier — *2026-07-18 22:01:52 UTC*
 
 A new mutator that occasionally allows balls moving at extremely high speeds to pass directly through hazards or walls without taking damage, encouraging high-risk, high-velocity playstyles.
