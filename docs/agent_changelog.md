@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1084] Radiation Mutator Zone — *2026-07-18 18:13:15 UTC*
+
+A battle royale zone where being in the danger zone not only deals DoT but also applies random positive and negative mutations to ball stats (speed, damage, perception).
+
+---
+
 ## [idea-1123] Expanding Healing Zone — *2026-07-18 14:31:44 UTC*
 
 A battle royale variation where instead of a shrinking danger zone, there's a slow-moving expanding healing zone. Being inside heals players but makes them more visible to enemies.
