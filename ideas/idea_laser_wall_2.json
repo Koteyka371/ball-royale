@@ -1,0 +1,7 @@
+{
+  "id": "idea-laser-wall",
+  "title": "Deployable Laser Wall",
+  "description": "Deployable obstacle that acts as a laser wall, damaging enemies that pass through it but allowing allies to pass.",
+  "area": "innovation",
+  "risk": "medium"
+}

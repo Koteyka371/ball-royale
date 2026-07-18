@@ -1159,7 +1159,7 @@ class ProceduralArena:
             import random
 
             # Clear old dynamic hazards
-            self.hazards = [h for h in self.hazards if getattr(h, 'id', 9999) < 1000]
+            self.hazards = [h for h in self.hazards if isinstance(getattr(h, "id", 9999), (int, float)) and getattr(h, "id", 9999) < 1000]
 
             # Process seasonal modifiers for hazards
             seasonal_modifier = getattr(self, "seasonal_modifier", "none")
