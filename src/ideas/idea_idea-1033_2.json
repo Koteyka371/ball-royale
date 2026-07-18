@@ -1,4 +1,4 @@
 {
-  "title": "Fractured Arena Mode",
-  "description": "A game mode where the main arena slowly splinters into smaller, moving floating islands separated by deadly void space. Players must use jump pads or specific movement skills to navigate between the shifting islands to avoid falling out of bounds."
+  "title": "Quantum Mimic Event",
+  "description": "Periodically, all players swap positions with their mimic clones (or a temporary mimic is spawned if they don't have one). While swapped, players' inputs are inverted, and they gain a temporary shield. Lasts for 5 seconds."
 }
