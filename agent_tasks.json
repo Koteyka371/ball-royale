@@ -19260,7 +19260,7 @@
     },
     {
       "id": "idea-1123",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Expanding Healing Zone",
@@ -30105,6 +30105,23 @@
         "src/ai/magnetize_booster.py",
         "src/ai/magnetize_booster.gd",
         "tests/test_magnetize_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1760",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Swap Skill",
+      "description": "A skill where the player places a decoy. The player can activate the skill a second time to instantly swap places with the decoy, which then explodes to damage nearby enemies.",
+      "allowed_paths": [
+        "src/ai/decoy_swap_skill.py",
+        "src/ai/decoy_swap_skill.gd",
+        "tests/test_decoy_swap_skill.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

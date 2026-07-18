@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1123] Expanding Healing Zone — *2026-07-18 14:31:44 UTC*
+
+A battle royale variation where instead of a shrinking danger zone, there's a slow-moving expanding healing zone. Being inside heals players but makes them more visible to enemies.
+
+---
+
 ## [idea-1105] Grappling Hook Refactor — *2026-07-18 14:23:41 UTC*
 
 Make the grappling hook pull you towards geometry if it hits a wall instead of another player.
