@@ -81,7 +81,8 @@ def test_void_mage_summon_black_hole():
 
     # Execute physics step and verify it moves towards the enemy
     action._process_physics = lambda delta: None # Disable standard physics to test just the action tick which processes hazards
-    action.execute("none", 1.0)
+    world.tick = 2
+    action.execute("flee", 1.0)
 
     # Since it was updated once, it should move
     assert bh.y < 500.0
