@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1135] Payload Turret Attachment — *2026-07-18 21:19:08 UTC*
+
+Allow specific defensive or supportive entities to be 'attached' to payloads in Escort and Dual Payload modes. When a payload gathers enough players around it to reach a certain speed threshold, it temporarily spawns an automated defensive turret that damages or repels approaching enemies, making coordination even more rewarding.
+
+---
+
 ## [idea-1122] Random Teleporter Mode — *2026-07-18 21:13:45 UTC*
 
 Periodically, portals randomly appear on the map and teleport balls to random locations, breaking positioning strategies.
