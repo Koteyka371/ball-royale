@@ -15038,6 +15038,174 @@ class BountyHuntMode extends GameMode:
 		return null
 
 
+
+class BodyguardBountyMode extends GameMode:
+	var bounties = {}
+	var purchase_cooldowns = {}
+	var rng = RandomNumberGenerator.new()
+
+	func _init() -> void:
+		super()
+		name = "Bodyguard Bounty"
+		description = "Players can dynamically purchase a massive bounty on an ally using score, drawing enemies while buffing the ally."
+		rng.randomize()
+
+	func tick(world, balls: Array, delta: float = 0.0) -> void:
+		super.tick(world, balls, delta)
+
+		# Handle purchase cooldowns
+		var expired_cooldowns = []
+		for buyer_id in purchase_cooldowns.keys():
+			purchase_cooldowns[buyer_id] -= delta
+			if purchase_cooldowns[buyer_id] <= 0:
+				expired_cooldowns.append(buyer_id)
+		for bid in expired_cooldowns:
+			purchase_cooldowns.erase(bid)
+
+		var alive_balls = []
+		for b in balls:
+			var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+			if b_alive and b_type != "spectator":
+				alive_balls.append(b)
+
+		for buyer in alive_balls:
+			var b_id = buyer.get("id", null) if typeof(buyer) == TYPE_DICTIONARY else (buyer.id if "id" in buyer else null)
+			var b_score = buyer.get("score", 0) if typeof(buyer) == TYPE_DICTIONARY else (buyer.score if "score" in buyer else 0)
+
+			if b_id != null and not purchase_cooldowns.has(b_id) and b_score >= 50:
+				if rng.randf() < 0.05 * delta:
+					var b_team = buyer.get("team", null) if typeof(buyer) == TYPE_DICTIONARY else (buyer.team if "team" in buyer else null)
+					var allies = []
+					for a in alive_balls:
+						var a_team = a.get("team", null) if typeof(a) == TYPE_DICTIONARY else (a.team if "team" in a else null)
+						var a_id = a.get("id", null) if typeof(a) == TYPE_DICTIONARY else (a.id if "id" in a else null)
+						if a_team == b_team and a_id != b_id:
+							allies.append(a)
+
+					if allies.size() > 0:
+						var target = allies[rng.randi() % allies.size()]
+						var t_id = target.get("id", null) if typeof(target) == TYPE_DICTIONARY else (target.id if "id" in target else null)
+						if t_id != null and not bounties.has(t_id):
+							if typeof(buyer) == TYPE_DICTIONARY:
+								buyer["score"] -= 50
+							else:
+								buyer.score -= 50
+
+							purchase_cooldowns[b_id] = 30.0
+							bounties[t_id] = 20.0
+
+							var t_max_hp = target.get("max_hp", 100.0) if typeof(target) == TYPE_DICTIONARY else (target.max_hp if "max_hp" in target else 100.0)
+							var t_hp = target.get("hp", 100.0) if typeof(target) == TYPE_DICTIONARY else (target.hp if "hp" in target else 100.0)
+							var t_base_damage = target.get("base_damage", target.get("damage", 10.0)) if typeof(target) == TYPE_DICTIONARY else (target.base_damage if "base_damage" in target else (target.damage if "damage" in target else 10.0))
+
+							if typeof(target) == TYPE_DICTIONARY:
+								target["is_bodyguard_bounty"] = true
+								target["high_threat"] = true
+								target["bodyguard_original_max_hp"] = t_max_hp
+								target["max_hp"] = t_max_hp * 1.5
+								target["hp"] = min(t_hp + (t_max_hp * 1.5 - t_max_hp), t_max_hp * 1.5)
+								target["bodyguard_original_base_damage"] = t_base_damage
+								target["base_damage"] = t_base_damage * 1.5
+							else:
+								if target.has_method("set_meta"):
+									target.set_meta("is_bodyguard_bounty", true)
+									target.set_meta("high_threat", true)
+									target.set_meta("bodyguard_original_max_hp", t_max_hp)
+									target.set_meta("bodyguard_original_base_damage", t_base_damage)
+								else:
+									target["is_bodyguard_bounty"] = true
+									target["high_threat"] = true
+									target["bodyguard_original_max_hp"] = t_max_hp
+									target["bodyguard_original_base_damage"] = t_base_damage
+
+								if "max_hp" in target: target.max_hp = t_max_hp * 1.5
+								if "hp" in target: target.hp = min(t_hp + (t_max_hp * 1.5 - t_max_hp), t_max_hp * 1.5)
+								if "base_damage" in target: target.base_damage = t_base_damage * 1.5
+
+							if typeof(world) == TYPE_DICTIONARY and world.has("add_event") and typeof(world["add_event"]) == TYPE_CALLABLE:
+								world["add_event"].call("bodyguard_bounty_purchased", {"message": "Player bought a Bodyguard Bounty!", "target_id": t_id})
+							elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("bodyguard_bounty_purchased", {"message": "Player bought a Bodyguard Bounty!", "target_id": t_id})
+
+		# Handle active bounties
+		var expired_bounties = []
+		for target_id in bounties.keys():
+			bounties[target_id] -= delta
+			var target = null
+			for b in alive_balls:
+				var a_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+				if a_id == target_id:
+					target = b
+					break
+
+			if target == null or bounties[target_id] <= 0:
+				expired_bounties.append(target_id)
+				if target != null:
+					if typeof(target) == TYPE_DICTIONARY:
+						target["is_bodyguard_bounty"] = false
+						target["high_threat"] = false
+						if target.has("bodyguard_original_max_hp"):
+							target["max_hp"] = target["bodyguard_original_max_hp"]
+							target["hp"] = min(target.get("hp", 100.0), target["max_hp"])
+						if target.has("bodyguard_original_base_damage"):
+							target["base_damage"] = target["bodyguard_original_base_damage"]
+					else:
+						if target.has_method("set_meta"):
+							target.set_meta("is_bodyguard_bounty", false)
+							target.set_meta("high_threat", false)
+							if target.has_meta("bodyguard_original_max_hp"):
+								if "max_hp" in target: target.max_hp = target.get_meta("bodyguard_original_max_hp")
+								if "hp" in target: target.hp = min(target.hp if "hp" in target else 100.0, target.get_meta("bodyguard_original_max_hp"))
+							if target.has_meta("bodyguard_original_base_damage"):
+								if "base_damage" in target: target.base_damage = target.get_meta("bodyguard_original_base_damage")
+						else:
+							target["is_bodyguard_bounty"] = false
+							target["high_threat"] = false
+							if "bodyguard_original_max_hp" in target:
+								if "max_hp" in target: target.max_hp = target["bodyguard_original_max_hp"]
+								if "hp" in target: target.hp = min(target.hp if "hp" in target else 100.0, target["bodyguard_original_max_hp"])
+							if "bodyguard_original_base_damage" in target:
+								if "base_damage" in target: target.base_damage = target["bodyguard_original_base_damage"]
+			else:
+				if int(bounties[target_id] * 10) % 20 == 0:
+					var tx = target.get("x", 0.0) if typeof(target) == TYPE_DICTIONARY else (target.x if "x" in target else 0.0)
+					var ty = target.get("y", 0.0) if typeof(target) == TYPE_DICTIONARY else (target.y if "y" in target else 0.0)
+					if typeof(world) == TYPE_DICTIONARY and world.has("add_event") and typeof(world["add_event"]) == TYPE_CALLABLE:
+						world["add_event"].call("bounty_compass", {"target_x": float(tx), "target_y": float(ty), "owner_id": target_id})
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("bounty_compass", {"target_x": float(tx), "target_y": float(ty), "owner_id": target_id})
+
+		for target_id in expired_bounties:
+			bounties.erase(target_id)
+
+	func on_ball_died(world, ball, killer) -> void:
+		if super.has_method("on_ball_died"):
+			super.on_ball_died(world, ball, killer)
+
+		var b_id = ball.get("id", null) if typeof(ball) == TYPE_DICTIONARY else (ball.id if "id" in ball else null)
+		if b_id != null and bounties.has(b_id):
+			bounties.erase(b_id)
+
+			var killer_alive = false
+			if killer != null:
+				killer_alive = killer.get("alive", false) if typeof(killer) == TYPE_DICTIONARY else (killer.alive if "alive" in killer else false)
+
+			if killer_alive:
+				if typeof(killer) == TYPE_DICTIONARY:
+					killer["score"] = killer.get("score", 0) + 100
+				else:
+					if "score" in killer:
+						killer.score += 100
+					elif killer.has_method("set_meta"):
+						killer.set_meta("score", killer.get_meta("score") + 100 if killer.has_meta("score") else 100)
+
+				if typeof(world) == TYPE_DICTIONARY and world.has("add_event") and typeof(world["add_event"]) == TYPE_CALLABLE:
+					world["add_event"].call("bodyguard_bounty_claimed", {"message": "Bodyguard Bounty claimed!"})
+				elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("bodyguard_bounty_claimed", {"message": "Bodyguard Bounty claimed!"})
+
+
 class DynamicBountyMode extends GameMode:
 	var vfx_timer = 0.0
 	var current_bounty_id = null
@@ -32956,6 +33124,7 @@ GAME_MODES = {
 	"moving_safe_zone": MovingSafeZoneMode.new(),
 	"poison_gas_zone": PoisonGasZoneMode.new(),
 	"bounty_hunt": BountyHuntMode.new(),
+	"bodyguard_bounty": BodyguardBountyMode.new(),
 	"dynamic_bounty": DynamicBountyMode.new(),
 	"earthquake": EarthquakeMode.new(),
 	"inverse_mirror_arena": InverseMirrorArenaMode.new(),
