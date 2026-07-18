@@ -37956,6 +37956,98 @@ class FakeBallsMode extends GameMode:
 GAME_MODES["fake_balls"] = FakeBallsMode.new()
 
 
+
+class ChainReactionMode extends GameMode:
+	var pending_explosions = []
+
+	func _init():
+		super._init()
+		name = "Chain Reaction"
+		description = "Every elimination sets off a delayed explosion around the eliminated player. Surviving players can chain these explosions to eliminate multiple enemies."
+
+	func on_ball_died(world, ball, killer = null):
+		if super.has_method("on_ball_died"):
+			super.on_ball_died(world, ball, killer)
+
+		var ex_pos_x = 0.0
+		var ex_pos_y = 0.0
+		if typeof(ball) == TYPE_DICTIONARY:
+			ex_pos_x = ball.get("x", 0.0)
+			ex_pos_y = ball.get("y", 0.0)
+		else:
+			ex_pos_x = ball.x
+			ex_pos_y = ball.y
+
+		pending_explosions.append({
+			"x": ex_pos_x,
+			"y": ex_pos_y,
+			"timer": 1.5,
+			"radius": 150.0,
+			"damage": 50.0
+		})
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		var remaining_explosions = []
+		var current_explosions = pending_explosions.duplicate()
+		pending_explosions.clear()
+
+		for explosion in current_explosions:
+			explosion["timer"] -= delta
+			if explosion["timer"] <= 0.0:
+				# Trigger explosion
+				if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+					world.add_event("chain_explosion", {
+						"x": explosion["x"],
+						"y": explosion["y"],
+						"radius": explosion["radius"]
+					})
+
+				# Apply damage
+				for b in balls:
+					var b_alive = true
+					var b_x = 0.0
+					var b_y = 0.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b_alive = b.get("alive", true)
+						b_x = b.get("x", 0.0)
+						b_y = b.get("y", 0.0)
+					else:
+						b_alive = b.alive
+						b_x = b.x
+						b_y = b.y
+
+					if b_alive:
+						var dx = b_x - explosion["x"]
+						var dy = b_y - explosion["y"]
+						var dist = sqrt(dx * dx + dy * dy)
+
+						if dist <= explosion["radius"]:
+							if typeof(b) == TYPE_DICTIONARY:
+								var hp = b.get("hp", 100.0)
+								hp -= explosion["damage"]
+								b["hp"] = hp
+								if hp <= 0.0:
+									b["alive"] = false
+									self.on_ball_died(world, b, null)
+							else:
+								if b.has_method("take_damage"):
+									b.take_damage(explosion["damage"], null)
+								else:
+									b.hp -= explosion["damage"]
+									if b.hp <= 0.0:
+										b.alive = false
+										self.on_ball_died(world, b, null)
+			else:
+				remaining_explosions.append(explosion)
+
+		for e in pending_explosions:
+			remaining_explosions.append(e)
+		pending_explosions = remaining_explosions
+
+
 class FactionWarMode extends GameMode:
 	var light_points: int = 0
 	var dark_points: int = 0
@@ -38042,3 +38134,5 @@ class FactionWarMode extends GameMode:
 						pm.save_profile()
 const WeatherStationsMode = preload("res://src/ai/stations.gd")
 GAME_MODES['weather_stations'] = WeatherStationsMode.new()
+
+GAME_MODES['chain_reaction'] = ChainReactionMode.new()

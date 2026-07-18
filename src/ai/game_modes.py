@@ -24843,4 +24843,66 @@ class FactionWarMode(GameMode):
                     pm.data["unlocked_balls"].append(ball_to_unlock)
                     pm.save()
 
+
+class ChainReactionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chain Reaction"
+        self.description = "Every elimination sets off a delayed explosion around the eliminated player. Surviving players can chain these explosions to eliminate multiple enemies."
+        self.pending_explosions = []
+
+    def on_ball_died(self, world, ball, killer):
+        if hasattr(super(), "on_ball_died"):
+            super().on_ball_died(world, ball, killer)
+
+        self.pending_explosions.append({
+            "x": ball.x,
+            "y": ball.y,
+            "timer": 1.5,
+            "radius": 150.0,
+            "damage": 50.0
+        })
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        remaining_explosions = []
+        new_explosions = [] # explosions added during this tick
+
+        # Save current length to avoid iterating over newly added ones this tick
+        current_explosions = list(self.pending_explosions)
+        self.pending_explosions = [] # Clear so on_ball_died appends to empty
+
+        for explosion in current_explosions:
+            explosion["timer"] -= delta
+            if explosion["timer"] <= 0.0:
+                # Trigger explosion
+                if hasattr(world, "add_event"):
+                    world.add_event("chain_explosion", {
+                        "x": explosion["x"],
+                        "y": explosion["y"],
+                        "radius": explosion["radius"]
+                    })
+
+                import math
+                # Apply damage
+                for b in balls:
+                    if getattr(b, "alive", True):
+                        dist = math.hypot(b.x - explosion["x"], b.y - explosion["y"])
+                        if dist <= explosion["radius"]:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(explosion["damage"], source=None)
+                            else:
+                                b.hp = getattr(b, "hp", 100) - explosion["damage"]
+                                if b.hp <= 0:
+                                    b.alive = False
+                                    self.on_ball_died(world, b, None)
+            else:
+                remaining_explosions.append(explosion)
+
+        # self.pending_explosions now contains explosions from deaths this tick
+        self.pending_explosions = remaining_explosions + self.pending_explosions
+
+GAME_MODES['chain_reaction'] = ChainReactionMode()
+
 GAME_MODES['faction_war'] = FactionWarMode()
