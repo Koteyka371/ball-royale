@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A new arena hazard that, when touched, immediately swaps the positions of the collector and their furthest alive enemy, disorienting both players and potentially dropping the enemy into another hazard."
+}

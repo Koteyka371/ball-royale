@@ -11765,6 +11765,28 @@ class Action:
                     # If it's stored in world.boosters, _collect_booster handles it, but just in case
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "team_tether_booster":
+                    enemies = self._get_enemies()
+                    allies = self._get_allies()
+
+                    if enemies and allies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        closest_ally = min(allies, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
+
+                        closest_enemy.team_tether_timer = 5.0
+                        closest_enemy.team_tether_target = closest_ally
+
+                        if hasattr(self, "_spawn_directed_particles"):
+                            self._spawn_directed_particles(closest_enemy, closest_ally, "team_tether")
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                    # In case it's in world.boosters explicitly
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 else:
                     if hasattr(self.world, "_collect_booster"):
                         self.world._collect_booster(self.ball, nearest)
@@ -16126,6 +16148,34 @@ class Action:
             else:
                 self.ball.link_booster_timer = 0
                 self.ball.link_booster_target = None
+
+        if hasattr(self.ball, "team_tether_timer") and self.ball.team_tether_timer > 0:
+            self.ball.team_tether_timer -= delta
+            target = getattr(self.ball, "team_tether_target", None)
+            if target and getattr(target, "alive", True):
+                import math
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                dist = math.sqrt(dx**2 + dy**2)
+
+                if dist > 0.1:
+                    pull_strength = 200.0 * delta
+                    self.ball.x += (dx / dist) * pull_strength
+                    self.ball.y += (dy / dist) * pull_strength
+
+                damage_amount = 15.0 * delta
+                if hasattr(self.world, "_deal_damage"):
+                    actual_damage = damage_amount
+                    self.ball.hp -= actual_damage
+                else:
+                    if hasattr(self.ball, "hp"):
+                        self.ball.hp -= damage_amount
+
+                if self.ball.team_tether_timer <= 0:
+                    self.ball.team_tether_target = None
+            else:
+                self.ball.team_tether_timer = 0
+                self.ball.team_tether_target = None
 
         arena = getattr(self.world, 'arena', None)
         is_snowing = getattr(arena, 'is_snowing', False) if arena else False

@@ -22178,6 +22178,40 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+            elif "kind" in nearest and nearest.kind == "team_tether_booster":
+                var enemies_tether = _get_enemies()
+                var allies_tether = _get_allies()
+                if enemies_tether.size() > 0 and allies_tether.size() > 0:
+                    var tether_enemy = null
+                    var min_dist_enemy_sq = INF
+                    for e in enemies_tether:
+                        var d_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                        if d_sq < min_dist_enemy_sq:
+                            min_dist_enemy_sq = d_sq
+                            tether_enemy = e
+
+                    var tether_ally = null
+                    var min_dist_ally_sq = INF
+                    for a in allies_tether:
+                        var d_sq = pow(a.x - self.ball.x, 2) + pow(a.y - self.ball.y, 2)
+                        if d_sq < min_dist_ally_sq:
+                            min_dist_ally_sq = d_sq
+                            tether_ally = a
+
+                    if typeof(tether_enemy) != TYPE_DICTIONARY and tether_enemy.has_method("set_meta"):
+                        tether_enemy.set_meta("team_tether_timer", 5.0)
+                        tether_enemy.set_meta("team_tether_target", tether_ally)
+                    else:
+                        tether_enemy.team_tether_timer = 5.0
+                        tether_enemy.team_tether_target = tether_ally
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "silencer_attachment":
                 if self.ball.has_method("set_meta"): self.ball.set_meta("silencer_timer", 15.0)
                 else: self.ball.silencer_timer = 15.0
@@ -30793,6 +30827,51 @@ func _update_skill_timer(delta: float):
             self.ball.set_meta("link_booster_timer", link_timer)
             self.ball.set_meta("link_booster_target", target)
 
+
+
+    var team_tether_timer = 0.0
+    if "team_tether_timer" in self.ball:
+        team_tether_timer = self.ball.team_tether_timer
+    elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("team_tether_timer"):
+        team_tether_timer = self.ball.get_meta("team_tether_timer")
+
+    if team_tether_timer > 0:
+        team_tether_timer -= delta
+        var target = null
+        if "team_tether_target" in self.ball:
+            target = self.ball.team_tether_target
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("team_tether_target"):
+            target = self.ball.get_meta("team_tether_target")
+
+        var alive = true
+        if target != null and typeof(target) == TYPE_OBJECT and target.get("alive") != null:
+            alive = target.alive
+        elif target != null and typeof(target) == TYPE_DICTIONARY and target.has("alive"):
+            alive = target.alive
+
+        if target != null and alive:
+            var dx = target.x - self.ball.x
+            var dy = target.y - self.ball.y
+            var dist = sqrt(dx*dx + dy*dy)
+            if dist > 0.1:
+                var pull_strength = 200.0 * delta
+                self.ball.x += (dx / dist) * pull_strength
+                self.ball.y += (dy / dist) * pull_strength
+            var damage_amount = 15.0 * delta
+            if "hp" in self.ball:
+                self.ball.hp -= damage_amount
+            if team_tether_timer <= 0:
+                target = null
+        else:
+            team_tether_timer = 0.0
+            target = null
+
+        if "team_tether_timer" in self.ball:
+            self.ball.team_tether_timer = team_tether_timer
+            self.ball.team_tether_target = target
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+            self.ball.set_meta("team_tether_timer", team_tether_timer)
+            self.ball.set_meta("team_tether_target", target)
 
     var hl_timer = 0.0
     var chaos_link_timer = 0.0
