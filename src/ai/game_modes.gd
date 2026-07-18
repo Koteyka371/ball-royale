@@ -5438,6 +5438,7 @@ class SurvivalMode extends GameMode:
 class DualPayloadMode extends GameMode:
 	var payload_red
 	var payload_blue
+	var anti_payload_timer: float = 0.0
 
 	func _init() -> void:
 		name = "Dual Payload"
@@ -5682,6 +5683,18 @@ class DualPayloadMode extends GameMode:
 		var center_x = arena_width / 2.0
 		var center_y = arena_height / 2.0
 
+		anti_payload_timer += delta
+		if anti_payload_timer >= 15.0:
+			anti_payload_timer = 0.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+				var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+				var hx = center_x + randf_range(-200.0, 200.0)
+				var hy = center_y + randf_range(-200.0, 200.0)
+				var ProceduralArenaModule = load("res://src/arena/procedural_arena.gd")
+				if ProceduralArenaModule and "Hazard" in ProceduralArenaModule:
+					var new_hazard = ProceduralArenaModule.Hazard.new(h_id, hx, hy, 80.0, "anti_payload_zone", 0.0)
+					world.arena.hazards.append(new_hazard)
+
 		if payload_red:
 			var red_alive = payload_red.get("alive", false) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("alive")
 			if red_alive:
@@ -5715,6 +5728,20 @@ class DualPayloadMode extends GameMode:
 						nearby_red += 1
 
 				var speed_mult_red = 1.0 + (nearby_red * 0.5)
+
+				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+					for h in world.arena.hazards:
+						if h.kind == "anti_payload_zone":
+							var hx = h.x
+							var hy = h.y
+							var hr = h.radius
+							var pr = payload_red.get("radius", 15.0) if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("radius")
+							if pr == null: pr = 15.0
+							var dx_h = red_x - hx
+							var dy_h = red_y - hy
+							if sqrt(dx_h * dx_h + dy_h * dy_h) <= hr + pr:
+								speed_mult_red *= 0.5
+								break
 
 				if speed_mult_red >= 2.0:
 					if typeof(payload_red) == TYPE_DICTIONARY:
@@ -5812,6 +5839,20 @@ class DualPayloadMode extends GameMode:
 
 				var speed_mult_blue = 1.0 + (nearby_blue * 0.5)
 
+				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+					for h in world.arena.hazards:
+						if h.kind == "anti_payload_zone":
+							var hx = h.x
+							var hy = h.y
+							var hr = h.radius
+							var pr = payload_blue.get("radius", 15.0) if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("radius")
+							if pr == null: pr = 15.0
+							var dx_h = blue_x - hx
+							var dy_h = blue_y - hy
+							if sqrt(dx_h * dx_h + dy_h * dy_h) <= hr + pr:
+								speed_mult_blue *= 0.5
+								break
+
 				if speed_mult_blue >= 2.0:
 					if typeof(payload_blue) == TYPE_DICTIONARY:
 						payload_blue["turret_active"] = true
@@ -5903,6 +5944,7 @@ class EscortMode extends GameMode:
 	var chosen_path: int = 0
 	var current_waypoint_index: int = 0
 	var hazard_timer: float = 0.0
+	var anti_payload_timer: float = 0.0
 
 	func _init() -> void:
 		name = "Escort Mode"
@@ -6079,6 +6121,20 @@ class EscortMode extends GameMode:
 		if timer > 0.0:
 			timer -= delta
 
+		anti_payload_timer += delta
+		if anti_payload_timer >= 15.0:
+			anti_payload_timer = 0.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena and payload != null:
+				var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
+				var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
+				var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+				var hx = px + randf_range(-200.0, 200.0)
+				var hy = py + randf_range(-200.0, 200.0)
+				var ProceduralArenaModule = load("res://src/arena/procedural_arena.gd")
+				if ProceduralArenaModule and "Hazard" in ProceduralArenaModule:
+					var new_hazard = ProceduralArenaModule.Hazard.new(h_id, hx, hy, 80.0, "anti_payload_zone", 0.0)
+					world.arena.hazards.append(new_hazard)
+
 		pulse_timer += delta
 		if pulse_timer >= 5.0:
 			pulse_timer = 0.0
@@ -6183,6 +6239,20 @@ class EscortMode extends GameMode:
 						nearby_teammates += 1
 
 				var speed_mult = 1.0 + (nearby_teammates * 0.5)
+
+				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+					for h in world.arena.hazards:
+						if h.kind == "anti_payload_zone":
+							var hx = h.x
+							var hy = h.y
+							var hr = h.radius
+							var pr = payload.get("radius", 15.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("radius")
+							if pr == null: pr = 15.0
+							var dx_h = px - hx
+							var dy_h = py - hy
+							if sqrt(dx_h * dx_h + dy_h * dy_h) <= hr + pr:
+								speed_mult *= 0.5
+								break
 
 				if speed_mult >= 2.0:
 					if typeof(payload) == TYPE_DICTIONARY:

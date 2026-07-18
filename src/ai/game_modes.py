@@ -3423,6 +3423,7 @@ class DualPayloadMode(GameMode):
         self.description = "Two payloads move towards the center, the team that destroys the enemy payload first wins."
         self.payload_red = None
         self.payload_blue = None
+        self.anti_payload_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
@@ -3552,6 +3553,21 @@ class DualPayloadMode(GameMode):
 
         import math
 
+        self.anti_payload_timer = getattr(self, "anti_payload_timer", 0.0) + delta
+        if self.anti_payload_timer >= 15.0:
+            self.anti_payload_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                    import random
+                    h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                    hx = center_x + random.uniform(-200, 200)
+                    hy = center_y + random.uniform(-200, 200)
+                    new_hazard = Hazard(h_id, hx, hy, 80.0, "anti_payload_zone", 0.0)
+                    world.arena.hazards.append(new_hazard)
+                except ImportError:
+                    pass
+
         if self.payload_red and getattr(self.payload_red, "alive", False):
             nearby_red = 0
             for b in balls:
@@ -3568,6 +3584,15 @@ class DualPayloadMode(GameMode):
                     nearby_red += 1
 
             speed_mult_red = 1.0 + (nearby_red * 0.5)
+
+            # Check if payload is in anti-payload hazard zone
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "anti_payload_zone":
+                        dist_h = math.hypot(getattr(h, "x", 0) - getattr(self.payload_red, "x", 0), getattr(h, "y", 0) - getattr(self.payload_red, "y", 0))
+                        if dist_h <= getattr(h, "radius", 0.0) + getattr(self.payload_red, "radius", 15.0):
+                            speed_mult_red *= 0.5
+                            break
 
             if speed_mult_red >= 2.0:
                 self.payload_red.turret_active = True
@@ -3622,6 +3647,15 @@ class DualPayloadMode(GameMode):
                     nearby_blue += 1
 
             speed_mult_blue = 1.0 + (nearby_blue * 0.5)
+
+            # Check if payload is in anti-payload hazard zone
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "anti_payload_zone":
+                        dist_h = math.hypot(getattr(h, "x", 0) - getattr(self.payload_blue, "x", 0), getattr(h, "y", 0) - getattr(self.payload_blue, "y", 0))
+                        if dist_h <= getattr(h, "radius", 0.0) + getattr(self.payload_blue, "radius", 15.0):
+                            speed_mult_blue *= 0.5
+                            break
 
             if speed_mult_blue >= 2.0:
                 self.payload_blue.turret_active = True
@@ -3693,6 +3727,7 @@ class EscortMode(GameMode):
         self.chosen_path = 0
         self.current_waypoint_index = 0
         self.hazard_timer = 0.0
+        self.anti_payload_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
@@ -3784,6 +3819,21 @@ class EscortMode(GameMode):
         if getattr(self, "timer", 0) > 0:
             self.timer -= delta
 
+        self.anti_payload_timer = getattr(self, "anti_payload_timer", 0.0) + delta
+        if self.anti_payload_timer >= 15.0:
+            self.anti_payload_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards") and getattr(self, "payload", None):
+                try:
+                    from arena.procedural_arena import Hazard
+                    import random
+                    h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                    hx = getattr(self.payload, "x", 0) + random.uniform(-200, 200)
+                    hy = getattr(self.payload, "y", 0) + random.uniform(-200, 200)
+                    new_hazard = Hazard(h_id, hx, hy, 80.0, "anti_payload_zone", 0.0)
+                    world.arena.hazards.append(new_hazard)
+                except ImportError:
+                    pass
+
         if not hasattr(self, "pulse_timer"):
             self.pulse_timer = 0.0
 
@@ -3838,6 +3888,15 @@ class EscortMode(GameMode):
                     nearby_teammates += 1
 
             speed_mult = 1.0 + (nearby_teammates * 0.5)
+
+            # Check if payload is in anti-payload hazard zone
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "anti_payload_zone":
+                        dist_h = math.hypot(getattr(h, "x", 0) - getattr(self.payload, "x", 0), getattr(h, "y", 0) - getattr(self.payload, "y", 0))
+                        if dist_h <= getattr(h, "radius", 0.0) + getattr(self.payload, "radius", 15.0):
+                            speed_mult *= 0.5
+                            break
 
             if speed_mult >= 2.0:
                 self.payload.turret_active = True
