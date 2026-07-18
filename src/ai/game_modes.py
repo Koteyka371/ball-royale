@@ -11095,6 +11095,48 @@ class ZeroGravityMode(GameMode):
         self.name = "Zero Gravity"
         self.description = "Friction and gravity are drastically reduced, causing balls to slide around effortlessly and collisions to produce massive knockback."
 
+class QuantumTunnelMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Tunnel Mutator"
+        self.description = "A mutator that occasionally allows balls moving at extremely high speeds to pass directly through hazards or walls without taking damage, encouraging high-risk, high-velocity playstyles."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+
+        import random
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+                continue
+
+            vx = getattr(b, "vx", 0.0)
+            vy = getattr(b, "vy", 0.0)
+            speed = (vx**2 + vy**2)**0.5
+
+            threshold = getattr(b, "base_speed", 100.0) * 1.5
+
+            if speed > threshold:
+                if random.random() < 0.2 * delta:
+                    b.phase_booster_timer = max(getattr(b, "phase_booster_timer", 0.0), 0.5)
+
+    def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            return "Draw"
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
+        return None
+
 class PinballMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -20254,6 +20296,7 @@ class ReverseTagMode(GameMode):
         return None
 
 GAME_MODES = {
+    'quantum_tunnel_mutator': QuantumTunnelMutatorMode(),
     'healing_zone': HealingZoneMode(),
     "sweeping_rotating_lasers": SweepingRotatingLasersMode(),
     'frictionless_arena_modifier': FrictionlessArenaModifierMode(),

@@ -17114,6 +17114,110 @@ class ZeroGravityMode extends GameMode:
 		description = "Friction and gravity are drastically reduced, causing balls to slide around effortlessly and collisions to produce massive knockback."
 
 
+class QuantumTunnelMutatorMode extends GameMode:
+	func _init() -> void:
+		name = "Quantum Tunnel Mutator"
+		description = "A mutator that occasionally allows balls moving at extremely high speeds to pass directly through hazards or walls without taking damage, encouraging high-risk, high-velocity playstyles."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		if not world.has("dead_balls"):
+			world["dead_balls"] = []
+		self.apply_dynamic_traits(world, balls, delta)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_OBJECT:
+				if "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): is_alive = b["alive"]
+
+			if not is_alive:
+				if not world["dead_balls"].has(b):
+					if typeof(b) == TYPE_OBJECT and "time_since_death" in b: b.time_since_death = 0.0
+					elif typeof(b) == TYPE_DICTIONARY: b["time_since_death"] = 0.0
+					world["dead_balls"].append(b)
+				else:
+					if typeof(b) == TYPE_OBJECT and "time_since_death" in b: b.time_since_death += delta
+					elif typeof(b) == TYPE_DICTIONARY: b["time_since_death"] += delta
+				continue
+
+			var vx = 0.0
+			var vy = 0.0
+			var base_speed = 100.0
+
+			if typeof(b) == TYPE_OBJECT:
+				if "vx" in b: vx = b.vx
+				if "vy" in b: vy = b.vy
+				if "base_speed" in b: base_speed = b.base_speed
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("vx"): vx = b["vx"]
+				if b.has("vy"): vy = b["vy"]
+				if b.has("base_speed"): base_speed = b["base_speed"]
+
+			var speed = sqrt(vx * vx + vy * vy)
+			var threshold = base_speed * 1.5
+
+			if speed > threshold:
+				if randf() < 0.2 * delta:
+					var current_timer = 0.0
+					if typeof(b) == TYPE_OBJECT:
+						if "phase_booster_timer" in b: current_timer = b.phase_booster_timer
+						elif b.has_method("has_meta") and b.has_meta("phase_booster_timer"): current_timer = b.get_meta("phase_booster_timer")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("phase_booster_timer"):
+						current_timer = b["phase_booster_timer"]
+
+					var new_timer = max(current_timer, 0.5)
+
+					if typeof(b) == TYPE_OBJECT:
+						if "phase_booster_timer" in b: b.phase_booster_timer = new_timer
+						else: b.set_meta("phase_booster_timer", new_timer)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["phase_booster_timer"] = new_timer
+
+	func check_winner(world: Dictionary, balls: Array):
+		var alive = []
+		for b in balls:
+			var is_alive = false
+			var b_type = null
+			if typeof(b) == TYPE_OBJECT:
+				if "alive" in b: is_alive = b.alive
+				if "ball_type" in b: b_type = b.ball_type
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): is_alive = b["alive"]
+				if b.has("ball_type"): b_type = b["ball_type"]
+			if is_alive and b_type != "spectator":
+				alive.append(b)
+		if alive.size() == 0:
+			return "Draw"
+		var teams_alive = []
+		for b in alive:
+			var t = null
+			var b_type = null
+			if typeof(b) == TYPE_OBJECT:
+				if "team" in b: t = b.team
+				if "ball_type" in b: b_type = b.ball_type
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("team"): t = b["team"]
+				if b.has("ball_type"): b_type = b["ball_type"]
+			if t == null:
+				t = b_type
+			if not teams_alive.has(t):
+				teams_alive.append(t)
+		if teams_alive.size() == 1:
+			return teams_alive[0]
+		if alive.size() == 1:
+			var t = null
+			var b_type = null
+			if typeof(alive[0]) == TYPE_OBJECT:
+				if "team" in alive[0]: t = alive[0].team
+				if "ball_type" in alive[0]: b_type = alive[0].ball_type
+			elif typeof(alive[0]) == TYPE_DICTIONARY:
+				if alive[0].has("team"): t = alive[0]["team"]
+				if alive[0].has("ball_type"): b_type = alive[0]["ball_type"]
+			if t != null: return t
+			return b_type
+		return null
+
 class PinballMode extends GameMode:
 	func _init() -> void:
 		name = "Pinball Mode"
@@ -32973,6 +33077,7 @@ class ReverseTagMode extends GameMode:
 		return null
 
 GAME_MODES = {
+	"quantum_tunnel_mutator": QuantumTunnelMutatorMode.new(),
 	"sweeping_rotating_lasers": SweepingRotatingLasersMode.new(),
 	"faction_war": FactionWarMode.new(),
 	"frictionless_arena_modifier": FrictionlessArenaModifierMode.new(),
