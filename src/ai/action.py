@@ -14880,6 +14880,42 @@ class Action:
                 self.ball.speed = base_s * 1.5
 
     def _update_skill_timer(self, delta: float) -> None:
+
+        # Necromancer Aura
+        if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'necromancer':
+            aura_radius = 150.0
+            aura_damage = 5.0 * delta # Base 5 dps
+            damage_dealt = 0.0
+            enemies = self._get_enemies()
+            if enemies:
+                import math
+                for e in enemies:
+                    if getattr(e, 'alive', False):
+                        dist_sq = (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2
+                        if dist_sq <= aura_radius**2:
+                            if hasattr(e, "take_damage"):
+                                e.take_damage(aura_damage)
+                                damage_dealt += aura_damage
+                            elif hasattr(e, "hp"):
+                                e.hp -= aura_damage
+                                damage_dealt += aura_damage
+                                if e.hp <= 0:
+                                    e.alive = False
+
+            if damage_dealt > 0:
+                # Convert a portion into bone armor or healing
+                heal_amount = damage_dealt * 0.5
+
+                # We can increment a hidden accumulator and when it reaches threshold, add bone armor stack
+                current_acc = getattr(self.ball, "bone_armor_accumulator", 0.0) + damage_dealt
+                while current_acc >= 20.0:
+                    current_acc -= 20.0
+                    self.ball.bone_armor_stacks = min(5, getattr(self.ball, "bone_armor_stacks", 0) + 1)
+                self.ball.bone_armor_accumulator = current_acc
+
+                # And also small heal
+                if getattr(self.ball, "hp", 100) < getattr(self.ball, "max_hp", 100):
+                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + heal_amount)
         if getattr(self.ball, "blood_magic_timer", 0.0) > 0.0:
             current_st = getattr(self.ball, "skill_timer", 0.0)
             prev_st = getattr(self.ball, "_prev_skill_timer", 0.0)

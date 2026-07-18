@@ -27751,6 +27751,108 @@ func _apply_friendly_aura(delta: float):
 
 
 func _update_skill_timer(delta: float):
+
+    # Necromancer Aura
+    var b_type_aura2 = ""
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ball_type"):
+        b_type_aura2 = str(self.ball.get_meta("ball_type")).to_lower()
+    elif "ball_type" in self.ball:
+        b_type_aura2 = str(self.ball.ball_type).to_lower()
+
+    if b_type_aura2 == "necromancer":
+        var aura_radius = 150.0
+        var aura_damage = 5.0 * delta
+        var damage_dealt = 0.0
+        var enemies = _get_enemies()
+        if enemies:
+            for e in enemies:
+                var e_alive = true
+                if typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("alive"):
+                    e_alive = e.get_meta("alive")
+                elif "alive" in e:
+                    e_alive = e.alive
+
+                if e_alive:
+                    var e_x = 0.0
+                    var e_y = 0.0
+                    if typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("x"):
+                        e_x = e.get_meta("x")
+                        e_y = e.get_meta("y")
+                    else:
+                        e_x = e.x
+                        e_y = e.y
+
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("x"):
+                        b_x = self.ball.get_meta("x")
+                        b_y = self.ball.get_meta("y")
+                    else:
+                        b_x = self.ball.x
+                        b_y = self.ball.y
+
+                    var dist_sq = (e_x - b_x) * (e_x - b_x) + (e_y - b_y) * (e_y - b_y)
+                    if dist_sq <= aura_radius * aura_radius:
+                        if typeof(e) == TYPE_OBJECT and e.has_method("take_damage"):
+                            e.take_damage(aura_damage)
+                            damage_dealt += aura_damage
+                        elif "hp" in e:
+                            e.hp -= aura_damage
+                            damage_dealt += aura_damage
+                            if e.hp <= 0:
+                                if typeof(e) == TYPE_OBJECT and e.has_method("set_meta"):
+                                    e.set_meta("alive", false)
+                                else:
+                                    e.alive = false
+
+        if damage_dealt > 0:
+            var heal_amount = damage_dealt * 0.5
+            var current_acc = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bone_armor_accumulator"):
+                current_acc = float(self.ball.get_meta("bone_armor_accumulator"))
+            elif "bone_armor_accumulator" in self.ball:
+                current_acc = float(self.ball.bone_armor_accumulator)
+
+            current_acc += damage_dealt
+
+            while current_acc >= 20.0:
+                current_acc -= 20.0
+                var current_stacks = 0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bone_armor_stacks"):
+                    current_stacks = int(self.ball.get_meta("bone_armor_stacks"))
+                elif "bone_armor_stacks" in self.ball:
+                    current_stacks = int(self.ball.bone_armor_stacks)
+
+                var new_stacks = min(5, current_stacks + 1)
+
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("bone_armor_stacks", new_stacks)
+                elif "bone_armor_stacks" in self.ball:
+                    self.ball.bone_armor_stacks = new_stacks
+
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("bone_armor_accumulator", current_acc)
+            elif "bone_armor_accumulator" in self.ball:
+                self.ball.bone_armor_accumulator = current_acc
+
+            var current_hp = 100.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"):
+                current_hp = float(self.ball.get_meta("hp"))
+            elif "hp" in self.ball:
+                current_hp = float(self.ball.hp)
+
+            var current_max_hp = 100.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"):
+                current_max_hp = float(self.ball.get_meta("max_hp"))
+            elif "max_hp" in self.ball:
+                current_max_hp = float(self.ball.max_hp)
+
+            if current_hp < current_max_hp:
+                var new_hp = min(current_max_hp, current_hp + heal_amount)
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("hp", new_hp)
+                elif "hp" in self.ball:
+                    self.ball.hp = new_hp
     var bm_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("blood_magic_timer"):
         bm_timer = float(self.ball.get_meta("blood_magic_timer"))
