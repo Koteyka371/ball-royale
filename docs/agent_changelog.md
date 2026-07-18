@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1130] Quantum Tunneling Modifier — *2026-07-18 22:01:52 UTC*
+
+A new mutator that occasionally allows balls moving at extremely high speeds to pass directly through hazards or walls without taking damage, encouraging high-risk, high-velocity playstyles.
+
+---
+
 ## [idea-1056] Laser Sight Attachment — *2026-07-18 21:42:55 UTC*
 
 Introduce a 'laser_sight_attachment' drop that increases the ball's attack range or accuracy for its abilities. When collected, the skill cooldown slightly decreases on successful hits, rewarding precise gameplay.

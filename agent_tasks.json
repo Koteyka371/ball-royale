@@ -19379,7 +19379,7 @@
     },
     {
       "id": "idea-1130",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tunneling Modifier",
@@ -30292,6 +30292,23 @@
         "src/ai/quantum_tunnels.py",
         "src/ai/quantum_tunnels.gd",
         "tests/test_quantum_tunnels.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1771",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Shifter Trap",
+      "description": "A deployable trap that, when triggered, instantly swaps the position of the victim with the trapper, confusing the enemy and allowing the trapper to escape or set up a secondary ambush.",
+      "allowed_paths": [
+        "src/arena/quantum_shifter_trap.py",
+        "src/arena/quantum_shifter_trap.gd",
+        "tests/test_quantum_shifter_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
