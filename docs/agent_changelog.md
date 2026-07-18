@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1119] King of the Hill - Gravity Well — *2026-07-18 04:25:07 UTC*
+
+A game mode where balls must stay near a central point to earn points. However, a gravity well pulses every 10 seconds, pushing everyone away, requiring players to time their movements.
+
+---
+
 ## [idea-1113] Mirage Mine — *2026-07-18 04:13:24 UTC*
 
 A trap that looks like a high-tier healing spring or booster. When collected, instead of granting the effect, it creates a temporary fake clone of the player that taunts enemy AI into attacking it while granting the player brief invisibility.
