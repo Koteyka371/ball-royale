@@ -4629,8 +4629,8 @@ class Action:
             self._update_skill_timer(delta)
             self._resolve_collisions()
             bounced_wall = self._clamp_position()
-            if bounced_wall and not getattr(self.ball, "is_stunned", False):
-                if getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0:
+            if bounced_wall and getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0 and not getattr(self.ball, "is_stunned", False):
+                if getattr(self.ball, "vx", 0.0) != 0.0 or getattr(self.ball, "vy", 0.0) != 0.0:
                     self.ball.wall_stick_timer = 2.0
                     self.ball.is_stunned = True
             return
@@ -8063,7 +8063,10 @@ class Action:
                 self.ball.stun_timer -= delta
                 return  # Skip movement if stunned
             elif getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
-                return # Skip movement if wall stuck
+                # We do not return here! Returning prevents `_clamp_position()` and the rest of `execute` from running,
+                # BUT if we don't return, movement logic happens.
+                # Actually, `target_weak` itself moves the ball using `_chase_target`.
+                pass
             else:
                 self.ball.is_stunned = False
 
@@ -8330,8 +8333,9 @@ class Action:
         bounced_col = self._resolve_collisions()
         bounced_wall = self._clamp_position()
 
-        if bounced_wall and not getattr(self.ball, "is_stunned", False):
-            if getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0:
+        if bounced_wall and getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0 and not getattr(self.ball, "is_stunned", False):
+            # Only trigger wall stick if it actually had velocity moving into the wall
+            if getattr(self.ball, "vx", 0.0) != 0.0 or getattr(self.ball, "vy", 0.0) != 0.0:
                 self.ball.wall_stick_timer = 2.0
                 self.ball.is_stunned = True
 
@@ -9467,6 +9471,8 @@ class Action:
         '''
         Target Weak — ищет самого слабого врага
         '''
+        if getattr(self.ball, "is_stunned", False):
+            return
         enemies = self._get_enemies()
         if not enemies:
             self._idle(delta)
