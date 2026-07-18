@@ -4947,6 +4947,41 @@ func execute(strategy: String, delta: float):
 									if bh <= 0.0:
 										if "alive" in b: b.alive = false
 										elif b.has_method("set_meta"): b.set_meta("alive", false)
+
+								var b_is_blinded = false
+								if "is_blinded" in b: b_is_blinded = b.is_blinded
+								elif b.has_method("get_meta") and b.has_meta("is_blinded"): b_is_blinded = b.get_meta("is_blinded")
+
+								if not b_is_blinded:
+									if "is_blinded" in b: b.is_blinded = true
+									elif b.has_method("set_meta"): b.set_meta("is_blinded", true)
+									elif typeof(b) == TYPE_DICTIONARY: b["is_blinded"] = true
+
+									var b_blind_timer = 3.0
+									if "blindness_timer" in b: b.blindness_timer = b_blind_timer
+									elif b.has_method("set_meta"): b.set_meta("blindness_timer", b_blind_timer)
+									elif typeof(b) == TYPE_DICTIONARY: b["blindness_timer"] = b_blind_timer
+
+									var b_base_per_rad = 100.0
+									var b_has_base_per = false
+									if "base_perception_radius" in b:
+										b_base_per_rad = b.base_perception_radius
+										b_has_base_per = true
+									elif b.has_method("get_meta") and b.has_meta("base_perception_radius"):
+										b_base_per_rad = b.get_meta("base_perception_radius")
+										b_has_base_per = true
+
+									if not b_has_base_per:
+										if "perception_radius" in b: b_base_per_rad = b.perception_radius
+										elif b.has_method("get_meta") and b.has_meta("perception_radius"): b_base_per_rad = b.get_meta("perception_radius")
+
+										if "base_perception_radius" in b: b.base_perception_radius = b_base_per_rad
+										elif b.has_method("set_meta"): b.set_meta("base_perception_radius", b_base_per_rad)
+										elif typeof(b) == TYPE_DICTIONARY: b["base_perception_radius"] = b_base_per_rad
+
+									if "perception_radius" in b: b.perception_radius = b_base_per_rad * 0.5
+									elif b.has_method("set_meta"): b.set_meta("perception_radius", b_base_per_rad * 0.5)
+									elif typeof(b) == TYPE_DICTIONARY: b["perception_radius"] = b_base_per_rad * 0.5
 				return
 
 	var is_alive_mine_decoy = true
