@@ -1280,6 +1280,41 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.world, 'flare_light_timer', 0.0) > 0.0:
+            # We decrement based on number of active balls so the total drain matches delta roughly
+            ball_count = max(1, len(getattr(self.world, 'balls', [1])))
+            self.world.flare_light_timer -= delta / ball_count
+
+        if getattr(self.ball, "ball_type", "") == "solar_bot":
+            arena = getattr(self.world, 'arena', None)
+            gm = getattr(self.world, 'game_mode', None)
+
+            is_dark = False
+            if arena:
+                if getattr(arena, 'is_night', False) or getattr(arena, 'is_eclipse', False) or getattr(arena, 'is_lunar_eclipse', False) or getattr(arena, 'is_solar_eclipse', False):
+                    is_dark = True
+            if gm and getattr(gm, 'is_blackout', False):
+                is_dark = True
+
+            is_lit_by_flare = getattr(self.world, 'flare_light_timer', 0.0) > 0.0
+
+            if is_lit_by_flare:
+                is_dark = False
+
+            if not hasattr(self.ball, "original_base_speed"):
+                self.ball.original_base_speed = getattr(self.ball, "base_speed", getattr(self.ball, "speed", 100.0))
+            if not hasattr(self.ball, "original_base_damage"):
+                self.ball.original_base_damage = getattr(self.ball, "base_damage", getattr(self.ball, "damage", 10.0))
+
+            if not is_dark:
+                self.ball.hp = min(getattr(self.ball, 'max_hp', 100.0), getattr(self.ball, 'hp', 0.0) + 5.0 * delta)
+                self.ball.stamina = min(getattr(self.ball, 'max_stamina', 100.0), getattr(self.ball, 'stamina', 0.0) + 20.0 * delta)
+                # Restore stats if they were debuffed
+                self.ball.speed = getattr(self.ball, 'original_base_speed', 100.0)
+                self.ball.damage = getattr(self.ball, 'original_base_damage', 10.0)
+            else:
+                self.ball.speed = getattr(self.ball, 'original_base_speed', 100.0) * 0.5
+                self.ball.damage = getattr(self.ball, 'original_base_damage', 10.0) * 0.5
 
         if getattr(self.ball, "has_drone", False):
             drone_radius = 150.0
@@ -11691,6 +11726,27 @@ class Action:
             skill_name = self.ball.active_skill
 
         can_recast = False
+        if skill_timer > 0 and skill_name == "solar_flare":
+            if hasattr(self.world, "add_event"):
+                self.world.add_event("visual_effect", {"type": "solar_flare_activation", "ball_id": self.ball.id})
+
+            self.world.flare_light_timer = 3.0
+            self.ball.skill_timer = 4.0
+
+            burn_radius = 200.0
+            burn_damage = 30.0
+
+            enemies = self._get_enemies()
+            for e in enemies:
+                dist_sq = (self.ball.x - e.x)**2 + (self.ball.y - e.y)**2
+                if dist_sq <= burn_radius**2:
+                    if hasattr(e, "take_damage"):
+                        e.take_damage(burn_damage)
+                    e.burning_timer = 3.0
+                    e.on_fire = True
+
+            return
+
         if skill_timer > 0 and skill_name == "fireball":
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for h in self.world.arena.hazards:

@@ -2245,6 +2245,94 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    if self.world != null:
+        var flare_timer = 0.0
+        if "flare_light_timer" in self.world:
+            flare_timer = self.world.flare_light_timer
+        elif self.world.has_method("has_meta") and self.world.has_meta("flare_light_timer"):
+            flare_timer = self.world.get_meta("flare_light_timer")
+
+        if flare_timer > 0.0:
+            var ball_count = 1
+            if "balls" in self.world:
+                ball_count = max(1, self.world.balls.size())
+            elif self.world.has_method("get_meta") and self.world.has_meta("balls"):
+                ball_count = max(1, self.world.get_meta("balls").size())
+            flare_timer -= delta / ball_count
+            if "flare_light_timer" in self.world:
+                self.world.flare_light_timer = flare_timer
+            elif self.world.has_method("set_meta"):
+                self.world.set_meta("flare_light_timer", flare_timer)
+
+    var b_type = ""
+    if "ball_type" in self.ball: b_type = self.ball.ball_type
+
+    if b_type == "solar_bot":
+        var is_dark = false
+        var gm = null
+        if self.world != null and "game_mode" in self.world:
+            gm = self.world.game_mode
+        var arena = null
+        if self.world != null and self.world.has_method("get_arena"):
+            arena = self.world.call("get_arena")
+
+        if arena != null:
+            if ("is_night" in arena and arena.is_night) or \
+               ("is_eclipse" in arena and arena.is_eclipse) or \
+               ("is_lunar_eclipse" in arena and arena.is_lunar_eclipse) or \
+               ("is_solar_eclipse" in arena and arena.is_solar_eclipse):
+                is_dark = true
+
+        if gm != null and "is_blackout" in gm and gm.is_blackout:
+            is_dark = true
+
+        var is_lit_by_flare = false
+        if self.world != null:
+            var flare = 0.0
+            if "flare_light_timer" in self.world: flare = self.world.flare_light_timer
+            elif self.world.has_method("has_meta") and self.world.has_meta("flare_light_timer"): flare = self.world.get_meta("flare_light_timer")
+            if flare > 0.0:
+                is_lit_by_flare = true
+
+        if is_lit_by_flare:
+            is_dark = false
+
+        var orig_spd = 100.0
+        if "original_base_speed" in self.ball: orig_spd = self.ball.original_base_speed
+        else:
+            if "base_speed" in self.ball: orig_spd = self.ball.base_speed
+            elif "speed" in self.ball: orig_spd = self.ball.speed
+            if self.ball.has_method("set_meta"): self.ball.set_meta("original_base_speed", orig_spd)
+            else: self.ball.original_base_speed = orig_spd
+
+        var orig_dmg = 10.0
+        if "original_base_damage" in self.ball: orig_dmg = self.ball.original_base_damage
+        else:
+            if "base_damage" in self.ball: orig_dmg = self.ball.base_damage
+            elif "damage" in self.ball: orig_dmg = self.ball.damage
+            if self.ball.has_method("set_meta"): self.ball.set_meta("original_base_damage", orig_dmg)
+            else: self.ball.original_base_damage = orig_dmg
+
+        if not is_dark:
+            var m_hp = 100.0
+            if "max_hp" in self.ball: m_hp = self.ball.max_hp
+            var c_hp = 0.0
+            if "hp" in self.ball: c_hp = self.ball.hp
+            self.ball.hp = min(m_hp, c_hp + 5.0 * delta)
+
+            var m_stam = 100.0
+            if "max_stamina" in self.ball: m_stam = self.ball.max_stamina
+            var c_stam = 0.0
+            if "stamina" in self.ball: c_stam = self.ball.stamina
+            if "stamina" in self.ball:
+                self.ball.stamina = min(m_stam, c_stam + 20.0 * delta)
+
+            self.ball.speed = orig_spd
+            self.ball.damage = orig_dmg
+        else:
+            self.ball.speed = orig_spd * 0.5
+            self.ball.damage = orig_dmg * 0.5
+
     var has_drone = false
     if "has_drone" in self.ball:
         has_drone = self.ball.has_drone
@@ -22051,6 +22139,59 @@ func _use_skill():
         skill_name = self.ball.active_skill
 
     var can_recast = false
+    if skill_timer > 0.0 and skill_name == "solar_flare":
+        if self.world != null and self.world.has_method("add_event"):
+            var b_id = 0
+            if "id" in self.ball: b_id = self.ball.id
+            self.world.call("add_event", "visual_effect", {"type": "solar_flare_activation", "ball_id": b_id})
+
+        if self.world != null:
+            if "flare_light_timer" in self.world:
+                self.world.flare_light_timer = 3.0
+            elif self.world.has_method("set_meta"):
+                self.world.set_meta("flare_light_timer", 3.0)
+
+        if "skill_timer" in self.ball:
+            self.ball.skill_timer = 4.0
+
+        var burn_radius = 200.0
+        var burn_damage = 30.0
+        var enemies = self._get_enemies()
+        for e in enemies:
+            var e_x = 0.0
+            var e_y = 0.0
+            if typeof(e) == TYPE_DICTIONARY:
+                e_x = e.get("x", 0.0)
+                e_y = e.get("y", 0.0)
+            else:
+                if "x" in e: e_x = e.x
+                if "y" in e: e_y = e.y
+            var b_x = 0.0
+            var b_y = 0.0
+            if "x" in self.ball: b_x = self.ball.x
+            if "y" in self.ball: b_y = self.ball.y
+            var dist_sq = (b_x - e_x)*(b_x - e_x) + (b_y - e_y)*(b_y - e_y)
+            if dist_sq <= burn_radius*burn_radius:
+                if typeof(e) == TYPE_OBJECT and e.has_method("take_damage"):
+                    e.take_damage(burn_damage)
+                elif typeof(e) == TYPE_DICTIONARY and e.has("hp"):
+                    e["hp"] -= burn_damage
+                elif typeof(e) == TYPE_OBJECT and "hp" in e:
+                    e.hp -= burn_damage
+
+                if typeof(e) == TYPE_OBJECT:
+                    if "burning_timer" in e:
+                        e.burning_timer = 3.0
+                    if "on_fire" in e:
+                        e.on_fire = true
+                    elif e.has_method("set_meta"):
+                        e.set_meta("burning_timer", 3.0)
+                        e.set_meta("on_fire", true)
+                elif typeof(e) == TYPE_DICTIONARY:
+                    e["burning_timer"] = 3.0
+                    e["on_fire"] = true
+        return
+
     if skill_timer > 0.0 and skill_name == "fireball":
         if world != null and world.has_method("get_arena"):
             var arena = world.call("get_arena")
