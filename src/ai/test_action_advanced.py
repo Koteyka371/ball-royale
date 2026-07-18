@@ -164,6 +164,53 @@ def test_tank_target_strong_chase():
     assert ball.x > 100
 
 
+def test_collect_fake_healing_orb():
+    from ai.action import Action
+
+    class MockBall:
+        def __init__(self, id=1, x=100.0, y=100.0, hp=100.0):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.radius = 10.0
+            self.hp = hp
+            self.stun_timer = 0.0
+
+        def take_damage(self, amount):
+            self.hp -= amount
+
+    class MockBooster:
+        def __init__(self, x=105.0, y=100.0, kind="fake_healing_orb"):
+            self.x = x
+            self.y = y
+            self.kind = kind
+            self.radius = 15.0
+            self.damage = 50.0
+            self.stun_duration = 2.0
+
+    class MockWorld:
+        def __init__(self, ball, booster):
+            self.balls = [ball]
+            self.boosters = [booster]
+
+            class MockArena:
+                hazards = []
+            self.arena = MockArena()
+
+    ball = MockBall(id=1, x=100.0, y=100.0, hp=100.0)
+    booster = MockBooster(x=105.0, y=100.0, kind="fake_healing_orb")
+    world = MockWorld(ball, booster)
+
+    action = Action(ball, world)
+    action._get_boosters = lambda: world.boosters
+    action._get_enemies = lambda: []
+
+    action.execute("collect_booster", 0.1)
+
+    assert ball.hp <= 50.0
+    assert ball.stun_timer == 2.0
+    assert len(world.boosters) == 0
+
 def test_collect_decoy_booster():
     ball = MockBall(x=100, y=100)
     world = MockWorld()
