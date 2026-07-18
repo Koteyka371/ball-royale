@@ -420,6 +420,66 @@ class GameMode:
                     if m in world.arena.hazards:
                         world.arena.hazards.remove(m)
 
+            player_mines = [h for h in world.arena.hazards if getattr(h, "kind", "") == "player_orbital_mine"]
+            for m in player_mines:
+                owner = next((b for b in balls if getattr(b, "id", None) == getattr(m, "owner_id", None)), None)
+                if not owner or not getattr(owner, "alive", False):
+                    if m in world.arena.hazards: world.arena.hazards.remove(m)
+                    continue
+
+                mine_state = getattr(m, "mine_state", "orbiting")
+                if mine_state == "orbiting":
+                    import math
+                    orbit_speed = 3.0 # radians per second
+                    orbit_angle = getattr(m, "orbit_angle", 0.0)
+                    orbit_angle += orbit_speed * delta
+                    setattr(m, "orbit_angle", orbit_angle)
+                    orbit_radius = getattr(m, "orbit_radius", 60.0)
+
+                    m.x = owner.x + math.cos(orbit_angle) * orbit_radius
+                    m.y = owner.y + math.sin(orbit_angle) * orbit_radius
+
+                    # Check for enemies nearby
+                    target_enemy = None
+                    min_dist_sq = 22500.0 # 150 range
+                    for b in balls:
+                        if not getattr(b, "alive", False) or getattr(b, "id", None) == owner.id: continue
+                        dist_sq = (b.x - m.x)**2 + (b.y - m.y)**2
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            target_enemy = b
+
+                    if target_enemy:
+                        setattr(m, "mine_state", "seeking")
+                        setattr(m, "target_id", target_enemy.id)
+
+                elif mine_state == "seeking":
+                    target_id = getattr(m, "target_id", None)
+                    target = next((b for b in balls if getattr(b, "id", None) == target_id), None)
+
+                    if not target or not getattr(target, "alive", False):
+                        setattr(m, "mine_state", "orbiting")
+                        continue
+
+                    dx = target.x - m.x
+                    dy = target.y - m.y
+                    dist = (dx**2 + dy**2)**0.5
+
+                    if dist > 0:
+                        speed = 300.0 * delta
+                        m.x += (dx/dist) * speed
+                        m.y += (dy/dist) * speed
+
+                    if dist < getattr(m, "radius", 8.0) + getattr(target, "radius", 15.0):
+                        if hasattr(target, "take_damage"): target.take_damage(getattr(m, "damage", 20.0))
+                        else: target.hp = getattr(target, "hp", 100) - getattr(m, "damage", 20.0)
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("explosion", {"x": m.x, "y": m.y, "radius": 40.0, "damage": 0})
+
+                        if m in world.arena.hazards: world.arena.hazards.remove(m)
+
+
         # --- BOUNTY PLACER BUFF TICK ---
         pm = getattr(world, "profile_manager", None)
         if pm and hasattr(pm, "data") and "temporary_buffs" in pm.data:
