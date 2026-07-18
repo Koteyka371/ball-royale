@@ -6444,6 +6444,147 @@ class VampireRoyaleMode extends GameMode:
 		return null
 
 
+class PulsingGravityWellMode extends GameMode:
+	var tick_timer = 0.0
+	var pulse_timer = 0.0
+	var game_time = 0.0
+
+	func _init() -> void:
+		name = "Pulsing Gravity Well"
+		description = "Balls must stay near a central point to earn points. A gravity well pulses every 10 seconds, pushing everyone away."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		pass
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_DICTIONARY and not "dead_balls" in world:
+			world["dead_balls"] = []
+		elif typeof(world) == TYPE_OBJECT and not "dead_balls" in world:
+			world.set("dead_balls", [])
+
+		game_time = 0.0
+		pulse_timer = 0.0
+
+		for b in balls:
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if b_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["score"] = 0
+				else:
+					b.set("score", 0)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if typeof(world) == TYPE_DICTIONARY and not "dead_balls" in world:
+			world["dead_balls"] = []
+		elif typeof(world) == TYPE_OBJECT and not "dead_balls" in world:
+			world.set("dead_balls", [])
+
+		game_time += delta
+		tick_timer += delta
+		pulse_timer += delta
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+			var arena = world["arena"]
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = arena.get("width", 1000.0)
+				arena_height = arena.get("height", 1000.0)
+			else:
+				arena_width = arena.get("width") if "width" in arena else 1000.0
+				arena_height = arena.get("height") if "height" in arena else 1000.0
+		elif typeof(world) == TYPE_OBJECT and "arena" in world:
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = arena.get("width", 1000.0)
+				arena_height = arena.get("height", 1000.0)
+			else:
+				arena_width = arena.get("width") if "width" in arena else 1000.0
+				arena_height = arena.get("height") if "height" in arena else 1000.0
+
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+		var zone_radius = 200.0
+
+		if tick_timer >= 0.5:
+			tick_timer = 0.0
+			for b in balls:
+				var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+				var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+				if is_alive and b_type != "spectator":
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var dist_sq = pow(bx - center_x, 2) + pow(by - center_y, 2)
+					if dist_sq <= pow(zone_radius, 2):
+						var score = b.get("score", 0) if typeof(b) == TYPE_DICTIONARY else b.get("score")
+						if typeof(b) == TYPE_DICTIONARY:
+							b["score"] = score + 1
+						else:
+							b.set("score", score + 1)
+
+		if pulse_timer >= 10.0:
+			pulse_timer = 0.0
+			if typeof(world) == TYPE_DICTIONARY and "add_event" in world:
+				world.add_event.call("gravity_pulse", {"x": center_x, "y": center_y})
+			elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("gravity_pulse", {"x": center_x, "y": center_y})
+
+			for b in balls:
+				var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+				var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+				if is_alive and b_type != "spectator":
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var bvx = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("vx")
+					var bvy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("vy")
+
+					var dx = bx - center_x
+					var dy = by - center_y
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist < 0.001:
+						dx = 1.0
+						dy = 0.0
+						dist = 1.0
+
+					var nx = dx / dist
+					var ny = dy / dist
+					var push_strength = max(0.0, 1500.0 - dist)
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["vx"] = bvx + nx * push_strength
+						b["vy"] = bvy + ny * push_strength
+					else:
+						b.set("vx", bvx + nx * push_strength)
+						b.set("vy", bvy + ny * push_strength)
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if is_alive and b_type != "spectator" and b_type != "shadow_monster":
+				alive.append(b)
+
+		if alive.size() == 0:
+			return "Draw"
+
+		var best_score = -1
+		var best_team = null
+
+		for b in balls:
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if b_type != "spectator":
+				var score = b.get("score", 0) if typeof(b) == TYPE_DICTIONARY else b.get("score")
+				if score >= 100:
+					return b.get("team", b_type) if typeof(b) == TYPE_DICTIONARY else b.get("team")
+				if score > best_score:
+					best_score = score
+					best_team = b.get("team", b_type) if typeof(b) == TYPE_DICTIONARY else b.get("team")
+
+		return null
+
 class MassiveGravityWellMode extends GameMode:
 	var mgw_x: float = 0.0
 	var mgw_y: float = 0.0
@@ -32356,6 +32497,7 @@ GAME_MODES = {
 	"black_hole": BlackHoleMode.new(),
 	"sweeping_black_hole": SweepingBlackHoleMode.new(),
 	"gravity_well": GravityWellMode.new(),
+	"pulsing_gravity_well": PulsingGravityWellMode.new(),
 	"massive_gravity_well": MassiveGravityWellMode.new(),
 	"king_of_the_hill": KingOfTheHillMode.new(),
 	"moving_zone": MovingZoneMode.new(),
