@@ -1,0 +1,4 @@
+{
+  "title": "Pass The Bomb",
+  "description": "A ticking bomb is randomly attached to a player. They must bump into another player to pass the bomb. The bomb explodes after 15 seconds, eliminating the holder. The process repeats until only one player is left."
+}

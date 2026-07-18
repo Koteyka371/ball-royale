@@ -19998,6 +19998,104 @@ class HealingZoneMode(GameMode):
                 else:
                     b.in_healing_zone = False
 
+
+class ReverseTagMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Reverse Tag"
+        self.description = "Instead of avoiding the 'IT' player, being 'IT' gives passive points. When a player collides with 'IT', they steal the status. To prevent stalling, the 'IT' status drains max HP slowly, forcing them to tag someone else eventually."
+        self.scores = {}
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for b in balls:
+            b.is_reverse_it = False
+            b.reverse_tag_cooldown = 0.0
+            bid = getattr(b, "id", None)
+            if bid is not None:
+                self.scores[bid] = 0.0
+
+        if valid_balls:
+            import random
+            first_it = random.choice(valid_balls)
+            first_it.is_reverse_it = True
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+
+        # Ensure there is exactly one IT if possible
+        it_balls = [b for b in alive_balls if getattr(b, "is_reverse_it", False)]
+        if not it_balls and alive_balls:
+            import random
+            random.choice(alive_balls).is_reverse_it = True
+            it_balls = [b for b in alive_balls if getattr(b, "is_reverse_it", False)]
+
+        for b in alive_balls:
+            if getattr(b, "reverse_tag_cooldown", 0.0) > 0:
+                b.reverse_tag_cooldown -= delta
+                if b.reverse_tag_cooldown < 0:
+                    b.reverse_tag_cooldown = 0.0
+
+            if getattr(b, "is_reverse_it", False):
+                bid = getattr(b, "id", None)
+                if bid is not None:
+                    self.scores[bid] = self.scores.get(bid, 0.0) + 10.0 * delta
+
+                new_max_hp = max(1.0, getattr(b, "max_hp", 100.0) - 5.0 * delta)
+                b.max_hp = new_max_hp
+                if getattr(b, "hp", 100.0) > new_max_hp:
+                    b.hp = new_max_hp
+
+        n = len(alive_balls)
+        for i in range(n):
+            for j in range(i + 1, n):
+                b1 = alive_balls[i]
+                b2 = alive_balls[j]
+
+                if getattr(b1, "is_reverse_it", False) == getattr(b2, "is_reverse_it", False):
+                    continue
+
+                dx = getattr(b1, "x", 0) - getattr(b2, "x", 0)
+                dy = getattr(b1, "y", 0) - getattr(b2, "y", 0)
+                dist_sq = dx*dx + dy*dy
+                r1 = getattr(b1, "radius", 10)
+                r2 = getattr(b2, "radius", 10)
+                if dist_sq < (r1 + r2) ** 2:
+                    if getattr(b1, "reverse_tag_cooldown", 0.0) <= 0 and getattr(b2, "reverse_tag_cooldown", 0.0) <= 0:
+                        if getattr(b1, "is_reverse_it", False):
+                            b1.is_reverse_it = False
+                            b2.is_reverse_it = True
+                        else:
+                            b2.is_reverse_it = False
+                            b1.is_reverse_it = True
+                        b1.reverse_tag_cooldown = 1.0
+                        b2.reverse_tag_cooldown = 1.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("reverse_tag", {"message": "Status Stolen!"})
+
+    def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if not alive:
+            if self.scores:
+                best_id = max(self.scores, key=self.scores.get)
+                return str(best_id)
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", "")) for b in alive)
+        if len(teams_alive) == 1:
+            if self.scores:
+                best_id = max(self.scores, key=self.scores.get)
+                best_ball = next((b for b in balls if getattr(b, "id", None) == best_id), None)
+                if best_ball:
+                    return getattr(best_ball, "team", str(best_id))
+                return str(best_id)
+            return list(teams_alive)[0]
+
+        return None
+
 GAME_MODES = {
     'healing_zone': HealingZoneMode(),
     "sweeping_rotating_lasers": SweepingRotatingLasersMode(),
@@ -20014,6 +20112,7 @@ GAME_MODES = {
 
     'scorching_sun': ScorchingSunMode(),
     "bounty_tag": BountyTagMode(),
+    "reverse_tag": ReverseTagMode(),
     "cosmic_storm": CosmicStormMode(),
     "elemental_auras": ElementalAurasMode(),
     "heavy_rain_mutator": HeavyRainMode(),
