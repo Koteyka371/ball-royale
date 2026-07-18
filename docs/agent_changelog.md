@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1115] Chain Reaction Game Mode — *2026-07-18 18:37:31 UTC*
+
+A game mode where every kill triggers an explosion that scales in radius and damage based on the killed ball's current killstreak. Players must carefully manage their spacing to avoid chain wipes.
+
+---
+
 ## [idea-1084] Radiation Mutator Zone — *2026-07-18 18:13:15 UTC*
 
 A battle royale zone where being in the danger zone not only deals DoT but also applies random positive and negative mutations to ball stats (speed, damage, perception).
