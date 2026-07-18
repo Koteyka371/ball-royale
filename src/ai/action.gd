@@ -2244,6 +2244,129 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+    # Necromancer aura logic
+    var b_type_aura = ""
+    if typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball:
+        b_type_aura = str(self.ball.ball_type).to_lower()
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"):
+        b_type_aura = str(self.ball["ball_type"]).to_lower()
+
+    if b_type_aura == "necromancer":
+        var necro_aura_radius = 150.0
+        var necro_aura_damage = 5.0 * delta
+        var total_damage_dealt = 0.0
+        var necro_team = ""
+        if typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: necro_team = str(self.ball.team)
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): necro_team = str(self.ball["team"])
+        else: necro_team = b_type_aura
+
+        var balls_list = []
+        if self.world != null and "balls" in self.world:
+            balls_list = self.world.balls
+
+        for e in balls_list:
+            if typeof(e) == TYPE_OBJECT:
+                if e == self.ball: continue
+                var e_alive = true
+                if "alive" in e: e_alive = e.alive
+                elif e.has_method("has_meta") and e.has_meta("alive"): e_alive = e.get_meta("alive")
+                if not e_alive: continue
+
+                var e_team = ""
+                if "team" in e: e_team = str(e.team)
+                elif "ball_type" in e: e_team = str(e.ball_type)
+
+                if e_team != necro_team:
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    var e_x = 0.0
+                    var e_y = 0.0
+                    if "x" in self.ball: b_x = self.ball.x
+                    if "y" in self.ball: b_y = self.ball.y
+                    if "x" in e: e_x = e.x
+                    if "y" in e: e_y = e.y
+                    var dist_sq = (b_x - e_x)*(b_x - e_x) + (b_y - e_y)*(b_y - e_y)
+                    if dist_sq <= necro_aura_radius * necro_aura_radius:
+                        if e.has_method("take_damage"):
+                            e.take_damage(necro_aura_damage)
+                        elif "hp" in e:
+                            e.hp -= necro_aura_damage
+                            if e.hp <= 0:
+                                e.hp = 0
+                                if "alive" in e: e.alive = false
+                        elif e.has_method("has_meta") and e.has_meta("hp"):
+                            var e_hp = e.get_meta("hp")
+                            e_hp -= necro_aura_damage
+                            if e_hp <= 0:
+                                e_hp = 0
+                                if e.has_method("set_meta"): e.set_meta("alive", false)
+                            e.set_meta("hp", e_hp)
+                        total_damage_dealt += necro_aura_damage
+            elif typeof(e) == TYPE_DICTIONARY:
+                if e == self.ball: continue
+                var e_alive = true
+                if e.has("alive"): e_alive = e["alive"]
+                if not e_alive: continue
+                var e_team = ""
+                if e.has("team"): e_team = str(e["team"])
+                elif e.has("ball_type"): e_team = str(e["ball_type"])
+
+                if e_team != necro_team:
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    var e_x = 0.0
+                    var e_y = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        if self.ball.has("x"): b_x = self.ball["x"]
+                        if self.ball.has("y"): b_y = self.ball["y"]
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "x" in self.ball: b_x = self.ball.x
+                        if "y" in self.ball: b_y = self.ball.y
+                    if e.has("x"): e_x = e["x"]
+                    if e.has("y"): e_y = e["y"]
+                    var dist_sq = (b_x - e_x)*(b_x - e_x) + (b_y - e_y)*(b_y - e_y)
+                    if dist_sq <= necro_aura_radius * necro_aura_radius:
+                        if e.has("hp"):
+                            e["hp"] -= necro_aura_damage
+                            if e["hp"] <= 0:
+                                e["hp"] = 0
+                                e["alive"] = false
+                        total_damage_dealt += necro_aura_damage
+
+        if total_damage_dealt > 0:
+            var conversion = total_damage_dealt * 0.5
+            var max_hp = 100.0
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "max_hp" in self.ball: max_hp = self.ball.max_hp
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+
+                var curr_hp = 0.0
+                if "hp" in self.ball: curr_hp = self.ball.hp
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("hp"): curr_hp = self.ball.get_meta("hp")
+
+                if curr_hp < max_hp:
+                    curr_hp = min(max_hp, curr_hp + conversion)
+                    if "hp" in self.ball: self.ball.hp = curr_hp
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", curr_hp)
+                else:
+                    var bat = 0.0
+                    if "bone_armor_timer" in self.ball: bat = self.ball.bone_armor_timer
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("bone_armor_timer"): bat = self.ball.get_meta("bone_armor_timer")
+                    bat += conversion
+                    if "bone_armor_timer" in self.ball: self.ball.bone_armor_timer = bat
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("bone_armor_timer", bat)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("max_hp"): max_hp = self.ball["max_hp"]
+                var curr_hp = 0.0
+                if self.ball.has("hp"): curr_hp = self.ball["hp"]
+                if curr_hp < max_hp:
+                    self.ball["hp"] = min(max_hp, curr_hp + conversion)
+                else:
+                    var bat = 0.0
+                    if self.ball.has("bone_armor_timer"): bat = self.ball["bone_armor_timer"]
+                    self.ball["bone_armor_timer"] = bat + conversion
+
     var t_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT:
         if "tracker_booster_timer" in self.ball: t_timer = self.ball.tracker_booster_timer

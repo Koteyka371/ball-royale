@@ -1280,6 +1280,33 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        # Necromancer aura logic
+        if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'necromancer':
+            necro_aura_radius = 150.0
+            necro_aura_damage = 5.0 * delta # 5 damage per second
+            enemies_in_aura = [e for e in getattr(self.world, "balls", []) if e != self.ball and getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]
+            total_damage_dealt = 0.0
+            for e in enemies_in_aura:
+                dist_sq = (self.ball.x - e.x)**2 + (self.ball.y - e.y)**2
+                if dist_sq <= necro_aura_radius**2:
+                    if hasattr(e, "take_damage"):
+                        e.take_damage(necro_aura_damage)
+                    elif hasattr(e, "hp"):
+                        e.hp -= necro_aura_damage
+                        if e.hp <= 0:
+                            e.hp = 0
+                            e.alive = False
+                    total_damage_dealt += necro_aura_damage
+
+            if total_damage_dealt > 0:
+                # Convert a portion of damage dealt to heal or bone armor stacks
+                conversion = total_damage_dealt * 0.5
+                if self.ball.hp < getattr(self.ball, "max_hp", 100.0):
+                    self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), self.ball.hp + conversion)
+                else:
+                    self.ball.bone_armor_timer = getattr(self.ball, "bone_armor_timer", 0.0) + conversion
+
         if getattr(self.ball, "tracker_booster_timer", 0.0) > 0:
             self.ball.tracker_booster_timer -= delta
             if self.ball.tracker_booster_timer <= 0:
