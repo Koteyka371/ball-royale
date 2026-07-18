@@ -5716,6 +5716,55 @@ class DualPayloadMode extends GameMode:
 
 				var speed_mult_red = 1.0 + (nearby_red * 0.5)
 
+				if speed_mult_red >= 2.0:
+					if typeof(payload_red) == TYPE_DICTIONARY:
+						payload_red["turret_active"] = true
+					else:
+						payload_red.set("turret_active", true)
+
+					for b in balls:
+						var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						if b_type == "spectator":
+							continue
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						if not b_alive:
+							continue
+						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+						var p_id = payload_red.get("id") if typeof(payload_red) == TYPE_DICTIONARY else payload_red.get("id")
+						if b_id != null and p_id != null and b_id == p_id:
+							continue
+						if typeof(b) == TYPE_OBJECT and typeof(payload_red) == TYPE_OBJECT and b == payload_red:
+							continue
+						var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+						if b_team != "Red":
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var bdx = bx - red_x
+							var bdy = by - red_y
+							var dist_to_enemy = sqrt(bdx*bdx + bdy*bdy)
+							if dist_to_enemy <= 200.0:
+								var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+								var new_hp = max(0.0, bhp - 10.0 * delta)
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = new_hp
+									if new_hp <= 0:
+										b["alive"] = false
+									if dist_to_enemy > 0:
+										b["x"] += (bdx / dist_to_enemy) * 150.0 * delta
+										b["y"] += (bdy / dist_to_enemy) * 150.0 * delta
+								else:
+									b.set("hp", new_hp)
+									if new_hp <= 0:
+										b.set("alive", false)
+									if dist_to_enemy > 0:
+										b.set("x", bx + (bdx / dist_to_enemy) * 150.0 * delta)
+										b.set("y", by + (bdy / dist_to_enemy) * 150.0 * delta)
+				else:
+					if typeof(payload_red) == TYPE_DICTIONARY:
+						payload_red["turret_active"] = false
+					else:
+						payload_red.set("turret_active", false)
+
 				var dx = center_x - red_x
 				var dy = center_y - red_y
 				var dist = sqrt(dx*dx + dy*dy)
@@ -5762,6 +5811,55 @@ class DualPayloadMode extends GameMode:
 						nearby_blue += 1
 
 				var speed_mult_blue = 1.0 + (nearby_blue * 0.5)
+
+				if speed_mult_blue >= 2.0:
+					if typeof(payload_blue) == TYPE_DICTIONARY:
+						payload_blue["turret_active"] = true
+					else:
+						payload_blue.set("turret_active", true)
+
+					for b in balls:
+						var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						if b_type == "spectator":
+							continue
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						if not b_alive:
+							continue
+						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+						var p_id = payload_blue.get("id") if typeof(payload_blue) == TYPE_DICTIONARY else payload_blue.get("id")
+						if b_id != null and p_id != null and b_id == p_id:
+							continue
+						if typeof(b) == TYPE_OBJECT and typeof(payload_blue) == TYPE_OBJECT and b == payload_blue:
+							continue
+						var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+						if b_team != "Blue":
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var bdx = bx - blue_x
+							var bdy = by - blue_y
+							var dist_to_enemy = sqrt(bdx*bdx + bdy*bdy)
+							if dist_to_enemy <= 200.0:
+								var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+								var new_hp = max(0.0, bhp - 10.0 * delta)
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = new_hp
+									if new_hp <= 0:
+										b["alive"] = false
+									if dist_to_enemy > 0:
+										b["x"] += (bdx / dist_to_enemy) * 150.0 * delta
+										b["y"] += (bdy / dist_to_enemy) * 150.0 * delta
+								else:
+									b.set("hp", new_hp)
+									if new_hp <= 0:
+										b.set("alive", false)
+									if dist_to_enemy > 0:
+										b.set("x", bx + (bdx / dist_to_enemy) * 150.0 * delta)
+										b.set("y", by + (bdy / dist_to_enemy) * 150.0 * delta)
+				else:
+					if typeof(payload_blue) == TYPE_DICTIONARY:
+						payload_blue["turret_active"] = false
+					else:
+						payload_blue.set("turret_active", false)
 
 				var dx = center_x - blue_x
 				var dy = center_y - blue_y
@@ -6085,6 +6183,56 @@ class EscortMode extends GameMode:
 						nearby_teammates += 1
 
 				var speed_mult = 1.0 + (nearby_teammates * 0.5)
+
+				if speed_mult >= 2.0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["turret_active"] = true
+					else:
+						payload.set("turret_active", true)
+
+					for b in balls:
+						var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						if b_type == "spectator":
+							continue
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						if not b_alive:
+							continue
+						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+						var p_id = payload.get("id") if typeof(payload) == TYPE_DICTIONARY else payload.get("id")
+						if b_id != null and p_id != null and b_id == p_id:
+							continue
+						if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
+							continue
+						var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+						if b_team != payload_team:
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var bdx = bx - px
+							var bdy = by - py
+							var dist_to_enemy = sqrt(bdx*bdx + bdy*bdy)
+							if dist_to_enemy <= 200.0:
+								var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+								var new_hp = max(0.0, bhp - 10.0 * delta)
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = new_hp
+									if new_hp <= 0:
+										b["alive"] = false
+									if dist_to_enemy > 0:
+										b["x"] += (bdx / dist_to_enemy) * 150.0 * delta
+										b["y"] += (bdy / dist_to_enemy) * 150.0 * delta
+								else:
+									b.set("hp", new_hp)
+									if new_hp <= 0:
+										b.set("alive", false)
+									if dist_to_enemy > 0:
+										b.set("x", bx + (bdx / dist_to_enemy) * 150.0 * delta)
+										b.set("y", by + (bdy / dist_to_enemy) * 150.0 * delta)
+				else:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["turret_active"] = false
+					else:
+						payload.set("turret_active", false)
+
 				var base_spd = payload.get("speed", 0) if typeof(payload) == TYPE_DICTIONARY else payload.speed
 				var spd = base_spd * speed_mult
 

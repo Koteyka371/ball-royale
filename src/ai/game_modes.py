@@ -3569,6 +3569,25 @@ class DualPayloadMode(GameMode):
 
             speed_mult_red = 1.0 + (nearby_red * 0.5)
 
+            if speed_mult_red >= 2.0:
+                self.payload_red.turret_active = True
+                for b in balls:
+                    if getattr(b, "ball_type", None) == "spectator": continue
+                    if not getattr(b, "alive", False) or b == self.payload_red: continue
+                    if getattr(b, "team", "") != "Red":
+                        bdx = getattr(b, "x", 0) - getattr(self.payload_red, "x", 0)
+                        bdy = getattr(b, "y", 0) - getattr(self.payload_red, "y", 0)
+                        dist_to_enemy = math.hypot(bdx, bdy)
+                        if dist_to_enemy <= 200.0:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 10.0 * delta)
+                            if b.hp <= 0:
+                                b.alive = False
+                            if dist_to_enemy > 0:
+                                b.x += (bdx / dist_to_enemy) * 150.0 * delta
+                                b.y += (bdy / dist_to_enemy) * 150.0 * delta
+            else:
+                self.payload_red.turret_active = False
+
             # Heal nearby red teammates
             for b in balls:
                 if getattr(b, "ball_type", None) == "spectator": continue
@@ -3603,6 +3622,25 @@ class DualPayloadMode(GameMode):
                     nearby_blue += 1
 
             speed_mult_blue = 1.0 + (nearby_blue * 0.5)
+
+            if speed_mult_blue >= 2.0:
+                self.payload_blue.turret_active = True
+                for b in balls:
+                    if getattr(b, "ball_type", None) == "spectator": continue
+                    if not getattr(b, "alive", False) or b == self.payload_blue: continue
+                    if getattr(b, "team", "") != "Blue":
+                        bdx = getattr(b, "x", 0) - getattr(self.payload_blue, "x", 0)
+                        bdy = getattr(b, "y", 0) - getattr(self.payload_blue, "y", 0)
+                        dist_to_enemy = math.hypot(bdx, bdy)
+                        if dist_to_enemy <= 200.0:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 10.0 * delta)
+                            if b.hp <= 0:
+                                b.alive = False
+                            if dist_to_enemy > 0:
+                                b.x += (bdx / dist_to_enemy) * 150.0 * delta
+                                b.y += (bdy / dist_to_enemy) * 150.0 * delta
+            else:
+                self.payload_blue.turret_active = False
 
             # Heal nearby blue teammates
             for b in balls:
@@ -3800,6 +3838,25 @@ class EscortMode(GameMode):
                     nearby_teammates += 1
 
             speed_mult = 1.0 + (nearby_teammates * 0.5)
+
+            if speed_mult >= 2.0:
+                self.payload.turret_active = True
+                for b in balls:
+                    if getattr(b, "ball_type", None) == "spectator": continue
+                    if not getattr(b, "alive", False) or b == self.payload: continue
+                    if getattr(b, "team", "") != payload_team:
+                        bdx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
+                        bdy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
+                        dist_to_enemy = math.hypot(bdx, bdy)
+                        if dist_to_enemy <= 200.0:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 10.0 * delta)
+                            if b.hp <= 0:
+                                b.alive = False
+                            if dist_to_enemy > 0:
+                                b.x += (bdx / dist_to_enemy) * 150.0 * delta
+                                b.y += (bdy / dist_to_enemy) * 150.0 * delta
+            else:
+                self.payload.turret_active = False
 
             path_data = getattr(self, "paths", [{"waypoints": [(self.goal_x, self.goal_y)], "risk": "low"}])[getattr(self, "chosen_path", 0)]
             waypoints = path_data["waypoints"]
