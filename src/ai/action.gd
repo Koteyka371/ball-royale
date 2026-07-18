@@ -13038,6 +13038,60 @@ func execute(strategy: String, delta: float):
                                             self.ball.damage_multiplier = 1.0
                                         elif self.ball.has_method("set_meta"):
                                             self.ball.set_meta("damage_multiplier", 1.0)
+                            elif trap_variant == "elemental_mine":
+                                var element = "fire" if randf() > 0.5 else "poison"
+                                var load_hazard = load("res://src/arena/procedural_arena.gd")
+                                var new_hazard = null
+                                if load_hazard != null:
+                                    new_hazard = load_hazard.Hazard.new()
+                                if new_hazard != null:
+                                    new_hazard.id = self.world.arena.hazards.size() + (randi() % 5000 + 5000)
+                                    new_hazard.x = hazard.x
+                                    new_hazard.y = hazard.y
+                                    new_hazard.radius = 80.0
+                                    if element == "fire":
+                                        new_hazard.kind = "fire_zone"
+                                        new_hazard.damage = 10.0
+                                    else:
+                                        new_hazard.kind = "poison_cloud"
+                                        new_hazard.damage = 5.0
+                                    new_hazard.set_meta("duration", 10.0)
+                                    self.world.arena.hazards.append(new_hazard)
+                                elif self.world.arena.has_method("create_hazard"):
+                                    new_hazard = self.world.arena.create_hazard()
+                                    new_hazard.id = self.world.arena.hazards.size() + (randi() % 5000 + 5000)
+                                    new_hazard.x = hazard.x
+                                    new_hazard.y = hazard.y
+                                    new_hazard.radius = 80.0
+                                    if element == "fire":
+                                        new_hazard.kind = "fire_zone"
+                                        new_hazard.damage = 10.0
+                                    else:
+                                        new_hazard.kind = "poison_cloud"
+                                        new_hazard.damage = 5.0
+                                    new_hazard.set_meta("duration", 10.0)
+                                    self.world.arena.hazards.append(new_hazard)
+                                else:
+                                    var h_dict = {
+                                        "id": self.world.arena.hazards.size() + (randi() % 5000 + 5000),
+                                        "x": hazard.x,
+                                        "y": hazard.y,
+                                        "radius": 80.0,
+                                        "duration": 10.0,
+                                        "active": true
+                                    }
+                                    if element == "fire":
+                                        h_dict["kind"] = "fire_zone"
+                                        h_dict["damage"] = 10.0
+                                    else:
+                                        h_dict["kind"] = "poison_cloud"
+                                        h_dict["damage"] = 5.0
+                                    self.world.arena.hazards.append(h_dict)
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
+
                             elif trap_variant == "mine":
                                 if self.ball.has_method("take_damage"):
                                     self.ball.take_damage(50.0)

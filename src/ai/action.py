@@ -6756,6 +6756,24 @@ class Action:
                                                     if hasattr(b, "stamina_booster_timer"): b.stamina_booster_timer = 0.0
 
                                     hazard.duration = 0.0
+                                elif trap_variant == "elemental_mine":
+                                    import random
+                                    element = random.choice(["fire", "poison"])
+                                    new_hazard = type("Hazard", (), {})()
+                                    new_hazard.id = len(self.world.arena.hazards) + getattr(self, "random", __import__("random")).randint(5000, 9999)
+                                    new_hazard.x = hazard.x
+                                    new_hazard.y = hazard.y
+                                    new_hazard.radius = 80.0
+                                    if element == "fire":
+                                        new_hazard.kind = "fire_zone"
+                                        new_hazard.damage = 10.0
+                                    else:
+                                        new_hazard.kind = "poison_cloud"
+                                        new_hazard.damage = 5.0
+                                    new_hazard.duration = 10.0
+                                    self.world.arena.hazards.append(new_hazard)
+                                    hazard.duration = 0.0
+
                                 elif trap_variant == "mine":
                                     # Mine: large damage
                                     if hasattr(self.ball, "take_damage"):
