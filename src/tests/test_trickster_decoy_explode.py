@@ -193,3 +193,55 @@ def test_decoy_explosion_trickster_fragments():
     assert enemy.stutter_timer > 0.0
     assert enemy.hp < 100.0
     assert getattr(trap, "duration", 10.0) == 0.0 or getattr(trap, "active", True) is False
+
+def test_decoy_explosion_trickster_blindness():
+    owner = MockBall(x=10, y=10)
+    owner.id = 111
+    owner.team = "owner_team"
+    owner.ball_type = "trickster"
+
+    decoy = MockBall(x=100, y=100)
+    decoy.is_decoy = True
+    decoy.alive = True
+    decoy.hp = 0
+    decoy.decoy_type = "explosive"
+    decoy.team = "owner_team"
+    decoy.owner_id = 111
+    decoy.decoy_timer = 5.0
+    decoy.id = 999
+    decoy.ball_type = "trickster"
+
+    enemy = MockBall(x=120, y=120)
+    enemy.id = 222
+    enemy.team = "enemy_team"
+    enemy.hp = 100
+    enemy.stutter_timer = 0.0
+    enemy.is_confused = False
+    enemy.confusion_timer = 0.0
+    enemy.is_blinded = False
+    enemy.blindness_timer = 0.0
+    enemy.perception_radius = 250.0
+    enemy.base_perception_radius = 250.0
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+
+    world = MockWorld()
+    world.balls = [owner, decoy, enemy]
+    world.arena = MockArena()
+    action = Action(decoy, world)
+
+    import random
+    original_random = random.random
+    random.random = lambda: 0.9
+
+    try:
+        action.execute("idle", 0.1)
+    finally:
+        random.random = original_random
+
+    assert getattr(decoy, "_decoy_exploded", False) is True
+    assert getattr(enemy, "is_blinded", False) is True
+    assert getattr(enemy, "blindness_timer", 0.0) == 3.0
+    assert getattr(enemy, "perception_radius", 250.0) == 50.0 # 250 * 0.2
