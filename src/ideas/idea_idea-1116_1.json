@@ -1,4 +1,1 @@
-{
-    "title": "Kinetic Counter Shield",
-    "description": "A new shield skill that reflects incoming melee damage based on how much speed the attacking ball had when colliding. The faster the enemy, the harder they get knocked back and damaged."
-}
+{"title": "Black Hole Decoy", "description": "A decoy variant that collapses into a miniature black hole upon fatal damage, slowly pulling enemies toward its center while dealing continuous minor damage, disrupting positioning."}

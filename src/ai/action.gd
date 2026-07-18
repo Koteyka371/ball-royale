@@ -23972,7 +23972,7 @@ func _use_skill():
                         self.ball["survival_swap_target_id"] = next_id
                         self.ball["survival_swap_timer"] = 3.0
 
-        elif skill_name == "deploy_decoy" or skill_name == "deploy_decoy_flash":
+        elif skill_name == "deploy_decoy" or skill_name == "deploy_decoy_flash" or skill_name == "deploy_decoy_advanced":
             var active_decoys = []
             var has_swapped_any = false
             if "balls" in self.world:
@@ -24127,7 +24127,7 @@ func _use_skill():
 
                             var b_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_meta("ball_type") if self.ball.has_method("has_meta") and self.ball.has_meta("ball_type") else "")
                             var dtype = "explosive"
-                            if skill_name == "deploy_decoy_flash":
+                            if skill_name == "deploy_decoy_flash" or skill_name == "deploy_decoy_advanced":
                                 dtype = "flash"
                             elif b_type == "trickster":
                                 if randf() < 0.5:
