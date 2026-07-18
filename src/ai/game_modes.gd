@@ -36207,6 +36207,59 @@ GAME_MODES["chicken_curse"] = ChickenCurseMode.new()
 
 GAME_MODES["magnetic_bumpers"] = MagneticBumpersMode.new()
 
+
+class MutantSafeZoneMode extends SafeZoneMode:
+	func _init():
+		super._init()
+		name = "Mutant Safe Zone"
+		description = "Being in the danger zone not only deals damage but applies random positive and negative mutations to ball stats."
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		for b in balls:
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+			var ball_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if is_alive and ball_type != "spectator":
+				var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+				var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+				var dx = bx - self.zone_x
+				var dy = by - self.zone_y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > self.zone_radius:
+					if randf() < 2.0 * delta:
+						var mutations = ["speed", "damage", "perception"]
+						var mutation_type = mutations[randi() % mutations.size()]
+						var is_buff = randf() > 0.5
+						var modifier = randf_range(1.1, 1.5) if is_buff else randf_range(0.6, 0.9)
+
+						if typeof(b) == TYPE_DICTIONARY:
+							if mutation_type == "speed":
+								var base_spd = b.get("base_speed", b.get("speed", 100.0))
+								b["base_speed"] = base_spd * modifier
+								b["speed"] = b["base_speed"]
+							elif mutation_type == "damage":
+								var base_dmg = b.get("base_damage_multiplier", b.get("damage_multiplier", 1.0))
+								b["base_damage_multiplier"] = base_dmg * modifier
+								b["damage_multiplier"] = b["base_damage_multiplier"]
+							elif mutation_type == "perception":
+								var base_perc = b.get("base_perception_radius", b.get("perception_radius", 250.0))
+								b["base_perception_radius"] = base_perc * modifier
+								b["perception_radius"] = b["base_perception_radius"]
+						else:
+							if mutation_type == "speed":
+								var base_spd = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+								b.base_speed = base_spd * modifier
+								if "speed" in b: b.speed = b.base_speed
+							elif mutation_type == "damage":
+								var base_dmg = b.base_damage_multiplier if "base_damage_multiplier" in b else (b.damage_multiplier if "damage_multiplier" in b else 1.0)
+								b.base_damage_multiplier = base_dmg * modifier
+								if "damage_multiplier" in b: b.damage_multiplier = b.base_damage_multiplier
+							elif mutation_type == "perception":
+								var base_perc = b.base_perception_radius if "base_perception_radius" in b else (b.perception_radius if "perception_radius" in b else 250.0)
+								b.base_perception_radius = base_perc * modifier
+								if "perception_radius" in b: b.perception_radius = b.base_perception_radius
+
+
 class PeriodicSafeZoneMode extends GameMode:
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -36468,6 +36521,7 @@ class ElasticBandZoneMode:
 
 					grabbed_state.erase(b.id)
 
+GAME_MODES["mutant_safe_zone"] = MutantSafeZoneMode.new()
 GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode.new()
 GAME_MODES["elastic_band_zone"] = ElasticBandZoneMode.new()
 

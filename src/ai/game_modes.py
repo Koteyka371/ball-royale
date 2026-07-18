@@ -23522,6 +23522,39 @@ GAME_MODES['phantom_juggernaut'] = PhantomJuggernautMode()
 
 GAME_MODES["chicken_curse"] = ChickenCurseMode()
 
+
+class MutantSafeZoneMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mutant Safe Zone"
+        self.description = "Being in the danger zone not only deals damage but applies random positive and negative mutations to ball stats."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+        import random
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = b.x - self.zone_x
+                dy = b.y - self.zone_y
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist > self.zone_radius:
+                    if random.random() < 2.0 * delta:
+                        mutation_type = random.choice(["speed", "damage", "perception"])
+                        is_buff = random.random() > 0.5
+                        modifier = random.uniform(1.1, 1.5) if is_buff else random.uniform(0.6, 0.9)
+
+                        if mutation_type == "speed":
+                            b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * modifier
+                            b.speed = b.base_speed
+                        elif mutation_type == "damage":
+                            b.base_damage_multiplier = getattr(b, "base_damage_multiplier", getattr(b, "damage_multiplier", 1.0)) * modifier
+                            b.damage_multiplier = b.base_damage_multiplier
+                        elif mutation_type == "perception":
+                            b.base_perception_radius = getattr(b, "base_perception_radius", getattr(b, "perception_radius", 250.0)) * modifier
+                            b.perception_radius = b.base_perception_radius
+
+
 class PeriodicSafeZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -23739,6 +23772,7 @@ class ElasticBandZoneMode(GameMode):
                     del self.grabbed_state[b.id]
 
 
+GAME_MODES["mutant_safe_zone"] = MutantSafeZoneMode()
 GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode()
 GAME_MODES["elastic_band_zone"] = ElasticBandZoneMode()
 
