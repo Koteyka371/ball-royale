@@ -9677,6 +9677,103 @@ class BountyHuntMode(GameMode):
         return None
 
 
+
+class BodyguardBountyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bodyguard Bounty"
+        self.description = "Players can dynamically purchase a massive bounty on an ally using score, drawing enemies while buffing the ally."
+        self.bounties = {}  # target_id -> remaining_time
+        self.purchase_cooldowns = {}  # buyer_id -> remaining_cooldown
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.0) -> None:
+        super().tick(world, balls, delta)
+
+        import random
+        # Handle purchase cooldowns
+        for buyer_id in list(self.purchase_cooldowns.keys()):
+            self.purchase_cooldowns[buyer_id] -= delta
+            if self.purchase_cooldowns[buyer_id] <= 0:
+                del self.purchase_cooldowns[buyer_id]
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+
+        # Randomly decide if a player wants to purchase a bounty for an ally
+        for buyer in alive_balls:
+            b_id = getattr(buyer, "id", None)
+            b_score = getattr(buyer, "score", 0)
+            if b_id not in self.purchase_cooldowns and b_score >= 50:
+                if random.random() < 0.05 * delta:
+                    # Find an ally to buff
+                    team = getattr(buyer, "team", None)
+                    allies = [a for a in alive_balls if getattr(a, "team", None) == team and getattr(a, "id", None) != b_id]
+                    if allies:
+                        target = random.choice(allies)
+                        t_id = getattr(target, "id", None)
+                        if t_id and t_id not in self.bounties:
+                            # Buy the bounty!
+                            buyer.score -= 50
+                            self.purchase_cooldowns[b_id] = 30.0  # 30s cooldown
+                            self.bounties[t_id] = 20.0  # Lasts 20s
+
+                            # Buff the target
+                            target.is_bodyguard_bounty = True
+                            target.high_threat = True
+
+                            if not hasattr(target, "bodyguard_original_max_hp"):
+                                target.bodyguard_original_max_hp = getattr(target, "max_hp", 100.0)
+                            target.max_hp = target.bodyguard_original_max_hp * 1.5
+                            target.hp = min(getattr(target, "hp", 100.0) + (target.max_hp - target.bodyguard_original_max_hp), target.max_hp)
+
+                            if not hasattr(target, "bodyguard_original_base_damage"):
+                                target.bodyguard_original_base_damage = getattr(target, "base_damage", getattr(target, "damage", 10.0))
+                            target.base_damage = target.bodyguard_original_base_damage * 1.5
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("bodyguard_bounty_purchased", {
+                                    "message": f"Player {b_id} bought a Bodyguard Bounty for {t_id}!",
+                                    "target_id": t_id
+                                })
+
+        # Handle active bounties
+        for target_id in list(self.bounties.keys()):
+            self.bounties[target_id] -= delta
+            target = next((b for b in alive_balls if getattr(b, "id", None) == target_id), None)
+
+            if not target or self.bounties[target_id] <= 0:
+                # Expired or dead
+                if target:
+                    target.is_bodyguard_bounty = False
+                    target.high_threat = False
+                    if hasattr(target, "bodyguard_original_max_hp"):
+                        target.max_hp = target.bodyguard_original_max_hp
+                        target.hp = min(getattr(target, "hp", 100.0), target.max_hp)
+                    if hasattr(target, "bodyguard_original_base_damage"):
+                        target.base_damage = target.bodyguard_original_base_damage
+                del self.bounties[target_id]
+            else:
+                # Active! Occasionally ping location
+                if int(self.bounties[target_id] * 10) % 20 == 0:  # ~every 2 seconds
+                    if hasattr(world, "add_event"):
+                        world.add_event("bounty_compass", {"target_x": float(target.x), "target_y": float(target.y), "owner_id": target_id})
+
+    def on_ball_died(self, world: Any, ball: Any, killer: Any) -> None:
+        if hasattr(super(), "on_ball_died"):
+            super().on_ball_died(world, ball, killer)
+
+        b_id = getattr(ball, "id", None)
+        if b_id in self.bounties:
+            del self.bounties[b_id]
+
+            if killer and getattr(killer, "alive", False):
+                # Killer gets massive reward
+                killer.score = getattr(killer, "score", 0) + 100
+                if hasattr(world, "add_event"):
+                    world.add_event("bodyguard_bounty_claimed", {
+                        "message": f"Bodyguard Bounty claimed by {getattr(killer, 'id', 'someone')}!"
+                    })
+
+
 class DynamicBountyMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -20290,6 +20387,7 @@ GAME_MODES = {
     "moving_safe_zone": MovingSafeZoneMode(),
     "poison_gas_zone": PoisonGasZoneMode(),
     "bounty_hunt": BountyHuntMode(),
+    "bodyguard_bounty": BodyguardBountyMode(),
     "dynamic_bounty": DynamicBountyMode(),
     "earthquake": EarthquakeMode(),
     "inverse_mirror_arena": InverseMirrorArenaMode(),
