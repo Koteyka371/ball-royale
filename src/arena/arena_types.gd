@@ -970,3 +970,110 @@ class TimeDistortionArena extends ProceduralArena:
 
 		rooms.append(ProceduralArena.Room.new(cx - 200.0, cy - 200.0, 400.0, 400.0))
 		hazards.append(ProceduralArena.Hazard.new(0, cx, cy, 200.0, "chrono_anomaly", 0.0))
+
+class ShiftingBoundariesArena extends ProceduralArena:
+	var min_x: float = 0.0
+	var min_y: float = 0.0
+	var max_x: float = 2000.0
+	var max_y: float = 2000.0
+
+	var target_min_x: float = 0.0
+	var target_min_y: float = 0.0
+	var target_max_x: float = 2000.0
+	var target_max_y: float = 2000.0
+
+	var shift_speed: float = 50.0
+
+	func _init(_arena_size: float = 2000.0, _num_rooms: int = 5, _seed = null):
+		super(_arena_size, _num_rooms, _seed)
+		min_x = 0.0
+		min_y = 0.0
+		max_x = width
+		max_y = height
+		target_min_x = 0.0
+		target_min_y = 0.0
+		target_max_x = width
+		target_max_y = height
+		shift_speed = 50.0
+
+	func generate() -> void:
+		super.generate()
+		_pick_new_targets()
+
+	func _pick_new_targets() -> void:
+		var min_size = 500.0
+		target_min_x = randf_range(0.0, width - min_size)
+		target_max_x = randf_range(target_min_x + min_size, width)
+
+		target_min_y = randf_range(0.0, height - min_size)
+		target_max_y = randf_range(target_min_y + min_size, height)
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		var is_new_tick = current_tick != last_tick
+		super.update_zone(current_tick, delta)
+
+		if is_new_tick:
+			var step = shift_speed * delta
+
+			var move_towards = func(current: float, target: float, max_step: float) -> float:
+				if current < target:
+					return min(current + max_step, target)
+				elif current > target:
+					return max(current - max_step, target)
+				return current
+
+			min_x = move_towards.call(min_x, target_min_x, step)
+			max_x = move_towards.call(max_x, target_max_x, step)
+			min_y = move_towards.call(min_y, target_min_y, step)
+			max_y = move_towards.call(max_y, target_max_y, step)
+
+			if min_x == target_min_x and max_x == target_max_x and min_y == target_min_y and max_y == target_max_y:
+				_pick_new_targets()
+
+			for hazard in hazards:
+				hazard.x = max(min_x + hazard.radius, min(max_x - hazard.radius, hazard.x))
+				hazard.y = max(min_y + hazard.radius, min(max_y - hazard.radius, hazard.y))
+
+			if "platforms" in self:
+				for p in self.platforms:
+					var pw_half = p.width / 2.0
+					var ph_half = p.height / 2.0
+					p.x = max(min_x + pw_half, min(max_x - pw_half, p.x))
+					p.y = max(min_y + ph_half, min(max_y - ph_half, p.y))
+
+	func is_point_inside(px: float, py: float, radius: float) -> bool:
+		if not (min_x + radius <= px and px <= max_x - radius and min_y + radius <= py and py <= max_y - radius):
+			return false
+		return super.is_point_inside(px, py, radius)
+
+	func clamp_position(px: float, py: float, radius: float) -> Array:
+		var bounced = false
+		var new_x = px
+		var new_y = py
+
+		if new_x < min_x + radius:
+			new_x = min_x + radius
+			bounced = true
+		elif new_x > max_x - radius:
+			new_x = max_x - radius
+			bounced = true
+
+		if new_y < min_y + radius:
+			new_y = min_y + radius
+			bounced = true
+		elif new_y > max_y - radius:
+			new_y = max_y - radius
+			bounced = true
+
+		var res = super.clamp_position(new_x, new_y, radius)
+		var res_x = res[0]
+		var res_y = res[1]
+		var proc_bounced = res[2]
+
+		var final_x = max(min_x + radius, min(max_x - radius, res_x))
+		var final_y = max(min_y + radius, min(max_y - radius, res_y))
+
+		if final_x != res_x or final_y != res_y:
+			proc_bounced = true
+
+		return [final_x, final_y, bounced or proc_bounced]
