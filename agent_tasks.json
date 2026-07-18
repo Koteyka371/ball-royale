@@ -18546,7 +18546,7 @@
     },
     {
       "id": "idea-1081",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Bomb Hazard",
@@ -29850,6 +29850,23 @@
         "src/ai/silent_steps_mutator.py",
         "src/ai/silent_steps_mutator.gd",
         "tests/test_silent_steps_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1745",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bone Splinters",
+      "description": "When the Bone Wall is destroyed, it sends out shrapnel in all directions dealing damage.",
+      "allowed_paths": [
+        "src/ai/bone_splinters.py",
+        "src/ai/bone_splinters.gd",
+        "tests/test_bone_splinters.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

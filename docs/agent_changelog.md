@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1081] Sticky Bomb Hazard — *2026-07-18 02:36:05 UTC*
+
+Introduce a new 'Sticky Bomb' item or hazard. If a player touches it, it attaches to them. They have 3 seconds to pass it to another player before it explodes, dealing heavy damage.
+
+---
+
 ## [idea-1096] Bone Wall Hazard — *2026-07-18 02:25:37 UTC*
 
 Necromancer can summon a Bone Wall hazard that blocks enemy movement and projectiles, but can be broken by taking enough damage.
