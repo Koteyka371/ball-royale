@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1106] Anti-Gravity Hazard Traps — *2026-07-18 02:18:15 UTC*
+
+Introduce a new type of placeable hazard trap that creates a localized zero-gravity or reverse-gravity bubble. Any enemy ball stepping inside loses all friction and gets slowly pushed towards the edge of the arena, making them easy targets for snipers and tricksters.
+
+---
+
 ## [idea-1101] Lava Interactions for Skills — *2026-07-18 01:35:28 UTC*
 
 Expand elemental terrain interactions to lava hazards. For example, using a water-based skill like Elemental Burst over lava could create a steam cloud that provides temporary stealth to nearby allies, or using Earth-based attacks could temporarily solidify the lava into walkable ground.

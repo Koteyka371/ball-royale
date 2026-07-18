@@ -18971,7 +18971,7 @@
     },
     {
       "id": "idea-1106",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Anti-Gravity Hazard Traps",
@@ -29748,6 +29748,40 @@
         "src/ai/stasis_bubble_booster.py",
         "src/ai/stasis_bubble_booster.gd",
         "tests/test_stasis_bubble_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1739",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Lava Surfing Skill",
+      "description": "A new movement skill that allows the player to briefly ride on top of damaging hazards like lava or acid. While 'surfing', the player takes no damage from the hazard and instead gains a massive speed boost and leaves a trail of fire. The skill duration is short, requiring precise timing to cross large hazardous pits or to reposition during end-game small safe zones.",
+      "allowed_paths": [
+        "src/ai/lava_surfing_skill.py",
+        "src/ai/lava_surfing_skill.gd",
+        "tests/test_lava_surfing_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1740",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Molten Rock Golem Entity",
+      "description": "Introduce a neutral AI entity, the Molten Golem, which spawns exclusively in lava environments or during extreme heatwaves. It slowly roams the arena, throwing chunks of magma at the nearest players. If defeated, it splits into multiple smaller lava puddles and drops a high-tier Fire core or item, providing a high-risk, high-reward encounter in hazardous areas.",
+      "allowed_paths": [
+        "src/ai/molten_rock_golem_entity.py",
+        "src/ai/molten_rock_golem_entity.gd",
+        "tests/test_molten_rock_golem_entity.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
