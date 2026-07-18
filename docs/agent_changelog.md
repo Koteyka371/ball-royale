@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1072] Decoy Explosion Traps — *2026-07-18 03:40:57 UTC*
+
+Trickster's decoys will explode upon being destroyed by an enemy, causing area-of-effect damage and temporarily blinding nearby opponents, further enhancing the baiting playstyle.
+
+---
+
 ## [idea-1077] Reverse Gravity Gun — *2026-07-18 03:27:40 UTC*
 
 A new booster that, when collected, temporarily reverses gravity for all other opponents on the map. This causes them to slide in the opposite direction of their input for 3 seconds.
