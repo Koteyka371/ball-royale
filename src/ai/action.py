@@ -1281,6 +1281,28 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        if getattr(self.ball, "has_drone", False):
+            drone_radius = 150.0
+            drone_drain_rate = 5.0 * delta # 5 damage per second per enemy? or total? Let's say per enemy.
+
+            enemies = [e for e in getattr(self.world, "balls", []) if getattr(e, "id", None) != getattr(self.ball, "id", None) and getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]
+
+            total_healed = 0.0
+            for e in enemies:
+                dist_sq = (self.ball.x - e.x)**2 + (self.ball.y - e.y)**2
+                if dist_sq <= drone_radius**2:
+                    if hasattr(e, "take_damage"):
+                        e.take_damage(drone_drain_rate)
+                    elif hasattr(e, "hp"):
+                        e.hp -= drone_drain_rate
+                        if e.hp <= 0:
+                            e.hp = 0
+                            e.alive = False
+                    total_healed += drone_drain_rate
+
+            if total_healed > 0.0:
+                self.ball.hp = min(getattr(self.ball, "hp", 100.0) + total_healed, getattr(self.ball, "max_hp", 100.0))
+
         if getattr(self.ball, "survival_swap_timer", 0.0) > 0.0:
             self.ball.survival_swap_timer -= delta
             if self.ball.survival_swap_timer <= 0.0:

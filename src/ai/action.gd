@@ -2245,6 +2245,137 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    var has_drone = false
+    if "has_drone" in self.ball:
+        has_drone = self.ball.has_drone
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("has_drone"):
+        has_drone = self.ball.get_meta("has_drone")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_drone"):
+        has_drone = self.ball["has_drone"]
+
+    if has_drone:
+        var drone_radius = 150.0
+        var drone_drain_rate = 5.0 * delta
+        var total_healed = 0.0
+
+        var balls_list = []
+        if "balls" in self.world:
+            balls_list = self.world.balls
+        elif typeof(self.world) == TYPE_OBJECT and self.world.has_method("get_meta") and self.world.has_meta("balls"):
+            balls_list = self.world.get_meta("balls")
+        elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"):
+            balls_list = self.world["balls"]
+
+        var my_id = -1
+        if "id" in self.ball:
+            my_id = self.ball.id
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"):
+            my_id = self.ball["id"]
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"):
+            my_id = self.ball.get_meta("id")
+
+        var my_team = ""
+        if "team" in self.ball:
+            my_team = self.ball.team
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+            my_team = self.ball["team"]
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"):
+            my_team = self.ball.get_meta("team")
+        if my_team == "" and "ball_type" in self.ball:
+            my_team = self.ball.ball_type
+
+        for e in balls_list:
+            var e_id = -1
+            if "id" in e: e_id = e.id
+            elif typeof(e) == TYPE_DICTIONARY and e.has("id"): e_id = e["id"]
+            elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("id"): e_id = e.get_meta("id")
+
+            if e_id != my_id:
+                var e_alive = true
+                if "alive" in e: e_alive = e.alive
+                elif typeof(e) == TYPE_DICTIONARY and e.has("alive"): e_alive = e["alive"]
+                elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("alive"): e_alive = e.get_meta("alive")
+
+                if e_alive:
+                    var e_team = ""
+                    if "team" in e: e_team = e.team
+                    elif typeof(e) == TYPE_DICTIONARY and e.has("team"): e_team = e["team"]
+                    elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("team"): e_team = e.get_meta("team")
+                    if e_team == "":
+                        if "ball_type" in e: e_team = e.ball_type
+                        elif typeof(e) == TYPE_DICTIONARY and e.has("ball_type"): e_team = e["ball_type"]
+                        elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("ball_type"): e_team = e.get_meta("ball_type")
+
+                    if e_team != my_team:
+                        var ex = 0.0
+                        var ey = 0.0
+                        if "x" in e and "y" in e:
+                            ex = e.x
+                            ey = e.y
+                        elif typeof(e) == TYPE_DICTIONARY and e.has("x") and e.has("y"):
+                            ex = e["x"]
+                            ey = e["y"]
+                        elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("x"):
+                            ex = e.get_meta("x")
+                            ey = e.get_meta("y")
+
+                        var bx = 0.0
+                        var by = 0.0
+                        if "x" in self.ball and "y" in self.ball:
+                            bx = self.ball.x
+                            by = self.ball.y
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x") and self.ball.has("y"):
+                            bx = self.ball["x"]
+                            by = self.ball["y"]
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("x"):
+                            bx = self.ball.get_meta("x")
+                            by = self.ball.get_meta("y")
+
+                        var dist_sq = (bx - ex)*(bx - ex) + (by - ey)*(by - ey)
+                        if dist_sq <= drone_radius*drone_radius:
+                            if typeof(e) == TYPE_OBJECT and e.has_method("take_damage"):
+                                e.take_damage(drone_drain_rate)
+                            else:
+                                var e_hp = 0.0
+                                if "hp" in e: e_hp = e.hp
+                                elif typeof(e) == TYPE_DICTIONARY and e.has("hp"): e_hp = e["hp"]
+                                elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("hp"): e_hp = e.get_meta("hp")
+
+                                e_hp -= drone_drain_rate
+                                if e_hp <= 0:
+                                    e_hp = 0
+                                    if typeof(e) == TYPE_OBJECT:
+                                        if "alive" in e: e.alive = false
+                                        elif e.has_method("set_meta"): e.set_meta("alive", false)
+                                    elif typeof(e) == TYPE_DICTIONARY:
+                                        e["alive"] = false
+
+                                if typeof(e) == TYPE_OBJECT:
+                                    if "hp" in e: e.hp = e_hp
+                                    elif e.has_method("set_meta"): e.set_meta("hp", e_hp)
+                                elif typeof(e) == TYPE_DICTIONARY:
+                                    e["hp"] = e_hp
+                            total_healed += drone_drain_rate
+
+        if total_healed > 0.0:
+            var b_hp = 0.0
+            if "hp" in self.ball: b_hp = self.ball.hp
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): b_hp = self.ball["hp"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("hp"): b_hp = self.ball.get_meta("hp")
+
+            var b_max_hp = 100.0
+            if "max_hp" in self.ball: b_max_hp = self.ball.max_hp
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"): b_max_hp = self.ball["max_hp"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): b_max_hp = self.ball.get_meta("max_hp")
+
+            b_hp = min(b_hp + total_healed, b_max_hp)
+
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "hp" in self.ball: self.ball.hp = b_hp
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", b_hp)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["hp"] = b_hp
+
     var swap_timer = 0.0
     if "survival_swap_timer" in self.ball:
         swap_timer = self.ball.survival_swap_timer
