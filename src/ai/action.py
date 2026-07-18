@@ -11820,6 +11820,12 @@ class Action:
             skill_name = self.ball.active_skill
 
         can_recast = False
+        if skill_name == "glitch_teleport":
+            self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
+            self.ball.vx = -getattr(self.ball, "vx", 0.0)
+            self.ball.vy = -getattr(self.ball, "vy", 0.0)
+            return
+
         if skill_timer > 0 and skill_name == "solar_flare":
             if hasattr(self.world, "add_event"):
                 self.world.add_event("visual_effect", {"type": "solar_flare_activation", "ball_id": self.ball.id})
