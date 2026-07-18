@@ -2245,6 +2245,70 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    var swap_timer = 0.0
+    if "survival_swap_timer" in self.ball:
+        swap_timer = self.ball.survival_swap_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("survival_swap_timer"):
+        swap_timer = self.ball.get_meta("survival_swap_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("survival_swap_timer"):
+        swap_timer = self.ball["survival_swap_timer"]
+
+    if swap_timer > 0.0:
+        swap_timer -= delta
+        if swap_timer <= 0.0:
+            swap_timer = 0.0
+
+            var target_id = -1
+            if "survival_swap_target_id" in self.ball:
+                target_id = self.ball.survival_swap_target_id
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("survival_swap_target_id"):
+                target_id = self.ball.get_meta("survival_swap_target_id")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("survival_swap_target_id"):
+                target_id = self.ball["survival_swap_target_id"]
+
+            if target_id != -1 and self.world != null and "balls" in self.world:
+                for b in self.world.balls:
+                    var b_id = -2
+                    if "id" in b: b_id = b.id
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+                    if b_id == target_id:
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        var b_is_decoy = false
+                        if "is_decoy" in b and b.is_decoy: b_is_decoy = true
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"): b_is_decoy = true
+
+                        if b_alive and b_is_decoy:
+                            var tx = self.ball.x
+                            var ty = self.ball.y
+
+                            if "x" in self.ball: self.ball.x = b.x
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"): self.ball.set("x", b.x)
+                            if "y" in self.ball: self.ball.y = b.y
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"): self.ball.set("y", b.y)
+
+                            if "x" in b: b.x = tx
+                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("x", tx)
+                            if "y" in b: b.y = ty
+                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("y", ty)
+
+                            if "hp" in b: b.hp = 0
+                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("hp", 0)
+
+                            if "alive" in b: b.alive = false
+                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("alive", false)
+                            break
+
+        if "survival_swap_timer" in self.ball:
+            self.ball.survival_swap_timer = swap_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("survival_swap_timer", swap_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["survival_swap_timer"] = swap_timer
+
     # Necromancer aura logic
     var b_type_aura = ""
     if typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball:
@@ -23309,6 +23373,77 @@ func _use_skill():
                             decoy["orbit_angle"] = orbit_angle
 
                         self.world.balls.append(decoy)
+
+        elif skill_name == "decoy_swap_survival":
+            if "balls" in self.world:
+                var active_decoys = []
+                var self_id = -1
+                if "id" in self.ball: self_id = self.ball.id
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                for b in self.world.balls:
+                    var is_d = false
+                    if "is_decoy" in b and b.is_decoy: is_d = true
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"): is_d = true
+
+                    if is_d:
+                        var owner = -2
+                        if "owner_id" in b: owner = b.owner_id
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("owner_id"): owner = b.get_meta("owner_id")
+
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        if owner == self_id and b_alive:
+                            active_decoys.append(b)
+
+                if active_decoys.size() == 0:
+                    var next_id = randi() % 90000 + 10000
+                    if "next_id" in self.world:
+                        next_id = self.world.next_id
+                        self.world.next_id += 1
+
+                    var b_hp = 100
+                    if "hp" in self.ball: b_hp = self.ball.hp
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("hp"): b_hp = self.ball.get_meta("hp")
+
+                    var b_max_hp = 100
+                    if "max_hp" in self.ball: b_max_hp = self.ball.max_hp
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): b_max_hp = self.ball.get_meta("max_hp")
+
+                    var decoy = {
+                        "id": next_id,
+                        "owner_id": self_id,
+                        "x": self.ball.x,
+                        "y": self.ball.y,
+                        "hp": b_hp,
+                        "max_hp": b_max_hp,
+                        "damage": 0,
+                        "speed": 0.0,
+                        "skill_timer": 9999.0,
+                        "attack_timer": 9999.0,
+                        "is_decoy": true,
+                        "decoy_timer": 3.5,
+                        "alive": true,
+                        "skill": null,
+                        "active_skill": null,
+                        "SKILL": null
+                    }
+                    self.world.balls.append(decoy)
+
+                    if "skill_timer" in self.ball: self.ball.skill_timer = 8.0
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", 8.0)
+
+                    if "survival_swap_target_id" in self.ball:
+                        self.ball.survival_swap_target_id = next_id
+                        self.ball.survival_swap_timer = 3.0
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("survival_swap_target_id", next_id)
+                        self.ball.set_meta("survival_swap_timer", 3.0)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["survival_swap_target_id"] = next_id
+                        self.ball["survival_swap_timer"] = 3.0
 
         elif skill_name == "deploy_decoy":
             var active_decoys = []

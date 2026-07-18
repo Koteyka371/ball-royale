@@ -1281,6 +1281,23 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        if getattr(self.ball, "survival_swap_timer", 0.0) > 0.0:
+            self.ball.survival_swap_timer -= delta
+            if self.ball.survival_swap_timer <= 0.0:
+                self.ball.survival_swap_timer = 0.0
+                target_id = getattr(self.ball, "survival_swap_target_id", None)
+                if target_id is not None and hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "id", None) == target_id and getattr(b, "alive", True) and getattr(b, "is_decoy", False):
+                            # Swap positions
+                            tx, ty = self.ball.x, self.ball.y
+                            self.ball.x, self.ball.y = b.x, b.y
+                            b.x, b.y = tx, ty
+                            # Remove decoy
+                            b.hp = 0
+                            b.alive = False
+                            break
+
         # Necromancer aura logic
         if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'necromancer':
             necro_aura_radius = 150.0
@@ -12465,6 +12482,35 @@ class Action:
                         decoy.decoy_type = decoy_types[i]
 
                         self.world.balls.append(decoy)
+
+            elif skill_name == "decoy_swap_survival":
+                import copy
+                import random
+                if hasattr(self.world, "balls"):
+                    active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
+                    if not active_decoys:
+                        decoy = copy.copy(self.ball)
+                        decoy.owner_id = getattr(self.ball, "id", None)
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 8.0)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        decoy.hp = getattr(self.ball, "hp", 100)
+                        decoy.max_hp = getattr(self.ball, "max_hp", 100)
+                        decoy.damage = 0
+                        decoy.speed = 0.0
+                        decoy.skill_timer = 9999.0
+                        decoy.attack_timer = 9999.0
+                        decoy.is_decoy = True
+                        decoy.decoy_timer = 3.5  # Give it a bit more than 3 seconds so it lives past the swap
+                        decoy.SKILL = None
+                        decoy.skill = None
+                        decoy.active_skill = None
+                        self.world.balls.append(decoy)
+
+                        self.ball.survival_swap_target_id = decoy.id
+                        self.ball.survival_swap_timer = 3.0
 
             elif skill_name == "deploy_decoy":
                 import copy
