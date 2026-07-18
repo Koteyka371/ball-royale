@@ -16930,10 +16930,11 @@ class CenterBlackHoleMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Center Black Hole"
-        self.description = "A black hole in the center slowly grows and pulls players inwards."
+        self.description = "A black hole in the center slowly grows and pulls players inwards. The gravitational pull becomes stronger as time progresses."
         self.bh_id = 999999
         self.growth_rate = 5.0  # radius per second
         self.pull_strength = 200.0
+        self.pull_growth_rate = 10.0 # strength per second
         self.damage = 10.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
@@ -17025,6 +17026,7 @@ class CenterBlackHoleMode(GameMode):
 
         # Grow the black hole
         bh.radius += self.growth_rate * delta
+        self.pull_strength += self.pull_growth_rate * delta
 
         # Pull players
         import math

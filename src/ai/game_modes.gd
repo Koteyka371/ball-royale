@@ -26669,12 +26669,13 @@ class CenterBlackHoleMode extends GameMode:
 	var bh_id = 999999
 	var growth_rate = 5.0
 	var pull_strength = 200.0
+	var pull_growth_rate = 10.0
 	var damage = 10.0
 
 	func _init():
 		super()
 		name = "Center Black Hole"
-		description = "A black hole in the center slowly grows and pulls players inwards."
+		description = "A black hole in the center slowly grows and pulls players inwards. The gravitational pull becomes stronger as time progresses."
 
 	func setup(world, balls):
 		super.setup(world, balls)
@@ -26729,6 +26730,8 @@ class CenterBlackHoleMode extends GameMode:
 			bh["radius"] += growth_rate * delta
 		elif typeof(bh) == TYPE_OBJECT:
 			bh.set("radius", bh.get("radius") + growth_rate * delta)
+
+		pull_strength += pull_growth_rate * delta
 
 		var bh_x = bh.get("x") if typeof(bh) == TYPE_OBJECT else bh["x"]
 		var bh_y = bh.get("y") if typeof(bh) == TYPE_OBJECT else bh["y"]

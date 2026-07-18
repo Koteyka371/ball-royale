@@ -51,8 +51,8 @@ def test_center_black_hole_tick_growth_and_pull():
     # Check pull
     # Ball is at 100, BH is at 500. dx = 400. dy = 0. dist = 400
     # pull_factor = pull_strength / max(100, 400) = 200 / 400 = 0.5? Wait, my implementation had:
-    # b.vx += (dx / dist) * pull_strength * delta -> b.vx += (400/400) * 200 * 1 = 200
-    assert b1.vx == 200.0
+    # b.vx += (dx / dist) * pull_strength * delta -> b.vx += (400/400) * (200 + 10) * 1 = 210
+    assert b1.vx == 210.0
     assert b1.vy == 0.0
 
 def test_center_black_hole_no_pull_if_dead():
