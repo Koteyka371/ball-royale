@@ -25853,6 +25853,13 @@ class DynamicDangerZonesMode(GameMode):
             else:
                 if zone["timer"] > 0:
                     active_zones.append(zone)
+
+                    # Shrink the active zone gradually
+                    shrink_rate = 10.0 * delta
+                    zone["radius"] = max(10.0, zone["radius"] - shrink_rate)
+                    if "hazard" in zone and hasattr(zone["hazard"], "radius"):
+                        zone["hazard"].radius = zone["radius"]
+
                     # Apply heavy damage
                     for b in balls:
                         if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":

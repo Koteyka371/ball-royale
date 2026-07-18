@@ -50,7 +50,9 @@ def test_dynamic_danger_zones_mode():
     balls[0].hp = 100.0
     balls[0].x = mode.zones[0]["x"]
     balls[0].y = mode.zones[0]["y"]
+
     mode.tick(world, balls, 0.01)
+
     assert balls[0].hp == 100.0
 
     # Tick another 500 frames to make the warning delay finish
@@ -66,7 +68,12 @@ def test_dynamic_danger_zones_mode():
 
     assert balls[0].hp < 100.0
 
-    # Verify zone shrinks as time progresses
+    # Verify active zone shrinks over its duration
+    active_zone_radius_before = mode.zones[0]["radius"]
+    mode.tick(world, balls, 0.01)
+    assert mode.zones[0]["radius"] < active_zone_radius_before
+
+    # Verify spawn zone radius shrinks as match time progresses
     mode.setup(world, balls)
     for _ in range(600): # 6 seconds
         mode.tick(world, balls, 0.01)
