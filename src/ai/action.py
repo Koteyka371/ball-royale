@@ -2756,18 +2756,20 @@ class Action:
                 # Grapple to target
                 dist = math.sqrt(closest_target_dist_sq)
                 if dist > 0.0001:
-                    # Pull ball towards target
                     dx = closest_target_data["x"] - self.ball.x
                     dy = closest_target_data["y"] - self.ball.y
-                    self.ball.x += (dx / dist) * pull_dist
-                    self.ball.y += (dy / dist) * pull_dist
 
                     if closest_target_data["type"] == "ball":
-                        # If it hits an enemy/ball, it pulls user and enemy together
+                        # If it hits an enemy/ball, only pull the enemy towards the user
                         target_b = closest_target_data["target"]
                         target_b.x -= (dx / dist) * pull_dist
                         target_b.y -= (dy / dist) * pull_dist
-                    elif closest_target_data["type"] == "hazard" and getattr(closest_target_data["target"], "kind", "") == "grapple_node":
+                    else:
+                        # Pull user towards geometry (hazard/grapple_node)
+                        self.ball.x += (dx / dist) * pull_dist
+                        self.ball.y += (dy / dist) * pull_dist
+
+                    if closest_target_data["type"] == "hazard" and getattr(closest_target_data["target"], "kind", "") == "grapple_node":
                         target_h = closest_target_data["target"]
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and target_h in self.world.arena.hazards:
                             self.world.arena.hazards.remove(target_h)
@@ -13263,10 +13265,12 @@ class Action:
                         grapple_targets.append(("hazard", h, dist_sq))
 
                 closest_target = None
+                closest_target_type = None
                 closest_target_dist_sq = 999999.0
                 for t_type, t, dist_sq in grapple_targets:
                     if dist_sq < closest_target_dist_sq:
                         closest_target = t
+                        closest_target_type = t_type
                         closest_target_dist_sq = dist_sq
 
                 # Wall distances
@@ -13284,9 +13288,16 @@ class Action:
                     # Grapple to target
                     dist = math.sqrt(closest_target_dist_sq)
                     if dist > 0.0001:
-                        # Pull ball towards target
-                        self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
-                        self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+                        dx = closest_target.x - self.ball.x
+                        dy = closest_target.y - self.ball.y
+
+                        if closest_target_type == "ball":
+                            closest_target.x -= (dx / dist) * pull_dist
+                            closest_target.y -= (dy / dist) * pull_dist
+                        else:
+                            # Pull user towards target
+                            self.ball.x += (dx / dist) * pull_dist
+                            self.ball.y += (dy / dist) * pull_dist
 
                         if getattr(closest_target, "kind", "") == "grapple_node":
                             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and closest_target in self.world.arena.hazards:

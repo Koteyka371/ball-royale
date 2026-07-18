@@ -59,3 +59,22 @@ def test_grapple_to_entity():
 
     assert ball.x == 700.0
     assert ball.y == 500.0
+
+def test_grapple_to_ball():
+    world = MockWorld()
+    ball = MockBall(500, 500)
+    world.balls.append(ball)
+
+    target_ball = MockBall(600, 500)
+    world.balls.append(target_ball)
+
+    action = Action(ball, world)
+    action._use_skill()
+
+    # User remains stationary
+    assert ball.x == 500.0
+    assert ball.y == 500.0
+
+    # Target ball is pulled
+    assert target_ball.x == 400.0
+    assert target_ball.y == 500.0
