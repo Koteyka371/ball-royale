@@ -17086,6 +17086,15 @@ func _get_enemies_internal() -> Array:
                         enemy_stealth_zones.append(h)
 
         var is_visible = true
+        var in_healing = false
+        if "in_healing_zone" in e: in_healing = e.in_healing_zone
+        elif e.has_method("has_meta") and e.has_meta("in_healing_zone"): in_healing = e.get_meta("in_healing_zone")
+        elif typeof(e) == TYPE_DICTIONARY and e.has("in_healing_zone"): in_healing = e["in_healing_zone"]
+
+        if in_healing:
+            filtered_enemies.append(e)
+            continue
+
         var e_ghost_active = false
         if "ghost_mode_active" in e: e_ghost_active = e.ghost_mode_active
         elif e.has_method("has_meta") and e.has_meta("ghost_mode_active"): e_ghost_active = e.get_meta("ghost_mode_active")

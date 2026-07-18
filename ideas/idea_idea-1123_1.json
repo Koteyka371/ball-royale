@@ -1,0 +1,4 @@
+{
+    "title": "Shrinking Safe Zones with Multiple Cores",
+    "description": "Instead of a single large safe zone shrinking, spawn 3-4 smaller safe zones that slowly shrink and merge together over time. Encourages early-game skirmishes in multiple areas before the final showdown."
+}
