@@ -37961,6 +37961,83 @@ class SponsorDropMode extends GameMode:
 
 GAME_MODES["sponsor_drop"] = SponsorDropMode.new()
 
+
+class HealingZoneMode extends GameMode:
+    var zone_x: float = 500.0
+    var zone_y: float = 500.0
+    var zone_radius: float = 50.0
+    var expand_rate: float = 10.0
+    var heal_rate: float = 20.0
+    var zone_target_x: float = 500.0
+    var zone_target_y: float = 500.0
+
+    func _init() -> void:
+        super._init()
+        name = "Healing Zone"
+        description = "A battle royale variation where instead of a shrinking danger zone, there's a slow-moving expanding healing zone. Being inside heals players but makes them more visible to enemies."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+            var arena = world.get("arena")
+            if typeof(arena) == TYPE_DICTIONARY:
+                arena_width = float(arena.get("width", 1000.0))
+                arena_height = float(arena.get("height", 1000.0))
+            elif typeof(arena) == TYPE_OBJECT:
+                arena_width = float(arena.get("width") if "width" in arena else 1000.0)
+                arena_height = float(arena.get("height") if "height" in arena else 1000.0)
+        elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+            if typeof(world.arena) == TYPE_DICTIONARY:
+                arena_width = float(world.arena.get("width", 1000.0))
+                arena_height = float(world.arena.get("height", 1000.0))
+            else:
+                arena_width = float(world.arena.get("width") if "width" in world.arena else 1000.0)
+                arena_height = float(world.arena.get("height") if "height" in world.arena else 1000.0)
+
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+        zone_target_x = zone_x
+        zone_target_y = zone_y
+        zone_radius = 50.0
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
+        zone_radius += expand_rate * delta
+
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator":
+                var b_x = b.get("x")
+                var b_y = b.get("y")
+                var dist_to_center = sqrt(pow(b_x - zone_x, 2) + pow(b_y - zone_y, 2))
+
+                if dist_to_center <= zone_radius:
+                    var max_hp = float(b.get("max_hp") if b.get("max_hp") != null else 100.0)
+                    b.hp = min(float(b.get("hp")) + heal_rate * delta, max_hp)
+                    if b.has_method("set_meta"):
+                        b.set_meta("in_healing_zone", true)
+                    else:
+                        b.in_healing_zone = true
+                else:
+                    if b.has_method("set_meta"):
+                        b.set_meta("in_healing_zone", false)
+                    else:
+                        b.in_healing_zone = false
+            elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator":
+                var b_x = float(b.get("x", 0.0))
+                var b_y = float(b.get("y", 0.0))
+                var dist_to_center = sqrt(pow(b_x - zone_x, 2) + pow(b_y - zone_y, 2))
+
+                if dist_to_center <= zone_radius:
+                    var max_hp = float(b.get("max_hp", 100.0))
+                    b["hp"] = min(float(b.get("hp", 100.0)) + heal_rate * delta, max_hp)
+                    b["in_healing_zone"] = true
+                else:
+                    b["in_healing_zone"] = false
+
+
 class EyeOfTheStormMode extends SafeZoneMode:
     var eye_x: float = 500.0
     var eye_y: float = 500.0
@@ -38017,6 +38094,7 @@ class EyeOfTheStormMode extends SafeZoneMode:
                     b["hp"] = min(float(b.get("hp", 100.0)) + heal_rate * delta, max_hp)
 
 GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode.new()
+GAME_MODES["healing_zone"] = HealingZoneMode.new()
 
 
 class FakeBall:

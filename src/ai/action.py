@@ -8886,6 +8886,8 @@ class Action:
                         my_stealth_zones.append(h)
 
         def is_visible(enemy) -> bool:
+            if getattr(enemy, "in_healing_zone", False):
+                return True
             if getattr(enemy, "is_flying", False):
                 return False
             if getattr(enemy, "ghost_mode_active", False):

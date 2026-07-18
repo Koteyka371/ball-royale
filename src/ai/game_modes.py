@@ -19929,7 +19929,48 @@ class SweepingRotatingLasersMode(GameMode):
             elif getattr(h, "id", "") == "sweep_rot_2":
                 h.x = (aw / 2.0) - math.sin(self.sweep_timer * 0.5) * (aw / 2.0 - 100.0)
 
+
+class HealingZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Healing Zone"
+        self.description = "A battle royale variation where instead of a shrinking danger zone, there's a slow-moving expanding healing zone. Being inside heals players but makes them more visible to enemies."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 50.0
+        self.expand_rate = 10.0
+        self.heal_rate = 20.0
+        self.zone_target_x = 500.0
+        self.zone_target_y = 500.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
+        self.zone_radius = 50.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        self.zone_radius += self.expand_rate * delta
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dist_to_center = math.sqrt((b.x - self.zone_x)**2 + (b.y - self.zone_y)**2)
+                if dist_to_center <= self.zone_radius:
+                    max_hp = getattr(b, "max_hp", 100.0)
+                    b.hp = min(b.hp + self.heal_rate * delta, max_hp)
+                    b.in_healing_zone = True
+                else:
+                    b.in_healing_zone = False
+
 GAME_MODES = {
+    'healing_zone': HealingZoneMode(),
     "sweeping_rotating_lasers": SweepingRotatingLasersMode(),
     'frictionless_arena_modifier': FrictionlessArenaModifierMode(),
     'gravity_reversal_mutator': GravityReversalMutatorMode(),
