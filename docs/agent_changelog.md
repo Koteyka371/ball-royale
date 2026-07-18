@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1093] Chain Reaction — *2026-07-18 04:07:39 UTC*
+
+Every elimination sets off a delayed explosion around the eliminated player. Surviving players can chain these explosions to eliminate multiple enemies.
+
+---
+
 ## [idea-1103] Quantum Tangle Mode — *2026-07-18 04:03:51 UTC*
 
 Players are paired randomly and any damage taken by one player is shared with the other, requiring tight coordination and careful play.
