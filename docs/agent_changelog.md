@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1109] Hazard Traps System — *2026-07-18 19:35:07 UTC*
+
+Introduce a new system where certain ball types can place invisible traps that trigger status effects on enemies when they come too close, allowing for more strategic area control.
+
+---
+
 ## [idea-1120] Weather-Adaptive Hazard Types — *2026-07-18 19:30:09 UTC*
 
 Introduce generic trap objects that change their literal 'kind' string and visual appearance (e.g. into 'ice_patch' or 'quicksand') based on weather changes, standardizing trap behaviors across modes.
