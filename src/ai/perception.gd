@@ -333,14 +333,15 @@ func scan() -> Dictionary:
                                 break
                         if not found:
                             data["boosters"].append(h)
-                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item" or h.kind == "shadow_booster" or h.kind == "stealth_booster"):
-                    var found = false
-                    for b in data["boosters"]:
-                        if "id" in b and "id" in h and b.id == h.id:
-                            found = true
-                            break
-                    if not found:
-                        data["boosters"].append(h)
+                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item" or h.kind == "shadow_booster" or h.kind == "stealth_booster" or h.kind == "sound_mine"):
+                    if h.kind != "sound_mine":
+                        var found = false
+                        for b in data["boosters"]:
+                            if "id" in b and "id" in h and b.id == h.id:
+                                found = true
+                                break
+                        if not found:
+                            data["boosters"].append(h)
                 else:
                     var found = false
                     for t in data["traps"]:

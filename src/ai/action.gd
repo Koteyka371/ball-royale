@@ -21482,6 +21482,69 @@ func _use_skill():
         if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
             self.ball.use_skill()
 
+        # Update skill_name just in case use_skill changed it
+        if "skill" in self.ball:
+            skill_name = self.ball.skill
+        elif "SKILL" in self.ball:
+            skill_name = self.ball.SKILL
+
+        if "active_skill" in self.ball and self.ball.active_skill != "":
+            skill_name = self.ball.active_skill
+
+        if self.world.has("arena") and self.world.arena != null:
+            var arena = self.world.arena
+            if "hazards" in arena:
+                for hazard in arena.hazards:
+                    var kind = ""
+                    if "kind" in hazard: kind = hazard.kind
+                    elif hazard.has_method("has_meta") and hazard.has_meta("kind"): kind = hazard.get_meta("kind")
+
+                    var active = true
+                    if "active" in hazard: active = hazard.active
+                    elif hazard.has_method("has_meta") and hazard.has_meta("active"): active = hazard.get_meta("active")
+
+                    if kind == "sound_mine" and active:
+                        if skill_name in ["dash", "sonar_ping", "stamina_dash", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"]:
+                            var h_x = 0.0
+                            if "x" in hazard: h_x = hazard.x
+                            var h_y = 0.0
+                            if "y" in hazard: h_y = hazard.y
+                            var r = 100.0
+                            if "radius" in hazard: r = hazard.radius
+                            elif hazard.has_method("has_meta") and hazard.has_meta("radius"): r = hazard.get_meta("radius")
+                            var my_x = 0.0
+                            if "x" in self.ball: my_x = self.ball.x
+                            var my_y = 0.0
+                            if "y" in self.ball: my_y = self.ball.y
+
+                            var dist_sq = (h_x - my_x) * (h_x - my_x) + (h_y - my_y) * (h_y - my_y)
+                            if dist_sq <= r * r:
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
+                                    hazard["active"] = false
+                                else:
+                                    if "duration" in hazard: hazard.duration = 0.0
+                                    elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                    if "active" in hazard: hazard.active = false
+                                    elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
+
+                                if self.world.has("balls") and typeof(self.world.balls) == TYPE_ARRAY:
+                                    for b in self.world.balls:
+                                        var b_x = 0.0
+                                        if "x" in b: b_x = b.x
+                                        var b_y = 0.0
+                                        if "y" in b: b_y = b.y
+                                        var b_dist_sq = (h_x - b_x) * (h_x - b_x) + (h_y - b_y) * (h_y - b_y)
+                                        if b_dist_sq <= r * r:
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                b["hp"] = b.get("hp", 100.0) - 50.0
+                                            else:
+                                                if "hp" in b: b.hp -= 50.0
+                                                elif b.has_method("set_meta"): b.set_meta("hp", b.get_meta("hp") - 50.0)
+
+                                if self.world.has("events") and typeof(self.world.events) == TYPE_ARRAY:
+                                    self.world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": h_x, "y": h_y, "radius": r}})
+
         # Synergy Logic
         var allies = []
         if self.world.has("balls"):

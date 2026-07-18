@@ -11514,15 +11514,30 @@ class Action:
             if hasattr(self.ball, "use_skill") and skill_timer <= 0:
                 self.ball.use_skill()
 
+            skill_name = getattr(self.ball, "skill", getattr(self.ball, "SKILL", ""))
+            if hasattr(self.ball, "active_skill"):
+                skill_name = self.ball.active_skill
+
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
                     if hazard.kind in ("explosive_barrel", "volatile_barrel") and not getattr(hazard, "is_exploded", False):
                         if math.hypot(hazard.x - self.ball.x, hazard.y - self.ball.y) < 200.0:
                             hazard.is_exploded = True
-
-            skill_name = getattr(self.ball, "skill", getattr(self.ball, "SKILL", ""))
-            if hasattr(self.ball, "active_skill"):
-                skill_name = self.ball.active_skill
+                    if getattr(hazard, "kind", "") == "sound_mine" and getattr(hazard, "active", True):
+                        if skill_name in ("dash", "sonar_ping", "stamina_dash", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"):
+                            dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                            r = getattr(hazard, "radius", 100.0)
+                            if dist_sq <= r * r:
+                                hazard.duration = 0.0
+                                hazard.active = False
+                                # Apply AoE damage to all nearby balls
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                        if b_dist_sq <= r * r:
+                                            b.hp = getattr(b, "hp", 100) - 50.0
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": hazard.x, "y": hazard.y, "radius": r}})
 
             # Synergy Logic
             allies = [b for b in getattr(self.world, "balls", []) if getattr(b, "id", None) != self.ball.id and getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True)]
