@@ -2162,6 +2162,39 @@ class BattleRoyaleMode extends GameMode:
 										if dot < 0:
 											b_vx -= 2 * dot * nx
 											b_vy -= 2 * dot * ny
+											var ks_active = false
+											if typeof(b) == TYPE_DICTIONARY:
+												ks_active = b.get("kinetic_shield_active", false)
+											elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("kinetic_shield_active"):
+												ks_active = b.get_meta("kinetic_shield_active")
+											elif "kinetic_shield_active" in b:
+												ks_active = b.kinetic_shield_active
+
+											if ks_active:
+												b_vx *= 0.5
+												b_vy *= 0.5
+												var cur_sp = 0.0
+												if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("speed_boost_timer"): cur_sp = b.get_meta("speed_boost_timer")
+												elif "speed_boost_timer" in b: cur_sp = b.speed_boost_timer
+												elif typeof(b) == TYPE_DICTIONARY and b.has("speed_boost_timer"): cur_sp = b["speed_boost_timer"]
+												var new_sp = max(cur_sp, 3.0)
+												if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+													if "speed_boost_timer" in b: b.speed_boost_timer = new_sp
+													else: b.set_meta("speed_boost_timer", new_sp)
+												elif "speed_boost_timer" in b: b.speed_boost_timer = new_sp
+												elif typeof(b) == TYPE_DICTIONARY: b["speed_boost_timer"] = new_sp
+
+												var cur_sh = 0.0
+												if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("shielding"): cur_sh = b.get_meta("shielding")
+												elif "shielding" in b: cur_sh = b.shielding
+												elif typeof(b) == TYPE_DICTIONARY and b.has("shielding"): cur_sh = b["shielding"]
+												var new_sh = cur_sh + (2000.0 * 0.016 * 0.5 * 0.05)
+												if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+													if "shielding" in b: b.shielding = new_sh
+													else: b.set_meta("shielding", new_sh)
+												elif "shielding" in b: b.shielding = new_sh
+												elif typeof(b) == TYPE_DICTIONARY: b["shielding"] = new_sh
+
 											if "vx" in b: b.vx = b_vx
 											elif b.has_method("set_meta"): b.set_meta("vx", b_vx)
 											if "vy" in b: b.vy = b_vy

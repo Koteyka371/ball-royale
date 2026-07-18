@@ -1387,6 +1387,13 @@ class BattleRoyaleMode(GameMode):
                                         if dot < 0:
                                             b.vx -= 2 * dot * nx
                                             b.vy -= 2 * dot * ny
+                                            if getattr(b, "kinetic_shield_active", False):
+                                                b.vx *= 0.5
+                                                b.vy *= 0.5
+                                                speed_boost = 3.0
+                                                shielding = 2000.0 * 0.016 * 0.5 * 0.05 # using nominal delta
+                                                b.speed_boost_timer = max(getattr(b, "speed_boost_timer", 0.0), speed_boost)
+                                                b.shielding = getattr(b, "shielding", 0.0) + shielding
 
             for h in hazards_to_remove:
                 if h in world.arena.hazards:
