@@ -38935,4 +38935,254 @@ class KillstreakExplosionMode extends GameMode:
 			remaining_explosions.append(e)
 		pending_explosions = remaining_explosions
 
+
+class MimicCloneSwapMode extends GameMode:
+	func _init():
+		super._init()
+		name = "Mimic Clone Swap"
+		description = "Every player spawns with a clone that perfectly mimics inputs, deals half damage, and takes double damage. Dying swaps the player into their clone but with halved stats."
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var b_alive = true
+			var b_is_mimic_clone = false
+			var b_ball_type = ""
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b_alive = b.get("alive", true)
+				b_is_mimic_clone = b.get("is_mimic_clone", false)
+				b_ball_type = b.get("ball_type", "")
+			else:
+				b_alive = b.alive
+				if "is_mimic_clone" in b:
+					b_is_mimic_clone = b.is_mimic_clone
+				elif b.has_method("has_meta") and b.has_meta("is_mimic_clone"):
+					b_is_mimic_clone = b.get_meta("is_mimic_clone")
+
+				if "ball_type" in b:
+					b_ball_type = b.ball_type
+
+			if not b_alive or b_is_mimic_clone or b_ball_type == "spectator":
+				continue
+
+			var b_has_used_mimic_revive = false
+			var clone = null
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b_has_used_mimic_revive = b.get("has_used_mimic_revive", false)
+				clone = b.get("my_mimic_clone", null)
+			else:
+				if "has_used_mimic_revive" in b:
+					b_has_used_mimic_revive = b.has_used_mimic_revive
+				elif b.has_method("has_meta") and b.has_meta("has_used_mimic_revive"):
+					b_has_used_mimic_revive = b.get_meta("has_used_mimic_revive")
+
+				if "my_mimic_clone" in b:
+					clone = b.my_mimic_clone
+				elif b.has_method("has_meta") and b.has_meta("my_mimic_clone"):
+					clone = b.get_meta("my_mimic_clone")
+
+			var clone_alive = false
+			if clone != null:
+				if typeof(clone) == TYPE_DICTIONARY:
+					clone_alive = clone.get("alive", false)
+				else:
+					clone_alive = clone.alive
+
+			if clone == null or not clone_alive:
+				if not b_has_used_mimic_revive:
+					var new_clone = null
+					if typeof(b) == TYPE_DICTIONARY:
+						new_clone = b.duplicate()
+						new_clone["x"] += randf_range(-50.0, 50.0)
+						new_clone["y"] += randf_range(-50.0, 50.0)
+						new_clone["is_mimic_clone"] = true
+						var prev_hp = new_clone.get("hp", 100.0)
+						new_clone["prev_hp"] = prev_hp
+						var base_dmg = new_clone.get("base_damage_multiplier", 1.0)
+						new_clone["base_damage_multiplier"] = base_dmg * 0.5
+
+						if typeof(world) == TYPE_DICTIONARY:
+							new_clone["id"] = world.get("next_id", randi() % 90000 + 10000)
+							if world.has("next_id"): world["next_id"] += 1
+							if world.has("balls"): world["balls"].append(new_clone)
+						else:
+							new_clone["id"] = randi() % 90000 + 10000
+							if "balls" in world: world.balls.append(new_clone)
+
+						b["my_mimic_clone"] = new_clone
+					else:
+						# GDScript Object copying limitation bypass
+						new_clone = {}
+						if b.has_method("duplicate"):
+							new_clone = b.duplicate()
+						new_clone.x = b.x + randf_range(-50.0, 50.0)
+						new_clone.y = b.y + randf_range(-50.0, 50.0)
+
+						if "is_mimic_clone" in new_clone:
+							new_clone.is_mimic_clone = true
+						elif new_clone.has_method("set_meta"):
+							new_clone.set_meta("is_mimic_clone", true)
+
+						var prev_hp = 100.0
+						if "hp" in b: prev_hp = b.hp
+						if "prev_hp" in new_clone:
+							new_clone.prev_hp = prev_hp
+						elif new_clone.has_method("set_meta"):
+							new_clone.set_meta("prev_hp", prev_hp)
+
+						var base_dmg = 1.0
+						if "base_damage_multiplier" in b: base_dmg = b.base_damage_multiplier
+						if "base_damage_multiplier" in new_clone:
+							new_clone.base_damage_multiplier = base_dmg * 0.5
+
+						if "my_mimic_clone" in b:
+							b.my_mimic_clone = new_clone
+						elif b.has_method("set_meta"):
+							b.set_meta("my_mimic_clone", new_clone)
+
+						if typeof(world) == TYPE_DICTIONARY:
+							if world.has("balls"): world["balls"].append(new_clone)
+						else:
+							if "balls" in world: world.balls.append(new_clone)
+			else:
+				var c = clone
+				var b_vx = 0.0
+				var b_vy = 0.0
+				var b_tx = 0.0
+				var b_ty = 0.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b_vx = b.get("vx", 0.0)
+					b_vy = b.get("vy", 0.0)
+					b_tx = b.get("target_x", b.get("x", 0.0))
+					b_ty = b.get("target_y", b.get("y", 0.0))
+				else:
+					if "vx" in b: b_vx = b.vx
+					if "vy" in b: b_vy = b.vy
+					if "target_x" in b: b_tx = b.target_x
+					else: b_tx = b.x
+					if "target_y" in b: b_ty = b.target_y
+					else: b_ty = b.y
+
+				if typeof(c) == TYPE_DICTIONARY:
+					c["vx"] = b_vx
+					c["vy"] = b_vy
+					c["target_x"] = b_tx
+					c["target_y"] = b_ty
+
+					var c_hp = c.get("hp", 100.0)
+					var c_prev = c.get("prev_hp", 100.0)
+					if c_hp < c_prev:
+						var damage_taken = c_prev - c_hp
+						c["hp"] = c_hp - damage_taken
+						if c["hp"] <= 0.0:
+							c["alive"] = false
+						c["prev_hp"] = c["hp"]
+					elif c_hp > c_prev:
+						c["prev_hp"] = c_hp
+				else:
+					if "vx" in c: c.vx = b_vx
+					if "vy" in c: c.vy = b_vy
+					if "target_x" in c: c.target_x = b_tx
+					if "target_y" in c: c.target_y = b_ty
+
+					var c_hp = 100.0
+					if "hp" in c: c_hp = c.hp
+
+					var c_prev = 100.0
+					if "prev_hp" in c: c_prev = c.prev_hp
+					elif c.has_method("has_meta") and c.has_meta("prev_hp"): c_prev = c.get_meta("prev_hp")
+
+					if c_hp < c_prev:
+						var damage_taken = c_prev - c_hp
+						var new_hp = c_hp - damage_taken
+						if "hp" in c: c.hp = new_hp
+						if new_hp <= 0.0:
+							if "alive" in c: c.alive = false
+						if "prev_hp" in c: c.prev_hp = new_hp
+						elif c.has_method("set_meta"): c.set_meta("prev_hp", new_hp)
+					elif c_hp > c_prev:
+						if "prev_hp" in c: c.prev_hp = c_hp
+						elif c.has_method("set_meta"): c.set_meta("prev_hp", c_hp)
+
+	func on_ball_died(world, ball, killer = null):
+		if super.has_method("on_ball_died"):
+			super.on_ball_died(world, ball, killer)
+
+		var is_mimic_clone = false
+		var has_used_revive = false
+		var clone = null
+
+		if typeof(ball) == TYPE_DICTIONARY:
+			is_mimic_clone = ball.get("is_mimic_clone", false)
+			has_used_revive = ball.get("has_used_mimic_revive", false)
+			clone = ball.get("my_mimic_clone", null)
+		else:
+			if "is_mimic_clone" in ball: is_mimic_clone = ball.is_mimic_clone
+			elif ball.has_method("has_meta") and ball.has_meta("is_mimic_clone"): is_mimic_clone = ball.get_meta("is_mimic_clone")
+
+			if "has_used_mimic_revive" in ball: has_used_revive = ball.has_used_mimic_revive
+			elif ball.has_method("has_meta") and ball.has_meta("has_used_mimic_revive"): has_used_revive = ball.get_meta("has_used_mimic_revive")
+
+			if "my_mimic_clone" in ball: clone = ball.my_mimic_clone
+			elif ball.has_method("has_meta") and ball.has_meta("my_mimic_clone"): clone = ball.get_meta("my_mimic_clone")
+
+		if is_mimic_clone or has_used_revive:
+			return
+
+		var clone_alive = false
+		if clone != null:
+			if typeof(clone) == TYPE_DICTIONARY: clone_alive = clone.get("alive", false)
+			else: clone_alive = clone.alive
+
+		if clone_alive:
+			var cx = 0.0
+			var cy = 0.0
+			if typeof(clone) == TYPE_DICTIONARY:
+				cx = clone.get("x", 0.0)
+				cy = clone.get("y", 0.0)
+			else:
+				cx = clone.x
+				cy = clone.y
+
+			if typeof(ball) == TYPE_DICTIONARY:
+				ball["alive"] = true
+				ball["x"] = cx
+				ball["y"] = cy
+				var max_hp = ball.get("max_hp", 100.0) / 2.0
+				ball["max_hp"] = max_hp
+				ball["hp"] = max_hp
+				var base_dmg = ball.get("base_damage_multiplier", 1.0) / 2.0
+				ball["base_damage_multiplier"] = base_dmg
+				ball["has_used_mimic_revive"] = true
+			else:
+				if "alive" in ball: ball.alive = true
+				if "x" in ball: ball.x = cx
+				if "y" in ball: ball.y = cy
+				var max_hp = 100.0
+				if "max_hp" in ball:
+					max_hp = ball.max_hp / 2.0
+					ball.max_hp = max_hp
+				if "hp" in ball: ball.hp = max_hp
+
+				var base_dmg = 1.0
+				if "base_damage_multiplier" in ball:
+					base_dmg = ball.base_damage_multiplier / 2.0
+					ball.base_damage_multiplier = base_dmg
+
+				if "has_used_mimic_revive" in ball: ball.has_used_mimic_revive = true
+				elif ball.has_method("set_meta"): ball.set_meta("has_used_mimic_revive", true)
+
+			if typeof(clone) == TYPE_DICTIONARY:
+				clone["alive"] = false
+				clone["hp"] = 0.0
+			else:
+				if "alive" in clone: clone.alive = false
+				if "hp" in clone: clone.hp = 0.0
+
+GAME_MODES['mimic_clone_swap'] = MimicCloneSwapMode.new()
+
 GAME_MODES['killstreak_explosion'] = KillstreakExplosionMode.new()

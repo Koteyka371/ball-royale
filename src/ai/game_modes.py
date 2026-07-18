@@ -25297,4 +25297,90 @@ class KillstreakExplosionMode(GameMode):
 
         self.pending_explosions = remaining_explosions + self.pending_explosions
 
+
+class MimicCloneSwapMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mimic Clone Swap"
+        self.description = "Every player spawns with a clone that perfectly mimics inputs, deals half damage, and takes double damage. Dying swaps the player into their clone but with halved stats."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import copy
+        import random
+
+        # Ensure balls have clones
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "is_mimic_clone", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            if not hasattr(b, "my_mimic_clone") or not getattr(b.my_mimic_clone, "alive", False):
+                if not getattr(b, "has_used_mimic_revive", False):
+                    clone = copy.copy(b)
+                    clone.id = getattr(world, "next_id", random.randint(10000, 99999))
+                    if hasattr(world, "next_id"):
+                        world.next_id += 1
+
+                    clone.x += random.uniform(-50, 50)
+                    clone.y += random.uniform(-50, 50)
+                    clone.hp = getattr(b, "hp", 100.0)
+                    clone.max_hp = getattr(b, "max_hp", 100.0)
+                    clone.is_mimic_clone = True
+                    clone.mimic_owner_id = b.id
+                    clone.base_damage_multiplier = getattr(b, "base_damage_multiplier", 1.0) * 0.5
+                    clone.prev_hp = clone.hp
+
+                    b.my_mimic_clone = clone
+
+                    if hasattr(world, "balls"):
+                        world.balls.append(clone)
+            else:
+                # Mimic inputs
+                c = b.my_mimic_clone
+                c.vx = getattr(b, "vx", 0.0)
+                c.vy = getattr(b, "vy", 0.0)
+                c.target_x = getattr(b, "target_x", c.x)
+                c.target_y = getattr(b, "target_y", c.y)
+
+                # Double damage logic
+                c_hp = getattr(c, "hp", 100.0)
+                c_prev = getattr(c, "prev_hp", 100.0)
+                if c_hp < c_prev:
+                    damage_taken = c_prev - c_hp
+                    c.hp = c_hp - damage_taken
+                    if c.hp <= 0:
+                        c.alive = False
+                    c.prev_hp = c.hp
+                elif c_hp > c_prev: # Healed
+                    c.prev_hp = c_hp
+
+    def on_ball_died(self, world, ball, killer):
+        if hasattr(super(), "on_ball_died"):
+            super().on_ball_died(world, ball, killer)
+
+        if getattr(ball, "is_mimic_clone", False):
+            return
+
+        if getattr(ball, "has_used_mimic_revive", False):
+            return
+
+        clone = getattr(ball, "my_mimic_clone", None)
+        if clone and getattr(clone, "alive", False):
+            # Revive
+            ball.alive = True
+            ball.x = clone.x
+            ball.y = clone.y
+
+            # Halve stats permanently
+            ball.max_hp = getattr(ball, "max_hp", 100.0) / 2.0
+            ball.hp = ball.max_hp
+            ball.base_speed = getattr(ball, "base_speed", 100.0)
+            ball.base_damage_multiplier = getattr(ball, "base_damage_multiplier", 1.0) / 2.0
+            ball.has_used_mimic_revive = True
+
+            clone.alive = False
+            clone.hp = 0
+
+GAME_MODES['mimic_clone_swap'] = MimicCloneSwapMode()
+
 GAME_MODES['killstreak_explosion'] = KillstreakExplosionMode()
