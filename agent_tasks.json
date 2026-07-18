@@ -18716,7 +18716,7 @@
     },
     {
       "id": "idea-1091",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Bomb Skill",
@@ -30054,6 +30054,40 @@
         "src/ai/chameleon_mimic_enemy.py",
         "src/ai/chameleon_mimic_enemy.gd",
         "tests/test_chameleon_mimic_enemy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1757",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Debris Hazard",
+      "description": "Small hazards that orbit larger hazards (like gravity wells) periodically detaching and flying outward when the larger hazard explodes or pulses.",
+      "allowed_paths": [
+        "src/arena/orbital_debris.py",
+        "src/arena/orbital_debris.gd",
+        "tests/test_orbital_debris.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1758",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Friction Modifier Zone",
+      "description": "Zones that randomly spawn and change the friction of the floor. Some zones are icy (zero friction), while others are like mud (high friction), forcing players to adapt their movement.",
+      "allowed_paths": [
+        "src/ai/friction_zone.py",
+        "src/ai/friction_zone.gd",
+        "tests/test_friction_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
