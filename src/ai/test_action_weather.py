@@ -320,3 +320,57 @@ def test_lightning_strike_bounce_damage():
 
 if __name__ == "__main__":
     test_lightning_strike_bounce_damage()
+
+def test_elemental_burst_lava_terrain():
+    from ai.action import Action
+    world = MockWorld(is_raining=False)
+    ball = MockBall(0, 0)
+    ball.active_skill = "elemental_burst"
+    world.balls.append(ball)
+
+    class MockHazard:
+        def __init__(self, kind, x, y, radius):
+            self.kind = kind
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.active = True
+
+        def __eq__(self, other):
+            return self is other
+
+    lava_puddle = MockHazard("lava_puddle", 0, 0, 50)
+    world.arena.hazards.append(lava_puddle)
+
+    action = Action(ball, world)
+    action.execute("use_skill", 0.1)
+
+    smokescreens = [h for h in world.arena.hazards if getattr(h, "kind", "") == "smokescreen"]
+    assert len(smokescreens) >= 1
+    assert not lava_puddle.active
+
+def test_ground_pound_lava_terrain():
+    from ai.action import Action
+    world = MockWorld(is_raining=False)
+    ball = MockBall(0, 0)
+    ball.active_skill = "ground_pound"
+    world.balls.append(ball)
+
+    class MockHazard:
+        def __init__(self, kind, x, y, radius):
+            self.kind = kind
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.active = True
+
+        def __eq__(self, other):
+            return self is other
+
+    lava_puddle = MockHazard("lava_puddle", 0, 0, 50)
+    world.arena.hazards.append(lava_puddle)
+
+    action = Action(ball, world)
+    action.execute("use_skill", 0.1)
+
+    assert lava_puddle not in world.arena.hazards

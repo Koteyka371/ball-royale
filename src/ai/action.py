@@ -13493,6 +13493,25 @@ class Action:
                                 import math
                                 if math.sqrt(dx*dx + dy*dy) <= burst_radius + getattr(h, "radius", 0):
                                     freezes_enemies = True
+                            elif h_kind in ["lava", "lava_puddle", "lava_pit"]:
+                                dx = h.x - self.ball.x
+                                dy = h.y - self.ball.y
+                                import math
+                                if math.sqrt(dx*dx + dy*dy) <= burst_radius + getattr(h, "radius", 0):
+                                    h.active = False
+                                    # We'll spawn a smokescreen later using a flag
+                                    if not hasattr(self, "_smokescreen_spawns"):
+                                        self._smokescreen_spawns = []
+                                    self._smokescreen_spawns.append((h.x, h.y))
+
+                if hasattr(self, "_smokescreen_spawns"):
+                    from arena.procedural_arena import Hazard # type: ignore
+                    for sx, sy in self._smokescreen_spawns:
+                        smoke_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                        smoke = Hazard(smoke_id, sx, sy, 80.0, "smokescreen", 0.0)
+                        setattr(smoke, 'duration', 5.0)
+                        self.world.arena.hazards.append(smoke)
+                    delattr(self, "_smokescreen_spawns")
 
                 if is_raining:
                     burst_radius *= 1.5
@@ -13991,6 +14010,8 @@ class Action:
                         h_dist = math.sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + getattr(hazard, "radius", 0):
                             if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare"]:
+                                hazards_to_remove.append(hazard)
+                            elif hasattr(hazard, "kind") and hazard.kind in ["lava", "lava_puddle", "lava_pit"]:
                                 hazards_to_remove.append(hazard)
 
                     for h in hazards_to_remove:

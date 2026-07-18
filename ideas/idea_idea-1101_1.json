@@ -1,0 +1,4 @@
+{
+    "title": "Molten Rock Golem Entity",
+    "description": "Introduce a neutral AI entity, the Molten Golem, which spawns exclusively in lava environments or during extreme heatwaves. It slowly roams the arena, throwing chunks of magma at the nearest players. If defeated, it splits into multiple smaller lava puddles and drops a high-tier Fire core or item, providing a high-risk, high-reward encounter in hazardous areas."
+}

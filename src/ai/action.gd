@@ -24831,6 +24831,43 @@ func _use_skill():
                             var dy = h_y - self.ball.y
                             if sqrt(dx*dx + dy*dy) <= burst_radius + h_radius:
                                 freezes_enemies = true
+                        elif h_kind in ["lava", "lava_puddle", "lava_pit"]:
+                            var dx = h_x - self.ball.x
+                            var dy = h_y - self.ball.y
+                            if sqrt(dx*dx + dy*dy) <= burst_radius + h_radius:
+                                if typeof(h) == TYPE_DICTIONARY:
+                                    h["active"] = false
+                                else:
+                                    h.active = false
+                                if not self.has_meta("_smokescreen_spawns"):
+                                    self.set_meta("_smokescreen_spawns", [])
+                                var spawns = self.get_meta("_smokescreen_spawns")
+                                spawns.append({"x": h_x, "y": h_y})
+                                self.set_meta("_smokescreen_spawns", spawns)
+
+            if self.has_meta("_smokescreen_spawns"):
+                var spawns = self.get_meta("_smokescreen_spawns")
+                for s in spawns:
+                    if self.world != null and "arena" in self.world and self.world.arena != null:
+                        var hazards = []
+                        if "hazards" in self.world.arena:
+                            hazards = self.world.arena.hazards
+                        elif self.world.arena.has_method("get_meta") and self.world.arena.has_meta("hazards"):
+                            hazards = self.world.arena.get_meta("hazards")
+
+                        var smoke_id = hazards.size() + (randi() % 9000 + 1000)
+                        var smoke = null
+                        if typeof(hazards) == TYPE_ARRAY and hazards.size() > 0 and typeof(hazards[0]) == TYPE_DICTIONARY:
+                            smoke = {"id": smoke_id, "x": s.x, "y": s.y, "radius": 80.0, "kind": "smokescreen", "damage": 0.0, "duration": 5.0, "active": true}
+                        elif self.world.arena.has_method("create_hazard"):
+                            smoke = self.world.arena.create_hazard(smoke_id, s.x, s.y, 80.0, "smokescreen", 0.0)
+                            if smoke != null:
+                                if "duration" in smoke: smoke.duration = 5.0
+                                elif smoke.has_method("set_meta"): smoke.set_meta("duration", 5.0)
+
+                        if smoke != null:
+                            hazards.append(smoke)
+                self.remove_meta("_smokescreen_spawns")
 
             if is_raining:
                 burst_radius *= 1.5
@@ -25405,6 +25442,8 @@ func _use_skill():
                         var h_dist = sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + (hazard.radius if "radius" in hazard else 0):
                             if "kind" in hazard and (hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item" or hazard.kind == "fake_flare"):
+                                hazards_to_remove.append(hazard)
+                            elif "kind" in hazard and (hazard.kind == "lava" or hazard.kind == "lava_puddle" or hazard.kind == "lava_pit"):
                                 hazards_to_remove.append(hazard)
 
                     for h in hazards_to_remove:
