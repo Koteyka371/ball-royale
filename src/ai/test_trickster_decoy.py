@@ -109,3 +109,33 @@ def test_trickster_decoy_mirroring():
 
     assert abs(decoy.x - (125 - (110 - 125))) < 5.0 # 140
     assert abs(decoy.y - (125 - (90 - 125))) < 5.0 # 160
+
+def test_trickster_decoy_explosion_blindness():
+    # Target enemy
+    target = MockBall(2, 100.0, 100.0, team="B")
+    target.perception_radius = 200.0
+    target.is_blinded = False
+
+    # Decoy owned by trickster
+    decoy = MockBall(3, 100.0, 100.0, team="A")
+    decoy.is_decoy_clone = True
+    decoy.hp = 0  # Trigger explosion
+
+    arena = MockArena()
+    world = MockWorld(arena, [target, decoy])
+    action = Action(decoy, world)
+
+    # Run logic
+    action.execute("idle", 0.1)
+
+    # Decoy should be dead
+    assert not decoy.alive
+    assert decoy._exploded
+
+    # Target should take damage
+    assert target.hp < 100.0
+
+    # Target should be blinded
+    assert getattr(target, "is_blinded", False)
+    assert getattr(target, "blindness_timer", 0.0) == 3.0
+    assert getattr(target, "perception_radius", 0.0) == 100.0

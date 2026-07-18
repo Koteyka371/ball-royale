@@ -3485,6 +3485,13 @@ class Action:
                                         b.hp -= 50.0
                                         if b.hp <= 0:
                                             b.alive = False
+
+                                    if not getattr(b, "is_blinded", False):
+                                        b.is_blinded = True
+                                        b.blindness_timer = 3.0
+                                        if not hasattr(b, "base_perception_radius"):
+                                            b.base_perception_radius = getattr(b, "perception_radius", 100.0)
+                                        b.perception_radius = b.base_perception_radius * 0.5
                     return
 
             if getattr(self.ball, "alive", True):
