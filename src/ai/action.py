@@ -4629,7 +4629,7 @@ class Action:
             self._update_skill_timer(delta)
             self._resolve_collisions()
             bounced_wall = self._clamp_position()
-            if bounced_wall:
+            if bounced_wall and not getattr(self.ball, "is_stunned", False):
                 if getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0:
                     self.ball.wall_stick_timer = 2.0
                     self.ball.is_stunned = True
@@ -8051,10 +8051,10 @@ class Action:
             if self.ball.emp_timer <= 0:
                 self.ball.is_emped = False
 
-        if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
-            self.ball.wall_stick_timer -= delta
-            if self.ball.wall_stick_timer <= 0.0:
-                self.ball.is_stunned = False
+
+
+
+
 
         if getattr(self.ball, "is_stunned", False):
 
@@ -8330,7 +8330,7 @@ class Action:
         bounced_col = self._resolve_collisions()
         bounced_wall = self._clamp_position()
 
-        if bounced_wall:
+        if bounced_wall and not getattr(self.ball, "is_stunned", False):
             if getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0:
                 self.ball.wall_stick_timer = 2.0
                 self.ball.is_stunned = True
@@ -11665,6 +11665,7 @@ class Action:
                     bh.vx = nx * 50.0
                     bh.vy = ny * 50.0
                     bh.duration = 5.0
+                    bh.active = True
                     self.world.arena.hazards.append(bh)
             elif skill_name == "meteor_strike":
                 enemies = self._get_enemies()
