@@ -69,6 +69,7 @@ class ProceduralArena:
         self.last_tick = -1
         self.danger_grid: dict[tuple[int, int], float] = {}
         self.boundary_states = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
+        self.boundary_health = {"top": 2000.0, "bottom": 2000.0, "left": 2000.0, "right": 2000.0}
         self.temperature = 20.0
 
         self.generate()
@@ -589,6 +590,12 @@ class ProceduralArena:
                     "bottom": states[1],
                     "left": states[2],
                     "right": states[3]
+                }
+                self.boundary_health = {
+                    "top": 2000.0,
+                    "bottom": 2000.0,
+                    "left": 2000.0,
+                    "right": 2000.0
                 }
             if current_tick % 600 == 0 and self.weather != "clear":
                 self.weather = "clear"

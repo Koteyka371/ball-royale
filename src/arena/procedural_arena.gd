@@ -15,6 +15,7 @@ var safe_zone_center: Array
 var last_tick: int = -1
 var danger_grid: Dictionary = {}
 var boundary_states: Dictionary = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
+var boundary_health: Dictionary = {"top": 2000.0, "bottom": 2000.0, "left": 2000.0, "right": 2000.0}
 var temperature: float = 20.0
 var weather: String = "clear"
 var is_raining: bool = false
@@ -674,6 +675,12 @@ func update_zone(current_tick: int, delta: float) -> void:
                 "bottom": states[1],
                 "left": states[2],
                 "right": states[3]
+            }
+            boundary_health = {
+                "top": 2000.0,
+                "bottom": 2000.0,
+                "left": 2000.0,
+                "right": 2000.0
             }
         if current_tick % 600 == 0 and weather != "clear":
             weather = "clear"

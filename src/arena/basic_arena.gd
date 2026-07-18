@@ -1,6 +1,7 @@
 class_name BasicArena
 extends RefCounted
 var boundary_states: Dictionary = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
+var boundary_health: Dictionary = {"top": 2000.0, "bottom": 2000.0, "left": 2000.0, "right": 2000.0}
 
 var width: float
 var height: float
