@@ -20145,7 +20145,7 @@
     },
     {
       "id": "idea-1175",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Alliances and Wars",
@@ -30700,6 +30700,23 @@
         "src/ai/adaptive_decoys.py",
         "src/ai/adaptive_decoys.gd",
         "tests/test_adaptive_decoys.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1795",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Push/Pull Mechanics",
+      "description": "Introduce magnetic fields that can alter ball movement trajectories and pull payload toward the objective when properly placed.",
+      "allowed_paths": [
+        "src/ai/magnetic_pushpull_mechanics.py",
+        "src/ai/magnetic_pushpull_mechanics.gd",
+        "tests/test_magnetic_pushpull_mechanics.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
