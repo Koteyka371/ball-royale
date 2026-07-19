@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1191] Kinetic Reversal Shield — *2026-07-19 23:25:39 UTC*
+
+A temporary shield that converts 100% of incoming damage into a burst of movement speed and maximum stamina, allowing for a rapid counter-attack or escape.
+
+---
+
 ## [idea-1193] Magnetic Gravity Mine — *2026-07-19 23:16:04 UTC*
 
 A mine that, instead of exploding, pulls all nearby enemies and physics objects toward its center for 3 seconds before detonating, creating devastating localized combos.

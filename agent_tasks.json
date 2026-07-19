@@ -20418,7 +20418,7 @@
     },
     {
       "id": "idea-1191",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Reversal Shield",
@@ -30939,6 +30939,40 @@
         "src/ai/wind_funnels.py",
         "src/ai/wind_funnels.gd",
         "tests/test_wind_funnels.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1809",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Reversal Mine",
+      "description": "A mine that, instead of dealing damage, reverses the velocity vector of all nearby physics objects and enemies with 2x magnitude when triggered, turning enemy charges or projectiles against them.",
+      "allowed_paths": [
+        "src/ai/kinetic_reversal_mine.py",
+        "src/ai/kinetic_reversal_mine.gd",
+        "tests/test_kinetic_reversal_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1810",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Singularity Mine",
+      "description": "A new mine variant that, upon detonation, spawns a massive expanding slow-motion zone. Any entities or projectiles caught inside the zone move at 20% speed for 8 seconds, creating high-tension dodges and setup combos.",
+      "allowed_paths": [
+        "src/ai/quantum_singularity_mine.py",
+        "src/ai/quantum_singularity_mine.gd",
+        "tests/test_quantum_singularity_mine.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
