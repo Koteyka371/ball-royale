@@ -19754,7 +19754,7 @@
     },
     {
       "id": "idea-1152",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Trap Item",
@@ -30564,6 +30564,23 @@
         "src/ai/payload_overcharge_events.py",
         "src/ai/payload_overcharge_events.gd",
         "tests/test_payload_overcharge_events.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1787",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stasis Bubble Deployable",
+      "description": "A rare deployable that casts a large stasis bubble around itself. Any entities or projectiles entering the bubble have their velocities slowed by 90% for a short duration.",
+      "allowed_paths": [
+        "src/ai/stasis_bubble_deployable.py",
+        "src/ai/stasis_bubble_deployable.gd",
+        "tests/test_stasis_bubble_deployable.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

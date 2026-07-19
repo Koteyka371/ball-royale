@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1152] Bounty Trap Item — *2026-07-19 05:25:28 UTC*
+
+An item that players can place on the field, which tags the first enemy to touch it with a small bounty that grants the placer a reward when the enemy dies.
+
+---
+
 ## [idea-1141] Quantum Singularity Trap — *2026-07-19 05:22:48 UTC*
 
 A rare deployable trap that sucks in nearby players and projectiles, gradually slowing them down and increasing collision damage within its event horizon before violently exploding.
