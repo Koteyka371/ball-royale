@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1151] Chain Bounties — *2026-07-19 01:35:35 UTC*
+
+When a player successfully claims a bounty, a smaller bounty is automatically placed on them, encouraging dynamic target shifting and continuous engagements.
+
+---
+
 ## [idea-1092] Destructible Bouncy Boundaries — *2026-07-19 01:35:31 UTC*
 
 Make parts of the bouncy arena boundaries destructible over time when hit by high-speed balls, gradually exposing deadly spikes or an infinite fall abyss behind them.
