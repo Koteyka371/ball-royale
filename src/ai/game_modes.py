@@ -3623,6 +3623,25 @@ class DualPayloadMode(GameMode):
                     if math.hypot(bdx, bdy) <= 150.0:
                         b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
 
+            px = getattr(self.payload_red, "x", 0)
+            if not hasattr(self, "red_milestones"):
+                self.red_milestones = [300.0, 500.0, 700.0, 900.0]
+
+            for m in self.red_milestones[:]:
+                if px >= m:
+                    self.red_milestones.remove(m)
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            import random
+                            h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                            drop = Hazard(h_id, px, getattr(self.payload_red, "y", 0), 40.0, "energy_barrier", 0.0)
+                            setattr(drop, 'duration', 15.0)
+                            setattr(drop, 'team', "Red")
+                            world.arena.hazards.append(drop)
+                        except ImportError:
+                            pass
+
             dx = (arena_width - 100.0) - getattr(self.payload_red, "x", 0)
             dy = center_y - getattr(self.payload_red, "y", 0)
             dist = math.hypot(dx, dy)
@@ -3685,6 +3704,25 @@ class DualPayloadMode(GameMode):
                     bdy = getattr(b, "y", 0) - getattr(self.payload_blue, "y", 0)
                     if math.hypot(bdx, bdy) <= 150.0:
                         b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
+
+            px = getattr(self.payload_blue, "x", 0)
+            if not hasattr(self, "blue_milestones"):
+                self.blue_milestones = [700.0, 500.0, 300.0, 100.0]
+
+            for m in self.blue_milestones[:]:
+                if px <= m:
+                    self.blue_milestones.remove(m)
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            import random
+                            h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                            drop = Hazard(h_id, px, getattr(self.payload_blue, "y", 0), 40.0, "energy_barrier", 0.0)
+                            setattr(drop, 'duration', 15.0)
+                            setattr(drop, 'team', "Blue")
+                            world.arena.hazards.append(drop)
+                        except ImportError:
+                            pass
 
             dx = 100.0 - getattr(self.payload_blue, "x", 0)
             dy = center_y - getattr(self.payload_blue, "y", 0)
@@ -3932,6 +3970,20 @@ class EscortMode(GameMode):
             if dist < 10.0 and wpt_idx < len(waypoints) - 1:
                 self.current_waypoint_index = wpt_idx + 1
                 target_x, target_y = waypoints[self.current_waypoint_index]
+
+                # Payload crossed a waypoint: drop a temporary static trap or buff zone
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                        import random
+                        h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                        drop = Hazard(h_id, getattr(self.payload, "x", 0), getattr(self.payload, "y", 0), 40.0, "energy_barrier", 0.0)
+                        setattr(drop, 'duration', 15.0)
+                        setattr(drop, 'team', getattr(self.payload, "team", "Defenders"))
+                        world.arena.hazards.append(drop)
+                    except ImportError:
+                        pass
+
                 dx = target_x - getattr(self.payload, "x", 0)
                 dy = target_y - getattr(self.payload, "y", 0)
                 dist = math.hypot(dx, dy)
@@ -16840,6 +16892,44 @@ class TickingPayloadMode(GameMode):
                 # Blue pushes towards Red goal (left)
                 speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
                 self.payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
+
+            # Milestone traps
+            if not hasattr(self, "milestones_crossed"):
+                self.milestones_crossed = []
+
+            milestones = [200.0, 350.0, 650.0, 800.0]
+            px = getattr(self.payload, "x", 500.0)
+
+            for m in milestones:
+                if m not in self.milestones_crossed:
+                    # Crossed milestone going right (Red pushing)
+                    if px >= m and m > 500.0 and red_count > blue_count:
+                        self.milestones_crossed.append(m)
+                        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                            try:
+                                from arena.procedural_arena import Hazard
+                                import random
+                                h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                                drop = Hazard(h_id, px, getattr(self.payload, "y", 0), 40.0, "energy_barrier", 0.0)
+                                setattr(drop, 'duration', 15.0)
+                                setattr(drop, 'team', "Red")
+                                world.arena.hazards.append(drop)
+                            except ImportError:
+                                pass
+                    # Crossed milestone going left (Blue pushing)
+                    elif px <= m and m < 500.0 and blue_count > red_count:
+                        self.milestones_crossed.append(m)
+                        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                            try:
+                                from arena.procedural_arena import Hazard
+                                import random
+                                h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                                drop = Hazard(h_id, px, getattr(self.payload, "y", 0), 40.0, "energy_barrier", 0.0)
+                                setattr(drop, 'duration', 15.0)
+                                setattr(drop, 'team', "Blue")
+                                world.arena.hazards.append(drop)
+                            except ImportError:
+                                pass
 
             # Check for goals
             if self.payload.x <= self.red_goal_x:
