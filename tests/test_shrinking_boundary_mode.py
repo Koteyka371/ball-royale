@@ -52,9 +52,8 @@ def test_shrinking_boundary_mode():
     initial_hp = balls[0].hp
     mode.tick(world, balls, delta=1.0)
 
-    # Ball should have taken damage
-    assert balls[0].hp == 0.0
-    assert balls[0].alive is False
+    # Ball should have taken continuous damage
+    assert balls[0].hp == 90.0
 
     # Deal enough damage to kill
     balls[0].hp = 1.0

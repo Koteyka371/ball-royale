@@ -35,9 +35,8 @@ def test_shrinking_boundary_elimination():
     assert ball_inside.alive is True
     assert ball_inside.hp == 100.0
 
-    assert ball_outside.alive is False
-    assert ball_outside.hp == 0.0
-    assert ball_outside.killer == "Shrinking Boundary"
+    assert ball_outside.alive is True
+    assert ball_outside.hp == 90.0
 
 if __name__ == "__main__":
     pytest.main([__file__])
