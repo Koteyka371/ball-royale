@@ -61,6 +61,7 @@ def test_solar_eclipse_event():
         def __init__(self):
             self.kind = "solar_panel"
             self.active = True
+            self.efficiency = 1.0
 
     balls = [DummyBall("normal")]
     world.arena.hazards.append(DummySolarPanel())
@@ -72,7 +73,7 @@ def test_solar_eclipse_event():
     # Totality means progress = 0.0 -> vision should be minimum (50.0), invisible = True
     assert balls[0].vision_radius == 50.0
     assert balls[0].invisible == True
-    assert world.arena.hazards[-1].active == False
+    assert world.arena.hazards[-1].efficiency < 0.1
 
     # Check monster spawn
     assert len(mode.eclipse_monsters) > 0 or hasattr(mode, 'eclipse_monsters')
@@ -96,6 +97,7 @@ def test_solar_eclipse_event():
         def __init__(self):
             self.kind = "solar_panel"
             self.active = True
+            self.efficiency = 1.0
 
     balls = [DummyBall("normal")]
     world.arena.hazards.append(DummySolarPanel())
@@ -107,7 +109,7 @@ def test_solar_eclipse_event():
     # Totality means progress = 0.0 -> vision should be minimum (50.0), invisible = True
     assert balls[0].vision_radius == 50.0
     assert balls[0].invisible == True
-    assert world.arena.hazards[-1].active == False
+    assert world.arena.hazards[-1].efficiency < 0.1
 
     # Check monster spawn
     assert len(mode.eclipse_monsters) > 0 or hasattr(mode, 'eclipse_monsters')
