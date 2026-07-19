@@ -1,4 +1,4 @@
 {
-  "title": "Time Loop Hazard",
-  "description": "A hazard zone that, instead of dealing damage, records a ball's movement for 3 seconds and then forces them to replay those exact movements backward. This can be used creatively to dodge attacks or maliciously to trap opponents in their own past paths."
+  "title": "Aegis Shield Booster",
+  "description": "A consumable booster that grants temporary directional immunity. It creates a frontal shield arc that blocks all incoming hazard and projectile damage, but leaves the rear exposed, introducing positioning and flanking tactics."
 }
