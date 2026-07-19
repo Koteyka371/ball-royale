@@ -21455,7 +21455,76 @@ class SpectatorHologramsMode(GameMode):
                             h.active = False
 
 
+
+class DraggingMagneticMinesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dragging Magnetic Mines"
+        self.description = "Spawns inactive magnetic mines. When a ball comes close, the mine drags it inward before exploding in a massive shockwave."
+        self.mines = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        import random
+        super().setup(world, balls)
+        self.mines = []
+        for _ in range(5):
+            self.mines.append({
+                "x": random.uniform(100, 700),
+                "y": random.uniform(100, 500),
+                "activation_radius": 150.0,
+                "state": "inactive",
+                "timer": 3.0,
+                "pull_strength": 100.0,
+                "explosion_radius": 250.0,
+                "explosion_damage": 100.0
+            })
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import math
+        for m in self.mines:
+            if m["state"] == "exploded":
+                continue
+
+            if m["state"] == "inactive":
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+                    dx = b.x - m["x"]
+                    dy = b.y - m["y"]
+                    dist = math.hypot(dx, dy)
+                    if dist <= m["activation_radius"]:
+                        m["state"] = "dragging"
+                        break
+            elif m["state"] == "dragging":
+                m["timer"] -= delta
+                if m["timer"] <= 0:
+                    m["state"] = "exploded"
+                    for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+                        dx = b.x - m["x"]
+                        dy = b.y - m["y"]
+                        dist = math.hypot(dx, dy)
+                        if dist <= m["explosion_radius"]:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(m["explosion_damage"])
+                            elif hasattr(b, "hp"):
+                                b.hp -= m["explosion_damage"]
+                    if hasattr(world, "add_event"):
+                        world.add_event("massive_shockwave", {"x": m["x"], "y": m["y"], "radius": m["explosion_radius"]})
+                else:
+                    for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+                        dx = b.x - m["x"]
+                        dy = b.y - m["y"]
+                        dist = math.hypot(dx, dy)
+                        if dist <= m["activation_radius"] and dist > 0:
+                            b.x -= (dx / dist) * m["pull_strength"] * delta
+                            b.y -= (dy / dist) * m["pull_strength"] * delta
+
 GAME_MODES = {
+    'dragging_magnetic_mines': DraggingMagneticMinesMode(),
     'position_swap': PositionSwapMode(),
     'quantum_tunnel_mutator': QuantumTunnelMutatorMode(),
     'healing_zone': HealingZoneMode(),

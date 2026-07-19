@@ -34890,6 +34890,7 @@ GAME_MODES = {
 	"massive_black_hole_event": MassiveBlackHoleEventMode.new(),
 	"ticking_bomb": TickingBombMode.new(),
 	"orbital_mines": OrbitalMinesMode.new(),
+	"dragging_magnetic_mines": DraggingMagneticMinesMode.new(),
 }
 
 
@@ -42067,3 +42068,69 @@ class SpectatorHologramsMode extends GameMode:
 								else:
 									if "active" in h:
 										h.active = false
+
+
+class DraggingMagneticMinesMode extends GameMode:
+	var mines = []
+
+	func _init():
+		name = "Dragging Magnetic Mines"
+		description = "Spawns inactive magnetic mines. When a ball comes close, the mine drags it inward before exploding in a massive shockwave."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		mines = []
+		for i in range(5):
+			mines.append({
+				"x": randf_range(100, 700),
+				"y": randf_range(100, 500),
+				"activation_radius": 150.0,
+				"state": "inactive",
+				"timer": 3.0,
+				"pull_strength": 100.0,
+				"explosion_radius": 250.0,
+				"explosion_damage": 100.0
+			})
+
+	func tick(world, balls, delta):
+		for m in mines:
+			if m["state"] == "exploded":
+				continue
+
+			if m["state"] == "inactive":
+				for b in balls:
+					if not b.get("alive", false):
+						continue
+					var dx = b.x - m["x"]
+					var dy = b.y - m["y"]
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist <= m["activation_radius"]:
+						m["state"] = "dragging"
+						break
+			elif m["state"] == "dragging":
+				m["timer"] -= delta
+				if m["timer"] <= 0:
+					m["state"] = "exploded"
+					for b in balls:
+						if not b.get("alive", false):
+							continue
+						var dx = b.x - m["x"]
+						var dy = b.y - m["y"]
+						var dist = sqrt(dx * dx + dy * dy)
+						if dist <= m["explosion_radius"]:
+							if b.has_method("take_damage"):
+								b.take_damage(m["explosion_damage"])
+							elif "hp" in b:
+								b.hp -= m["explosion_damage"]
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("massive_shockwave", {"x": m["x"], "y": m["y"], "radius": m["explosion_radius"]})
+				else:
+					for b in balls:
+						if not b.get("alive", false):
+							continue
+						var dx = b.x - m["x"]
+						var dy = b.y - m["y"]
+						var dist = sqrt(dx * dx + dy * dy)
+						if dist <= m["activation_radius"] and dist > 0:
+							b.x -= (dx / dist) * m["pull_strength"] * delta
+							b.y -= (dy / dist) * m["pull_strength"] * delta
