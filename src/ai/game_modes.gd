@@ -16930,6 +16930,26 @@ class GuildVsGuildMode extends GameMode:
 			var gm = GuildManager.new()
 			gm.capture_territory(winner_guild, "GvG_Arena")
 			var loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
+
+			var loser_defenses = gm.get_hq_defenses(loser)
+			var defense_score = 0
+			for val in loser_defenses.values():
+				defense_score += val
+
+			if defense_score > 0:
+				var attack_power = 0
+				if guilds.has(winner_guild):
+					attack_power = guilds[winner_guild].size() * 10
+
+				if attack_power >= defense_score:
+					var stolen = gm.record_siege_defense_broken(winner_guild, loser, 500)
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("siege_success", {"attacker": winner_guild, "defender": loser, "stolen": stolen})
+				else:
+					gm.record_siege_held(loser, 250)
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("siege_failed", {"attacker": winner_guild, "defender": loser, "xp_reward": 250})
+
 			gm.record_gvg_match(winner_guild, loser, winner_guild)
 
 

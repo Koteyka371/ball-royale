@@ -689,10 +689,74 @@ func get_mini_game_leaderboard(guild_name: String, mini_game_id: String) -> Arra
                 scores.sort_custom(func(a, b): return a["score"] > b["score"])
     return scores
 
+func build_hq_defense(guild_name: String, defense_type: String, cost: int, amount: int = 1) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        var current_resources = 0
+        if guild.has("resources"):
+            current_resources = guild["resources"]
+
+        if current_resources >= cost:
+            guild["resources"] = current_resources - cost
+            if not guild.has("hq"):
+                guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "mini_games": {}, "defenses": {}, "training_arena_unlocked": false}
+            if not guild["hq"].has("defenses"):
+                guild["hq"]["defenses"] = {}
+
+            var defenses = guild["hq"]["defenses"]
+            if defenses.has(defense_type):
+                defenses[defense_type] += amount
+            else:
+                defenses[defense_type] = amount
+
+            save_guilds()
+            return true
+    return false
+
+func get_hq_defenses(guild_name: String) -> Dictionary:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("hq") and guild["hq"].has("defenses"):
+            return guild["hq"]["defenses"]
+    return {}
+
+func record_siege_defense_broken(attacker_name: String, defender_name: String, stolen_amount: int) -> int:
+    if data["guilds"].has(attacker_name) and data["guilds"].has(defender_name):
+        var defender = data["guilds"][defender_name]
+        var attacker = data["guilds"][attacker_name]
+
+        var defender_resources = 0
+        if defender.has("resources"):
+            defender_resources = defender["resources"]
+
+        var actual_stolen = min(defender_resources, stolen_amount)
+        if actual_stolen > 0:
+            defender["resources"] -= actual_stolen
+
+            var attacker_resources = 0
+            if attacker.has("resources"):
+                attacker_resources = attacker["resources"]
+            attacker["resources"] = attacker_resources + actual_stolen
+
+            save_guilds()
+        return actual_stolen
+    return 0
+
+func record_siege_held(defender_name: String, xp_reward: int) -> bool:
+    if data["guilds"].has(defender_name):
+        var defender = data["guilds"][defender_name]
+        var current_xp = 0
+        if defender.has("guild_xp"):
+            current_xp = defender["guild_xp"]
+        defender["guild_xp"] = current_xp + xp_reward
+        save_guilds()
+        return true
+    return false
+
 func get_hq_status(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
-        var hq = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "mini_games": {}, "training_arena_unlocked": false}
+        var hq = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "mini_games": {}, "defenses": {}, "training_arena_unlocked": false}
         if guild.has("hq"):
             if guild["hq"].has("statues"): hq["statues"] = guild["hq"]["statues"]
             if guild["hq"].has("banners"): hq["banners"] = guild["hq"]["banners"]
@@ -701,6 +765,7 @@ func get_hq_status(guild_name: String) -> Dictionary:
             if guild["hq"].has("backgrounds"): hq["backgrounds"] = guild["hq"]["backgrounds"]
             if guild["hq"].has("announcer_voices"): hq["announcer_voices"] = guild["hq"]["announcer_voices"]
             if guild["hq"].has("mini_games"): hq["mini_games"] = guild["hq"]["mini_games"]
+            if guild["hq"].has("defenses"): hq["defenses"] = guild["hq"]["defenses"]
             if guild["hq"].has("training_arena_unlocked"): hq["training_arena_unlocked"] = guild["hq"]["training_arena_unlocked"]
         return hq
     return {}

@@ -10953,8 +10953,28 @@ class GuildVsGuildMode(GameMode):
             gm = GuildManager()
             gm.capture_territory(winner_guild, "GvG_Arena")
 
-            # record match
             loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
+
+            # Check for siege mechanic
+            loser_defenses = gm.get_hq_defenses(loser)
+            defense_score = sum(loser_defenses.values())
+
+            # If the loser has defenses, the winner must break them to steal resources
+            if defense_score > 0:
+                # Calculate attack power based on number of players alive or something similar, simple calculation for now
+                attack_power = len(self.guilds.get(winner_guild, [])) * 10
+                if attack_power >= defense_score:
+                    # Broken defenses!
+                    stolen = gm.record_siege_defense_broken(winner_guild, loser, 500)
+                    if hasattr(self.world, 'add_event'):
+                        self.world.add_event("siege_success", {"attacker": winner_guild, "defender": loser, "stolen": stolen})
+                else:
+                    # Defense held!
+                    gm.record_siege_held(loser, 250)
+                    if hasattr(self.world, 'add_event'):
+                        self.world.add_event("siege_failed", {"attacker": winner_guild, "defender": loser, "xp_reward": 250})
+
+            # record match
             gm.record_gvg_match(winner_guild, loser, winner_guild)
         except ImportError:
             pass
