@@ -19890,7 +19890,7 @@
     },
     {
       "id": "idea-1160",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Musical Chairs Game Mode",
@@ -30581,6 +30581,40 @@
         "src/ai/stasis_bubble_deployable.py",
         "src/ai/stasis_bubble_deployable.gd",
         "tests/test_stasis_bubble_deployable.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1788",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tug of War Multiple Payloads",
+      "description": "Spawn three payloads instead of one.",
+      "allowed_paths": [
+        "src/ai/tug_of_war_multiple_payloads.py",
+        "src/ai/tug_of_war_multiple_payloads.gd",
+        "tests/test_tug_of_war_multiple_payloads.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1789",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Payload Mod",
+      "description": "Add a mutator that makes the Tug of War payload 10x bouncier and faster.",
+      "allowed_paths": [
+        "src/ai/bouncy_payload_mod.py",
+        "src/ai/bouncy_payload_mod.gd",
+        "tests/test_bouncy_payload_mod.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

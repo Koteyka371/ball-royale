@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1160] Musical Chairs Game Mode — *2026-07-19 05:53:23 UTC*
+
+Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The number of safe zones decreases each round.
+
+---
+
 ## [idea-1145] Bouncing Payload Mode — *2026-07-19 05:31:23 UTC*
 
 The payload in Tug of War moves incredibly fast but bounces off walls and players instead of being a slow and steady push. Players must carefully angle themselves to reflect the payload towards the enemy goal, akin to air hockey.
