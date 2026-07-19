@@ -23055,6 +23055,26 @@ func _use_skill():
                 self.ball["vy"] = -self.ball["vy"]
         return
 
+    if skill_name == "glitch_teleport_v2":
+        var cd = 3.0
+        if "SKILL_COOLDOWN" in self.ball:
+            cd = self.ball.SKILL_COOLDOWN
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "skill_timer" in self.ball:
+                self.ball.skill_timer = cd
+            if "vx" in self.ball:
+                self.ball.vx = -self.ball.vx
+            if "vy" in self.ball:
+                self.ball.vy = -self.ball.vy
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            if self.ball.has("skill_timer"):
+                self.ball["skill_timer"] = cd
+            if self.ball.has("vx"):
+                self.ball["vx"] = -self.ball["vx"]
+            if self.ball.has("vy"):
+                self.ball["vy"] = -self.ball["vy"]
+        return
+
     if skill_timer <= 0.0 and skill_name == "solar_flare":
         if self.world != null and self.world.has_method("add_event"):
             var b_id = 0
