@@ -312,10 +312,10 @@ class GameMode:
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -915,10 +915,10 @@ class DraftRoyaleMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "team", "spectator") == "spectator":
                 b.ball_type = "spectator"
@@ -1187,10 +1187,10 @@ class BattleRoyaleMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -1367,10 +1367,10 @@ class BattleRoyaleMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 b_x = getattr(b, "x", 0.0)
@@ -1612,10 +1612,10 @@ class BattleRoyaleMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "is_final_boss", False):
                 if not getattr(b, "alive", False) and not getattr(b, "reward_given", False):
@@ -1656,10 +1656,10 @@ class BattleRoyaleMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "weather_control_timer", 0.0) > 0:
                 controller = b
@@ -3132,10 +3132,10 @@ class ZombieInfectionMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -3293,10 +3293,10 @@ class GuildBossFightMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if b.id == self.boss_id:
                 boss = b
@@ -3317,10 +3317,10 @@ class GuildBossFightMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if b.id != self.boss_id and getattr(b, "alive", False):
                 dx = boss.x - b.x
@@ -3461,10 +3461,10 @@ class BossFightMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "team", "") == "Boss" and getattr(b, "alive", False):
                 b.hp = min(b.hp + 5.0 * delta, getattr(b, "max_hp", 1000.0))
@@ -3610,10 +3610,10 @@ class DualPayloadMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -4585,10 +4585,10 @@ class VampireRoyaleMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -4985,10 +4985,10 @@ class KingOfTheHillMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -5033,10 +5033,10 @@ class KingOfTheHillMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "ball_type", None) != "spectator":
                 score = getattr(b, "score", 0)
@@ -5236,10 +5236,10 @@ class BlackHoleMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -5265,10 +5265,10 @@ class BlackHoleMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = center_x - b.x
@@ -5415,10 +5415,10 @@ class WeatherChaosMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -5432,10 +5432,10 @@ class WeatherChaosMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "weather_control_timer", 0.0) > 0:
                 controller = b
@@ -6328,10 +6328,10 @@ class MovingZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "ball_type", None) != "spectator":
                 b.score = 0
@@ -6382,10 +6382,10 @@ class MovingZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "ball_type", None) != "spectator":
                 if getattr(b, "score", 0) >= 100:
@@ -6530,10 +6530,10 @@ class MemoryTrapsMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -6671,10 +6671,10 @@ class CustomMatchMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -6916,10 +6916,10 @@ class EcholocationMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -7064,10 +7064,10 @@ class PitchBlackMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -7082,10 +7082,10 @@ class PitchBlackMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 b.perception_radius = getattr(b, "base_perception_radius", 250.0)
@@ -7199,10 +7199,10 @@ class VisionReducedMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -7224,10 +7224,10 @@ class VisionReducedMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 # Sonar-like pulses temporarily restore or enhance perception
@@ -7508,10 +7508,10 @@ class PortalNodeMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             team = getattr(b, "team", "Solo")
             if team not in self.team_scores:
@@ -7544,10 +7544,10 @@ class PortalNodeMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 continue
@@ -7669,10 +7669,10 @@ class MovingSafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -7805,10 +7805,10 @@ class ShrinkingDangerZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -7839,10 +7839,10 @@ class ShrinkingDangerZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx_b = b.x - self.zone_x
@@ -7893,10 +7893,10 @@ class ShrinkingDangerZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = b.x - self.zone_x
@@ -8159,10 +8159,10 @@ class ModifierZonesSafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -8193,10 +8193,10 @@ class ModifierZonesSafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx_b = b.x - self.zone_x
@@ -8253,10 +8253,10 @@ class ModifierZonesSafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -8409,10 +8409,10 @@ class SafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -8446,10 +8446,10 @@ class SafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx_b = b.x - self.zone_x
@@ -8500,10 +8500,10 @@ class SafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = b.x - self.zone_x
@@ -8582,10 +8582,10 @@ class InverseMirrorArenaMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             clone = copy.copy(b)
             clone.id = getattr(world, "next_id", random.randint(10000, 99999))
@@ -8619,10 +8619,10 @@ class InverseMirrorArenaMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "is_clone", False) and getattr(b, "clone_owner", None):
                 owner_to_clone[b.clone_owner] = b
@@ -8632,10 +8632,10 @@ class InverseMirrorArenaMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "is_clone", False):
                 if b.id in owner_to_clone:
@@ -9323,10 +9323,10 @@ class BumperBallsMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -9410,10 +9410,10 @@ class ToxicEnvironmentMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -9550,10 +9550,10 @@ class ModifierZonesMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -9743,10 +9743,10 @@ class WindstormMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -9922,10 +9922,10 @@ class BlackoutMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "ball_type", None) != "spectator":
                 b.base_perception_radius = getattr(b, "perception_radius", 250)
@@ -10018,10 +10018,10 @@ class BlackoutMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
 
             in_spotlight = False
@@ -10374,10 +10374,10 @@ class EarthquakeMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -10494,10 +10494,10 @@ class ShiftingMazeMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 continue
@@ -10706,10 +10706,10 @@ class SupernovaMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -10772,10 +10772,10 @@ class SupernovaMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = center_x - b.x
@@ -11887,10 +11887,10 @@ class PinballMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False):
                 if getattr(b, "_last_hit_by_timer", 0.0) > 0:
@@ -12115,10 +12115,10 @@ class GeometricZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -12221,10 +12221,10 @@ class GeometricZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 safe = False
@@ -12267,10 +12267,10 @@ class BodySwapMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -13126,10 +13126,10 @@ class StaminaSpeedMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             current_hp = getattr(b, 'hp', 100.0)
             prev_hp = getattr(b, 'prev_hp', current_hp)
@@ -13272,10 +13272,10 @@ class HazardBilliardsMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False): continue
             b.reflect_shield_active = True
@@ -13354,10 +13354,10 @@ class HazardBilliardsMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 continue
@@ -13574,10 +13574,10 @@ class InverseSafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -13599,10 +13599,10 @@ class InverseSafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 dx = b.x - self.zone_x
@@ -13762,10 +13762,10 @@ class DynamicSafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -13827,10 +13827,10 @@ class DynamicSafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -14064,10 +14064,10 @@ class DailyMutatorMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
                 teams_alive.add(getattr(b, "team", b.ball_type))
@@ -14230,10 +14230,10 @@ class BlackMarketMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -14434,10 +14434,10 @@ class FloorIsLavaMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -14587,10 +14587,10 @@ class BlizzardMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -14914,10 +14914,10 @@ class CursedBuffZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -15064,10 +15064,10 @@ class RhythmPanelsMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -15111,10 +15111,10 @@ class TimeRewindMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -15225,10 +15225,10 @@ class PolarityShiftMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
                 bx = getattr(b, "x", cx)
@@ -15600,10 +15600,10 @@ class ArtifactUpgraderMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -16051,10 +16051,10 @@ class MazeSafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 if b not in world.dead_balls:
@@ -16132,10 +16132,10 @@ class MazeSafeZoneMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 # Safe zone damage
@@ -16374,10 +16374,10 @@ class ExtremeWeatherMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if getattr(b, "forecast_booster_active", False):
                 time_until = 15.0 - self.weather_timer
@@ -16511,10 +16511,10 @@ class ExtremeWeatherMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator" or getattr(b, "is_decoy", False):
                 continue
@@ -18520,10 +18520,10 @@ class MultipleSafeZonesMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 continue
@@ -19274,10 +19274,10 @@ class HeavyRainMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if is_immune:
                 continue
@@ -21533,10 +21533,10 @@ class SoulLinkMode(GameMode):
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
 
             fi_timer = getattr(b, 'freezing_immunity_timer', 0.0)
-            if fi_timer > 0.0:
+            if isinstance(fi_timer, (int, float)) and fi_timer > 0.0:
                 b.freezing_immunity_timer = max(0.0, fi_timer - delta)
             si_timer = getattr(b, 'slippery_immunity_timer', 0.0)
-            if si_timer > 0.0:
+            if isinstance(si_timer, (int, float)) and si_timer > 0.0:
                 b.slippery_immunity_timer = max(0.0, si_timer - delta)
             if not getattr(b, "alive", False):
                 continue
