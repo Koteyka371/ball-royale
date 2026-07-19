@@ -378,17 +378,78 @@ class GuildManager:
     def collect_passive_resources(self):
         if "territories" not in self.data:
             return
-        # Each territory grants 5 resources to its owner
+
+        incomes = {}
         for territory, owner in self.data["territories"].items():
             if owner in self.data["guilds"]:
-                self.data["guilds"][owner]["resources"] += 5
+                incomes[owner] = incomes.get(owner, 0) + 5
 
-                # Also give 2 resources to each ally
                 allies = self.data["guilds"][owner].get("allies", [])
                 for ally in allies:
                     if ally in self.data["guilds"]:
-                        self.data["guilds"][ally]["resources"] += 2
+                        incomes[ally] = incomes.get(ally, 0) + 2
+
+        for guild_name, amount in incomes.items():
+            guild = self.data["guilds"][guild_name]
+            pay_taxes_to = guild.get("pay_taxes_to", [])
+
+            if pay_taxes_to:
+                tax_rate = 0.5
+                tax_amount = int(amount * tax_rate)
+                amount -= tax_amount
+
+                tax_per_winner = tax_amount // len(pay_taxes_to)
+                for winner in pay_taxes_to:
+                    if winner in self.data["guilds"]:
+                        self.data["guilds"][winner]["resources"] += tax_per_winner
+
+            self.data["guilds"][guild_name]["resources"] += amount
+
         self.save()
+
+    def declare_war(self, guild1_name, guild2_name):
+        if guild1_name in self.data["guilds"] and guild2_name in self.data["guilds"] and guild1_name != guild2_name:
+            self.break_alliance(guild1_name, guild2_name)
+
+            guild1 = self.data["guilds"][guild1_name]
+            guild2 = self.data["guilds"][guild2_name]
+
+            if "wars" not in guild1: guild1["wars"] = []
+            if "wars" not in guild2: guild2["wars"] = []
+
+            if guild2_name not in guild1["wars"] and guild1_name not in guild2["wars"]:
+                guild1["wars"].append(guild2_name)
+                guild2["wars"].append(guild1_name)
+                self.save()
+                return True
+        return False
+
+    def end_war(self, winner_name, loser_name):
+        if winner_name in self.data["guilds"] and loser_name in self.data["guilds"]:
+            winner = self.data["guilds"][winner_name]
+            loser = self.data["guilds"][loser_name]
+
+            modified = False
+            if "wars" in winner and loser_name in winner["wars"]:
+                winner["wars"].remove(loser_name)
+                modified = True
+            if "wars" in loser and winner_name in loser["wars"]:
+                loser["wars"].remove(winner_name)
+                modified = True
+
+            if modified:
+                territories_to_transfer = self.get_territories(loser_name)
+                for t in territories_to_transfer:
+                    self.capture_territory(winner_name, t)
+
+                if "pay_taxes_to" not in loser:
+                    loser["pay_taxes_to"] = []
+                if winner_name not in loser["pay_taxes_to"]:
+                    loser["pay_taxes_to"].append(winner_name)
+
+                self.save()
+                return True
+        return False
 
     def form_alliance(self, guild1_name, guild2_name):
         if guild1_name in self.data["guilds"] and guild2_name in self.data["guilds"] and guild1_name != guild2_name:
