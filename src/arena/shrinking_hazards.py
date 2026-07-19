@@ -6,6 +6,8 @@ from arena.procedural_arena import ProceduralArena, Hazard
 
 class ShrinkingHazardsArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, num_rooms: int = 5, seed: int | None = None):
+        self.boundary_states = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
+        self.boundary_health = {"top": 2000.0, "bottom": 2000.0, "left": 2000.0, "right": 2000.0}
         super().__init__(arena_size=arena_size, num_rooms=num_rooms, seed=seed)
         self.hazard_spawn_timer = 0.0
 

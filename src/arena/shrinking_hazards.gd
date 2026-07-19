@@ -1,5 +1,7 @@
 class_name ShrinkingHazardsArena
 extends ProceduralArena
+var boundary_states: Dictionary = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
+var boundary_health: Dictionary = {"top": 2000.0, "bottom": 2000.0, "left": 2000.0, "right": 2000.0}
 
 var hazard_spawn_timer: float = 0.0
 

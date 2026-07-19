@@ -10,6 +10,8 @@ from arena.procedural_arena import TimeDistortionArena
 
 class SwapPortal(Hazard):
     def __init__(self, id: int, x: float, y: float, radius: float, target_x: float, target_y: float, pair_id: int):
+        self.boundary_states = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
+        self.boundary_health = {"top": 2000.0, "bottom": 2000.0, "left": 2000.0, "right": 2000.0}
         super().__init__(id, x, y, radius, "swap_portal", 0.0)
         self.target_x = target_x
         self.target_y = target_y
