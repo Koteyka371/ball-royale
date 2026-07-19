@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1143] Glitch Ball Sub-Type — *2026-07-19 20:48:19 UTC*
+
+A new ball type 'Glitch' that randomly teleports short distances when hit and occasionally reverses its own movement vector, making it highly unpredictable but hard to control.
+
+---
+
 ## [idea-1137] Interactive Hologram Spectators — *2026-07-19 20:24:14 UTC*
 
 During intense matches, high-excitement crowd events can spawn physical holograms of the spectators along the arena edges. These holograms can block projectiles or be interacted with to cheer and grant minor speed buffs to nearby players.
