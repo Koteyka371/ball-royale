@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1170] Neon Disco Event Mode — *2026-07-19 15:12:36 UTC*
+
+The arena turns into a disco floor during this event. The ground changes colors rhythmically, and balls must stay on the matching color to avoid taking damage. Balls gain increased speed and stamina regeneration while on the correct color.
+
+---
+
 ## [idea-1168] Tornado Skill Modification — *2026-07-19 07:46:47 UTC*
 
 Balls with the tornado skill can now absorb elemental properties of other hazards they collide with. For example, if a player's tornado collides with a poison puddle, it becomes a poison_tornado, or colliding with a fire trap turns it into a firenado, adding extra utility and combo potential to their kit.
