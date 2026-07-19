@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1011] Decoy Barrel Trap — *2026-07-19 01:35:45 UTC*
+
+A player-deployable trap that looks exactly like a volatile_barrel but has a much larger explosion radius and detonates on contact, rather than taking damage.
+
+---
+
 ## [idea-1142] Guild Headquarters Customization & Siege Defense — *2026-07-19 01:35:40 UTC*
 
 Allow guilds to spend resources on building automated defenses (turrets, traps, barricades) in their HQ area on the persistent GvG map. Opposing guilds can attempt HQ sieges, where breaking defenses steals resources directly from the defending guild's vault. Successfully holding off a siege grants guild XP to the defenders.
