@@ -1746,6 +1746,43 @@ func _attempt_damage(attacker, target) -> void:
 					base_xp *= 2.0
 			self._award_xp(attacker, base_xp, self.world)
 	if new_hp <= 0 and old_hp > 0:
+		var target_is_bounty_target = false
+		if typeof(target) == TYPE_DICTIONARY:
+			target_is_bounty_target = target.get("is_bounty_target", false)
+		elif target.has_method("get_meta") and target.has_meta("is_bounty_target"):
+			target_is_bounty_target = target.get_meta("is_bounty_target")
+		elif "is_bounty_target" in target:
+			target_is_bounty_target = target.is_bounty_target
+
+		if target_is_bounty_target:
+			var owner_id = null
+			if typeof(target) == TYPE_DICTIONARY:
+				owner_id = target.get("bounty_target_owner")
+			elif target.has_method("get_meta") and target.has_meta("bounty_target_owner"):
+				owner_id = target.get_meta("bounty_target_owner")
+			elif "bounty_target_owner" in target:
+				owner_id = target.bounty_target_owner
+
+			if owner_id != null and typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+				var owner = null
+				for b in self.world.balls:
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id
+					if b_id == owner_id:
+						owner = b
+						break
+				if owner != null:
+					var o_alive = owner.get("alive", true) if typeof(owner) == TYPE_DICTIONARY else owner.alive
+					if o_alive:
+						self._award_xp(owner, 150.0, self.world)
+						var o_hp = owner.get("hp", 100.0) if typeof(owner) == TYPE_DICTIONARY else owner.hp
+						var o_mhp = owner.get("max_hp", 100.0) if typeof(owner) == TYPE_DICTIONARY else owner.max_hp
+						if typeof(owner) == TYPE_DICTIONARY:
+							owner["hp"] = min(o_mhp, o_hp + 30.0)
+						else:
+							owner.hp = min(o_mhp, o_hp + 30.0)
+						if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+							self.world.add_event("bounty_trap_claimed", {"message": "Bounty Trap claimed!"})
+
 		var target_is_dynamic_bounty = false
 		if typeof(target) == TYPE_DICTIONARY:
 			target_is_dynamic_bounty = target.get("is_dynamic_bounty", false)
@@ -10094,6 +10131,58 @@ func execute(strategy: String, delta: float):
                                                 else:
                                                     other_hazard.set("vx", (dx / dist) * speed)
                                                     other_hazard.set("vy", (dy / dist) * speed)
+
+                elif hazard.kind == "bounty_trap":
+                    var is_active = true
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        is_active = hazard.get("active", true)
+                    else:
+                        is_active = hazard.get("active") if "active" in hazard else true
+
+                    var h_team = ""
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        h_team = hazard.get("team", "")
+                    else:
+                        h_team = hazard.get("team") if "team" in hazard else ""
+
+                    var b_team = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        b_team = self.ball.get("team", "")
+                    else:
+                        b_team = self.ball.team
+
+                    if is_active and h_team != b_team:
+                        var hx = float(hazard.get("x", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.x)
+                        var hy = float(hazard.get("y", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.y)
+                        var hr = float(hazard.get("radius", 20.0) if typeof(hazard) == TYPE_DICTIONARY else (hazard.radius if "radius" in hazard else 20.0))
+
+                        var bx = float(self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x)
+                        var by = float(self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y)
+                        var br = float(self.ball.get("radius", 10.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.radius)
+
+                        var dist_sq = (hx - bx) * (hx - bx) + (hy - by) * (hy - by)
+                        if dist_sq < (hr + br) * (hr + br):
+                            var owner_id = hazard.get("owner_id") if typeof(hazard) == TYPE_DICTIONARY else (hazard.owner_id if "owner_id" in hazard else null)
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["is_bounty_target"] = true
+                                self.ball["bounty_target_owner"] = owner_id
+                            elif typeof(self.ball) == TYPE_OBJECT:
+                                if "is_bounty_target" in self.ball:
+                                    self.ball.is_bounty_target = true
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("is_bounty_target", true)
+
+                                if "bounty_target_owner" in self.ball:
+                                    self.ball.bounty_target_owner = owner_id
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("bounty_target_owner", owner_id)
+
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hazard["duration"] = 0.0
+                                hazard["active"] = false
+                            else:
+                                if "duration" in hazard: hazard.duration = 0.0
+                                if "active" in hazard: hazard.active = false
 
                 elif hazard.kind == "deployable_thin_hazard_line":
                     var is_active = true
@@ -26803,6 +26892,29 @@ func _use_skill():
                 }
                 self.world.arena.hazards.append(node)
 
+        elif skill_name == "bounty_trap":
+            if typeof(self.world) == TYPE_OBJECT and self.world.has("arena") and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                var node = {}
+                node["id"] = "bounty_trap_" + str(self.ball.get("id", "")) + "_" + str(self.world.get("tick", 0))
+                node["kind"] = "bounty_trap"
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    node["x"] = self.ball.get("x", 0.0)
+                    node["y"] = self.ball.get("y", 0.0)
+                    node["team"] = self.ball.get("team", "")
+                    node["owner_id"] = self.ball.get("id")
+                else:
+                    node["x"] = self.ball.x
+                    node["y"] = self.ball.y
+                    node["team"] = self.ball.team
+                    node["owner_id"] = self.ball.id
+                node["radius"] = 20.0
+                node["duration"] = 60.0
+                node["active"] = true
+                self.world.arena.hazards.append(node)
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["skill_timer"] = 15.0
+            else:
+                self.ball.skill_timer = 15.0
         elif skill_name == "deployable_thin_hazard_line":
             var enemies = _get_enemies()
             var end_x = self.ball.x + 300.0
