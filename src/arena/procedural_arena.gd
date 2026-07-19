@@ -668,7 +668,7 @@ func update_zone(current_tick: int, delta: float) -> void:
                             other.set_meta("hidden_by_avalanche", false)
 
         if current_tick % 400 == 0:
-            var states = ["bouncy", "bouncy", "bouncy", "bouncy"]
+            var states = ["bouncy", "bouncy", "bouncy", "absorptive"]
             states.shuffle()
             boundary_states = {
                 "top": states[0],

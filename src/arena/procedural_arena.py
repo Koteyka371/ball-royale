@@ -583,7 +583,7 @@ class ProceduralArena:
 
             import random
             if current_tick % 400 == 0:
-                states = ["bouncy", "bouncy", "bouncy", "bouncy"]
+                states = ["bouncy", "bouncy", "bouncy", "absorptive"]
                 random.shuffle(states)
                 self.boundary_states = {
                     "top": states[0],
