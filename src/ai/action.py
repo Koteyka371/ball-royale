@@ -5546,6 +5546,8 @@ class Action:
                             current_tick = getattr(self.world, "tick", 0)
                             last_teleport = getattr(self.ball, "last_teleport_tick", -100)
                             cooldown = 30 if hazard.kind == "quantum_teleporter" else 10
+                            if hazard.kind == "quantum_teleporter" and getattr(self.ball, "quantum_teleporter_booster_timer", 0.0) > 0:
+                                cooldown = 15
 
                             if hazard.kind == "quantum_teleporter":
                                 ent_tick = getattr(hazard, "entangled_until_tick", 0)
@@ -5580,6 +5582,19 @@ class Action:
 
                                         if hasattr(self.world, "events"):
                                             self.world.events.append({'type': 'visual_effect', 'data': {'x': old_x, 'y': old_y, 'target_x': self.ball.x, 'target_y': self.ball.y, 'kind': 'quantum_trail'}})
+
+                                        if getattr(self.ball, "quantum_teleporter_booster_timer", 0.0) > 0:
+                                            allies = self._get_allies()
+                                            for ally in allies:
+                                                if ally != self.ball and getattr(ally, "alive", True):
+                                                    ally_dx = ally.x - old_x
+                                                    ally_dy = ally.y - old_y
+                                                    if ally_dx*ally_dx + ally_dy*ally_dy <= 40000:
+                                                        ally.x = self.ball.x
+                                                        ally.y = self.ball.y
+                                                        ally.last_teleport_tick = current_tick
+                                                        if hasattr(self.world, "events"):
+                                                            self.world.events.append({'type': 'visual_effect', 'data': {'x': old_x, 'y': old_y, 'target_x': ally.x, 'target_y': ally.y, 'kind': 'quantum_trail'}})
 
                                         # Apply quantum instability buff/debuff if the event mode is active
                                         mode_name = getattr(self.world, "game_mode", None)
@@ -10781,6 +10796,13 @@ class Action:
                     # Explodes on collection
                     if hasattr(self.ball, "hp"):
                         self.ball.hp -= 30.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "quantum_teleporter_booster":
+                    self.ball.quantum_teleporter_booster_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -16202,6 +16224,9 @@ class Action:
                     self.ball.leech_tether_timer = 0.0
             self.ball.leech_tether_timer = max(0.0, getattr(self.ball, "leech_tether_timer", 0.0) - delta)
 
+        quantum_teleporter_booster_timer = getattr(self.ball, "quantum_teleporter_booster_timer", 0.0)
+        if quantum_teleporter_booster_timer > 0:
+            self.ball.quantum_teleporter_booster_timer = quantum_teleporter_booster_timer - delta
         tether_booster_timer = getattr(self.ball, "tether_booster_timer", 0.0)
         if tether_booster_timer > 0:
             target = getattr(self.ball, "tether_booster_target", None)

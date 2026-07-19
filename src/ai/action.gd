@@ -6041,6 +6041,17 @@ func execute(strategy: String, delta: float):
 		if "magnet_tether_timer" in self.ball: self.ball.magnet_tether_timer = m_tether_timer
 		elif self.ball.has_method("set_meta"): self.ball.set_meta("magnet_tether_timer", m_tether_timer)
 
+        var qtbt = 0.0
+        if self.ball.has_method("has_meta") and self.ball.has_meta("quantum_teleporter_booster_timer"):
+            qtbt = self.ball.get_meta("quantum_teleporter_booster_timer")
+        elif "quantum_teleporter_booster_timer" in self.ball:
+            qtbt = self.ball.quantum_teleporter_booster_timer
+        if qtbt > 0.0:
+            qtbt -= delta
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("quantum_teleporter_booster_timer", qtbt)
+            if "quantum_teleporter_booster_timer" in self.ball:
+                self.ball.quantum_teleporter_booster_timer = qtbt
 		var tether_booster_timer = 0.0
 		if self.ball.has_method("has_meta") and self.ball.has_meta("tether_booster_timer"):
 			tether_booster_timer = self.ball.get_meta("tether_booster_timer")
@@ -10597,9 +10608,44 @@ func execute(strategy: String, delta: float):
                                             h.set_meta("entangled_until_tick", current_tick + int(10.0 / delta))
                                             break
 
-                                    if self.world.get("events") != null:
+                                                                        if self.world.get("events") != null:
                                         var eff = {"type": "visual_effect", "data": {"x": old_x, "y": old_y, "target_x": self.ball.x, "target_y": self.ball.y, "kind": "quantum_trail"}}
                                         self.world.events.append(eff)
+
+                                    var qtbt_val = 0.0
+                                    if self.ball.has_method("has_meta") and self.ball.has_meta("quantum_teleporter_booster_timer"):
+                                        qtbt_val = self.ball.get_meta("quantum_teleporter_booster_timer")
+                                    elif "quantum_teleporter_booster_timer" in self.ball:
+                                        qtbt_val = self.ball.quantum_teleporter_booster_timer
+                                    if qtbt_val > 0.0:
+                                        var allies = _get_allies_internal()
+                                        for ally in allies:
+                                            var is_alive = true
+                                            if typeof(ally) == TYPE_DICTIONARY:
+                                                is_alive = ally.get("alive", true)
+                                            elif typeof(ally) == TYPE_OBJECT:
+                                                is_alive = ally.alive if "alive" in ally else true
+                                            if ally != self.ball and is_alive:
+                                                var ax = ally.get("x") if typeof(ally) == TYPE_DICTIONARY else ally.x
+                                                var ay = ally.get("y") if typeof(ally) == TYPE_DICTIONARY else ally.y
+                                                var ally_dx = ax - old_x
+                                                var ally_dy = ay - old_y
+                                                if ally_dx*ally_dx + ally_dy*ally_dy <= 40000:
+                                                    if typeof(ally) == TYPE_DICTIONARY:
+                                                        ally["x"] = self.ball.x
+                                                        ally["y"] = self.ball.y
+                                                        ally["last_teleport_tick"] = current_tick
+                                                    else:
+                                                        ally.x = self.ball.x
+                                                        ally.y = self.ball.y
+                                                        if ally.has_method("set_meta"):
+                                                            ally.set_meta("last_teleport_tick", current_tick)
+                                                        elif "last_teleport_tick" in ally:
+                                                            ally.last_teleport_tick = current_tick
+                                                    if self.world.get("events") != null:
+                                                        var eff2 = {"type": "visual_effect", "data": {"x": old_x, "y": old_y, "target_x": ally.x, "target_y": ally.y, "kind": "quantum_trail"}}
+                                                        self.world.events.append(eff2)
+
 
                                     var mode_name = ""
                                     if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
@@ -20553,6 +20599,19 @@ func _collect_booster(delta: float):
             elif "kind" in nearest and nearest.kind == "exploding_booster":
                 if "hp" in self.ball:
                     self.ball.hp -= 30.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "quantum_teleporter_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("quantum_teleporter_booster_timer", 10.0)
+                if "quantum_teleporter_booster_timer" in self.ball:
+                    self.ball.quantum_teleporter_booster_timer = 10.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
