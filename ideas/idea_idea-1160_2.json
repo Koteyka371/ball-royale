@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Micro Safe Zones",
+  "description": "Similar to decreasing safe zones, but instead of the number of zones decreasing, the size of each zone decreases until they disappear completely, encouraging tight close-combat scenarios."
+}
