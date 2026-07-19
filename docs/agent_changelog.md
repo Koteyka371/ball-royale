@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1153] Shrinking Safe Zone Game Mode — *2026-07-19 18:19:00 UTC*
+
+A battle royale mode where the boundaries slowly constrict over time. Staying outside the boundary deals continuous damage until elimination.
+
+---
+
 ## [idea-1170] Neon Disco Event Mode — *2026-07-19 15:12:36 UTC*
 
 The arena turns into a disco floor during this event. The ground changes colors rhythmically, and balls must stay on the matching color to avoid taking damage. Balls gain increased speed and stamina regeneration while on the correct color.
