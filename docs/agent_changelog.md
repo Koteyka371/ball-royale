@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1142] Guild Headquarters Customization & Siege Defense — *2026-07-19 01:35:40 UTC*
+
+Allow guilds to spend resources on building automated defenses (turrets, traps, barricades) in their HQ area on the persistent GvG map. Opposing guilds can attempt HQ sieges, where breaking defenses steals resources directly from the defending guild's vault. Successfully holding off a siege grants guild XP to the defenders.
+
+---
+
 ## [idea-1151] Chain Bounties — *2026-07-19 01:35:35 UTC*
 
 When a player successfully claims a bounty, a smaller bounty is automatically placed on them, encouraging dynamic target shifting and continuous engagements.
