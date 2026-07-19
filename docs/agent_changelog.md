@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1043] Weather-Specific Consumables — *2026-07-19 18:50:01 UTC*
+
+Introduce items that spawn exclusively during specific weather conditions. For example, a 'Snow Globe' in a blizzard that grants brief freezing immunity, or an 'Umbrella Booster' in rain that prevents the slippery status effect.
+
+---
+
 ## [idea-1155] Quantum Swap Mode — *2026-07-19 18:29:15 UTC*
 
 A new GameMode where players occasionally swap positions with an enemy player at random intervals, confusing targeting and causing chaos. The swap is telegraphed by a small portal particle effect beneath the players 1 second before the swap happens.
