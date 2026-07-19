@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1185] Decoy Transposition — *2026-07-19 23:01:42 UTC*
+
+A new skill that allows a player to instantly teleport to any of their active decoys, instantly exploding the decoy they swapped with to catch enemies off guard.
+
+---
+
 ## [idea-1181] Bouncing Laser — *2026-07-19 22:47:06 UTC*
 
 A laser beam that bounces off arena walls.

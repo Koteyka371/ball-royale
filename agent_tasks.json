@@ -20316,7 +20316,7 @@
     },
     {
       "id": "idea-1185",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Transposition",
@@ -30871,6 +30871,40 @@
         "src/ai/cryogenic_shield_booster.py",
         "src/ai/cryogenic_shield_booster.gd",
         "tests/test_cryogenic_shield_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1805",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Dimension Event",
+      "description": "Balls enter a mirror dimension where they interact with shadows of other balls.",
+      "allowed_paths": [
+        "src/ai/mirror_dimension.py",
+        "src/ai/mirror_dimension.gd",
+        "tests/test_mirror_dimension.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1806",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Swap Mutator",
+      "description": "Periodically, the gravity in the arena flips, pulling balls towards the edges.",
+      "allowed_paths": [
+        "src/ai/gravity_swap_mutator.py",
+        "src/ai/gravity_swap_mutator.gd",
+        "tests/test_gravity_swap_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
