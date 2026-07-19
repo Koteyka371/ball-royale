@@ -8221,6 +8221,14 @@ class Action:
                                     self.ball.speed_boost_timer = 3.0 * combo_multiplier
                                 elif powerup == "shield":
                                     self.ball.shield = getattr(self.ball, "shield", 0.0) + (20.0 * combo_multiplier)
+                                elif powerup == "heat_shield":
+                                    base_shield = 20.0
+                                    temp_bonus = max(0.0, getattr(self.world.arena, "temperature", 20.0) - 20.0) * 0.5
+                                    self.ball.shield = getattr(self.ball, "shield", 0.0) + ((base_shield + temp_bonus) * combo_multiplier)
+                                elif powerup == "cryo_heal":
+                                    base_heal = 10.0
+                                    temp_bonus = max(0.0, 20.0 - getattr(self.world.arena, "temperature", 20.0)) * 0.25
+                                    self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + ((base_heal + temp_bonus) * combo_multiplier))
                                 elif powerup == "stamina":
                                     self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + (20.0 * combo_multiplier))
 

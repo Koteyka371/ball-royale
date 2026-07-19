@@ -260,7 +260,7 @@ class ProceduralArena:
 
                 # Make bumpers dynamic
                 if random.random() < 0.4:
-                    powerups = ["heal", "speed", "shield", "stamina", "cursed"]
+                    powerups = ["heal", "speed", "shield", "stamina", "cursed", "heat_shield", "cryo_heal"]
                     setattr(new_hazard, "powerup_type", random.choice(powerups))
                 if kind == "breakable_wall":
                     setattr(new_hazard, "hp", 100.0)
