@@ -13342,6 +13342,32 @@ class _MinefieldHazard:
         self.duration = duration
         self.active = True
 
+class CrowdedSafeZoneMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Crowded Safe Zone"
+        self.description = "The safe zone shrinks faster when more players are outside of it, forcing combat."
+        self.base_shrink_rate = 10.0
+
+    def apply_dynamic_traits(self, world, balls, delta=0.016):
+        import math
+        super().apply_dynamic_traits(world, balls, delta)
+
+        # Calculate players outside the zone
+        players_outside = 0
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = b.x - self.zone_x
+                dy = b.y - self.zone_y
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist > self.zone_radius:
+                    players_outside += 1
+
+        # Adjust shrink rate based on players outside
+        # Shrinks much faster with more players outside
+        self.shrink_rate = self.base_shrink_rate * (1.0 + float(players_outside) * 0.5)
+
+
 class MutantSafeZoneMode(SafeZoneMode):
     def __init__(self):
         super().__init__()
@@ -21281,6 +21307,7 @@ GAME_MODES = {
     "inverse_safe_zone": InverseSafeZoneMode(),
     "safe_zone": SafeZoneMode(),
     "mutant_safe_zone": MutantSafeZoneMode(),
+    "crowded_safe_zone": CrowdedSafeZoneMode(),
     "micro_safe_zones": MicroSafeZonesMode(),
     "hex_grid_royale": HexGridRoyaleMode(),
     "minefield_safe_zone": MinefieldSafeZoneMode(),

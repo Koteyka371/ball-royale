@@ -12302,6 +12302,55 @@ class ModifierZonesSafeZoneMode extends GameMode:
 		return null
 
 
+class CrowdedSafeZoneMode extends SafeZoneMode:
+	var base_shrink_rate: float = 10.0
+
+	func _init() -> void:
+		super._init()
+		name = "Crowded Safe Zone"
+		description = "The safe zone shrinks faster when more players are outside of it, forcing combat."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+
+		var players_outside = 0
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			if is_alive and b_type != "spectator":
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				else:
+					if "position" in b and b.position != null:
+						bx = b.position.x
+						by = b.position.y
+					else:
+						bx = b.x if "x" in b else 0.0
+						by = b.y if "y" in b else 0.0
+
+				var dx = bx - zone_x
+				var dy = by - zone_y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > zone_radius:
+					players_outside += 1
+
+		shrink_rate = base_shrink_rate * (1.0 + float(players_outside) * 0.5)
+
+
 class MutantSafeZoneMode extends SafeZoneMode:
 	func _init() -> void:
 		name = "Mutant Safe Zone"
@@ -34337,6 +34386,7 @@ GAME_MODES = {
 	"inverse_safe_zone": InverseSafeZoneMode.new(),
 	"safe_zone": SafeZoneMode.new(),
 	"mutant_safe_zone": MutantSafeZoneMode.new(),
+	"crowded_safe_zone": CrowdedSafeZoneMode.new(),
 	"micro_safe_zones": MicroSafeZonesMode.new(),
 	"hex_grid_royale": HexGridRoyaleMode.new(),
 	"minefield_safe_zone": MinefieldSafeZoneMode.new(),
