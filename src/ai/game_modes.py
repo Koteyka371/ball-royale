@@ -19511,6 +19511,67 @@ class SolarEclipseEventMode(GameMode):
                 world.arena.is_night = True
                 world.arena.is_solar_eclipse = True
 
+            # Progress starts at 1.0 (start, duration=30), goes to 0.0 (totality at 15.0), back to 1.0 (end, duration=0)
+            progress = abs(15.0 - self.event_duration) / 15.0
+            progress = max(0.0, min(1.0, progress))
+
+            # Decreasing vision and invisibility at totality
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]:
+                    if not hasattr(b, "_eclipse_orig_vision"):
+                        b._eclipse_orig_vision = getattr(b, "vision_radius", 500.0)
+
+                    b.vision_radius = max(50.0, b._eclipse_orig_vision * progress)
+
+                    if 10.0 <= self.event_duration <= 20.0:
+                        b.invisible = True
+                    else:
+                        b.invisible = False
+
+            # Solar panels drop in efficiency
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "solar_panel":
+                        h.active = (progress > 0.5)
+
+            # Spawn shadow monsters at full totality
+            if 10.0 <= self.event_duration <= 20.0:
+                if not hasattr(self, "eclipse_monsters"):
+                    self.eclipse_monsters = []
+
+                self.eclipse_monsters = [m for m in self.eclipse_monsters if getattr(m, "alive", True)]
+
+                if len(self.eclipse_monsters) < 10:
+                    import random
+                    if random.random() < 0.5:
+                        class EclipseShadowMonster:
+                            def __init__(self, x, y):
+                                self.id = random.randint(10000, 99999)
+                                self.x = x
+                                self.y = y
+                                self.ball_type = "shadow_monster"
+                                self.alive = True
+                                self.hp = 50.0
+                                self.team = -1
+                                self.radius = 15.0
+                                self.speed = 0.0
+                                self.stamina = 100.0
+                                self.base_speed = 300.0
+                                self.max_stamina = 100.0
+                                self.base_damage = 10.0
+                                self.original_base_damage = 10.0
+                                self.traits = []
+                                self.weather_immunity_timer = 0.0
+                                self.in_mirror_dimension = False
+                                self.intangible = False
+
+                        w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+                        h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+                        m = EclipseShadowMonster(random.uniform(100, w-100), random.uniform(100, h-100))
+                        self.eclipse_monsters.append(m)
+                        balls.append(m)
+
             if self.event_duration <= 0:
                 self.event_active = False
                 if hasattr(world, "arena"):
@@ -19520,7 +19581,25 @@ class SolarEclipseEventMode(GameMode):
                         for h in self.modified_walls:
                             if h in world.arena.hazards and getattr(h, "kind", "") == "breakable_wall":
                                 h.kind = "indestructible_wall"
+                        for h in world.arena.hazards:
+                            if getattr(h, "kind", "") == "solar_panel":
+                                h.active = True
                 self.modified_walls = []
+
+                # Restore ball attributes
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]:
+                        b.invisible = False
+                        if hasattr(b, "_eclipse_orig_vision"):
+                            b.vision_radius = b._eclipse_orig_vision
+
+                # Kill remaining eclipse monsters
+                if hasattr(self, "eclipse_monsters"):
+                    for m in self.eclipse_monsters:
+                        m.alive = False
+                        m.hp = 0.0
+                    self.eclipse_monsters = []
+
                 if hasattr(world, "add_event"):
                     world.add_event("solar_eclipse_end", {"type": "weather_warning", "message": "The solar eclipse has ended."})
 

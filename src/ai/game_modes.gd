@@ -31526,6 +31526,91 @@ class SolarEclipseEventMode extends GameMode:
 				world.arena.is_night = true
 				world.arena.is_solar_eclipse = true
 
+			var progress = abs(15.0 - event_duration) / 15.0
+			if progress < 0.0: progress = 0.0
+			if progress > 1.0: progress = 1.0
+
+			for b in balls:
+				var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+				var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+
+				if is_alive and b_type != "spectator" and b_type != "shadow_monster":
+					if typeof(b) == TYPE_DICTIONARY:
+						if not b.has("_eclipse_orig_vision"):
+							b["_eclipse_orig_vision"] = b.get("vision_radius", 500.0)
+						var min_vision = 50.0
+						var current = b["_eclipse_orig_vision"] * progress
+						b["vision_radius"] = current if current > min_vision else min_vision
+						if event_duration >= 10.0 and event_duration <= 20.0:
+							b["invisible"] = true
+						else:
+							b["invisible"] = false
+					else:
+						if not b.has_meta("_eclipse_orig_vision"):
+							b.set_meta("_eclipse_orig_vision", b.get("vision_radius", 500.0) if "vision_radius" in b else 500.0)
+						var min_vision = 50.0
+						var current = b.get_meta("_eclipse_orig_vision") * progress
+						if "vision_radius" in b:
+							b.vision_radius = current if current > min_vision else min_vision
+						if event_duration >= 10.0 and event_duration <= 20.0:
+							if "invisible" in b: b.invisible = true
+							elif b.has_method("set_meta"): b.set_meta("invisible", true)
+						else:
+							if "invisible" in b: b.invisible = false
+							elif b.has_method("set_meta"): b.set_meta("invisible", false)
+
+			if world != null and "arena" in world and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "solar_panel":
+						h["active"] = (progress > 0.5)
+					elif typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "solar_panel":
+						if "active" in h: h.active = (progress > 0.5)
+
+			if event_duration >= 10.0 and event_duration <= 20.0:
+				if not self.has_meta("eclipse_monsters"):
+					self.set_meta("eclipse_monsters", [])
+				var monsters = self.get_meta("eclipse_monsters")
+
+				var alive_monsters = []
+				for m in monsters:
+					var m_alive = m.get("alive", false) if typeof(m) == TYPE_DICTIONARY else (m.alive if "alive" in m else false)
+					if m_alive: alive_monsters.append(m)
+
+				if alive_monsters.size() < 10:
+					if randf() < 0.5:
+						var w = 1000.0
+						var h = 1000.0
+						if world != null and "arena" in world:
+							if typeof(world.arena) == TYPE_DICTIONARY:
+								w = world.arena.get("width", 1000.0)
+								h = world.arena.get("height", 1000.0)
+							else:
+								w = world.arena.width if "width" in world.arena else 1000.0
+								h = world.arena.height if "height" in world.arena else 1000.0
+						var new_m = {
+							"id": randi() % 90000 + 10000,
+							"x": randf_range(100.0, w - 100.0),
+							"y": randf_range(100.0, h - 100.0),
+							"ball_type": "shadow_monster",
+							"alive": true,
+							"hp": 50.0,
+							"team": -1,
+							"radius": 15.0,
+							"speed": 0.0,
+							"stamina": 100.0,
+							"base_speed": 300.0,
+							"max_stamina": 100.0,
+							"base_damage": 10.0,
+							"original_base_damage": 10.0,
+							"traits": [],
+							"weather_immunity_timer": 0.0,
+							"in_mirror_dimension": false,
+							"intangible": false
+						}
+						alive_monsters.append(new_m)
+						balls.append(new_m)
+				self.set_meta("eclipse_monsters", alive_monsters)
+
 			if event_duration <= 0:
 				event_active = false
 				if world != null and "arena" in world:
@@ -31535,7 +31620,36 @@ class SolarEclipseEventMode extends GameMode:
 						for h in modified_walls:
 							if world.arena.hazards.has(h) and typeof(h) == TYPE_OBJECT and h.kind == "breakable_wall":
 								h.kind = "indestructible_wall"
+						for h in world.arena.hazards:
+							if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "solar_panel":
+								h["active"] = true
+							elif typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "solar_panel":
+								if "active" in h: h.active = true
 				modified_walls.clear()
+
+				for b in balls:
+					var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+					var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+
+					if is_alive and b_type != "spectator" and b_type != "shadow_monster":
+						if typeof(b) == TYPE_DICTIONARY:
+							b["invisible"] = false
+							if b.has("_eclipse_orig_vision"): b["vision_radius"] = b["_eclipse_orig_vision"]
+						else:
+							if "invisible" in b: b.invisible = false
+							elif b.has_method("set_meta"): b.set_meta("invisible", false)
+							if b.has_meta("_eclipse_orig_vision") and "vision_radius" in b: b.vision_radius = b.get_meta("_eclipse_orig_vision")
+
+				if self.has_meta("eclipse_monsters"):
+					for m in self.get_meta("eclipse_monsters"):
+						if typeof(m) == TYPE_DICTIONARY:
+							m["alive"] = false
+							m["hp"] = 0.0
+						else:
+							if "alive" in m: m.alive = false
+							if "hp" in m: m.hp = 0.0
+					self.set_meta("eclipse_monsters", [])
+
 				if world != null and world.has_method("add_event"):
 					world.add_event("solar_eclipse_end", {"type": "weather_warning", "message": "The solar eclipse has ended."})
 

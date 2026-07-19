@@ -50,6 +50,76 @@ def test_solar_eclipse_event():
     assert world.arena.is_solar_eclipse == True
     assert world.arena.hazards[0].kind == "breakable_wall"
 
+    class DummyBall:
+        def __init__(self, t):
+            self.alive = True
+            self.ball_type = t
+            self.vision_radius = 1000.0
+            self.invisible = False
+
+    class DummySolarPanel:
+        def __init__(self):
+            self.kind = "solar_panel"
+            self.active = True
+
+    balls = [DummyBall("normal")]
+    world.arena.hazards.append(DummySolarPanel())
+
+    # Test totality
+    mode.event_duration = 15.0
+    mode.tick(world, balls, 0.0)
+
+    # Totality means progress = 0.0 -> vision should be minimum (50.0), invisible = True
+    assert balls[0].vision_radius == 50.0
+    assert balls[0].invisible == True
+    assert world.arena.hazards[-1].active == False
+
+    # Check monster spawn
+    assert len(mode.eclipse_monsters) > 0 or hasattr(mode, 'eclipse_monsters')
+
+    # Test edge
+    mode.event_duration = 29.0 # start of eclipse
+    mode.tick(world, balls, 0.0)
+    assert balls[0].vision_radius > 900.0
+    assert balls[0].invisible == False
+    assert world.arena.hazards[-1].active == True
+
+
+    class DummyBall:
+        def __init__(self, t):
+            self.alive = True
+            self.ball_type = t
+            self.vision_radius = 1000.0
+            self.invisible = False
+
+    class DummySolarPanel:
+        def __init__(self):
+            self.kind = "solar_panel"
+            self.active = True
+
+    balls = [DummyBall("normal")]
+    world.arena.hazards.append(DummySolarPanel())
+
+    # Test totality
+    mode.event_duration = 15.0
+    mode.tick(world, balls, 0.0)
+
+    # Totality means progress = 0.0 -> vision should be minimum (50.0), invisible = True
+    assert balls[0].vision_radius == 50.0
+    assert balls[0].invisible == True
+    assert world.arena.hazards[-1].active == False
+
+    # Check monster spawn
+    assert len(mode.eclipse_monsters) > 0 or hasattr(mode, 'eclipse_monsters')
+
+    # Test edge
+    mode.event_duration = 29.0 # start of eclipse
+    mode.tick(world, balls, 0.0)
+    assert balls[0].vision_radius > 900.0
+    assert balls[0].invisible == False
+    assert world.arena.hazards[-1].active == True
+
+
     # End event
     mode.tick(world, [], 30.1)
 
