@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1186] Decoy Network Shield — *2026-07-19 23:25:44 UTC*
+
+An energy shield that gets stronger based on the number of active allied decoys near the user, giving Decoy Masters immense defensive utility when swarmed.
+
+---
+
 ## [idea-1191] Kinetic Reversal Shield — *2026-07-19 23:25:39 UTC*
 
 A temporary shield that converts 100% of incoming damage into a burst of movement speed and maximum stamina, allowing for a rapid counter-attack or escape.
