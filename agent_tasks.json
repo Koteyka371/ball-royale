@@ -19958,7 +19958,7 @@
     },
     {
       "id": "idea-1164",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Magnet Zones",
@@ -30717,6 +30717,41 @@
         "src/ai/magnetic_pushpull_mechanics.py",
         "src/ai/magnetic_pushpull_mechanics.gd",
         "tests/test_magnetic_pushpull_mechanics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1796",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Mercenaries",
+      "description": "Allow guilds to hire AI-controlled mercenary balls to defend their territories or attack rival guilds during wars. These mercenaries could have distinct traits or abilities based on the level of the guild.",
+      "allowed_paths": [
+        "src/ui/guild_mercenaries.py",
+        "src/ui/guild_mercenaries.gd",
+        "src/ai/guild_mercenaries.py",
+        "tests/test_guild_mercenaries.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1797",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Alliance Tournaments",
+      "description": "Host special alliance tournaments where partnered guilds can form combined teams to compete against other alliances. Winning these tournaments would yield unique cosmetics or high resource rewards shared among all allied guilds.",
+      "allowed_paths": [
+        "src/ai/alliance_tournaments.py",
+        "src/ai/alliance_tournaments.gd",
+        "tests/test_alliance_tournaments.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

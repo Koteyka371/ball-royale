@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1164] Reverse Magnet Zones — *2026-07-19 19:35:07 UTC*
+
+Hazard zones that push players away from their center rather than pulling them in, creating impassable barriers unless players have a speed or dash boost to push through.
+
+---
+
 ## [idea-1175] Guild Alliances and Wars — *2026-07-19 19:25:11 UTC*
 
 Allow guilds to form alliances or declare wars against rival guilds, with exclusive territory control benefits and resource taxes imposed on the losing side.
