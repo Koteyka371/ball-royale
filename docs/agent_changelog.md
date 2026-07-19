@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1147] Payload Abilities Based on Teammates — *2026-07-19 03:26:46 UTC*
+
+As more teammates stand near a payload in Tug of War or Escort mode, the payload gains temporary abilities (like a small healing aura, a reflecting shield, or damaging pulses to enemies).
+
+---
+
 ## [idea-1158] Bounty Target Switch — *2026-07-19 02:58:18 UTC*
 
 During Bounty Hunter mode, the targeted player swaps randomly every 30 seconds. A siren effect sounds, and a new player becomes the high-value target, requiring dynamic on-the-fly strategy shifts from all teams.
