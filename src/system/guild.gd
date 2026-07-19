@@ -485,10 +485,15 @@ func get_territories(guild_name: String) -> Array:
 func collect_passive_resources():
     if not data.has("territories"):
         return
+
+    var incomes = {}
     for territory in data["territories"].keys():
         var owner = data["territories"][territory]
         if data["guilds"].has(owner):
-            data["guilds"][owner]["resources"] += 5
+            if incomes.has(owner):
+                incomes[owner] += 5
+            else:
+                incomes[owner] = 5
 
             var allies = []
             if data["guilds"][owner].has("allies"):
@@ -496,8 +501,75 @@ func collect_passive_resources():
 
             for ally in allies:
                 if data["guilds"].has(ally):
-                    data["guilds"][ally]["resources"] += 2
+                    if incomes.has(ally):
+                        incomes[ally] += 2
+                    else:
+                        incomes[ally] = 2
+
+    for guild_name in incomes.keys():
+        var amount = incomes[guild_name]
+        var guild = data["guilds"][guild_name]
+        var pay_taxes_to = []
+        if guild.has("pay_taxes_to"):
+            pay_taxes_to = guild["pay_taxes_to"]
+
+        if pay_taxes_to.size() > 0:
+            var tax_rate = 0.5
+            var tax_amount = int(amount * tax_rate)
+            amount -= tax_amount
+
+            var tax_per_winner = tax_amount / pay_taxes_to.size()
+            for winner in pay_taxes_to:
+                if data["guilds"].has(winner):
+                    data["guilds"][winner]["resources"] += tax_per_winner
+
+        data["guilds"][guild_name]["resources"] += amount
+
     save_guilds()
+
+func declare_war(guild1_name: String, guild2_name: String) -> bool:
+    if data["guilds"].has(guild1_name) and data["guilds"].has(guild2_name) and guild1_name != guild2_name:
+        break_alliance(guild1_name, guild2_name)
+
+        var guild1 = data["guilds"][guild1_name]
+        var guild2 = data["guilds"][guild2_name]
+
+        if not guild1.has("wars"): guild1["wars"] = []
+        if not guild2.has("wars"): guild2["wars"] = []
+
+        if not guild1["wars"].has(guild2_name) and not guild2["wars"].has(guild1_name):
+            guild1["wars"].append(guild2_name)
+            guild2["wars"].append(guild1_name)
+            save_guilds()
+            return true
+    return false
+
+func end_war(winner_name: String, loser_name: String) -> bool:
+    if data["guilds"].has(winner_name) and data["guilds"].has(loser_name):
+        var winner = data["guilds"][winner_name]
+        var loser = data["guilds"][loser_name]
+
+        var modified = false
+        if winner.has("wars") and winner["wars"].has(loser_name):
+            winner["wars"].erase(loser_name)
+            modified = true
+        if loser.has("wars") and loser["wars"].has(winner_name):
+            loser["wars"].erase(winner_name)
+            modified = true
+
+        if modified:
+            var territories_to_transfer = get_territories(loser_name)
+            for t in territories_to_transfer:
+                capture_territory(winner_name, t)
+
+            if not loser.has("pay_taxes_to"):
+                loser["pay_taxes_to"] = []
+            if not loser["pay_taxes_to"].has(winner_name):
+                loser["pay_taxes_to"].append(winner_name)
+
+            save_guilds()
+            return true
+    return false
 
 func form_alliance(guild1_name: String, guild2_name: String) -> bool:
     if data["guilds"].has(guild1_name) and data["guilds"].has(guild2_name) and guild1_name != guild2_name:
