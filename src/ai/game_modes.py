@@ -4026,6 +4026,9 @@ class EscortMode(GameMode):
         self.goal_x = 900.0
         self.goal_y = 500.0
         self.timer = 180.0
+        self.hack_points = []
+        self.hacked_timer = 0.0
+        self.original_path = None
         self.ability_timer = 0.0
         self.current_ability = 0
         self.paths = [
@@ -4111,6 +4114,12 @@ class EscortMode(GameMode):
         self.chosen_path = random.randint(0, len(self.paths) - 1)
         self.current_waypoint_index = 0
         self.hazard_timer = 0.0
+        self.hack_points = [
+            {"x": 300.0, "y": 500.0, "radius": 50.0, "progress": 0.0, "captured": False},
+            {"x": 600.0, "y": 500.0, "radius": 50.0, "progress": 0.0, "captured": False}
+        ]
+        self.hacked_timer = 0.0
+        self.original_path = self.chosen_path
 
         # Transform a defender into the payload, or just use the first defender
         defenders = [b for b in balls if getattr(b, "team", "") == "Defenders"]
@@ -4127,6 +4136,65 @@ class EscortMode(GameMode):
 
         if getattr(self, "timer", 0) > 0:
             self.timer -= delta
+
+        # Hack points logic
+        if not hasattr(self, "hack_points"):
+            self.hack_points = []
+
+        for hp in self.hack_points:
+            if not hp.get("captured", False):
+                attackers_in_range = 0
+                for b in balls:
+                    if getattr(b, "team", "") == "Attackers" and getattr(b, "alive", False):
+                        import math
+                        dist = math.hypot(getattr(b, "x", 0) - hp["x"], getattr(b, "y", 0) - hp["y"])
+                        if dist <= hp["radius"]:
+                            attackers_in_range += 1
+
+                if attackers_in_range > 0:
+                    hp["progress"] = hp.get("progress", 0.0) + delta * 10.0 * attackers_in_range
+                    if hp["progress"] >= 100.0:
+                        hp["captured"] = True
+                        if getattr(self, "hacked_timer", 0.0) <= 0.0:
+                            self.original_path = getattr(self, "chosen_path", 0)
+                        self.hacked_timer = 20.0
+
+                        # Find new path
+                        new_path = (self.original_path + 1) % len(self.paths)
+                        self.chosen_path = new_path
+
+                        # Update current_waypoint_index to the closest waypoint in the new path
+                        if self.payload:
+                            px = getattr(self.payload, "x", 0)
+                            py = getattr(self.payload, "y", 0)
+                            min_dist = float('inf')
+                            best_idx = 0
+                            for i, wp in enumerate(self.paths[self.chosen_path]["waypoints"]):
+                                dist = math.hypot(px - wp[0], py - wp[1])
+                                if dist < min_dist:
+                                    min_dist = dist
+                                    best_idx = i
+                            self.current_waypoint_index = best_idx
+
+        # Check hacked timer
+        if getattr(self, "hacked_timer", 0.0) > 0:
+            self.hacked_timer -= delta
+            if self.hacked_timer <= 0:
+                self.hacked_timer = 0.0
+                self.chosen_path = getattr(self, "original_path", 0)
+
+                if self.payload:
+                    import math
+                    px = getattr(self.payload, "x", 0)
+                    py = getattr(self.payload, "y", 0)
+                    min_dist = float('inf')
+                    best_idx = 0
+                    for i, wp in enumerate(self.paths[self.chosen_path]["waypoints"]):
+                        dist = math.hypot(px - wp[0], py - wp[1])
+                        if dist < min_dist:
+                            min_dist = dist
+                            best_idx = i
+                    self.current_waypoint_index = best_idx
 
         self.anti_payload_timer = getattr(self, "anti_payload_timer", 0.0) + delta
         if self.anti_payload_timer >= 15.0:

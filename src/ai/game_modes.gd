@@ -6504,6 +6504,9 @@ class EscortMode extends GameMode:
 	var current_waypoint_index: int = 0
 	var hazard_timer: float = 0.0
 	var anti_payload_timer: float = 0.0
+	var hack_points: Array = []
+	var hacked_timer: float = 0.0
+	var original_path: int = -1
 
 	func _init() -> void:
 		name = "Escort Mode"
@@ -6645,6 +6648,12 @@ class EscortMode extends GameMode:
 		chosen_path = randi() % paths.size()
 		current_waypoint_index = 0
 		hazard_timer = 0.0
+		hack_points = [
+			{"x": 300.0, "y": 500.0, "radius": 50.0, "progress": 0.0, "captured": false},
+			{"x": 600.0, "y": 500.0, "radius": 50.0, "progress": 0.0, "captured": false}
+		]
+		hacked_timer = 0.0
+		original_path = chosen_path
 
 		var mid = valid_balls.size() / 2
 		var defenders = []
@@ -6679,6 +6688,69 @@ class EscortMode extends GameMode:
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if timer > 0.0:
 			timer -= delta
+
+		for hp in hack_points:
+			if not hp["captured"]:
+				var attackers_in_range = 0
+				for b in balls:
+					var is_attacker = false
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.get("team", "") == "Attackers" and b.get("alive", false):
+							is_attacker = true
+					else:
+						if b.get("team") == "Attackers" and b.get("alive"):
+							is_attacker = true
+
+					if is_attacker:
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+						var dx = bx - hp["x"]
+						var dy = by - hp["y"]
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= hp["radius"]:
+							attackers_in_range += 1
+
+				if attackers_in_range > 0:
+					hp["progress"] += delta * 10.0 * attackers_in_range
+					if hp["progress"] >= 100.0:
+						hp["captured"] = true
+						if hacked_timer <= 0.0:
+							original_path = chosen_path
+						hacked_timer = 20.0
+						chosen_path = (chosen_path + 1) % paths.size()
+
+						if payload != null:
+							var px = payload.get("x", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("x")
+							var py = payload.get("y", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("y")
+							var min_dist = 999999.0
+							var best_idx = 0
+							var wps = paths[chosen_path]["waypoints"]
+							for i in range(wps.size()):
+								var wp = wps[i]
+								var dist = sqrt(pow(px - wp.x, 2) + pow(py - wp.y, 2))
+								if dist < min_dist:
+									min_dist = dist
+									best_idx = i
+							current_waypoint_index = best_idx
+
+		if hacked_timer > 0.0:
+			hacked_timer -= delta
+			if hacked_timer <= 0.0:
+				hacked_timer = 0.0
+				chosen_path = original_path
+				if payload != null:
+					var px = payload.get("x", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("x")
+					var py = payload.get("y", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("y")
+					var min_dist = 999999.0
+					var best_idx = 0
+					var wps = paths[chosen_path]["waypoints"]
+					for i in range(wps.size()):
+						var wp = wps[i]
+						var dist = sqrt(pow(px - wp.x, 2) + pow(py - wp.y, 2))
+						if dist < min_dist:
+							min_dist = dist
+							best_idx = i
+					current_waypoint_index = best_idx
 
 		anti_payload_timer += delta
 		if anti_payload_timer >= 15.0:
