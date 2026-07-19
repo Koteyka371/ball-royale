@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1154] Shrinking Safe Zone based on Kills — *2026-07-19 02:17:56 UTC*
+
+The safe zone shrinks naturally over time, but every time a team gets a kill, the safe zone pauses its shrinking for 5 seconds.
+
+---
+
 ## [idea-1148] Payload Traps Mode — *2026-07-19 02:08:33 UTC*
 
 In payload modes, when the payload crosses certain points in the arena, it drops temporary static traps or buff zones for its controlling team to use.

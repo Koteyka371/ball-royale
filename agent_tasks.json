@@ -19788,7 +19788,7 @@
     },
     {
       "id": "idea-1154",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zone based on Kills",
@@ -30462,6 +30462,40 @@
         "src/ai/mirage_decoy_generator.py",
         "src/ai/mirage_decoy_generator.gd",
         "tests/test_mirage_decoy_generator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1781",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Cargo Buff Variants",
+      "description": "Instead of just energy barriers, payloads can drop other localized zone effects when crossing milestones, such as temporary haste fields, jump pads, or healing springs based on the payload's cargo type.",
+      "allowed_paths": [
+        "src/ai/payload_cargo_buff_variants.py",
+        "src/ai/payload_cargo_buff_variants.gd",
+        "tests/test_payload_cargo_buff_variants.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1782",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Reversal Pushback",
+      "description": "If a payload is completely unopposed by its owning team and pushed strictly by defenders for an extended period, it arms an explosive charge that detonates, knocking back the defenders slightly to give the attacking team a chance to recover.",
+      "allowed_paths": [
+        "src/ai/payload_reversal_pushback.py",
+        "src/ai/payload_reversal_pushback.gd",
+        "tests/test_payload_reversal_pushback.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
