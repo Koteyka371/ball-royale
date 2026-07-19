@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1159] Crystallized Armor Booster — *2026-07-19 04:48:05 UTC*
+
+A rare booster that coats the player in hardened crystal. The armor fully negates the next 3 instances of damage, but each hit slows the player's movement speed slightly until the armor breaks entirely, sending shrapnel outward.
+
+---
+
 ## [idea-1157] Orbital Strike Satellite Event — *2026-07-19 04:08:30 UTC*
 
 An event where a slowly moving satellite crosshair tracks players in the arena. Once it locks on for a few seconds, it fires a devastating orbital beam that creates an irradiated zone reducing stamina regen for a short time.
