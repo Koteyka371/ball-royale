@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1148] Payload Traps Mode — *2026-07-19 02:08:33 UTC*
+
+In payload modes, when the payload crosses certain points in the arena, it drops temporary static traps or buff zones for its controlling team to use.
+
+---
+
 ## [idea-1011] Decoy Barrel Trap — *2026-07-19 01:35:45 UTC*
 
 A player-deployable trap that looks exactly like a volatile_barrel but has a much larger explosion radius and detonates on contact, rather than taking damage.

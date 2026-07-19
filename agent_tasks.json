@@ -19686,7 +19686,7 @@
     },
     {
       "id": "idea-1148",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Traps Mode",
@@ -30411,6 +30411,57 @@
         "src/ai/solar_wind.py",
         "src/ai/solar_wind.gd",
         "tests/test_solar_wind.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1778",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Minor Synergy",
+      "description": "Bounty Hunter entities receive passive tracking pings towards any player marked with a minor bounty, making dynamic bounty claiming inherently risky but highly rewarding.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_minor_synergy.py",
+        "src/ai/bounty_hunter_minor_synergy.gd",
+        "tests/test_bounty_hunter_minor_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1779",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Minor Bounty Degradation",
+      "description": "Minor bounties decay over time (e.g. after 30 seconds), turning into temporary speed or damage debuffs rather than immediately expiring to prolong the tension and encourage the minor bounty to play aggressively to cleanse it.",
+      "allowed_paths": [
+        "src/ai/minor_bounty_degradation.py",
+        "src/ai/minor_bounty_degradation.gd",
+        "tests/test_minor_bounty_degradation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1780",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Decoy Generator",
+      "description": "A deployable item that creates 3 distinct hologram decoys that mimic the player's movement patterns for 10 seconds. Enemies hitting a decoy get slightly slowed and take minor psychic damage.",
+      "allowed_paths": [
+        "src/ai/mirage_decoy_generator.py",
+        "src/ai/mirage_decoy_generator.gd",
+        "tests/test_mirage_decoy_generator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
