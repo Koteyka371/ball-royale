@@ -19636,7 +19636,7 @@ class SolarEclipseEventMode(GameMode):
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                 for h in world.arena.hazards:
                     if getattr(h, "kind", "") == "solar_panel":
-                        h.active = (progress > 0.5)
+                        h.efficiency = progress
 
             # Spawn shadow monsters at full totality
             if 10.0 <= self.event_duration <= 20.0:
@@ -19687,7 +19687,7 @@ class SolarEclipseEventMode(GameMode):
                                 h.kind = "indestructible_wall"
                         for h in world.arena.hazards:
                             if getattr(h, "kind", "") == "solar_panel":
-                                h.active = True
+                                h.efficiency = 1.0
                 self.modified_walls = []
 
                 # Restore ball attributes

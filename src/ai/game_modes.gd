@@ -31737,10 +31737,10 @@ class SolarEclipseEventMode extends GameMode:
 
 			if world != null and "arena" in world and "hazards" in world.arena:
 				for h in world.arena.hazards:
-					if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "solar_panel":
-						h["active"] = (progress > 0.5)
-					elif typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "solar_panel":
-						if "active" in h: h.active = (progress > 0.5)
+					if (typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "solar_panel") or (typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "solar_panel"):
+						if "efficiency" in h: h.efficiency = progress
+						elif typeof(h) == TYPE_DICTIONARY: h["efficiency"] = progress
+						elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("efficiency", progress)
 
 			if event_duration >= 10.0 and event_duration <= 20.0:
 				if not self.has_meta("eclipse_monsters"):
@@ -31797,10 +31797,10 @@ class SolarEclipseEventMode extends GameMode:
 							if world.arena.hazards.has(h) and typeof(h) == TYPE_OBJECT and h.kind == "breakable_wall":
 								h.kind = "indestructible_wall"
 						for h in world.arena.hazards:
-							if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "solar_panel":
-								h["active"] = true
-							elif typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "solar_panel":
-								if "active" in h: h.active = true
+							if (typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "solar_panel") or (typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "solar_panel"):
+								if "efficiency" in h: h.efficiency = 1.0
+								elif typeof(h) == TYPE_DICTIONARY: h["efficiency"] = 1.0
+								elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("efficiency", 1.0)
 				modified_walls.clear()
 
 				for b in balls:
