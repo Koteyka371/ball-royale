@@ -87,7 +87,7 @@ def test_solar_bot_dark_debuff():
 def test_solar_bot_solar_flare_skill():
     world = MockWorld(is_dark=True)
     bot = MockBall()
-    bot.skill_timer = 1.0
+    bot.skill_timer = 0.0
     bot.skill = "solar_flare"
 
     enemy = MockBall(is_enemy=True)

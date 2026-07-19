@@ -11873,12 +11873,12 @@ class Action:
             self.ball.vy = -getattr(self.ball, "vy", 0.0)
             return
 
-        if skill_timer > 0 and skill_name == "solar_flare":
+        if skill_timer <= 0 and skill_name == "solar_flare":
             if hasattr(self.world, "add_event"):
                 self.world.add_event("visual_effect", {"type": "solar_flare_activation", "ball_id": self.ball.id})
 
             self.world.flare_light_timer = 3.0
-            self.ball.skill_timer = 4.0
+            self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
 
             burn_radius = 200.0
             burn_damage = 30.0
@@ -11889,6 +11889,8 @@ class Action:
                 if dist_sq <= burn_radius**2:
                     if hasattr(e, "take_damage"):
                         e.take_damage(burn_damage)
+                    else:
+                        e.hp = max(0, getattr(e, "hp", 0) - burn_damage)
                     e.burning_timer = 3.0
                     e.on_fire = True
 
