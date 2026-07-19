@@ -19,6 +19,15 @@ class MockBall:
         self.y = y
         self.ball_type = ball_type
         self.alive = True
+        self.radius = 10.0
+        self.vx = 0.0
+        self.vy = 0.0
+        self.radius = 10.0
+        self.vx = 0.0
+        self.vy = 0.0
+        self.radius = 10.0
+        self.vx = 0.0
+        self.vy = 0.0
         self.speed = 10.0
         self.base_speed = 10.0
         self.max_hp = 100.0
@@ -43,14 +52,25 @@ def test_tug_of_war_setup():
 def test_tug_of_war_tick_movement():
     mode = TugOfWarMode()
     world = MockWorld()
-    balls = [MockBall(ball_type="brawler", x=500.0, y=500.0), MockBall(ball_type="sniper", x=100.0, y=100.0)]
+
+    # Place brawler exactly hitting the payload to transfer velocity
+    # Payload is at (500, 500) initially.
+    # Brawler radius 10, payload radius 20, sum 30.
+    # Brawler at (475, 500), dist is 25 (overlapping)
+    # Brawler has high vx
+    brawler = MockBall(ball_type="brawler", x=475.0, y=500.0)
+    brawler.vx = 1000.0
+
+    balls = [brawler, MockBall(ball_type="sniper", x=100.0, y=100.0)]
     mode.setup(world, balls)
 
-    # Red is close, Blue is far
-    mode.tick(world, balls, 1.0)
+    # Call tick
+    mode.tick(world, balls, 0.1)
 
     payload = balls[2]
-    assert payload.x > 500.0 # Red pushes towards Blue goal (right)
+    # The payload should have received a rightwards impulse (vx > 0) and moved right (x > 500)
+    assert getattr(payload, "vx", 0.0) > 0.0
+    assert payload.x > 500.0
 
 def test_tug_of_war_winner():
     mode = TugOfWarMode()
