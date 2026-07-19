@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1169] Shrinking Zones based on Players — *2026-07-19 19:36:34 UTC*
+
+A game mode where the safe zone's size decreases much faster when more players are outside of it, encouraging players to fight for the center.
+
+---
+
 ## [idea-1164] Reverse Magnet Zones — *2026-07-19 19:35:07 UTC*
 
 Hazard zones that push players away from their center rather than pulling them in, creating impassable barriers unless players have a speed or dash boost to push through.
