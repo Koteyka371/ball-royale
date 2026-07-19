@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Teleportation Relay",
+  "description": "A hazard that acts as a chain of unstable portals. When a player enters one, they are rapidly teleported between multiple random portal nodes across the map, taking a small amount of damage per jump, but eventually dropping them into a high-tier loot zone."
+}

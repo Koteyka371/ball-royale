@@ -26334,3 +26334,94 @@ class RepulsionFieldMode(GameMode):
                     b2.vy -= ny * force
 
 GAME_MODES['repulsion_field'] = RepulsionFieldMode()
+
+class MagneticShockwaveEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Magnetic Shockwave Event"
+        self.description = "A new heavy hazard type that drops in the arena and periodically unleashes a massive magnetic shockwave that pulls players toward it while dealing damage. If a player touches the center of the anchor, they are completely stunned for 2 seconds."
+        self.anchor = None
+        self.spawn_timer = 0.0
+        self.shockwave_timer = 0.0
+        self.active_shockwave = False
+        self.shockwave_duration = 0.0
+        self.anchor_radius = 20.0
+        self.pull_radius = 400.0
+
+    class AnchorHazard:
+        def __init__(self, x, y, radius):
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.kind = "magnetic_anchor"
+            self.active = True
+            self.duration = 9999.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if getattr(world, "arena", None) is None:
+            return
+
+        if self.anchor is None:
+            self.spawn_timer += delta
+            if self.spawn_timer > 5.0:
+                # Spawn anchor in the center
+                import random
+                x = getattr(world.arena, "width", 800) / 2
+                y = getattr(world.arena, "height", 800) / 2
+                self.anchor = self.AnchorHazard(x, y, self.anchor_radius)
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                world.arena.hazards.append(self.anchor)
+                self.spawn_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("magnetic_anchor_spawn", {"x": x, "y": y})
+        else:
+            if not self.anchor.active or self.anchor not in getattr(world.arena, "hazards", []):
+                self.anchor = None
+                self.spawn_timer = 0.0
+                return
+
+            self.shockwave_timer += delta
+            if self.active_shockwave:
+                self.shockwave_duration += delta
+                if self.shockwave_duration > 1.0:
+                    self.active_shockwave = False
+                    self.shockwave_duration = 0.0
+                    self.shockwave_timer = 0.0
+                else:
+                    # Apply pull and damage
+                    import math
+                    for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+                        dx = self.anchor.x - b.x
+                        dy = self.anchor.y - b.y
+                        dist = math.hypot(dx, dy)
+                        if dist < self.pull_radius and dist > 0:
+                            pull_strength = 200.0 * (1.0 - dist / self.pull_radius)
+                            b.vx += (dx / dist) * pull_strength * delta
+                            b.vy += (dy / dist) * pull_strength * delta
+
+                            # Damage over time during shockwave
+                            b.hp -= 5.0 * delta
+
+            elif self.shockwave_timer > 4.0:
+                self.active_shockwave = True
+                self.shockwave_duration = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("magnetic_shockwave", {"x": self.anchor.x, "y": self.anchor.y, "radius": self.pull_radius})
+
+            # Check for direct contact with anchor
+            import math
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                dx = self.anchor.x - b.x
+                dy = self.anchor.y - b.y
+                dist = math.hypot(dx, dy)
+                if dist < (self.anchor.radius + getattr(b, "radius", 10.0)):
+                    # Stun
+                    b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
+
+GAME_MODES['magnetic_shockwave'] = MagneticShockwaveEventMode()
