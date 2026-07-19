@@ -10342,6 +10342,24 @@ class Action:
 
 
     def _defend(self, delta: float) -> None:
+        import math
+        b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+        if b_type == "decoy_master":
+            import math
+            active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == getattr(self.ball, "id", None) and getattr(b, "alive", True)]
+
+            near_decoys = 0
+            for d in active_decoys:
+                dist_sq = (d.x - self.ball.x)**2 + (d.y - self.ball.y)**2
+                if dist_sq <= 10000: # 100 radius
+                    near_decoys += 1
+
+            if near_decoys > 0:
+                self.ball.energy_shield_active = True
+                shield_str = near_decoys * 15.0 # Example value
+                self.ball.energy_shield_hp = getattr(self.ball, "energy_shield_hp", 0) + shield_str
+
+
         personality = getattr(self.ball, "personality", "idle")
         if personality in ("tank", "defender", "guardian", "juggernaut"):
             enemies = self._get_enemies()

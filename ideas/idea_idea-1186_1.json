@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Confusion Aura",
+  "description": "An aura that makes all allied and enemy entities treat decoys as valid targets to heal or buff if they are in close proximity, increasing the effectiveness of decoy swarms."
+}
