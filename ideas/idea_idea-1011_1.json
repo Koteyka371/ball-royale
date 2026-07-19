@@ -1,0 +1,4 @@
+{
+  "title": "Mirage Decoy Generator",
+  "description": "A deployable item that creates 3 distinct hologram decoys that mimic the player's movement patterns for 10 seconds. Enemies hitting a decoy get slightly slowed and take minor psychic damage."
+}
