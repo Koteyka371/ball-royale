@@ -20852,9 +20852,83 @@ class ReverseTagMode(GameMode):
 
         return None
 
+
+class RepulsionZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Repulsion Zones"
+        self.description = "Hazard zones that push players away from their center rather than pulling them in, creating impassable barriers unless players have a speed or dash boost to push through."
+        self.spawn_timer = 0.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 5.0:
+            self.spawn_timer = 0.0
+            x = random.uniform(200.0, getattr(world.arena, "width", 800) - 200.0)
+            y = random.uniform(200.0, getattr(world.arena, "height", 800) - 200.0)
+
+            h_id = 9500 + len(world.arena.hazards) + random.randint(0, 1000)
+            try:
+                from arena.procedural_arena import Hazard
+                rz = Hazard(id=h_id, x=x, y=y, radius=random.uniform(100.0, 200.0), kind="repulsion_zone", damage=0.0)
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                rz = FallbackHazard(id=h_id, x=x, y=y, radius=random.uniform(100.0, 200.0), kind="repulsion_zone", damage=0.0)
+
+            setattr(rz, "duration", random.uniform(8.0, 12.0))
+            world.arena.hazards.append(rz)
+
+            # Limit total repulsion zones
+            rz_hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") == "repulsion_zone"]
+            if len(rz_hazards) > 4:
+                world.arena.hazards.remove(rz_hazards[0])
+
+        hazards_to_remove = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "repulsion_zone":
+                if hasattr(h, "duration"):
+                    h.duration -= delta
+                    if h.duration <= 0:
+                        hazards_to_remove.append(h)
+                        continue
+
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                        dx = b.x - h.x
+                        dy = b.y - h.y
+                        dist = math.hypot(dx, dy)
+                        if dist < h.radius and dist > 0:
+                            # Push players away
+                            push_factor = 1.0 - (dist / h.radius)
+                            # Strong force to create impassable barrier without dash
+                            push_force = 2000.0 * push_factor * delta
+                            b.vx += (dx / dist) * push_force
+                            b.vy += (dy / dist) * push_force
+
+        for h in hazards_to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+
 GAME_MODES = {
     'quantum_tunnel_mutator': QuantumTunnelMutatorMode(),
     'healing_zone': HealingZoneMode(),
+    'repulsion_zones': RepulsionZonesMode(),
     "sweeping_rotating_lasers": SweepingRotatingLasersMode(),
     'frictionless_arena_modifier': FrictionlessArenaModifierMode(),
     'gravity_reversal_mutator': GravityReversalMutatorMode(),

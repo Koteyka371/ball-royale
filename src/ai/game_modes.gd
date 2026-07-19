@@ -33855,8 +33855,107 @@ class ReverseTagMode extends GameMode:
 
 		return null
 
+
+class RepulsionZonesMode extends GameMode:
+	var spawn_timer = 0.0
+
+	func _init():
+		name = "Repulsion Zones"
+		description = "Hazard zones that push players away from their center rather than pulling them in, creating impassable barriers unless players have a speed or dash boost to push through."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		spawn_timer = 0.0
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		if not "arena" in world or not "hazards" in world.arena:
+			return
+
+		spawn_timer += delta
+		if spawn_timer >= 5.0:
+			spawn_timer = 0.0
+			var arena_width = 800.0
+			var arena_height = 800.0
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+			var x = randf_range(200.0, arena_width - 200.0)
+			var y = randf_range(200.0, arena_height - 200.0)
+
+			var h_id = 9500 + world.arena.hazards.size() + (randi() % 1000)
+			var rz = {}
+			rz["id"] = h_id
+			rz["x"] = x
+			rz["y"] = y
+			rz["radius"] = randf_range(100.0, 200.0)
+			rz["kind"] = "repulsion_zone"
+			rz["damage"] = 0.0
+			rz["duration"] = randf_range(8.0, 12.0)
+			rz["active"] = true
+			world.arena.hazards.append(rz)
+
+			var rz_hazards = []
+			for h in world.arena.hazards:
+				var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
+				if kind == "repulsion_zone":
+					rz_hazards.append(h)
+
+			if rz_hazards.size() > 4:
+				world.arena.hazards.erase(rz_hazards[0])
+
+		var hazards_to_remove = []
+		for h in world.arena.hazards:
+			var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
+			if kind == "repulsion_zone":
+				var duration = h.get("duration", 0.0) if typeof(h) == TYPE_DICTIONARY else h.duration
+				duration -= delta
+				if typeof(h) == TYPE_DICTIONARY:
+					h["duration"] = duration
+				else:
+					h.duration = duration
+
+				if duration <= 0:
+					hazards_to_remove.append(h)
+					continue
+
+				var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
+				var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
+				var h_radius = h.get("radius", 0.0) if typeof(h) == TYPE_DICTIONARY else h.radius
+
+				for b in balls:
+					var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+					var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+					if alive and b_type != "spectator":
+						var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+						var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+						var dx = b_x - h_x
+						var dy = b_y - h_y
+						var dist = sqrt(dx * dx + dy * dy)
+						if dist < h_radius and dist > 0:
+							var push_factor = 1.0 - (dist / h_radius)
+							var push_force = 2000.0 * push_factor * delta
+							var b_vx = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else b.vx
+							var b_vy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else b.vy
+							b_vx += (dx / dist) * push_force
+							b_vy += (dy / dist) * push_force
+							if typeof(b) == TYPE_DICTIONARY:
+								b["vx"] = b_vx
+								b["vy"] = b_vy
+							else:
+								b.vx = b_vx
+								b.vy = b_vy
+
+		for h in hazards_to_remove:
+			if h in world.arena.hazards:
+				world.arena.hazards.erase(h)
+
 GAME_MODES = {
 	"quantum_tunnel_mutator": QuantumTunnelMutatorMode.new(),
+	"repulsion_zones": RepulsionZonesMode.new(),
 	"sweeping_rotating_lasers": SweepingRotatingLasersMode.new(),
 	"faction_war": FactionWarMode.new(),
 	"frictionless_arena_modifier": FrictionlessArenaModifierMode.new(),
