@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1168] Tornado Skill Modification — *2026-07-19 07:46:47 UTC*
+
+Balls with the tornado skill can now absorb elemental properties of other hazards they collide with. For example, if a player's tornado collides with a poison puddle, it becomes a poison_tornado, or colliding with a fire trap turns it into a firenado, adding extra utility and combo potential to their kit.
+
+---
+
 ## [idea-1160] Musical Chairs Game Mode — *2026-07-19 05:53:23 UTC*
 
 Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The number of safe zones decreases each round.
