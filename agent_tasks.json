@@ -30995,6 +30995,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1812",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Escort Decoys",
+      "description": "Defenders can spawn decoy payloads in EscortMode that mimic the visuals of the real payload, designed to lure attackers away from the main objective.",
+      "allowed_paths": [
+        "src/ai/escort_decoys.py",
+        "src/ai/escort_decoys.gd",
+        "tests/test_escort_decoys.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1813",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Overcharge",
+      "description": "Attackers can deposit energy cores into the payload. Once 3 energy cores are deposited, the payload gets an 'overcharge' status that causes it to speed up and have a shield for a short duration.",
+      "allowed_paths": [
+        "src/ai/payload_overcharge.py",
+        "src/ai/payload_overcharge.gd",
+        "tests/test_payload_overcharge.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

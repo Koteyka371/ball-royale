@@ -1,4 +1,0 @@
-{
-  "title": "Kinetic Reversal Mine",
-  "description": "A mine that, instead of dealing damage, reverses the velocity vector of all nearby physics objects and enemies with 2x magnitude when triggered, turning enemy charges or projectiles against them."
-}
