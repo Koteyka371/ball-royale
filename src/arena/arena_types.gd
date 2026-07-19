@@ -1,5 +1,7 @@
 class_name ArenaTypes
 extends RefCounted
+var boundary_states: Dictionary = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
+var boundary_health: Dictionary = {"top": 2000.0, "bottom": 2000.0, "left": 2000.0, "right": 2000.0}
 
 class SwapPortal extends ProceduralArena.Hazard:
     func _init(_id: int, _x: float, _y: float, _radius: float, _target_x: float, _target_y: float, _pair_id: int):

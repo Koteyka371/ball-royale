@@ -1,1 +1,4 @@
-{"title": "Black Hole Overload", "description": "When multiple black holes spawn, if they merge enough times, they collapse into a white hole that repels entities violently but drops rare boosters."}
+{
+    "title": "Wall Repair Drones",
+    "description": "Small, neutral drone entities that periodically spawn and heal damaged boundary walls to prevent them from turning into abyss or spikes. Players can destroy the drones to gain temporary buffs or allow the walls to break faster."
+}

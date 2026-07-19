@@ -1,1 +1,4 @@
-{"title": "Crumbling Floor Arena", "description": "An arena mode where staying in one spot for too long causes the floor beneath to crack and fall away, revealing abyss tiles."}
+{
+    "title": "Shatter Shrapnel Walls",
+    "description": "When a wall section is completely destroyed, instead of just exposing spikes or abyss, it explodes inward sending high-velocity, damaging shrapnel across the arena that can hurt both the player who broke it and their opponents."
+}
