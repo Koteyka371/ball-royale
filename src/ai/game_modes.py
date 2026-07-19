@@ -20925,6 +20925,86 @@ class ReverseTagMode(GameMode):
 
         return None
 
+
+class DiscoFloorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Disco Floor"
+        self.description = "The arena turns into a disco floor. The ground changes colors rhythmically, and balls must stay on the matching color to avoid taking damage. Balls gain increased speed and stamina regeneration while on the correct color."
+        self.rhythm_timer = 0.0
+        self.beat_interval = 3.0
+        self.colors = ["red", "blue", "green", "yellow"]
+        self.current_color = "red"
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.rhythm_timer = 0.0
+        import random
+        self.current_color = random.choice(self.colors)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        for i in range(12):
+            x = random.uniform(100, arena_width - 100)
+            y = random.uniform(100, arena_height - 100)
+            panel = Hazard(id=18000+i, x=x, y=y, radius=150.0, kind="disco_panel", damage=0.0)
+            setattr(panel, "color", random.choice(self.colors))
+            world.arena.hazards.append(panel)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.rhythm_timer += delta
+        if self.rhythm_timer >= self.beat_interval:
+            self.rhythm_timer = 0.0
+            import random
+            self.current_color = random.choice(self.colors)
+
+        panels = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "disco_panel"]
+
+        import math
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            on_matching_panel = False
+            for p in panels:
+                if getattr(p, "color", "") != self.current_color:
+                    continue
+                dist = math.hypot(b.x - p.x, b.y - p.y)
+                if dist < p.radius + getattr(b, "radius", 15.0):
+                    on_matching_panel = True
+                    break
+
+            base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+            if on_matching_panel:
+                b.speed = base_speed * 1.5
+                max_stam = getattr(b, "max_stamina", 100.0)
+                cur_stam = getattr(b, "stamina", 100.0)
+                b.stamina = min(max_stam, cur_stam + 20.0 * delta)
+            else:
+                b.speed = base_speed * 0.5
+                b.hp = getattr(b, "hp", 100.0) - 20.0 * delta
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    b.killer = "disco_floor"
+
 GAME_MODES = {
     'quantum_tunnel_mutator': QuantumTunnelMutatorMode(),
     'healing_zone': HealingZoneMode(),
@@ -21076,6 +21156,7 @@ GAME_MODES = {
     "hazard_billiards": HazardBilliardsMode(),
     "time_rewind": TimeRewindMode(),
     "rhythm_panels": RhythmPanelsMode(),
+    "disco_floor": DiscoFloorMode(),
     "cursed_buff_zone": CursedBuffZoneMode(),
     "weapon_collection": WeaponCollectionMode(),
     "blacksmith_boss": BlacksmithBossMode()
