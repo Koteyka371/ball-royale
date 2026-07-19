@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1155] Quantum Swap Mode — *2026-07-19 18:29:15 UTC*
+
+A new GameMode where players occasionally swap positions with an enemy player at random intervals, confusing targeting and causing chaos. The swap is telegraphed by a small portal particle effect beneath the players 1 second before the swap happens.
+
+---
+
 ## [idea-1153] Shrinking Safe Zone Game Mode — *2026-07-19 18:19:00 UTC*
 
 A battle royale mode where the boundaries slowly constrict over time. Staying outside the boundary deals continuous damage until elimination.

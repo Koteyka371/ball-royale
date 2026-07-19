@@ -19805,7 +19805,7 @@
     },
     {
       "id": "idea-1155",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Mode",
@@ -30666,6 +30666,23 @@
         "src/ai/color_match_team.py",
         "src/ai/color_match_team.gd",
         "tests/test_color_match_team.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1793",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Boundaries",
+      "description": "Instead of taking damage or dying, balls that touch the boundary are violently bounced inward with extreme force, potentially knocking them into hazards or other players. The boundary acts as a massive trampoline.",
+      "allowed_paths": [
+        "src/ai/bouncy_boundaries.py",
+        "src/ai/bouncy_boundaries.gd",
+        "tests/test_bouncy_boundaries.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
