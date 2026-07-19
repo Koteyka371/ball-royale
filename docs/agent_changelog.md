@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1140] Magnetic Minefield Hazard — *2026-07-19 21:34:38 UTC*
+
+New procedural arena hazard that spawns inactive magnetic mines. When a ball comes within a certain proximity, the mine starts slowly dragging the ball towards it before exploding in a massive shockwave.
+
+---
+
 ## [idea-1128] Gravity Swap Anomaly — *2026-07-19 21:34:34 UTC*
 
 A rare hazard that, when triggered, temporarily reverses the gravitational pull of Black Holes and Gravity Wells in the arena, turning them into intense repulsors that scatter balls across the map.
