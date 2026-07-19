@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1054] Lightning Strikes in Rain Arenas — *2026-07-19 21:55:51 UTC*
+
+During is_raining or thunderstorm conditions, occasionally strike the arena with lightning. The lightning strike targets the area with the highest cluster of balls. Any ball hit takes massive damage, but gains a temporary movement speed and cooldown buff from being overcharged.
+
+---
+
 ## [idea-1165] Temperature-Dependent Powerups — *2026-07-19 21:47:48 UTC*
 
 Create powerups that scale in effectiveness based on the arena temperature, such as a Heat Shield that blocks more damage in high-temperature environments.
