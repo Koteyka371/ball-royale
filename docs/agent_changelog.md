@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1145] Bouncing Payload Mode — *2026-07-19 05:31:23 UTC*
+
+The payload in Tug of War moves incredibly fast but bounces off walls and players instead of being a slow and steady push. Players must carefully angle themselves to reflect the payload towards the enemy goal, akin to air hockey.
+
+---
+
 ## [idea-1152] Bounty Trap Item — *2026-07-19 05:25:28 UTC*
 
 An item that players can place on the field, which tags the first enemy to touch it with a small bounty that grants the placer a reward when the enemy dies.
