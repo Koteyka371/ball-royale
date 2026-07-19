@@ -1,5 +1,5 @@
 import pytest
-from src.ai.game_modes import GAME_MODES
+from ai.game_modes import GAME_MODES
 
 class MockArena:
     def __init__(self, width=1000, height=1000):

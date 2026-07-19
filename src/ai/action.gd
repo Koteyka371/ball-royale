@@ -6954,8 +6954,11 @@ func execute(strategy: String, delta: float):
 										is_inverted = hazard.get_meta("is_inverted")
 									elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("is_inverted"):
 										is_inverted = hazard["is_inverted"]
+									var is_world_reversed = false
+									if "gravity_reversal_active" in world:
+										is_world_reversed = world.gravity_reversal_active
 
-									if is_inverted:
+									if is_inverted or is_world_reversed:
 										if typeof(b) == TYPE_DICTIONARY:
 											b["x"] -= bnx * force * 3.0
 											b["y"] -= bny * force * 3.0
@@ -7010,8 +7013,11 @@ func execute(strategy: String, delta: float):
 								is_inverted = hazard.get_meta("is_inverted")
 							elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("is_inverted"):
 								is_inverted = hazard["is_inverted"]
+							var is_world_reversed = false
+							if "gravity_reversal_active" in world:
+								is_world_reversed = world.gravity_reversal_active
 
-							if is_inverted:
+							if is_inverted or is_world_reversed:
 								if typeof(self.ball) == TYPE_DICTIONARY:
 									self.ball["x"] -= nx * force * 3.0
 									self.ball["y"] -= ny * force * 3.0
@@ -12549,6 +12555,18 @@ func execute(strategy: String, delta: float):
                                     elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm": is_ts = true
                                     var radius_mult = 1.5 if is_ts and hazard.kind == "tornado" else 1.0
                                     var bpull_strength = (hazard.radius * 2.0 * radius_mult / bmin_dist) * 50.0 * delta * lifetime_mult
+                                    var is_world_reversed = false
+                                    if "gravity_reversal_active" in self.world:
+                                        is_world_reversed = self.world.gravity_reversal_active
+                                    if is_world_reversed and hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"]:
+                                        bpull_strength = -bpull_strength
+                                    var is_inverted = false
+                                    if hazard.has_method("get_meta") and hazard.has_meta("is_inverted"):
+                                        is_inverted = hazard.get_meta("is_inverted")
+                                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("is_inverted"):
+                                        is_inverted = hazard["is_inverted"]
+                                    if is_inverted and hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"]:
+                                        bpull_strength = -bpull_strength
                                     var b_anchor_timer = 0.0
                                     if "anchor_booster_timer" in b: b_anchor_timer = float(b.anchor_booster_timer)
                                     elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("anchor_booster_timer"): b_anchor_timer = float(b.get_meta("anchor_booster_timer"))
@@ -12615,6 +12633,18 @@ func execute(strategy: String, delta: float):
                             elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm": is_ts = true
                             var radius_mult = 1.5 if is_ts and hazard.kind == "tornado" else 1.0
                             var pull_strength = (hazard.radius * 2.0 * radius_mult / min_dist) * 50.0 * delta * lifetime_mult
+                            var is_world_reversed = false
+                            if "gravity_reversal_active" in self.world:
+                                is_world_reversed = self.world.gravity_reversal_active
+                            if is_world_reversed and hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"]:
+                                pull_strength = -pull_strength
+                            var is_inverted = false
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("is_inverted"):
+                                is_inverted = hazard.get_meta("is_inverted")
+                            elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("is_inverted"):
+                                is_inverted = hazard["is_inverted"]
+                            if is_inverted and hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"]:
+                                pull_strength = -pull_strength
                             var anchor_timer = 0.0
                             if "anchor_booster_timer" in self.ball: anchor_timer = float(self.ball.anchor_booster_timer)
                             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer = float(self.ball.get_meta("anchor_booster_timer"))
