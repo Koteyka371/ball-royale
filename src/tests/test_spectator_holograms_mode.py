@@ -1,5 +1,5 @@
 import pytest
-from src.ai.game_modes import SpectatorHologramsMode
+from ai.game_modes import SpectatorHologramsMode
 
 class MockArena:
     def __init__(self):

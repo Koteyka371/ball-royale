@@ -4140,7 +4140,7 @@ class Action:
                                     bnx = bdx / bdist
                                     bny = bdy / bdist
                                     if kind == "gravity_well":
-                                        if getattr(hazard, "is_inverted", False):
+                                        if getattr(hazard, "is_inverted", False) or getattr(self.world, 'gravity_reversal_active', False):
                                             # Extreme push out
                                             b.x -= bnx * force * 3.0
                                             b.y -= bny * force * 3.0
@@ -4170,7 +4170,7 @@ class Action:
                             ny = dy / dist
 
                             if kind == "gravity_well":
-                                if getattr(hazard, "is_inverted", False):
+                                if getattr(hazard, "is_inverted", False) or getattr(self.world, 'gravity_reversal_active', False):
                                     # Push away from center extremely
                                     self.ball.x -= nx * force * 3.0
                                     self.ball.y -= ny * force * 3.0
@@ -6515,7 +6515,9 @@ class Action:
                                                 if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
                                                 radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
                                                 pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, bdist)) * 80.0 * delta * lifetime_mult
-                                                if getattr(self.world, 'gravity_reversal_active', False) and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"):
+                                                if getattr(self.world, 'gravity_reversal_active', False) and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"):
+                                                    pull_strength = -pull_strength
+                                                if getattr(hazard, "is_inverted", False) and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"):
                                                     pull_strength = -pull_strength
                                                 if getattr(b, "anchor_booster_timer", 0.0) <= 0:
                                                     c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
@@ -6601,7 +6603,9 @@ class Action:
                                 if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
                                 radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
                                 pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 50.0 * delta * lifetime_mult
-                                if getattr(self.world, 'gravity_reversal_active', False) and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"):
+                                if getattr(self.world, 'gravity_reversal_active', False) and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"):
+                                    pull_strength = -pull_strength
+                                if getattr(hazard, "is_inverted", False) and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"):
                                     pull_strength = -pull_strength
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
