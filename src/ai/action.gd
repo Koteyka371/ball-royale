@@ -14766,6 +14766,87 @@ func execute(strategy: String, delta: float):
                                     else:
                                         self.ball.vx = bvx - 2 * dot * nx
                                         self.ball.vy = bvy - 2 * dot * ny
+                    elif hazard.kind == "cycling_hazard":
+                        var phase_timer = 0.0
+                        var is_solid = true
+                        var last_update_time = -1.0
+
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            if not hazard.has("phase_timer"):
+                                hazard["phase_timer"] = 0.0
+                            if not hazard.has("is_solid"):
+                                hazard["is_solid"] = true
+                            if not hazard.has("last_update_time"):
+                                hazard["last_update_time"] = -1.0
+                            phase_timer = hazard["phase_timer"]
+                            is_solid = hazard["is_solid"]
+                            last_update_time = hazard["last_update_time"]
+                        else:
+                            if not hazard.has_meta("phase_timer"):
+                                hazard.set_meta("phase_timer", 0.0)
+                            if not hazard.has_meta("is_solid"):
+                                hazard.set_meta("is_solid", true)
+                            if not hazard.has_meta("last_update_time"):
+                                hazard.set_meta("last_update_time", -1.0)
+                            phase_timer = hazard.get_meta("phase_timer")
+                            is_solid = hazard.get_meta("is_solid")
+                            last_update_time = hazard.get_meta("last_update_time")
+
+                        var current_time = 0.0
+                        if typeof(self.world) == TYPE_DICTIONARY and self.world.has("time"):
+                            current_time = self.world["time"]
+                        elif typeof(self.world) == TYPE_OBJECT and "time" in self.world:
+                            current_time = self.world.time
+
+                        if last_update_time != current_time:
+                            phase_timer += delta
+                            if phase_timer >= 2.0:
+                                phase_timer -= 2.0
+                                is_solid = not is_solid
+                            last_update_time = current_time
+
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hazard["phase_timer"] = phase_timer
+                                hazard["is_solid"] = is_solid
+                                hazard["last_update_time"] = last_update_time
+                            else:
+                                hazard.set_meta("phase_timer", phase_timer)
+                                hazard.set_meta("is_solid", is_solid)
+                                hazard.set_meta("last_update_time", last_update_time)
+
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var dist2 = dx*dx + dy*dy
+                        var dist = sqrt(dist2) if dist2 > 0 else 0.0001
+                        var b_rad = self.ball.radius if "radius" in self.ball else 10.0
+                        var h_rad = hazard.radius if typeof(hazard) == TYPE_DICTIONARY else (hazard.radius if "radius" in hazard else 40.0)
+
+                        if dist < (b_rad + h_rad):
+                            if is_solid:
+                                var overlap = (b_rad + h_rad) - dist
+                                var nx = dx / dist
+                                var ny = dy / dist
+                                self.ball.x += nx * overlap
+                                self.ball.y += ny * overlap
+
+                                var bvx = self.ball.vx if "vx" in self.ball else 0.0
+                                var bvy = self.ball.vy if "vy" in self.ball else 0.0
+                                var dot = bvx * nx + bvy * ny
+                                if dot < 0:
+                                    if typeof(self.ball) == TYPE_DICTIONARY:
+                                        self.ball["vx"] = bvx - 2 * dot * nx
+                                        self.ball["vy"] = bvy - 2 * dot * ny
+                                    else:
+                                        self.ball.vx = bvx - 2 * dot * nx
+                                        self.ball.vy = bvy - 2 * dot * ny
+                            else:
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+                                    self.ball.take_damage(50.0 * delta)
+                                elif "hp" in self.ball:
+                                    if typeof(self.ball) == TYPE_DICTIONARY:
+                                        self.ball["hp"] -= 50.0 * delta
+                                    else:
+                                        self.ball.hp -= 50.0 * delta
                     elif hazard.kind == "sweeping_paddle":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
