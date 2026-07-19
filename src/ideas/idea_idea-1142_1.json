@@ -1,0 +1,4 @@
+{
+  "title": "Siege Event Notifications",
+  "description": "Implement a real-time notification system within the UI to alert guild members when a siege is underway against their HQ defenses. Notifications can display attacker guild, number of defenses broken, and provide an option to instantly spectate the battle if it's currently live."
+}

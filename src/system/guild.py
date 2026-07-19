@@ -561,6 +561,44 @@ class GuildManager:
                 return scores
         return []
 
+    def build_hq_defense(self, guild_name, defense_type, cost, amount=1):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild.get("resources", 0) >= cost:
+                guild["resources"] -= cost
+                hq = guild.setdefault("hq", {})
+                defenses = hq.setdefault("defenses", {})
+                defenses[defense_type] = defenses.get(defense_type, 0) + amount
+                self.save()
+                return True
+        return False
+
+    def get_hq_defenses(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("hq", {}).get("defenses", {})
+        return {}
+
+    def record_siege_defense_broken(self, attacker_name, defender_name, stolen_amount):
+        if attacker_name in self.data["guilds"] and defender_name in self.data["guilds"]:
+            defender = self.data["guilds"][defender_name]
+            attacker = self.data["guilds"][attacker_name]
+
+            actual_stolen = min(defender.get("resources", 0), stolen_amount)
+            if actual_stolen > 0:
+                defender["resources"] -= actual_stolen
+                attacker["resources"] = attacker.get("resources", 0) + actual_stolen
+                self.save()
+            return actual_stolen
+        return 0
+
+    def record_siege_held(self, defender_name, xp_reward):
+        if defender_name in self.data["guilds"]:
+            defender = self.data["guilds"][defender_name]
+            defender["guild_xp"] = defender.get("guild_xp", 0) + xp_reward
+            self.save()
+            return True
+        return False
+
     def get_hq_status(self, guild_name):
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
@@ -573,6 +611,7 @@ class GuildManager:
                 "backgrounds": hq.get("backgrounds", []),
                 "announcer_voices": hq.get("announcer_voices", []),
                 "mini_games": hq.get("mini_games", {}),
+                "defenses": hq.get("defenses", {}),
                 "training_arena_unlocked": hq.get("training_arena_unlocked", False)
             }
         return None

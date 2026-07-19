@@ -397,3 +397,62 @@ def test_hq_currency(temp_guild_file):
     # HQ status should have flag
     hq_status = gm.get_hq_status("CurrencyGuild")
     assert "jolly_roger" in hq_status["flags"]
+
+def test_hq_defenses(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("DefenseGuild", "p1")
+
+    # Add resources
+    guild = gm.get_guild("DefenseGuild")
+    guild["resources"] = 1000
+    gm.save()
+
+    assert gm.build_hq_defense("DefenseGuild", "turret", 200, 2) == True
+    assert gm.build_hq_defense("DefenseGuild", "barricade", 100, 5) == True
+
+    # Check resources
+    guild = gm.get_guild("DefenseGuild")
+    assert guild["resources"] == 700
+
+    defenses = gm.get_hq_defenses("DefenseGuild")
+    assert defenses["turret"] == 2
+    assert defenses["barricade"] == 5
+
+    hq_status = gm.get_hq_status("DefenseGuild")
+    assert "turret" in hq_status["defenses"]
+
+def test_siege_mechanics(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("AttackerGuild", "p1")
+    gm.create_guild("DefenderGuild", "p2")
+
+    attacker = gm.get_guild("AttackerGuild")
+    defender = gm.get_guild("DefenderGuild")
+
+    attacker["resources"] = 100
+    defender["resources"] = 500
+    defender["guild_xp"] = 100
+    gm.save()
+
+    # Break defense
+    stolen = gm.record_siege_defense_broken("AttackerGuild", "DefenderGuild", 200)
+    assert stolen == 200
+
+    attacker = gm.get_guild("AttackerGuild")
+    defender = gm.get_guild("DefenderGuild")
+    assert attacker["resources"] == 300
+    assert defender["resources"] == 300
+
+    # Break again, more than available
+    stolen2 = gm.record_siege_defense_broken("AttackerGuild", "DefenderGuild", 400)
+    assert stolen2 == 300
+
+    attacker = gm.get_guild("AttackerGuild")
+    defender = gm.get_guild("DefenderGuild")
+    assert attacker["resources"] == 600
+    assert defender["resources"] == 0
+
+    # Hold siege
+    assert gm.record_siege_held("DefenderGuild", 50) == True
+    defender = gm.get_guild("DefenderGuild")
+    assert defender["guild_xp"] == 150
