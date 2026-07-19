@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1166] Wind System — *2026-07-19 23:01:46 UTC*
+
+Introduce global wind vectors that slightly alter ball movement trajectories and hazard positions (like poison gas or tornadoes).
+
+---
+
 ## [idea-1185] Decoy Transposition — *2026-07-19 23:01:42 UTC*
 
 A new skill that allows a player to instantly teleport to any of their active decoys, instantly exploding the decoy they swapped with to catch enemies off guard.
