@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1099] Tsunami Wave Entity — *2026-07-19 04:05:45 UTC*
+
+Convert the tsunami weather event to visually and physically spawn a giant, screen-wide wave entity that travels across the screen from one side, acting as a massive moving hazard that players must outrun or use boosters to dive under.
+
+---
+
 ## [idea-1156] Abyssal Anchor Hazard — *2026-07-19 03:43:45 UTC*
 
 A new heavy hazard type that drops in the arena and periodically unleashes a massive magnetic shockwave that pulls players toward it while dealing damage. If a player touches the center of the anchor, they are completely stunned for 2 seconds.
