@@ -19498,7 +19498,7 @@
     },
     {
       "id": "idea-1137",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Hologram Spectators",
@@ -30769,6 +30769,23 @@
         "src/ai/stellar_conjunction.py",
         "src/ai/stellar_conjunction.gd",
         "tests/test_stellar_conjunction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1799",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Repulsion Mine",
+      "description": "A trap that triggers when a player gets close, detonating with a large force that pushes everything away instead of pulling or doing massive damage, useful for denying zones or saving allies.",
+      "allowed_paths": [
+        "src/ai/repulsion_mine.py",
+        "src/ai/repulsion_mine.gd",
+        "tests/test_repulsion_mine.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
