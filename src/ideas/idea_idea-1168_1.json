@@ -1,0 +1,4 @@
+{
+    "title": "Weather Conductor",
+    "description": "A new booster that makes the user's ball act as a conductor for extreme weather effects. When struck by a thunderstorm lightning bolt or passing through a localized elemental hazard, the ball stores that element for 5 seconds and its next basic attack will inflict that elemental damage (e.g. burn or poison)."
+}
