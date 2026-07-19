@@ -28126,6 +28126,160 @@ class CenterGravityWellMode extends GameMode:
 							h.set("y", hy + pull_y * delta)
 
 
+class EndGameMagnetMode extends GameMode:
+	var magnet_id = 999998
+	var base_pull_strength = 150.0
+	var pull_growth_rate = 5.0
+
+	func _init():
+		super()
+		name = "End Game Magnet"
+		description = "A massive magnet activates near the end of the match, slowly pulling all balls, boosters, and smaller hazards towards its center."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if not "hazards" in world.arena:
+			return
+
+		var current_match_time = 0.0
+		if "total_match_time" in self:
+			current_match_time = self.total_match_time
+		if current_match_time < 60.0:
+			return
+
+		var cx = world.arena.width / 2.0
+		var cy = world.arena.height / 2.0
+
+		var magnet = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "end_game_magnet" and h.get("id", null) == magnet_id:
+					magnet = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "end_game_magnet" and h.get("id") == magnet_id:
+					magnet = h
+					break
+
+		if not magnet:
+			world.arena.hazards.append({
+				"id": magnet_id,
+				"x": cx,
+				"y": cy,
+				"radius": 30.0,
+				"kind": "end_game_magnet",
+				"damage": 0.0,
+				"active": true
+			})
+			for h in world.arena.hazards:
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.get("kind", "") == "end_game_magnet" and h.get("id", null) == magnet_id:
+						magnet = h
+						break
+
+		var current_pull = base_pull_strength + pull_growth_rate * (current_match_time - 60.0)
+
+		var mag_x = magnet.get("x") if typeof(magnet) == TYPE_OBJECT else magnet["x"]
+		var mag_y = magnet.get("y") if typeof(magnet) == TYPE_OBJECT else magnet["y"]
+
+		# Pull balls
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
+
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_OBJECT else b["x"]
+			var by = b.get("y") if typeof(b) == TYPE_OBJECT else b["y"]
+
+			var dx = mag_x - bx
+			var dy = mag_y - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > 0:
+				var pull_x = (dx / dist) * current_pull * delta
+				var pull_y = (dy / dist) * current_pull * delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					if "vx" in b and "vy" in b:
+						b["vx"] += pull_x
+						b["vy"] += pull_y
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_method("get") and b.get("vx") != null and b.get("vy") != null:
+						b.set("vx", b.get("vx") + pull_x)
+						b.set("vy", b.get("vy") + pull_y)
+
+		# Pull boosters
+		var boosters = []
+		if typeof(world) == TYPE_DICTIONARY and world.has("boosters"):
+			if typeof(world.boosters) == TYPE_ARRAY: boosters = world.boosters.duplicate()
+		elif typeof(world) == TYPE_OBJECT and "boosters" in world:
+			if typeof(world.boosters) == TYPE_ARRAY: boosters = world.boosters.duplicate()
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("boosters"):
+			if typeof(world.arena.boosters) == TYPE_ARRAY: boosters.append_array(world.arena.boosters)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "boosters" in world.arena:
+			if typeof(world.arena.boosters) == TYPE_ARRAY: boosters.append_array(world.arena.boosters)
+
+		for b in boosters:
+			var bx = b.get("x") if typeof(b) == TYPE_OBJECT else b["x"]
+			var by = b.get("y") if typeof(b) == TYPE_OBJECT else b["y"]
+			var dx = mag_x - bx
+			var dy = mag_y - by
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0:
+				var pull_x = (dx / dist) * current_pull * delta
+				var pull_y = (dy / dist) * current_pull * delta
+				if typeof(b) == TYPE_DICTIONARY:
+					if "vx" in b and "vy" in b:
+						b["vx"] += pull_x
+						b["vy"] += pull_y
+					else:
+						b["x"] += pull_x
+						b["y"] += pull_y
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_method("get") and b.get("vx") != null and b.get("vy") != null:
+						b.set("vx", b.get("vx") + pull_x)
+						b.set("vy", b.get("vy") + pull_y)
+					else:
+						b.set("x", b.get("x") + pull_x)
+						b.set("y", b.get("y") + pull_y)
+
+		# Pull smaller hazards
+		for h in world.arena.hazards:
+			var h_kind = h.get("kind") if typeof(h) == TYPE_OBJECT else h.get("kind", "")
+			if h_kind == "end_game_magnet":
+				continue
+			var h_rad = h.get("radius") if typeof(h) == TYPE_OBJECT else h.get("radius", 100.0)
+			if h_rad < 50.0:
+				var hx = h.get("x") if typeof(h) == TYPE_OBJECT else h["x"]
+				var hy = h.get("y") if typeof(h) == TYPE_OBJECT else h["y"]
+				var dx = mag_x - hx
+				var dy = mag_y - hy
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > 0:
+					var pull_x = (dx / dist) * current_pull * delta
+					var pull_y = (dy / dist) * current_pull * delta
+					if typeof(h) == TYPE_DICTIONARY:
+						if "vx" in h and "vy" in h:
+							h["vx"] += pull_x
+							h["vy"] += pull_y
+						else:
+							h["x"] += pull_x
+							h["y"] += pull_y
+					elif typeof(h) == TYPE_OBJECT:
+						if h.has_method("get") and h.get("vx") != null and h.get("vy") != null:
+							h.set("vx", h.get("vx") + pull_x)
+							h.set("vy", h.get("vy") + pull_y)
+						else:
+							h.set("x", h.get("x") + pull_x)
+							h.set("y", h.get("y") + pull_y)
+
+
 class CenterBlackHoleMode extends GameMode:
 	var bh_id = 999999
 	var growth_rate = 5.0
@@ -34232,6 +34386,7 @@ GAME_MODES = {
 	"solar_flare": SolarFlareMode.new(),
 	"center_vortex": CenterVortexMode.new(),
 	"center_gravity_well": CenterGravityWellMode.new(),
+	"end_game_magnet": EndGameMagnetMode.new(),
 	"center_black_hole": CenterBlackHoleMode.new(),
 	"extreme_weather": ExtremeWeatherMode.new(),
 	"weather_station": WeatherStationMode.new(),
