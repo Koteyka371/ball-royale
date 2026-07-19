@@ -15,6 +15,7 @@ class MockEntity:
         self.hp = 100.0
         self.loadout_fragments = 0
         self.is_dynamic_bounty = False
+        self.is_minor_bounty = False
         self.team = "Red"
         self.stun_timer = 0.0
         self.charge_level = 0.0
@@ -82,3 +83,38 @@ def test_dynamic_bounty_buffs_on_kill():
     assert attacker.loadout_fragments == 1
 
     assert any(e[0] == "dynamic_bounty_claimed" for e in world.events)
+
+def test_minor_bounty_applied_on_claim():
+    world = MockWorld()
+
+    attacker = MockEntity(1)
+    target = MockEntity(2)
+    target.hp = 5.0
+    target.is_dynamic_bounty = True
+
+    world.balls = [attacker, target]
+
+    action = Action(attacker, world)
+    action._attempt_damage(attacker, target)
+
+    assert target.hp <= 0.0
+    assert attacker.is_minor_bounty is True
+
+def test_minor_bounty_reward():
+    world = MockWorld()
+
+    attacker = MockEntity(1)
+    target = MockEntity(2)
+    target.hp = 5.0
+    target.is_minor_bounty = True
+
+    world.balls = [attacker, target]
+
+    action = Action(attacker, world)
+    action._attempt_damage(attacker, target)
+
+    assert target.hp <= 0.0
+    assert attacker.damage == 12.5 # 10.0 * 1.25
+    assert attacker.max_hp == 125.0 # 100.0 * 1.25
+    assert attacker.hp == 125.0
+    assert any(e[0] == "minor_bounty_claimed" for e in world.events)
