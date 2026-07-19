@@ -16190,11 +16190,13 @@ class Action:
                 if getattr(hazard, "kind", "") == "repulsion_zone":
                     import math
                     dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
-                    if dist < getattr(hazard, "radius", 150.0):
+                    h_rad = getattr(hazard, "radius", 150.0)
+                    if dist < h_rad:
                         if dist > 0.0001:
                             nx = (self.ball.x - hazard.x) / dist
                             ny = (self.ball.y - hazard.y) / dist
-                            push_strength = 200.0 * delta
+                            # Push strength scales with proximity (500 base strength)
+                            push_strength = 500.0 * (1.0 - (dist / h_rad)) * delta
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
 

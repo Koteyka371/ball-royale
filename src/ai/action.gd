@@ -31303,7 +31303,7 @@ func _update_skill_timer(delta: float):
                                         if dist > 0.0001:
                                             var nx = (self.ball.x - hazard.x) / dist
                                             var ny = (self.ball.y - hazard.y) / dist
-                                            var push_strength = 200.0 * delta
+                                            var push_strength = 500.0 * (1.0 - (dist / h_rad)) * delta
                                             if "x" in self.ball: self.ball.x += nx * push_strength
                                             elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * push_strength)
                                             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): self.ball["x"] += nx * push_strength
