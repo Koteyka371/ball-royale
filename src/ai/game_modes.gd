@@ -33917,6 +33917,121 @@ class ReverseTagMode extends GameMode:
 
 		return null
 
+
+class DiscoFloorMode extends GameMode:
+	var rhythm_timer: float = 0.0
+	var beat_interval: float = 3.0
+	var colors: Array = ["red", "blue", "green", "yellow"]
+	var current_color: String = "red"
+	var rng = RandomNumberGenerator.new()
+
+	func _init() -> void:
+		name = "Disco Floor"
+		description = "The arena turns into a disco floor. The ground changes colors rhythmically, and balls must stay on the matching color to avoid taking damage. Balls gain increased speed and stamina regeneration while on the correct color."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		rhythm_timer = 0.0
+		rng.randomize()
+		current_color = colors[rng.randi() % colors.size()]
+
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var arena_width = world.arena.width if "width" in world.arena else 1000.0
+		var arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+		var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+		for i in range(12):
+			var x = rng.randf_range(100.0, arena_width - 100.0)
+			var y = rng.randf_range(100.0, arena_height - 100.0)
+			var panel = ProceduralArena.Hazard.new(18000 + i, x, y, 150.0, "disco_panel", 0.0)
+			panel.set_meta("color", colors[rng.randi() % colors.size()])
+			world.arena.hazards.append(panel)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		rhythm_timer += delta
+		if rhythm_timer >= beat_interval:
+			rhythm_timer = 0.0
+			rng.randomize()
+			current_color = colors[rng.randi() % colors.size()]
+
+		var panels = []
+		if "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
+				if kind == "disco_panel":
+					panels.append(h)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				var bt = b.get("ball_type", "")
+				if not is_alive or bt == "spectator":
+					continue
+			else:
+				is_alive = b.alive
+				var bt = b.ball_type
+				if not is_alive or bt == "spectator":
+					continue
+
+			var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+			var b_radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.radius
+
+			var on_matching_panel = false
+			for p in panels:
+				var p_color = p.get("color", "") if typeof(p) == TYPE_DICTIONARY else (p.get_meta("color") if p.has_meta("color") else "")
+				if p_color != current_color:
+					continue
+
+				var p_x = p.get("x", 0.0) if typeof(p) == TYPE_DICTIONARY else p.x
+				var p_y = p.get("y", 0.0) if typeof(p) == TYPE_DICTIONARY else p.y
+				var p_radius = p.get("radius", 150.0) if typeof(p) == TYPE_DICTIONARY else p.radius
+
+				var dist = sqrt((b_x - p_x) * (b_x - p_x) + (b_y - p_y) * (b_y - p_y))
+				if dist < p_radius + b_radius:
+					on_matching_panel = true
+					break
+
+			if on_matching_panel:
+				if typeof(b) == TYPE_DICTIONARY:
+					var base_s = b.get("base_speed", b.get("speed", 100.0))
+					b["speed"] = base_s * 1.5
+					var stam = b.get("stamina", 100.0)
+					var max_stam = b.get("max_stamina", 100.0)
+					b["stamina"] = min(max_stam, stam + 20.0 * delta)
+				else:
+					var base_s = b.base_speed if "base_speed" in b else b.speed
+					b.speed = base_s * 1.5
+					var stam = b.stamina if "stamina" in b else 100.0
+					var max_stam = b.max_stamina if "max_stamina" in b else 100.0
+					b.stamina = min(max_stam, stam + 20.0 * delta)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					var base_s = b.get("base_speed", b.get("speed", 100.0))
+					b["speed"] = base_s * 0.5
+					var hp = b.get("hp", 100.0) - 20.0 * delta
+					if hp <= 0:
+						b["hp"] = 0
+						b["alive"] = false
+						b["killer"] = "disco_floor"
+					else:
+						b["hp"] = hp
+				else:
+					var base_s = b.base_speed if "base_speed" in b else b.speed
+					b.speed = base_s * 0.5
+					var hp = b.hp - 20.0 * delta
+					if hp <= 0:
+						b.hp = 0
+						b.alive = false
+						b.killer = "disco_floor"
+					else:
+						b.hp = hp
+
 GAME_MODES = {
 	"quantum_tunnel_mutator": QuantumTunnelMutatorMode.new(),
 	"sweeping_rotating_lasers": SweepingRotatingLasersMode.new(),
@@ -34086,6 +34201,7 @@ GAME_MODES = {
 	"hazard_billiards": HazardBilliardsMode.new(),
 	"time_rewind": TimeRewindMode.new(),
 	"rhythm_panels": RhythmPanelsMode.new(),
+	"disco_floor": DiscoFloorMode.new(),
 	"cursed_buff_zone": CursedBuffZoneMode.new(),
 	"weapon_collection": WeaponCollectionMode.new(),
 	"blacksmith_boss": BlacksmithBossMode.new(),
