@@ -9,6 +9,38 @@ class GameMode:
 		pass
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		var weather_c = ""
+		if "weather" in self:
+			weather_c = self.weather
+		if weather_c == "" and world != null:
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+				var arena = world.get("arena")
+				if typeof(arena) == TYPE_DICTIONARY:
+					weather_c = arena.get("weather", "")
+				elif arena != null and "weather" in arena:
+					weather_c = arena.weather
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					weather_c = world.arena.get("weather", "")
+				elif "weather" in world.arena:
+					weather_c = world.arena.weather
+
+		var target_arena_temp = 20.0
+		if weather_c == "heatwave":
+			target_arena_temp = 50.0
+		elif weather_c == "blizzard" or weather_c == "snow":
+			target_arena_temp = -20.0
+
+		var current_arena_temp = 20.0
+		if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "temperature" in world.arena:
+			current_arena_temp = world.arena.temperature
+			world.arena.temperature = current_arena_temp + (target_arena_temp - current_arena_temp) * delta * 0.1
+			current_arena_temp = world.arena.temperature
+		elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("temperature"):
+			current_arena_temp = world.arena["temperature"]
+			world.arena["temperature"] = current_arena_temp + (target_arena_temp - current_arena_temp) * delta * 0.1
+			current_arena_temp = world.arena["temperature"]
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -18,6 +50,102 @@ class GameMode:
 
 			if not is_alive:
 				continue
+
+			var has_cooling = false
+			if typeof(b) == TYPE_DICTIONARY:
+				has_cooling = b.get("cooling_booster_timer", 0.0) > 0.0
+			else:
+				has_cooling = b.has_method("has_meta") and b.has_meta("cooling_booster_timer") and b.get_meta("cooling_booster_timer") > 0.0
+
+			var target_temp = current_arena_temp
+			if has_cooling:
+				target_temp = -10.0
+			elif target_temp > -10.0 and has_cooling:
+				target_temp = -10.0
+
+			var hazards = []
+			if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				hazards = world.arena.hazards
+			elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				hazards = world.arena.hazards
+
+			var b_x = 0.0
+			var b_y = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				b_x = b.get("x", 0.0)
+				b_y = b.get("y", 0.0)
+			else:
+				b_x = b.get("x") if "x" in b else 0.0
+				b_y = b.get("y") if "y" in b else 0.0
+
+			for h in hazards:
+				var h_x = 0.0
+				var h_y = 0.0
+				var h_r = 0.0
+				var h_kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					h_x = h.get("x", 0.0)
+					h_y = h.get("y", 0.0)
+					h_r = h.get("radius", 0.0)
+					h_kind = h.get("kind", "")
+				else:
+					h_x = h.get("x") if "x" in h else 0.0
+					h_y = h.get("y") if "y" in h else 0.0
+					h_r = h.get("radius") if "radius" in h else 0.0
+					h_kind = h.get("kind") if "kind" in h else ""
+
+				var dist = sqrt((b_x - h_x)*(b_x - h_x) + (b_y - h_y)*(b_y - h_y))
+				if dist < h_r:
+					if h_kind == "lava":
+						target_temp = 60.0
+					elif h_kind == "ice_patch" or h_kind == "ice_patches":
+						target_temp = -30.0
+
+			if has_cooling and target_temp > -10.0:
+				target_temp = -10.0
+
+			var cur_int_temp = 20.0
+			if typeof(b) == TYPE_DICTIONARY:
+				cur_int_temp = b.get("internal_temperature", 20.0)
+			else:
+				cur_int_temp = b.get("internal_temperature") if "internal_temperature" in b else (b.get_meta("internal_temperature") if b.has_method("has_meta") and b.has_meta("internal_temperature") else 20.0)
+
+			var new_int_temp = cur_int_temp + (target_temp - cur_int_temp) * delta * 0.5
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["internal_temperature"] = new_int_temp
+			elif "internal_temperature" in b:
+				b.internal_temperature = new_int_temp
+			elif b.has_method("set_meta"):
+				b.set_meta("internal_temperature", new_int_temp)
+
+			if new_int_temp > 40.0:
+				var cur_hp = 100.0
+				if typeof(b) == TYPE_DICTIONARY:
+					cur_hp = b.get("hp", 100.0)
+				else:
+					cur_hp = b.get("hp") if "hp" in b else 100.0
+				var new_hp = max(0.0, cur_hp - 5.0 * delta)
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = new_hp
+				elif "hp" in b:
+					b.hp = new_hp
+				elif b.has_method("set_meta"):
+					b.set_meta("hp", new_hp)
+
+			if new_int_temp < 0.0:
+				var cur_speed = 100.0
+				if typeof(b) == TYPE_DICTIONARY:
+					cur_speed = b.get("speed", 100.0)
+				else:
+					cur_speed = b.get("speed") if "speed" in b else 100.0
+				var new_speed = cur_speed * 0.5 if new_int_temp >= -10.0 else 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = new_speed
+				elif "speed" in b:
+					b.speed = new_speed
+				elif b.has_method("set_meta"):
+					b.set_meta("speed", new_speed)
 
 			var traits = []
 			var b_type = ""
