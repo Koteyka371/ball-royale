@@ -234,6 +234,78 @@ class GameMode:
             if not getattr(b, "alive", False):
                 continue
 
+        # Lightning Strike Event
+        weather = getattr(self, "weather", "")
+        if not weather and hasattr(world, "arena"):
+            weather = getattr(world.arena, "weather", "")
+        is_raining = getattr(world.arena, "is_raining", False) if hasattr(world, "arena") else False
+
+        if weather in ["rain", "thunderstorm"] or is_raining:
+            t = getattr(world, "lightning_strike_timer", 0.0)
+            if not isinstance(t, (int, float)):
+                t = 0.0
+            timer = t + delta
+            if timer >= 15.0:
+                timer = 0.0
+
+                # find cluster of balls
+                best_target_x, best_target_y = 0.0, 0.0
+                max_balls = -1
+
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        count = 0
+                        bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                        for ob in balls:
+                            if getattr(ob, "alive", False):
+                                obx, oby = getattr(ob, "x", 0.0), getattr(ob, "y", 0.0)
+                                if (bx - obx)**2 + (by - oby)**2 <= 10000.0:
+                                    count += 1
+                        if count > max_balls:
+                            max_balls = count
+                            best_target_x = bx
+                            best_target_y = by
+
+                if max_balls > 0:
+                    if hasattr(world, "add_event"):
+                        world.add_event("lightning_strike", {"x": best_target_x, "y": best_target_y, "radius": 100.0})
+
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                            if (bx - best_target_x)**2 + (by - best_target_y)**2 <= 10000.0:
+                                # Massive damage
+                                b.hp = getattr(b, "hp", 100.0) - 50.0
+                                if b.hp <= 0.0:
+                                    b.hp = 0.0
+                                    b.alive = False
+                                else:
+                                    # Overcharge buff
+                                    b.overcharge_timer = 5.0
+                                    if not getattr(b, "is_overcharged", False):
+                                        b.is_overcharged = True
+                                        b._orig_speed = getattr(b, "speed", 100.0)
+                                        b._orig_cooldown_multiplier = getattr(b, "cooldown_multiplier", 1.0)
+                                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                                    b.cooldown_multiplier = getattr(b, "_orig_cooldown_multiplier", 1.0) * 0.5
+            world.lightning_strike_timer = timer
+
+        # Manage overcharge timers
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "is_overcharged", False):
+                o = getattr(b, "overcharge_timer", 0.0)
+                if not isinstance(o, (int, float)):
+                    o = 0.0
+                otimer = o - delta
+                if otimer <= 0.0:
+                    b.is_overcharged = False
+                    b.overcharge_timer = 0.0
+                    b.speed = getattr(b, "_orig_speed", getattr(b, "base_speed", 100.0))
+                    b.cooldown_multiplier = getattr(b, "_orig_cooldown_multiplier", 1.0)
+                else:
+                    b.overcharge_timer = otimer
+
+
 
 
         # Mid-game Neutral Shop Zone logic
