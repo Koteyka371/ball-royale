@@ -19856,7 +19856,7 @@
     },
     {
       "id": "idea-1158",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Target Switch",
@@ -30496,6 +30496,40 @@
         "src/ai/payload_reversal_pushback.py",
         "src/ai/payload_reversal_pushback.gd",
         "tests/test_payload_reversal_pushback.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1783",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Escort Boss Mode",
+      "description": "Each team must escort a powerful boss AI to the enemy base. The boss attacks nearby enemies and heals allies, but moves very slowly.",
+      "allowed_paths": [
+        "src/ai/escort_boss.py",
+        "src/ai/escort_boss.gd",
+        "tests/test_escort_boss.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1784",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hot Potato Payload",
+      "description": "A single payload that explodes periodically. Teams must push it into the enemy side before the timer runs out and it detonates, dealing massive damage to anyone nearby.",
+      "allowed_paths": [
+        "src/ai/hot_potato_payload.py",
+        "src/ai/hot_potato_payload.gd",
+        "tests/test_hot_potato_payload.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

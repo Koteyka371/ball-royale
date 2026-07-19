@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1158] Bounty Target Switch — *2026-07-19 02:58:18 UTC*
+
+During Bounty Hunter mode, the targeted player swaps randomly every 30 seconds. A siren effect sounds, and a new player becomes the high-value target, requiring dynamic on-the-fly strategy shifts from all teams.
+
+---
+
 ## [idea-1146] Payload Swap Mode — *2026-07-19 02:45:42 UTC*
 
 Two payloads are spawned, one for each team. The twist is that each team needs to push the *other* team's payload into the opposing goal. The payloads deal slight damage if a team member is near their own payload, forcing them to focus on the enemy payload.
