@@ -2615,7 +2615,7 @@ class Action:
                 trap_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
                 trap = Hazard(trap_id, self.ball.x, self.ball.y, 20.0, "trap", 0.0)
 
-                trap_type = random.choice(["mine", "freeze", "black_hole", "swap", "emp_trap", "reverse_gravity"])
+                trap_type = random.choice(["mine", "freeze", "black_hole", "swap", "emp_trap", "reverse_gravity", "event_horizon"])
                 setattr(trap, 'duration', 10.0)
                 setattr(trap, 'trap_variant', trap_type)
                 setattr(trap, 'owner_id', getattr(self.ball, 'id', None))
@@ -13536,7 +13536,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "defensive_shield", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster"]:
+                        if getattr(h, "kind", "") not in ["event_horizon_trap", "healing_spring", "booster", "defensive_shield", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -13586,7 +13586,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 40000.0  # Range 200
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["healing_spring", "booster", "defensive_shield"]:
+                        if getattr(h, "kind", "") not in ["event_horizon_trap", "healing_spring", "booster", "defensive_shield"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -13595,7 +13595,7 @@ class Action:
                                 target_hazard = h
 
                     if target_hazard:
-                        new_kind = _rnd.choice(["healing_spring", "booster", "defensive_shield"])
+                        new_kind = _rnd.choice(["event_horizon_trap", "healing_spring", "booster", "defensive_shield"])
                         setattr(target_hazard, "kind", new_kind)
                         setattr(target_hazard, "damage", 0.0)
                         setattr(target_hazard, "duration", 10.0)
@@ -16076,6 +16076,55 @@ class Action:
                             trap.damage = 0.0
                             trap.duration = 10.0
                             self.world.arena.hazards.append(trap)
+
+
+                if getattr(hazard, "kind", "") == "event_horizon_trap":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        import math
+                        dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
+
+                        # 1. Pulling Effect
+                        if dist < getattr(hazard, "radius", 300.0):
+                            if dist > 0.0001:
+                                nx = (hazard.x - self.ball.x) / dist
+                                ny = (hazard.y - self.ball.y) / dist
+
+                                # Pull strength increases closer to the center
+                                pull_strength = 200.0 * (1.0 - (dist / getattr(hazard, "radius", 300.0))) * delta
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
+
+                        # 2. Slow down
+                        if dist < getattr(hazard, "radius", 300.0) * 0.75:
+                            self.ball.speed_multiplier = min(getattr(self.ball, "speed_multiplier", 1.0), 0.3)
+
+                        # 3. Increase Collision Damage (simulate by amplifying damage received this tick if they collide)
+                        if dist < getattr(hazard, "radius", 300.0) * 0.5:
+                            self.ball.defense_multiplier = max(getattr(self.ball, "defense_multiplier", 1.0), 2.0)
+
+                        # 4. Explode if duration ends or touched
+                        if dist < 30.0:
+                            hazard.duration = 0.0
+
+                    # Explode logic
+                    if getattr(hazard, "duration", 0.0) <= 0.0:
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and hazard in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(hazard)
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": 200.0, "damage": 50.0})
+
+                            # Add explosion damage immediately
+                            enemies = self._get_enemies()
+                            if enemies:
+                                for e in enemies:
+                                    import math
+                                    if math.hypot(e.x - hazard.x, e.y - hazard.y) <= 200.0:
+                                        if hasattr(e, "take_damage"):
+                                            e.take_damage(50.0)
+                                        elif hasattr(e, "hp"):
+                                            e.hp -= 50.0
+                                            if e.hp <= 0:
+                                                e.alive = False
 
                 if getattr(hazard, "kind", "") == "invisible_status_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
