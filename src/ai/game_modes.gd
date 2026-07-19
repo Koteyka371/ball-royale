@@ -317,6 +317,215 @@ class GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 
+		var weather = ""
+		if "weather" in self:
+			weather = self.weather
+		if weather == "" and "arena" in world and world.arena != null and "weather" in world.arena:
+			weather = world.arena.weather
+
+		var is_raining = false
+		if "arena" in world and world.arena != null:
+			if "is_raining" in world.arena:
+				is_raining = world.arena.is_raining
+			elif world.arena.has_method("get_meta") and world.arena.has_meta("is_raining"):
+				is_raining = world.arena.get_meta("is_raining")
+
+		if weather == "rain" or weather == "thunderstorm" or is_raining:
+			var timer = 0.0
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.has("lightning_strike_timer"):
+					timer = world.lightning_strike_timer
+			elif typeof(world) == TYPE_OBJECT:
+				if "lightning_strike_timer" in world:
+					timer = world.lightning_strike_timer
+				elif world.has_method("get_meta") and world.has_meta("lightning_strike_timer"):
+					timer = world.get_meta("lightning_strike_timer")
+			timer += delta
+
+			if timer >= 15.0:
+				timer = 0.0
+				var best_target_x = 0.0
+				var best_target_y = 0.0
+				var max_balls = -1
+
+				for b in balls:
+					var b_alive = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+					elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+					if b_alive:
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							if b.has("x"): bx = b.x
+							if b.has("y"): by = b.y
+						elif typeof(b) == TYPE_OBJECT:
+							if "x" in b: bx = b.x
+							if "y" in b: by = b.y
+
+						var count = 0
+						for ob in balls:
+							var ob_alive = false
+							if typeof(ob) == TYPE_DICTIONARY and ob.has("alive"): ob_alive = ob.alive
+							elif typeof(ob) == TYPE_OBJECT and "alive" in ob: ob_alive = ob.alive
+							elif typeof(ob) == TYPE_OBJECT and ob.has_method("get_meta") and ob.has_meta("alive"): ob_alive = ob.get_meta("alive")
+
+							if ob_alive:
+								var obx = 0.0
+								var oby = 0.0
+								if typeof(ob) == TYPE_DICTIONARY:
+									if ob.has("x"): obx = ob.x
+									if ob.has("y"): oby = ob.y
+								elif typeof(ob) == TYPE_OBJECT:
+									if "x" in ob: obx = ob.x
+									if "y" in ob: oby = ob.y
+
+								var dist_sq = (bx - obx) * (bx - obx) + (by - oby) * (by - oby)
+								if dist_sq <= 10000.0:
+									count += 1
+
+						if count > max_balls:
+							max_balls = count
+							best_target_x = bx
+							best_target_y = by
+
+				if max_balls > 0:
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("lightning_strike", {"x": best_target_x, "y": best_target_y, "radius": 100.0})
+
+					for b in balls:
+						var b_alive = false
+						if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+						elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+						elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+						if b_alive:
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("x"): bx = b.x
+								if b.has("y"): by = b.y
+							elif typeof(b) == TYPE_OBJECT:
+								if "x" in b: bx = b.x
+								if "y" in b: by = b.y
+
+							var dist_sq = (bx - best_target_x) * (bx - best_target_x) + (by - best_target_y) * (by - best_target_y)
+							if dist_sq <= 10000.0:
+								var hp = 0.0
+								if typeof(b) == TYPE_DICTIONARY and b.has("hp"): hp = b.hp
+								elif typeof(b) == TYPE_OBJECT and "hp" in b: hp = b.hp
+
+								hp -= 50.0
+								if hp <= 0.0:
+									hp = 0.0
+									if typeof(b) == TYPE_DICTIONARY:
+										b.hp = hp
+										b.alive = false
+									elif typeof(b) == TYPE_OBJECT:
+										if "hp" in b: b.hp = hp
+										if "alive" in b: b.alive = false
+								else:
+									if typeof(b) == TYPE_DICTIONARY:
+										b.hp = hp
+										b.overcharge_timer = 5.0
+										var is_overcharged = false
+										if b.has("is_overcharged"): is_overcharged = b.is_overcharged
+										if not is_overcharged:
+											b.is_overcharged = true
+											b._orig_speed = b.get("speed", 100.0)
+											b._orig_cooldown_multiplier = b.get("cooldown_multiplier", 1.0)
+										var base_speed = b.get("base_speed", b.get("speed", 100.0))
+										b.speed = base_speed * 2.0
+										var orig_cd = b.get("_orig_cooldown_multiplier", 1.0)
+										b.cooldown_multiplier = orig_cd * 0.5
+									elif typeof(b) == TYPE_OBJECT:
+										if "hp" in b: b.hp = hp
+										if "overcharge_timer" in b: b.overcharge_timer = 5.0
+										elif b.has_method("set_meta"): b.set_meta("overcharge_timer", 5.0)
+										var is_overcharged = false
+										if "is_overcharged" in b: is_overcharged = b.is_overcharged
+										elif b.has_method("get_meta") and b.has_meta("is_overcharged"): is_overcharged = b.get_meta("is_overcharged")
+										if not is_overcharged:
+											if "is_overcharged" in b: b.is_overcharged = true
+											elif b.has_method("set_meta"): b.set_meta("is_overcharged", true)
+											var sp = 100.0
+											if "speed" in b: sp = b.speed
+											if "_orig_speed" in b: b._orig_speed = sp
+											elif b.has_method("set_meta"): b.set_meta("_orig_speed", sp)
+											var cd = 1.0
+											if "cooldown_multiplier" in b: cd = b.cooldown_multiplier
+											if "_orig_cooldown_multiplier" in b: b._orig_cooldown_multiplier = cd
+											elif b.has_method("set_meta"): b.set_meta("_orig_cooldown_multiplier", cd)
+
+										var base_speed = 100.0
+										if "base_speed" in b: base_speed = b.base_speed
+										elif "speed" in b: base_speed = b.speed
+										if "speed" in b: b.speed = base_speed * 2.0
+
+										var orig_cd = 1.0
+										if "_orig_cooldown_multiplier" in b: orig_cd = b._orig_cooldown_multiplier
+										elif b.has_method("get_meta") and b.has_meta("_orig_cooldown_multiplier"): orig_cd = b.get_meta("_orig_cooldown_multiplier")
+										if "cooldown_multiplier" in b: b.cooldown_multiplier = orig_cd * 0.5
+
+			if typeof(world) == TYPE_DICTIONARY:
+				world.lightning_strike_timer = timer
+			elif typeof(world) == TYPE_OBJECT:
+				if "lightning_strike_timer" in world:
+					world.lightning_strike_timer = timer
+				elif world.has_method("set_meta"):
+					world.set_meta("lightning_strike_timer", timer)
+
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+			var is_overcharged = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("is_overcharged"): is_overcharged = b.is_overcharged
+			elif typeof(b) == TYPE_OBJECT and "is_overcharged" in b: is_overcharged = b.is_overcharged
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_overcharged"): is_overcharged = b.get_meta("is_overcharged")
+
+			if b_alive and is_overcharged:
+				var otimer = 0.0
+				if typeof(b) == TYPE_DICTIONARY and b.has("overcharge_timer"): otimer = b.overcharge_timer
+				elif typeof(b) == TYPE_OBJECT and "overcharge_timer" in b: otimer = b.overcharge_timer
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("overcharge_timer"): otimer = b.get_meta("overcharge_timer")
+
+				otimer -= delta
+				if otimer <= 0.0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b.is_overcharged = false
+						b.overcharge_timer = 0.0
+						var orig_sp = b.get("_orig_speed", b.get("base_speed", 100.0))
+						b.speed = orig_sp
+						var orig_cd = b.get("_orig_cooldown_multiplier", 1.0)
+						b.cooldown_multiplier = orig_cd
+					elif typeof(b) == TYPE_OBJECT:
+						if "is_overcharged" in b: b.is_overcharged = false
+						elif b.has_method("set_meta"): b.set_meta("is_overcharged", false)
+						if "overcharge_timer" in b: b.overcharge_timer = 0.0
+						elif b.has_method("set_meta"): b.set_meta("overcharge_timer", 0.0)
+
+						var orig_sp = 100.0
+						if "_orig_speed" in b: orig_sp = b._orig_speed
+						elif b.has_method("get_meta") and b.has_meta("_orig_speed"): orig_sp = b.get_meta("_orig_speed")
+						elif "base_speed" in b: orig_sp = b.base_speed
+						if "speed" in b: b.speed = orig_sp
+
+						var orig_cd = 1.0
+						if "_orig_cooldown_multiplier" in b: orig_cd = b._orig_cooldown_multiplier
+						elif b.has_method("get_meta") and b.has_meta("_orig_cooldown_multiplier"): orig_cd = b.get_meta("_orig_cooldown_multiplier")
+						if "cooldown_multiplier" in b: b.cooldown_multiplier = orig_cd
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b.overcharge_timer = otimer
+					elif typeof(b) == TYPE_OBJECT:
+						if "overcharge_timer" in b: b.overcharge_timer = otimer
+						elif b.has_method("set_meta"): b.set_meta("overcharge_timer", otimer)
+
+
 		# Task idea-898: Mid-game Neutral Shop Zone logic
 		var shop_x = 500.0
 		var shop_y = 500.0
