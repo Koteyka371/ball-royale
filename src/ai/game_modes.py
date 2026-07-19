@@ -21005,7 +21005,91 @@ class DiscoFloorMode(GameMode):
                     b.alive = False
                     b.killer = "disco_floor"
 
+
+class PositionSwapMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Position Swap"
+        self.description = "Players swap positions with an enemy at random intervals"
+        self.swap_interval = 5.0 # time between swapping attempts
+        self.telegraph_duration = 1.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        import random
+        # Initialize timers
+        import random
+        timer = getattr(world, "position_swap_timer", random.uniform(3.0, 8.0)) - delta
+        if timer < 0:
+            timer = 0
+
+        pending = getattr(world, "position_swap_pending", False)
+        telegraph_timer = getattr(world, "position_swap_telegraph_timer", 0.0)
+
+        if pending:
+            telegraph_timer -= delta
+            if telegraph_timer <= 0:
+                # Time to swap
+                pending = False
+                timer = random.uniform(3.0, 8.0) # reset main timer
+
+                # Fetch balls to swap
+                ball_a_id = getattr(world, "position_swap_ball_a", None)
+                ball_b_id = getattr(world, "position_swap_ball_b", None)
+
+                ball_a = None
+                ball_b = None
+                for b in balls:
+                    if getattr(b, "id", None) == ball_a_id:
+                        ball_a = b
+                    elif getattr(b, "id", None) == ball_b_id:
+                        ball_b = b
+
+                if ball_a and ball_b and getattr(ball_a, "alive", False) and getattr(ball_b, "alive", False):
+                    # Swap positions
+                    temp_x, temp_y = ball_a.x, ball_a.y
+                    ball_a.x, ball_a.y = ball_b.x, ball_b.y
+                    ball_b.x, ball_b.y = temp_x, temp_y
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("position_swapped", {
+                            "ball_a": ball_a_id,
+                            "ball_b": ball_b_id,
+                            "pos_a": [ball_a.x, ball_a.y],
+                            "pos_b": [ball_b.x, ball_b.y]
+                        })
+            world.position_swap_telegraph_timer = telegraph_timer
+        else:
+            if timer <= 0:
+                # Pick 2 random living balls from different teams if possible
+                living = [b for b in balls if getattr(b, "alive", False)]
+                if len(living) >= 2:
+                    # try to find different teams
+                    ball_a = random.choice(living)
+                    candidates = [b for b in living if b != ball_a and getattr(b, "team", None) != getattr(ball_a, "team", None)]
+                    if not candidates:
+                        candidates = [b for b in living if b != ball_a]
+
+                    if candidates:
+                        ball_b = random.choice(candidates)
+                        # Set up swap
+                        pending = True
+                        telegraph_timer = self.telegraph_duration
+                        world.position_swap_ball_a = ball_a.id
+                        world.position_swap_ball_b = ball_b.id
+                        world.position_swap_telegraph_timer = telegraph_timer
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("portal_telegraph", {
+                                "duration": self.telegraph_duration,
+                                "targets": [ball_a.id, ball_b.id]
+                            })
+
+        world.position_swap_timer = timer
+        world.position_swap_pending = pending
+
+
 GAME_MODES = {
+    'position_swap': PositionSwapMode(),
     'quantum_tunnel_mutator': QuantumTunnelMutatorMode(),
     'healing_zone': HealingZoneMode(),
     "sweeping_rotating_lasers": SweepingRotatingLasersMode(),

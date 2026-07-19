@@ -1,0 +1,4 @@
+{
+  "title": "Doppelganger Match Mode",
+  "description": "Every player spawns with an identical AI-controlled doppelganger. If the original player dies but their doppelganger survives, the player assumes control of the doppelganger with 50% max HP."
+}
