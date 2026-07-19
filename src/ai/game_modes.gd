@@ -40564,3 +40564,94 @@ class RepulsionFieldMode extends GameMode:
 							b2.vy -= ny * force
 
 GAME_MODES['repulsion_field'] = RepulsionFieldMode.new()
+
+class MagneticShockwaveEventModeClass extends GameMode:
+	var anchor: Dictionary = {}
+	var spawn_timer: float = 0.0
+	var shockwave_timer: float = 0.0
+	var active_shockwave: bool = false
+	var shockwave_duration: float = 0.0
+	var anchor_radius: float = 20.0
+	var pull_radius: float = 400.0
+
+	func _init():
+		super._init()
+		name = "Magnetic Shockwave Event"
+		description = "A new heavy hazard type that drops in the arena and periodically unleashes a massive magnetic shockwave that pulls players toward it while dealing damage. If a player touches the center of the anchor, they are completely stunned for 2 seconds."
+		anchor = {}
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if world.get("arena") == null:
+			return
+
+		if anchor.is_empty() or not anchor.get("active", false):
+			spawn_timer += delta
+			if spawn_timer > 5.0:
+				var x = world.arena.get("width", 800) / 2.0
+				var y = world.arena.get("height", 800) / 2.0
+				anchor = {
+					"kind": "magnetic_anchor",
+					"x": x,
+					"y": y,
+					"radius": anchor_radius,
+					"active": true,
+					"duration": 9999.0
+				}
+				if not "hazards" in world.arena:
+					world.arena.hazards = []
+				world.arena.hazards.append(anchor)
+				spawn_timer = 0.0
+				if world.has_method("add_event"):
+					world.add_event("magnetic_anchor_spawn", {"x": x, "y": y})
+		else:
+			# Verify anchor is still in arena
+			var found = false
+			if "hazards" in world.arena:
+				for h in world.arena.hazards:
+					# Check exact reference
+					if h.hash() == anchor.hash():
+						found = true
+						break
+			if not found:
+				anchor = {}
+				spawn_timer = 0.0
+				return
+
+			shockwave_timer += delta
+			if active_shockwave:
+				shockwave_duration += delta
+				if shockwave_duration > 1.0:
+					active_shockwave = false
+					shockwave_duration = 0.0
+					shockwave_timer = 0.0
+				else:
+					for b in balls:
+						if not b.get("alive", false):
+							continue
+						var dx = anchor["x"] - b.x
+						var dy = anchor["y"] - b.y
+						var dist = sqrt(dx * dx + dy * dy)
+						if dist < pull_radius and dist > 0:
+							var pull_strength = 200.0 * (1.0 - dist / pull_radius)
+							b.vx += (dx / dist) * pull_strength * delta
+							b.vy += (dy / dist) * pull_strength * delta
+							b.hp -= 5.0 * delta
+			elif shockwave_timer > 4.0:
+				active_shockwave = true
+				shockwave_duration = 0.0
+				if world.has_method("add_event"):
+					world.add_event("magnetic_shockwave", {"x": anchor["x"], "y": anchor["y"], "radius": pull_radius})
+
+			for b in balls:
+				if not b.get("alive", false):
+					continue
+				var dx = anchor["x"] - b.x
+				var dy = anchor["y"] - b.y
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist < (anchor_radius + b.get("radius", 10.0)):
+					var current_stun = b.get("stun_timer", 0.0)
+					if current_stun < 2.0:
+						b.stun_timer = 2.0
+
+GAME_MODES['magnetic_shockwave'] = MagneticShockwaveEventModeClass.new()
