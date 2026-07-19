@@ -20452,7 +20452,7 @@
     },
     {
       "id": "idea-1193",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Gravity Mine",
@@ -30905,6 +30905,40 @@
         "src/ai/gravity_swap_mutator.py",
         "src/ai/gravity_swap_mutator.gd",
         "tests/test_gravity_swap_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1807",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wind Shield Booster",
+      "description": "A new booster that grants a temporary wind shield, making the ball immune to wind pushes and tornado pulls, and allowing it to travel through storms unaffected.",
+      "allowed_paths": [
+        "src/ai/wind_shield_booster.py",
+        "src/ai/wind_shield_booster.gd",
+        "tests/test_wind_shield_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1808",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wind Funnels",
+      "description": "Add stationary wind funnels that shoot out air constantly in one direction, significantly speeding up balls that enter the stream and acting as a makeshift highway or a trap.",
+      "allowed_paths": [
+        "src/ai/wind_funnels.py",
+        "src/ai/wind_funnels.gd",
+        "tests/test_wind_funnels.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

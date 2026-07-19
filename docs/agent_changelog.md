@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1193] Magnetic Gravity Mine — *2026-07-19 23:16:04 UTC*
+
+A mine that, instead of exploding, pulls all nearby enemies and physics objects toward its center for 3 seconds before detonating, creating devastating localized combos.
+
+---
+
 ## [idea-1166] Wind System — *2026-07-19 23:01:46 UTC*
 
 Introduce global wind vectors that slightly alter ball movement trajectories and hazard positions (like poison gas or tornadoes).
