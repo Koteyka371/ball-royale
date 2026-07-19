@@ -1,4 +1,0 @@
-{
-  "title": "Minor Bounty Degradation",
-  "description": "Minor bounties decay over time (e.g. after 30 seconds), turning into temporary speed or damage debuffs rather than immediately expiring to prolong the tension and encourage the minor bounty to play aggressively to cleanse it."
-}

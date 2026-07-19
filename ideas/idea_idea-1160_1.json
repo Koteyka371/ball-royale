@@ -1,4 +1,0 @@
-{
-  "title": "Reverse Safe Zones",
-  "description": "Safe zones periodically swap. If you are inside a safe zone, you are taking continuous damage, meaning players need to constantly move out of the safe zones to avoid getting killed. After a while, they might swap back or become deadly."
-}
