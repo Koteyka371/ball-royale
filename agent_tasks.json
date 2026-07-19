@@ -30654,6 +30654,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1792",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Color Match Team Mode",
+      "description": "A team-based mode where balls can only deal damage to enemies of the matching color. Teams periodically swap colors based on a global timer, requiring dynamic positioning and target switching.",
+      "allowed_paths": [
+        "src/ai/color_match_team.py",
+        "src/ai/color_match_team.gd",
+        "tests/test_color_match_team.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
