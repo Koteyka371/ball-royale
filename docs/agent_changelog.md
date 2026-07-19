@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1157] Orbital Strike Satellite Event — *2026-07-19 04:08:30 UTC*
+
+An event where a slowly moving satellite crosshair tracks players in the arena. Once it locks on for a few seconds, it fires a devastating orbital beam that creates an irradiated zone reducing stamina regen for a short time.
+
+---
+
 ## [idea-1099] Tsunami Wave Entity — *2026-07-19 04:05:45 UTC*
 
 Convert the tsunami weather event to visually and physically spawn a giant, screen-wide wave entity that travels across the screen from one side, acting as a massive moving hazard that players must outrun or use boosters to dive under.
