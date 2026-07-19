@@ -8108,6 +8108,7 @@ class ModifierZonesSafeZoneMode(GameMode):
 class SafeZoneMode(GameMode):
     def __init__(self):
         super().__init__()
+        self.shrink_pause_timer = 0.0
         self.collapse_triggered = False
         self.name = "Safe Zone"
         self.description = "A battle royale mode where the safe zone gradually shrinks, and balls take continuous damage outside of it."
@@ -8123,6 +8124,7 @@ class SafeZoneMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        self.shrink_pause_timer = 0.0
         self.world = world
         self.collapse_triggered = False
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -8179,6 +8181,12 @@ class SafeZoneMode(GameMode):
             self.zone_target_x = random.uniform(buffer, arena_width - buffer)
             self.zone_target_y = random.uniform(buffer, arena_height - buffer)
 
+        paused_this_tick = self.shrink_pause_timer > 0
+        if self.shrink_pause_timer > 0:
+            self.shrink_pause_timer -= delta
+            if self.shrink_pause_timer < 0:
+                self.shrink_pause_timer = 0.0
+
         # Count players inside the safe zone to calculate shrink multiplier
         players_in_zone = 0
         for b in balls:
@@ -8194,7 +8202,7 @@ class SafeZoneMode(GameMode):
         shrink_multiplier = max(1.0, float(players_in_zone))
 
         # Shrink the safe zone
-        if self.zone_radius > self.min_zone_radius:
+        if not paused_this_tick and self.zone_radius > self.min_zone_radius:
             self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
             if self.zone_radius <= self.min_zone_radius:
                 self.zone_radius = self.min_zone_radius
@@ -8204,7 +8212,7 @@ class SafeZoneMode(GameMode):
                         world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
         elif getattr(self, "collapse_triggered", False):
             # Continue shrinking beyond min_zone_radius towards 0
-            if self.zone_radius > 0:
+            if not paused_this_tick and self.zone_radius > 0:
                 self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
                 if self.zone_radius < 0:
                     self.zone_radius = 0.0
@@ -8257,6 +8265,13 @@ class SafeZoneMode(GameMode):
                     if b.hp <= 0:
                         b.alive = False
                         b.hp = 0
+
+
+    def on_ball_died(self, world, ball, killer=None):
+        if hasattr(super(), 'on_ball_died'):
+            super().on_ball_died(world, ball, killer)
+        if killer and getattr(killer, 'alive', False):
+            self.shrink_pause_timer = 5.0
 
     def check_winner(self, world, balls):
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]

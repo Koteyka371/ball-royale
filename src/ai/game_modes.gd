@@ -12126,6 +12126,7 @@ class MutantSafeZoneMode extends SafeZoneMode:
 
 class SafeZoneMode extends GameMode:
 	var zone_x: float = 500.0
+	var shrink_pause_timer: float = 0.0
 	var zone_y: float = 500.0
 	var zone_radius: float = 500.0
 	var min_zone_radius: float = 50.0
@@ -12255,6 +12256,7 @@ class SafeZoneMode extends GameMode:
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
+		shrink_pause_timer = 0.0
 		collapse_triggered = false
 		var arena_width = 1000.0
 		var arena_height = 1000.0
@@ -12337,8 +12339,14 @@ class SafeZoneMode extends GameMode:
 			zone_target_x = randf_range(buffer, arena_width - buffer)
 			zone_target_y = randf_range(buffer, arena_height - buffer)
 
+		var paused_this_tick = shrink_pause_timer > 0
+		if shrink_pause_timer > 0:
+			shrink_pause_timer -= delta
+			if shrink_pause_timer < 0:
+				shrink_pause_timer = 0.0
+
 		# Shrink the safe zone
-		if zone_radius > min_zone_radius:
+		if not paused_this_tick and zone_radius > min_zone_radius:
 			zone_radius -= shrink_rate * delta
 			if zone_radius <= min_zone_radius:
 				zone_radius = min_zone_radius
@@ -12347,7 +12355,7 @@ class SafeZoneMode extends GameMode:
 					if world.has_method("add_event"):
 						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
 		elif collapse_triggered:
-			if zone_radius > 0:
+			if not paused_this_tick and zone_radius > 0:
 				zone_radius -= shrink_rate * delta
 				if zone_radius < 0:
 					zone_radius = 0.0
@@ -12405,6 +12413,18 @@ class SafeZoneMode extends GameMode:
 					if b.hp <= 0:
 						b.alive = false
 						b.hp = 0
+
+	func on_ball_died(world, ball, killer = null):
+
+		var killer_alive = false
+		if killer != null:
+			if typeof(killer) == TYPE_DICTIONARY:
+				killer_alive = killer.get("alive", false)
+			else:
+				killer_alive = killer.alive if "alive" in killer else false
+
+		if killer_alive:
+			shrink_pause_timer = 5.0
 
 	func check_winner(world, balls: Array):
 		var alive = []
@@ -39242,8 +39262,6 @@ class ChainReactionMode extends GameMode:
 		description = "Every elimination sets off a delayed explosion around the eliminated player. Surviving players can chain these explosions to eliminate multiple enemies."
 
 	func on_ball_died(world, ball, killer = null):
-		if super.has_method("on_ball_died"):
-			super.on_ball_died(world, ball, killer)
 
 		var ex_pos_x = 0.0
 		var ex_pos_y = 0.0
@@ -39422,8 +39440,6 @@ class KillstreakExplosionMode extends GameMode:
 		description = "Every kill triggers an explosion that scales in radius and damage based on the killed ball's current killstreak."
 
 	func on_ball_died(world, ball, killer = null):
-		if super.has_method("on_ball_died"):
-			super.on_ball_died(world, ball, killer)
 
 		var ex_pos_x = 0.0
 		var ex_pos_y = 0.0
@@ -39685,8 +39701,6 @@ class MimicCloneSwapMode extends GameMode:
 						elif c.has_method("set_meta"): c.set_meta("prev_hp", c_hp)
 
 	func on_ball_died(world, ball, killer = null):
-		if super.has_method("on_ball_died"):
-			super.on_ball_died(world, ball, killer)
 
 		var is_mimic_clone = false
 		var has_used_revive = false
