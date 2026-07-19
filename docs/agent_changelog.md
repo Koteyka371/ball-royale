@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1121] Temperature Mechanics — *2026-07-19 22:27:59 UTC*
+
+Add a temperature gauge to the arena that rises in heatwaves and drops in blizzards. Balls must manage their internal temperature with boosters or specific hazard zones to prevent freezing or overheating (DoT or stun).
+
+---
+
 ## [idea-1054] Lightning Strikes in Rain Arenas — *2026-07-19 21:55:51 UTC*
 
 During is_raining or thunderstorm conditions, occasionally strike the arena with lightning. The lightning strike targets the area with the highest cluster of balls. Any ball hit takes massive damage, but gains a temporary movement speed and cooldown buff from being overcharged.

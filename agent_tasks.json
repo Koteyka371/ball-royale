@@ -19226,7 +19226,7 @@
     },
     {
       "id": "idea-1121",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Temperature Mechanics",
@@ -30837,6 +30837,23 @@
         "src/ai/solar_flare.py",
         "src/ai/solar_flare.gd",
         "tests/test_solar_flare.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1803",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Puddles",
+      "description": "During heavy rain or thunderstorm conditions, temporary puddles form on the arena. Moving through puddles slows balls down, but using an electric skill while standing in a puddle electrifies it, damaging nearby enemies.",
+      "allowed_paths": [
+        "src/ai/dynamic_puddles.py",
+        "src/ai/dynamic_puddles.gd",
+        "tests/test_dynamic_puddles.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
