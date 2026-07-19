@@ -12226,6 +12226,8 @@ class TugOfWarMode(GameMode):
         self.payload.is_payload = True
         self.payload.is_invulnerable = True
         self.payload.speed = 0.0
+        self.payload.vx = 0.0
+        self.payload.vy = 0.0
         self.payload.base_speed = 0.0
         self.payload.damage = 0.0
         self.payload.base_damage = 0.0
@@ -12243,80 +12245,77 @@ class TugOfWarMode(GameMode):
             self.timer -= delta
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
 
         if self.payload and getattr(self.payload, "alive", False):
             import math
 
-            # Count nearby players to determine movement
-            red_count = 0
-            blue_count = 0
+            px = getattr(self.payload, "x", arena_width / 2.0)
+            py = getattr(self.payload, "y", arena_height / 2.0)
+            pvx = getattr(self.payload, "vx", 0.0)
+            pvy = getattr(self.payload, "vy", 0.0)
 
             for b in balls:
                 if b == self.payload or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                     continue
 
-                dx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
-                dy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
+                dx = getattr(b, "x", 0.0) - px
+                dy = getattr(b, "y", 0.0) - py
                 dist = math.hypot(dx, dy)
+                min_dist = getattr(self.payload, "radius", 20.0) + getattr(b, "radius", 10.0)
 
-                if dist < 150.0:
-                    team = getattr(b, "team", "")
-                    if team == "Red":
-                        red_count += 1
-                    elif team == "Blue":
-                        blue_count += 1
+                if 0 < dist < min_dist:
+                    nx = dx / dist
+                    ny = dy / dist
+                    overlap = min_dist - dist
 
-                    if team in ["Red", "Blue"]:
-                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
+                    px -= nx * overlap * 0.5
+                    b.x += nx * overlap * 0.5
 
-            # Payload moves towards Blue goal if Red has more players nearby, and vice versa
-            move_speed = 50.0 # base move speed
+                    b_vx = getattr(b, "vx", 0.0)
+                    b_vy = getattr(b, "vy", 0.0)
 
-            controlling_team = None
-            nearby_teammates = 0
+                    dvx = b_vx - pvx
+                    dvy = b_vy - pvy
+                    vel_along_normal = dvx * nx + dvy * ny
 
-            if red_count > blue_count:
-                controlling_team = "Red"
-                nearby_teammates = red_count
-                speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
-                self.payload.x += move_speed * delta * (red_count - blue_count) * speed_multiplier
-            elif blue_count > red_count:
-                controlling_team = "Blue"
-                nearby_teammates = blue_count
-                speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
-                self.payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
+                    if vel_along_normal < 0:
+                        restitution = 1.2
+                        impulse = -(1 + restitution) * vel_along_normal
 
-            if nearby_teammates >= 2 and controlling_team:
-                self.payload.turret_active = True
-                for b in balls:
-                    if getattr(b, "ball_type", None) == "spectator": continue
-                    if not getattr(b, "alive", False) or b == self.payload: continue
-                    if getattr(b, "team", "") != controlling_team:
-                        bdx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
-                        bdy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
-                        dist_to_enemy = math.hypot(bdx, bdy)
-                        if dist_to_enemy <= 200.0:
-                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 10.0 * delta)
-                            if b.hp <= 0:
-                                b.alive = False
-                            if dist_to_enemy > 0:
-                                b.x += (bdx / dist_to_enemy) * 150.0 * delta
-                                b.y += (bdy / dist_to_enemy) * 150.0 * delta
-            else:
-                self.payload.turret_active = False
+                        pvx -= nx * impulse * 1.5
+                        pvy -= ny * impulse * 1.5
+                        if hasattr(b, "vx"): b.vx += nx * impulse * 0.5
+                        if hasattr(b, "vy"): b.vy += ny * impulse * 0.5
 
-            if nearby_teammates >= 3 and controlling_team:
-                self.payload.has_reflecting_shield = True
-                self.payload.reflect_projectiles = True
-            else:
-                self.payload.has_reflecting_shield = False
-                self.payload.reflect_projectiles = False
+            pvx *= 0.99
+            pvy *= 0.99
+            px += pvx * delta
+            py += pvy * delta
 
-            # Keep in bounds
-            if self.payload.x < 50.0:
-                self.payload.x = 50.0
-            elif self.payload.x > arena_width - 50.0:
-                self.payload.x = arena_width - 50.0
+            if px < 50.0:
+                px = 50.0
+                pvx = -pvx * 0.9
+            elif px > arena_width - 50.0:
+                px = arena_width - 50.0
+                pvx = -pvx * 0.9
+
+            if py < 50.0:
+                py = 50.0
+                pvy = -pvy * 0.9
+            elif py > arena_height - 50.0:
+                py = arena_height - 50.0
+                pvy = -pvy * 0.9
+
+            speed = math.hypot(pvx, pvy)
+            if speed > 1500.0:
+                pvx = (pvx / speed) * 1500.0
+                pvy = (pvy / speed) * 1500.0
+
+            self.payload.x = px
+            self.payload.y = py
+            self.payload.vx = pvx
+            self.payload.vy = pvy
 
     def check_winner(self, world, balls):
         if not self.payload:

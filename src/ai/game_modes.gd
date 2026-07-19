@@ -19027,6 +19027,8 @@ class TugOfWarMode extends GameMode:
 			"is_payload": true,
 			"is_invulnerable": true,
 			"speed": 0.0,
+			"vx": 0.0,
+			"vy": 0.0,
 			"base_speed": 0.0,
 			"damage": 0.0,
 			"base_damage": 0.0,
@@ -19045,20 +19047,22 @@ class TugOfWarMode extends GameMode:
 			timer -= delta
 
 		var arena_width = 1000.0
+		var arena_height = 1000.0
 		if "arena" in world and world.arena:
 			if typeof(world.arena) == TYPE_DICTIONARY:
 				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
 			else:
-				arena_width = world.arena.get("width")
+				arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+				arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
 
 		if payload != null:
 			var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
 			if is_alive:
-				var red_count = 0
-				var blue_count = 0
-
-				var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
-				var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
+				var px = payload.get("x", arena_width / 2.0) if typeof(payload) == TYPE_DICTIONARY else payload.x
+				var py = payload.get("y", arena_height / 2.0) if typeof(payload) == TYPE_DICTIONARY else payload.y
+				var pvx = payload.get("vx", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("vx")
+				var pvy = payload.get("vy", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("vy")
 
 				for b in balls:
 					if typeof(b) == TYPE_DICTIONARY and b == payload:
@@ -19072,122 +19076,83 @@ class TugOfWarMode extends GameMode:
 					if not b_alive or b_type == "spectator":
 						continue
 
-					var bx = b.get("x", 0) if typeof(b) == TYPE_DICTIONARY else b.x
-					var by = b.get("y", 0) if typeof(b) == TYPE_DICTIONARY else b.y
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
 
 					var dx = bx - px
 					var dy = by - py
 					var dist = sqrt(dx * dx + dy * dy)
 
-					if dist < 150.0:
-						var team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.team
-						if team == "Red":
-							red_count += 1
-						elif team == "Blue":
-							blue_count += 1
+					var p_rad = payload.get("radius", 20.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("radius")
+					var b_rad = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+					var min_dist = p_rad + b_rad
 
-						if team == "Red" or team == "Blue":
-							var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.hp
-							var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.max_hp
+					if dist > 0.0 and dist < min_dist:
+						var nx = dx / dist
+						var ny = dy / dist
+						var overlap = min_dist - dist
+
+						px -= nx * overlap * 0.5
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] += nx * overlap * 0.5
+						else:
+							b.x += nx * overlap * 0.5
+
+						var b_vx = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("vx")
+						var b_vy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("vy")
+
+						var dvx = b_vx - pvx
+						var dvy = b_vy - pvy
+						var vel_along_normal = dvx * nx + dvy * ny
+
+						if vel_along_normal < 0:
+							var restitution = 1.2
+							var impulse = -(1.0 + restitution) * vel_along_normal
+
+							pvx -= nx * impulse * 1.5
+							pvy -= ny * impulse * 1.5
+
 							if typeof(b) == TYPE_DICTIONARY:
-								b["hp"] = min(max_hp, hp + 15.0 * delta)
+								if b.has("vx"): b["vx"] += nx * impulse * 0.5
+								if b.has("vy"): b["vy"] += ny * impulse * 0.5
 							else:
-								b.hp = min(max_hp, hp + 15.0 * delta)
+								if "vx" in b: b.vx += nx * impulse * 0.5
+								if "vy" in b: b.vy += ny * impulse * 0.5
 
-				var move_speed = 50.0
-				var speed_multiplier = 1.0
+				pvx *= 0.99
+				pvy *= 0.99
+				px += pvx * delta
+				py += pvy * delta
 
-				var controlling_team = ""
-				var nearby_teammates = 0
-
-				if red_count > blue_count:
-					controlling_team = "Red"
-					nearby_teammates = red_count
-					speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
-					if typeof(payload) == TYPE_DICTIONARY:
-						payload["x"] += move_speed * delta * (red_count - blue_count) * speed_multiplier
-					else:
-						payload.x += move_speed * delta * (red_count - blue_count) * speed_multiplier
-				elif blue_count > red_count:
-					controlling_team = "Blue"
-					nearby_teammates = blue_count
-					speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
-					if typeof(payload) == TYPE_DICTIONARY:
-						payload["x"] -= move_speed * delta * (blue_count - red_count) * speed_multiplier
-					else:
-						payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
-
-				if nearby_teammates >= 2 and controlling_team != "":
-					if typeof(payload) == TYPE_DICTIONARY:
-						payload["turret_active"] = true
-					else:
-						payload.set("turret_active", true)
-
-					for b in balls:
-						var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
-						if b_type == "spectator":
-							continue
-						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
-						if not b_alive:
-							continue
-						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
-						var p_id = payload.get("id") if typeof(payload) == TYPE_DICTIONARY else payload.get("id")
-						if b_id != null and p_id != null and b_id == p_id:
-							continue
-						if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
-							continue
-						var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
-						if b_team != controlling_team:
-							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
-							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
-							var bdx = bx - px
-							var bdy = by - py
-							var dist_to_enemy = sqrt(bdx*bdx + bdy*bdy)
-							if dist_to_enemy <= 200.0:
-								var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
-								var new_hp = max(0.0, bhp - 10.0 * delta)
-								if typeof(b) == TYPE_DICTIONARY:
-									b["hp"] = new_hp
-									if new_hp <= 0:
-										b["alive"] = false
-									if dist_to_enemy > 0:
-										b["x"] += (bdx / dist_to_enemy) * 150.0 * delta
-										b["y"] += (bdy / dist_to_enemy) * 150.0 * delta
-								else:
-									b.set("hp", new_hp)
-									if new_hp <= 0:
-										b.set("alive", false)
-									if dist_to_enemy > 0:
-										b.set("x", bx + (bdx / dist_to_enemy) * 150.0 * delta)
-										b.set("y", by + (bdy / dist_to_enemy) * 150.0 * delta)
-				else:
-					if typeof(payload) == TYPE_DICTIONARY:
-						payload["turret_active"] = false
-					else:
-						payload.set("turret_active", false)
-
-				if nearby_teammates >= 3 and controlling_team != "":
-					if typeof(payload) == TYPE_DICTIONARY:
-						payload["has_reflecting_shield"] = true
-						payload["reflect_projectiles"] = true
-					else:
-						payload.set("has_reflecting_shield", true)
-						payload.set("reflect_projectiles", true)
-				else:
-					if typeof(payload) == TYPE_DICTIONARY:
-						payload["has_reflecting_shield"] = false
-						payload["reflect_projectiles"] = false
-					else:
-						payload.set("has_reflecting_shield", false)
-						payload.set("reflect_projectiles", false)
-
-				px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
 				if px < 50.0:
-					if typeof(payload) == TYPE_DICTIONARY: payload["x"] = 50.0
-					else: payload.x = 50.0
+					px = 50.0
+					pvx = -pvx * 0.9
 				elif px > arena_width - 50.0:
-					if typeof(payload) == TYPE_DICTIONARY: payload["x"] = arena_width - 50.0
-					else: payload.x = arena_width - 50.0
+					px = arena_width - 50.0
+					pvx = -pvx * 0.9
+
+				if py < 50.0:
+					py = 50.0
+					pvy = -pvy * 0.9
+				elif py > arena_height - 50.0:
+					py = arena_height - 50.0
+					pvy = -pvy * 0.9
+
+				var speed = sqrt(pvx * pvx + pvy * pvy)
+				if speed > 1500.0:
+					pvx = (pvx / speed) * 1500.0
+					pvy = (pvy / speed) * 1500.0
+
+				if typeof(payload) == TYPE_DICTIONARY:
+					payload["x"] = px
+					payload["y"] = py
+					payload["vx"] = pvx
+					payload["vy"] = pvy
+				else:
+					payload.x = px
+					payload.y = py
+					payload.set("vx", pvx)
+					payload.set("vy", pvy)
 
 	func check_winner(world, balls: Array):
 		if payload == null:
