@@ -48,9 +48,69 @@ class GameMode:
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
+        if hasattr(world, "arena") and world.arena is not None:
+            target_arena_temp = 20.0
+            if weather == "heatwave":
+                target_arena_temp = 50.0
+            elif weather in ["blizzard", "snow"]:
+                target_arena_temp = -20.0
+
+            c_temp = getattr(world.arena, "temperature", 20.0)
+            if not isinstance(c_temp, (int, float)): c_temp = 20.0
+            world.arena.temperature = c_temp + (target_arena_temp - c_temp) * delta * 0.1
+
         for b in balls:
             if not getattr(b, "alive", False):
                 continue
+
+            i_temp = getattr(b, "internal_temperature", 20.0)
+            if not isinstance(i_temp, (int, float)): i_temp = 20.0
+            b.internal_temperature = i_temp
+
+            target_temp = 20.0
+            if hasattr(world, "arena") and world.arena is not None:
+                t_temp = getattr(world.arena, "temperature", 20.0)
+                if isinstance(t_temp, (int, float)): target_temp = t_temp
+
+            # Check hazards
+            hazards = getattr(getattr(world, "arena", None), "hazards", [])
+            if isinstance(hazards, list):
+                b_x = getattr(b, "x", 0.0)
+                if not isinstance(b_x, (int, float)): b_x = 0.0
+                b_y = getattr(b, "y", 0.0)
+                if not isinstance(b_y, (int, float)): b_y = 0.0
+                for h in hazards:
+                    h_x = getattr(h, "x", 0.0)
+                    if not isinstance(h_x, (int, float)): h_x = 0.0
+                    h_y = getattr(h, "y", 0.0)
+                    if not isinstance(h_y, (int, float)): h_y = 0.0
+                    r = getattr(h, "radius", 0.0)
+                    if not isinstance(r, (int, float)): r = 0.0
+                    kind = getattr(h, "kind", "")
+
+                    import math
+                    dist = math.sqrt((b_x - h_x)**2 + (b_y - h_y)**2)
+                    if dist < r:
+                        if kind == "lava":
+                            target_temp = 60.0
+                        elif kind in ["ice_patch", "ice_patches"]:
+                            target_temp = -30.0
+
+            # Check boosters
+            c_timer = getattr(b, "cooling_booster_timer", 0.0)
+            if isinstance(c_timer, (int, float)) and c_timer > 0.0:
+                target_temp = min(-10.0, target_temp)
+
+            b.internal_temperature += (target_temp - b.internal_temperature) * delta * 0.5
+
+            if b.internal_temperature > 40.0:
+                cur_hp = getattr(b, "hp", 100.0)
+                if isinstance(cur_hp, (int, float)):
+                    b.hp = max(0.0, cur_hp - 5.0 * delta)
+            if b.internal_temperature < 0.0:
+                cur_speed = getattr(b, "speed", 100.0)
+                if isinstance(cur_speed, (int, float)):
+                    b.speed = cur_speed * 0.5 if b.internal_temperature >= -10.0 else 0.0
 
             traits = getattr(b, "traits", [])
             b_type = getattr(b, "ball_type", "").lower()
