@@ -19294,7 +19294,7 @@
     },
     {
       "id": "idea-1125",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Phase-Shifting Hazard",
@@ -30683,6 +30683,23 @@
         "src/ai/bouncy_boundaries.py",
         "src/ai/bouncy_boundaries.gd",
         "tests/test_bouncy_boundaries.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1794",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Adaptive Decoys",
+      "description": "Decoys deployed by tricksters or traps dynamically inherit properties based on the current extreme weather. For example, a decoy placed in a blizzard might explode into a freezing blast instead of standard damage, or a decoy in acid rain could leave behind a neutralizing puddle upon destruction.",
+      "allowed_paths": [
+        "src/ai/adaptive_decoys.py",
+        "src/ai/adaptive_decoys.gd",
+        "tests/test_adaptive_decoys.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1125] Phase-Shifting Hazard — *2026-07-19 18:57:10 UTC*
+
+A new hazard type that cycles between solid (blocks movement) and damaging (passes through but deals heavy damage over time).
+
+---
+
 ## [idea-1043] Weather-Specific Consumables — *2026-07-19 18:50:01 UTC*
 
 Introduce items that spawn exclusively during specific weather conditions. For example, a 'Snow Globe' in a blizzard that grants brief freezing immunity, or an 'Umbrella Booster' in rain that prevents the slippery status effect.
