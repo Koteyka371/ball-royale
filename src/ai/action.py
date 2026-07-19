@@ -486,6 +486,7 @@ class Action:
             elif hasattr(target, "hp"):
                 target.hp -= refl_dmg
             return
+
         if getattr(target, "half_reflect_shield_active", False):
             original_damage = getattr(attacker, "damage", 10.0)
             refl_dmg = original_damage * 0.5
@@ -494,7 +495,16 @@ class Action:
             elif hasattr(attacker, "hp"):
                 attacker.hp -= refl_dmg
             return
+        if getattr(target, "surge_shield_active", False):
+            inc_dmg = getattr(attacker, "damage", 10.0)
+            target.speed_boost_timer = getattr(target, "speed_boost_timer", 0.0) + 3.0
+            target.max_stamina = getattr(target, "max_stamina", 100.0) + inc_dmg
+            target.stamina = getattr(target, "stamina", 0.0) + inc_dmg
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
+            return
         if getattr(target, "energy_shield_active", False):
+
             import math
             a_x = getattr(attacker, 'x', 0.0)
             a_y = getattr(attacker, 'y', 0.0)
@@ -12220,9 +12230,14 @@ class Action:
             self.ball.damage = self.ball.base_damage
 
 
+
             if skill_name == "energy_shield":
                 self.ball.energy_shield_active = True
                 self.ball.energy_shield_timer = 3.0
+            elif skill_name == "surge_shield":
+                self.ball.surge_shield_active = True
+                self.ball.surge_shield_timer = 3.0
+
             elif skill_name == "trickster_swap":
                 all_entities = getattr(self.world, "balls", [])
 
@@ -15725,10 +15740,17 @@ class Action:
             self.ball.half_reflect_shield_timer -= delta
             if self.ball.half_reflect_shield_timer <= 0:
                 self.ball.half_reflect_shield_active = False
+
         if hasattr(self.ball, "energy_shield_timer") and self.ball.energy_shield_timer > 0:
             self.ball.energy_shield_timer -= delta
             if self.ball.energy_shield_timer <= 0:
                 self.ball.energy_shield_active = False
+
+        if hasattr(self.ball, "surge_shield_timer") and self.ball.surge_shield_timer > 0:
+            self.ball.surge_shield_timer -= delta
+            if self.ball.surge_shield_timer <= 0:
+                self.ball.surge_shield_active = False
+
 
         if hasattr(self.ball, "orbital_shield_timer") and self.ball.orbital_shield_timer > 0:
             self.ball.orbital_shield_timer -= delta
