@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Singularity Trap",
+  "description": "A late-game trap that creates a localized black hole that pulls all nearby entities (players, items, other traps) towards the center. The pull gets stronger the closer they are, and if they reach the center, they take massive damage and are randomly teleported across the map."
+}

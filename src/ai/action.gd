@@ -24818,6 +24818,160 @@ func _use_skill():
                         self.ball["survival_swap_target_id"] = next_id
                         self.ball["survival_swap_timer"] = 3.0
 
+        elif skill_name == "decoy_swap_detonate":
+            var active_decoys = []
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    var is_d = false
+                    if "is_decoy" in b and b.is_decoy:
+                        is_d = true
+                    elif b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"):
+                        is_d = true
+
+                    if is_d:
+                        var owner = -1
+                        if "owner_id" in b: owner = b.owner_id
+                        elif b.has_method("get_meta") and b.has_meta("owner_id"): owner = b.get_meta("owner_id")
+
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        var self_id = -2
+                        if "id" in self.ball: self_id = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                        if owner == self_id and b_alive:
+                            active_decoys.append(b)
+
+            if active_decoys.size() > 0:
+                var decoy = active_decoys[0]
+                var tx = 0.0
+                var ty = 0.0
+                if "x" in self.ball: tx = self.ball.x
+                if "y" in self.ball: ty = self.ball.y
+
+                var dx_pos = 0.0
+                var dy_pos = 0.0
+                if "x" in decoy: dx_pos = decoy.x
+                if "y" in decoy: dy_pos = decoy.y
+
+                if typeof(self.ball) == TYPE_OBJECT:
+                    if "x" in self.ball: self.ball.x = dx_pos
+                    if "y" in self.ball: self.ball.y = dy_pos
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("x"): self.ball["x"] = dx_pos
+                    if self.ball.has("y"): self.ball["y"] = dy_pos
+
+                if self.world.has_method("add_event"):
+                    self.world.add_event("explosion", {"x": tx, "y": ty, "radius": 150.0, "damage": 50.0})
+
+                if "balls" in self.world:
+                    for b in self.world.balls:
+                        if b != self.ball:
+                            var b_alive = true
+                            if "alive" in b: b_alive = b.alive
+                            elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                            if b_alive:
+                                var b_team = ""
+                                if "team" in b: b_team = b.team
+                                elif b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+                                var self_team = ""
+                                if "team" in self.ball: self_team = self.ball.team
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): self_team = self.ball.get_meta("team")
+
+                                if b_team != self_team:
+                                    var bx = 0.0
+                                    var by = 0.0
+                                    if "x" in b: bx = b.x
+                                    if "y" in b: by = b.y
+                                    var dx2 = bx - tx
+                                    var dy2 = by - ty
+                                    var dist_sq = dx2*dx2 + dy2*dy2
+                                    if dist_sq <= 150.0 * 150.0:
+                                        if typeof(b) == TYPE_OBJECT:
+                                            if b.has_method("take_damage"):
+                                                b.take_damage(50.0)
+                                            elif "hp" in b:
+                                                b.hp = max(0, b.hp - 50.0)
+                                        elif typeof(b) == TYPE_DICTIONARY:
+                                            if b.has("hp"):
+                                                b["hp"] = max(0, b["hp"] - 50.0)
+
+                if typeof(decoy) == TYPE_OBJECT:
+                    if "hp" in decoy: decoy.hp = 0
+                    if "alive" in decoy: decoy.alive = false
+                elif typeof(decoy) == TYPE_DICTIONARY:
+                    if decoy.has("hp"): decoy["hp"] = 0
+                    if decoy.has("alive"): decoy["alive"] = false
+
+                var cd = 5.0
+                if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+                if typeof(self.ball) == TYPE_OBJECT:
+                    if "skill_timer" in self.ball: self.ball.skill_timer = cd
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("skill_timer"): self.ball["skill_timer"] = cd
+
+            else:
+                var decoy_dict = {}
+                var self_id = -1
+                if "id" in self.ball: self_id = self.ball.id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                var max_hp = 100.0
+                if "max_hp" in self.ball: max_hp = self.ball.max_hp
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+
+                var speed = 5.0
+                if "speed" in self.ball: speed = self.ball.speed
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("speed"): speed = self.ball.get_meta("speed")
+
+                var bx = 0.0
+                var by = 0.0
+                if "x" in self.ball: bx = self.ball.x
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): bx = self.ball.get_meta("x")
+                if "y" in self.ball: by = self.ball.y
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): by = self.ball.get_meta("y")
+
+                var b_team = ""
+                if "team" in self.ball: b_team = self.ball.team
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): b_team = self.ball.get_meta("team")
+
+                var next_id = randi() % 90000 + 10000
+                if "next_id" in self.world:
+                    next_id = self.world.next_id
+                    self.world.next_id += 1
+
+                decoy_dict["id"] = next_id
+                decoy_dict["owner_id"] = self_id
+                decoy_dict["hp"] = max_hp * 0.5
+                decoy_dict["max_hp"] = max_hp * 0.5
+                decoy_dict["damage"] = 0.0
+                decoy_dict["speed"] = speed
+                decoy_dict["skill_timer"] = 9999.0
+                decoy_dict["attack_timer"] = 9999.0
+                decoy_dict["is_decoy"] = true
+                decoy_dict["decoy_timer"] = 10.0
+                decoy_dict["x"] = bx
+                decoy_dict["y"] = by
+                decoy_dict["team"] = b_team
+                decoy_dict["alive"] = true
+                decoy_dict["radius"] = 10.0
+                if "radius" in self.ball: decoy_dict["radius"] = self.ball.radius
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): decoy_dict["radius"] = self.ball.get_meta("radius")
+                decoy_dict["decoy_type"] = "basic"
+
+                self.world.balls.append(decoy_dict)
+
+                var cd = 2.0
+                if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+                if typeof(self.ball) == TYPE_OBJECT:
+                    if "skill_timer" in self.ball: self.ball.skill_timer = cd
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("skill_timer"): self.ball["skill_timer"] = cd
+
+
         elif skill_name == "deploy_decoy" or skill_name == "deploy_decoy_flash" or skill_name == "deploy_decoy_advanced":
             var active_decoys = []
             var has_swapped_any = false
