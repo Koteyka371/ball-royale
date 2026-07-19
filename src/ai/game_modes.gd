@@ -25575,7 +25575,11 @@ class ExtremeWeatherMode extends GameMode:
 				world.add_event("weather_change", {"weather": current_weather})
 
 			var booster_kind = ""
-			if current_weather == "blizzard": booster_kind = "thermal_booster"
+			if current_weather == "blizzard":
+				if randf() < 0.3:
+					booster_kind = "snow_globe_item"
+				else:
+					booster_kind = "thermal_booster"
 			elif current_weather == "heatwave": booster_kind = "cooling_booster"
 			elif current_weather == "acid_rain": booster_kind = "hazmat_booster"
 			elif current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
@@ -25586,6 +25590,15 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "giant_flood": booster_kind = "life_jacket_booster"
 			elif current_weather == "solar_eclipse": booster_kind = "vision_booster"
 			elif current_weather == "celestial_alignment": booster_kind = "starlight_booster"
+
+			if current_weather == "acid_rain" and world != null and "boosters" in world:
+				var arena_w = 1000
+				var arena_h = 1000
+				if "arena" in world and world.arena != null:
+					if "width" in world.arena: arena_w = world.arena.width
+					if "height" in world.arena: arena_h = world.arena.height
+				if randf() < 0.5:
+					world.boosters.append({"kind": "umbrella_booster", "x": randf_range(100, arena_w - 100), "y": randf_range(100, arena_h - 100), "active": true, "radius": 15.0})
 
 			var boss_map = {
 				"blizzard": "Frost Titan",
@@ -25671,7 +25684,7 @@ class ExtremeWeatherMode extends GameMode:
 			if "steering_mult" in b: b.steering_mult = 1.0
 			elif b.has_method("set_meta"): b.set_meta("steering_mult", 1.0)
 
-			var has_thermal = (b.has_meta("thermal_booster_timer") and b.get_meta("thermal_booster_timer") > 0.0) or (b.has_meta("mega_thermal_booster_timer") and b.get_meta("mega_thermal_booster_timer") > 0.0)
+			var has_thermal = (b.has_meta("thermal_booster_timer") and b.get_meta("thermal_booster_timer") > 0.0) or (b.has_meta("mega_thermal_booster_timer") and b.get_meta("mega_thermal_booster_timer") > 0.0) or (b.has_meta("snow_globe_immunity_timer") and b.get_meta("snow_globe_immunity_timer") > 0.0)
 			var has_cooling = (b.has_meta("cooling_booster_timer") and b.get_meta("cooling_booster_timer") > 0.0) or (b.has_meta("mega_cooling_booster_timer") and b.get_meta("mega_cooling_booster_timer") > 0.0)
 			var has_hazmat = (b.has_meta("hazmat_booster_timer") and b.get_meta("hazmat_booster_timer") > 0.0) or (b.has_meta("mega_hazmat_booster_timer") and b.get_meta("mega_hazmat_booster_timer") > 0.0)
 			var has_anchor = (b.has_meta("heavy_anchor_booster_timer") and b.get_meta("heavy_anchor_booster_timer") > 0.0) or (b.has_meta("mega_heavy_anchor_booster_timer") and b.get_meta("mega_heavy_anchor_booster_timer") > 0.0)

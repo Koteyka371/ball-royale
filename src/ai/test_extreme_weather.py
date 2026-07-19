@@ -79,6 +79,7 @@ def test_extreme_weather_boss_spawn_and_drop():
         def choice(self, seq): return "blizzard"
         def uniform(self, a, b): return a + (b-a)/2.0
         def randint(self, a, b): return a
+        def random(self): return 1.0
     mode.random = MockRandom()
 
     mode.tick(world, world.balls, 0.1)
@@ -124,6 +125,14 @@ def test_extreme_weather_mode_effects():
     # b2 protected
     assert b2.speed == b2.base_speed
     assert b2.hp == 100.0
+
+    # Test snow globe item
+    b1.hp = 100.0
+    b1.speed = 100.0
+    b1.snow_globe_immunity_timer = 10.0
+    mode.tick(world, balls, 1.0)
+    assert b1.hp == 100.0
+    assert b1.speed == b1.base_speed
 
     # Test heatwave
     mode.current_weather = "heatwave"
