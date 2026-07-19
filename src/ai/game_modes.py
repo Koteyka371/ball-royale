@@ -9903,6 +9903,15 @@ class WindstormMode(GameMode):
                     b.vx += self.push_dir_x * strength * delta
                     b.vy += self.push_dir_y * strength * delta
 
+            if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                for h in world.arena.hazards:
+                    if hasattr(h, 'vx') and hasattr(h, 'vy'):
+                        h.vx += self.push_dir_x * self.push_strength * delta
+                        h.vy += self.push_dir_y * self.push_strength * delta
+                    elif hasattr(h, 'x') and hasattr(h, 'y'):
+                        h.x += self.push_dir_x * self.push_strength * delta
+                        h.y += self.push_dir_y * self.push_strength * delta
+
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
