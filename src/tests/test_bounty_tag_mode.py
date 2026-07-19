@@ -5,9 +5,17 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import pytest # type: ignore
 from ai.game_modes import GAME_MODES
 
+class MockProfileManager:
+    def __init__(self):
+        self.points = 0
+    def add_skill_points(self, pts):
+        self.points += pts
+
 class MockWorld:
     def __init__(self):
         self.events = []
+        self.profile_manager = MockProfileManager()
+        self.dead_balls = []
 
     def add_event(self, type_, data):
         self.events.append((type_, data))
@@ -51,13 +59,24 @@ def test_bounty_tag_mode():
     pings = [e for e in world.events if e[0] == "bounty_compass"]
     assert len(pings) > 0
 
+    # Move the bounty ball to increase distance
+    bounty_ball.x += 100
+    bounty_ball.y += 0
+    mode.tick(world, balls, 1.0)
+
+    # distance = 100. bonus = 5. base = 30 * 2 * 2.0 = 120
+    # expected = 125
+
     # Kill bounty
+    bounty_ball.kill_bounty = 2
     bounty_ball.alive = False
     killer = balls[0] if bounty_ball.id == 2 else balls[1]
     mode.on_ball_died(world, bounty_ball, killer)
 
     assert mode.current_bounty_id == killer.id
     assert killer.max_hp == 200.0
+
+    assert world.profile_manager.points == 125
 
     # Test winner
     bounty_ball.alive = False

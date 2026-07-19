@@ -19478,6 +19478,8 @@ class BountyTagMode(GameMode):
         self.bounty_ping_timer = 0.0
         self.current_bounty_id = None
         self.bounty_time_held = {}
+        self.bounty_distance_traveled = 0.0
+        self.last_bounty_pos = None
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
@@ -19488,6 +19490,8 @@ class BountyTagMode(GameMode):
             self.current_bounty_id = getattr(first_bounty, "id", None)
 
     def _make_bounty(self, b: Any) -> None:
+        self.bounty_distance_traveled = 0.0
+        self.last_bounty_pos = (getattr(b, 'x', 0.0), getattr(b, 'y', 0.0))
         b.is_bounty = True
         b.max_hp = getattr(b, "max_hp", 100.0) * 2.0
         b.hp = b.max_hp
@@ -19507,6 +19511,13 @@ class BountyTagMode(GameMode):
         bounty_ball = next((b for b in balls if getattr(b, "id", None) == self.current_bounty_id and getattr(b, "alive", False)), None)
 
         if bounty_ball:
+            import math
+            bx, by = getattr(bounty_ball, 'x', 0.0), getattr(bounty_ball, 'y', 0.0)
+            if self.last_bounty_pos is not None:
+                dist = math.hypot(bx - self.last_bounty_pos[0], by - self.last_bounty_pos[1])
+                self.bounty_distance_traveled += dist
+            self.last_bounty_pos = (bx, by)
+
             bid = getattr(bounty_ball, "id", None)
             if bid is not None:
                 self.bounty_time_held[bid] = self.bounty_time_held.get(bid, 0.0) + delta
@@ -19527,6 +19538,9 @@ class BountyTagMode(GameMode):
     def on_ball_died(self, world: Any, ball: Any, killer: Any) -> None:
         if getattr(ball, "id", None) == self.current_bounty_id:
             if killer and getattr(killer, "alive", False):
+                # Calculate reward before resetting bounty
+                distance_bonus = int(getattr(self, "bounty_distance_traveled", 0.0) / 100.0) * 5
+
                 self._remove_bounty(ball)
                 self._make_bounty(killer)
                 self.current_bounty_id = getattr(killer, "id", None)
@@ -19535,6 +19549,7 @@ class BountyTagMode(GameMode):
                 profile = getattr(world, "profile_manager", None)
                 if profile and hasattr(profile, "add_skill_points"):
                     points_reward = 30 * getattr(ball, "kill_bounty", 2) * 2.0
+                    points_reward += distance_bonus
                     profile.add_skill_points(int(points_reward))
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
