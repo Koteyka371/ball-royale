@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1141] Quantum Singularity Trap — *2026-07-19 05:22:48 UTC*
+
+A rare deployable trap that sucks in nearby players and projectiles, gradually slowing them down and increasing collision damage within its event horizon before violently exploding.
+
+---
+
 ## [idea-1069] Quantum Resonance Booster — *2026-07-19 05:10:02 UTC*
 
 A new booster type that temporarily halves the cooldown of quantum teleporters and additionally links your ball with your teammates for shared short-range teleports when near.
