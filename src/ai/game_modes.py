@@ -9935,6 +9935,7 @@ class BountyHuntMode(GameMode):
         self.description = "One ball on each team is the Bounty. Destroying the enemy Bounty grants a massive buff and extra skill points."
         self.bounty_base_reward = 30
         self.bounty_multiplier = 2.0
+        self.bounty_swap_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
@@ -10027,6 +10028,47 @@ class BountyHuntMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.0) -> None:
         super().tick(world, balls, delta)
+
+        self.bounty_swap_timer += delta
+        if self.bounty_swap_timer >= 30.0:
+            self.bounty_swap_timer = 0.0
+
+            # Gather valid teams
+            red_team = []
+            blue_team = []
+            import random
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    if getattr(b, "team", "") == "Red":
+                        red_team.append(b)
+                    elif getattr(b, "team", "") == "Blue":
+                        blue_team.append(b)
+
+            swapped = False
+            # Pick new for Red
+            if red_team:
+                old_red = self.bounties.get("Red")
+                if old_red:
+                    setattr(old_red, "is_bounty", False)
+                new_red = random.choice(red_team)
+                new_red.is_bounty = True
+                new_red.bounty_timer = 0
+                self.bounties["Red"] = new_red
+                swapped = True
+
+            # Pick new for Blue
+            if blue_team:
+                old_blue = self.bounties.get("Blue")
+                if old_blue:
+                    setattr(old_blue, "is_bounty", False)
+                new_blue = random.choice(blue_team)
+                new_blue.is_bounty = True
+                new_blue.bounty_timer = 0
+                self.bounties["Blue"] = new_blue
+                swapped = True
+
+            if swapped and hasattr(world, "add_event"):
+                world.add_event("bounty_swapped", {"message": "Bounty targets have swapped!", "siren": True})
 
         for team, bounty in list(self.bounties.items()):
             if not getattr(bounty, "alive", False) and team not in self.buffed_teams:
