@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1092] Destructible Bouncy Boundaries — *2026-07-19 01:35:31 UTC*
+
+Make parts of the bouncy arena boundaries destructible over time when hit by high-speed balls, gradually exposing deadly spikes or an infinite fall abyss behind them.
+
+---
+
 ## [idea-1134] Solar Powered Ball — *2026-07-19 01:14:16 UTC*
 
 A new ball type 'solar_bot' that naturally regenerates HP and stamina as long as the arena is well lit, but suffers heavy debuffs (speed, damage) during blackouts or eclipses. It uses a unique skill 'Solar Flare' that burns nearby enemies and briefly lights up a dark area.

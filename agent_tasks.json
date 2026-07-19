@@ -18733,7 +18733,7 @@
     },
     {
       "id": "idea-1092",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Destructible Bouncy Boundaries",
@@ -30394,6 +30394,23 @@
         "src/ai/payload_overload_mod.py",
         "src/ai/payload_overload_mod.gd",
         "tests/test_payload_overload_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1777",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar Wind Weather Event",
+      "description": "A weather event that randomly applies push forces across the entire arena while drastically increasing the effectiveness of all solar-powered abilities and boosting energy regeneration. Movement against the wind costs extra stamina.",
+      "allowed_paths": [
+        "src/ai/solar_wind.py",
+        "src/ai/solar_wind.gd",
+        "tests/test_solar_wind.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
