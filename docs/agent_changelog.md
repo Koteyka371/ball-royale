@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1150] Kinetic Bounce Walls — *2026-07-19 05:09:58 UTC*
+
+Arena walls that absorb impact energy and reflect entities back with a velocity proportional to their incoming momentum, while spawning temporary defensive shields around the impact zone.
+
+---
+
 ## [idea-1159] Crystallized Armor Booster — *2026-07-19 04:48:05 UTC*
 
 A rare booster that coats the player in hardened crystal. The armor fully negates the next 3 instances of damage, but each hit slows the player's movement speed slightly until the armor breaks entirely, sending shrapnel outward.
