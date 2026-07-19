@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1162] Reverse Escort Mode — *2026-07-19 19:07:04 UTC*
+
+Similar to Escort Mode, but instead of one team escorting an invulnerable payload, both teams must push the payload toward the center, acting as a shared 'Tug of War' towards a mutual goal point where it generates points over time for the team holding it closer.
+
+---
+
 ## [idea-1125] Phase-Shifting Hazard — *2026-07-19 18:57:10 UTC*
 
 A new hazard type that cycles between solid (blocks movement) and damaging (passes through but deals heavy damage over time).
