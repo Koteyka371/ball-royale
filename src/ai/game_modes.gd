@@ -34174,7 +34174,161 @@ class PositionSwapMode extends GameMode:
 			world.position_swap_pending = pending
 
 
+
+class CrowdHologramEventMode extends GameMode:
+	var event_timer: float = 0.0
+	var event_active: bool = false
+	var event_duration: float = 0.0
+	var holograms: Array = []
+	var hologram_id_counter: int = 8000
+
+	func _init():
+		super._init()
+		name = "Crowd Hologram Event"
+		description = "High-excitement crowd events spawn physical holograms along the arena edges."
+
+	func apply_dynamic_traits(world, balls, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 20.0:
+			if randf() < 0.2:
+				event_active = true
+				event_duration = 15.0
+				event_timer = 0.0
+				holograms = []
+
+				var arena_width = 800
+				var arena_height = 600
+				if typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and world.has_meta("arena"):
+					var a = world.get_meta("arena")
+					arena_width = a.width if "width" in a else (a.get_meta("width") if a.has_method("has_meta") and a.has_meta("width") else 800)
+					arena_height = a.height if "height" in a else (a.get_meta("height") if a.has_method("has_meta") and a.has_meta("height") else 600)
+				elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+					arena_width = world["arena"]["width"] if world["arena"].has("width") else 800
+					arena_height = world["arena"]["height"] if world["arena"].has("height") else 600
+				elif "arena" in world:
+					arena_width = world.arena.width if "width" in world.arena else 800
+					arena_height = world.arena.height if "height" in world.arena else 600
+
+				var num_holograms = randi() % 5 + 4
+				for i in range(num_holograms):
+					hologram_id_counter += 1
+					var edge_choices = ["top", "bottom", "left", "right"]
+					var edge = edge_choices[randi() % 4]
+					var margin = 50
+					var hx = 0.0
+					var hy = 0.0
+
+					if edge == "top":
+						hx = randf_range(margin, arena_width - margin)
+						hy = margin
+					elif edge == "bottom":
+						hx = randf_range(margin, arena_width - margin)
+						hy = arena_height - margin
+					elif edge == "left":
+						hx = margin
+						hy = randf_range(margin, arena_height - margin)
+					else:
+						hx = arena_width - margin
+						hy = randf_range(margin, arena_height - margin)
+
+					holograms.append({
+						"id": hologram_id_counter,
+						"x": hx,
+						"y": hy,
+						"radius": 20.0,
+						"hp": 100.0,
+						"active": true,
+						"kind": "crowd_hologram"
+					})
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("crowd_holograms_spawned", {"message": "Hologram spectators appeared!"})
+			else:
+				event_timer = 0.0
+
+		if event_active:
+			event_duration -= delta
+			if event_duration <= 0:
+				event_active = false
+				event_timer = 0.0
+				holograms = []
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("crowd_holograms_ended", {"message": "Hologram spectators disappeared."})
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+				elif "alive" in b: is_alive = b.alive
+
+				if not is_alive: continue
+
+				var bx = b.x if "x" in b else (b["x"] if typeof(b) == TYPE_DICTIONARY else b.get_meta("x"))
+				var by = b.y if "y" in b else (b["y"] if typeof(b) == TYPE_DICTIONARY else b.get_meta("y"))
+				var bradius = b.radius if "radius" in b else (b["radius"] if typeof(b) == TYPE_DICTIONARY and b.has("radius") else 15.0)
+				var bid = b.id if "id" in b else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else null)
+
+				for h in holograms:
+					if not h["active"]: continue
+
+					var dx = bx - h["x"]
+					var dy = by - h["y"]
+					var dist = sqrt(dx * dx + dy * dy)
+
+					if dist < bradius + h["radius"]:
+						h["active"] = false
+
+						var current_sb = 0.0
+						if "speed_buff_timer" in b: current_sb = b.speed_buff_timer
+						elif typeof(b) == TYPE_DICTIONARY and b.has("speed_buff_timer"): current_sb = b["speed_buff_timer"]
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("speed_buff_timer"): current_sb = b.get_meta("speed_buff_timer")
+
+						if "speed_buff_timer" in b: b.speed_buff_timer = current_sb + 2.0
+						elif typeof(b) == TYPE_DICTIONARY: b["speed_buff_timer"] = current_sb + 2.0
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("speed_buff_timer", current_sb + 2.0)
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("crowd_cheer", {"ball_id": bid, "message": "The crowd cheers for you!"})
+
+			var arena = null
+			if typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and world.has_meta("arena"): arena = world.get_meta("arena")
+			elif typeof(world) == TYPE_DICTIONARY and world.has("arena"): arena = world["arena"]
+			elif "arena" in world: arena = world.arena
+
+			if arena != null:
+				var old_hazards = arena.hazards if "hazards" in arena else (arena["hazards"] if typeof(arena) == TYPE_DICTIONARY else (arena.get_meta("hazards") if arena.has_method("has_meta") else []))
+				var new_hazards = []
+				for hzd in old_hazards:
+					var hkind = ""
+					if typeof(hzd) == TYPE_DICTIONARY and hzd.has("kind"): hkind = hzd["kind"]
+					elif typeof(hzd) == TYPE_OBJECT and hzd.has_method("has_meta") and hzd.has_meta("kind"): hkind = hzd.get_meta("kind")
+					elif "kind" in hzd: hkind = hzd.kind
+					if hkind != "crowd_hologram":
+						new_hazards.append(hzd)
+
+				for h in holograms:
+					if h["active"]:
+						new_hazards.append({
+							"id": h["id"],
+							"x": h["x"],
+							"y": h["y"],
+							"radius": h["radius"],
+							"kind": h["kind"],
+							"damage": 0,
+							"hp": h["hp"],
+							"active": true
+						})
+
+				if "hazards" in arena: arena.hazards = new_hazards
+				elif typeof(arena) == TYPE_DICTIONARY: arena["hazards"] = new_hazards
+				elif typeof(arena) == TYPE_OBJECT and arena.has_method("set_meta"): arena.set_meta("hazards", new_hazards)
+
 GAME_MODES = {
+	"crowd_hologram_event": CrowdHologramEventMode.new(),
 	"position_swap": PositionSwapMode.new(),
 	"quantum_tunnel_mutator": QuantumTunnelMutatorMode.new(),
 	"sweeping_rotating_lasers": SweepingRotatingLasersMode.new(),

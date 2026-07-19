@@ -21091,7 +21091,121 @@ class PositionSwapMode(GameMode):
         world.position_swap_pending = pending
 
 
+
+class CrowdHologramEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Crowd Hologram Event"
+        self.description = "High-excitement crowd events spawn physical holograms along the arena edges."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+        self.holograms = []
+        self.hologram_id_counter = 8000
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import math
+        import random
+
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 20.0:
+            if random.random() < 0.2:  # 20% chance to trigger
+                self.event_active = True
+                self.event_duration = 15.0
+                self.event_timer = 0.0
+                self.holograms = []
+
+                arena_width = getattr(world.arena, "width", 800)
+                arena_height = getattr(world.arena, "height", 600)
+
+                for _ in range(random.randint(4, 8)):
+                    self.hologram_id_counter += 1
+
+                    # Spawn along edges
+                    edge = random.choice(["top", "bottom", "left", "right"])
+                    margin = 50
+                    if edge == "top":
+                        hx = random.uniform(margin, arena_width - margin)
+                        hy = margin
+                    elif edge == "bottom":
+                        hx = random.uniform(margin, arena_width - margin)
+                        hy = arena_height - margin
+                    elif edge == "left":
+                        hx = margin
+                        hy = random.uniform(margin, arena_height - margin)
+                    else:
+                        hx = arena_width - margin
+                        hy = random.uniform(margin, arena_height - margin)
+
+                    self.holograms.append({
+                        "id": self.hologram_id_counter,
+                        "x": hx,
+                        "y": hy,
+                        "radius": 20.0,
+                        "hp": 100.0,
+                        "active": True,
+                        "kind": "crowd_hologram"
+                    })
+
+                if hasattr(world, "add_event"):
+                    world.add_event("crowd_holograms_spawned", {"message": "Hologram spectators appeared!"})
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            if self.event_duration <= 0:
+                self.event_active = False
+                self.event_timer = 0.0
+                self.holograms = []
+                if hasattr(world, "add_event"):
+                    world.add_event("crowd_holograms_ended", {"message": "Hologram spectators disappeared."})
+
+            # Check collisions with balls
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                for h in self.holograms:
+                    if not h.get("active", False):
+                        continue
+
+                    dx = b.x - h["x"]
+                    dy = b.y - h["y"]
+                    dist = math.hypot(dx, dy)
+
+                    if dist < getattr(b, "radius", 15) + h["radius"]:
+                        h["active"] = False
+                        b.speed_buff_timer = getattr(b, "speed_buff_timer", 0.0) + 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("crowd_cheer", {"ball_id": getattr(b, "id", None), "message": "The crowd cheers for you!"})
+
+            # Sync with arena hazards so they block projectiles (if treated as obstacles)
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards = [hzd for hzd in world.arena.hazards if getattr(hzd, "kind", "") != "crowd_hologram"]
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+
+                for h in self.holograms:
+                    if h.get("active", False):
+                        hzd = Hazard(h["id"], h["x"], h["y"], h["radius"], "crowd_hologram", 0)
+                        hzd.active = True
+                        hzd.hp = h["hp"]
+                        world.arena.hazards.append(hzd)
+
 GAME_MODES = {
+    'crowd_hologram_event': CrowdHologramEventMode(),
     'position_swap': PositionSwapMode(),
     'quantum_tunnel_mutator': QuantumTunnelMutatorMode(),
     'healing_zone': HealingZoneMode(),
