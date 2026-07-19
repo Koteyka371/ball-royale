@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1171] Solar Eclipse Event Mode — *2026-07-19 21:34:42 UTC*
+
+An event where the sun is gradually blocked. As the eclipse progresses, vision gradually decreases, solar panels provide less power, and at full totality, shadow monsters spawn rapidly and all balls become temporarily invisible to each other.
+
+---
+
 ## [idea-1140] Magnetic Minefield Hazard — *2026-07-19 21:34:38 UTC*
 
 New procedural arena hazard that spawns inactive magnetic mines. When a ball comes within a certain proximity, the mine starts slowly dragging the ball towards it before exploding in a massive shockwave.
