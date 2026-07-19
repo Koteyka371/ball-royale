@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1183] Payload Path Alteration — *2026-07-19 23:30:51 UTC*
+
+Allow Attackers to capture hack points around the map to temporarily alter the payload's path, forcing the Defenders to take a longer route.
+
+---
+
 ## [idea-1186] Decoy Network Shield — *2026-07-19 23:25:44 UTC*
 
 An energy shield that gets stronger based on the number of active allied decoys near the user, giving Decoy Masters immense defensive utility when swarmed.

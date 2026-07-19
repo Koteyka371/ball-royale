@@ -20282,7 +20282,7 @@
     },
     {
       "id": "idea-1183",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Path Alteration",
@@ -30973,6 +30973,23 @@
         "src/ai/quantum_singularity_mine.py",
         "src/ai/quantum_singularity_mine.gd",
         "tests/test_quantum_singularity_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1811",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Overdrive",
+      "description": "A mode where generating more than 5 decoys causes them to link together with electricity, damaging any enemies that cross the connection.",
+      "allowed_paths": [
+        "src/ai/decoy_overdrive.py",
+        "src/ai/decoy_overdrive.gd",
+        "tests/test_decoy_overdrive.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
