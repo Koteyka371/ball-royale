@@ -946,6 +946,19 @@ class Action:
                 self._award_xp(attacker, base_xp, self.world)
 
         if new_hp <= 0 and old_hp > 0:
+            if getattr(target, "is_bounty_target", False):
+                owner_id = getattr(target, "bounty_target_owner", None)
+                if owner_id is not None:
+                    owner = None
+                    if hasattr(self.world, "balls"):
+                        owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id), None)
+                    if owner and getattr(owner, "alive", True):
+                        self._award_xp(owner, 150.0, self.world)
+                        if hasattr(owner, "take_damage"):
+                            owner.hp = min(getattr(owner, "max_hp", 100.0), getattr(owner, "hp", 100.0) + 30.0)
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("bounty_trap_claimed", {"message": "Bounty Trap claimed!"})
+
             if getattr(target, "is_dynamic_bounty", False):
                 attacker.damage = getattr(attacker, "damage", 10.0) * 1.5
                 if hasattr(attacker, "base_damage"):
@@ -5414,6 +5427,19 @@ class Action:
                                                     speed = 50.0
                                                     other_hazard.vx = (dx / dist) * speed
                                                     other_hazard.vy = (dy / dist) * speed
+
+                    elif hazard.kind == "bounty_trap":
+                        hazard_is_active = getattr(hazard, "active", True)
+                        hazard_team = getattr(hazard, "team", "")
+                        my_team = getattr(self.ball, "team", "")
+
+                        if hazard_is_active and hazard_team != my_team:
+                            dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                            if dist_sq < (getattr(hazard, "radius", 20.0) + self.ball.radius)**2:
+                                self.ball.is_bounty_target = True
+                                self.ball.bounty_target_owner = getattr(hazard, "owner_id", None)
+                                hazard.duration = 0.0
+                                hazard.active = False
 
                     elif hazard.kind == "deployable_thin_hazard_line":
                         hazard_is_active = getattr(hazard, "active", True)
@@ -14522,6 +14548,23 @@ class Action:
                     node.pulse_active_timer = 0.0
                     node.owner_id = self.ball.id
                     self.world.arena.hazards.append(node)
+
+            elif skill_name == "bounty_trap":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class BountyTrapNode:
+                        pass
+                    node = BountyTrapNode()
+                    node.id = f"bounty_trap_{self.ball.id}_{self.world.tick}"
+                    node.kind = "bounty_trap"
+                    node.x = self.ball.x
+                    node.y = self.ball.y
+                    node.radius = 20.0
+                    node.owner_id = self.ball.id
+                    node.team = getattr(self.ball, "team", "")
+                    node.duration = 60.0
+                    node.active = True
+                    self.world.arena.hazards.append(node)
+                self.ball.skill_timer = 15.0
 
             elif skill_name == "deployable_thin_hazard_line":
                 enemies = self._get_enemies()

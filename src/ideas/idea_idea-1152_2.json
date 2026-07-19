@@ -1,0 +1,4 @@
+{
+  "title": "Chrono Anchor Trap",
+  "description": "A hazard that continuously pulls in enemies within its radius. Once an enemy reaches the center, it places a \"Time Stop\" effect on them, freezing their movement and stamina regeneration for 2 seconds while leaving them vulnerable to attacks."
+}
