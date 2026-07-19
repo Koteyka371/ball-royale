@@ -19763,6 +19763,55 @@ func _hold_zone(delta: float):
                 self.ball.y += (edy / edist) * spd * delta * 50.0
 
 func _defend(delta: float):
+    var b_type = ""
+    if "ball_type" in self.ball:
+        b_type = str(self.ball.ball_type).to_lower()
+
+    if b_type == "decoy_master":
+        var active_decoys = []
+        if "balls" in self.world:
+            for b in self.world.balls:
+                var is_d = false
+                if "is_decoy" in b and b.is_decoy:
+                    is_d = true
+                elif b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"):
+                    is_d = true
+                if is_d:
+                    var owner = -1
+                    if "owner_id" in b: owner = b.owner_id
+                    elif b.has_method("get_meta") and b.has_meta("owner_id"): owner = b.get_meta("owner_id")
+
+                    var b_alive = true
+                    if "alive" in b: b_alive = b.alive
+                    elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                    var self_id = -2
+                    if "id" in self.ball: self_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                    if owner == self_id and b_alive:
+                        active_decoys.append(b)
+
+        var near_decoys = 0
+        for d in active_decoys:
+            var dist_sq = pow(d.x - self.ball.x, 2) + pow(d.y - self.ball.y, 2)
+            if dist_sq <= 10000: # 100 radius
+                near_decoys += 1
+
+        if near_decoys > 0:
+            if "energy_shield_active" in self.ball: self.ball.energy_shield_active = true
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("energy_shield_active", true)
+
+            var shield_str = float(near_decoys) * 15.0
+
+            var curr_hp = 0.0
+            if "energy_shield_hp" in self.ball: curr_hp = float(self.ball.energy_shield_hp)
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("energy_shield_hp"): curr_hp = float(self.ball.get_meta("energy_shield_hp"))
+
+            if "energy_shield_hp" in self.ball: self.ball.energy_shield_hp = curr_hp + shield_str
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("energy_shield_hp", curr_hp + shield_str)
+
+
     var personality = "idle"
     if "personality" in self.ball:
         personality = self.ball.personality
