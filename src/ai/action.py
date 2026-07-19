@@ -6864,31 +6864,12 @@ class Action:
                                     hazard.duration = 0.0
 
                                 elif trap_variant == "mine":
-                                    # Mine: large damage
-                                    if hasattr(self.ball, "take_damage"):
-                                        self.ball.take_damage(50.0)
-                                    elif hasattr(self.ball, "hp"):
-                                        self.ball.hp -= 50.0
-                                        if self.ball.hp <= 0:
-                                            self.ball.alive = False
+                                    # Black Hole Mine: Pull nearby enemies and physics objects for 3s before detonating
+                                    if not getattr(hazard, "is_detonating", False):
+                                        hazard.is_detonating = True
+                                        hazard.detonation_timer = 3.0
+                                        # Keep it active but marked as detonating
 
-                                    # Disable AI abilities and rendering them unable to attack for 5 seconds.
-                                    if hasattr(self.ball, "skill_timer"):
-                                        self.ball.skill_timer = max(getattr(self.ball, "skill_timer", 0.0), 5.0)
-                                    else:
-                                        self.ball.skill_timer = 5.0
-
-                                    if hasattr(self.ball, "silence_timer"):
-                                        self.ball.silence_timer = max(getattr(self.ball, "silence_timer", 0.0), 5.0)
-                                    else:
-                                        self.ball.silence_timer = 5.0
-
-                                    if hasattr(self.ball, "attack_timer"):
-                                        self.ball.attack_timer = max(getattr(self.ball, "attack_timer", 0.0), 5.0)
-                                    else:
-                                        self.ball.attack_timer = 5.0
-
-                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "freeze":
                                     # Freeze: halt for 2 seconds
                                     if not getattr(self.ball, "is_stunned", False):

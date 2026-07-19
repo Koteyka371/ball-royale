@@ -289,6 +289,56 @@ class GameMode:
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+        # Black Hole Mine detonating logic
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            to_remove = []
+            for h in world.arena.hazards:
+                if getattr(h, "is_detonating", False) and getattr(h, "kind", "") == "trap":
+                    h.detonation_timer -= delta
+                    if h.detonation_timer > 0:
+                        # Pull nearby enemies and physics objects
+
+                        pull_targets = []
+                        pull_targets.extend([b for b in balls if getattr(b, "alive", False)])
+                        if hasattr(world, "boosters"):
+                            pull_targets.extend(world.boosters)
+
+                        for b in pull_targets:
+                            dx = h.x - getattr(b, "x", 0.0)
+                            dy = h.y - getattr(b, "y", 0.0)
+                            dist_sq = dx*dx + dy*dy
+                            if dist_sq < 90000: # 300 radius squared
+                                dist = dist_sq**0.5
+                                if dist > 0:
+                                    pull_strength = 200.0 * (1.0 - dist/300.0)
+                                    b.vx = getattr(b, "vx", 0.0) + (dx/dist) * pull_strength * delta
+                                    b.vy = getattr(b, "vy", 0.0) + (dy/dist) * pull_strength * delta
+                    else:
+                        h.is_detonating = False
+                        h.duration = 0.0
+                        # Explosive damage
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                dx = h.x - getattr(b, "x", 0.0)
+                                dy = h.y - getattr(b, "y", 0.0)
+                                if dx*dx + dy*dy < 40000: # 200 radius squared
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(50.0)
+                                    else:
+                                        b.hp = getattr(b, "hp", 100.0) - 50.0
+                                        if b.hp <= 0:
+                                            b.alive = False
+                                    if hasattr(b, "skill_timer"): b.skill_timer = max(getattr(b, "skill_timer", 0.0), 5.0)
+                                    else: b.skill_timer = 5.0
+                                    if hasattr(b, "silence_timer"): b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
+                                    else: b.silence_timer = 5.0
+                                    if hasattr(b, "attack_timer"): b.attack_timer = max(getattr(b, "attack_timer", 0.0), 5.0)
+                                    else: b.attack_timer = 5.0
+                        to_remove.append(h)
+            for h in to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
         self.apply_dynamic_traits(world, balls, delta)
         for b in balls:
             if not getattr(b, "alive", False):
