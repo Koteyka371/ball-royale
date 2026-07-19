@@ -1772,8 +1772,38 @@ func _attempt_damage(attacker, target) -> void:
 				var lf = attacker.get_meta("loadout_fragments") if attacker.has_meta("loadout_fragments") else 0
 				attacker.set_meta("loadout_fragments", lf + 1)
 
+			if "is_minor_bounty" in attacker:
+				attacker.is_minor_bounty = true
+			elif typeof(attacker) == TYPE_DICTIONARY:
+				attacker["is_minor_bounty"] = true
+			elif attacker.has_method("set_meta"):
+				attacker.set_meta("is_minor_bounty", true)
+
 			if self.world != null and self.world.has_method("add_event"):
 				self.world.add_event("dynamic_bounty_claimed", {"message": "Dynamic Bounty claimed!"})
+
+		var target_is_minor_bounty = false
+		if typeof(target) == TYPE_DICTIONARY:
+			target_is_minor_bounty = target.get("is_minor_bounty", false)
+		elif target.has_method("get_meta") and target.has_meta("is_minor_bounty"):
+			target_is_minor_bounty = target.get_meta("is_minor_bounty")
+		elif "is_minor_bounty" in target:
+			target_is_minor_bounty = target.is_minor_bounty
+
+		if target_is_minor_bounty and not target_is_dynamic_bounty:
+			if "damage" in attacker:
+				attacker.damage = float(attacker.damage) * 1.25
+			if "base_damage" in attacker:
+				attacker.base_damage = float(attacker.base_damage) * 1.25
+
+			if "max_hp" in attacker:
+				var mhp = float(attacker.max_hp) * 1.25
+				attacker.max_hp = mhp
+				if "hp" in attacker:
+					attacker.hp = min(float(attacker.hp) + (mhp - mhp / 1.25), mhp)
+
+			if self.world != null and self.world.has_method("add_event"):
+				self.world.add_event("minor_bounty_claimed", {"message": "Minor Bounty claimed!"})
 
 		if pm != null and pm.has_method("add_kill"):
 			pm.add_kill(attacker_type, target_type)

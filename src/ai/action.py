@@ -953,8 +953,17 @@ class Action:
                 attacker.max_hp = getattr(attacker, "max_hp", 100.0) * 1.5
                 attacker.hp = min(getattr(attacker, "hp", 100.0) + (attacker.max_hp - attacker.max_hp / 1.5), attacker.max_hp)
                 attacker.loadout_fragments = getattr(attacker, "loadout_fragments", 0) + 1
+                attacker.is_minor_bounty = True
                 if hasattr(self.world, "add_event"):
                     self.world.add_event("dynamic_bounty_claimed", {"message": "Dynamic Bounty claimed!"})
+            elif getattr(target, "is_minor_bounty", False):
+                attacker.damage = getattr(attacker, "damage", 10.0) * 1.25
+                if hasattr(attacker, "base_damage"):
+                    attacker.base_damage *= 1.25
+                attacker.max_hp = getattr(attacker, "max_hp", 100.0) * 1.25
+                attacker.hp = min(getattr(attacker, "hp", 100.0) + (attacker.max_hp - attacker.max_hp / 1.25), attacker.max_hp)
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("minor_bounty_claimed", {"message": "Minor Bounty claimed!"})
             if pm and hasattr(pm, "add_kill"):
                 pm.add_kill(attacker.ball_type, target.ball_type)
                 if pm.is_nemesis(target.ball_type, attacker.ball_type):
