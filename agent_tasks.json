@@ -19822,7 +19822,7 @@
     },
     {
       "id": "idea-1156",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Abyssal Anchor Hazard",
@@ -30530,6 +30530,40 @@
         "src/ai/hot_potato_payload.py",
         "src/ai/hot_potato_payload.gd",
         "tests/test_hot_potato_payload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1785",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Saboteur Traps on Payloads",
+      "description": "Players can attach hidden saboteur traps (like an EMP or a virus) to enemy payloads when they get close. After a delay, the trap explodes, disabling the payload's abilities (like its shield or turrets) and slowing it down, forcing the defending team to 'defuse' it by standing near it.",
+      "allowed_paths": [
+        "src/arena/saboteur_traps_on_payloads.py",
+        "src/arena/saboteur_traps_on_payloads.gd",
+        "tests/test_saboteur_traps_on_payloads.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1786",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Overcharge Events",
+      "description": "Occasionally, a neutral overcharge battery spawns on the map. If a player brings it to their team's payload, it unlocks a massive temporary boost (e.g., global healing aura, immense speed, or instant destruction of enemy structures) for 15 seconds, creating high-priority secondary objectives.",
+      "allowed_paths": [
+        "src/ai/payload_overcharge_events.py",
+        "src/ai/payload_overcharge_events.gd",
+        "tests/test_payload_overcharge_events.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

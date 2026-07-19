@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1156] Abyssal Anchor Hazard — *2026-07-19 03:43:45 UTC*
+
+A new heavy hazard type that drops in the arena and periodically unleashes a massive magnetic shockwave that pulls players toward it while dealing damage. If a player touches the center of the anchor, they are completely stunned for 2 seconds.
+
+---
+
 ## [idea-1147] Payload Abilities Based on Teammates — *2026-07-19 03:26:46 UTC*
 
 As more teammates stand near a payload in Tug of War or Escort mode, the payload gains temporary abilities (like a small healing aura, a reflecting shield, or damaging pulses to enemies).
