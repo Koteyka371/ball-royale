@@ -1,5 +1,5 @@
 import pytest
-from src.ai.action import Action
+from ai.action import Action
 
 class MockArena:
     def __init__(self):

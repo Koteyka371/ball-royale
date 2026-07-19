@@ -11052,7 +11052,7 @@ class DayNightMode(GameMode):
                             b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.5
                             b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.5
                             if hasattr(world, "add_event"):
-                                world.add_event("visual_effect", {"type": "solar_flare_supercharge", "ball_id": b.id})
+                                world.add_event("visual_effect", {"type": "solar_flare_supercharge", "ball_id": getattr(b, "id", 0)})
 
 class GuildVsGuildMode(GameMode):
     """Guild vs Guild mode where players capture territory on a persistent world map."""
@@ -16187,7 +16187,9 @@ class ExtremeWeatherMode(GameMode):
 
             # Spawn the corresponding booster
             booster_kind = None
-            if self.current_weather == "blizzard": booster_kind = "thermal_booster"
+            if self.current_weather == "blizzard":
+                if self.random.random() < 0.3: booster_kind = "snow_globe_item"
+                else: booster_kind = "thermal_booster"
             elif self.current_weather == "heatwave": booster_kind = "cooling_booster"
             elif self.current_weather == "acid_rain": booster_kind = "hazmat_booster"
             elif self.current_weather == "hurricane": booster_kind = "heavy_anchor_booster"
@@ -16199,6 +16201,20 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "giant_flood": booster_kind = "life_jacket_booster"
             elif self.current_weather == "solar_eclipse": booster_kind = "vision_booster"
             elif self.current_weather == "celestial_alignment": booster_kind = "starlight_booster"
+
+            # Also spawn rain-exclusive umbrella booster in acid rain
+            if self.current_weather == "acid_rain" and hasattr(world, "boosters"):
+                arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+                arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+                class TempBooster:
+                    def __init__(self, kind, x, y):
+                        self.kind = kind
+                        self.x = x
+                        self.y = y
+                        self.active = True
+                        self.radius = 15.0
+                if self.random.random() < 0.5:
+                    world.boosters.append(TempBooster("umbrella_booster", self.random.uniform(100, arena_w - 100), self.random.uniform(100, arena_h - 100)))
 
             # Spawn a Boss / Mega-Minion for the current weather
             if hasattr(world, "balls"):
@@ -16295,7 +16311,7 @@ class ExtremeWeatherMode(GameMode):
             b.damage = getattr(b, "base_damage", 10.0)
             b.steering_mult = 1.0
 
-            has_thermal = getattr(b, "thermal_booster_timer", 0.0) > 0 or getattr(b, "mega_thermal_booster_timer", 0.0) > 0
+            has_thermal = getattr(b, "thermal_booster_timer", 0.0) > 0 or getattr(b, "mega_thermal_booster_timer", 0.0) > 0 or getattr(b, "snow_globe_immunity_timer", 0.0) > 0
             has_cooling = getattr(b, "cooling_booster_timer", 0.0) > 0 or getattr(b, "mega_cooling_booster_timer", 0.0) > 0
             has_hazmat = getattr(b, "hazmat_booster_timer", 0.0) > 0 or getattr(b, "mega_hazmat_booster_timer", 0.0) > 0
             has_anchor = getattr(b, "heavy_anchor_booster_timer", 0.0) > 0 or getattr(b, "mega_heavy_anchor_booster_timer", 0.0) > 0
@@ -16328,6 +16344,9 @@ class ExtremeWeatherMode(GameMode):
                     if hasattr(b, "take_damage"): b.take_damage(15.0 * delta)
                     elif hasattr(b, "hp"): b.hp -= 15.0 * delta
             elif self.current_weather == "acid_rain":
+                has_umbrella = getattr(b, "umbrella_booster_timer", 0.0) > 0
+                if has_umbrella:
+                    b.is_slipping = False
                 if self.random.random() < 0.2 * delta and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                     from arena.procedural_arena import Hazard
                     import random
