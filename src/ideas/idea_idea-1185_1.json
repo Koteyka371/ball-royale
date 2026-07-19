@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Tether",
+  "description": "A new skill that throws out a tether towards an enemy. If it connects, it drains HP and slows them. Additionally, the tether chains to another nearby enemy (up to 3 targets), applying half the drain and slow effect to the secondary targets."
+}

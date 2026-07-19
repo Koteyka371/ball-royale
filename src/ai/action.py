@@ -10821,7 +10821,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -13030,6 +13030,58 @@ class Action:
 
                         self.ball.survival_swap_target_id = decoy.id
                         self.ball.survival_swap_timer = 3.0
+
+            elif skill_name == "decoy_swap_detonate":
+                import copy
+                import random
+                if hasattr(self.world, "balls"):
+                    active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
+                    if active_decoys:
+                        decoy = active_decoys[0]
+                        tx, ty = self.ball.x, self.ball.y
+
+                        self.ball.x, self.ball.y = decoy.x, decoy.y
+
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("explosion", {"x": tx, "y": ty, "radius": 150.0, "damage": 50.0})
+
+                        for b in self.world.balls:
+                            if b != self.ball and getattr(b, "alive", True):
+                                if getattr(b, "team", "") != getattr(self.ball, "team", ""):
+                                    dx = b.x - tx
+                                    dy = b.y - ty
+                                    dist_sq = dx*dx + dy*dy
+                                    if dist_sq <= 150.0**2:
+                                        if hasattr(b, "take_damage"):
+                                            b.take_damage(50.0)
+                                        else:
+                                            b.hp = max(0, getattr(b, "hp", 100) - 50.0)
+
+                        decoy.hp = 0
+                        decoy.alive = False
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+
+                    else:
+                        decoy = copy.copy(self.ball)
+                        decoy.owner_id = getattr(self.ball, "id", None)
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 2.0)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        decoy.hp = getattr(self.ball, "max_hp", 100) * 0.5
+                        decoy.max_hp = decoy.hp
+                        decoy.damage = 0
+                        decoy.speed = getattr(self.ball, "speed", 5.0)
+                        decoy.skill_timer = 9999.0
+                        decoy.attack_timer = 9999.0
+                        decoy.is_decoy = True
+                        decoy.decoy_timer = 10.0
+                        decoy.SKILL = None
+                        decoy.skill = None
+                        decoy.active_skill = None
+                        decoy.decoy_type = "basic"
+                        self.world.balls.append(decoy)
 
             elif skill_name in ["deploy_decoy", "deploy_decoy_flash", "deploy_decoy_advanced"]:
                 import copy
