@@ -1,4 +1,4 @@
 {
-  "title": "Decoy Network Overdrive",
-  "description": "If multiple decoys are active on the field from a single user, using the survival swap skill triggers a massive electrical chain reaction between all active decoys and swaps the player back to their original position, causing huge damage around the area."
+  "title": "Chain Lightning Modifier",
+  "description": "A new mutator where any damage dealt to an enemy has a 25% chance to trigger chain lightning, damaging up to 3 nearby enemies for a portion of the original damage."
 }

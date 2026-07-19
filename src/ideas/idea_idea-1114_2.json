@@ -1,4 +1,4 @@
 {
-  "title": "Mirror Image Swap",
-  "description": "A survival mechanism where a player spawns 4 mirrored decoys in a square formation. After 3 seconds, all decoys converge to the middle and explode, and the player is instantly relocated to the middle if they are within a certain radius, providing a high-risk healing zone."
+  "title": "Quantum Tunneling Skill",
+  "description": "An active skill that lets a ball ignore all wall collisions for 2 seconds while moving at 1.5x speed, leaving a fading trail. Cooldown: 12 seconds."
 }
