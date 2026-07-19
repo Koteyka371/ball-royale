@@ -15733,6 +15733,56 @@ func execute(strategy: String, delta: float):
                                         self.ball.reflect_shield_initial_capacity = 50.0 + bonus_cap
                                 if "shield" in self.ball: self.ball.shield = shield
 
+                            elif powerup == "heat_shield":
+                                var shield = 0.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("shield"): shield = self.ball.get_meta("shield")
+                                elif "shield" in self.ball: shield = self.ball.shield
+
+                                var arena_temp = 20.0
+                                if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "temperature" in self.world.arena:
+                                    arena_temp = self.world.arena.temperature
+                                elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("temperature"):
+                                    arena_temp = self.world.arena.temperature
+                                elif typeof(self.world) == TYPE_OBJECT and self.world.has_method("has_meta") and self.world.has_meta("arena"):
+                                    var arena = self.world.get_meta("arena")
+                                    if typeof(arena) == TYPE_OBJECT and "temperature" in arena:
+                                        arena_temp = arena.temperature
+                                    elif typeof(arena) == TYPE_OBJECT and arena.has_method("has_meta") and arena.has_meta("temperature"):
+                                        arena_temp = arena.get_meta("temperature")
+
+                                var temp_bonus = max(0.0, arena_temp - 20.0) * 0.5
+                                shield += ((20.0 + temp_bonus) * combo_multiplier)
+
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("shield", shield)
+                                if "shield" in self.ball: self.ball.shield = shield
+
+                            elif powerup == "cryo_heal":
+                                var hp = 100.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp = self.ball.get_meta("hp")
+                                elif "hp" in self.ball: hp = self.ball.hp
+
+                                var max_hp = 100.0
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+                                elif "max_hp" in self.ball: max_hp = self.ball.max_hp
+
+                                var arena_temp = 20.0
+                                if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "temperature" in self.world.arena:
+                                    arena_temp = self.world.arena.temperature
+                                elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("temperature"):
+                                    arena_temp = self.world.arena.temperature
+                                elif typeof(self.world) == TYPE_OBJECT and self.world.has_method("has_meta") and self.world.has_meta("arena"):
+                                    var arena = self.world.get_meta("arena")
+                                    if typeof(arena) == TYPE_OBJECT and "temperature" in arena:
+                                        arena_temp = arena.temperature
+                                    elif typeof(arena) == TYPE_OBJECT and arena.has_method("has_meta") and arena.has_meta("temperature"):
+                                        arena_temp = arena.get_meta("temperature")
+
+                                var temp_bonus = max(0.0, 20.0 - arena_temp) * 0.25
+                                hp = min(max_hp, hp + ((10.0 + temp_bonus) * combo_multiplier))
+
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", hp)
+                                if "hp" in self.ball: self.ball.hp = hp
+
                             elif powerup == "stamina":
                                 var max_stam = 100.0
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("max_stamina"): max_stam = self.ball.get_meta("max_stamina")
