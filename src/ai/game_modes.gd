@@ -444,6 +444,157 @@ class GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Black Hole Mine detonating logic
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+				var hazards = arena.hazards
+				if typeof(hazards) == TYPE_ARRAY:
+					var to_remove = []
+					for h in hazards:
+						var is_detonating = false
+						if typeof(h) == TYPE_DICTIONARY and h.has("is_detonating"):
+							is_detonating = h["is_detonating"]
+						elif typeof(h) == TYPE_OBJECT:
+							if "is_detonating" in h:
+								is_detonating = h.is_detonating
+							elif h.has_method("get_meta") and h.has_meta("is_detonating"):
+								is_detonating = h.get_meta("is_detonating")
+
+						var h_kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+							h_kind = h["kind"]
+						elif typeof(h) == TYPE_OBJECT and "kind" in h:
+							h_kind = h.kind
+
+						if is_detonating and h_kind == "trap":
+							var d_timer = 0.0
+							if typeof(h) == TYPE_DICTIONARY and h.has("detonation_timer"):
+								d_timer = h["detonation_timer"] - delta
+								h["detonation_timer"] = d_timer
+							elif typeof(h) == TYPE_OBJECT:
+								if "detonation_timer" in h:
+									d_timer = h.detonation_timer - delta
+									h.detonation_timer = d_timer
+								elif h.has_method("get_meta") and h.has_meta("detonation_timer"):
+									d_timer = h.get_meta("detonation_timer") - delta
+									h.set_meta("detonation_timer", d_timer)
+
+							var hx = 0.0
+							var hy = 0.0
+							if typeof(h) == TYPE_DICTIONARY:
+								if h.has("x"): hx = h["x"]
+								if h.has("y"): hy = h["y"]
+							elif typeof(h) == TYPE_OBJECT:
+								if "x" in h: hx = h.x
+								if "y" in h: hy = h.y
+
+							if d_timer > 0:
+								var pull_targets = []
+								for b in balls:
+									var alive = false
+									if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+										alive = b["alive"]
+									elif typeof(b) == TYPE_OBJECT and "alive" in b:
+										alive = b.alive
+									if alive:
+										pull_targets.append(b)
+
+								if typeof(world) == TYPE_OBJECT and "boosters" in world:
+									var boosters = world.boosters
+									if typeof(boosters) == TYPE_ARRAY:
+										for bo in boosters:
+											pull_targets.append(bo)
+
+								for b in pull_targets:
+									var bx = 0.0
+									var by = 0.0
+									if typeof(b) == TYPE_DICTIONARY:
+										if b.has("x"): bx = b["x"]
+										if b.has("y"): by = b["y"]
+									elif typeof(b) == TYPE_OBJECT:
+										if "x" in b: bx = b.x
+										if "y" in b: by = b.y
+
+									var dx = hx - bx
+									var dy = hy - by
+									var dist_sq = dx*dx + dy*dy
+									if dist_sq < 90000: # 300 radius squared
+										var dist = sqrt(dist_sq)
+										if dist > 0:
+											var pull_strength = 200.0 * (1.0 - dist/300.0)
+											var bvx = 0.0
+											var bvy = 0.0
+											if typeof(b) == TYPE_DICTIONARY:
+												if b.has("vx"): bvx = b["vx"]
+												if b.has("vy"): bvy = b["vy"]
+												b["vx"] = bvx + (dx/dist) * pull_strength * delta
+												b["vy"] = bvy + (dy/dist) * pull_strength * delta
+											elif typeof(b) == TYPE_OBJECT:
+												if "vx" in b: bvx = b.vx
+												if "vy" in b: bvy = b.vy
+												b.vx = bvx + (dx/dist) * pull_strength * delta
+												b.vy = bvy + (dy/dist) * pull_strength * delta
+							else:
+								if typeof(h) == TYPE_DICTIONARY:
+									h["is_detonating"] = false
+									h["duration"] = 0.0
+								elif typeof(h) == TYPE_OBJECT:
+									if "is_detonating" in h: h.is_detonating = false
+									elif h.has_method("set_meta"): h.set_meta("is_detonating", false)
+									if "duration" in h: h.duration = 0.0
+									elif h.has_method("set_meta"): h.set_meta("duration", 0.0)
+
+								# Explosive damage
+								for b in balls:
+									var alive = false
+									if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+										alive = b["alive"]
+									elif typeof(b) == TYPE_OBJECT and "alive" in b:
+										alive = b.alive
+
+									if alive:
+										var bx = 0.0
+										var by = 0.0
+										if typeof(b) == TYPE_DICTIONARY:
+											if b.has("x"): bx = b["x"]
+											if b.has("y"): by = b["y"]
+										elif typeof(b) == TYPE_OBJECT:
+											if "x" in b: bx = b.x
+											if "y" in b: by = b.y
+										var dx = hx - bx
+										var dy = hy - by
+										if dx*dx + dy*dy < 40000: # 200 radius squared
+											if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+												b.take_damage(50.0)
+											else:
+												var bhp = 100.0
+												if typeof(b) == TYPE_DICTIONARY and b.has("hp"): bhp = b["hp"]
+												elif typeof(b) == TYPE_OBJECT and "hp" in b: bhp = b.hp
+												bhp -= 50.0
+												if typeof(b) == TYPE_DICTIONARY:
+													b["hp"] = bhp
+													if bhp <= 0: b["alive"] = false
+												elif typeof(b) == TYPE_OBJECT:
+													if "hp" in b: b.hp = bhp
+													if bhp <= 0 and "alive" in b: b.alive = false
+
+											if typeof(b) == TYPE_DICTIONARY:
+												b["skill_timer"] = max(b.get("skill_timer", 0.0), 5.0)
+												b["silence_timer"] = max(b.get("silence_timer", 0.0), 5.0)
+												b["attack_timer"] = max(b.get("attack_timer", 0.0), 5.0)
+											elif typeof(b) == TYPE_OBJECT:
+												if "skill_timer" in b: b.skill_timer = max(b.skill_timer, 5.0)
+												elif b.has_method("set_meta"): b.set_meta("skill_timer", max(b.get_meta("skill_timer", 0.0), 5.0))
+												if "silence_timer" in b: b.silence_timer = max(b.silence_timer, 5.0)
+												elif b.has_method("set_meta"): b.set_meta("silence_timer", max(b.get_meta("silence_timer", 0.0), 5.0))
+												if "attack_timer" in b: b.attack_timer = max(b.attack_timer, 5.0)
+												elif b.has_method("set_meta"): b.set_meta("attack_timer", max(b.get_meta("attack_timer", 0.0), 5.0))
+								to_remove.append(h)
+
+					for h in to_remove:
+						if hazards.has(h):
+							hazards.erase(h)
 
 		var weather = ""
 		if "weather" in self:
