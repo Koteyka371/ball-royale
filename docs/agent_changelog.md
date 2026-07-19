@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1146] Payload Swap Mode — *2026-07-19 02:45:42 UTC*
+
+Two payloads are spawned, one for each team. The twist is that each team needs to push the *other* team's payload into the opposing goal. The payloads deal slight damage if a team member is near their own payload, forcing them to focus on the enemy payload.
+
+---
+
 ## [idea-1154] Shrinking Safe Zone based on Kills — *2026-07-19 02:17:56 UTC*
 
 The safe zone shrinks naturally over time, but every time a team gets a kill, the safe zone pauses its shrinking for 5 seconds.
