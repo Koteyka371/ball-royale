@@ -20248,7 +20248,7 @@
     },
     {
       "id": "idea-1181",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncing Laser",
@@ -30854,6 +30854,23 @@
         "src/ai/dynamic_puddles.py",
         "src/ai/dynamic_puddles.gd",
         "tests/test_dynamic_puddles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1804",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cryogenic Shield Booster",
+      "description": "A booster that not only provides a shield but also emits a freezing aura, rapidly reducing the internal temperature of nearby enemy balls.",
+      "allowed_paths": [
+        "src/ai/cryogenic_shield_booster.py",
+        "src/ai/cryogenic_shield_booster.gd",
+        "tests/test_cryogenic_shield_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

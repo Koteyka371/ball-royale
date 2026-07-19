@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1181] Bouncing Laser — *2026-07-19 22:47:06 UTC*
+
+A laser beam that bounces off arena walls.
+
+---
+
 ## [idea-1121] Temperature Mechanics — *2026-07-19 22:27:59 UTC*
 
 Add a temperature gauge to the arena that rises in heatwaves and drops in blizzards. Balls must manage their internal temperature with boosters or specific hazard zones to prevent freezing or overheating (DoT or stun).
