@@ -1,0 +1,4 @@
+{
+  "title": "Hot Potato Payload",
+  "description": "A single payload that explodes periodically. Teams must push it into the enemy side before the timer runs out and it detonates, dealing massive damage to anyone nearby."
+}
