@@ -6476,7 +6476,7 @@ class EscortMode extends GameMode:
 								speed_mult *= 0.5
 								break
 
-				if speed_mult >= 2.0:
+				if nearby_teammates >= 2:
 					if typeof(payload) == TYPE_DICTIONARY:
 						payload["turret_active"] = true
 					else:
@@ -6524,6 +6524,21 @@ class EscortMode extends GameMode:
 						payload["turret_active"] = false
 					else:
 						payload.set("turret_active", false)
+
+				if nearby_teammates >= 3:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["has_reflecting_shield"] = true
+						payload["reflect_projectiles"] = true
+					else:
+						payload.set("has_reflecting_shield", true)
+						payload.set("reflect_projectiles", true)
+				else:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["has_reflecting_shield"] = false
+						payload["reflect_projectiles"] = false
+					else:
+						payload.set("has_reflecting_shield", false)
+						payload.set("reflect_projectiles", false)
 
 				var base_spd = payload.get("speed", 0) if typeof(payload) == TYPE_DICTIONARY else payload.speed
 				var spd = base_spd * speed_mult
@@ -19082,18 +19097,89 @@ class TugOfWarMode extends GameMode:
 				var move_speed = 50.0
 				var speed_multiplier = 1.0
 
+				var controlling_team = ""
+				var nearby_teammates = 0
+
 				if red_count > blue_count:
+					controlling_team = "Red"
+					nearby_teammates = red_count
 					speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
 					if typeof(payload) == TYPE_DICTIONARY:
 						payload["x"] += move_speed * delta * (red_count - blue_count) * speed_multiplier
 					else:
 						payload.x += move_speed * delta * (red_count - blue_count) * speed_multiplier
 				elif blue_count > red_count:
+					controlling_team = "Blue"
+					nearby_teammates = blue_count
 					speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
 					if typeof(payload) == TYPE_DICTIONARY:
 						payload["x"] -= move_speed * delta * (blue_count - red_count) * speed_multiplier
 					else:
 						payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
+
+				if nearby_teammates >= 2 and controlling_team != "":
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["turret_active"] = true
+					else:
+						payload.set("turret_active", true)
+
+					for b in balls:
+						var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						if b_type == "spectator":
+							continue
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						if not b_alive:
+							continue
+						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+						var p_id = payload.get("id") if typeof(payload) == TYPE_DICTIONARY else payload.get("id")
+						if b_id != null and p_id != null and b_id == p_id:
+							continue
+						if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
+							continue
+						var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+						if b_team != controlling_team:
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var bdx = bx - px
+							var bdy = by - py
+							var dist_to_enemy = sqrt(bdx*bdx + bdy*bdy)
+							if dist_to_enemy <= 200.0:
+								var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+								var new_hp = max(0.0, bhp - 10.0 * delta)
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = new_hp
+									if new_hp <= 0:
+										b["alive"] = false
+									if dist_to_enemy > 0:
+										b["x"] += (bdx / dist_to_enemy) * 150.0 * delta
+										b["y"] += (bdy / dist_to_enemy) * 150.0 * delta
+								else:
+									b.set("hp", new_hp)
+									if new_hp <= 0:
+										b.set("alive", false)
+									if dist_to_enemy > 0:
+										b.set("x", bx + (bdx / dist_to_enemy) * 150.0 * delta)
+										b.set("y", by + (bdy / dist_to_enemy) * 150.0 * delta)
+				else:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["turret_active"] = false
+					else:
+						payload.set("turret_active", false)
+
+				if nearby_teammates >= 3 and controlling_team != "":
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["has_reflecting_shield"] = true
+						payload["reflect_projectiles"] = true
+					else:
+						payload.set("has_reflecting_shield", true)
+						payload.set("reflect_projectiles", true)
+				else:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["has_reflecting_shield"] = false
+						payload["reflect_projectiles"] = false
+					else:
+						payload.set("has_reflecting_shield", false)
+						payload.set("reflect_projectiles", false)
 
 				px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
 				if px < 50.0:
