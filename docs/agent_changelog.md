@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1128] Gravity Swap Anomaly — *2026-07-19 21:34:34 UTC*
+
+A rare hazard that, when triggered, temporarily reverses the gravitational pull of Black Holes and Gravity Wells in the arena, turning them into intense repulsors that scatter balls across the map.
+
+---
+
 ## [idea-1163] Bounty Escalation Scaling — *2026-07-19 21:13:06 UTC*
 
 Bounties dynamically increase their reward pool over time based on the distance traveled by the targeted player, incentivizing fast and prolonged chases while adding risk-reward for running away.
