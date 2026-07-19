@@ -1,0 +1,4 @@
+{
+  "title": "Weather Front Hazard",
+  "description": "Introduce a slowly moving 'Weather Front' line that bisects the arena. One side of the front applies one extreme weather condition (e.g., Blizzard with slow and slippery movement) while the other side applies an opposing condition (e.g., Heatwave with DoT and speed buffs). Players must tactically jump back and forth across the front to manage their status effects and optimize movement speed, while using boosters to survive the transitions."
+}

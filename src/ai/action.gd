@@ -15794,6 +15794,48 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp <= 0 and "alive" in self.ball:
                                 self.ball.alive = false
                         continue
+                    elif hazard.kind == "tsunami_wave":
+                        if hazard.has_method("get_meta") and hazard.has_meta("active") and not hazard.get_meta("active"):
+                            continue
+                        if typeof(hazard) == TYPE_OBJECT and "active" in hazard and not hazard.active:
+                            continue
+                        if typeof(hazard) == TYPE_DICTIONARY and hazard.has("active") and not hazard.active:
+                            continue
+
+                        var has_jacket = false
+                        if "life_jacket_booster_timer" in self.ball and self.ball.life_jacket_booster_timer > 0.0:
+                            has_jacket = true
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("life_jacket_booster_timer") and self.ball.get_meta("life_jacket_booster_timer") > 0.0:
+                            has_jacket = true
+                        if has_jacket:
+                            continue
+
+                        var current_tick = 0
+                        if typeof(self.world) == TYPE_DICTIONARY and self.world.has("tick"): current_tick = self.world.tick
+                        elif typeof(self.world) == TYPE_OBJECT and "tick" in self.world: current_tick = self.world.tick
+
+                        var last_tick = -1
+                        if "last_tsunami_tick" in self.ball: last_tick = self.ball.last_tsunami_tick
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("last_tsunami_tick"): last_tick = self.ball.get_meta("last_tsunami_tick")
+
+                        if last_tick != current_tick:
+                            if "last_tsunami_tick" in self.ball: self.ball.last_tsunami_tick = current_tick
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("last_tsunami_tick", current_tick)
+
+                            if "x" in self.ball: self.ball.x += 300.0 * delta
+
+                            var h_dmg = 20.0
+                            if typeof(hazard) == TYPE_DICTIONARY and hazard.has("damage"): h_dmg = hazard.damage
+                            elif typeof(hazard) == TYPE_OBJECT and "damage" in hazard: h_dmg = hazard.damage
+
+                            var hazard_damage = h_dmg * delta
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
+                        continue
                     elif hazard.kind == "vampiric_puddle":
                         var hazard_damage = hazard.damage * delta
                         if self.ball.has_method("take_damage"):

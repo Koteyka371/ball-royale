@@ -16363,14 +16363,7 @@ class ExtremeWeatherMode(GameMode):
                         angle = self.random.uniform(0, 2 * math.pi)
                         b.x += math.cos(angle) * 100.0 * delta
                         b.y += math.sin(angle) * 100.0 * delta
-            elif self.current_weather == "tsunami":
-                if not has_life_jacket:
-                    if hasattr(b, "x"):
-                        b.x += 300.0 * delta
-                        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
-                        if b.x >= arena_w - 20:
-                            if hasattr(b, "take_damage"): b.take_damage(20.0 * delta)
-                            elif hasattr(b, "hp"): b.hp -= 20.0 * delta
+
             elif self.current_weather == "ice":
                 if not is_immune:
                     b.is_frictionless = True
@@ -16399,6 +16392,47 @@ class ExtremeWeatherMode(GameMode):
                     b.perception_radius = 50.0
             elif self.current_weather == "celestial_alignment":
                 pass # Logic moved to outside the ball loop
+
+        if self.current_weather == "tsunami":
+            if not getattr(self, "tsunami_spawned", False):
+                self.tsunami_spawned = True
+                self.tsunami_hazards = []
+                arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+                            self.weather_hazard = ""
+
+                num_segments = int(arena_h / 80) + 2
+                for i in range(num_segments):
+                    h_id = 99000 + (len(world.arena.hazards) if hasattr(world, "arena") and hasattr(world.arena, "hazards") else i)
+                    wave = Hazard(id=h_id, x=-100, y=i * 80, radius=60.0, kind="tsunami_wave", damage=20.0)
+                    wave.weather_hazard = "tsunami"
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        world.arena.hazards.append(wave)
+                    self.tsunami_hazards.append(wave)
+
+            # Move wave
+            for h in getattr(self, "tsunami_hazards", []):
+                if getattr(h, "active", True):
+                    if hasattr(h, "x"):
+                        h.x += 300.0 * delta
+        else:
+            if getattr(self, "tsunami_spawned", False):
+                for h in getattr(self, "tsunami_hazards", []):
+                    h.active = False
+                self.tsunami_spawned = False
+                self.tsunami_hazards = []
 
         if self.current_weather == "celestial_alignment":
             boss = None

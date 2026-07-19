@@ -25787,14 +25787,7 @@ class ExtremeWeatherMode extends GameMode:
 					var angle = randf_range(0, 2 * PI)
 					b.x += cos(angle) * 100.0 * delta
 					b.y += sin(angle) * 100.0 * delta
-			elif current_weather == "tsunami":
-				if not has_life_jacket:
-					b.x += 300.0 * delta
-					var arena_w = 1000
-					if world != null and "arena" in world and world.arena != null and "width" in world.arena:
-						arena_w = world.arena.width
-					if b.x >= arena_w - 20:
-						b.hp -= 20.0 * delta
+
 			elif current_weather == "ice":
 				if not is_immune:
 					if b.has_method("set_meta"):
@@ -25837,6 +25830,76 @@ class ExtremeWeatherMode extends GameMode:
 						b.perception_radius = 50.0
 			elif current_weather == "celestial_alignment":
 				pass
+
+		if current_weather == "tsunami":
+			var spawned = false
+			if "tsunami_spawned" in self:
+				spawned = self.tsunami_spawned
+			elif self.has_meta("tsunami_spawned"):
+				spawned = self.get_meta("tsunami_spawned")
+
+			if not spawned:
+				if "tsunami_spawned" in self: self.tsunami_spawned = true
+				elif self.has_method("set_meta"): self.set_meta("tsunami_spawned", true)
+
+				var ts_hazards = []
+				var arena_h = 1000
+				if world != null and "arena" in world and world.arena != null and "height" in world.arena:
+					arena_h = world.arena.height
+
+				var num_segments = int(arena_h / 80) + 2
+				for i in range(num_segments):
+					var h_id = 99000 + i
+					if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+						h_id += world.arena.hazards.size()
+
+					var wave = {
+						"id": h_id,
+						"x": -100,
+						"y": i * 80,
+						"radius": 60.0,
+						"kind": "tsunami_wave",
+						"damage": 20.0,
+						"active": true,
+						"weather_hazard": "tsunami"
+					}
+
+					if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+						world.arena.hazards.append(wave)
+					ts_hazards.append(wave)
+
+				if "tsunami_hazards" in self: self.tsunami_hazards = ts_hazards
+				elif self.has_method("set_meta"): self.set_meta("tsunami_hazards", ts_hazards)
+
+			var hazards = []
+			if "tsunami_hazards" in self: hazards = self.tsunami_hazards
+			elif self.has_method("get_meta") and self.has_meta("tsunami_hazards"): hazards = self.get_meta("tsunami_hazards")
+
+			for h in hazards:
+				if typeof(h) == TYPE_OBJECT and "active" in h and h.active:
+					if "x" in h: h.x += 300.0 * delta
+				elif typeof(h) == TYPE_DICTIONARY and h.has("active") and h.active:
+					if h.has("x"): h.x += 300.0 * delta
+		else:
+			var spawned = false
+			if "tsunami_spawned" in self: spawned = self.tsunami_spawned
+			elif self.has_meta("tsunami_spawned"): spawned = self.get_meta("tsunami_spawned")
+
+			if spawned:
+				var hazards = []
+				if "tsunami_hazards" in self: hazards = self.tsunami_hazards
+				elif self.has_method("get_meta") and self.has_meta("tsunami_hazards"): hazards = self.get_meta("tsunami_hazards")
+
+				for h in hazards:
+					if typeof(h) == TYPE_OBJECT and "active" in h:
+						h.active = false
+					elif typeof(h) == TYPE_DICTIONARY and h.has("active"):
+						h.active = false
+
+				if "tsunami_spawned" in self: self.tsunami_spawned = false
+				elif self.has_method("set_meta"): self.set_meta("tsunami_spawned", false)
+				if "tsunami_hazards" in self: self.tsunami_hazards = []
+				elif self.has_method("set_meta"): self.set_meta("tsunami_hazards", [])
 
 		if current_weather == "celestial_alignment":
 			var boss = null
