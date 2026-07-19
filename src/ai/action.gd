@@ -23439,6 +23439,7 @@ func _use_skill():
         self.ball.use_skill()
         _spawn_skill_particles(skill_name)
 
+
         if skill_name == "energy_shield":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("energy_shield_active", true)
@@ -23446,6 +23447,14 @@ func _use_skill():
             else:
                 self.ball.energy_shield_active = true
                 self.ball.energy_shield_timer = 3.0
+        elif skill_name == "surge_shield":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("surge_shield_active", true)
+                self.ball.set_meta("surge_shield_timer", 3.0)
+            else:
+                self.ball.surge_shield_active = true
+                self.ball.surge_shield_timer = 3.0
+
         elif skill_name == "trickster_swap":
             var all_entities = []
             if "balls" in self.world:
@@ -30119,6 +30128,7 @@ func _update_skill_timer(delta: float):
     elif "energy_shield_timer" in self.ball:
         es_timer = float(self.ball.energy_shield_timer)
 
+
     if es_timer > 0.0:
         es_timer -= delta
         if es_timer <= 0.0:
@@ -30133,6 +30143,26 @@ func _update_skill_timer(delta: float):
                 self.ball.set_meta("energy_shield_timer", es_timer)
             else:
                 self.ball.energy_shield_timer = es_timer
+
+    var ss_timer = 0.0
+    if "surge_shield_timer" in self.ball: ss_timer = self.ball.surge_shield_timer
+    elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("surge_shield_timer"): ss_timer = self.ball.get_meta("surge_shield_timer")
+
+    if ss_timer > 0.0:
+        ss_timer -= delta
+        if ss_timer <= 0.0:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("surge_shield_active", false)
+                self.ball.set_meta("surge_shield_timer", 0.0)
+            else:
+                self.ball.surge_shield_active = false
+                self.ball.surge_shield_timer = 0.0
+        else:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("surge_shield_timer", ss_timer)
+            else:
+                self.ball.surge_shield_timer = ss_timer
+
 
     var m_tether_timer = 0.0
 
