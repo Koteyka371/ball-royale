@@ -1,0 +1,4 @@
+{
+  "title": "Bounty Chain Mode",
+  "description": "When a bounty target is eliminated, instead of rewarding the team immediately, the bounty status automatically passes to the killer, turning them into a high-value target for the opposing team while granting them a temporary shield. The team holding the bounty at the end of the match wins."
+}

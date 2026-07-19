@@ -15362,6 +15362,7 @@ class BountyHuntMode extends GameMode:
 	var buffed_teams = {}
 	var bounty_base_reward = 30
 	var bounty_multiplier = 2.0
+	var bounty_swap_timer: float = 0.0
 
 	func _init() -> void:
 		name = "Bounty Hunt"
@@ -15521,6 +15522,57 @@ class BountyHuntMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float) -> void:
 		super.tick(world, balls, delta)
+
+		bounty_swap_timer += delta
+		if bounty_swap_timer >= 30.0:
+			bounty_swap_timer = 0.0
+
+			var red_team = []
+			var blue_team = []
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					if b.get("team") == "Red":
+						red_team.append(b)
+					elif b.get("team") == "Blue":
+						blue_team.append(b)
+
+			var swapped = false
+			if red_team.size() > 0:
+				var old_red = bounties.get("Red")
+				if old_red != null:
+					if old_red.has_method("set_meta"):
+						old_red.set_meta("is_bounty", false)
+					else:
+						old_red.is_bounty = false
+				var new_red = red_team[randi() % red_team.size()]
+				if new_red.has_method("set_meta"):
+					new_red.set_meta("is_bounty", true)
+					new_red.set_meta("bounty_timer", 0)
+				else:
+					new_red.is_bounty = true
+					new_red.bounty_timer = 0
+				bounties["Red"] = new_red
+				swapped = true
+
+			if blue_team.size() > 0:
+				var old_blue = bounties.get("Blue")
+				if old_blue != null:
+					if old_blue.has_method("set_meta"):
+						old_blue.set_meta("is_bounty", false)
+					else:
+						old_blue.is_bounty = false
+				var new_blue = blue_team[randi() % blue_team.size()]
+				if new_blue.has_method("set_meta"):
+					new_blue.set_meta("is_bounty", true)
+					new_blue.set_meta("bounty_timer", 0)
+				else:
+					new_blue.is_bounty = true
+					new_blue.bounty_timer = 0
+				bounties["Blue"] = new_blue
+				swapped = true
+
+			if swapped and world != null and world.has_method("add_event"):
+				world.add_event("bounty_swapped", {"message": "Bounty targets have swapped!", "siren": true})
 
 		for team in bounties.keys():
 			var bounty = bounties[team]
