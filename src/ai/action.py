@@ -6451,6 +6451,21 @@ class Action:
                                                 other.duration = 0.0
                                                 other.radius = 0.0
 
+                            if hazard.kind in ("tornado", "local_tornado"):
+                                for other in getattr(self.world.arena, "hazards", []):
+                                    if other is not hazard and getattr(other, "active", True):
+                                        other_kind = getattr(other, "kind", "")
+                                        if other_kind in ("fire_zone", "lava", "fire_ring", "fire_trap", "lava_puddle", "lava_pit", "poison_cloud", "poison_nova", "poison_puddle", "poison_trap"):
+                                            dist = math.hypot(hazard.x - getattr(other, "x", 0.0), hazard.y - getattr(other, "y", 0.0))
+                                            if dist < getattr(hazard, "radius", 40.0) + getattr(other, "radius", 50.0):
+                                                if other_kind in ("fire_zone", "lava", "fire_ring", "fire_trap", "lava_puddle", "lava_pit"):
+                                                    hazard.kind = "local_firenado" if hazard.kind == "local_tornado" else "firenado"
+                                                    hazard.damage = getattr(hazard, "damage", 20.0) * 1.5
+                                                elif other_kind in ("poison_cloud", "poison_nova", "poison_puddle", "poison_trap"):
+                                                    hazard.kind = "local_poison_tornado" if hazard.kind == "local_tornado" else "poison_tornado"
+                                                    hazard.damage = getattr(hazard, "damage", 20.0) * 1.25
+                                                break
+
                             is_supernova = hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and getattr(hazard, "radius", 40.0) >= 150.0
                             if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and (h_lifetime >= 10.0 or is_supernova):
                                 hazard.duration = 0.0

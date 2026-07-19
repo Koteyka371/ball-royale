@@ -12419,6 +12419,44 @@ func execute(strategy: String, delta: float):
                                                 other.set_meta("duration", 0.0)
                                                 other.radius = 0.0
 
+                        if hazard.kind in ["tornado", "local_tornado"]:
+                            if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                                for other in self.world.arena.hazards:
+                                    var other_active = true
+                                    if typeof(other) == TYPE_OBJECT and "active" in other: other_active = other.active
+                                    elif typeof(other) == TYPE_DICTIONARY and other.has("active"): other_active = other["active"]
+                                    if other != hazard and other_active:
+                                        var other_kind = ""
+                                        if typeof(other) == TYPE_OBJECT and "kind" in other: other_kind = other.kind
+                                        elif typeof(other) == TYPE_DICTIONARY and other.has("kind"): other_kind = other["kind"]
+                                        if other_kind in ["fire_zone", "lava", "fire_ring", "fire_trap", "lava_puddle", "lava_pit", "poison_cloud", "poison_nova", "poison_puddle", "poison_trap"]:
+                                            var ox = 0.0
+                                            var oy = 0.0
+                                            var orad = 50.0
+                                            if typeof(other) == TYPE_OBJECT:
+                                                if "x" in other: ox = other.x
+                                                if "y" in other: oy = other.y
+                                                if "radius" in other: orad = other.radius
+                                            elif typeof(other) == TYPE_DICTIONARY:
+                                                if other.has("x"): ox = other["x"]
+                                                if other.has("y"): oy = other["y"]
+                                                if other.has("radius"): orad = other["radius"]
+                                            var dx = hazard.x - ox
+                                            var dy = hazard.y - oy
+                                            var dist = sqrt(dx * dx + dy * dy)
+                                            if dist < hazard.radius + orad:
+                                                if other_kind in ["fire_zone", "lava", "fire_ring", "fire_trap", "lava_puddle", "lava_pit"]:
+                                                    if hazard.kind == "local_tornado": hazard.kind = "local_firenado"
+                                                    else: hazard.kind = "firenado"
+                                                    if typeof(hazard) == TYPE_OBJECT and "damage" in hazard: hazard.damage = hazard.damage * 1.5
+                                                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("damage"): hazard["damage"] = hazard["damage"] * 1.5
+                                                elif other_kind in ["poison_cloud", "poison_nova", "poison_puddle", "poison_trap"]:
+                                                    if hazard.kind == "local_tornado": hazard.kind = "local_poison_tornado"
+                                                    else: hazard.kind = "poison_tornado"
+                                                    if typeof(hazard) == TYPE_OBJECT and "damage" in hazard: hazard.damage = hazard.damage * 1.25
+                                                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("damage"): hazard["damage"] = hazard["damage"] * 1.25
+                                                break
+
                         var is_supernova = hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and hazard.radius >= 150.0
 
                         if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"] and (h_lifetime >= 10.0 or is_supernova):
