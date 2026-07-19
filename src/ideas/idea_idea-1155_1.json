@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Bomb",
+  "description": "A throwable item that triggers an AoE explosion after a short delay. Instead of dealing damage, all players caught within the radius swap positions randomly with each other. A fun chaos inducer during tight brawls."
+}
