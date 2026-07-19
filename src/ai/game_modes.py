@@ -17843,6 +17843,95 @@ class CenterGravityWellMode(GameMode):
                         h.y += (dy / dist) * pull_strength * delta * delta
 
 
+
+class EndGameMagnetMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "End Game Magnet"
+        self.description = "A massive magnet activates near the end of the match, slowly pulling all balls, boosters, and smaller hazards towards its center."
+        self.magnet_id = 999998
+        self.base_pull_strength = 150.0
+        self.pull_growth_rate = 5.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        # Activate after 60 seconds of match time
+        if self.total_match_time < 60.0:
+            return
+
+        cx = world.arena.width / 2.0
+        cy = world.arena.height / 2.0
+
+        import math
+        magnet = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "end_game_magnet" and getattr(h, "id", None) == self.magnet_id), None)
+        if not magnet:
+
+            class FallbackHazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                    self.active = True
+            HazardClass = FallbackHazard
+            try:
+                from arena.procedural_arena import Hazard
+                HazardClass = Hazard
+            except ImportError:
+                pass
+
+            magnet = HazardClass(id=self.magnet_id, x=cx, y=cy, radius=30.0, kind="end_game_magnet", damage=0.0)
+            world.arena.hazards.append(magnet)
+
+        current_pull = self.base_pull_strength + self.pull_growth_rate * (self.total_match_time - 60.0)
+
+        # Pull balls
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            dx = magnet.x - b.x
+            dy = magnet.y - b.y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > 0:
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.vx += (dx / dist) * current_pull * delta
+                    b.vy += (dy / dist) * current_pull * delta
+
+        # Pull boosters
+        boosters = list(getattr(world, "boosters", []))
+        if hasattr(world.arena, "boosters"):
+            boosters.extend(world.arena.boosters)
+        for b in boosters:
+            dx = magnet.x - b.x
+            dy = magnet.y - b.y
+            dist = math.sqrt(dx*dx + dy*dy)
+            if dist > 0:
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.vx += (dx / dist) * current_pull * delta
+                    b.vy += (dy / dist) * current_pull * delta
+                else:
+                    b.x += (dx / dist) * current_pull * delta
+                    b.y += (dy / dist) * current_pull * delta
+
+        # Pull smaller hazards
+        for h in world.arena.hazards:
+            if h is magnet or getattr(h, "kind", "") == "end_game_magnet":
+                continue
+            if getattr(h, "radius", 100.0) < 50.0:
+                dx = magnet.x - h.x
+                dy = magnet.y - h.y
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist > 0:
+                    if hasattr(h, "vx") and hasattr(h, "vy"):
+                        h.vx += (dx / dist) * current_pull * delta
+                        h.vy += (dy / dist) * current_pull * delta
+                    else:
+                        h.x += (dx / dist) * current_pull * delta
+                        h.y += (dy / dist) * current_pull * delta
+
+
 class CenterBlackHoleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -21286,6 +21375,7 @@ GAME_MODES = {
     "spiked_walls": SpikedWallsMode(),
     "center_vortex": CenterVortexMode(),
     "center_gravity_well": CenterGravityWellMode(),
+    "end_game_magnet": EndGameMagnetMode(),
     "center_black_hole": CenterBlackHoleMode(),
     "extreme_weather": ExtremeWeatherMode(),
     "weather_station": WeatherStationMode(),
