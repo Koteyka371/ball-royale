@@ -4075,7 +4075,7 @@ class EscortMode(GameMode):
                             speed_mult *= 0.5
                             break
 
-            if speed_mult >= 2.0:
+            if nearby_teammates >= 2:
                 self.payload.turret_active = True
                 for b in balls:
                     if getattr(b, "ball_type", None) == "spectator": continue
@@ -4093,6 +4093,13 @@ class EscortMode(GameMode):
                                 b.y += (bdy / dist_to_enemy) * 150.0 * delta
             else:
                 self.payload.turret_active = False
+
+            if nearby_teammates >= 3:
+                self.payload.has_reflecting_shield = True
+                self.payload.reflect_projectiles = True
+            else:
+                self.payload.has_reflecting_shield = False
+                self.payload.reflect_projectiles = False
 
             path_data = getattr(self, "paths", [{"waypoints": [(self.goal_x, self.goal_y)], "risk": "low"}])[getattr(self, "chosen_path", 0)]
             waypoints = path_data["waypoints"]
@@ -12265,14 +12272,45 @@ class TugOfWarMode(GameMode):
             # Payload moves towards Blue goal if Red has more players nearby, and vice versa
             move_speed = 50.0 # base move speed
 
+            controlling_team = None
+            nearby_teammates = 0
+
             if red_count > blue_count:
-                # Red pushes towards Blue goal (right)
+                controlling_team = "Red"
+                nearby_teammates = red_count
                 speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
                 self.payload.x += move_speed * delta * (red_count - blue_count) * speed_multiplier
             elif blue_count > red_count:
-                # Blue pushes towards Red goal (left)
+                controlling_team = "Blue"
+                nearby_teammates = blue_count
                 speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
                 self.payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
+
+            if nearby_teammates >= 2 and controlling_team:
+                self.payload.turret_active = True
+                for b in balls:
+                    if getattr(b, "ball_type", None) == "spectator": continue
+                    if not getattr(b, "alive", False) or b == self.payload: continue
+                    if getattr(b, "team", "") != controlling_team:
+                        bdx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
+                        bdy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
+                        dist_to_enemy = math.hypot(bdx, bdy)
+                        if dist_to_enemy <= 200.0:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 10.0 * delta)
+                            if b.hp <= 0:
+                                b.alive = False
+                            if dist_to_enemy > 0:
+                                b.x += (bdx / dist_to_enemy) * 150.0 * delta
+                                b.y += (bdy / dist_to_enemy) * 150.0 * delta
+            else:
+                self.payload.turret_active = False
+
+            if nearby_teammates >= 3 and controlling_team:
+                self.payload.has_reflecting_shield = True
+                self.payload.reflect_projectiles = True
+            else:
+                self.payload.has_reflecting_shield = False
+                self.payload.reflect_projectiles = False
 
             # Keep in bounds
             if self.payload.x < 50.0:
