@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1114] Mirage Clone Swap — *2026-07-19 00:20:16 UTC*
+
+A survival skill where the ball spawns a decoy and after 3 seconds, instantly swaps positions with the decoy, confusing enemies and redirecting aggro.
+
+---
+
 ## [idea-1111] Tether Pull Booster — *2026-07-18 22:45:46 UTC*
 
 A booster that grants the ability to shoot a tether at an enemy. The enemy is pulled towards the user for 3 seconds, making them easier targets for melee balls or environmental hazards.
