@@ -22533,7 +22533,7 @@ func _use_skill():
                 self.ball["vy"] = -self.ball["vy"]
         return
 
-    if skill_timer > 0.0 and skill_name == "solar_flare":
+    if skill_timer <= 0.0 and skill_name == "solar_flare":
         if self.world != null and self.world.has_method("add_event"):
             var b_id = 0
             if "id" in self.ball: b_id = self.ball.id
@@ -22546,7 +22546,9 @@ func _use_skill():
                 self.world.set_meta("flare_light_timer", 3.0)
 
         if "skill_timer" in self.ball:
-            self.ball.skill_timer = 4.0
+            var cd = 10.0
+            if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+            self.ball.skill_timer = cd
 
         var burn_radius = 200.0
         var burn_damage = 30.0
@@ -22569,9 +22571,9 @@ func _use_skill():
                 if typeof(e) == TYPE_OBJECT and e.has_method("take_damage"):
                     e.take_damage(burn_damage)
                 elif typeof(e) == TYPE_DICTIONARY and e.has("hp"):
-                    e["hp"] -= burn_damage
+                    e["hp"] = max(0.0, e["hp"] - burn_damage)
                 elif typeof(e) == TYPE_OBJECT and "hp" in e:
-                    e.hp -= burn_damage
+                    e.hp = max(0.0, e.hp - burn_damage)
 
                 if typeof(e) == TYPE_OBJECT:
                     if "burning_timer" in e:
