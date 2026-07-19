@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1165] Temperature-Dependent Powerups — *2026-07-19 21:47:48 UTC*
+
+Create powerups that scale in effectiveness based on the arena temperature, such as a Heat Shield that blocks more damage in high-temperature environments.
+
+---
+
 ## [idea-1171] Solar Eclipse Event Mode — *2026-07-19 21:34:42 UTC*
 
 An event where the sun is gradually blocked. As the eclipse progresses, vision gradually decreases, solar panels provide less power, and at full totality, shadow monsters spawn rapidly and all balls become temporarily invisible to each other.

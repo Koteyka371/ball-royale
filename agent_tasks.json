@@ -19975,7 +19975,7 @@
     },
     {
       "id": "idea-1165",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Temperature-Dependent Powerups",
@@ -30786,6 +30786,57 @@
         "src/ai/repulsion_mine.py",
         "src/ai/repulsion_mine.gd",
         "tests/test_repulsion_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1800",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time-Dilated Safe Zone",
+      "description": "A moving safe zone where time passes much slower. Balls inside the zone move at half speed and their skill cooldowns regenerate twice as slow, but they take reduced damage and are safe from external map hazards.",
+      "allowed_paths": [
+        "src/ai/time_dilated_safe_zone.py",
+        "src/ai/time_dilated_safe_zone.gd",
+        "tests/test_time_dilated_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1801",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Moon Gravity Adjuster",
+      "description": "During lunar events (like lunar eclipse), overall gravity drops by 50%. Bouncing off walls or other balls propels balls further, and jump pads have 2x vertical lift, fundamentally changing the arena physics for the duration.",
+      "allowed_paths": [
+        "src/ai/moon_gravity_adjuster.py",
+        "src/ai/moon_gravity_adjuster.gd",
+        "tests/test_moon_gravity_adjuster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1802",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar Flare Mode",
+      "description": "An intense event where the sun emits random bursts of solar energy. During a flare, balls take DOT damage over time if not hiding in shadows or under indestructible walls. Electronic items and shields are temporarily disabled.",
+      "allowed_paths": [
+        "src/ai/solar_flare.py",
+        "src/ai/solar_flare.gd",
+        "tests/test_solar_flare.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
