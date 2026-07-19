@@ -26459,3 +26459,128 @@ class MagneticShockwaveEventMode(GameMode):
                     b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
 
 GAME_MODES['magnetic_shockwave'] = MagneticShockwaveEventMode()
+class OrbitalCrosshairMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Orbital Crosshair"
+        self.description = "A satellite crosshair slowly tracks players. Upon locking on, it fires an orbital beam creating an irradiated zone."
+        self.crosshairs = []
+        self.spawn_timer = 0.0
+        self.spawn_interval = 20.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.crosshairs = []
+        self.spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        super().tick(world, balls, delta)
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.spawn_interval
+
+            valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+            if valid_balls:
+                target = random.choice(valid_balls)
+                arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+                arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+                cx = random.uniform(100, arena_width - 100)
+                cy = random.uniform(100, arena_height - 100)
+                self.crosshairs.append({
+                    "x": cx,
+                    "y": cy,
+                    "target_id": getattr(target, "id", None),
+                    "state": "hunting", # hunting, locking, firing
+                    "timer": 0.0,
+                    "radius": 50.0,
+                    "speed": 80.0
+                })
+                if hasattr(world, "add_event"):
+                    world.add_event("crosshair_spawn", {"message": "An orbital crosshair is tracking a target!"})
+
+        active_crosshairs = []
+        for ch in self.crosshairs:
+            if ch["state"] == "hunting":
+                target = next((b for b in balls if getattr(b, "id", None) == ch["target_id"]), None)
+                if not target or not getattr(target, "alive", False):
+                    # Pick new target
+                    valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+                    if valid_balls:
+                        target = random.choice(valid_balls)
+                        ch["target_id"] = getattr(target, "id", None)
+                    else:
+                        continue # No targets left
+
+                dx = target.x - ch["x"]
+                dy = target.y - ch["y"]
+                dist = math.hypot(dx, dy)
+
+                if dist > 5.0:
+                    ch["x"] += (dx / dist) * ch["speed"] * delta
+                    ch["y"] += (dy / dist) * ch["speed"] * delta
+
+                if dist < 20.0:
+                    ch["timer"] += delta
+                    if ch["timer"] >= 2.0:
+                        ch["state"] = "locking"
+                        ch["timer"] = 3.0 # Lock on duration
+                        if hasattr(world, "add_event"):
+                            world.add_event("crosshair_locking", {"x": ch["x"], "y": ch["y"], "message": "Orbital strike locking on!"})
+                else:
+                    ch["timer"] = max(0.0, ch["timer"] - delta)
+                active_crosshairs.append(ch)
+
+            elif ch["state"] == "locking":
+                ch["timer"] -= delta
+                if ch["timer"] <= 0:
+                    ch["state"] = "firing"
+                    # Spawn irradiated zone
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            HazardClass = Hazard
+                        except ImportError:
+                            class FallbackHazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                                    self.active = True
+                            HazardClass = FallbackHazard
+
+                        h_id = getattr(world, "next_id", random.randint(100000, 999999))
+                        h = HazardClass(id=h_id, x=ch["x"], y=ch["y"], radius=80.0, kind="irradiated_zone", damage=0.0)
+                        setattr(h, "duration", 15.0)
+                        world.arena.hazards.append(h)
+                        if hasattr(world, "next_id"):
+                            world.next_id += 1
+                        if hasattr(world, "add_event"):
+                            world.add_event("orbital_strike_fired", {"x": ch["x"], "y": ch["y"], "message": "Orbital strike fired!"})
+            # if firing, we don't append it to active, it just disappears after firing
+
+        self.crosshairs = active_crosshairs
+
+        # Process irradiated_zone hazards
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "irradiated_zone" and getattr(h, "active", True):
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                            dist = math.hypot(b.x - h.x, b.y - h.y)
+                            if dist <= getattr(h, "radius", 80.0):
+                                # Drain stamina regen (set to 0 or drain)
+                                if hasattr(b, "stamina"):
+                                    b.stamina = max(0.0, b.stamina - 20.0 * delta)
+                                # Deal slight damage
+                                damage = 10.0 * delta
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(damage, source="irradiated_zone")
+                                else:
+                                    b.hp -= damage
+                                    if b.hp <= 0:
+                                        b.hp = 0
+                                        b.alive = False
+
+
+GAME_MODES['orbital_crosshair'] = OrbitalCrosshairMode()
