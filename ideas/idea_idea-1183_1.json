@@ -1,0 +1,4 @@
+{
+    "title": "Payload Overcharge",
+    "description": "Attackers can deposit energy cores into the payload. Once 3 energy cores are deposited, the payload gets an 'overcharge' status that causes it to speed up and have a shield for a short duration."
+}
