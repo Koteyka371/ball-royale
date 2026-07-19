@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1163] Bounty Escalation Scaling — *2026-07-19 21:13:06 UTC*
+
+Bounties dynamically increase their reward pool over time based on the distance traveled by the targeted player, incentivizing fast and prolonged chases while adding risk-reward for running away.
+
+---
+
 ## [idea-1143] Glitch Ball Sub-Type — *2026-07-19 20:48:19 UTC*
 
 A new ball type 'Glitch' that randomly teleports short distances when hit and occasionally reverses its own movement vector, making it highly unpredictable but hard to control.
