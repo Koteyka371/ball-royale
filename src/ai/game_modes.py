@@ -21595,7 +21595,31 @@ class DraggingMagneticMinesMode(GameMode):
                             b.x -= (dx / dist) * m["pull_strength"] * delta
                             b.y -= (dy / dist) * m["pull_strength"] * delta
 
+
+class BounceLaserMode(GameMode):
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena"):
+            return
+
+        # Spawn bounce lasers periodically
+        if getattr(world, 'tick', 0) % 100 == 0:
+            import random
+            from arena.procedural_arena import Hazard
+            w = getattr(world.arena, "width", 2000.0)
+            h = getattr(world.arena, "height", 2000.0)
+            x = random.uniform(200, w - 200)
+            y = random.uniform(200, h - 200)
+
+            laser = Hazard(getattr(world, "next_id", 9000), x, y, 20.0, "bounce_laser", 25.0)
+            if hasattr(world, "next_id"):
+                world.next_id += 1
+
+            laser.speed = 300.0
+            world.arena.hazards.append(laser)
+
 GAME_MODES = {
+    'bounce_laser': BounceLaserMode(),
     'dragging_magnetic_mines': DraggingMagneticMinesMode(),
     'position_swap': PositionSwapMode(),
     'quantum_tunnel_mutator': QuantumTunnelMutatorMode(),

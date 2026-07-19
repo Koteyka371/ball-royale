@@ -34905,7 +34905,36 @@ class SpectatorHologramsMode extends GameMode:
 										h.active = false
 
 
+
+class BounceLaserMode extends GameMode:
+    func tick(world, balls: Array, delta: float) -> void:
+        super.tick(world, balls, delta)
+
+        if not "arena" in world or world.arena == null:
+            return
+
+        if "tick" in world and world.tick % 100 == 0:
+            var w = 2000.0
+            if "width" in world.arena: w = world.arena.width
+            var h = 2000.0
+            if "height" in world.arena: h = world.arena.height
+            var x = randf_range(200, w - 200)
+            var y = randf_range(200, h - 200)
+
+            var next_id = 9000
+            if "next_id" in world:
+                next_id = world.next_id
+                world.next_id += 1
+
+            var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+            var laser = ProceduralArena.Hazard.new(next_id, x, y, 20.0, "bounce_laser", 25.0)
+            laser.set_meta("speed", 300.0)
+
+            if "hazards" in world.arena:
+                world.arena.hazards.append(laser)
+
 GAME_MODES = {
+    "bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),
 
 	"position_swap": PositionSwapMode.new(),
