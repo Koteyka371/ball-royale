@@ -395,7 +395,7 @@ class GameMode:
 									if "base_damage" in b: b.base_damage = bd
 									if "damage" in b: b.damage = bd
 
-							if world.has_method("add_event"):
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								var bid = "Unknown"
 								if typeof(b) == TYPE_DICTIONARY and b.has("id"): bid = str(b.id)
 								elif typeof(b) == TYPE_OBJECT and "id" in b: bid = str(b.id)
@@ -447,7 +447,7 @@ class GameMode:
 			if theme == "Frost" or theme == "Inferno" or theme == "Void" or theme == "Abyssal":
 				var has_arena = false
 				var arena_ref = null
-				if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 					has_arena = true
 					arena_ref = world["arena"]
 				elif typeof(world) == TYPE_OBJECT and "arena" in world:
@@ -1014,7 +1014,7 @@ class GameMode:
 					var placer = claim_result[1]
 					if reward > 0:
 						pm.apply_bounty_placer_buff(placer)
-						if world.has_method("add_event"):
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("bounty_claimed", {
 								"message": killer_id + " claimed a nemesis bounty on " + target_id + " for " + str(reward) + " tokens!"
 							})
@@ -1033,7 +1033,7 @@ class GameMode:
 			elif typeof(killer) == TYPE_OBJECT and killer.has_method("set_meta"):
 				killer.set_meta("gold", new_gold)
 
-			if world.has_method("add_event"):
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				var killer_id_str = "Unknown"
 				if typeof(killer) == TYPE_DICTIONARY and killer.has("id"): killer_id_str = str(killer.id)
 				elif typeof(killer) == TYPE_OBJECT and "id" in killer: killer_id_str = str(killer.id)
@@ -1083,7 +1083,7 @@ class GameMode:
 				if has_cursed:
 					reward = int(reward * 1.5)
 				pm.add_skill_points(reward)
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					var killer_id = str(killer.id)
 					var target_id = str(ball.id)
 					world.add_event("bounty_claimed", {
@@ -2610,7 +2610,7 @@ class BattleRoyaleMode extends GameMode:
 			tornado.set_meta("duration", 9999.0)
 			if "arena" in world and world.arena and "hazards" in world.arena:
 				world.arena.hazards.append(tornado)
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("hazard_spawn", {"message": "A roaming Tornado has appeared!"})
 
 		dark_phase_timer += delta
@@ -3101,7 +3101,7 @@ class BattleRoyaleMode extends GameMode:
 					var y = randf_range(100.0, world.arena.height - 100.0)
 					var warning = Hazard.new(world.arena.hazards.size() + (randi() % 9000 + 1000), x, y, 40.0, "tornado_warning", 0.0)
 					warning.set_meta("duration", 3.0)
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("audio_event", {"sound": "siren_warning", "volume": 1.0, "x": x, "y": y})
 					world.arena.hazards.append(warning)
 
@@ -3291,7 +3291,7 @@ class BattleRoyaleMode extends GameMode:
 
 					var arena_width = 1000.0
 					var arena_height = 1000.0
-					if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+					if typeof(world) == TYPE_DICTIONARY and ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY:
 						if world.arena.has("width"): arena_width = world.arena.width
 						if world.arena.has("height"): arena_height = world.arena.height
 					elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
@@ -3385,10 +3385,10 @@ class BattleRoyaleMode extends GameMode:
 				new_goblin.id = 95000 + rng.randi() % 10000
 				var arena_width = 1000.0
 				var arena_height = 1000.0
-				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+				if ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY:
 					if world.arena.has("width"): arena_width = world.arena.width
 					if world.arena.has("height"): arena_height = world.arena.height
-				elif world.has("arena") and typeof(world.arena) == TYPE_OBJECT:
+				elif ("arena" in world) and typeof(world.arena) == TYPE_OBJECT:
 					if "width" in world.arena: arena_width = world.arena.width
 					if "height" in world.arena: arena_height = world.arena.height
 
@@ -3415,10 +3415,10 @@ class BattleRoyaleMode extends GameMode:
 			elif event_type == "low_gravity_zone":
 				var arena_width = 1000.0
 				var arena_height = 1000.0
-				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+				if ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY:
 					if world.arena.has("width"): arena_width = world.arena.width
 					if world.arena.has("height"): arena_height = world.arena.height
-				elif world.has("arena") and typeof(world.arena) == TYPE_OBJECT:
+				elif ("arena" in world) and typeof(world.arena) == TYPE_OBJECT:
 					if "width" in world.arena: arena_width = world.arena.width
 					if "height" in world.arena: arena_height = world.arena.height
 				var cx = arena_width / 2.0
@@ -3435,7 +3435,7 @@ class BattleRoyaleMode extends GameMode:
 					"damage": 0.0,
 					"duration": 15.0
 				}
-				if world.has("arena"):
+				if ("arena" in world):
 					var arena = world.arena
 					if typeof(arena) == TYPE_DICTIONARY and arena.has("hazards") and typeof(arena.hazards) == TYPE_ARRAY:
 						arena.hazards.append(low_grav)
@@ -3576,7 +3576,7 @@ class BattleRoyaleMode extends GameMode:
 
 		# Update Low Gravity Zone expansion
 		var hazards_array = null
-		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards") and typeof(world.arena.hazards) == TYPE_ARRAY:
 				hazards_array = world.arena.hazards
 			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena and typeof(world.arena.hazards) == TYPE_ARRAY:
@@ -3919,7 +3919,7 @@ class BattleRoyaleMode extends GameMode:
 						crater.set_meta("duration", 10.0)
 						world.arena.hazards.append(crater)
 
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "explosion", "x": mx, "y": my, "radius": 80.0})
 
 			if self.has_method("set_meta"):
@@ -3949,7 +3949,7 @@ class BattleRoyaleMode extends GameMode:
 					boss.set_meta("lifetime", 0.0)
 					world.arena.hazards.append(boss)
 
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("sudden_death_black_hole_spawn", {"message": "SUDDEN DEATH! A massive black hole is consuming the arena!"})
 			else:
 				if "hazards" in world.arena:
@@ -7367,7 +7367,7 @@ class MassiveGravityWellMode extends GameMode:
 			mgw_vx = cos(angle) * speed
 			mgw_vy = sin(angle) * speed
 
-			if world.has_method("add_event"):
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("massive_gravity_well_spawn", {"message": "A massive gravity well has appeared!"})
 
 		mgw_x += mgw_vx * delta
@@ -8609,7 +8609,7 @@ class WeatherChaosMode extends GameMode:
 						minion.damage = 10.0
 						if not "balls" in world: world.balls = []
 						world.balls.append(minion)
-						if world.has_method("add_event"):
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("minion_spawn", {"type": "minion_spawn", "message": "A Sand Minion emerged from the storm!"})
 
 			if weather == "fog":
@@ -8628,7 +8628,7 @@ class WeatherChaosMode extends GameMode:
 						minion.damage = 15.0
 						if not "balls" in world: world.balls = []
 						world.balls.append(minion)
-						if world.has_method("add_event"):
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("minion_spawn", {"type": "minion_spawn", "message": "A Fog Phantom materialized!"})
 
 			if weather == "wind":
@@ -11164,7 +11164,7 @@ class MovingSafeZoneMode extends GameMode:
 				zone_radius = min_zone_radius
 				if not collapse_triggered:
 					collapse_triggered = true
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
 		elif collapse_triggered:
 			if zone_radius > 0:
@@ -11284,7 +11284,7 @@ class PoisonGasZoneMode extends MovingSafeZoneMode:
 		tick_timer += delta
 		if tick_timer > 0.5:
 			tick_timer = 0.0
-			if world.has_method("add_event"):
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("poison_gas_ambient", {"zone_x": zone_x, "zone_y": zone_y, "radius": zone_radius})
 
 
@@ -11508,7 +11508,7 @@ class ShrinkingDangerZoneMode extends GameMode:
 				zone_radius = min_zone_radius
 				if not collapse_triggered:
 					collapse_triggered = true
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
 		elif collapse_triggered:
 			if zone_radius > 0:
@@ -12146,7 +12146,7 @@ class ModifierZonesSafeZoneMode extends GameMode:
 				zone_radius = min_zone_radius
 				if not collapse_triggered:
 					collapse_triggered = true
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
 		elif collapse_triggered:
 			if zone_radius > 0:
@@ -12599,7 +12599,7 @@ class SafeZoneMode extends GameMode:
 				zone_radius = min_zone_radius
 				if not collapse_triggered:
 					collapse_triggered = true
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
 		elif collapse_triggered:
 			if not paused_this_tick and zone_radius > 0:
@@ -13756,7 +13756,7 @@ class SumoKnockoutMode extends GameMode:
 
 		if tick_timer > 0.5:
 			tick_timer = 0.0
-			if world.has_method("add_event"):
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("zone_shrink_update", {"zone_x": zone_x, "zone_y": zone_y, "radius": zone_radius})
 
 
@@ -15254,7 +15254,7 @@ class BlackoutMode extends GameMode:
 		if timer >= 5.0:
 			timer = 0.0
 			is_blackout = not is_blackout
-			if world.has_method("add_event"):
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				var msg = "The arena went dark!" if is_blackout else "Vision restored!"
 				world.add_event("weather_warning", {"type": "weather_warning", "message": msg})
 
@@ -15616,7 +15616,7 @@ class BountyHuntMode extends GameMode:
 					call("_award_skill_points")
 					call("_award_skill_points")
 
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("bounty_destroyed", {"message": team + " Bounty destroyed! " + enemy_team + " gets massive buff!"})
 
 	func check_winner(world, balls: Array):
@@ -16980,7 +16980,7 @@ class DayNightMode extends GameMode:
 
 					active_moonlight_shadows.append({"x": fx, "y": fy, "radius": shadow_radius, "duration": 4.0})
 
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "moonlight_shadow", "x": fx, "y": fy, "radius": shadow_radius, "duration": 4.0})
 
 			if not is_night:
@@ -17009,7 +17009,7 @@ class DayNightMode extends GameMode:
 
 					active_sunlight_beams.append({"x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
 
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
 
 
@@ -17741,7 +17741,7 @@ class QuantumTunnelMutatorMode extends GameMode:
 		description = "A mutator that occasionally allows balls moving at extremely high speeds to pass directly through hazards or walls without taking damage, encouraging high-risk, high-velocity playstyles."
 
 	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
-		if not world.has("dead_balls"):
+		if not ("dead_balls" in world):
 			world["dead_balls"] = []
 		self.apply_dynamic_traits(world, balls, delta)
 
@@ -18859,7 +18859,7 @@ class BodySwapMode extends GameMode:
 					if "vx" in b2: b2.vx = vx1; b2.vy = vy1
 					elif b2.has_method("set_meta"): b2.set_meta("vx", vx1); b2.set_meta("vy", vy1)
 
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("body_swap", {"type": "body_swap", "message": "Body Swap! Players swap places!"})
 					i += 2
 
@@ -19500,14 +19500,14 @@ class ChainLightningStormMode extends GameMode:
 						"state": "warning"
 					})
 
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("chain_lightning_warning", {"message": "CHAIN LIGHTNING STORM IMMINENT! SPREAD OUT!"})
 
 		if event_active:
 			if strikes.size() == 0:
 				event_active = false
 				event_timer = 0.0
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("chain_lightning_ended", {"message": "The storm has passed."})
 
 			var active_strikes = []
@@ -19615,14 +19615,14 @@ class LightningStrikeEventMode extends GameMode:
 						"state": "warning"
 					})
 
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("lightning_warning", {"message": "LIGHTNING STORM IMMINENT!"})
 
 		if event_active:
 			if strikes.size() == 0:
 				event_active = false
 				event_timer = 0.0
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("lightning_storm_ended", {"message": "Storm passed."})
 
 			var active_strikes = []
@@ -19657,11 +19657,11 @@ class LightningStrikeEventMode extends GameMode:
 									if "stun_timer" in b: b.stun_timer = new_stun
 									elif typeof(b) == TYPE_OBJECT: b.set_meta("stun_timer", new_stun)
 
-									if world.has_method("add_event"):
+									if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 										var bid = b.id if "id" in b else (b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_meta("id") else "unknown")
 										world.add_event("stun", {"id": bid, "duration": 2.0})
 
-						if world.has_method("add_event"):
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("lightning_strike", {"x": s["x"], "y": s["y"], "radius": s["radius"]})
 					active_strikes.append(s)
 				elif s["state"] == "active":
@@ -19722,7 +19722,7 @@ class MeteorCrashEventMode extends GameMode:
 						"delay": delay,
 						"radius": 30.0
 					})
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("meteor_crash_event", {"message": "METEOR CRASH! Watch out!"})
 			else:
 				event_timer = 0.0
@@ -19731,7 +19731,7 @@ class MeteorCrashEventMode extends GameMode:
 			if meteors.size() == 0 and craters.size() == 0:
 				event_active = false
 				event_timer = 0.0
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("meteor_crash_ended", {"message": "Meteor crash ended."})
 
 			var active_meteors = []
@@ -20616,7 +20616,7 @@ class MinefieldSafeZoneMode extends SafeZoneMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if ("arena" in world) and world.arena != null:
 				if typeof(world.arena) == TYPE_DICTIONARY:
 					if world.arena.has("width"): arena_width = float(world.arena.width)
 					if world.arena.has("height"): arena_height = float(world.arena.height)
@@ -20640,7 +20640,7 @@ class MinefieldSafeZoneMode extends SafeZoneMode:
 
 			var arena_hazards = null
 			if typeof(world) == TYPE_DICTIONARY:
-				if world.has("arena") and world.arena != null:
+				if ("arena" in world) and world.arena != null:
 					if typeof(world.arena) == TYPE_DICTIONARY:
 						if world.arena.has("hazards"): arena_hazards = world.arena.hazards
 					else:
@@ -21216,7 +21216,7 @@ class DynamicSafeZoneMode extends GameMode:
 				zone_radius = min_zone_radius
 				if not collapse_triggered:
 					collapse_triggered = true
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
 		elif collapse_triggered:
 			if zone_radius > 0:
@@ -21606,7 +21606,7 @@ class DailyMutatorMode extends GameMode:
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
-		if not world.has("dead_balls"):
+		if not ("dead_balls" in world):
 			world.dead_balls = []
 
 		var current_day = int(Time.get_unix_time_from_system() / (24.0 * 3600.0))
@@ -21660,7 +21660,7 @@ class DailyMutatorMode extends GameMode:
 					else:
 						b.skill_cooldown = b.get("skill_cooldown", 5.0) * 0.5
 
-		if "invisible_hazards" in mutators and world.has("arena") and world.arena != null:
+		if "invisible_hazards" in mutators and ("arena" in world) and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
 				for h in world.arena.hazards:
 					h["invisible"] = true
@@ -21988,7 +21988,7 @@ class BlackMarketMode extends GameMode:
 								b.set_meta("base_damage", cur_base_dmg + 5.0)
 								b.set("damage", cur_base_dmg + 5.0)
 
-						if world.has_method("add_event"):
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
 						break
 
@@ -22005,10 +22005,10 @@ class BlackMarketMode extends GameMode:
 						var roll = randf()
 						if roll < 0.33:
 							bcurrency += deposit * 2
-							if world.has_method("add_event"):
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("gambling_win", {"ball": b, "amount": deposit * 2})
 						elif roll < 0.66:
-							if world.has_method("add_event"):
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("gambling_lose", {"ball": b, "amount": deposit})
 						else:
 							var cur_hp = float(b.get("hp", 100.0)) if typeof(b) == TYPE_DICTIONARY else float(b.get("hp"))
@@ -22055,7 +22055,7 @@ class BlackMarketMode extends GameMode:
 												other.set("hp", o_new_hp)
 												if o_new_hp <= 0: other.set("alive", false)
 
-							if world.has_method("add_event"):
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("gambling_explode", {"ball": b, "amount": deposit})
 						break
 
@@ -22085,7 +22085,7 @@ class FloorIsLavaMode extends GameMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if ("arena" in world) and world.arena != null:
 				arena_width = world.arena.get("width", 1000.0)
 				arena_height = world.arena.get("height", 1000.0)
 		else:
@@ -22104,7 +22104,7 @@ class FloorIsLavaMode extends GameMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if ("arena" in world) and world.arena != null:
 				arena_width = world.arena.get("width", 1000.0)
 				arena_height = world.arena.get("height", 1000.0)
 		else:
@@ -22140,7 +22140,7 @@ class FloorIsLavaMode extends GameMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if ("arena" in world) and world.arena != null:
 				arena_width = world.arena.get("width", 1000.0)
 				arena_height = world.arena.get("height", 1000.0)
 		else:
@@ -22176,7 +22176,7 @@ class FloorIsLavaMode extends GameMode:
 
 		var hazards_array = null
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null and typeof(world.arena) == TYPE_DICTIONARY:
+			if ("arena" in world) and world.arena != null and typeof(world.arena) == TYPE_DICTIONARY:
 				if world.arena.has("hazards"):
 					hazards_array = world.arena.hazards
 		else:
@@ -22279,13 +22279,13 @@ class BlizzardMode extends GameMode:
 				blizzard_timer = 0.0
 				blizzard_active = true
 				blizzard_duration = 10.0
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("blizzard_warning", {"type": "weather_warning", "message": "A BLIZZARD HAS BEGUN!"})
 		else:
 			blizzard_duration -= delta
 			if blizzard_duration <= 0:
 				blizzard_active = false
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("blizzard_end", {"type": "weather_warning", "message": "The blizzard has ended."})
 
 			spawn_timer += delta
@@ -23567,7 +23567,7 @@ class LunarEclipseEventMode extends GameMode:
 					boss.set_meta("dy", dy)
 
 					world.arena.hazards.append(boss)
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("boss_warning", {"type": "weather_warning", "message": "THE ECLIPSE BOSS HAS AWAKENED!"})
 			else:
 				event_timer = 0.0
@@ -23633,7 +23633,7 @@ class LunarEclipseEventMode extends GameMode:
 										if "hp" in b: b.hp = b.get("max_hp", 100.0)
 
 									var b_id = b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else 0)
-									if world.has_method("add_event"):
+									if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 										world.add_event("shadow_conversion", {"type": "visual_effect", "target_id": b_id})
 
 			if event_duration <= 0:
@@ -24749,7 +24749,7 @@ class SweepingPaddlesMode extends GameMode:
 		sweep_timer += delta
 		var arena_width = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if ("arena" in world) and world.arena != null:
 				arena_width = world.arena.get("width", 1000.0)
 		else:
 			if world.get("arena") != null:
@@ -24804,7 +24804,7 @@ class SweepingLasersMode extends GameMode:
 		sweep_timer += delta
 		var arena_width = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if ("arena" in world) and world.arena != null:
 				arena_width = world.arena.get("width", 1000.0)
 		else:
 			if world.get("arena") != null:
@@ -25144,7 +25144,7 @@ class MazeSafeZoneMode extends GameMode:
 				zone_radius = min_zone_radius
 				if not collapse_triggered:
 					collapse_triggered = true
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
 		elif collapse_triggered:
 			if zone_radius > 0:
@@ -25281,7 +25281,7 @@ class ReverseGravityEventMode extends GameMode:
 				event_active = true
 				event_duration = 10.0
 				event_timer = 0.0
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("reverse_gravity", {"active": true})
 			else:
 				event_timer = 0.0
@@ -25291,7 +25291,7 @@ class ReverseGravityEventMode extends GameMode:
 			if event_duration <= 0:
 				event_active = false
 				event_timer = 0.0
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("reverse_gravity", {"active": false})
 
 		if "arena" in world and world.arena != null:
@@ -25659,7 +25659,7 @@ class ExtremeWeatherMode extends GameMode:
 							"active": true,
 							"radius": 20.0
 						})
-						if world.has_method("add_event"):
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("boss_defeated", {"message": b.get("name", "Boss") + " was defeated! Mega booster dropped!"})
 				continue
 
@@ -26342,7 +26342,7 @@ class SolarFlareMode extends GameMode:
 				world.events.append({"type": "solar_flare_end", "message": "Solar Flare Ended."})
 
 		var hazards = null
-		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
 			hazards = world.arena.hazards
 		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
 			hazards = world.arena.hazards
@@ -26789,7 +26789,7 @@ class HexGridRoyaleMode extends GameMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if ("arena" in world) and world.arena != null:
 				if typeof(world.arena) == TYPE_DICTIONARY:
 					if world.arena.has("width"): arena_width = float(world.arena.width)
 					if world.arena.has("height"): arena_height = float(world.arena.height)
@@ -26841,7 +26841,7 @@ class HexGridRoyaleMode extends GameMode:
 						if world.has("add_event"):
 							world.add_event("hex_tile_warning", {"x": t.x, "y": t.y})
 					else:
-						if world.has_method("add_event"):
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("hex_tile_warning", {"x": t.x, "y": t.y})
 
 				t.timer += delta
@@ -26851,7 +26851,7 @@ class HexGridRoyaleMode extends GameMode:
 						if world.has("add_event"):
 							world.add_event("hex_tile_fallen", {"x": t.x, "y": t.y})
 					else:
-						if world.has_method("add_event"):
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("hex_tile_fallen", {"x": t.x, "y": t.y})
 
 		# Start new warnings
@@ -27439,7 +27439,7 @@ class BlackoutEventMode extends GameMode:
 		if timer >= 5.0:
 			timer = 0.0
 			is_blackout = not is_blackout
-			if world.has_method("add_event"):
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				var msg = "The arena went dark!" if is_blackout else "Vision restored!"
 				world.add_event("blackout_event", {"message": msg})
 
@@ -27734,7 +27734,7 @@ class WeaponCollectionMode extends GameMode:
 		super.setup(world, balls)
 		weapon_spawn_timer = 0.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if not world.has("arena"):
+			if not ("arena" in world):
 				world["arena"] = {}
 			if not world["arena"].has("hazards"):
 				world["arena"]["hazards"] = []
@@ -27759,7 +27759,7 @@ class WeaponCollectionMode extends GameMode:
 		var arena_height = 1000
 		var hazards = []
 
-		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			arena_width = world["arena"].get("width", 1000)
 			arena_height = world["arena"].get("height", 1000)
 			hazards = world["arena"].get("hazards", [])
@@ -28873,7 +28873,7 @@ class EntangledArenaMode extends GameMode:
 							if target_state.hp < 0:
 								target_state.hp = 0
 
-							if world.has_method("add_event"):
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								var bx = b.x if "x" in b else 0
 								var by = b.y if "y" in b else 0
 								var tx = target.x if "x" in target else 0
@@ -28894,7 +28894,7 @@ class EntangledArenaMode extends GameMode:
 							if target_state.hp > target_max_hp:
 								target_state.hp = target_max_hp
 
-							if world.has_method("add_event"):
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								var bx = b.x if "x" in b else 0
 								var by = b.y if "y" in b else 0
 								var tx = target.x if "x" in target else 0
@@ -29164,7 +29164,7 @@ class EntanglementMutatorMode extends GameMode:
 							if target_state.hp < 0:
 								target_state.hp = 0
 
-							if world.has_method("add_event"):
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								var bx = b.x if "x" in b else 0
 								var by = b.y if "y" in b else 0
 								var tx = target.x if "x" in target else 0
@@ -29185,7 +29185,7 @@ class EntanglementMutatorMode extends GameMode:
 							if target_state.hp > target_max_hp:
 								target_state.hp = target_max_hp
 
-							if world.has_method("add_event"):
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								var bx = b.x if "x" in b else 0
 								var by = b.y if "y" in b else 0
 								var tx = target.x if "x" in target else 0
@@ -29230,6 +29230,103 @@ class EntanglementMutatorMode extends GameMode:
 
 
 
+
+class DecreasingSafeZonesMode extends GameMode:
+	var round_timer: float = 15.0
+	var max_round_timer: float = 15.0
+	var num_zones: int = 5
+	var zones: Array = []
+	var zone_radius: float = 80.0
+
+	func _init():
+		name = "Decreasing Safe Zones"
+		description = "Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The number of safe zones decreases each round."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		round_timer = max_round_timer
+		num_zones = 5
+		_spawn_zones(world)
+
+	func _spawn_zones(world) -> void:
+		zones.clear()
+		if num_zones <= 0:
+			return
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if ("arena" in world) and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			elif world.arena.has_method("get"):
+				arena_width = float(world.arena.get("width"))
+				arena_height = float(world.arena.get("height"))
+
+		for i in range(num_zones):
+			var x = randf_range(zone_radius, arena_width - zone_radius)
+			var y = randf_range(zone_radius, arena_height - zone_radius)
+			zones.append({"x": x, "y": y, "radius": zone_radius})
+
+	func tick(world, balls: Array, delta: float) -> void:
+		if not ("dead_balls" in world):
+			world["dead_balls"] = []
+
+		round_timer -= delta
+		if round_timer <= 0:
+			for b in balls:
+				var is_alive = false
+				var is_immune = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+					var w_timer = b.get("weather_immunity_timer", 0.0)
+					is_immune = w_timer > 0.0
+				else:
+					is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else false
+					var w_timer = b.get("weather_immunity_timer") if b.has_method("get") and b.get("weather_immunity_timer") != null else 0.0
+					is_immune = w_timer > 0.0
+
+				if not is_alive or is_immune:
+					continue
+
+				var b_x = b["x"] if typeof(b) == TYPE_DICTIONARY else b.get("x")
+				var b_y = b["y"] if typeof(b) == TYPE_DICTIONARY else b.get("y")
+
+				var in_zone = false
+				for zone in zones:
+					var dx = b_x - zone["x"]
+					var dy = b_y - zone["y"]
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= zone["radius"]:
+						in_zone = true
+						break
+
+				if not in_zone:
+					var damage = 500.0
+					var hp = b["hp"] if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+					hp -= damage
+					if hp <= 0:
+						hp = 0
+						if typeof(b) == TYPE_DICTIONARY:
+							b["alive"] = false
+						else:
+							b.set("alive", false)
+						var b_id = b["id"] if typeof(b) == TYPE_DICTIONARY else b.get("id")
+						var db = world["dead_balls"] if typeof(world) == TYPE_DICTIONARY else world.get("dead_balls")
+						if db.find(b_id) == -1:
+							db.append(b_id)
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("ball_died", {"id": b_id, "reason": "decreasing_safe_zones", "killer_id": -1})
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = hp
+					else:
+						b.set("hp", hp)
+
+			num_zones -= 1
+			round_timer = max_round_timer
+			_spawn_zones(world)
+
 class MultipleSafeZonesMode extends GameMode:
 	var zones = []
 	var split_timer = 0.0
@@ -29243,7 +29340,7 @@ class MultipleSafeZonesMode extends GameMode:
 		super.setup(world, balls)
 		var arena_width = 1000.0
 		var arena_height = 1000.0
-		if world.has("arena") and world.arena != null:
+		if ("arena" in world) and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY:
 				arena_width = float(world.arena.get("width", 1000.0))
 				arena_height = float(world.arena.get("height", 1000.0))
@@ -29264,7 +29361,7 @@ class MultipleSafeZonesMode extends GameMode:
 		split_timer = randf_range(10.0, 20.0)
 
 	func tick(world, balls: Array, delta: float = 0.016):
-		if not world.has("dead_balls"):
+		if not ("dead_balls" in world):
 			world["dead_balls"] = []
 
 		split_timer -= delta
@@ -29274,7 +29371,7 @@ class MultipleSafeZonesMode extends GameMode:
 
 		var arena_width = 1000.0
 		var arena_height = 1000.0
-		if world.has("arena") and world.arena != null:
+		if ("arena" in world) and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY:
 				arena_width = float(world.arena.get("width", 1000.0))
 				arena_height = float(world.arena.get("height", 1000.0))
@@ -29338,7 +29435,7 @@ class MultipleSafeZonesMode extends GameMode:
 					var db = world["dead_balls"] if typeof(world) == TYPE_DICTIONARY else world.get("dead_balls")
 					if db.find(b_id) == -1:
 						db.append(b_id)
-						if world.has_method("add_event"):
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("ball_died", {"id": b_id, "reason": "multiple_safe_zones_storm", "killer_id": -1})
 				if typeof(b) == TYPE_DICTIONARY:
 					b["hp"] = hp
@@ -29348,7 +29445,7 @@ class MultipleSafeZonesMode extends GameMode:
 	func _split_zones(world):
 		var arena_width = 1000.0
 		var arena_height = 1000.0
-		if world.has("arena") and world.arena != null:
+		if ("arena" in world) and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY:
 				arena_width = float(world.arena.get("width", 1000.0))
 				arena_height = float(world.arena.get("height", 1000.0))
@@ -29460,7 +29557,7 @@ class PhysicsAnomalyEventMode extends GameMode:
 				event_active = true
 				event_duration = 15.0
 				event_timer = 0.0
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("physics_anomaly", {"active": true, "message": "Physics Anomaly detected! Projectiles curve and movement is distorted!"})
 			else:
 				event_timer = 0.0
@@ -29487,7 +29584,7 @@ class PhysicsAnomalyEventMode extends GameMode:
 			if event_duration <= 0:
 				event_active = false
 				event_timer = 0.0
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("physics_anomaly", {"active": false})
 
 			for b in balls:
@@ -30088,7 +30185,7 @@ class DynamicWeatherTransitionsMode extends GameMode:
 				weather_timer = 20.0
 				if world.get("arena") != null:
 					world.arena.weather = weather
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("weather_transition", {"new_weather": weather})
 			else:
 				weather_timer = 9999.0
@@ -30958,7 +31055,7 @@ class CosmicStormMode extends GameMode:
 
 			var arena_width = 1000.0
 			var arena_height = 1000.0
-			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 				var arena = world["arena"]
 				if typeof(arena) == TYPE_DICTIONARY:
 					arena_width = arena["width"] if arena.has("width") else 1000.0
@@ -31131,7 +31228,7 @@ class BountyTagMode extends GameMode:
 			bounty_ping_timer -= delta
 			if bounty_ping_timer <= 0:
 				bounty_ping_timer = bounty_ping_interval
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					var tx = float(bounty_ball["x"] if typeof(bounty_ball) == TYPE_DICTIONARY and bounty_ball.has("x") else (bounty_ball.get("x") if "x" in bounty_ball else 0))
 					var ty = float(bounty_ball["y"] if typeof(bounty_ball) == TYPE_DICTIONARY and bounty_ball.has("y") else (bounty_ball.get("y") if "y" in bounty_ball else 0))
 					world.add_event("bounty_compass", {"target_x": tx, "target_y": ty, "owner_id": bid})
@@ -31226,7 +31323,7 @@ class CollapsingBubblesMode extends GameMode:
 			_spawn_bubble(world)
 
 	func tick(world, balls: Array, delta: float = 0.016):
-		if not world.has("dead_balls"):
+		if not ("dead_balls" in world):
 			world["dead_balls"] = []
 
 		bubble_spawn_timer -= delta
@@ -31240,7 +31337,7 @@ class CollapsingBubblesMode extends GameMode:
 			b["timer"] -= delta
 			if b["timer"] <= 0 and not b["collapsing"]:
 				b["collapsing"] = true
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("bubble_collapsing", {"x": b["x"], "y": b["y"], "message": "A safe bubble is collapsing!"})
 
 			if b["collapsing"]:
@@ -31289,7 +31386,7 @@ class CollapsingBubblesMode extends GameMode:
 					var db = world["dead_balls"] if typeof(world) == TYPE_DICTIONARY else world.get("dead_balls")
 					if db.find(b_id) == -1:
 						db.append(b_id)
-						if world.has_method("add_event"):
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("ball_died", {"id": b_id, "reason": "outside_bubble", "killer_id": -1})
 
 				if typeof(ball) == TYPE_DICTIONARY:
@@ -31300,7 +31397,7 @@ class CollapsingBubblesMode extends GameMode:
 	func _spawn_bubble(world):
 		var arena_width = 1000.0
 		var arena_height = 1000.0
-		if world.has("arena") and world.arena != null:
+		if ("arena" in world) and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY:
 				arena_width = float(world.arena.get("width", 1000.0))
 				arena_height = float(world.arena.get("height", 1000.0))
@@ -31394,7 +31491,7 @@ class StationaryTurretsMode extends GameMode:
 			var arena_w = 1000.0
 			var arena_h = 1000.0
 			if typeof(world) == TYPE_DICTIONARY:
-				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+				if ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY:
 					arena_w = world.arena.get("width", 1000.0)
 					arena_h = world.arena.get("height", 1000.0)
 			else:
@@ -31425,7 +31522,7 @@ class StationaryTurretsMode extends GameMode:
 			turrets.append(new_turret)
 
 			if typeof(world) == TYPE_DICTIONARY:
-				if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+				if ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY:
 					if world.arena.has("hazards"):
 						world.arena.hazards.append(new_turret)
 			else:
@@ -31545,7 +31642,7 @@ class SacrificeAltarMode extends GameMode:
 		var arena_w = 1000.0
 		var arena_h = 1000.0
 
-		if is_dict and world.has("arena"):
+		if is_dict and ("arena" in world):
 			arena_w = world["arena"].get("width", 1000.0)
 			arena_h = world["arena"].get("height", 1000.0)
 		elif not is_dict and "arena" in world and world.arena != null:
@@ -31672,7 +31769,7 @@ class SacrificeAltarMode extends GameMode:
 							if world.has("add_event") and typeof(world["add_event"]) == TYPE_CALLABLE:
 								world["add_event"].call("sacrifice_altar_used", {"ball": b, "altar": altar})
 						else:
-							if world.has_method("add_event"):
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.call("add_event", "sacrifice_altar_used", {"ball": b, "altar": altar})
 
 
@@ -31698,7 +31795,7 @@ class WatchtowerMode extends GameMode:
 			tower_spawn_timer = randf_range(15.0, 30.0)
 			var aw = 1000.0
 			var ah = 1000.0
-			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 				if typeof(world.arena) == TYPE_DICTIONARY:
 					aw = world.arena.get("width", 1000.0)
 					ah = world.arena.get("height", 1000.0)
@@ -31801,7 +31898,7 @@ class TickingBombMode extends GameMode:
 
 		var arena_w = 1000.0
 		var arena_h = 1000.0
-		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		if world != null and typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			arena_w = world.arena.get("width", 1000.0)
 			arena_h = world.arena.get("height", 1000.0)
 		elif world != null and "arena" in world and world.arena != null:
@@ -32095,7 +32192,7 @@ class MassiveBlackHoleEventMode extends GameMode:
 					arena_width = world.arena.width
 				if "height" in world.arena:
 					arena_height = world.arena.height
-			elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+			elif world != null and typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena != null:
 				if world.arena.has("width"):
 					arena_width = world.arena.width
 				if world.arena.has("height"):
@@ -32177,7 +32274,7 @@ class MassiveBlackHoleEventMode extends GameMode:
 											if "id" in b and not world.get_meta("dead_balls").has(b.id):
 												world.get_meta("dead_balls").append(b.id)
 									elif typeof(world) == TYPE_DICTIONARY:
-										if not world.has("dead_balls"):
+										if not ("dead_balls" in world):
 											world["dead_balls"] = []
 										if b.has("id") and not world["dead_balls"].has(b.id):
 											world["dead_balls"].append(b.id)
@@ -32266,7 +32363,7 @@ class ElementalWandererMode extends GameMode:
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and world.arena != null:
+			if ("arena" in world) and world.arena != null:
 				if typeof(world.arena) == TYPE_DICTIONARY:
 					arena_width = world.arena.get("width", 1000.0)
 					arena_height = world.arena.get("height", 1000.0)
@@ -32298,7 +32395,7 @@ class ElementalWandererMode extends GameMode:
 		}
 
 		if typeof(world) == TYPE_DICTIONARY:
-			if not world.has("arena") or world.arena == null:
+			if not ("arena" in world) or world.arena == null:
 				world.arena = {"hazards": []}
 			if typeof(world.arena) == TYPE_DICTIONARY and not world.arena.has("hazards"):
 				world.arena.hazards = []
@@ -32354,7 +32451,7 @@ class ElementalWandererMode extends GameMode:
 			var arena_width = 1000.0
 			var arena_height = 1000.0
 			if typeof(world) == TYPE_DICTIONARY:
-				if world.has("arena") and world.arena != null:
+				if ("arena" in world) and world.arena != null:
 					if typeof(world.arena) == TYPE_DICTIONARY:
 						arena_width = world.arena.get("width", 1000.0)
 						arena_height = world.arena.get("height", 1000.0)
@@ -32469,7 +32566,7 @@ class ChickenCurseMode extends GameMode:
 
 		var arena = world.get("arena") if typeof(world) == TYPE_OBJECT else world.get("arena", null)
 		if arena == null:
-			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 				arena = world["arena"]
 			else:
 				return
@@ -32523,7 +32620,7 @@ class ChickenCurseMode extends GameMode:
 
 		var arena = world.get("arena") if typeof(world) == TYPE_OBJECT else world.get("arena", null)
 		if arena == null:
-			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 				arena = world["arena"]
 			else:
 				return
@@ -33429,7 +33526,7 @@ class InfiltrationMode extends GameMode:
 
 			var hazards = []
 			if typeof(world) == TYPE_DICTIONARY:
-				if world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+				if ("arena" in world) and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
 					hazards = world["arena"]["hazards"]
 			else:
 				var a = world.get("arena")
@@ -33852,6 +33949,7 @@ GAME_MODES = {
 
 	"sticky_arena": StickyArenaMode.new(),
 	"falling_panels": FallingPanelsMode.new(),
+	"decreasing_safe_zones": DecreasingSafeZonesMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"collapsing_bubbles": CollapsingBubblesMode.new(),
 	"entangled_arena": EntangledArenaMode.new(),
@@ -34224,7 +34322,7 @@ class CrossfireMode extends GameMode:
 		var arena_width = 1000.0
 		if typeof(world) == TYPE_OBJECT and world.get("arena"):
 			arena_width = float(world.arena.get("width"))
-		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			arena_width = float(world["arena"].get("width") if typeof(world["arena"]) == TYPE_OBJECT else world["arena"]["width"])
 
 		var alive_balls = []
@@ -34263,7 +34361,7 @@ class CrossfireMode extends GameMode:
 		var arena_width = 1000.0
 		if typeof(world) == TYPE_OBJECT and world.get("arena"):
 			arena_width = float(world.arena.get("width"))
-		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			arena_width = float(world["arena"].get("width") if typeof(world["arena"]) == TYPE_OBJECT else world["arena"]["width"])
 
 		var center_line = arena_width / 2.0
@@ -34562,7 +34660,7 @@ class TagTeamMode extends GameMode:
 								m["ball_type"] = "spectator"
 
 							var world_is_dict = typeof(world) == TYPE_DICTIONARY
-							if world_is_dict and world.has("dead_balls"):
+							if world_is_dict and ("dead_balls" in world):
 								var mid = m.get("id") if typeof(m) == TYPE_DICTIONARY else m.get("id")
 								if mid in world["dead_balls"]:
 									world["dead_balls"].erase(mid)
@@ -35007,7 +35105,7 @@ class TeleporterHubMode extends GameMode:
 		if shift_timer >= shift_interval:
 			shift_timer = 0.0
 			_spawn_portals(world)
-			if world.has_method("add_event"):
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("portal_shift", {"type": "portal_shift", "message": "Teleporter Hub destinations shifted!"})
 
 class RubberBandMode extends GameMode:
@@ -35222,7 +35320,7 @@ class RiftRouletteMode extends GameMode:
 					portals.append(p1)
 					portals.append(p2)
 
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("rifts_shifted", {"message": "Rifts have shifted positions!"})
 
 				for p in portals:
@@ -35271,7 +35369,7 @@ class ItemMorphMode extends GameMode:
 				if morphed and world.has("add_event"):
 					if typeof(world.add_event) == TYPE_OBJECT and world.add_event.has_method("call"):
 						world.add_event.call("items_morphed", {"message": "All items have morphed!"})
-					elif world.has_method("add_event"):
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("items_morphed", {"message": "All items have morphed!"})
 			elif typeof(world) == TYPE_OBJECT and "boosters" in world and typeof(world.boosters) == TYPE_ARRAY and world.boosters.size() > 0:
 				var morphed = false
@@ -35960,7 +36058,7 @@ class ColorTrailMode extends GameMode:
 		super.tick(world, balls, delta)
 		timer += delta
 
-		if typeof(world) != TYPE_DICTIONARY and not world.has("arena"):
+		if typeof(world) != TYPE_DICTIONARY and not ("arena" in world):
 			if typeof(world) == TYPE_OBJECT and not world.has_method("get_arena") and not ("arena" in world):
 				return
 
@@ -36095,7 +36193,7 @@ class TemporalRiftsMode extends GameMode:
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		.tick(world, balls, delta)
 
-		if typeof(world) != TYPE_DICTIONARY and not world.has("arena"):
+		if typeof(world) != TYPE_DICTIONARY and not ("arena" in world):
 			if typeof(world) == TYPE_OBJECT and not world.has_method("get_arena") and not ("arena" in world):
 				return
 
@@ -36202,7 +36300,7 @@ class SectorCollapseMode extends GameMode:
 		.setup(world, balls)
 		var arena_w = 1000.0
 		var arena_h = 1000.0
-		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		if world != null and typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			arena_w = world.arena.get("width", 1000.0)
 			arena_h = world.arena.get("height", 1000.0)
 		elif world != null and "arena" in world and world.arena != null:
@@ -36248,7 +36346,7 @@ class SectorCollapseMode extends GameMode:
 		.tick(world, balls, delta)
 		var arena_w = 1000.0
 		var arena_h = 1000.0
-		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		if world != null and typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			arena_w = world.arena.get("width", 1000.0)
 			arena_h = world.arena.get("height", 1000.0)
 		elif world != null and "arena" in world and world.arena != null:
@@ -36406,7 +36504,7 @@ class ConstrictingBoundaryTrapMode extends GameMode:
 		trap_active = false
 		trap_timer = 0.0
 
-		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		if world != null and typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			original_width = world.arena.get("width", 1000.0)
 			original_height = world.arena.get("height", 1000.0)
 		elif world != null and "arena" in world and world.arena != null:
@@ -36454,7 +36552,7 @@ class ConstrictingBoundaryTrapMode extends GameMode:
 				current_width = original_width
 				current_height = original_height
 
-			if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if world != null and typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 				world.arena["width"] = current_width
 				world.arena["height"] = current_height
 			elif world != null and "arena" in world and world.arena != null:
@@ -36527,7 +36625,7 @@ class BermudaTriangleMode extends GameMode:
 		.setup(world, balls)
 		var arena_w = 800.0
 		var arena_h = 600.0
-		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		if world != null and typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			arena_w = world.arena.get("width", 800.0)
 			arena_h = world.arena.get("height", 600.0)
 		elif world != null and "arena" in world and world.arena != null:
@@ -36581,7 +36679,7 @@ class BermudaTriangleMode extends GameMode:
 
 		var arena_w = 800.0
 		var arena_h = 600.0
-		if world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		if world != null and typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			arena_w = world.arena.get("width", 800.0)
 			arena_h = world.arena.get("height", 600.0)
 		elif world != null and "arena" in world and world.arena != null:
@@ -36648,7 +36746,7 @@ class StatsDecayMode extends GameMode:
 
 	func setup(world, balls):
 		total_match_time = 0.0
-		if not world.has("dead_balls"):
+		if not ("dead_balls" in world):
 			world["dead_balls"] = []
 		for b in balls:
 			if typeof(b) == TYPE_DICTIONARY:
@@ -36708,7 +36806,7 @@ class StatsDecayMode extends GameMode:
 					b.set_meta("_original_decay_max_hp", b.max_hp)
 
 	func tick(world, balls, delta):
-		if not world.has("dead_balls"):
+		if not ("dead_balls" in world):
 			world["dead_balls"] = []
 
 		# We need to manually calculate match_time since it might not be reliably accessible in all contexts
@@ -36946,7 +37044,7 @@ class PaintSplatterMode extends GameMode:
 
 		var width: float = 1000.0
 		var height: float = 1000.0
-		if world.has("arena"):
+		if ("arena" in world):
 			width = world["arena"].get("width", width)
 			height = world["arena"].get("height", height)
 
@@ -37320,7 +37418,7 @@ class GridLockdownMode extends GameMode:
 
 		var width = 1000.0
 		var height = 1000.0
-		if world.has("arena"):
+		if ("arena" in world):
 			width = world["arena"].get("width", width)
 			height = world["arena"].get("height", height)
 
@@ -37547,7 +37645,7 @@ class PhantomJuggernautMode extends GameMode:
 							if world.has("events"):
 								world.events.append({"type": "juggernaut_change", "message": "A new Phantom Juggernaut has emerged!"})
 						else:
-							if world.has_method("add_event"):
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("juggernaut_change", {"message": "A new Phantom Juggernaut has emerged!"})
 
 		self.trail_timer += delta
@@ -37589,7 +37687,7 @@ class PhantomJuggernautMode extends GameMode:
 
 				if spawn_trail:
 					if typeof(world) == TYPE_DICTIONARY:
-						if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+						if ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY:
 							if not world.arena.has("hazards"):
 								world.arena["hazards"] = []
 							world.arena.hazards.append(PhantomTrailHazard.new(b_x, b_y))
@@ -37600,7 +37698,7 @@ class PhantomJuggernautMode extends GameMode:
 							world.arena.hazards.append(PhantomTrailHazard.new(b_x, b_y))
 
 		if typeof(world) == TYPE_DICTIONARY:
-			if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			if ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
 				var active = []
 				for h in world.arena.hazards:
 					var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
@@ -37868,7 +37966,7 @@ class InvisibleMinesMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if typeof(world) == TYPE_DICTIONARY:
-			if not world.has("arena") or typeof(world["arena"]) != TYPE_DICTIONARY or not world["arena"].has("hazards"):
+			if not ("arena" in world) or typeof(world["arena"]) != TYPE_DICTIONARY or not world["arena"].has("hazards"):
 				return
 		else:
 			if not "arena" in world or not "hazards" in world.arena:
@@ -38232,7 +38330,7 @@ class PerfectReflectorHazardMode extends GameMode:
 		super.setup(world, balls)
 		var arena_width = 1000.0
 		var arena_height = 1000.0
-		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena != null:
 			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
 			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
 		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
@@ -38245,7 +38343,7 @@ class PerfectReflectorHazardMode extends GameMode:
 
 		var arena_has_hazards = false
 		var arena_ref = null
-		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
 				arena_has_hazards = true
 				arena_ref = world.arena
@@ -38491,7 +38589,7 @@ class InverseControlsZoneMode extends GameMode:
 		super.setup(world, balls)
 		var arena_width = 1000.0
 		var arena_height = 1000.0
-		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena != null:
 			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
 			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
 		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
@@ -38503,7 +38601,7 @@ class InverseControlsZoneMode extends GameMode:
 
 		var arena_has_hazards = false
 		var arena_ref = null
-		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena != null:
 			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
 				arena_has_hazards = true
 				arena_ref = world.arena
@@ -39338,7 +39436,7 @@ class SponsorDropMode extends GameMode:
             if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
                 arena_width = float(world.arena.width)
                 arena_height = float(world.arena.height)
-            elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+            elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
                 arena_width = float(world.arena.width)
                 arena_height = float(world.arena.height)
 
@@ -39427,7 +39525,7 @@ class HealingZoneMode extends GameMode:
         super.setup(world, balls)
         var arena_width = 1000.0
         var arena_height = 1000.0
-        if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+        if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
             var arena = world.get("arena")
             if typeof(arena) == TYPE_DICTIONARY:
                 arena_width = float(arena.get("width", 1000.0))
@@ -39619,7 +39717,7 @@ class FakeBallsMode extends GameMode:
         if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
             arena_width = float(world.arena.width)
             arena_height = float(world.arena.height)
-        elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+        elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
             arena_width = float(world.arena.width)
             arena_height = float(world.arena.height)
 
@@ -40239,7 +40337,7 @@ class TornadoSwarmEventMode extends GameMode:
 				if typeof(world) == TYPE_OBJECT and "arena" in world:
 					if "width" in world.arena: arena_width = world.arena.width
 					if "height" in world.arena: arena_height = world.arena.height
-				elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 					if world.arena.has("width"): arena_width = world.arena.width
 					if world.arena.has("height"): arena_height = world.arena.height
 
@@ -40255,7 +40353,7 @@ class TornadoSwarmEventMode extends GameMode:
 				var hazards = []
 				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
 					hazards = world.arena.hazards
-				elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena.has("hazards"):
+				elif typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena.has("hazards"):
 					hazards = world.arena.hazards
 
 				var t_id = hazards.size() + (randi() % 90000 + 10000)
@@ -40279,13 +40377,13 @@ class TornadoSwarmEventMode extends GameMode:
 
 				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
 					world.arena.hazards.append(tornado)
-				elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena.has("hazards"):
+				elif typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena.has("hazards"):
 					world.arena.hazards.append(tornado)
 
 		var hazards = []
 		if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
 			hazards = world.arena.hazards
-		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena.has("hazards"):
+		elif typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena.has("hazards"):
 			hazards = world.arena.hazards
 
 		var to_remove = []
@@ -40294,7 +40392,7 @@ class TornadoSwarmEventMode extends GameMode:
 		if typeof(world) == TYPE_OBJECT and "arena" in world:
 			if "width" in world.arena: arena_width = world.arena.width
 			if "height" in world.arena: arena_height = world.arena.height
-		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+		elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
 			if world.arena.has("width"): arena_width = world.arena.width
 			if world.arena.has("height"): arena_height = world.arena.height
 
@@ -40479,7 +40577,7 @@ class DynamicDangerZonesMode extends GameMode:
 				"duration": 10.0
 			})
 
-			if world.has_method("add_event"):
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("danger_zone_warning", {"x": x, "y": y, "radius": current_max_radius, "message": "Danger zone appearing!"})
 
 		var active_zones = []
@@ -40489,7 +40587,7 @@ class DynamicDangerZonesMode extends GameMode:
 				if zone["timer"] <= 0:
 					zone["active"] = true
 					zone["timer"] = zone["duration"]
-					if world.has_method("add_event"):
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("danger_zone_active", {"x": zone["x"], "y": zone["y"], "radius": zone["radius"], "message": "Danger zone active!"})
 
 					var hazard_class = null
@@ -40630,7 +40728,7 @@ class MagneticShockwaveEventModeClass extends GameMode:
 					world.arena.hazards = []
 				world.arena.hazards.append(anchor)
 				spawn_timer = 0.0
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("magnetic_anchor_spawn", {"x": x, "y": y})
 		else:
 			# Verify anchor is still in arena
@@ -40668,7 +40766,7 @@ class MagneticShockwaveEventModeClass extends GameMode:
 			elif shockwave_timer > 4.0:
 				active_shockwave = true
 				shockwave_duration = 0.0
-				if world.has_method("add_event"):
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("magnetic_shockwave", {"x": anchor["x"], "y": anchor["y"], "radius": pull_radius})
 
 			for b in balls:

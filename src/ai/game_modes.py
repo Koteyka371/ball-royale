@@ -18296,6 +18296,80 @@ class EntanglementMutatorMode(GameMode):
 
 
 
+
+class DecreasingSafeZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Decreasing Safe Zones"
+        self.description = "Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The number of safe zones decreases each round."
+        self.round_timer = 15.0
+        self.max_round_timer = 15.0
+        self.num_zones = 5
+        self.zones = []
+        self.zone_radius = 80.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.round_timer = self.max_round_timer
+        self.num_zones = 5
+        self._spawn_zones(world)
+
+    def _spawn_zones(self, world):
+        import random
+        self.zones = []
+        if self.num_zones <= 0:
+            return
+
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        for _ in range(self.num_zones):
+            x = random.uniform(self.zone_radius, arena_width - self.zone_radius)
+            y = random.uniform(self.zone_radius, arena_height - self.zone_radius)
+            self.zones.append({"x": x, "y": y, "radius": self.zone_radius})
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        self.round_timer -= delta
+
+        if self.round_timer <= 0:
+            # Timer hits zero! Massive damage to anyone outside
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+                is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+                if is_immune:
+                    continue
+
+                in_zone = False
+                for zone in self.zones:
+                    dx = b.x - zone["x"]
+                    dy = b.y - zone["y"]
+                    if math.sqrt(dx*dx + dy*dy) <= zone["radius"]:
+                        in_zone = True
+                        break
+
+                if not in_zone:
+                    damage = 500.0
+                    b.hp -= damage
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                        if hasattr(b, "id") and b.id not in world.dead_balls:
+                            world.dead_balls.append(b.id)
+                            if hasattr(world, "add_event"):
+                                world.add_event("ball_died", {"id": b.id, "reason": "decreasing_safe_zones", "killer_id": -1})
+
+            # Setup next round
+            self.num_zones -= 1
+            self.round_timer = self.max_round_timer
+            self._spawn_zones(world)
+
 class MultipleSafeZonesMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -20875,6 +20949,7 @@ GAME_MODES = {
 
     'sticky_arena': StickyArenaMode(),
     "falling_panels": FallingPanelsMode(),
+    "decreasing_safe_zones": DecreasingSafeZonesMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entangled_arena": EntangledArenaMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
