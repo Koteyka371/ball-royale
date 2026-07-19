@@ -31367,6 +31367,8 @@ class BountyTagMode extends GameMode:
 	var bounty_ping_timer = 0.0
 	var current_bounty_id = null
 	var bounty_time_held = {}
+	var bounty_distance_traveled = 0.0
+	var last_bounty_pos = null
 
 	func _init() -> void:
 		name = "Bounty Tag"
@@ -31387,6 +31389,10 @@ class BountyTagMode extends GameMode:
 				current_bounty_id = first_bounty.get("id") if "id" in first_bounty else null
 
 	func _make_bounty(b) -> void:
+		bounty_distance_traveled = 0.0
+		var bx = b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else (b.get("x") if "x" in b else 0.0)
+		var by = b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else (b.get("y") if "y" in b else 0.0)
+		last_bounty_pos = Vector2(float(bx), float(by))
 		if b.has_method("set_meta"):
 			b.set_meta("is_bounty", true)
 		elif typeof(b) == TYPE_DICTIONARY:
@@ -31445,6 +31451,13 @@ class BountyTagMode extends GameMode:
 				break
 
 		if bounty_ball != null:
+			var bx = float(bounty_ball["x"] if typeof(bounty_ball) == TYPE_DICTIONARY and bounty_ball.has("x") else (bounty_ball.get("x") if "x" in bounty_ball else 0.0))
+			var by = float(bounty_ball["y"] if typeof(bounty_ball) == TYPE_DICTIONARY and bounty_ball.has("y") else (bounty_ball.get("y") if "y" in bounty_ball else 0.0))
+			var current_pos = Vector2(bx, by)
+			if last_bounty_pos != null:
+				bounty_distance_traveled += last_bounty_pos.distance_to(current_pos)
+			last_bounty_pos = current_pos
+
 			var bid = bounty_ball["id"] if typeof(bounty_ball) == TYPE_DICTIONARY and bounty_ball.has("id") else (bounty_ball.get("id") if "id" in bounty_ball else null)
 			if bid != null:
 				var current_time = 0.0
@@ -31476,6 +31489,9 @@ class BountyTagMode extends GameMode:
 		if ball_id == current_bounty_id:
 			var killer_alive = killer["alive"] if typeof(killer) == TYPE_DICTIONARY and killer.has("alive") else (killer.get("alive") if killer != null and "alive" in killer else false)
 			if killer != null and killer_alive:
+				# Calculate reward before resetting bounty
+				var distance_bonus = int(bounty_distance_traveled / 100.0) * 5
+
 				_remove_bounty(ball)
 				_make_bounty(killer)
 				current_bounty_id = killer["id"] if typeof(killer) == TYPE_DICTIONARY and killer.has("id") else (killer.get("id") if "id" in killer else null)
@@ -31484,7 +31500,7 @@ class BountyTagMode extends GameMode:
 				var profile = world["profile_manager"] if typeof(world) == TYPE_DICTIONARY and world.has("profile_manager") else (world.get("profile_manager") if "profile_manager" in world else null)
 				if profile != null and profile.has_method("add_skill_points"):
 					var kb = ball["kill_bounty"] if typeof(ball) == TYPE_DICTIONARY and ball.has("kill_bounty") else (ball.get("kill_bounty") if "kill_bounty" in ball else 2)
-					var points_reward = 30 * kb * 2.0
+					var points_reward = 30 * kb * 2.0 + distance_bonus
 					profile.add_skill_points(int(points_reward))
 
 	func check_winner(world, balls: Array):

@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Flare Mechanism",
+  "description": "Players can deploy a decoy flare that emits a false minimap ping imitating a bounty for 5 seconds. This allows hunted players to mislead their chasers or ambush them."
+}
