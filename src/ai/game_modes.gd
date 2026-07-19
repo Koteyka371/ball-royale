@@ -40655,3 +40655,287 @@ class MagneticShockwaveEventModeClass extends GameMode:
 						b.stun_timer = 2.0
 
 GAME_MODES['magnetic_shockwave'] = MagneticShockwaveEventModeClass.new()
+class OrbitalCrosshairMode extends GameMode:
+	var crosshairs: Array = []
+	var spawn_timer: float = 0.0
+	var spawn_interval: float = 20.0
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+
+	func _init() -> void:
+		name = "Orbital Crosshair"
+		description = "A satellite crosshair slowly tracks players. Upon locking on, it fires an orbital beam creating an irradiated zone."
+		rng.randomize()
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		crosshairs = []
+		spawn_timer = 5.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = spawn_interval
+
+			var valid_balls = []
+			for b in balls:
+				var is_alive = false
+				var b_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+					b_type = str(b.get("ball_type", ""))
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+					b_type = str(b.ball_type) if "ball_type" in b else ""
+
+				if is_alive and b_type != "spectator":
+					valid_balls.append(b)
+
+			if valid_balls.size() > 0:
+				var target = valid_balls[rng.randi() % valid_balls.size()]
+				var target_id = null
+				if typeof(target) == TYPE_DICTIONARY:
+					target_id = target.get("id")
+				else:
+					target_id = target.id if "id" in target else null
+
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_width = arena.get("width", 1000.0)
+						arena_height = arena.get("height", 1000.0)
+					elif arena != null:
+						arena_width = arena.width if "width" in arena else 1000.0
+						arena_height = arena.height if "height" in arena else 1000.0
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					var arena = world.arena
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_width = arena.get("width", 1000.0)
+						arena_height = arena.get("height", 1000.0)
+					else:
+						arena_width = arena.width if "width" in arena else 1000.0
+						arena_height = arena.height if "height" in arena else 1000.0
+
+				var cx = rng.randf_range(100.0, arena_width - 100.0)
+				var cy = rng.randf_range(100.0, arena_height - 100.0)
+
+				crosshairs.append({
+					"x": cx,
+					"y": cy,
+					"target_id": target_id,
+					"state": "hunting",
+					"timer": 0.0,
+					"radius": 50.0,
+					"speed": 80.0
+				})
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("crosshair_spawn", {"message": "An orbital crosshair is tracking a target!"})
+
+		var active_crosshairs = []
+		for ch in crosshairs:
+			if ch["state"] == "hunting":
+				var target = null
+				for b in balls:
+					var b_id = null
+					var is_alive = false
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						b_id = b.get("id")
+						is_alive = b.get("alive", false)
+						b_type = str(b.get("ball_type", ""))
+					else:
+						b_id = b.id if "id" in b else null
+						is_alive = b.get("alive") if "alive" in b else false
+						b_type = str(b.ball_type) if "ball_type" in b else ""
+
+					if b_id == ch["target_id"] and is_alive and b_type != "spectator":
+						target = b
+						break
+
+				if target == null:
+					var valid_balls = []
+					for b in balls:
+						var is_alive = false
+						var b_type = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							is_alive = b.get("alive", false)
+							b_type = str(b.get("ball_type", ""))
+						else:
+							is_alive = b.get("alive") if "alive" in b else false
+							b_type = str(b.ball_type) if "ball_type" in b else ""
+						if is_alive and b_type != "spectator":
+							valid_balls.append(b)
+					if valid_balls.size() > 0:
+						target = valid_balls[rng.randi() % valid_balls.size()]
+						if typeof(target) == TYPE_DICTIONARY:
+							ch["target_id"] = target.get("id")
+						else:
+							ch["target_id"] = target.id if "id" in target else null
+					else:
+						continue
+
+				var tx = 0.0
+				var ty = 0.0
+				if typeof(target) == TYPE_DICTIONARY:
+					tx = target.get("x", 0.0)
+					ty = target.get("y", 0.0)
+				else:
+					tx = target.x if "x" in target else 0.0
+					ty = target.y if "y" in target else 0.0
+
+				var dx = tx - ch["x"]
+				var dy = ty - ch["y"]
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 5.0:
+					ch["x"] += (dx / dist) * ch["speed"] * delta
+					ch["y"] += (dy / dist) * ch["speed"] * delta
+
+				if dist < 20.0:
+					ch["timer"] += delta
+					if ch["timer"] >= 2.0:
+						ch["state"] = "locking"
+						ch["timer"] = 3.0
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("crosshair_locking", {"x": ch["x"], "y": ch["y"], "message": "Orbital strike locking on!"})
+				else:
+					ch["timer"] = max(0.0, ch["timer"] - delta)
+				active_crosshairs.append(ch)
+
+			elif ch["state"] == "locking":
+				ch["timer"] -= delta
+				if ch["timer"] <= 0:
+					ch["state"] = "firing"
+					var has_hazards = false
+					var hazards = []
+					if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+						var arena = world.get("arena")
+						if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+							has_hazards = true
+							hazards = arena.get("hazards")
+						elif arena != null and "hazards" in arena:
+							has_hazards = true
+							hazards = arena.hazards
+					elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+						var arena = world.arena
+						if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+							has_hazards = true
+							hazards = arena.get("hazards")
+						elif "hazards" in arena:
+							has_hazards = true
+							hazards = arena.hazards
+
+					if has_hazards:
+						var HazardObj = load("res://src/arena/procedural_arena.gd")
+						if HazardObj != null:
+							HazardObj = HazardObj.Hazard
+							var next_id = rng.randi_range(100000, 999999)
+							if typeof(world) == TYPE_DICTIONARY and "next_id" in world:
+								next_id = world.get("next_id")
+								world["next_id"] = next_id + 1
+							elif typeof(world) != TYPE_DICTIONARY and "next_id" in world:
+								next_id = world.next_id
+								world.next_id += 1
+
+							var h = HazardObj.new(next_id, ch["x"], ch["y"], "irradiated_zone", 80.0)
+							if h.has_method("set_meta"):
+								h.set_meta("duration", 15.0)
+							if "damage" in h: h.damage = 0.0
+							hazards.append(h)
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("orbital_strike_fired", {"x": ch["x"], "y": ch["y"], "message": "Orbital strike fired!"})
+
+		crosshairs = active_crosshairs
+
+		var hazards = []
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+				hazards = arena.get("hazards")
+			elif arena != null and "hazards" in arena:
+				hazards = arena.hazards
+		elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+				hazards = arena.get("hazards")
+			elif "hazards" in arena:
+				hazards = arena.hazards
+
+		for h in hazards:
+			var h_kind = ""
+			var is_active = true
+			var h_x = 0.0
+			var h_y = 0.0
+			var h_radius = 80.0
+			if typeof(h) == TYPE_DICTIONARY:
+				h_kind = h.get("kind", "")
+				is_active = h.get("active", true)
+				h_x = h.get("x", 0.0)
+				h_y = h.get("y", 0.0)
+				h_radius = h.get("radius", 80.0)
+			else:
+				h_kind = h.kind if "kind" in h else ""
+				if h.has_method("get_meta") and h.has_meta("active"):
+					is_active = h.get_meta("active")
+				elif "active" in h:
+					is_active = h.active
+				h_x = h.x if "x" in h else 0.0
+				h_y = h.y if "y" in h else 0.0
+				h_radius = h.radius if "radius" in h else 80.0
+
+			if h_kind == "irradiated_zone" and is_active:
+				for b in balls:
+					var is_alive = false
+					var b_type = ""
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+						b_type = str(b.get("ball_type", ""))
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					else:
+						is_alive = b.get("alive") if "alive" in b else false
+						b_type = str(b.ball_type) if "ball_type" in b else ""
+						bx = b.x if "x" in b else 0.0
+						by = b.y if "y" in b else 0.0
+
+					if is_alive and b_type != "spectator":
+						var dx = bx - h_x
+						var dy = by - h_y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= h_radius:
+							if typeof(b) == TYPE_DICTIONARY:
+								var stam = b.get("stamina", 0.0)
+								b["stamina"] = max(0.0, stam - 20.0 * delta)
+								var damage = 10.0 * delta
+								b["hp"] = b.get("hp", 100.0) - damage
+								if b["hp"] <= 0:
+									b["hp"] = 0
+									b["alive"] = false
+							else:
+								var stam = 0.0
+								if b.has_method("has_meta") and b.has_meta("stamina"):
+									stam = b.get_meta("stamina")
+								elif "stamina" in b:
+									stam = b.stamina
+								stam = max(0.0, stam - 20.0 * delta)
+								if b.has_method("set_meta"):
+									b.set_meta("stamina", stam)
+								if "stamina" in b:
+									b.stamina = stam
+
+								var damage = 10.0 * delta
+								if b.has_method("take_damage"):
+									b.take_damage(damage, "irradiated_zone")
+								elif "hp" in b:
+									b.hp -= damage
+									if b.hp <= 0:
+										b.hp = 0
+										b.alive = false
+
+GAME_MODES['orbital_crosshair'] = OrbitalCrosshairMode.new()
