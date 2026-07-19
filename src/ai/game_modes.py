@@ -21110,6 +21110,45 @@ class PositionSwapMode(GameMode):
         world.position_swap_pending = pending
 
 
+
+class SharedTugOfWarMode(TugOfWarMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shared Tug of War"
+        self.description = "Both teams must push the payload toward the center, acting as a shared 'Tug of War' towards a mutual goal point where it generates points over time for the team holding it closer."
+        self.scores = {"Red": 0.0, "Blue": 0.0}
+
+    def setup(self, world, balls) -> None:
+        super().setup(world, balls)
+        self.scores = {"Red": 0.0, "Blue": 0.0}
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        center_x = arena_width / 2.0
+
+        if self.payload and getattr(self.payload, "alive", False):
+            px = getattr(self.payload, "x", center_x)
+            if px > center_x:
+                self.scores["Red"] += delta
+            elif px < center_x:
+                self.scores["Blue"] += delta
+
+    def check_winner(self, world, balls):
+        if not self.payload:
+            return None
+
+        if getattr(self, "timer", 0) <= 0:
+            if self.scores["Red"] > self.scores["Blue"]:
+                return "Red"
+            elif self.scores["Blue"] > self.scores["Red"]:
+                return "Blue"
+            else:
+                return "Draw"
+
+        return None
+
 GAME_MODES = {
     'position_swap': PositionSwapMode(),
     'quantum_tunnel_mutator': QuantumTunnelMutatorMode(),
@@ -21185,6 +21224,7 @@ GAME_MODES = {
     "tug_of_war": TugOfWarMode(),
     "ticking_payload": TickingPayloadMode(),
     "reverse_tug_of_war": ReverseTugOfWarMode(),
+    "shared_tug_of_war": SharedTugOfWarMode(),
     "reverse_gravity_event": ReverseGravityEventMode(),
     "physics_anomaly_event": PhysicsAnomalyEventMode(),
     "escort": EscortMode(),

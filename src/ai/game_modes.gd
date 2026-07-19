@@ -34273,6 +34273,7 @@ GAME_MODES = {
 	"tug_of_war": TugOfWarMode.new(),
 	"ticking_payload": TickingPayloadMode.new(),
 	"reverse_tug_of_war": ReverseTugOfWarMode.new(),
+	"shared_tug_of_war": SharedTugOfWarMode.new(),
 	"reverse_gravity_event": ReverseGravityEventMode.new(),
 	"physics_anomaly_event": PhysicsAnomalyEventMode.new(),
 	"escort": EscortMode.new(),
@@ -41337,3 +41338,49 @@ class OrbitalCrosshairMode extends GameMode:
 										b.alive = false
 
 GAME_MODES['orbital_crosshair'] = OrbitalCrosshairMode.new()
+
+
+class SharedTugOfWarMode extends TugOfWarMode:
+	var scores = {"Red": 0.0, "Blue": 0.0}
+
+	func _init() -> void:
+		name = "Shared Tug of War"
+		description = "Both teams must push the payload toward the center, acting as a shared 'Tug of War' towards a mutual goal point where it generates points over time for the team holding it closer."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		scores = {"Red": 0.0, "Blue": 0.0}
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		var arena_width = 1000.0
+		if "arena" in world and world.arena:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = world.arena.get("width", 1000.0)
+			else:
+				arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+
+		var center_x = arena_width / 2.0
+
+		if payload != null:
+			var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
+			if is_alive:
+				var px = payload.get("x", center_x) if typeof(payload) == TYPE_DICTIONARY else payload.x
+				if px > center_x:
+					scores["Red"] += delta
+				elif px < center_x:
+					scores["Blue"] += delta
+
+	func check_winner(world, balls: Array):
+		if payload == null:
+			return null
+
+		if timer <= 0.0:
+			if scores["Red"] > scores["Blue"]:
+				return "Red"
+			elif scores["Blue"] > scores["Red"]:
+				return "Blue"
+			else:
+				return "Draw"
+		return null
