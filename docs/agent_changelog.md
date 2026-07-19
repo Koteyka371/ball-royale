@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1069] Quantum Resonance Booster — *2026-07-19 05:10:02 UTC*
+
+A new booster type that temporarily halves the cooldown of quantum teleporters and additionally links your ball with your teammates for shared short-range teleports when near.
+
+---
+
 ## [idea-1150] Kinetic Bounce Walls — *2026-07-19 05:09:58 UTC*
 
 Arena walls that absorb impact energy and reflect entities back with a velocity proportional to their incoming momentum, while spawning temporary defensive shields around the impact zone.
