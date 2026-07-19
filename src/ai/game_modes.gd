@@ -31149,6 +31149,12 @@ class HeavyRainMode:
 
 	func apply_dynamic_traits(world: Object, balls: Array, delta: float) -> void:
 		super.apply_dynamic_traits(world, balls, delta)
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if not world.arena.has("hazards"):
+				world.arena["hazards"] = []
+		else:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
 
 	func setup(world: Object, balls: Array) -> void:
 		super.setup(world, balls)
@@ -34504,7 +34510,179 @@ class PositionSwapMode extends GameMode:
 			world.position_swap_pending = pending
 
 
+class SpectatorHologramsMode extends GameMode:
+	var hologram_spawn_timer: float = 5.0
+	var hologram_spawn_interval: float = 10.0
+	var max_holograms: int = 5
+
+	func _init():
+		self.name = "Spectator Holograms"
+		self.description = "During intense matches, high-excitement crowd events can spawn physical holograms of the spectators along the arena edges. These holograms block projectiles and grant minor speed buffs to nearby players who cheer with them."
+
+	func apply_dynamic_traits(world: Object, balls: Array, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if not world.arena.has("hazards"):
+				world.arena["hazards"] = []
+		else:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+
+		hologram_spawn_timer -= delta
+		if hologram_spawn_timer <= 0:
+			hologram_spawn_timer = hologram_spawn_interval
+			var holograms = []
+			var hazards = []
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				hazards = world.arena.hazards
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				hazards = world.arena.hazards
+
+			for h in hazards:
+				var kind = ""
+				var active = true
+				if typeof(h) == TYPE_DICTIONARY:
+					kind = h.get("kind", "")
+					active = h.get("active", true)
+				else:
+					kind = h.get("kind") if "kind" in h else ""
+					active = h.get("active") if "active" in h else true
+
+				if kind == "spectator_hologram" and active:
+					holograms.append(h)
+
+			if holograms.size() < max_holograms:
+				var margin = 50.0
+				var width = 1000.0
+				var height = 1000.0
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					width = world.arena.get("width", 1000.0)
+					height = world.arena.get("height", 1000.0)
+				else:
+					width = world.arena.get("width") if "width" in world.arena else 1000.0
+					height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+				var edge = randi() % 4
+				var hx = 0.0
+				var hy = 0.0
+				if edge == 0:
+					hx = randf_range(margin, width - margin)
+					hy = margin
+				elif edge == 1:
+					hx = width - margin
+					hy = randf_range(margin, height - margin)
+				elif edge == 2:
+					hx = randf_range(margin, width - margin)
+					hy = height - margin
+				else:
+					hx = margin
+					hy = randf_range(margin, height - margin)
+
+				var new_hologram = {
+					"id": randi() % 90000 + 10000,
+					"x": hx,
+					"y": hy,
+					"radius": 30.0,
+					"kind": "spectator_hologram",
+					"damage": 0.0,
+					"active": true,
+					"duration": 20.0
+				}
+				hazards.append(new_hologram)
+				if world.has_method("add_event"):
+					world.add_event("hologram_spawned", {"x": hx, "y": hy})
+
+		# Process existing holograms
+		var hazards = []
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			hazards = world.arena.hazards
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			hazards = world.arena.hazards
+
+		for h in hazards:
+			var kind = ""
+			var active = true
+			if typeof(h) == TYPE_DICTIONARY:
+				kind = h.get("kind", "")
+				active = h.get("active", true)
+			else:
+				kind = h.get("kind") if "kind" in h else ""
+				active = h.get("active") if "active" in h else true
+
+			if kind == "spectator_hologram" and active:
+				var dur = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					dur = h.get("duration", 0.0)
+					dur -= delta
+					h["duration"] = dur
+					if dur <= 0:
+						h["active"] = false
+						continue
+				else:
+					dur = h.get("duration") if "duration" in h else 0.0
+					dur -= delta
+					if "duration" in h:
+						h.duration = dur
+					if dur <= 0:
+						if "active" in h:
+							h.active = false
+						continue
+
+				var hx = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.x if "x" in h else 0.0)
+				var hy = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.y if "y" in h else 0.0)
+				var hr = h.get("radius", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 0.0)
+
+				for b in balls:
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+					if not b_alive:
+						continue
+
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+					var br = b.get("radius", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 0.0)
+
+					var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+					if dist_sq <= (hr + br) * (hr + br):
+						var b_type = b.get("ball_type", b.get("kind", "")) if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if "ball_type" in b else (b.get("kind") if "kind" in b else ""))
+						var is_proj_flag = b.get("is_projectile", false) if typeof(b) == TYPE_DICTIONARY else (b.get("is_projectile") if "is_projectile" in b else false)
+						var is_proj = b_type in ["projectile", "spell"] or is_proj_flag
+
+						if is_proj:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = 0
+								b["alive"] = false
+							else:
+								if "hp" in b:
+									b.hp = 0
+								if "alive" in b:
+									b.alive = false
+							if world.has_method("add_event"):
+								world.add_event("hologram_blocked_projectile", {"x": hx, "y": hy})
+						else:
+							if b_type != "spectator":
+								if typeof(b) == TYPE_DICTIONARY:
+									b["speed_buff_timer"] = b.get("speed_buff_timer", 0.0) + 3.0
+								else:
+									if "speed_buff_timer" in b:
+										b.speed_buff_timer += 3.0
+									elif b.has_method("set_meta"):
+										var current = b.get_meta("speed_buff_timer") if b.has_meta("speed_buff_timer") else 0.0
+										b.set_meta("speed_buff_timer", current + 3.0)
+
+								if world.has_method("add_event"):
+									var bid = b.get("id", -1) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else -1)
+									world.add_event("spectator_cheer", {"x": hx, "y": hy, "target_id": bid})
+
+								if typeof(h) == TYPE_DICTIONARY:
+									h["active"] = false
+								else:
+									if "active" in h:
+										h.active = false
+
+
 GAME_MODES = {
+	"spectator_holograms": SpectatorHologramsMode.new(),
+
 	"position_swap": PositionSwapMode.new(),
 	"quantum_tunnel_mutator": QuantumTunnelMutatorMode.new(),
 	"sweeping_rotating_lasers": SweepingRotatingLasersMode.new(),
@@ -41703,3 +41881,173 @@ class SharedTugOfWarMode extends TugOfWarMode:
 			else:
 				return "Draw"
 		return null
+class SpectatorHologramsMode extends GameMode:
+	var hologram_spawn_timer: float = 5.0
+	var hologram_spawn_interval: float = 10.0
+	var max_holograms: int = 5
+
+	func _init():
+		self.name = "Spectator Holograms"
+		self.description = "During intense matches, high-excitement crowd events can spawn physical holograms of the spectators along the arena edges. These holograms block projectiles and grant minor speed buffs to nearby players who cheer with them."
+
+
+
+	func apply_dynamic_traits(world: Object, balls: Array, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if not world.arena.has("hazards"):
+				world.arena["hazards"] = []
+		else:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+
+		hologram_spawn_timer -= delta
+		if hologram_spawn_timer <= 0:
+			hologram_spawn_timer = hologram_spawn_interval
+			var holograms = []
+			var hazards = []
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				hazards = world.arena.hazards
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				hazards = world.arena.hazards
+
+			for h in hazards:
+				var kind = ""
+				var active = true
+				if typeof(h) == TYPE_DICTIONARY:
+					kind = h.get("kind", "")
+					active = h.get("active", true)
+				else:
+					kind = h.get("kind") if "kind" in h else ""
+					active = h.get("active") if "active" in h else true
+
+				if kind == "spectator_hologram" and active:
+					holograms.append(h)
+
+			if holograms.size() < max_holograms:
+				var margin = 50.0
+				var width = 1000.0
+				var height = 1000.0
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					width = world.arena.get("width", 1000.0)
+					height = world.arena.get("height", 1000.0)
+				else:
+					width = world.arena.get("width") if "width" in world.arena else 1000.0
+					height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+				var edge = randi() % 4
+				var hx = 0.0
+				var hy = 0.0
+				if edge == 0:
+					hx = randf_range(margin, width - margin)
+					hy = margin
+				elif edge == 1:
+					hx = width - margin
+					hy = randf_range(margin, height - margin)
+				elif edge == 2:
+					hx = randf_range(margin, width - margin)
+					hy = height - margin
+				else:
+					hx = margin
+					hy = randf_range(margin, height - margin)
+
+				var new_hologram = {
+					"id": randi() % 90000 + 10000,
+					"x": hx,
+					"y": hy,
+					"radius": 30.0,
+					"kind": "spectator_hologram",
+					"damage": 0.0,
+					"active": true,
+					"duration": 20.0
+				}
+				hazards.append(new_hologram)
+				if world.has_method("add_event"):
+					world.add_event("hologram_spawned", {"x": hx, "y": hy})
+
+		# Process existing holograms
+		var hazards = []
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			hazards = world.arena.hazards
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			hazards = world.arena.hazards
+
+		for h in hazards:
+			var kind = ""
+			var active = true
+			if typeof(h) == TYPE_DICTIONARY:
+				kind = h.get("kind", "")
+				active = h.get("active", true)
+			else:
+				kind = h.get("kind") if "kind" in h else ""
+				active = h.get("active") if "active" in h else true
+
+			if kind == "spectator_hologram" and active:
+				var dur = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					dur = h.get("duration", 0.0)
+					dur -= delta
+					h["duration"] = dur
+					if dur <= 0:
+						h["active"] = false
+						continue
+				else:
+					dur = h.get("duration") if "duration" in h else 0.0
+					dur -= delta
+					if "duration" in h:
+						h.duration = dur
+					if dur <= 0:
+						if "active" in h:
+							h.active = false
+						continue
+
+				var hx = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.x if "x" in h else 0.0)
+				var hy = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.y if "y" in h else 0.0)
+				var hr = h.get("radius", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 0.0)
+
+				for b in balls:
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+					if not b_alive:
+						continue
+
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+					var br = b.get("radius", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 0.0)
+
+					var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+					if dist_sq <= (hr + br) * (hr + br):
+						var b_type = b.get("ball_type", b.get("kind", "")) if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if "ball_type" in b else (b.get("kind") if "kind" in b else ""))
+						var is_proj_flag = b.get("is_projectile", false) if typeof(b) == TYPE_DICTIONARY else (b.get("is_projectile") if "is_projectile" in b else false)
+						var is_proj = b_type in ["projectile", "spell"] or is_proj_flag
+
+						if is_proj:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = 0
+								b["alive"] = false
+							else:
+								if "hp" in b:
+									b.hp = 0
+								if "alive" in b:
+									b.alive = false
+							if world.has_method("add_event"):
+								world.add_event("hologram_blocked_projectile", {"x": hx, "y": hy})
+						else:
+							if b_type != "spectator":
+								if typeof(b) == TYPE_DICTIONARY:
+									b["speed_buff_timer"] = b.get("speed_buff_timer", 0.0) + 3.0
+								else:
+									if "speed_buff_timer" in b:
+										b.speed_buff_timer += 3.0
+									elif b.has_method("set_meta"):
+										var current = b.get_meta("speed_buff_timer") if b.has_meta("speed_buff_timer") else 0.0
+										b.set_meta("speed_buff_timer", current + 3.0)
+
+								if world.has_method("add_event"):
+									var bid = b.get("id", -1) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else -1)
+									world.add_event("spectator_cheer", {"x": hx, "y": hy, "target_id": bid})
+
+								if typeof(h) == TYPE_DICTIONARY:
+									h["active"] = false
+								else:
+									if "active" in h:
+										h.active = false

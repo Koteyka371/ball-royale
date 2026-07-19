@@ -21343,6 +21343,103 @@ class SharedTugOfWarMode(TugOfWarMode):
 
         return None
 
+class SpectatorHologramsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Spectator Holograms"
+        self.description = "During intense matches, high-excitement crowd events can spawn physical holograms of the spectators along the arena edges. These holograms block projectiles and grant minor speed buffs to nearby players who cheer with them."
+        self.hologram_spawn_timer = 5.0
+        self.hologram_spawn_interval = 10.0
+        self.max_holograms = 5
+
+
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        super().apply_dynamic_traits(world, balls, delta)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        self.hologram_spawn_timer -= delta
+        if self.hologram_spawn_timer <= 0:
+            self.hologram_spawn_timer = self.hologram_spawn_interval
+            holograms = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "spectator_hologram" and getattr(h, "active", True)]
+            if len(holograms) < self.max_holograms:
+                margin = 50.0
+                width = getattr(world.arena, "width", 1000.0)
+                height = getattr(world.arena, "height", 1000.0)
+
+                import random
+                edge = random.randint(0, 3)
+                if edge == 0:
+                    x = random.uniform(margin, width - margin)
+                    y = margin
+                elif edge == 1:
+                    x = width - margin
+                    y = random.uniform(margin, height - margin)
+                elif edge == 2:
+                    x = random.uniform(margin, width - margin)
+                    y = height - margin
+                else:
+                    x = margin
+                    y = random.uniform(margin, height - margin)
+
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                        self.duration = 20.0
+                        self.owner_id = None
+
+                import sys
+                HazardClass = FallbackHazard
+                if "src.ai.action" in sys.modules and hasattr(sys.modules["src.ai.action"], "Hazard"):
+                    HazardClass = sys.modules["src.ai.action"].Hazard
+                elif "ai.action" in sys.modules and hasattr(sys.modules["ai.action"], "Hazard"):
+                    HazardClass = sys.modules["ai.action"].Hazard
+
+                h_id = random.randint(10000, 99999)
+                new_hologram = HazardClass(h_id, x, y, 30.0, "spectator_hologram", 0.0)
+                setattr(new_hologram, "duration", 20.0)
+                world.arena.hazards.append(new_hologram)
+                if hasattr(world, "add_event"):
+                    world.add_event("hologram_spawned", {"x": x, "y": y})
+
+        import math
+        holograms = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "spectator_hologram" and getattr(h, "active", True)]
+        for h in holograms:
+            dur = getattr(h, "duration", 0.0)
+            dur -= delta
+            setattr(h, "duration", dur)
+            if dur <= 0:
+                h.active = False
+                continue
+
+            for b in balls:
+                if not getattr(b, "alive", False): continue
+
+                dist_sq = (b.x - h.x)**2 + (b.y - h.y)**2
+                if dist_sq <= (h.radius + b.radius)**2:
+                    b_type = getattr(b, "ball_type", getattr(b, "kind", ""))
+                    is_proj = b_type in ["projectile", "spell"] or getattr(b, "is_projectile", False)
+
+                    if is_proj:
+                        b.hp = 0
+                        b.alive = False
+                        if hasattr(world, "add_event"):
+                            world.add_event("hologram_blocked_projectile", {"x": h.x, "y": h.y})
+                    else:
+                        if b_type != "spectator":
+                            b.speed_buff_timer = getattr(b, "speed_buff_timer", 0.0) + 3.0
+                            if hasattr(world, "add_event"):
+                                world.add_event("spectator_cheer", {"x": h.x, "y": h.y, "target_id": b.id})
+                            h.active = False
+
+
 GAME_MODES = {
     'position_swap': PositionSwapMode(),
     'quantum_tunnel_mutator': QuantumTunnelMutatorMode(),
@@ -27081,3 +27178,5 @@ class OrbitalCrosshairMode(GameMode):
 
 
 GAME_MODES['orbital_crosshair'] = OrbitalCrosshairMode()
+
+GAME_MODES['spectator_holograms'] = SpectatorHologramsMode()
