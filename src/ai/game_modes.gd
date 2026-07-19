@@ -19795,7 +19795,7 @@ class MagneticMineZoneMode extends GameMode:
 
 	func _init() -> void:
 		name = "Magnetic Mine Zone"
-		description = "A hazard zone where proximity mines are strongly attracted to nearby moving entities."
+		description = "A hazard zone where proximity mines slowly drag nearby entities towards them before exploding in a massive shockwave."
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
@@ -19810,40 +19810,34 @@ class MagneticMineZoneMode extends GameMode:
 			})
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
-		for b in balls:
-			var is_alive = false
-			if typeof(b) == TYPE_DICTIONARY:
-				is_alive = b.get("alive", false)
-			else:
-				is_alive = b.get("alive") if "alive" in b else false
-
-			if not is_alive:
+		for m in mines:
+			if not m["active"]:
 				continue
 
-			var bx = 0.0
-			var by = 0.0
-			var bvx = 0.0
-			var bvy = 0.0
-			var bradius = 0.0
+			var detonated = false
 
-			if typeof(b) == TYPE_DICTIONARY:
-				bx = b.get("x", 0.0)
-				by = b.get("y", 0.0)
-				bvx = b.get("vx", 0.0)
-				bvy = b.get("vy", 0.0)
-				bradius = b.get("radius", 0.0)
-			else:
-				bx = b.get("x") if "x" in b else 0.0
-				by = b.get("y") if "y" in b else 0.0
-				bvx = b.get("vx") if "vx" in b else 0.0
-				bvy = b.get("vy") if "vy" in b else 0.0
-				bradius = b.get("radius") if "radius" in b else 0.0
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
 
-			var speed = sqrt(bvx * bvx + bvy * bvy)
-
-			for m in mines:
-				if not m["active"]:
+				if not is_alive:
 					continue
+
+				var bx = 0.0
+				var by = 0.0
+				var bradius = 0.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = float(b.get("x", 0.0))
+					by = float(b.get("y", 0.0))
+					bradius = float(b.get("radius", 10.0))
+				else:
+					bx = float(b.get("x") if "x" in b else 0.0)
+					by = float(b.get("y") if "y" in b else 0.0)
+					bradius = float(b.get("radius") if "radius" in b else 10.0)
 
 				var dx = bx - m["x"]
 				var dy = by - m["y"]
@@ -19851,31 +19845,52 @@ class MagneticMineZoneMode extends GameMode:
 
 				if dist < bradius + m["radius"]:
 					m["active"] = false
-					if typeof(b) == TYPE_DICTIONARY:
-						if b.has("hp"):
-							b["hp"] -= m["damage"]
-					else:
-						if b.has_method("take_damage"):
-							b.take_damage(m["damage"])
-						elif "hp" in b:
-							b.hp -= m["damage"]
-
+					detonated = true
 					if world != null and world.has_method("add_event"):
 						world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
-					continue
 
-				var base_tracking_distance = 50.0
-				var max_tracking_distance = 150.0
+					var explosion_radius = 200.0
+					for other_b in balls:
+						var other_alive = false
+						if typeof(other_b) == TYPE_DICTIONARY:
+							other_alive = other_b.get("alive", false)
+						else:
+							other_alive = other_b.get("alive") if "alive" in other_b else false
 
-				var normalized_speed = max(0.0, min(1.0, (speed - 50.0) / 100.0))
-				var tracking_distance = base_tracking_distance + (max_tracking_distance - base_tracking_distance) * normalized_speed
+						if not other_alive:
+							continue
 
+						var obx = 0.0
+						var oby = 0.0
+						if typeof(other_b) == TYPE_DICTIONARY:
+							obx = float(other_b.get("x", 0.0))
+							oby = float(other_b.get("y", 0.0))
+						else:
+							obx = float(other_b.get("x") if "x" in other_b else 0.0)
+							oby = float(other_b.get("y") if "y" in other_b else 0.0)
+
+						var dist_sq = (m["x"] - obx) * (m["x"] - obx) + (m["y"] - oby) * (m["y"] - oby)
+						if dist_sq < explosion_radius * explosion_radius:
+							if typeof(other_b) == TYPE_DICTIONARY:
+								if other_b.has("hp"):
+									other_b["hp"] -= m["damage"]
+							else:
+								if other_b.has_method("take_damage"):
+									other_b.take_damage(m["damage"])
+								elif "hp" in other_b:
+									other_b.hp -= m["damage"]
+					break
+
+				var tracking_distance = 150.0
 				if dist < tracking_distance and dist > 0.0:
-					var pull_force = 150.0 * delta
-					# The mine is attracted to the ball, so the direction is from mine to ball.
-					# dx = bx - m["x"], dy = by - m["y"]
-					m["x"] += (dx / dist) * pull_force
-					m["y"] += (dy / dist) * pull_force
+					var pull_force = 100.0 * delta
+					# The mine slowly drags the ball towards it
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] -= (dx / dist) * pull_force
+						b["y"] -= (dy / dist) * pull_force
+					else:
+						b.x -= (dx / dist) * pull_force
+						b.y -= (dy / dist) * pull_force
 
 class StaminaSpeedMode extends GameMode:
 	func _init():

@@ -12823,7 +12823,7 @@ class MagneticMineZoneMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Magnetic Mine Zone"
-        self.description = "A hazard zone where proximity mines are strongly attracted to nearby moving entities."
+        self.description = "A hazard zone where proximity mines slowly drag nearby entities towards them before exploding in a massive shockwave."
         self.mines = []
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
@@ -12841,44 +12841,45 @@ class MagneticMineZoneMode(GameMode):
 
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         import math
-        for b in balls:
-            if not getattr(b, "alive", False):
+        for m in self.mines:
+            if not m["active"]:
                 continue
 
-            vx = getattr(b, "vx", 0.0)
-            vy = getattr(b, "vy", 0.0)
-            speed = math.hypot(vx, vy)
+            detonated = False
 
-            for m in self.mines:
-                if not m["active"]:
+            for b in balls:
+                if not getattr(b, "alive", False):
                     continue
 
                 dx = b.x - m["x"]
                 dy = b.y - m["y"]
                 dist = math.hypot(dx, dy)
 
-                if dist < b.radius + m["radius"]:
+                if dist < getattr(b, "radius", 10.0) + m["radius"]:
                     m["active"] = False
-                    if hasattr(b, "take_damage"):
-                        b.take_damage(m["damage"])
-                    elif hasattr(b, "hp"):
-                        b.hp -= m["damage"]
+                    detonated = True
                     if hasattr(world, "add_event"):
                         world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
-                    continue
 
-                base_tracking_distance = 50.0
-                max_tracking_distance = 150.0
+                    explosion_radius = 200.0
+                    for other_b in balls:
+                        if not getattr(other_b, "alive", False):
+                            continue
 
-                normalized_speed = max(0.0, min(1.0, (speed - 50.0) / 100.0))
-                tracking_distance = base_tracking_distance + (max_tracking_distance - base_tracking_distance) * normalized_speed
+                        dist_sq = (m["x"] - other_b.x)**2 + (m["y"] - other_b.y)**2
+                        if dist_sq < explosion_radius**2:
+                            if hasattr(other_b, "take_damage"):
+                                other_b.take_damage(m["damage"])
+                            elif hasattr(other_b, "hp"):
+                                other_b.hp -= m["damage"]
+                    break
 
+                tracking_distance = 150.0
                 if dist < tracking_distance and dist > 0:
-                    pull_force = 150.0 * delta
-                    # The mine is attracted to the ball, so the direction is from mine to ball.
-                    # dx = b.x - m["x"], dy = b.y - m["y"]
-                    m["x"] += (dx / dist) * pull_force
-                    m["y"] += (dy / dist) * pull_force
+                    pull_force = 100.0 * delta
+                    # The mine slowly drags the ball towards it
+                    b.x -= (dx / dist) * pull_force
+                    b.y -= (dy / dist) * pull_force
 
 class StaminaSpeedMode(GameMode):
     def __init__(self):

@@ -22,12 +22,11 @@ def test_magnetic_mine_pull():
     mode = MagneticMineZoneMode()
     world = MockWorld()
 
-    # Fast ball (speed 150 -> norm 1 -> tracking 150)
-    b_fast = MockBall(200, 200, 150, 0)
-    mode.setup(world, [b_fast])
+    # Place a ball at (200, 200)
+    b = MockBall(200, 200, 0, 0)
+    mode.setup(world, [b])
 
-    # Place a mine at 300, 200. Distance = 100.
-    # It should track because tracking = 150.
+    # Place a mine at (300, 200) -> distance is 100, which is within the 150 tracking distance
     mode.mines = [{
         "x": 300.0,
         "y": 200.0,
@@ -36,29 +35,28 @@ def test_magnetic_mine_pull():
         "active": True
     }]
 
-    orig_x = mode.mines[0]["x"]
-    mode.tick(world, [b_fast], delta=1.0)
-    assert mode.mines[0]["x"] < orig_x
+    orig_x = b.x
+    mode.tick(world, [b], delta=1.0)
 
-    # Slow ball (speed 0 -> norm 0 -> tracking 50)
-    b_slow = MockBall(200, 200, 0, 0)
-    mode.mines = [{
-        "x": 300.0,
-        "y": 200.0,
-        "radius": 15.0,
-        "damage": 50.0,
-        "active": True
-    }]
-    orig_x_slow = mode.mines[0]["x"]
-    mode.tick(world, [b_slow], delta=1.0)
-    # distance = 100. tracking = 50. Should NOT track!
-    assert mode.mines[0]["x"] == orig_x_slow
+    # Ball should be dragged towards the mine (x increases)
+    assert b.x > orig_x
+    # Mine should not move
+    assert mode.mines[0]["x"] == 300.0
 
 def test_magnetic_mine_explosion():
     mode = MagneticMineZoneMode()
     world = MockWorld()
-    b = MockBall(200, 200, 0, 0)
-    mode.setup(world, [b])
+
+    # Ball 1 touches the mine
+    b1 = MockBall(200, 200, 0, 0)
+    # Ball 2 is within explosion radius (200) but not touching
+    b2 = MockBall(250, 200, 0, 0)
+    # Ball 3 is outside explosion radius
+    b3 = MockBall(500, 500, 0, 0)
+
+    mode.setup(world, [b1, b2, b3])
+
+    # Mine at same pos as b1
     mode.mines = [{
         "x": 200.0,
         "y": 200.0,
@@ -67,9 +65,11 @@ def test_magnetic_mine_explosion():
         "active": True
     }]
 
-    mode.tick(world, [b], delta=1.0)
+    mode.tick(world, [b1, b2, b3], delta=1.0)
+
     assert not mode.mines[0]["active"]
-    assert b.hp == 50
+    assert b1.hp == 50
+    assert b2.hp == 50  # b2 should also take damage due to massive shockwave
+    assert b3.hp == 100 # b3 should not take damage
     assert len(world.events) == 1
     assert world.events[0][0] == "mine_explosion"
-

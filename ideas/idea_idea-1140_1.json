@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Tether Mine",
+  "description": "A hazard that drops an inactive mine. Once armed, any player walking within its radius gets tethered to it. The further they try to run away, the stronger the mine pulls them back until the tether snaps causing burst damage."
+}

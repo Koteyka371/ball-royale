@@ -1,0 +1,4 @@
+{
+  "title": "Chrono-Fracture Grenade",
+  "description": "An item that, when deployed, shatters the space-time in a small radius. Any entity entering the radius has their local time slowed by 80% while receiving damage over time."
+}
