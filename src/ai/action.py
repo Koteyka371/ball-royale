@@ -8213,6 +8213,26 @@ class Action:
                                 if self.ball.hp <= 0:
                                     self.ball.alive = False
                             continue
+                        elif hazard.kind == "tsunami_wave":
+                            if not getattr(hazard, "active", True):
+                                continue
+                            if getattr(self.ball, "life_jacket_booster_timer", 0.0) > 0:
+                                continue
+
+                            current_tick = getattr(self.world, "tick", 0)
+                            if getattr(self.ball, "last_tsunami_tick", -1) != current_tick:
+                                self.ball.last_tsunami_tick = current_tick
+                                if hasattr(self.ball, "x"):
+                                    self.ball.x += 300.0 * delta
+
+                                hazard_damage = getattr(hazard, "damage", 20.0) * delta
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(hazard_damage)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= hazard_damage
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+                            continue
                         elif hazard.kind == "vampiric_puddle":
                             hazard_damage = hazard.damage * delta
                             if hasattr(self.ball, "take_damage"):
