@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1177] Orbital Magnet Hazard — *2026-07-19 20:06:07 UTC*
+
+A new hazard type that activates near the end of the match. It acts as an area-of-effect magnet, pulling all balls, boosters, and even smaller hazards slowly toward its center. Navigating through it requires using dash mechanics or bouncing off nearby obstacles to escape its pull.
+
+---
+
 ## [idea-1169] Shrinking Zones based on Players — *2026-07-19 19:36:34 UTC*
 
 A game mode where the safe zone's size decreases much faster when more players are outside of it, encouraging players to fight for the center.

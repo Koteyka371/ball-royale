@@ -20180,7 +20180,7 @@
     },
     {
       "id": "idea-1177",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Magnet Hazard",
@@ -30752,6 +30752,23 @@
         "src/ai/alliance_tournaments.py",
         "src/ai/alliance_tournaments.gd",
         "tests/test_alliance_tournaments.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1798",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stellar Conjunction Event",
+      "description": "An extremely rare late-game event where all balls' cooldowns are permanently reduced by 50% but damage taken is doubled, forcing a high-stakes fast-paced ending to the match.",
+      "allowed_paths": [
+        "src/ai/stellar_conjunction.py",
+        "src/ai/stellar_conjunction.gd",
+        "tests/test_stellar_conjunction.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
