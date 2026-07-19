@@ -28459,7 +28459,7 @@ class ShrinkingBoundaryMode extends GameMode:
 
 	func _init() -> void:
 		name = "Shrinking Boundary"
-		description = "The boundaries of the arena slowly shrink over time, instantly eliminating anyone caught outside the safe area."
+		description = "The boundaries of the arena slowly shrink over time, dealing continuous damage to anyone caught outside the safe area."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
 		for b in balls:
@@ -28611,14 +28611,23 @@ class ShrinkingBoundaryMode extends GameMode:
 				var by = b_dict.get("y", 0.0) if is_dict else b.get("y")
 
 				if bx < min_x or bx > max_x or by < min_y or by > max_y:
-					if is_dict:
-						b["hp"] = 0.0
-						b["alive"] = false
-						b["killer"] = "Shrinking Boundary"
+					var current_hp = b_dict.get("hp", 0.0) if is_dict else b.get("hp")
+					var new_hp = current_hp - 20.0 * delta
+
+					if new_hp <= 0:
+						if is_dict:
+							b["hp"] = 0.0
+							b["alive"] = false
+							b["killer"] = "Shrinking Boundary"
+						else:
+							b.set("hp", 0.0)
+							b.set("alive", false)
+							b.set("killer", "Shrinking Boundary")
 					else:
-						b.set("hp", 0.0)
-						b.set("alive", false)
-						b.set("killer", "Shrinking Boundary")
+						if is_dict:
+							b["hp"] = new_hp
+						else:
+							b.set("hp", new_hp)
 
 
 class EntangledArenaMode extends GameMode:

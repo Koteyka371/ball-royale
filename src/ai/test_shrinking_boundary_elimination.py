@@ -30,10 +30,18 @@ def test_shrinking_boundary_elimination():
     balls = [ball_inside, ball_outside]
 
     mode.setup(world, balls)
+
+    # Tick for 1 second, ball should lose 20 HP
     mode.tick(world, balls, 1.0)
 
     assert ball_inside.alive is True
     assert ball_inside.hp == 100.0
+
+    assert ball_outside.alive is True
+    assert ball_outside.hp == 80.0
+
+    # Tick for another 4 seconds, ball should lose 80 HP and die
+    mode.tick(world, balls, 4.0)
 
     assert ball_outside.alive is False
     assert ball_outside.hp == 0.0

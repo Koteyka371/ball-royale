@@ -1,0 +1,4 @@
+{
+  "title": "Moving Safe Zone",
+  "description": "Instead of just shrinking, the safe zone boundary also slowly drifts around the map over time, forcing players to constantly reposition while fighting."
+}

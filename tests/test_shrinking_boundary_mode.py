@@ -53,8 +53,8 @@ def test_shrinking_boundary_mode():
     mode.tick(world, balls, delta=1.0)
 
     # Ball should have taken damage
-    assert balls[0].hp == 0.0
-    assert balls[0].alive is False
+    assert balls[0].hp == 80.0
+    assert balls[0].alive is True
 
     # Deal enough damage to kill
     balls[0].hp = 1.0
