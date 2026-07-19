@@ -26425,3 +26425,84 @@ class MagneticShockwaveEventMode(GameMode):
                     b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
 
 GAME_MODES['magnetic_shockwave'] = MagneticShockwaveEventMode()
+
+
+class MusicalChairsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Musical Chairs"
+        self.description = "Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The number of safe zones decreases each round."
+        self.zones = [] # list of {"x": float, "y": float, "radius": float}
+        self.round_timer = 0.0
+        self.round_duration = 10.0
+        self.num_zones = 5
+        self.phase = "waiting" # "waiting", "damage"
+        self.damage_timer = 0.0
+        self.zone_radius = 80.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        num_alive = sum(1 for b in balls if getattr(b, 'alive', False))
+        self.num_zones = max(1, num_alive - 1)
+        self.phase = "waiting"
+        self.round_timer = self.round_duration
+        self._spawn_zones(world)
+
+    def _spawn_zones(self, world):
+        import random
+        self.zones = []
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        for _ in range(self.num_zones):
+            self.zones.append({
+                "x": random.uniform(100, arena_width - 100),
+                "y": random.uniform(100, arena_height - 100),
+                "radius": self.zone_radius
+            })
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        if self.phase == "waiting":
+            self.round_timer -= delta
+            if self.round_timer <= 0.0:
+                self.phase = "damage"
+                self.damage_timer = 1.0
+                for b in balls:
+                    w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+                    is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+                    if not getattr(b, "alive", False) or is_immune:
+                        continue
+
+                    in_zone = False
+                    for zone in self.zones:
+                        dx = b.x - zone["x"]
+                        dy = b.y - zone["y"]
+                        if math.sqrt(dx*dx + dy*dy) <= zone["radius"]:
+                            in_zone = True
+                            break
+                    if not in_zone:
+                        b.hp -= 50.0
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if hasattr(b, "id") and b.id not in world.dead_balls:
+                                world.dead_balls.append(b.id)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("ball_died", {"id": b.id, "reason": "musical_chairs_damage", "killer_id": -1})
+
+                self.num_zones = max(1, self.num_zones - 1)
+                self.zones = []
+
+        elif self.phase == "damage":
+            self.damage_timer -= delta
+            if self.damage_timer <= 0.0:
+                self.phase = "waiting"
+                self.round_timer = self.round_duration
+                self._spawn_zones(world)
+
+GAME_MODES['musical_chairs'] = MusicalChairsMode()

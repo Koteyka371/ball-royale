@@ -40655,3 +40655,153 @@ class MagneticShockwaveEventModeClass extends GameMode:
 						b.stun_timer = 2.0
 
 GAME_MODES['magnetic_shockwave'] = MagneticShockwaveEventModeClass.new()
+
+
+class MusicalChairsMode extends GameMode:
+	var zones: Array = []
+	var round_timer: float = 0.0
+	var round_duration: float = 10.0
+	var num_zones: int = 5
+	var phase: String = "waiting" # "waiting", "damage"
+	var damage_timer: float = 0.0
+	var zone_radius: float = 80.0
+
+	func _init():
+		name = "Musical Chairs"
+		description = "Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The number of safe zones decreases each round."
+		zones = []
+		round_timer = 0.0
+		round_duration = 10.0
+		num_zones = 5
+		phase = "waiting"
+		damage_timer = 0.0
+		zone_radius = 80.0
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var num_alive = 0
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive"):
+				num_alive += 1
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"]:
+				num_alive += 1
+		num_zones = int(max(1, num_alive - 1))
+		phase = "waiting"
+		round_timer = round_duration
+		_spawn_zones(world)
+
+	func _spawn_zones(world) -> void:
+		zones.clear()
+		var arena_width: float = 1000.0
+		var arena_height: float = 1000.0
+		if world != null:
+			if typeof(world) == TYPE_OBJECT and world.has_method("get"):
+				var arena = world.get("arena")
+				if arena != null:
+					if typeof(arena) == TYPE_OBJECT and arena.has_method("get"):
+						arena_width = float(arena.get("width"))
+						arena_height = float(arena.get("height"))
+					elif typeof(arena) == TYPE_DICTIONARY:
+						arena_width = float(arena.get("width", 1000.0))
+						arena_height = float(arena.get("height", 1000.0))
+			elif typeof(world) == TYPE_DICTIONARY:
+				var arena = world.get("arena")
+				if arena != null and typeof(arena) == TYPE_DICTIONARY:
+					arena_width = float(arena.get("width", 1000.0))
+					arena_height = float(arena.get("height", 1000.0))
+
+		for i in range(num_zones):
+			zones.append({
+				"x": randf_range(100.0, arena_width - 100.0),
+				"y": randf_range(100.0, arena_height - 100.0),
+				"radius": zone_radius
+			})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null:
+			if typeof(world) == TYPE_OBJECT and world.has_method("get") and not world.get("dead_balls"):
+				world.set("dead_balls", [])
+			elif typeof(world) == TYPE_DICTIONARY and not world.has("dead_balls"):
+				world["dead_balls"] = []
+
+		if phase == "waiting":
+			round_timer -= delta
+			if round_timer <= 0.0:
+				phase = "damage"
+				damage_timer = 1.0
+				for b in balls:
+					var alive = false
+					var w_timer = 0.0
+					if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+						alive = b.get("alive")
+						w_timer = b.get("weather_immunity_timer") if b.get("weather_immunity_timer") != null else 0.0
+					elif typeof(b) == TYPE_DICTIONARY:
+						alive = b.get("alive", false)
+						w_timer = b.get("weather_immunity_timer", 0.0)
+
+					var is_immune = false
+					if typeof(w_timer) == TYPE_INT or typeof(w_timer) == TYPE_FLOAT:
+						is_immune = w_timer > 0.0
+
+					if not alive or is_immune:
+						continue
+
+					var bx: float = 0.0
+					var by: float = 0.0
+					var hp: float = 0.0
+					var bid = -1
+					if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+						bx = float(b.get("x"))
+						by = float(b.get("y"))
+						hp = float(b.get("hp"))
+						bid = b.get("id")
+					elif typeof(b) == TYPE_DICTIONARY:
+						bx = float(b.get("x", 0.0))
+						by = float(b.get("y", 0.0))
+						hp = float(b.get("hp", 0.0))
+						bid = b.get("id", -1)
+
+					var in_zone = false
+					for z in zones:
+						var dx = bx - z["x"]
+						var dy = by - z["y"]
+						if sqrt(dx*dx + dy*dy) <= z["radius"]:
+							in_zone = true
+							break
+
+					if not in_zone:
+						hp -= 50.0
+						if hp <= 0:
+							hp = 0
+							if typeof(b) == TYPE_OBJECT and b.has_method("set"):
+								b.set("alive", false)
+							elif typeof(b) == TYPE_DICTIONARY:
+								b["alive"] = false
+
+							var dead_balls = []
+							if typeof(world) == TYPE_OBJECT and world.has_method("get"):
+								dead_balls = world.get("dead_balls")
+							elif typeof(world) == TYPE_DICTIONARY:
+								dead_balls = world.get("dead_balls", [])
+
+							if typeof(dead_balls) == TYPE_ARRAY and not (bid in dead_balls):
+								dead_balls.append(bid)
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("ball_died", {"id": bid, "reason": "musical_chairs_damage", "killer_id": -1})
+
+						if typeof(b) == TYPE_OBJECT and b.has_method("set"):
+							b.set("hp", hp)
+						elif typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = hp
+
+				num_zones = int(max(1, num_zones - 1))
+				zones.clear()
+
+		elif phase == "damage":
+			damage_timer -= delta
+			if damage_timer <= 0.0:
+				phase = "waiting"
+				round_timer = round_duration
+				_spawn_zones(world)
+
+GAME_MODES["musical_chairs"] = MusicalChairsMode.new()
