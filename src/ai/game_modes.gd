@@ -5792,6 +5792,23 @@ class DualPayloadMode extends GameMode:
 					else:
 						payload_red.set("turret_active", false)
 
+				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+					if not self.has_meta("red_milestones"):
+						self.set_meta("red_milestones", [300.0, 500.0, 700.0, 900.0])
+					var m_arr = self.get_meta("red_milestones")
+					var to_remove = []
+					for m in m_arr:
+						if red_x >= m:
+							to_remove.append(m)
+							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, red_x, red_y, 40.0, "energy_barrier", 0.0)
+							drop.set_meta("duration", 15.0)
+							drop.set_meta("team", "Red")
+							world.arena.hazards.append(drop)
+					for m in to_remove:
+						m_arr.erase(m)
+					self.set_meta("red_milestones", m_arr)
+
 				var dx = (arena_width - 100.0) - red_x
 				var dy = center_y - red_y
 				var dist = sqrt(dx*dx + dy*dy)
@@ -5901,6 +5918,23 @@ class DualPayloadMode extends GameMode:
 						payload_blue["turret_active"] = false
 					else:
 						payload_blue.set("turret_active", false)
+
+				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+					if not self.has_meta("blue_milestones"):
+						self.set_meta("blue_milestones", [700.0, 500.0, 300.0, 100.0])
+					var m_arr = self.get_meta("blue_milestones")
+					var to_remove = []
+					for m in m_arr:
+						if blue_x <= m:
+							to_remove.append(m)
+							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, blue_x, blue_y, 40.0, "energy_barrier", 0.0)
+							drop.set_meta("duration", 15.0)
+							drop.set_meta("team", "Blue")
+							world.arena.hazards.append(drop)
+					for m in to_remove:
+						m_arr.erase(m)
+					self.set_meta("blue_milestones", m_arr)
 
 				var dx = 100.0 - blue_x
 				var dy = center_y - blue_y
@@ -6317,6 +6351,16 @@ class EscortMode extends GameMode:
 				if dist < 10.0 and current_waypoint_index < waypoints.size() - 1:
 					current_waypoint_index += 1
 					target_pos = waypoints[current_waypoint_index]
+
+					if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+						var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+						var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, px, py, 40.0, "energy_barrier", 0.0)
+						drop.set_meta("duration", 15.0)
+						var p_team = payload.get("team", "Defenders") if typeof(payload) == TYPE_DICTIONARY else payload.get("team")
+						if p_team == null: p_team = "Defenders"
+						drop.set_meta("team", p_team)
+						world.arena.hazards.append(drop)
+
 					dx = target_pos.x - px
 					dy = target_pos.y - py
 					dist = sqrt(dx * dx + dy * dy)
@@ -26739,6 +26783,30 @@ class TickingPayloadMode extends GameMode:
 				payload["x"] -= move_speed * delta * (blue_count - red_count) * speed_multiplier
 
 			var px = payload.get("x", 0.0)
+
+			if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+				if not self.has_meta("milestones_crossed"):
+					self.set_meta("milestones_crossed", [])
+				var crossed = self.get_meta("milestones_crossed")
+				var milestones = [200.0, 350.0, 650.0, 800.0]
+				for m in milestones:
+					if not crossed.has(m):
+						if px >= m and m > 500.0 and red_count > blue_count:
+							crossed.append(m)
+							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, px, payload.get("y", 0.0), 40.0, "energy_barrier", 0.0)
+							drop.set_meta("duration", 15.0)
+							drop.set_meta("team", "Red")
+							world.arena.hazards.append(drop)
+						elif px <= m and m < 500.0 and blue_count > red_count:
+							crossed.append(m)
+							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, px, payload.get("y", 0.0), 40.0, "energy_barrier", 0.0)
+							drop.set_meta("duration", 15.0)
+							drop.set_meta("team", "Blue")
+							world.arena.hazards.append(drop)
+				self.set_meta("milestones_crossed", crossed)
+
 			if px <= red_goal_x:
 				payload["alive"] = false
 				payload["hp"] = 0
