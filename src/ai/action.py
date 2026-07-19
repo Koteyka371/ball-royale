@@ -7864,6 +7864,56 @@ class Action:
                                     if dot < 0:
                                         self.ball.vx = bvx - 2 * dot * nx
                                         self.ball.vy = bvy - 2 * dot * ny
+                        elif hazard.kind == "cycling_hazard":
+                            # Cycle every 2 seconds
+                            if not hasattr(hazard, "phase_timer"):
+                                hazard.phase_timer = 0.0
+                            if not hasattr(hazard, "is_solid"):
+                                hazard.is_solid = True
+
+                            # Only update timer once per tick, we can approximate by just updating
+                            # But since this is per-agent loop, it updates per ball!
+                            # Let's attach the update to a tick timer or just let the arena handle it.
+                            # Oh, if we update per ball, it will run N times faster.
+                            # We can just check hazard.last_update_time against self.world.time
+                            current_time = getattr(self.world, "time", 0.0)
+                            last_time = getattr(hazard, "last_update_time", -1.0)
+                            if last_time != current_time:
+                                hazard.phase_timer += delta
+                                if hazard.phase_timer >= 2.0:
+                                    hazard.phase_timer -= 2.0
+                                    hazard.is_solid = not hazard.is_solid
+                                hazard.last_update_time = current_time
+
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            dist2 = dx*dx + dy*dy
+                            dist = math.sqrt(dist2) if dist2 > 0 else 0.0001
+                            b_rad = getattr(self.ball, "radius", 10.0)
+                            h_rad = getattr(hazard, "radius", 40.0)
+
+                            if dist < (b_rad + h_rad):
+                                if hazard.is_solid:
+                                    # Solid: push out and reflect
+                                    overlap = (b_rad + h_rad) - dist
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    self.ball.x += nx * overlap
+                                    self.ball.y += ny * overlap
+
+                                    # Bounce
+                                    bvx = getattr(self.ball, "vx", 0.0)
+                                    bvy = getattr(self.ball, "vy", 0.0)
+                                    dot = bvx * nx + bvy * ny
+                                    if dot < 0:
+                                        self.ball.vx = bvx - 2 * dot * nx
+                                        self.ball.vy = bvy - 2 * dot * ny
+                                else:
+                                    # Not solid: heavy damage over time
+                                    if hasattr(self.ball, "take_damage"):
+                                        self.ball.take_damage(50.0 * delta)
+                                    elif hasattr(self.ball, "hp"):
+                                        self.ball.hp -= 50.0 * delta
                         elif hazard.kind == "sweeping_paddle":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y

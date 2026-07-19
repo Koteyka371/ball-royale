@@ -1,0 +1,4 @@
+{
+  "title": "Gravity Inversion Zone",
+  "description": "A large hazard zone that periodically toggles on and off. When active, any player entering the zone has their movement inputs inverted and they slowly float towards the center of the zone."
+}
