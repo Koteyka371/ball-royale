@@ -20673,7 +20673,7 @@
     },
     {
       "id": "idea-1206",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New Item: Cloaking Device",
@@ -31568,6 +31568,23 @@
         "src/ai/supply_drop_orbital_path.py",
         "src/ai/supply_drop_orbital_path.gd",
         "tests/test_supply_drop_orbital_path.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1846",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Pull Booster",
+      "description": "A rare booster that upon collection spawns a miniature magnetic field around the ball for a short duration, pulling in nearby items and boosters while slightly repelling enemy balls.",
+      "allowed_paths": [
+        "src/ai/magnetic_pull_booster.py",
+        "src/ai/magnetic_pull_booster.gd",
+        "tests/test_magnetic_pull_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

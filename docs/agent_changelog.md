@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1206] New Item: Cloaking Device — *2026-07-20 21:38:06 UTC*
+
+An item that temporarily renders the player invisible to enemy AI, preventing targeting for a short duration.
+
+---
+
 ## [idea-1207] Shrinking Safe Haven Booster — *2026-07-20 21:17:30 UTC*
 
 A rare booster that upon collection spawns a miniature personal safe zone that moves with the ball for a short duration, rendering them immune to environmental hazard damage.
