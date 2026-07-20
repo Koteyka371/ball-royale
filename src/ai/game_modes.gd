@@ -40992,6 +40992,127 @@ class BountyContractEventMode extends GameMode:
 							killer.xp += b_reward
 
 
+
+class DecoyNetworkMode extends GameMode:
+    var timer: float = 0.0
+    var spawn_interval: float = 8.0
+
+    class HologramDecoy:
+        var id: int
+        var owner_id: int
+        var x: float
+        var y: float
+        var radius: float = 15.0
+        var hp: float = 100.0
+        var max_hp: float = 100.0
+        var _prev_hp: float = 100.0
+        var alive: bool = true
+        var kind: String = "hologram_decoy"
+        var duration: float = 10.0
+        var is_hologram_decoy: bool = true
+        var team: String = "neutral"
+        var ball_type: String = "basic"
+        var damage: float = 0.0
+        var base_damage: float = 0.0
+        var speed: float = 0.0
+
+        func _init(target_ball):
+            self.owner_id = target_ball.id if "id" in target_ball else 0
+            self.x = target_ball.x if "x" in target_ball else 0.0
+            self.y = target_ball.y if "y" in target_ball else 0.0
+            self.team = target_ball.team if "team" in target_ball else "neutral"
+
+        func update(delta):
+            self.duration -= delta
+            if self.duration <= 0.0:
+                self.alive = false
+
+        func take_damage(amount, source=null):
+            self.hp -= amount
+            if self.hp <= 0:
+                self.alive = false
+
+    func _init():
+        self.name = "Decoy Network"
+        self.description = "Players occasionally deploy interconnected holograms. Enemies hitting one decoy take damage that ripples across the entire network, punishing aggressive, untargeted playstyles."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        self.timer = 0.0
+
+    func tick(world, balls, delta=0.016):
+        self.timer += delta
+
+        for b in balls:
+            var is_holo = b.is_hologram_decoy if "is_hologram_decoy" in b else false
+            var b_alive = b.alive if "alive" in b else false
+            if is_holo and b_alive:
+                if typeof(b) == TYPE_OBJECT and b.has_method("update"):
+                    b.update(delta)
+
+                var cur_hp = b.hp if "hp" in b else 0.0
+                var prev_hp = b._prev_hp if "_prev_hp" in b else cur_hp
+                if cur_hp < prev_hp:
+                    var damage_taken = prev_hp - cur_hp
+                    if typeof(b) == TYPE_OBJECT and "set_meta" in b:
+                        b._prev_hp = cur_hp
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["_prev_hp"] = cur_hp
+                    else:
+                        b._prev_hp = cur_hp
+
+                    var network_owner = b.owner_id if "owner_id" in b else -1
+                    if network_owner != -1:
+                        for h in balls:
+                            var h_is_holo = h.is_hologram_decoy if "is_hologram_decoy" in h else false
+                            var h_alive = h.alive if "alive" in h else false
+                            var h_owner = h.owner_id if "owner_id" in h else -1
+                            if h_is_holo and h_alive and h_owner == network_owner:
+                                var nearest_enemy = null
+                                var nearest_dist = 62500.0 # 250^2
+                                var h_x = h.x if "x" in h else 0.0
+                                var h_y = h.y if "y" in h else 0.0
+                                var h_team = h.team if "team" in h else ""
+
+                                for e in balls:
+                                    var e_alive = e.alive if "alive" in e else false
+                                    var e_is_decoy = e.is_decoy if "is_decoy" in e else false
+                                    var e_is_holo = e.is_hologram_decoy if "is_hologram_decoy" in e else false
+                                    if e_alive and not e_is_decoy and not e_is_holo:
+                                        var e_team = e.team if "team" in e else ""
+                                        if e_team != h_team:
+                                            var e_x = e.x if "x" in e else 0.0
+                                            var e_y = e.y if "y" in e else 0.0
+                                            var dx = e_x - h_x
+                                            var dy = e_y - h_y
+                                            var dist_sq = dx*dx + dy*dy
+                                            if dist_sq < nearest_dist:
+                                                nearest_dist = dist_sq
+                                                nearest_enemy = e
+
+                                if nearest_enemy != null:
+                                    if typeof(nearest_enemy) == TYPE_OBJECT and "hp" in nearest_enemy:
+                                        nearest_enemy.hp -= damage_taken
+                                    elif typeof(nearest_enemy) == TYPE_DICTIONARY:
+                                        nearest_enemy["hp"] -= damage_taken
+
+        if self.timer >= self.spawn_interval:
+            self.timer = 0.0
+            var new_holograms = []
+            for b in balls:
+                var b_alive = b.alive if "alive" in b else false
+                var is_decoy = b.is_decoy if "is_decoy" in b else false
+                var is_holo = b.is_hologram_decoy if "is_hologram_decoy" in b else false
+                if b_alive and not is_decoy and not is_holo:
+                    var decoy = HologramDecoy.new(b)
+                    if "next_id" in world:
+                        decoy.id = world.next_id
+                        world.next_id += 1
+                    new_holograms.append(decoy)
+
+            for d in new_holograms:
+                balls.append(d)
+
 class VengefulDecoysMode extends GameMode:
     var timer: float = 0.0
     var decoy_interval: float = 10.0
@@ -41148,6 +41269,7 @@ class VengefulDecoysMode extends GameMode:
 
             self.recordings.clear()
 
+GAME_MODES["decoy_network"] = DecoyNetworkMode.new()
 GAME_MODES["vengeful_decoys"] = VengefulDecoysMode.new()
 
 class SponsorDropBox:
