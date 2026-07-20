@@ -6467,6 +6467,14 @@ class DualPayloadMode extends GameMode:
 					var bdy = by - red_y
 					if sqrt(bdx*bdx + bdy*bdy) <= 150.0:
 						nearby_red += 1
+						var current_sb = b.get_meta("speed_boost_timer") if (typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("speed_boost_timer")) else (b.get("speed_boost_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.speed_boost_timer if "speed_boost_timer" in b else 0.0))
+						var new_sb = max(current_sb, 2.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["speed_boost_timer"] = new_sb
+						elif "speed_boost_timer" in b:
+							b.speed_boost_timer = new_sb
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+							b.set_meta("speed_boost_timer", new_sb)
 
 				var speed_mult_red = 1.0 + (nearby_red * 0.5)
 
@@ -6594,6 +6602,14 @@ class DualPayloadMode extends GameMode:
 					var bdy = by - blue_y
 					if sqrt(bdx*bdx + bdy*bdy) <= 150.0:
 						nearby_blue += 1
+						var current_sb = b.get_meta("speed_boost_timer") if (typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("speed_boost_timer")) else (b.get("speed_boost_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.speed_boost_timer if "speed_boost_timer" in b else 0.0))
+						var new_sb = max(current_sb, 2.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["speed_boost_timer"] = new_sb
+						elif "speed_boost_timer" in b:
+							b.speed_boost_timer = new_sb
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+							b.set_meta("speed_boost_timer", new_sb)
 
 				var speed_mult_blue = 1.0 + (nearby_blue * 0.5)
 
@@ -7084,6 +7100,14 @@ class EscortMode extends GameMode:
 					var bdy = by - py
 					if sqrt(bdx*bdx + bdy*bdy) <= 150.0:
 						nearby_teammates += 1
+						var current_sb = b.get_meta("speed_boost_timer") if (typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("speed_boost_timer")) else (b.get("speed_boost_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.speed_boost_timer if "speed_boost_timer" in b else 0.0))
+						var new_sb = max(current_sb, 2.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["speed_boost_timer"] = new_sb
+						elif "speed_boost_timer" in b:
+							b.speed_boost_timer = new_sb
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+							b.set_meta("speed_boost_timer", new_sb)
 
 				var speed_mult = 1.0 + (nearby_teammates * 0.5)
 
