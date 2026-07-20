@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1204] Decoy Grenade — *2026-07-20 22:34:26 UTC*
+
+An item that can be thrown at a target location. Upon landing, it emits fake footstep sounds and creates visual noise (similar to multiple players moving) to draw enemy fire and mask real player movements.
+
+---
+
 ## [idea-1230] Debris Repulsor Mod — *2026-07-20 22:09:48 UTC*
 
 A new hazard modifier that causes orbital debris to push balls away continuously rather than just slowing them down, making the crater area extremely slippery and harder to navigate for any balls trying to find cover.
