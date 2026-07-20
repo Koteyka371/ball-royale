@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Mutator",
+  "description": "A new hazard mutator where energy orbs periodically appear. Hitting an orb releases chain lightning that strikes the nearest player and chains up to 3 additional nearby players, applying damage and a brief stun. This adds a chaotic anti-grouping mechanic."
+}
