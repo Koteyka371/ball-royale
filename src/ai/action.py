@@ -1743,6 +1743,7 @@ class Action:
             if self.ball.intangible_timer <= 0.0:
                 self.ball.intangible_timer = 0.0
                 self.ball.intangible = False
+                self.ball.ghost_mode_active = False
         if hasattr(self.ball, "suspended_projectiles"):
             gm = getattr(self.world, "game_mode", None)
             cx = 500.0
@@ -14999,6 +15000,11 @@ class Action:
             elif skill_name == "phase_through":
                 self.ball.intangible_timer = 3.0
                 self.ball.intangible = True
+            elif skill_name == "ghost_walk":
+                self.ball.intangible_timer = 3.0
+                self.ball.intangible = True
+                self.ball.hazard_immunity_timer = 3.0
+                self.ball.ghost_mode_active = True
             elif skill_name == "fire_homing_missile":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random

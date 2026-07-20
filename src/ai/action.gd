@@ -3669,6 +3669,8 @@ func execute(strategy: String, delta: float):
             timer = 0.0
             if typeof(self.ball) == TYPE_OBJECT and "intangible" in self.ball: self.ball.intangible = false
             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("intangible", false)
+            if typeof(self.ball) == TYPE_OBJECT and "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = false
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_active", false)
         if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: self.ball.intangible_timer = timer
         elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", timer)
     var sus_proj = []
@@ -28376,6 +28378,22 @@ func _use_skill():
             elif typeof(self.ball) == TYPE_OBJECT:
                 self.ball.intangible_timer = 3.0
                 self.ball.intangible = true
+        elif skill_name == "ghost_walk":
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("intangible_timer", 3.0)
+                self.ball.set_meta("intangible", true)
+                self.ball.set_meta("hazard_immunity_timer", 3.0)
+                self.ball.set_meta("ghost_mode_active", true)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["intangible_timer"] = 3.0
+                self.ball["intangible"] = true
+                self.ball["hazard_immunity_timer"] = 3.0
+                self.ball["ghost_mode_active"] = true
+            elif typeof(self.ball) == TYPE_OBJECT:
+                self.ball.intangible_timer = 3.0
+                self.ball.intangible = true
+                self.ball.hazard_immunity_timer = 3.0
+                self.ball.ghost_mode_active = true
         elif skill_name == "fire_homing_missile":
             if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
                 var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
