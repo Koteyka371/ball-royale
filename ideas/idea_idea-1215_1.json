@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Lock Trap",
+  "description": "A deployable trap that, when triggered by an enemy, temporarily freezes their cooldowns and movement for 3 seconds while also increasing the damage they take from all sources by 25%."
+}

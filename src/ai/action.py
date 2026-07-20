@@ -8635,6 +8635,36 @@ class Action:
                                         other_ball.alive = False
 
 
+        if start_hp > 0 and current_hp <= 0 and getattr(self.ball, "has_kinetic_echo", False):
+            self.ball.hp = 1.0
+            current_hp = 1.0
+            damage_taken = 0.0
+            self.ball.alive = True
+
+            # Trigger kinetic echo shockwave and teleport
+            dmg_accumulated = max(0.0, getattr(self.ball, "kinetic_echo_start_hp", 1.0) - 1.0)
+            shockwave_dmg = max(10.0, dmg_accumulated * 1.5)
+            echo_x = getattr(self.ball, "kinetic_echo_x", self.ball.x)
+            echo_y = getattr(self.ball, "kinetic_echo_y", self.ball.y)
+
+            # Deal damage to enemies near the echo
+            if hasattr(self, "_get_enemies"):
+                for enemy in self._get_enemies():
+                    dist_sq = (enemy.x - echo_x)**2 + (enemy.y - echo_y)**2
+                    if dist_sq <= 150.0**2:
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(self.ball, enemy)
+                        if hasattr(enemy, "hp"):
+                            enemy.hp -= shockwave_dmg
+
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_echo_shockwave', 'x': echo_x, 'y': echo_y, 'radius': 150.0, 'damage': shockwave_dmg}})
+
+            # Teleport
+            self.ball.x = echo_x
+            self.ball.y = echo_y
+            self.ball.has_kinetic_echo = False
+            self.ball.skill_timer = 0.0
         if start_hp > 0 and current_hp <= 0 and getattr(self.ball, "death_defy_active", False):
             self.ball.hp = 1.0
             current_hp = 1.0
@@ -10973,7 +11003,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -15913,6 +15943,45 @@ class Action:
                                 self.ball.speed = getattr(self.ball, "speed", 0.0) * 0.7
 
     def _update_skill_timer(self, delta: float) -> None:
+        if getattr(self.ball, "skill", "") == "kinetic_echo":
+            current_st = getattr(self.ball, "skill_timer", 0.0)
+            prev_st = getattr(self.ball, "_prev_skill_timer", 0.0)
+            if current_st > prev_st:
+                if not getattr(self.ball, "has_kinetic_echo", False):
+                    # Place echo
+                    self.ball.has_kinetic_echo = True
+                    self.ball.kinetic_echo_x = self.ball.x
+                    self.ball.kinetic_echo_y = self.ball.y
+                    self.ball.kinetic_echo_start_hp = getattr(self.ball, "hp", 100.0)
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_echo_placed', 'x': self.ball.x, 'y': self.ball.y}})
+                    # Reset timer instantly so they can trigger again
+                    self.ball.skill_timer = 0.0
+                else:
+                    # Unleash shockwave manually
+                    dmg_accumulated = max(0.0, getattr(self.ball, "kinetic_echo_start_hp", 1.0) - getattr(self.ball, "hp", 1.0))
+                    shockwave_dmg = max(10.0, dmg_accumulated * 1.5)
+                    echo_x = getattr(self.ball, "kinetic_echo_x", self.ball.x)
+                    echo_y = getattr(self.ball, "kinetic_echo_y", self.ball.y)
+
+                    if hasattr(self, "_get_enemies"):
+                        for enemy in self._get_enemies():
+                            dist_sq = (enemy.x - echo_x)**2 + (enemy.y - echo_y)**2
+                            if dist_sq <= 150.0**2:
+                                if hasattr(self.world, "_deal_damage"):
+                                    self.world._deal_damage(self.ball, enemy)
+                                if hasattr(enemy, "hp"):
+                                    enemy.hp -= shockwave_dmg
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_echo_shockwave', 'x': echo_x, 'y': echo_y, 'radius': 150.0, 'damage': shockwave_dmg}})
+
+                    self.ball.x = echo_x
+                    self.ball.y = echo_y
+                    self.ball.has_kinetic_echo = False
+                    self.ball.skill_timer = 0.0
+
+            self.ball._prev_skill_timer = current_st
         if getattr(self.ball, "blood_magic_timer", 0.0) > 0.0:
             current_st = getattr(self.ball, "skill_timer", 0.0)
             prev_st = getattr(self.ball, "_prev_skill_timer", 0.0)

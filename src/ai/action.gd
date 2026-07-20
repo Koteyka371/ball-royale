@@ -17025,6 +17025,78 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("death_defy_active"):
         death_defy_active = self.ball.get_meta("death_defy_active")
 
+    var has_kinetic = false
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        has_kinetic = self.ball.get("has_kinetic_echo", false)
+    elif typeof(self.ball) == TYPE_OBJECT and "has_kinetic_echo" in self.ball:
+        has_kinetic = self.ball.has_kinetic_echo
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("has_kinetic_echo"):
+        has_kinetic = self.ball.get_meta("has_kinetic_echo")
+
+    if start_hp > 0 and current_hp <= 0 and has_kinetic:
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["hp"] = 1.0
+            self.ball["has_kinetic_echo"] = false
+            self.ball["skill_timer"] = 0.0
+            self.ball["alive"] = true
+        else:
+            self.ball.hp = 1.0
+            if "has_kinetic_echo" in self.ball:
+                self.ball.has_kinetic_echo = false
+                self.ball.skill_timer = 0.0
+                self.ball.alive = true
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("has_kinetic_echo", false)
+                self.ball.set_meta("skill_timer", 0.0)
+                self.ball.set_meta("alive", true)
+        current_hp = 1.0
+        damage_taken = 0.0
+
+        var start_kinetic_hp = 100.0
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            start_kinetic_hp = self.ball.get("kinetic_echo_start_hp", 1.0)
+        elif typeof(self.ball) == TYPE_OBJECT and "kinetic_echo_start_hp" in self.ball:
+            start_kinetic_hp = self.ball.kinetic_echo_start_hp
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_echo_start_hp"):
+            start_kinetic_hp = self.ball.get_meta("kinetic_echo_start_hp")
+
+        var echo_x = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+        var echo_y = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            echo_x = self.ball.get("kinetic_echo_x", echo_x)
+            echo_y = self.ball.get("kinetic_echo_y", echo_y)
+        elif typeof(self.ball) == TYPE_OBJECT and "kinetic_echo_x" in self.ball:
+            echo_x = self.ball.kinetic_echo_x
+            echo_y = self.ball.kinetic_echo_y
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_echo_x"):
+            echo_x = self.ball.get_meta("kinetic_echo_x")
+            echo_y = self.ball.get_meta("kinetic_echo_y")
+
+        var dmg_accumulated = max(0.0, start_kinetic_hp - 1.0)
+        var shockwave_dmg = max(10.0, dmg_accumulated * 1.5)
+
+        var enemies = _get_enemies()
+        for enemy in enemies:
+            var ex = enemy.get("x", 0.0) if typeof(enemy) == TYPE_DICTIONARY else enemy.x
+            var ey = enemy.get("y", 0.0) if typeof(enemy) == TYPE_DICTIONARY else enemy.y
+            var dist_sq = pow(ex - echo_x, 2) + pow(ey - echo_y, 2)
+            if dist_sq <= 22500.0:
+                if typeof(self.world) == TYPE_OBJECT and self.world.has_method("_deal_damage"):
+                    self.world._deal_damage(self.ball, enemy)
+                if typeof(enemy) == TYPE_DICTIONARY:
+                    enemy["hp"] = enemy.get("hp", 100.0) - shockwave_dmg
+                elif "hp" in enemy:
+                    enemy.hp -= shockwave_dmg
+
+        if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+            self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_echo_shockwave', 'x': echo_x, 'y': echo_y, 'radius': 150.0, 'damage': shockwave_dmg}})
+
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["x"] = echo_x
+            self.ball["y"] = echo_y
+        else:
+            self.ball.x = echo_x
+            self.ball.y = echo_y
     if start_hp > 0 and current_hp <= 0 and death_defy_active:
         if typeof(self.ball) == TYPE_DICTIONARY:
             self.ball["hp"] = 1.0
@@ -21453,7 +21525,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -30614,6 +30686,111 @@ func _apply_friendly_aura(delta: float):
                                 self.ball.speed *= 0.7
 
 func _update_skill_timer(delta: float):
+    var cur_skill = ""
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("skill"):
+        cur_skill = self.ball.get_meta("skill")
+    elif "skill" in self.ball:
+        cur_skill = self.ball.skill
+
+    if cur_skill == "kinetic_echo":
+        var current_st = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("skill_timer"):
+            current_st = float(self.ball.get_meta("skill_timer"))
+        elif "skill_timer" in self.ball:
+            current_st = float(self.ball.skill_timer)
+
+        var prev_st = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("_prev_skill_timer"):
+            prev_st = float(self.ball.get_meta("_prev_skill_timer"))
+        elif "_prev_skill_timer" in self.ball:
+            prev_st = float(self.ball._prev_skill_timer)
+
+        if current_st > prev_st:
+            var has_kin = false
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("has_kinetic_echo"):
+                has_kin = self.ball.get_meta("has_kinetic_echo")
+            elif "has_kinetic_echo" in self.ball:
+                has_kin = self.ball.has_kinetic_echo
+
+            if not has_kin:
+                if typeof(self.ball) == TYPE_OBJECT:
+                    if "has_kinetic_echo" in self.ball:
+                        self.ball.has_kinetic_echo = true
+                        self.ball.kinetic_echo_x = self.ball.x
+                        self.ball.kinetic_echo_y = self.ball.y
+                        self.ball.kinetic_echo_start_hp = self.ball.hp
+                        self.ball.skill_timer = 0.0
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("has_kinetic_echo", true)
+                        self.ball.set_meta("kinetic_echo_x", self.ball.x)
+                        self.ball.set_meta("kinetic_echo_y", self.ball.y)
+                        self.ball.set_meta("kinetic_echo_start_hp", self.ball.hp)
+                        self.ball.set_meta("skill_timer", 0.0)
+                if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_echo_placed', 'x': self.ball.x, 'y': self.ball.y}})
+            else:
+                var start_kinetic_hp = 100.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    start_kinetic_hp = self.ball.get("kinetic_echo_start_hp", 1.0)
+                elif typeof(self.ball) == TYPE_OBJECT and "kinetic_echo_start_hp" in self.ball:
+                    start_kinetic_hp = self.ball.kinetic_echo_start_hp
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_echo_start_hp"):
+                    start_kinetic_hp = self.ball.get_meta("kinetic_echo_start_hp")
+
+                var echo_x = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+                var echo_y = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    echo_x = self.ball.get("kinetic_echo_x", echo_x)
+                    echo_y = self.ball.get("kinetic_echo_y", echo_y)
+                elif typeof(self.ball) == TYPE_OBJECT and "kinetic_echo_x" in self.ball:
+                    echo_x = self.ball.kinetic_echo_x
+                    echo_y = self.ball.kinetic_echo_y
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_echo_x"):
+                    echo_x = self.ball.get_meta("kinetic_echo_x")
+                    echo_y = self.ball.get_meta("kinetic_echo_y")
+
+                var b_hp = self.ball.get("hp", 1.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.hp
+                var dmg_accumulated = max(0.0, start_kinetic_hp - b_hp)
+                var shockwave_dmg = max(10.0, dmg_accumulated * 1.5)
+
+                var enemies = _get_enemies()
+                for enemy in enemies:
+                    var ex = enemy.get("x", 0.0) if typeof(enemy) == TYPE_DICTIONARY else enemy.x
+                    var ey = enemy.get("y", 0.0) if typeof(enemy) == TYPE_DICTIONARY else enemy.y
+                    var dist_sq = pow(ex - echo_x, 2) + pow(ey - echo_y, 2)
+                    if dist_sq <= 22500.0:
+                        if typeof(self.world) == TYPE_OBJECT and self.world.has_method("_deal_damage"):
+                            self.world._deal_damage(self.ball, enemy)
+                        if typeof(enemy) == TYPE_DICTIONARY:
+                            enemy["hp"] = enemy.get("hp", 100.0) - shockwave_dmg
+                        elif "hp" in enemy:
+                            enemy.hp -= shockwave_dmg
+
+                if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_echo_shockwave', 'x': echo_x, 'y': echo_y, 'radius': 150.0, 'damage': shockwave_dmg}})
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["x"] = echo_x
+                    self.ball["y"] = echo_y
+                    self.ball["has_kinetic_echo"] = false
+                    self.ball["skill_timer"] = 0.0
+                else:
+                    self.ball.x = echo_x
+                    self.ball.y = echo_y
+                    if "has_kinetic_echo" in self.ball:
+                        self.ball.has_kinetic_echo = false
+                        self.ball.skill_timer = 0.0
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("has_kinetic_echo", false)
+                        self.ball.set_meta("skill_timer", 0.0)
+
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["_prev_skill_timer"] = current_st
+        else:
+            if "_prev_skill_timer" in self.ball:
+                self.ball._prev_skill_timer = current_st
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("_prev_skill_timer", current_st)
     var bm_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("blood_magic_timer"):
         bm_timer = float(self.ball.get_meta("blood_magic_timer"))
