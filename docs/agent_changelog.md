@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1215] Echo Strike Ability — *2026-07-20 21:38:11 UTC*
+
+A new active skill where the ball leaves behind a ghostly echo at its current position. Upon taking lethal damage or pressing the ability again, the ball teleports back to the echo, unleashing a shockwave based on the damage it took since placing the echo.
+
+---
+
 ## [idea-1206] New Item: Cloaking Device — *2026-07-20 21:38:06 UTC*
 
 An item that temporarily renders the player invisible to enemy AI, preventing targeting for a short duration.
