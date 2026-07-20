@@ -3957,6 +3957,7 @@ class DualPayloadMode(GameMode):
                 bdy = getattr(b, "y", 0) - getattr(self.payload_red, "y", 0)
                 if math.hypot(bdx, bdy) <= 150.0:
                     nearby_red += 1
+                    b.speed_boost_timer = max(getattr(b, "speed_boost_timer", 0.0), 2.0)
 
             speed_mult_red = 1.0 + (nearby_red * 0.5)
 
@@ -4053,6 +4054,7 @@ class DualPayloadMode(GameMode):
                 bdy = getattr(b, "y", 0) - getattr(self.payload_blue, "y", 0)
                 if math.hypot(bdx, bdy) <= 150.0:
                     nearby_blue += 1
+                    b.speed_boost_timer = max(getattr(b, "speed_boost_timer", 0.0), 2.0)
 
             speed_mult_blue = 1.0 + (nearby_blue * 0.5)
 
@@ -4395,6 +4397,7 @@ class EscortMode(GameMode):
                 bdist = math.hypot(bdx, bdy)
                 if bdist <= 150.0:
                     nearby_teammates += 1
+                    b.speed_boost_timer = max(getattr(b, "speed_boost_timer", 0.0), 2.0)
 
             speed_mult = 1.0 + (nearby_teammates * 0.5)
 
