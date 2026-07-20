@@ -22220,6 +22220,101 @@ class VoidTilesMode(GameMode):
                     b.y = past_state[2]
 
 
+class InvisibleGravityWellsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Invisible Gravity Wells"
+        self.description = "Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously."
+        self.spawn_timer = 0.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        if not hasattr(world.arena, "hazards"):
+            return
+
+        hazards_to_remove = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "invisible_gravity_well":
+                if hasattr(h, "duration"):
+                    h.duration -= delta
+                    if h.duration <= 0:
+                        hazards_to_remove.append(h)
+                        continue
+
+                h_x = getattr(h, "x", 0.0)
+                h_y = getattr(h, "y", 0.0)
+                h_radius = getattr(h, "radius", 200.0)
+
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                        continue
+
+                    b_x = getattr(b, "x", 0.0)
+                    b_y = getattr(b, "y", 0.0)
+
+                    dx = h_x - b_x
+                    dy = h_y - b_y
+                    dist = math.hypot(dx, dy)
+
+                    if 0 < dist < h_radius:
+                        pull_strength = 200.0 * (1.0 - (dist / h_radius))
+                        if hasattr(b, "vx") and hasattr(b, "vy"):
+                            b.vx += (dx / dist) * pull_strength * delta
+                            b.vy += (dy / dist) * pull_strength * delta
+                        else:
+                            b.x += (dx / dist) * pull_strength * delta * delta
+                            b.y += (dy / dist) * pull_strength * delta * delta
+
+        for h in hazards_to_remove:
+            world.arena.hazards.remove(h)
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 5.0:
+            self.spawn_timer = 0.0
+
+            arena_width = getattr(world.arena, "width", 2000.0)
+            arena_height = getattr(world.arena, "height", 2000.0)
+
+            x = random.uniform(200.0, arena_width - 200.0)
+            y = random.uniform(200.0, arena_height - 200.0)
+
+            h_id = 15000 + len(world.arena.hazards) + random.randint(0, 1000)
+
+            try:
+                from arena.procedural_arena import Hazard
+                igw = Hazard(id=h_id, x=x, y=y, radius=200.0, kind="invisible_gravity_well", damage=0.0)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                igw = DummyHazard(h_id, x, y, 200.0, "invisible_gravity_well", 0.0)
+
+            setattr(igw, "duration", random.uniform(10.0, 20.0))
+            setattr(igw, "invisible", True)
+            if hasattr(igw, "set_meta"):
+                igw.set_meta("invisible", True)
+            world.arena.hazards.append(igw)
+
+            igw_hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") == "invisible_gravity_well"]
+            if len(igw_hazards) > 5:
+                world.arena.hazards.remove(igw_hazards[0])
+
+
 GAME_MODES = {
     "void_tiles": VoidTilesMode(),
     "cursed_boosters": CursedBoosterMode(),
@@ -22339,6 +22434,7 @@ GAME_MODES = {
     "gravity_well": GravityWellMode(),
     "pulsing_gravity_well": PulsingGravityWellMode(),
     "massive_gravity_well": MassiveGravityWellMode(),
+    "invisible_gravity_wells": InvisibleGravityWellsMode(),
     "king_of_the_hill": KingOfTheHillMode(),
     "moving_zone": MovingZoneMode(),
     "vampire_royale": VampireRoyaleMode(),

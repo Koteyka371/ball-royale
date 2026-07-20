@@ -35737,6 +35737,142 @@ class VoidTilesMode extends GameMode:
 						b.x = past_state.x
 						b.y = past_state.y
 
+class InvisibleGravityWellsMode extends GameMode:
+	var spawn_timer = 0.0
+
+	func _init():
+		name = "Invisible Gravity Wells"
+		description = "Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		spawn_timer = 0.0
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		if not "hazards" in world.arena:
+			return
+
+		var hazards_to_remove = []
+		for h in world.arena.hazards:
+			var kind = ""
+			if "kind" in h: kind = h.kind
+			elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+			elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+
+			if kind == "invisible_gravity_well":
+				var duration = 0.0
+				if "duration" in h: duration = h.duration
+				elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("duration"): duration = h.get_meta("duration")
+				elif typeof(h) == TYPE_DICTIONARY and h.has("duration"): duration = h["duration"]
+
+				if duration > 0.0:
+					duration -= delta
+					if "duration" in h: h.duration = duration
+					elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("duration", duration)
+					elif typeof(h) == TYPE_DICTIONARY: h["duration"] = duration
+
+					if duration <= 0:
+						hazards_to_remove.append(h)
+						continue
+
+				var h_x = 0.0
+				var h_y = 0.0
+				var h_radius = 200.0
+				if "x" in h: h_x = h.x
+				elif typeof(h) == TYPE_DICTIONARY and h.has("x"): h_x = h["x"]
+				if "y" in h: h_y = h.y
+				elif typeof(h) == TYPE_DICTIONARY and h.has("y"): h_y = h["y"]
+				if "radius" in h: h_radius = h.radius
+				elif typeof(h) == TYPE_DICTIONARY and h.has("radius"): h_radius = h["radius"]
+
+				for b in balls:
+					var is_alive = false
+					var b_type = ""
+					if typeof(b) == TYPE_OBJECT:
+						if "alive" in b: is_alive = b.alive
+						if "ball_type" in b: b_type = b.ball_type
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("alive"): is_alive = b["alive"]
+						if b.has("ball_type"): b_type = b["ball_type"]
+
+					if is_alive and b_type != "spectator":
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_OBJECT:
+							if "x" in b: bx = b.x
+							if "y" in b: by = b.y
+						elif typeof(b) == TYPE_DICTIONARY:
+							if b.has("x"): bx = b["x"]
+							if b.has("y"): by = b["y"]
+
+						var dx = h_x - bx
+						var dy = h_y - by
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist > 0.0 and dist < h_radius:
+							var pull_strength = 200.0 * (1.0 - (dist / h_radius))
+							if typeof(b) == TYPE_OBJECT:
+								if "vx" in b and "vy" in b:
+									b.vx += (dx / dist) * pull_strength * delta
+									b.vy += (dy / dist) * pull_strength * delta
+								else:
+									b.x += (dx / dist) * pull_strength * delta * delta
+									b.y += (dy / dist) * pull_strength * delta * delta
+							elif typeof(b) == TYPE_DICTIONARY:
+								if b.has("vx") and b.has("vy"):
+									b["vx"] += (dx / dist) * pull_strength * delta
+									b["vy"] += (dy / dist) * pull_strength * delta
+								else:
+									b["x"] += (dx / dist) * pull_strength * delta * delta
+									b["y"] += (dy / dist) * pull_strength * delta * delta
+
+		for h in hazards_to_remove:
+			world.arena.hazards.erase(h)
+
+		spawn_timer += delta
+		if spawn_timer >= 5.0:
+			spawn_timer = 0.0
+			var arena_width = 2000.0
+			var arena_height = 2000.0
+			if typeof(world.arena) == TYPE_OBJECT:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+			elif typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_width = world.arena["width"]
+				if world.arena.has("height"): arena_height = world.arena["height"]
+
+			var spawn_x = randf_range(200.0, arena_width - 200.0)
+			var spawn_y = randf_range(200.0, arena_height - 200.0)
+
+			var igw = {
+				"id": randi() % 1000000,
+				"x": spawn_x,
+				"y": spawn_y,
+				"radius": 200.0,
+				"kind": "invisible_gravity_well",
+				"damage": 0.0,
+				"active": true,
+				"duration": randf_range(10.0, 20.0),
+				"invisible": true
+			}
+			world.arena.hazards.append(igw)
+
+			var igw_hazards = []
+			for h in world.arena.hazards:
+				var kind = ""
+				if "kind" in h: kind = h.kind
+				elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+				elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+				if kind == "invisible_gravity_well":
+					igw_hazards.append(h)
+
+			if igw_hazards.size() > 5:
+				world.arena.hazards.erase(igw_hazards[0])
+
 GAME_MODES = {
 	"void_tiles": VoidTilesMode.new(),
 	"chronosphere_event": ChronosphereEventMode.new(),
@@ -35871,6 +36007,7 @@ GAME_MODES = {
 	"gravity_well": GravityWellMode.new(),
 	"pulsing_gravity_well": PulsingGravityWellMode.new(),
 	"massive_gravity_well": MassiveGravityWellMode.new(),
+	"invisible_gravity_wells": InvisibleGravityWellsMode.new(),
 	"king_of_the_hill": KingOfTheHillMode.new(),
 	"moving_zone": MovingZoneMode.new(),
 	"vampire_royale": VampireRoyaleMode.new(),
