@@ -2355,6 +2355,155 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    var is_mnt = false
+    if "is_mounted" in self.ball:
+        is_mnt = self.ball.is_mounted
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("is_mounted"):
+        is_mnt = self.ball.get_meta("is_mounted")
+
+    if is_mnt:
+        var hp = 0.0
+        if "hp" in self.ball: hp = self.ball.hp
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp = self.ball.get_meta("hp")
+
+        if hp <= 0.0:
+            if "is_mounted" in self.ball: self.ball.is_mounted = false
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("is_mounted", false)
+
+            var curr_stun = 0.0
+            if "stutter_timer" in self.ball: curr_stun = self.ball.stutter_timer
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("stutter_timer"): curr_stun = self.ball.get_meta("stutter_timer")
+
+            if "stutter_timer" in self.ball: self.ball.stutter_timer = max(curr_stun, 2.0)
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("stutter_timer", max(curr_stun, 2.0))
+
+            # Restore original stats
+            var pre_hp = 100.0
+            var pre_max = 100.0
+            var pre_dmg = 10.0
+            var pre_spd = 100.0
+            if "pre_mount_hp" in self.ball: pre_hp = self.ball.pre_mount_hp
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("pre_mount_hp"): pre_hp = self.ball.get_meta("pre_mount_hp")
+            if "pre_mount_max_hp" in self.ball: pre_max = self.ball.pre_mount_max_hp
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("pre_mount_max_hp"): pre_max = self.ball.get_meta("pre_mount_max_hp")
+            if "pre_mount_damage" in self.ball: pre_dmg = self.ball.pre_mount_damage
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("pre_mount_damage"): pre_dmg = self.ball.get_meta("pre_mount_damage")
+            if "pre_mount_speed" in self.ball: pre_spd = self.ball.pre_mount_speed
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("pre_mount_speed"): pre_spd = self.ball.get_meta("pre_mount_speed")
+
+            if "hp" in self.ball: self.ball.hp = pre_hp
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", pre_hp)
+            if "max_hp" in self.ball: self.ball.max_hp = pre_max
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("max_hp", pre_max)
+            if "damage" in self.ball: self.ball.damage = pre_dmg
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("damage", pre_dmg)
+            if "speed" in self.ball: self.ball.speed = pre_spd
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", pre_spd)
+
+            if self.world != null and self.world.has_method("add_event"):
+                var b_id = -1
+                if "id" in self.ball: b_id = self.ball.id
+                self.world.add_event("vehicle_destroyed", {"ball_id": b_id})
+        else:
+            var m_max_hp = 100.0
+            var m_dmg = 10.0
+            var m_spd = 50.0
+            if "mount_max_hp" in self.ball: m_max_hp = self.ball.mount_max_hp
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("mount_max_hp"): m_max_hp = self.ball.get_meta("mount_max_hp")
+            if "mount_damage" in self.ball: m_dmg = self.ball.mount_damage
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("mount_damage"): m_dmg = self.ball.get_meta("mount_damage")
+            if "mount_speed" in self.ball: m_spd = self.ball.mount_speed
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("mount_speed"): m_spd = self.ball.get_meta("mount_speed")
+
+            if "max_hp" in self.ball: self.ball.max_hp = m_max_hp
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("max_hp", m_max_hp)
+            if "damage" in self.ball: self.ball.damage = m_dmg
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("damage", m_dmg)
+            if "speed" in self.ball: self.ball.speed = m_spd
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", m_spd)
+
+    else:
+        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+            var to_remove = []
+            for h in self.world.arena.hazards:
+                var kind = ""
+                if "kind" in h: kind = h.kind
+                elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+
+                if kind == "vehicle_mount":
+                    var h_x = 0.0
+                    var h_y = 0.0
+                    var h_rad = 30.0
+                    var h_hp = 200.0
+                    var h_max = 200.0
+                    var h_dmg = 50.0
+                    var h_spd = 50.0
+
+                    if typeof(h) == TYPE_DICTIONARY:
+                        if h.has("x"): h_x = h["x"]
+                        if h.has("y"): h_y = h["y"]
+                        if h.has("radius"): h_rad = h["radius"]
+                        if h.has("hp"): h_hp = h["hp"]
+                        if h.has("max_hp"): h_max = h["max_hp"]
+                        if h.has("damage"): h_dmg = h["damage"]
+                        if h.has("speed"): h_spd = h["speed"]
+                    else:
+                        if "x" in h: h_x = h.x
+                        if "y" in h: h_y = h.y
+                        if "radius" in h: h_rad = h.radius
+                        if "hp" in h: h_hp = h.hp
+                        if "max_hp" in h: h_max = h.max_hp
+                        if "damage" in h: h_dmg = h.damage
+                        if "speed" in h: h_spd = h.speed
+
+                    var dx = h_x - self.ball.x
+                    var dy = h_y - self.ball.y
+                    if dx*dx + dy*dy <= h_rad*h_rad:
+                        if "is_mounted" in self.ball: self.ball.is_mounted = true
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("is_mounted", true)
+
+                        var b_hp = 100.0
+                        var b_max = 100.0
+                        var b_dmg = 10.0
+                        var b_spd = 100.0
+                        if "hp" in self.ball: b_hp = self.ball.hp
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("hp"): b_hp = self.ball.get_meta("hp")
+                        if "max_hp" in self.ball: b_max = self.ball.max_hp
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): b_max = self.ball.get_meta("max_hp")
+                        if "damage" in self.ball: b_dmg = self.ball.damage
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"): b_dmg = self.ball.get_meta("damage")
+                        if "speed" in self.ball: b_spd = self.ball.speed
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("speed"): b_spd = self.ball.get_meta("speed")
+
+                        if "pre_mount_hp" in self.ball: self.ball.pre_mount_hp = b_hp
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("pre_mount_hp", b_hp)
+                        if "pre_mount_max_hp" in self.ball: self.ball.pre_mount_max_hp = b_max
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("pre_mount_max_hp", b_max)
+                        if "pre_mount_damage" in self.ball: self.ball.pre_mount_damage = b_dmg
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("pre_mount_damage", b_dmg)
+                        if "pre_mount_speed" in self.ball: self.ball.pre_mount_speed = b_spd
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("pre_mount_speed", b_spd)
+
+                        if "mount_max_hp" in self.ball: self.ball.mount_max_hp = h_max
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("mount_max_hp", h_max)
+                        if "hp" in self.ball: self.ball.hp = h_hp
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", h_hp)
+                        if "mount_damage" in self.ball: self.ball.mount_damage = h_dmg
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("mount_damage", h_dmg)
+                        if "mount_speed" in self.ball: self.ball.mount_speed = h_spd
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("mount_speed", h_spd)
+
+                        to_remove.append(h)
+
+                        if self.world != null and self.world.has_method("add_event"):
+                            var b_id = -1
+                            if "id" in self.ball: b_id = self.ball.id
+                            self.world.add_event("vehicle_mounted", {"ball_id": b_id})
+                        break
+            for r in to_remove:
+                self.world.arena.hazards.erase(r)
+
+
     if self.world != null:
         var gm = self.world.get("game_mode")
         if gm != null:
@@ -19589,7 +19738,7 @@ func _group_attack(delta: float):
             self.ball.attack_timer = cooldown
             if cooldown >= 0.8:
                 if "stutter_timer" in self.ball:
-                    self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                    self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
 
@@ -19853,14 +20002,14 @@ func _flank(delta: float):
                     self.ball.attack_timer = cooldown
                     if cooldown >= 0.8:
                         if "stutter_timer" in self.ball:
-                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                         elif self.ball.has_method("set_meta"):
                             self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("attack_timer", cooldown)
                     if cooldown >= 0.8:
                         if "stutter_timer" in self.ball:
-                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                         elif self.ball.has_method("set_meta"):
                             self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
     else:
@@ -20039,14 +20188,14 @@ func _chase(delta: float):
                     self.ball.attack_timer = cooldown
                     if cooldown >= 0.8:
                         if "stutter_timer" in self.ball:
-                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                         elif self.ball.has_method("set_meta"):
                             self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("attack_timer", cooldown)
                     if cooldown >= 0.8:
                         if "stutter_timer" in self.ball:
-                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                         elif self.ball.has_method("set_meta"):
                             self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
             return
@@ -20399,14 +20548,14 @@ func _attack(delta: float):
                     self.ball.attack_timer = cooldown
                     if cooldown >= 0.8:
                         if "stutter_timer" in self.ball:
-                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                         elif self.ball.has_method("set_meta"):
                             self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("attack_timer", cooldown)
                     if cooldown >= 0.8:
                         if "stutter_timer" in self.ball:
-                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                         elif self.ball.has_method("set_meta"):
                             self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
     else:
@@ -20656,14 +20805,14 @@ func _defend(delta: float):
                         self.ball.attack_timer = cooldown
                         if cooldown >= 0.8:
                             if "stutter_timer" in self.ball:
-                                self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                                self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                     elif self.ball.has_method("set_meta"):
                         self.ball.set_meta("attack_timer", cooldown)
                         if cooldown >= 0.8:
                             if "stutter_timer" in self.ball:
-                                self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                                self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
             return
@@ -20752,14 +20901,14 @@ func _defend(delta: float):
                         self.ball.attack_timer = cooldown
                         if cooldown >= 0.8:
                             if "stutter_timer" in self.ball:
-                                self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                                self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                     elif self.ball.has_method("set_meta"):
                         self.ball.set_meta("attack_timer", cooldown)
                         if cooldown >= 0.8:
                             if "stutter_timer" in self.ball:
-                                self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                                self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
             return
@@ -34294,14 +34443,14 @@ func _kite(delta: float):
                     self.ball.attack_timer = cooldown
                     if cooldown >= 0.8:
                         if "stutter_timer" in self.ball:
-                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                         elif self.ball.has_method("set_meta"):
                             self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("attack_timer", cooldown)
                     if cooldown >= 0.8:
                         if "stutter_timer" in self.ball:
-                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            self.ball.stutter_timer = max(self.ball.stutter_timer if "stutter_timer" in self.ball else 0.0, min(cooldown * 0.4, 0.4))
                         elif self.ball.has_method("set_meta"):
                             self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
     else:
@@ -34418,6 +34567,8 @@ func _escort(delta: float) -> void:
                         if is_oc:
                             new_cd *= 0.5
                         ball.attack_timer = new_cd
+
+
 
 func _intercept(delta: float) -> void:
     var enemies = _get_enemies()

@@ -1325,6 +1325,50 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if getattr(self.ball, "is_mounted", False):
+            # The ball's HP *is* the mount's HP. If they take damage, ball.hp goes down.
+            # Check if mount is destroyed
+            if getattr(self.ball, "hp", 0) <= 0:
+                self.ball.is_mounted = False
+                self.ball.stutter_timer = max(getattr(self.ball, "stutter_timer", 0.0), 2.0)
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("vehicle_destroyed", {"ball_id": getattr(self.ball, "id", None)})
+                # Restore original stats
+                self.ball.hp = getattr(self.ball, "pre_mount_hp", 100)
+                self.ball.max_hp = getattr(self.ball, "pre_mount_max_hp", 100)
+                self.ball.damage = getattr(self.ball, "pre_mount_damage", 10)
+                self.ball.speed = getattr(self.ball, "pre_mount_speed", 100)
+            else:
+                self.ball.max_hp = getattr(self.ball, "mount_max_hp", 100)
+                self.ball.damage = getattr(self.ball, "mount_damage", 10)
+                self.ball.speed = getattr(self.ball, "mount_speed", 50)
+
+        else:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for hazard in list(self.world.arena.hazards):
+                    if getattr(hazard, "kind", "") == "vehicle_mount":
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq <= getattr(hazard, "radius", 30)**2:
+                            self.ball.is_mounted = True
+
+                            # Save original stats
+                            self.ball.pre_mount_hp = getattr(self.ball, "hp", 100)
+                            self.ball.pre_mount_max_hp = getattr(self.ball, "max_hp", 100)
+                            self.ball.pre_mount_damage = getattr(self.ball, "damage", 10)
+                            self.ball.pre_mount_speed = getattr(self.ball, "speed", 100)
+
+                            # Apply mount stats
+                            self.ball.mount_max_hp = getattr(hazard, "max_hp", 200)
+                            self.ball.hp = getattr(hazard, "hp", 200)
+                            self.ball.mount_damage = getattr(hazard, "damage", 50)
+                            self.ball.mount_speed = getattr(hazard, "speed", 50)
+
+                            self.world.arena.hazards.remove(hazard)
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("vehicle_mounted", {"ball_id": getattr(self.ball, "id", None)})
+                            break
+
         gm = getattr(self.world, 'game_mode', None)
         if gm and getattr(gm, 'name', '') == 'Custom Match' and getattr(gm, 'mutators_active', False) and 'kinetic_ghost' in getattr(gm, 'mutators', []):
             vx = getattr(self.ball, 'vx', 0.0)
@@ -1380,11 +1424,15 @@ class Action:
                 self.ball.hp = min(getattr(self.ball, 'max_hp', 100.0), getattr(self.ball, 'hp', 0.0) + 5.0 * delta)
                 self.ball.stamina = min(getattr(self.ball, 'max_stamina', 100.0), getattr(self.ball, 'stamina', 0.0) + 20.0 * delta)
                 # Restore stats if they were debuffed
-                self.ball.speed = getattr(self.ball, 'original_base_speed', 100.0)
-                self.ball.damage = getattr(self.ball, 'original_base_damage', 10.0)
+                if not getattr(self.ball, 'is_mounted', False):
+                    self.ball.speed = getattr(self.ball, 'original_base_speed', 100.0)
+                if not getattr(self.ball, 'is_mounted', False):
+                    self.ball.damage = getattr(self.ball, 'original_base_damage', 10.0)
             else:
-                self.ball.speed = getattr(self.ball, 'original_base_speed', 100.0) * 0.5
-                self.ball.damage = getattr(self.ball, 'original_base_damage', 10.0) * 0.5
+                if not getattr(self.ball, 'is_mounted', False):
+                    self.ball.speed = getattr(self.ball, 'original_base_speed', 100.0) * 0.5
+                if not getattr(self.ball, 'is_mounted', False):
+                    self.ball.damage = getattr(self.ball, 'original_base_damage', 10.0) * 0.5
 
         if getattr(self.ball, "has_drone", False):
             drone_radius = 150.0
@@ -9989,7 +10037,7 @@ class Action:
                 cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                 self.ball.attack_timer = cooldown
                 if cooldown >= 0.8:
-                    self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                    self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(cooldown * 0.4, 0.4))
         else:
             self._idle(delta)
 
@@ -10151,7 +10199,7 @@ class Action:
                     cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                     self.ball.attack_timer = cooldown
                     if cooldown >= 0.8:
-                        self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                        self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(cooldown * 0.4, 0.4))
         else:
             self._idle(delta)
 
@@ -10264,7 +10312,7 @@ class Action:
                         speed_val = getattr(self.ball, "speed", 2.0)
                         self.ball.attack_timer = max(0.2, 2.0 / speed_val if speed_val > 0 else 1.0)
                         if self.ball.attack_timer >= 0.8:
-                            self.ball.stutter_timer = min(self.ball.attack_timer * 0.4, 0.4)
+                            self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(self.ball.attack_timer * 0.4, 0.4))
                 return
         else:
             if dist_to_target > 0.01:
@@ -10483,7 +10531,7 @@ class Action:
                         cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                     self.ball.attack_timer = cooldown
                     if cooldown >= 0.8:
-                        self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                        self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(cooldown * 0.4, 0.4))
         else:
             self._idle(delta)
 
@@ -10657,7 +10705,7 @@ class Action:
                                 cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                             self.ball.attack_timer = cooldown
                             if cooldown >= 0.8:
-                                self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                                self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(cooldown * 0.4, 0.4))
                 return
         elif personality in ("healer", "leader", "caring"):
             allies = self._get_allies()
@@ -10715,7 +10763,7 @@ class Action:
                             cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                         self.ball.attack_timer = cooldown
                         if cooldown >= 0.8:
-                            self.ball.stutter_timer = min(cooldown * 0.4, 0.4)
+                            self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(cooldown * 0.4, 0.4))
                 return
 
         # Defend fallback
@@ -17690,7 +17738,7 @@ class Action:
                     new_cooldown *= 0.5
                 self.ball.attack_timer = new_cooldown
                 if new_cooldown >= 0.8:
-                    self.ball.stutter_timer = min(new_cooldown * 0.4, 0.4)
+                    self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(new_cooldown * 0.4, 0.4))
 
     def _escort(self, delta: float) -> None:
         old_x = getattr(self.ball, "x", 0)
@@ -17768,7 +17816,7 @@ class Action:
                             new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                             self.ball.attack_timer = new_cooldown
                             if new_cooldown >= 0.8:
-                                self.ball.stutter_timer = min(new_cooldown * 0.4, 0.4)
+                                self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(new_cooldown * 0.4, 0.4))
 
         # Regen/Drain Stamina at end of execution
         dist = math.sqrt((getattr(self.ball, "x", 0) - old_x)**2 + (getattr(self.ball, "y", 0) - old_y)**2)
@@ -17796,6 +17844,14 @@ class Action:
             self.ball.x += getattr(self.ball, 'vx', 0) * delta * 0.5
             self.ball.y += getattr(self.ball, 'vy', 0) * delta * 0.5
 
+
+        if getattr(self.ball, "is_mounted", False):
+            # Enforce stats
+            self.ball.speed = getattr(self.ball, "mount_speed", 50)
+            self.ball.damage = getattr(self.ball, "mount_damage", 10)
+            self.ball.max_hp = getattr(self.ball, "mount_max_hp", 100)
+            # HP shouldn't be overridden if they take damage, but we sync mount_hp if needed, actually we just use ball.hp for everything
+            # while mounted, and when destroyed we revert. We injected setting mount_hp earlier, let's just make sure damage and speed are locked.
     def _intercept(self, delta: float) -> None:
         enemies = self._get_enemies()
         if not enemies:
@@ -17874,7 +17930,7 @@ class Action:
                     new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                     self.ball.attack_timer = new_cooldown
                     if new_cooldown >= 0.8:
-                        self.ball.stutter_timer = min(new_cooldown * 0.4, 0.4)
+                        self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(new_cooldown * 0.4, 0.4))
 
     def _hide_behind(self, delta: float) -> None:
         enemies = self._get_enemies()
