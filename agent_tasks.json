@@ -20367,7 +20367,7 @@
     },
     {
       "id": "idea-1188",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Overcharged Payload Explosion",
@@ -31194,6 +31194,23 @@
         "src/ai/gravity_nullifier_zone.py",
         "src/ai/gravity_nullifier_zone.gd",
         "tests/test_gravity_nullifier_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1824",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Viewer Named AI Balls",
+      "description": "Top viewers automatically have AI balls named after them in the next match, inheriting their loyalty badges.",
+      "allowed_paths": [
+        "src/ai/viewer_named_ai_balls.py",
+        "src/ai/viewer_named_ai_balls.gd",
+        "tests/test_viewer_named_ai_balls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

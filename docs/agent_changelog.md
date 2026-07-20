@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1188] Overcharged Payload Explosion — *2026-07-20 03:57:13 UTC*
+
+If a team manages to push the payload to the enemy goal with maximum players nearby, the payload detonates with a massive area-of-effect explosion, heavily damaging any remaining defenders caught in the blast and creating a spectacular end to the round.
+
+---
+
 ## [idea-1178] Twitch Interactive Leaderboard — *2026-07-20 03:40:26 UTC*
 
 Create a viewer loyalty leaderboard that tracks which Twitch viewers spawned the most impactful hazards or voted correctly in the crowd system. Top viewers receive cosmetic badges when their name appears in the kill feed.
