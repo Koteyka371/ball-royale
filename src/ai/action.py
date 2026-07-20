@@ -12465,7 +12465,7 @@ class Action:
                         if math.hypot(hazard.x - self.ball.x, hazard.y - self.ball.y) < 200.0:
                             hazard.is_exploded = True
                     if getattr(hazard, "kind", "") == "sound_mine" and getattr(hazard, "active", True):
-                        if skill_name in ("dash", "sonar_ping", "stamina_dash", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"):
+                        if skill_name in ("dash", "sonar_ping", "forecast_ping", "stamina_dash", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"):
                             dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                             r = getattr(hazard, "radius", 100.0)
                             if dist_sq <= r * r:
@@ -13799,6 +13799,13 @@ class Action:
                 if hasattr(self.world, "add_event"):
                     self.world.add_event("sonar_ping", {"x": self.ball.x, "y": self.ball.y, "radius": 1500.0, "source_id": getattr(self.ball, "id", None)})
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 12.0)
+            elif skill_name == "forecast_ping":
+                setattr(self.ball, "sonar_ping_timer", 5.0)
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("sonar_ping", {"x": self.ball.x, "y": self.ball.y, "radius": 1500.0, "source_id": getattr(self.ball, "id", None)})
+                # Refresh forecast_booster_active to ensure weather tracking stays active
+                setattr(self.ball, "forecast_booster_active", True)
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 15.0)
             elif skill_name == "flare":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random as _rnd
