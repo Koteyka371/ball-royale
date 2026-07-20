@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1214] EMP Grenades — *2026-07-20 21:13:36 UTC*
+
+A new tactical throwable that temporarily disables nearby enemies' abilities and deployed traps. Hitting an opponent with an EMP briefly sets their speed to zero and shuts off any active shield buffs.
+
+---
+
 ## [idea-1211] Chant Streak Visual Effects — *2026-07-20 20:54:13 UTC*
 
 Add visual particle effects to the UI or around players when their team is on a chant streak to hype up the excitement.
