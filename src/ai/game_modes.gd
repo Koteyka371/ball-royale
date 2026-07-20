@@ -35388,6 +35388,91 @@ class BounceLaserMode extends GameMode:
             if "hazards" in world.arena:
                 world.arena.hazards.append(laser)
 
+
+class DynamicWindCurrentsMode extends GameMode:
+	var wind_timer = 15.0
+	var wind_dir_x = 1.0
+	var wind_dir_y = 0.0
+	var wind_strength = 150.0
+
+	func _init() -> void:
+		name = "Dynamic Wind Currents"
+		description = "Dynamic wind currents slowly push balls and projectiles in a specific direction, altering movement and combat dynamics."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var angle = randf_range(0.0, 2.0 * PI)
+		wind_dir_x = cos(angle)
+		wind_dir_y = sin(angle)
+		wind_strength = randf_range(50.0, 150.0)
+		wind_timer = 15.0
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		wind_timer -= delta
+		if wind_timer <= 0:
+			wind_timer = randf_range(10.0, 20.0)
+			var angle = randf_range(0.0, 2.0 * PI)
+			wind_dir_x = cos(angle)
+			wind_dir_y = sin(angle)
+			wind_strength = randf_range(50.0, 150.0)
+			if world != null and world.has_method("add_event"):
+				world.add_event("weather_warning", {"type": "weather_warning", "message": "The wind direction is changing!"})
+
+		var all_entities = []
+		for b in balls:
+			all_entities.append(b)
+		if world != null and "projectiles" in world and typeof(world.projectiles) == TYPE_ARRAY:
+			for p in world.projectiles:
+				all_entities.append(p)
+
+		for b in all_entities:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				b_alive = b.get("alive", false)
+			else:
+				b_alive = b.get("alive") if "alive" in b else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = str(b.get("ball_type", ""))
+			else:
+				if "ball_type" in b:
+					b_type = str(b.ball_type)
+
+			if b_alive and b_type != "spectator":
+				var b_vx = 0.0
+				var b_vy = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					b_vx = b.get("vx", 0.0)
+					b_vy = b.get("vy", 0.0)
+				else:
+					if b.has_method("get_meta") and b.has_meta("vx"):
+						b_vx = b.get_meta("vx")
+					elif "vx" in b:
+						b_vx = b.vx
+
+					if b.has_method("get_meta") and b.has_meta("vy"):
+						b_vy = b.get_meta("vy")
+					elif "vy" in b:
+						b_vy = b.vy
+
+				b_vx += wind_dir_x * wind_strength * delta
+				b_vy += wind_dir_y * wind_strength * delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["vx"] = b_vx
+					b["vy"] = b_vy
+				else:
+					if b.has_method("set_meta"):
+						b.set_meta("vx", b_vx)
+						b.set_meta("vy", b_vy)
+					else:
+						if "vx" in b:
+							b.vx = b_vx
+						if "vy" in b:
+							b.vy = b_vy
+
 GAME_MODES = {
     "bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),
@@ -35483,6 +35568,7 @@ GAME_MODES = {
 	"physics_anomaly_event": PhysicsAnomalyEventMode.new(),
 	"escort": EscortMode.new(),
 	"windstorm": WindstormMode.new(),
+	"dynamic_wind_currents": DynamicWindCurrentsMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
 	"modifier_safe_zone": ModifierSafeZoneMode.new(),
 	"modifier_zones_safe_zone": ModifierZonesSafeZoneMode.new(),
@@ -38174,7 +38260,14 @@ class BermudaTriangleMode extends GameMode:
 		var p2 = pylons[1]
 		var p3 = pylons[2]
 
+		var all_entities = []
 		for b in balls:
+			all_entities.append(b)
+		if world != null and "projectiles" in world and typeof(world.projectiles) == TYPE_ARRAY:
+			for p in world.projectiles:
+				all_entities.append(p)
+
+		for b in all_entities:
 			var b_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
 				b_alive = b.get("alive", false)
