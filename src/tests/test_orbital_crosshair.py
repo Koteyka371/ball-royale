@@ -25,6 +25,7 @@ class MockBall:
         self.alive = True
         self.ball_type = "player"
         self.stamina = 100.0
+        self.score = 0
 
 def test_orbital_crosshair_lifecycle():
     mode = OrbitalCrosshairMode()
@@ -71,3 +72,37 @@ def test_orbital_crosshair_lifecycle():
 
     assert b1.stamina < initial_stamina
     assert b1.hp < initial_hp
+
+
+def test_orbital_crosshair_tracks_highest_scoring():
+    mode = OrbitalCrosshairMode()
+    world = MockWorld()
+
+    b1 = MockBall(1, 100, 100)
+    b1.score = 50
+
+    b2 = MockBall(2, 900, 900)
+    b2.score = 100
+
+    balls = [b1, b2]
+
+    mode.setup(world, balls)
+
+    # Tick past spawn timer
+    mode.tick(world, balls, delta=6.0)
+
+    assert len(mode.crosshairs) == 1
+    ch = mode.crosshairs[0]
+    assert ch["state"] == "hunting"
+
+    # Should initially target b2, which has the highest score
+    assert ch["target_id"] == 2
+
+    # Now b1 gets a higher score
+    b1.score = 150
+
+    # Tick again
+    mode.tick(world, balls, delta=1.0)
+
+    # Should swap target to b1
+    assert ch["target_id"] == 1
