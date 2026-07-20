@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1208] Temporal Collapse — *2026-07-20 19:57:02 UTC*
+
+As the match progresses, the edges of the arena start breaking down into 'void tiles'. Touching these tiles slows the player down and randomly rewinds their movement to a previous position, disorienting them and forcing fights into the center.
+
+---
+
 ## [idea-1209] Gravitational Mine Trap — *2026-07-20 19:24:49 UTC*
 
 A stationary mine that remains hidden until an enemy comes close. Upon detonation, instead of direct damage, it violently pulls all nearby entities toward its center before exploding in a shockwave, effectively disrupting team formations.
