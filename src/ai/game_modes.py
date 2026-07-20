@@ -21830,7 +21830,79 @@ class BounceLaserMode(GameMode):
             laser.speed = 300.0
             world.arena.hazards.append(laser)
 
+
+class ChargedMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Charged"
+        self.description = "Balls are assigned Positive or Negative charge. Opposites attract, likes repel. Charges periodically flip."
+        self.charge_flip_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        self.charge_flip_timer += delta
+
+        if self.charge_flip_timer >= 10.0:
+            self.charge_flip_timer = 0.0
+            for b in balls:
+                if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
+                    if hasattr(b, "charge"):
+                        b.charge = "negative" if b.charge == "positive" else "positive"
+            if hasattr(world, "add_event"):
+                world.add_event("charge_flip", {"message": "Charges have flipped!"})
+
+        for b in balls:
+            if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator":
+                if not hasattr(b, "charge"):
+                    b.charge = random.choice(["positive", "negative"])
+
+        num_balls = len(balls)
+        for i in range(num_balls):
+            b1 = balls[i]
+            if not getattr(b1, "alive", True) or getattr(b1, "ball_type", None) == "spectator":
+                continue
+            b1_charge = getattr(b1, "charge", "positive")
+            b1_x = getattr(b1, "x", 0.0)
+            b1_y = getattr(b1, "y", 0.0)
+
+            for j in range(i + 1, num_balls):
+                b2 = balls[j]
+                if not getattr(b2, "alive", True) or getattr(b2, "ball_type", None) == "spectator":
+                    continue
+                b2_charge = getattr(b2, "charge", "positive")
+                b2_x = getattr(b2, "x", 0.0)
+                b2_y = getattr(b2, "y", 0.0)
+
+                dx = b2_x - b1_x
+                dy = b2_y - b1_y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                mag_range = 300.0
+                if 0 < dist < mag_range:
+                    force = (mag_range - dist) / mag_range * 250.0 * delta
+
+                    if b1_charge != b2_charge:
+                        # Opposites attract
+                        b1.x += (dx / dist) * force
+                        b1.y += (dy / dist) * force
+                        b2.x -= (dx / dist) * force
+                        b2.y -= (dy / dist) * force
+                    else:
+                        # Likes repel
+                        b1.x -= (dx / dist) * force
+                        b1.y -= (dy / dist) * force
+                        b2.x += (dx / dist) * force
+                        b2.y += (dy / dist) * force
+
+                    # Update current positions for remaining interactions
+                    b1_x = getattr(b1, "x", 0.0)
+                    b1_y = getattr(b1, "y", 0.0)
+
 GAME_MODES = {
+    'charged': ChargedMode(),
     'bounce_laser': BounceLaserMode(),
     'dragging_magnetic_mines': DraggingMagneticMinesMode(),
     'position_swap': PositionSwapMode(),

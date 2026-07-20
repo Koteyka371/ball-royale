@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Entanglement Modifier",
+    "description": "Pairs of balls become 'entangled'. If one entangled ball takes damage, the other takes a percentage of that damage. If one picks up a booster, the other gains a temporary buff. Entangled pairs are linked by a faint visual tether, and the pairing periodically shuffles among surviving players."
+}
