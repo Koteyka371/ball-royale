@@ -43744,6 +43744,187 @@ class ZeroGravityMeteorShowerMode extends GameMode:
 										h.vx = vx
 										h.vy = vy
 
+class VehicularCombatMode extends GameMode:
+	var spawn_timer: float = 0.0
+
+	func _init():
+		super._init()
+		self.name = "Vehicular Combat"
+		self.description = "Players can mount vehicles to inherit their stats but lose mobility traits. If destroyed, players are ejected and stunned."
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		super.setup(world, balls)
+		self.spawn_timer = 0.0
+		if not world.has("vehicles"):
+			world["vehicles"] = []
+		_spawn_vehicles(world, 3)
+
+	func _spawn_vehicles(world: Dictionary, count: int) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and world["arena"] != null:
+			if typeof(world["arena"]) == TYPE_DICTIONARY:
+				arena_width = world["arena"].get("width", 1000.0)
+				arena_height = world["arena"].get("height", 1000.0)
+			else:
+				if "width" in world["arena"]: arena_width = world["arena"].width
+				if "height" in world["arena"]: arena_height = world["arena"].height
+
+		for i in range(count):
+			var x = randf_range(100, arena_width - 100)
+			var y = randf_range(100, arena_height - 100)
+			var v_type = "tank" if randf() > 0.5 else "hovercraft"
+			var r = 30.0 if v_type == "tank" else 25.0
+			var hp = 500.0 if v_type == "tank" else 300.0
+			var dmg = 50.0 if v_type == "tank" else 30.0
+			var spd = 80.0 if v_type == "tank" else 150.0
+
+			world["vehicles"].append({
+				"x": x,
+				"y": y,
+				"radius": r,
+				"type": v_type,
+				"hp": hp,
+				"max_hp": hp,
+				"base_damage": dmg,
+				"speed": spd,
+				"driver": null
+			})
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		if not world.has("vehicles"):
+			world["vehicles"] = []
+
+		self.spawn_timer += delta
+		if self.spawn_timer >= 15.0:
+			self.spawn_timer = 0.0
+			if world["vehicles"].size() < 5:
+				_spawn_vehicles(world, 1)
+
+		for b in balls:
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+			if not alive:
+				continue
+
+			var stun_timer = b.get("stun_timer") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("stun_timer") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") else 0.0)
+			if stun_timer == null: stun_timer = 0.0
+
+			if stun_timer > 0:
+				stun_timer -= delta
+				if typeof(b) == TYPE_DICTIONARY:
+					b["stun_timer"] = stun_timer
+					if b.has("speed"): b["speed"] = 0.0
+					if b.has("vx"): b["vx"] = 0.0
+					if b.has("vy"): b["vy"] = 0.0
+					if stun_timer <= 0 and b.has("original_base_speed"):
+						b["speed"] = b["original_base_speed"]
+				else:
+					if b.has_method("set_meta"): b.set_meta("stun_timer", stun_timer)
+					b.speed = 0.0
+					if "vx" in b: b.vx = 0.0
+					if "vy" in b: b.vy = 0.0
+					elif b.has_method("set_meta"):
+						b.set_meta("vx", 0.0)
+						b.set_meta("vy", 0.0)
+					if stun_timer <= 0 and b.has_method("has_meta") and b.has_meta("original_base_speed"):
+						b.speed = b.get_meta("original_base_speed")
+				continue
+
+			if typeof(b) == TYPE_DICTIONARY and not b.has("stun_timer"):
+				b["stun_timer"] = 0.0
+			elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta") and not b.has_meta("stun_timer"):
+				b.set_meta("stun_timer", 0.0)
+
+			var mounted = b.get("mounted_vehicle") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("mounted_vehicle") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") else null)
+
+			if mounted == null:
+				for v in world["vehicles"]:
+					if v["driver"] == null and v["hp"] > 0:
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+						var br = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.radius
+						var dx = bx - v["x"]
+						var dy = by - v["y"]
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist < br + v["radius"]:
+							v["driver"] = b
+							var base_dmg = b.get("base_damage", 10.0) if typeof(b) == TYPE_DICTIONARY else b.base_damage
+							var cur_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp
+							if typeof(b) == TYPE_DICTIONARY:
+								b["mounted_vehicle"] = v
+								b["original_base_damage"] = base_dmg
+								b["original_base_speed"] = b.get("speed", 50.0)
+								b["_last_hp"] = cur_hp
+							else:
+								if b.has_method("set_meta"):
+									b.set_meta("mounted_vehicle", v)
+									b.set_meta("original_base_damage", base_dmg)
+									b.set_meta("original_base_speed", b.get("speed", 50.0) if "speed" in b else 50.0)
+									b.set_meta("stun_timer", 0.0)
+									b.set_meta("_last_hp", cur_hp)
+							mounted = v
+							break
+
+			if mounted != null:
+				var alive2 = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+				if not alive2:
+					mounted["driver"] = null
+					var v_idx = world["vehicles"].find(mounted)
+					if v_idx != -1:
+						world["vehicles"].remove_at(v_idx)
+					continue
+				var hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp
+				var last_hp = b.get("_last_hp", hp) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("_last_hp") if typeof(b) == TYPE_OBJECT and b.has_meta("_last_hp") else hp)
+
+				if hp < last_hp:
+					var dmg = last_hp - hp
+					mounted["hp"] -= dmg
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = last_hp
+					else:
+						b.hp = last_hp
+
+				var cur_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp
+				if typeof(b) == TYPE_DICTIONARY:
+					b["_last_hp"] = cur_hp
+					b["speed"] = mounted["speed"]
+					b["base_damage"] = mounted["base_damage"]
+				else:
+					if b.has_method("set_meta"):
+						b.set_meta("_last_hp", cur_hp)
+					b.speed = mounted["speed"]
+					if "base_damage" in b:
+						b.base_damage = mounted["base_damage"]
+
+				if mounted["hp"] <= 0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["mounted_vehicle"] = null
+						b["stun_timer"] = 2.0
+						if b.has("original_base_damage"):
+							b["base_damage"] = b["original_base_damage"]
+						if b.has("original_base_speed"):
+							b["speed"] = b["original_base_speed"]
+					else:
+						if b.has_method("set_meta"):
+							b.set_meta("mounted_vehicle", null)
+							b.set_meta("stun_timer", 2.0)
+							if b.has_meta("original_base_damage"):
+								b.base_damage = b.get_meta("original_base_damage")
+							if b.has_meta("original_base_speed"):
+								b.speed = b.get_meta("original_base_speed")
+					var v_idx = world["vehicles"].find(mounted)
+					if v_idx != -1:
+						world["vehicles"].remove_at(v_idx)
+
+		for v in world["vehicles"]:
+			if v["driver"] != null:
+				var driver = v["driver"]
+				var alive = driver.get("alive") if typeof(driver) == TYPE_DICTIONARY else driver.alive
+				if alive:
+					v["x"] = driver.get("x", v["x"]) if typeof(driver) == TYPE_DICTIONARY else driver.x
+					v["y"] = driver.get("y", v["y"]) if typeof(driver) == TYPE_DICTIONARY else driver.y
+
+GAME_MODES["vehicular_combat"] = VehicularCombatMode.new()
 GAME_MODES["zero_gravity_meteor_shower"] = ZeroGravityMeteorShowerMode.new()
 
 class CursedBoosterMode extends GameMode:

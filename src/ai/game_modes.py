@@ -28409,4 +28409,151 @@ GAME_MODES['spectator_holograms'] = SpectatorHologramsMode()
 
 GAME_MODES['decoy_network'] = DecoyNetworkMode()
 
+
+class VehicularCombatMode(GameMode):
+    """
+    Players can find and mount stationary vehicles like tanks or hovercrafts across the arena.
+    While mounted, they inherit the vehicle's health and damage stats, but lose their personal mobility traits.
+    If the vehicle is destroyed, they are ejected with temporary stun.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Vehicular Combat"
+        self.description = "Players can mount vehicles to inherit their stats but lose mobility traits. If destroyed, players are ejected and stunned."
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.spawn_timer = 0.0
+        if not hasattr(world, "vehicles"):
+            world.vehicles = []
+
+        # Initial spawn of some vehicles
+        self._spawn_vehicles(world, 3)
+
+    def _spawn_vehicles(self, world, count):
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        import random
+        for _ in range(count):
+            x = random.uniform(100, arena_width - 100)
+            y = random.uniform(100, arena_height - 100)
+            vehicle_type = random.choice(["tank", "hovercraft"])
+
+            vehicle = {
+                "x": x,
+                "y": y,
+                "radius": 30.0 if vehicle_type == "tank" else 25.0,
+                "type": vehicle_type,
+                "hp": 500.0 if vehicle_type == "tank" else 300.0,
+                "max_hp": 500.0 if vehicle_type == "tank" else 300.0,
+                "base_damage": 50.0 if vehicle_type == "tank" else 30.0,
+                "speed": 80.0 if vehicle_type == "tank" else 150.0,
+                "driver": None
+            }
+            world.vehicles.append(vehicle)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "vehicles"):
+            world.vehicles = []
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 15.0:
+            self.spawn_timer = 0.0
+            if len(world.vehicles) < 5:
+                self._spawn_vehicles(world, 1)
+
+        # Process vehicles and balls
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            # Initialize stun timer if not present
+            if not hasattr(b, "stun_timer"):
+                b.stun_timer = 0.0
+
+            # Handle stun effect
+            if b.stun_timer > 0:
+                b.stun_timer -= delta
+                if getattr(b, "speed", 0) > 0:
+                    b.speed = 0.0 # Keep stunned
+                    b.vx = 0.0
+                    b.vy = 0.0
+                if b.stun_timer <= 0 and hasattr(b, "original_base_speed"):
+                    b.speed = b.original_base_speed
+                continue
+
+            # Handle mounted logic
+            mounted_vehicle = getattr(b, "mounted_vehicle", None)
+
+            if not mounted_vehicle:
+                import math
+                # Check for mounting
+                for v in world.vehicles:
+                    if v["driver"] is None and v["hp"] > 0:
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+                        dist = math.hypot(bx - v["x"], by - v["y"])
+                        if dist < getattr(b, "radius", 15.0) + v["radius"]:
+                            # Mount the vehicle
+                            v["driver"] = b
+                            b.mounted_vehicle = v
+                            b.original_base_damage = getattr(b, "base_damage", 10.0)
+                            b.original_base_speed = getattr(b, "speed", 50.0)
+                            b._last_hp = b.hp
+                            mounted_vehicle = v
+                            break
+
+            if mounted_vehicle:
+                # Synchronize position
+
+                # Check if player is dead by other means
+                if not getattr(b, "alive", False):
+                    mounted_vehicle["driver"] = None
+                    if mounted_vehicle in world.vehicles:
+                        world.vehicles.remove(mounted_vehicle)
+                    continue
+
+                # Suppress personal mobility traits
+                if hasattr(b, "speed"):
+                    b.speed = mounted_vehicle["speed"]
+                if hasattr(b, "base_damage"):
+                    b.base_damage = mounted_vehicle["base_damage"]
+
+                # The vehicle acts as armor. Since we don't have full event hooks,
+                # we'll approximate the damage redirection by checking if ball HP drops,
+                # but an easier way is to just let the ball's stats reflect the vehicle,
+                # and when checking vehicle hp manually, if it dies, eject.
+                # Actually, a better approach for simple tick logic:
+                # If the ball takes damage (hp goes down compared to last tick),
+                # redirect that damage to the vehicle.
+
+                last_hp = getattr(b, "_last_hp", b.hp)
+                if b.hp < last_hp:
+                    damage_taken = last_hp - b.hp
+                    mounted_vehicle["hp"] -= damage_taken
+                    b.hp = last_hp # Restore ball hp, vehicle took the hit
+
+                b._last_hp = b.hp
+
+                if mounted_vehicle["hp"] <= 0:
+                    # Vehicle destroyed! Eject and stun
+                    b.mounted_vehicle = None
+                    b.stun_timer = 2.0
+                    if hasattr(b, "original_base_damage"):
+                        b.base_damage = b.original_base_damage
+                    if hasattr(b, "original_base_speed"):
+                        b.speed = b.original_base_speed
+                    if mounted_vehicle in world.vehicles:
+                        world.vehicles.remove(mounted_vehicle)
+
+        # Move unmounted vehicles (stationary, so no movement needed)
+        # Vehicles move when driven, but the ball driver moves them
+        for v in world.vehicles:
+            if v["driver"] and getattr(v["driver"], "alive", False):
+                v["x"] = getattr(v["driver"], "x", v["x"])
+                v["y"] = getattr(v["driver"], "y", v["y"])
+
+GAME_MODES["vehicular_combat"] = VehicularCombatMode()
 GAME_MODES["chronosphere_event"] = ChronosphereEventMode()
