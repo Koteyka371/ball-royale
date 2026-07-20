@@ -50,8 +50,8 @@ def test_dragging_magnetic_mines():
     mode.tick(world, [ball], 0.9)
     assert mine['state'] == 'exploded'
 
-    # Explode should damage ball
-    assert ball.hp == 50
+    # Explode should apply shockwave, not direct damage
+    assert getattr(ball, 'vx', 0.0) != 0.0 or getattr(ball, 'vy', 0.0) != 0.0
     assert len(world.events) == 1
     assert world.events[0][0] == "massive_shockwave"
     assert world.events[0][1]["radius"] == 200

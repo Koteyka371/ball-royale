@@ -28136,6 +28136,42 @@ func _use_skill():
                 if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
                 self.ball.skill_timer = cd
 
+        elif skill_name == "throw_emp":
+            if world.has("arena") and world.arena.has("hazards"):
+                var enemies = _get_enemies()
+                if enemies.size() > 0:
+                    var closest_enemy = enemies[0]
+                    var min_d_sq = (closest_enemy.x - ball.x)*(closest_enemy.x - ball.x) + (closest_enemy.y - ball.y)*(closest_enemy.y - ball.y)
+                    for i in range(1, enemies.size()):
+                        var e = enemies[i]
+                        var d_sq = (e.x - ball.x)*(e.x - ball.x) + (e.y - ball.y)*(e.y - ball.y)
+                        if d_sq < min_d_sq:
+                            min_d_sq = d_sq
+                            closest_enemy = e
+
+                    var dx = closest_enemy.x - ball.x
+                    var dy = closest_enemy.y - ball.y
+                    var dist = max(0.0001, sqrt(dx*dx + dy*dy))
+                    var nx = dx / dist
+                    var ny = dy / dist
+
+                    var thrown_emp = {}
+                    thrown_emp["id"] = 19100 + world.arena.hazards.size()
+                    var b_radius = ball.get("radius", 10.0)
+                    thrown_emp["x"] = ball.x + nx * (b_radius + 5.0)
+                    thrown_emp["y"] = ball.y + ny * (b_radius + 5.0)
+                    thrown_emp["radius"] = 20.0
+                    thrown_emp["kind"] = "thrown_emp"
+                    thrown_emp["damage"] = 0.0
+                    thrown_emp["vx"] = nx * 500.0
+                    thrown_emp["vy"] = ny * 500.0
+                    thrown_emp["duration"] = 1.5
+                    thrown_emp["owner_id"] = ball.get("id", null)
+                    thrown_emp["team"] = ball.get("team", null)
+
+                    world.arena.hazards.append(thrown_emp)
+                    ball.skill_timer = ball.get("skill_cooldown", 5.0)
+
         elif skill_name == "throw_decoy":
             var active_decoys = []
             var has_swapped_any = false
@@ -28392,7 +28428,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster"]:
+                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "thrown_emp", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
