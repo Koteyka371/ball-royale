@@ -3469,6 +3469,9 @@ class BattleRoyaleMode extends GameMode:
 								if sqrt(dx*dx + dy*dy) <= c["radius"]:
 									var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
 									b.speed = base_speed * 0.5
+									if typeof(b) == TYPE_OBJECT and "slow_timer" in b: b.slow_timer = max(b.slow_timer if b.slow_timer != null else 0.0, 2.0)
+									elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
+									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
 									else: b.hp -= 10.0 * delta
 				self.set_meta("craters", still_craters)
@@ -9084,6 +9087,9 @@ class WeatherChaosMode extends GameMode:
 								if sqrt(dx*dx + dy*dy) <= c["radius"]:
 									var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
 									b.speed = base_speed * 0.5
+									if typeof(b) == TYPE_OBJECT and "slow_timer" in b: b.slow_timer = max(b.slow_timer if b.slow_timer != null else 0.0, 2.0)
+									elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
+									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
 									else: b.hp -= 10.0 * delta
 				self.set_meta("craters", still_craters)
@@ -18077,6 +18083,9 @@ class MagneticCollisionsMode extends GameMode:
 								if sqrt(dx*dx + dy*dy) <= c["radius"]:
 									var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
 									b.speed = base_speed * 0.5
+									if typeof(b) == TYPE_OBJECT and "slow_timer" in b: b.slow_timer = max(b.slow_timer if b.slow_timer != null else 0.0, 2.0)
+									elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
+									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
 									else: b.hp -= 10.0 * delta
 				self.set_meta("craters", still_craters)
@@ -18640,6 +18649,9 @@ class PinballMode extends GameMode:
 								if sqrt(dx*dx + dy*dy) <= c["radius"]:
 									var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
 									b.speed = base_speed * 0.5
+									if typeof(b) == TYPE_OBJECT and "slow_timer" in b: b.slow_timer = max(b.slow_timer if b.slow_timer != null else 0.0, 2.0)
+									elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
+									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
 									else: b.hp -= 10.0 * delta
 				self.set_meta("craters", still_craters)
@@ -23052,6 +23064,9 @@ class MeteorShowerMode extends GameMode:
 								else: b.hp -= 20.0 * delta
 							else:
 								b.speed = base_speed * 0.5
+								if typeof(b) == TYPE_OBJECT and "slow_timer" in b: b.slow_timer = max(b.slow_timer if b.slow_timer != null else 0.0, 2.0)
+								elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
+								elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 								if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
 								else: b.hp -= 10.0 * delta
 
@@ -25310,6 +25325,9 @@ class SweepingPaddlesMode extends GameMode:
 								if sqrt(dx*dx + dy*dy) <= c["radius"]:
 									var base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
 									b.speed = base_speed * 0.5
+									if typeof(b) == TYPE_OBJECT and "slow_timer" in b: b.slow_timer = max(b.slow_timer if b.slow_timer != null else 0.0, 2.0)
+									elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
+									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
 									else: b.hp -= 10.0 * delta
 				self.set_meta("craters", still_craters)
@@ -38728,6 +38746,9 @@ class MeteorBombardmentMode extends GameMode:
 						var by = _get_prop(b, "y", 0.0)
 						var dist = sqrt(pow(bx - c["x"], 2) + pow(by - c["y"], 2))
 						if dist <= c["radius"]:
+							if typeof(b) == TYPE_OBJECT and "slow_timer" in b: b.slow_timer = max(b.slow_timer if b.slow_timer != null else 0.0, 2.0)
+							elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 								b.take_damage(20.0 * delta)
 							else:

@@ -2150,6 +2150,7 @@ class BattleRoyaleMode(GameMode):
                             if getattr(b, "alive", False):
                                 if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
                                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 2.0)
                                     if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
                                     else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
                 self.craters = still_craters
@@ -5997,6 +5998,7 @@ class WeatherChaosMode(GameMode):
                             if getattr(b, "alive", False):
                                 if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
                                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 2.0)
                                     if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
                                     else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
                 self.craters = still_craters
@@ -11652,6 +11654,7 @@ class MagneticCollisionsMode(GameMode):
                             if getattr(b, "alive", False):
                                 if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
                                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 2.0)
                                     if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
                                     else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
                 self.craters = still_craters
@@ -12003,6 +12006,7 @@ class PinballMode(GameMode):
                             if getattr(b, "alive", False):
                                 if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
                                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 2.0)
                                     if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
                                     else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
                 self.craters = still_craters
@@ -15926,6 +15930,7 @@ class SweepingPaddlesMode(GameMode):
                             if getattr(b, "alive", False):
                                 if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
                                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 2.0)
                                     if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
                                     else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
                 self.craters = still_craters
@@ -16896,6 +16901,7 @@ class ExtremeWeatherMode(GameMode):
                         if getattr(b, "alive", False) and not has_meteor_shield:
                             if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
                                 b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 2.0)
                                 if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
                                 else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
             self.craters = still_craters
@@ -21127,9 +21133,14 @@ class MeteorBombardmentMode(GameMode):
                 for b in balls:
                     if getattr(b, "alive", False):
                         if math.hypot(getattr(b, "x", 0.0) - c["x"], getattr(b, "y", 0.0) - c["y"]) <= c["radius"]:
+                            b.slow_timer = max(getattr(b, "slow_timer", 0.0), 2.0)
+
                             if hasattr(b, "take_damage"):
+
                                 b.take_damage(20.0 * delta)
+
                             else:
+
                                 b.hp = getattr(b, "hp", 100) - 20.0 * delta
         self.craters = still_craters
 
