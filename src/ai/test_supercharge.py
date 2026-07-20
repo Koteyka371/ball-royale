@@ -69,7 +69,7 @@ def test_supercharge_robotic():
     # Lightning strike should deal 50 damage, then drain applies for 0.1s * 5.0 = 0.5 damage
     assert ball.hp == 100.0 - 50.0 - 0.5
     # Ball should be supercharged because it's a "drone", initial 5.0 - delta = 4.9
-    assert getattr(ball, "supercharge_timer", 0.0) == 4.9
+    assert getattr(ball, "supercharge_timer", 0.0) == 9.9
     assert getattr(ball, "stutter_timer", 0.0) == 0.0
 
     # Speed and damage should be multiplied by 1.5 in the NEXT tick since it was set in hazard phase
@@ -83,7 +83,7 @@ def test_supercharge_robotic():
 
     # Also check that drain applies again (0.5)
     assert ball.hp == pytest.approx(100.0 - 50.0 - 0.5 - 0.5)
-    assert getattr(ball, "supercharge_timer", 0.0) == pytest.approx(4.8)
+    assert getattr(ball, "supercharge_timer", 0.0) == pytest.approx(9.8)
 
 def test_supercharge_non_robotic():
     ball = MockBall(ball_type="mage", speed=2.0, damage=10.0)
@@ -123,7 +123,7 @@ def test_supercharge_metal():
     action.execute("idle", delta)
 
     # Ball should get supercharge because of "metal" trait
-    assert getattr(ball, "supercharge_timer", 0.0) == pytest.approx(4.9)
+    assert getattr(ball, "supercharge_timer", 0.0) == pytest.approx(9.9)
     assert getattr(ball, "stutter_timer", 0.0) == 0.0
     # Also speed buff
     assert getattr(ball, "speed_buff_timer", 0.0) == pytest.approx(3.0)

@@ -1464,6 +1464,33 @@ func _attempt_damage(attacker, target) -> void:
 					attacker["damage"] = old_dmg_final
 
 
+		var sc_stun = false
+		if typeof(attacker) == TYPE_DICTIONARY:
+			if attacker.has("supercharge_stun_ready") and attacker["supercharge_stun_ready"]:
+				sc_stun = true
+		else:
+			if "supercharge_stun_ready" in attacker and attacker.supercharge_stun_ready:
+				sc_stun = true
+			elif attacker.has_method("has_meta") and attacker.has_meta("supercharge_stun_ready") and attacker.get_meta("supercharge_stun_ready"):
+				sc_stun = true
+
+		if sc_stun:
+			var curr_stutter = 0.0
+			if typeof(target) == TYPE_DICTIONARY:
+				if target.has("stutter_timer"): curr_stutter = target["stutter_timer"]
+				target["stutter_timer"] = max(curr_stutter, 1.0)
+			else:
+				if "stutter_timer" in target: curr_stutter = target.stutter_timer
+				elif target.has_method("has_meta") and target.has_meta("stutter_timer"): curr_stutter = target.get_meta("stutter_timer")
+
+				if "stutter_timer" in target: target.stutter_timer = max(curr_stutter, 1.0)
+				elif target.has_method("set_meta"): target.set_meta("stutter_timer", max(curr_stutter, 1.0))
+
+			if typeof(attacker) == TYPE_DICTIONARY: attacker["supercharge_stun_ready"] = false
+			elif "supercharge_stun_ready" in attacker: attacker.supercharge_stun_ready = false
+			elif attacker.has_method("set_meta"): attacker.set_meta("supercharge_stun_ready", false)
+
+
 		var ls_timer = 0.0
 		if "laser_sight_timer" in attacker: ls_timer = attacker.laser_sight_timer
 		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("laser_sight_timer"): ls_timer = attacker.get_meta("laser_sight_timer")
@@ -30457,6 +30484,43 @@ func _update_skill_timer(delta: float):
             self.ball.hp -= drain_amount
             if self.ball.hp <= 0:
                 self.ball.alive = false
+
+        var is_alive = true
+        if "alive" in self.ball:
+            is_alive = self.ball.alive
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("alive"):
+            is_alive = self.ball.get_meta("alive")
+
+        if is_alive:
+            var sz_timer = 0.0
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("supercharge_zap_timer"):
+                sz_timer = float(self.ball.get_meta("supercharge_zap_timer"))
+            elif "supercharge_zap_timer" in self.ball:
+                sz_timer = float(self.ball.supercharge_zap_timer)
+            sz_timer -= delta
+            if sz_timer <= 0:
+                sz_timer = 1.0
+                var enemies = _get_enemies()
+                for enemy in enemies:
+                    var bx = self.ball.x if "x" in self.ball else 0.0
+                    var by = self.ball.y if "y" in self.ball else 0.0
+                    var ex = enemy.x if "x" in enemy else 0.0
+                    var ey = enemy.y if "y" in enemy else 0.0
+                    var edx = ex - bx
+                    var edy = ey - by
+                    if edx*edx + edy*edy <= 22500:
+                        if typeof(enemy) != TYPE_DICTIONARY and enemy.has_method("take_damage"):
+                            enemy.take_damage(5.0)
+                        elif "hp" in enemy:
+                            enemy.hp -= 5.0
+                        if has_method("_spawn_directed_particles"):
+                            _spawn_directed_particles(self.ball, enemy, "lightning")
+
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("supercharge_zap_timer", sz_timer)
+            if "supercharge_zap_timer" in self.ball:
+                self.ball["supercharge_zap_timer"] = sz_timer
+
         if sc_timer < 0.0: sc_timer = 0.0
         if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
             self.ball.set_meta("supercharge_timer", sc_timer)
@@ -33084,10 +33148,36 @@ func _update_skill_timer(delta: float):
         stutter_timer = self.ball.get_meta("stutter_timer")
 
     if stutter_timer > 0.0:
+        var new_st = stutter_timer - delta
         if "stutter_timer" in self.ball:
-            self.ball.stutter_timer = stutter_timer - delta
+            self.ball.stutter_timer = new_st
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["stutter_timer"] = new_st
         elif self.ball.has_method("set_meta"):
-            self.ball.set_meta("stutter_timer", stutter_timer - delta)
+            self.ball.set_meta("stutter_timer", new_st)
+
+        if new_st <= 0.0:
+            var pending = false
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("pending_supercharge") and self.ball["pending_supercharge"]: pending = true
+            else:
+                if "pending_supercharge" in self.ball and self.ball.pending_supercharge: pending = true
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("pending_supercharge") and self.ball.get_meta("pending_supercharge"): pending = true
+
+            if pending:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["supercharge_timer"] = 10.0
+                    self.ball["supercharge_stun_ready"] = true
+                    self.ball["pending_supercharge"] = false
+                else:
+                    if "supercharge_timer" in self.ball: self.ball.supercharge_timer = 10.0
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("supercharge_timer", 10.0)
+
+                    if "supercharge_stun_ready" in self.ball: self.ball.supercharge_stun_ready = true
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("supercharge_stun_ready", true)
+
+                    if "pending_supercharge" in self.ball: self.ball.pending_supercharge = false
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("pending_supercharge", false)
 
     var stealth_timer = 0.0
     if "stealth_drone_timer" in self.ball:
