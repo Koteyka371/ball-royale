@@ -40298,7 +40298,173 @@ class EdgeSlingshotsMode:
 
 GAME_MODES["meteor_bombardment"] = MeteorBombardmentMode.new()
 
+
+
+
+
+class AuraInversionZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 200.0
+	var hazard_obj = null
+
+	func _init():
+		super._init()
+		name = "Aura Inversion Zone"
+		description = "A hazard zone that inverts the effects of beneficial auras while players are inside."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and typeof(world.arena) != TYPE_NIL:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			else:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+
+		if world.has("arena") and typeof(world.arena) != TYPE_NIL:
+			var hazards = null
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				hazards = world.arena.hazards
+			elif typeof(world.arena) != TYPE_DICTIONARY and "hazards" in world.arena:
+				hazards = world.arena.hazards
+
+			if hazards != null:
+				var hazard_class = null
+				if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+					var script = load("res://src/arena/procedural_arena.gd")
+					if script != null:
+						if typeof(script) == TYPE_OBJECT and script.has_method("const_defined"):
+							if script.const_defined("Hazard"):
+								hazard_class = script.Hazard
+
+				if hazard_class != null:
+					hazard_obj = hazard_class.new("aura_inversion_zone", zone_x, zone_y, zone_radius, "aura_inversion_zone", 0.0)
+				else:
+					class FallbackHazard:
+						var id: String
+						var x: float
+						var y: float
+						var radius: float
+						var kind: String
+						var damage: float
+						var active: bool = true
+						func _init(p_id, p_x, p_y, p_radius, p_kind, p_damage):
+							id = p_id
+							x = p_x
+							y = p_y
+							radius = p_radius
+							kind = p_kind
+							damage = p_damage
+					hazard_obj = FallbackHazard.new("aura_inversion_zone", zone_x, zone_y, zone_radius, "aura_inversion_zone", 0.0)
+
+				hazards.append(hazard_obj)
+
+	func apply_dynamic_traits(world, balls, delta: float = 0.016):
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT and "alive" in b:
+				is_alive = b.alive
+
+			if not is_alive:
+				continue
+
+			var b_type = null
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type")
+			elif typeof(b) == TYPE_OBJECT and "ball_type" in b:
+				b_type = b.ball_type
+			if b_type == "spectator":
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			else:
+				if "x" in b: bx = float(b.x)
+				if "y" in b: by = float(b.y)
+
+			var dx = bx - zone_x
+			var dy = by - zone_y
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist <= zone_radius:
+				var has_buffs = false
+				if typeof(b) == TYPE_DICTIONARY:
+					var current_timer = b.get("aura_inversion_timer", 0.0)
+					b["aura_inversion_timer"] = max(current_timer, 0.1)
+					if b.get("aura_booster_timer", 0.0) > 0: has_buffs = true
+					if b.get("vampiric_aura_timer", 0.0) > 0: has_buffs = true
+				elif typeof(b) == TYPE_OBJECT:
+					if "aura_inversion_timer" in b:
+						b.aura_inversion_timer = max(b.aura_inversion_timer, 0.1)
+					elif b.has_method("set_meta"):
+						var current_timer = 0.0
+						if b.has_meta("aura_inversion_timer"):
+							current_timer = float(b.get_meta("aura_inversion_timer"))
+						b.set_meta("aura_inversion_timer", max(current_timer, 0.1))
+
+					if "aura_booster_timer" in b and b.aura_booster_timer > 0: has_buffs = true
+					elif b.has_method("has_meta") and b.has_meta("aura_booster_timer") and float(b.get_meta("aura_booster_timer")) > 0: has_buffs = true
+
+					if "vampiric_aura_timer" in b and b.vampiric_aura_timer > 0: has_buffs = true
+					elif b.has_method("has_meta") and b.has_meta("vampiric_aura_timer") and float(b.get_meta("vampiric_aura_timer")) > 0: has_buffs = true
+
+				# Check if inside a healing aura
+				if world.has("arena") and typeof(world.arena) != TYPE_NIL:
+					var hazards = null
+					if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"): hazards = world.arena.hazards
+					elif typeof(world.arena) != TYPE_DICTIONARY and "hazards" in world.arena: hazards = world.arena.hazards
+
+					if hazards != null:
+						for h in hazards:
+							var h_kind = ""
+							if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+							elif typeof(h) != TYPE_DICTIONARY and "kind" in h: h_kind = h.kind
+
+							var h_active = true
+							if typeof(h) == TYPE_DICTIONARY and h.has("active"): h_active = h.active
+							elif typeof(h) != TYPE_DICTIONARY and "active" in h: h_active = h.active
+
+							if h_kind == "healing_aura" and h_active:
+								var hx = 0.0
+								var hy = 0.0
+								var hrad = 150.0
+								if typeof(h) == TYPE_DICTIONARY:
+									if h.has("x"): hx = float(h.x)
+									if h.has("y"): hy = float(h.y)
+									if h.has("radius"): hrad = float(h.radius)
+								elif typeof(h) != TYPE_DICTIONARY:
+									if "x" in h: hx = float(h.x)
+									if "y" in h: hy = float(h.y)
+									if "radius" in h: hrad = float(h.radius)
+
+								var hdx = hx - bx
+								var hdy = hy - by
+								if hdx*hdx + hdy*hdy <= hrad*hrad:
+									has_buffs = true
+									break
+
+				if has_buffs:
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("hp"): b["hp"] -= 20.0 * delta
+					elif typeof(b) == TYPE_OBJECT:
+						if b.has_method("take_damage"):
+							b.take_damage(20.0 * delta)
+						elif "hp" in b: b.hp -= 20.0 * delta
+
 GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode.new()
+GAME_MODES["aura_inversion_zone"] = AuraInversionZoneMode.new()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
 

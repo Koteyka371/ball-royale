@@ -26387,7 +26387,89 @@ class EdgeSlingshotsMode(GameMode):
                     del self.grabbed_state[b.id]
 
 
+
+
+
+
+class AuraInversionZoneMode(GameMode):
+    """
+    An environmental hazard zone. While inside, all active beneficial auras
+    (like healing or damage boosts) on players invert their effects, causing
+    steady damage or reducing attack damage until they exit.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Aura Inversion Zone"
+        self.description = "A hazard zone that inverts the effects of beneficial auras while players are inside."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 200.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            self.hazard_obj = hazard_class("aura_inversion_zone", self.zone_x, self.zone_y, self.zone_radius, "aura_inversion_zone", 0.0)
+            if not hasattr(self.hazard_obj, "active"):
+                self.hazard_obj.active = True
+            world.arena.hazards.append(self.hazard_obj)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", True):
+                continue
+
+            dx = b.x - self.zone_x
+            dy = b.y - self.zone_y
+            dist = math.hypot(dx, dy)
+
+            if dist <= self.zone_radius:
+                # Apply inversion and damage
+                b.aura_inversion_timer = max(getattr(b, "aura_inversion_timer", 0.0), 0.1)
+
+                # Check if ball is getting beneficial auras from friends
+                has_buffs = False
+
+                # Check personal aura buffs
+                if getattr(b, "aura_booster_timer", 0.0) > 0:
+                    has_buffs = True
+                if getattr(b, "vampiric_aura_timer", 0.0) > 0:
+                    has_buffs = True
+
+                # Check if ball is inside a friendly healing aura hazard
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        if getattr(h, "kind", "") == "healing_aura" and getattr(h, "active", True):
+                            h_dist_sq = (h.x - b.x)**2 + (h.y - b.y)**2
+                            if h_dist_sq <= getattr(h, "radius", 150.0)**2:
+                                has_buffs = True
+                                break
+
+                # Deal steady damage if inverted buffs are active
+                if has_buffs:
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(20.0 * delta)
+                    elif hasattr(b, "hp"):
+                        b.hp -= 20.0 * delta # 20 damage per second
+
 GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode()
+GAME_MODES["aura_inversion_zone"] = AuraInversionZoneMode()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
 
