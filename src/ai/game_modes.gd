@@ -3262,7 +3262,7 @@ class BattleRoyaleMode extends GameMode:
 					if "height" in world.arena: arena_height = world.arena.height
 
 				rng.randomize()
-				var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "trap_disarm_kit"]
+				var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "trap_disarm_kit", "forecast_booster"]
 				var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
 				var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
 				var b_x = rng.randf_range(100, arena_width - 100)
@@ -4047,7 +4047,7 @@ class BattleRoyaleMode extends GameMode:
 						boosters_array = world.boosters
 
 					if boosters_array != null:
-						var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "trap_disarm_kit"]
+						var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "trap_disarm_kit", "forecast_booster"]
 						for i in range(3):
 							var b_id = 9100 + boosters_array.size() + rng.randi() % 1000
 							var b_x = bx + rng.randf_range(-30, 30)
@@ -17120,7 +17120,7 @@ class SupernovaMode extends GameMode:
 					boosters_array = world.boosters
 
 				if boosters_array != null:
-					var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "trap_disarm_kit"]
+					var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "trap_disarm_kit", "forecast_booster"]
 					var rng = RandomNumberGenerator.new()
 					rng.randomize()
 					for i in range(10):
@@ -31085,11 +31085,74 @@ class DynamicWeatherTransitionsMode extends GameMode:
 		super.tick(world, balls, delta)
 
 		weather_timer -= delta
+
+		var time_until = weather_timer
+		var warning_triggered_this_tick = false
+		for b in balls:
+			var is_active = false
+			if typeof(b) == TYPE_DICTIONARY:
+				if "forecast_booster_active" in b and b.forecast_booster_active: is_active = true
+			elif typeof(b) == TYPE_OBJECT:
+				if "forecast_booster_active" in b and b.get("forecast_booster_active"): is_active = true
+				elif b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"): is_active = true
+
+			var warning_issued = false
+			if typeof(b) == TYPE_DICTIONARY:
+				if "forecast_warning_issued" in b and b.forecast_warning_issued: warning_issued = true
+			elif typeof(b) == TYPE_OBJECT:
+				if "forecast_warning_issued" in b and b.get("forecast_warning_issued"): warning_issued = true
+				elif b.has_method("get_meta") and b.has_meta("forecast_warning_issued") and b.get_meta("forecast_warning_issued"): warning_issued = true
+
+			if is_active and time_until <= 10.0 and not warning_issued:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["forecast_warning_issued"] = true
+				elif typeof(b) == TYPE_OBJECT:
+					if "forecast_warning_issued" in b:
+						b.set("forecast_warning_issued", true)
+					elif b.has_method("set_meta"):
+						b.set_meta("forecast_warning_issued", true)
+				warning_triggered_this_tick = true
+
+		if warning_triggered_this_tick:
+			var next_w = weather
+			if current_stage < weather_sequence.size() - 1:
+				next_w = weather_sequence[current_stage + 1]
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("weather_warning", {"type": "weather_warning", "message": "Forecast warns: " + next_w.to_upper() + " incoming in " + str(int(time_until)) + "s!"})
+
 		if weather_timer <= 0:
 			if current_stage < weather_sequence.size() - 1:
 				current_stage += 1
 				weather = weather_sequence[current_stage]
 				weather_timer = 20.0
+
+				for b in balls:
+					var is_active = false
+					if typeof(b) == TYPE_DICTIONARY:
+						if "forecast_booster_active" in b and b.forecast_booster_active: is_active = true
+					elif typeof(b) == TYPE_OBJECT:
+						if "forecast_booster_active" in b and b.get("forecast_booster_active"): is_active = true
+						elif b.has_method("get_meta") and b.has_meta("forecast_booster_active") and b.get_meta("forecast_booster_active"): is_active = true
+
+					if is_active:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["forecast_booster_active"] = false
+							b["weather_immunity_timer"] = 15.0
+							b["aura_booster_timer"] = 15.0
+						elif typeof(b) == TYPE_OBJECT:
+							if "forecast_booster_active" in b: b.set("forecast_booster_active", false)
+							elif b.has_method("set_meta"): b.set_meta("forecast_booster_active", false)
+							if "weather_immunity_timer" in b: b.set("weather_immunity_timer", 15.0)
+							elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", 15.0)
+							if "aura_booster_timer" in b: b.set("aura_booster_timer", 15.0)
+							elif b.has_method("set_meta"): b.set_meta("aura_booster_timer", 15.0)
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["forecast_warning_issued"] = false
+					elif typeof(b) == TYPE_OBJECT:
+						if "forecast_warning_issued" in b: b.set("forecast_warning_issued", false)
+						elif b.has_method("set_meta"): b.set_meta("forecast_warning_issued", false)
+
 				if world.get("arena") != null:
 					world.arena.weather = weather
 				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
@@ -37024,7 +37087,7 @@ class ItemMorphMode extends GameMode:
 	var morph_timer: float = 0.0
 	var morph_interval: float = 10.0
 	var rng = RandomNumberGenerator.new()
-	var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "trap_disarm_kit"]
+	var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "trap_disarm_kit", "forecast_booster"]
 
 	func _init().():
 		name = "Item Morph"
