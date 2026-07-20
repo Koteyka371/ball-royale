@@ -236,6 +236,12 @@ func scan() -> Dictionary:
             elif "shadow_booster_timer" in e:
                 e_has_shadow = float(e.shadow_booster_timer) > 0
 
+            var e_has_invisibility = false
+            if e.has_method("get_meta") and e.has_meta("invisibility_timer"):
+                e_has_invisibility = e.get_meta("invisibility_timer") > 0
+            elif "invisibility_timer" in e:
+                e_has_invisibility = float(e.invisibility_timer) > 0
+
             var e_has_stealth_booster = false
             if e.has_method("get_meta") and e.has_meta("stealth_booster_timer"):
                 e_has_stealth_booster = e.get_meta("stealth_booster_timer") > 0
@@ -252,14 +258,16 @@ func scan() -> Dictionary:
             if "ball_type" in e and e.ball_type == "sand_elemental" and self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena and self.world.arena.is_sandstorming:
                 is_sand_cloaked = true
 
-            if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster:
+            if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility:
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
 
                 if ball_has_thermal_vision:
                     if dist > 500.0:
                         continue
                 else:
-                    if (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
+                    if e_has_invisibility:
+                        continue
+                    elif (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
                         continue
                     elif is_sand_cloaked and dist > 40.0:
                         continue
@@ -333,7 +341,7 @@ func scan() -> Dictionary:
                                 break
                         if not found:
                             data["boosters"].append(h)
-                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item" or h.kind == "shadow_booster" or h.kind == "stealth_booster" or h.kind == "sound_mine"):
+                elif "kind" in h and (h.kind == "drone_item" or h.kind == "stealth_drone_item" or h.kind == "shadow_booster" or h.kind == "stealth_booster" or h.kind == "invisibility_booster" or h.kind == "sound_mine"):
                     if h.kind != "sound_mine":
                         var found = false
                         for b in data["boosters"]:
