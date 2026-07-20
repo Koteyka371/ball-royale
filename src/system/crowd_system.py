@@ -26,6 +26,7 @@ class CrowdSystem:
         self.has_real_spectators = False
         self.viewer_loyalty = {}
         self.user_votes = {}
+        self.active_bounty = None
 
     def _get_user_display(self, user: str) -> str:
         points = self.viewer_loyalty.get(user, 0)
@@ -149,6 +150,19 @@ class CrowdSystem:
                 self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} spawned a {emote_type} emote!"})
                 self.excitement_level += 2.0
 
+        elif cmd == "!bounty" and len(parts) >= 2:
+            try:
+                tid = int(parts[1])
+                target = next((b for b in alive_balls if getattr(b, "id", -1) == tid), None)
+                if target:
+                    self.active_bounty = {"target_id": tid, "timer": 600, "user": user}
+                    if hasattr(self.world, 'add_event'):
+                        self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} placed a BOUNTY on Ball {tid}!"})
+                        self.world.add_event("visual_effect", {"type": "bounty_placed", "x": getattr(target, "x", 0), "y": getattr(target, "y", 0)})
+                        self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 10
+            except ValueError:
+                pass
+
         elif cmd == "!vote" and len(parts) >= 2:
             option = parts[1]
             if getattr(self, 'active_vote', None) and getattr(self, 'votes', None) is not None:
@@ -227,8 +241,31 @@ class CrowdSystem:
         self._process_votes(balls, tick)
         self._process_spectator_signs(balls, tick)
         self._process_global_modifier(balls, tick)
+        self._process_bounties(balls, tick)
         self._trigger_large_scale_event(balls, tick)
 
+    def _process_bounties(self, balls: List[Any], tick: int):
+        if not getattr(self, 'active_bounty', None):
+            return
+
+        self.active_bounty["timer"] -= 1
+        if self.active_bounty["timer"] <= 0:
+            if hasattr(self.world, 'add_event'):
+                self.world.add_event("crowd_cheer", {"message": f"The bounty on Ball {self.active_bounty['target_id']} has expired!"})
+            self.active_bounty = None
+            return
+
+        # Periodic visual effect on target
+        if tick % 30 == 0:
+            tid = self.active_bounty["target_id"]
+            target = next((b for b in balls if getattr(b, "id", -1) == tid and getattr(b, "alive", False)), None)
+            if target and hasattr(self.world, 'add_event'):
+                self.world.add_event("visual_effect", {
+                    "type": "bounty_mark",
+                    "x": getattr(target, "x", 0),
+                    "y": getattr(target, "y", 0),
+                    "target_id": tid
+                })
 
     def _trigger_large_scale_event(self, balls: List[Any], tick: int):
         if self.excitement_level >= 10.0:
@@ -445,6 +482,19 @@ class CrowdSystem:
                     self.world.add_event("crowd_cheer", {"message": f"The crowd gasps as team {victim_team} is wiped out!", "volume": 1.1})
                     self.world.add_event("audio_event", {"sound": "team_wipe_gasp", "volume": 1.0})
 
+        # Bounty check
+        if getattr(self, 'active_bounty', None) and victim_id == self.active_bounty["target_id"]:
+            if killer:
+                killer.score = getattr(killer, "score", 0) + 5000
+                self.excitement_level += 50.0
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": f"The BOUNTY on Ball {victim_id} was claimed by Ball {killer_id}!", "volume": 1.5})
+                    self.world.add_event("visual_effect", {
+                        "type": "bounty_claimed",
+                        "x": getattr(killer, "x", 0),
+                        "y": getattr(killer, "y", 0)
+                    })
+            self.active_bounty = None
 
     def _throw_buffs_if_needed(self, balls: List[Any], tick: int):
         if self.excitement_level < 50.0:

@@ -19,6 +19,7 @@ var match_started = false
 var match_ended = false
 var external_commands = []
 var has_real_spectators = false
+var active_bounty = null
 
 func _init(p_world):
     world = p_world
@@ -192,6 +193,46 @@ func process_external_command(user: String, command: String, balls: Array):
             world.add_event("crowd_throw", {"message": "Viewer " + user + " spawned a " + emote_type + " emote!"})
             excitement_level += 2.0
 
+    elif cmd == "!bounty" and parts.size() >= 2:
+        var tid = parts[1].to_int()
+        var target = null
+        for b in alive_balls:
+            var b_id = -1
+            if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                b_id = b.get("id")
+            elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                b_id = b["id"]
+            if b_id == tid:
+                target = b
+                break
+
+        if target != null:
+            active_bounty = {"target_id": tid, "timer": 600, "user": user}
+            if world != null and world.has_method("add_event"):
+                var disp_user = user
+                if viewer_loyalty.has(user):
+                    var pts = viewer_loyalty[user]
+                    if pts >= 50:
+                        disp_user = "👑 " + user
+                    elif pts >= 20:
+                        disp_user = "⭐ " + user
+
+                world.add_event("crowd_throw", {"message": "Viewer " + disp_user + " placed a BOUNTY on Ball " + str(tid) + "!"})
+                var t_x = 0.0
+                var t_y = 0.0
+                if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+                    t_x = float(target.get("x", 0.0))
+                    t_y = float(target.get("y", 0.0))
+                elif typeof(target) == TYPE_DICTIONARY:
+                    t_x = float(target.get("x", 0.0))
+                    t_y = float(target.get("y", 0.0))
+                world.add_event("visual_effect", {"type": "bounty_placed", "x": t_x, "y": t_y})
+
+                if viewer_loyalty.has(user):
+                    viewer_loyalty[user] += 10
+                else:
+                    viewer_loyalty[user] = 10
+
     elif cmd == "!vote" and parts.size() >= 2:
         var option = parts[1]
         if active_vote != null and votes.has(option):
@@ -282,7 +323,52 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
     _process_votes(balls, current_tick)
     _process_spectator_signs(balls, current_tick)
     _process_global_modifier(balls, current_tick)
+    _process_bounties(balls, current_tick)
     _trigger_large_scale_event(balls, current_tick)
+
+func _process_bounties(balls: Array, current_tick: int):
+    if active_bounty == null:
+        return
+
+    active_bounty["timer"] -= 1
+    if active_bounty["timer"] <= 0:
+        if world != null and world.has_method("add_event"):
+            world.add_event("crowd_cheer", {"message": "The bounty on Ball " + str(active_bounty["target_id"]) + " has expired!"})
+        active_bounty = null
+        return
+
+    if current_tick % 30 == 0:
+        var tid = active_bounty["target_id"]
+        var target = null
+        for b in balls:
+            var b_id = -1
+            var b_alive = false
+            if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                b_id = b.get("id")
+                b_alive = b.get("alive") if b.get("alive") != null else false
+            elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                b_id = b["id"]
+                b_alive = b.get("alive", false)
+            if b_id == tid and b_alive:
+                target = b
+                break
+
+        if target != null and world != null and world.has_method("add_event"):
+            var t_x = 0.0
+            var t_y = 0.0
+            if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+                t_x = float(target.get("x", 0.0))
+                t_y = float(target.get("y", 0.0))
+            elif typeof(target) == TYPE_DICTIONARY:
+                t_x = float(target.get("x", 0.0))
+                t_y = float(target.get("y", 0.0))
+
+            world.add_event("visual_effect", {
+                "type": "bounty_mark",
+                "x": t_x,
+                "y": t_y,
+                "target_id": tid
+            })
 
 func _check_bets_and_winner(balls: Array, current_tick: int):
     if not match_started and balls.size() > 1:
@@ -660,6 +746,33 @@ func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
                     world.add_event("crowd_cheer", {"message": "The crowd gasps as team " + str(victim_team) + " is wiped out!", "volume": 1.1})
                     world.add_event("audio_event", {"sound": "team_wipe_gasp", "volume": 1.0})
 
+        if active_bounty != null and str(victim_id) == str(active_bounty["target_id"]):
+            if killer != null:
+                if typeof(killer) == TYPE_OBJECT and "score" in killer:
+                    killer.score += 5000
+                elif typeof(killer) == TYPE_DICTIONARY:
+                    killer["score"] = killer.get("score", 0) + 5000
+                elif typeof(killer) == TYPE_OBJECT and killer.has_method("set"):
+                    killer.set("score", killer.get("score") + 5000)
+
+                excitement_level += 50.0
+                if world != null and world.has_method("add_event"):
+                    world.add_event("crowd_cheer", {"message": "The BOUNTY on Ball " + str(victim_id) + " was claimed by Ball " + str(killer_id) + "!", "volume": 1.5})
+
+                    var k_x = 0.0
+                    var k_y = 0.0
+                    if typeof(killer) == TYPE_OBJECT and killer.has_method("get"):
+                        k_x = float(killer.get("x", 0.0))
+                        k_y = float(killer.get("y", 0.0))
+                    elif typeof(killer) == TYPE_DICTIONARY:
+                        k_x = float(killer.get("x", 0.0))
+                        k_y = float(killer.get("y", 0.0))
+                    world.add_event("visual_effect", {
+                        "type": "bounty_claimed",
+                        "x": k_x,
+                        "y": k_y
+                    })
+            active_bounty = null
 
 func _throw_buffs_if_needed(balls: Array, current_tick: int):
     if excitement_level < 50.0:
