@@ -1,4 +1,4 @@
 {
-  "title": "Twitch Plays AI Parameters",
-  "description": "Expose a set of macro commands that let top-loyal viewers vote to tweak the global neural network weights mid-match (e.g., '!aggression up', '!survival down'). If a vote passes, the AI models shift their behavior weights dynamically, making all bots hyper-aggressive or extremely cowardly for a duration."
+  "title": "Viewer Named AI Balls",
+  "description": "Top viewers automatically have AI balls named after them in the next match, inheriting their loyalty badges."
 }

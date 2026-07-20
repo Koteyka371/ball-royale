@@ -19,10 +19,47 @@ var match_started = false
 var match_ended = false
 var external_commands = []
 var has_real_spectators = false
+var viewer_loyalty = {}
+var user_votes = {}
 
 func _init(p_world):
     world = p_world
 
+
+
+func _add_viewer_loyalty(user: String, points: int):
+    var current_points = 0
+    if viewer_loyalty.has(user):
+        current_points = viewer_loyalty[user]
+    viewer_loyalty[user] = current_points + points
+
+    if world != null and typeof(world) == TYPE_OBJECT and world.has("leaderboard_manager") and world.leaderboard_manager != null:
+        if world.leaderboard_manager.has_method("record_viewer_loyalty"):
+            world.leaderboard_manager.record_viewer_loyalty(user, points)
+    elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("leaderboard_manager") and world["leaderboard_manager"] != null:
+        if world["leaderboard_manager"].has_method("record_viewer_loyalty"):
+            world["leaderboard_manager"].record_viewer_loyalty(user, points)
+
+func _get_user_display(user: String) -> String:
+    var badge = ""
+    if world != null and typeof(world) == TYPE_OBJECT and world.has("leaderboard_manager") and world.leaderboard_manager != null:
+        if world.leaderboard_manager.has_method("get_viewer_badge"):
+            badge = world.leaderboard_manager.get_viewer_badge(user)
+    elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("leaderboard_manager") and world["leaderboard_manager"] != null:
+        if world["leaderboard_manager"].has_method("get_viewer_badge"):
+            badge = world["leaderboard_manager"].get_viewer_badge(user)
+    else:
+        var points = 0
+        if viewer_loyalty.has(user):
+            points = viewer_loyalty[user]
+        if points >= 50:
+            badge = "👑"
+        elif points >= 20:
+            badge = "⭐"
+
+    if badge != "":
+        return badge + " " + user
+    return user
 
 func queue_external_command(user: String, command: String):
     external_commands.append({"user": user, "command": command})
@@ -74,7 +111,8 @@ func process_external_command(user: String, command: String, balls: Array):
                 "y": t_y,
                 "kind": hazard_kind
             })
-            world.add_event("crowd_throw", {"message": "Viewer " + user + " spawned a " + hazard_kind + "!"})
+            _add_viewer_loyalty(user, 5)
+            world.add_event("crowd_throw", {"message": "Viewer " + _get_user_display(user) + " spawned a " + hazard_kind + "!"})
             excitement_level += 5.0
 
     elif cmd == "!weather" and parts.size() >= 2:
@@ -87,7 +125,8 @@ func process_external_command(user: String, command: String, balls: Array):
                     world.arena["temperature"] = 50.0
                 if world != null and world.has_method("add_event"):
                     world.add_event("arena_modifier", {"temperature": 50.0})
-                    world.add_event("crowd_cheer", {"message": "Viewer " + user + " made it HOT!"})
+                    _add_viewer_loyalty(user, 10)
+                    world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " made it HOT!"})
             elif weather_type == "cold" or weather_type == "blizzard" or weather_type == "snow":
                 if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "temperature" in world.arena:
                     world.arena.temperature = -20.0
@@ -95,7 +134,8 @@ func process_external_command(user: String, command: String, balls: Array):
                     world.arena["temperature"] = -20.0
                 if world != null and world.has_method("add_event"):
                     world.add_event("arena_modifier", {"temperature": -20.0})
-                    world.add_event("crowd_cheer", {"message": "Viewer " + user + " made it COLD!"})
+                    _add_viewer_loyalty(user, 10)
+                    world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " made it COLD!"})
             else:
                 if world != null and world.has_method("add_event"):
                     var target = null
@@ -115,7 +155,8 @@ func process_external_command(user: String, command: String, balls: Array):
                             "y": t_y,
                             "kind": weather_type
                         })
-                        world.add_event("crowd_cheer", {"message": "Viewer " + user + " summoned a " + weather_type + "!"})
+                        _add_viewer_loyalty(user, 10)
+                        world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " summoned a " + weather_type + "!"})
             excitement_level -= 10.0
 
     elif cmd == "!drop" and parts.size() >= 2:
@@ -152,7 +193,8 @@ func process_external_command(user: String, command: String, balls: Array):
                 "kind": booster_kind,
                 "value": 30.0
             })
-            world.add_event("crowd_throw", {"message": "Viewer " + user + " dropped a " + booster_kind + " booster!"})
+            _add_viewer_loyalty(user, 5)
+            world.add_event("crowd_throw", {"message": "Viewer " + _get_user_display(user) + " dropped a " + booster_kind + " booster!"})
             excitement_level += 5.0
 
     elif cmd == "!emote" and parts.size() >= 2:
@@ -189,7 +231,8 @@ func process_external_command(user: String, command: String, balls: Array):
                 "kind": "emote",
                 "emoji": emote_type
             })
-            world.add_event("crowd_throw", {"message": "Viewer " + user + " spawned a " + emote_type + " emote!"})
+            _add_viewer_loyalty(user, 5)
+            world.add_event("crowd_throw", {"message": "Viewer " + _get_user_display(user) + " spawned a " + emote_type + " emote!"})
             excitement_level += 2.0
 
     elif cmd == "!vote" and parts.size() >= 2:
@@ -197,7 +240,8 @@ func process_external_command(user: String, command: String, balls: Array):
         if active_vote != null and votes.has(option):
             votes[option] += 1
             if world != null and world.has_method("add_event"):
-                world.add_event("crowd_cheer", {"message": "Viewer " + user + " voted for " + option + "!"})
+                user_votes[user] = option
+                world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " voted for " + option + "!"})
 
     elif cmd == "!bribe" and parts.size() >= 2:
         var action = parts[1]
@@ -947,6 +991,12 @@ func _resolve_vote(balls: Array):
             global_modifier_timer = 1800
             if world != null and world.has_method("add_event"):
                 world.add_event("crowd_cheer", {"message": "The crowd activated a " + winning_option + " for 30 seconds!", "volume": 1.2})
+
+
+    for u in user_votes.keys():
+        if user_votes[u] == winning_option:
+            _add_viewer_loyalty(u, 10)
+    user_votes.clear()
 
     active_vote = null
     votes.clear()

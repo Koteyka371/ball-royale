@@ -21,7 +21,8 @@ class LeaderboardManager:
                 "current_season": 1,
                 "players": {},
                 "nemesis_rivalries": {},
-                "nemesis_event_active": False
+                "nemesis_event_active": False,
+                "viewer_loyalty": {}
             }
 
     def save(self):
@@ -165,3 +166,19 @@ class LeaderboardManager:
         self.data["current_season"] = season_num + 1
         self.data["players"] = {}
         self.save()
+
+    def record_viewer_loyalty(self, viewer_id: str, points: int):
+        if "viewer_loyalty" not in self.data:
+            self.data["viewer_loyalty"] = {}
+        self.data["viewer_loyalty"][viewer_id] = self.data["viewer_loyalty"].get(viewer_id, 0) + points
+        self.save()
+
+    def get_viewer_badge(self, viewer_id: str):
+        if "viewer_loyalty" not in self.data:
+            return ""
+        points = self.data["viewer_loyalty"].get(viewer_id, 0)
+        if points >= 50:
+            return "👑"
+        elif points >= 20:
+            return "⭐"
+        return ""

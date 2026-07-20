@@ -27,7 +27,8 @@ func load_leaderboard():
     data = {
         "season_start_time": Time.get_unix_time_from_system(),
         "current_season": 1,
-        "players": {}
+        "players": {},
+        "viewer_loyalty": {}
     }
 
 func save_leaderboard():
@@ -169,3 +170,25 @@ func end_season():
     data["current_season"] = season_num + 1
     data["players"] = {}
     save_leaderboard()
+
+func record_viewer_loyalty(viewer_id: String, points: int):
+    if not data.has("viewer_loyalty"):
+        data["viewer_loyalty"] = {}
+
+    var current_points = 0
+    if data["viewer_loyalty"].has(viewer_id):
+        current_points = data["viewer_loyalty"][viewer_id]
+
+    data["viewer_loyalty"][viewer_id] = current_points + points
+    save_leaderboard()
+
+func get_viewer_badge(viewer_id: String) -> String:
+    if not data.has("viewer_loyalty") or not data["viewer_loyalty"].has(viewer_id):
+        return ""
+
+    var points = data["viewer_loyalty"][viewer_id]
+    if points >= 50:
+        return "👑"
+    elif points >= 20:
+        return "⭐"
+    return ""
