@@ -6961,6 +6961,14 @@ class Action:
                                         self.world.arena.hazards.append(tar_puddle)
 
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "jump_pad":
+                                    hazard.duration = 0.0 # Destroy trap
+                                    import random
+                                    import math
+                                    angle = random.uniform(0, 2 * math.pi)
+                                    speed = 1000.0
+                                    self.ball.vx = math.cos(angle) * speed
+                                    self.ball.vy = math.sin(angle) * speed
                                 elif trap_variant == "ricochet":
                                     hazard.duration = 0.0 # Destroy trap
 
