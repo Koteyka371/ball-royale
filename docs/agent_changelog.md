@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1228] New Game Mode: Toxic Flood — *2026-07-20 23:35:52 UTC*
+
+A variation of the standard battle royale where the safe zone isn't a shrinking circle, but rather elevated platforms. The floor periodically floods with poison, forcing all players to fight for control of the limited high ground platforms before the flood recedes.
+
+---
+
 ## [idea-1225] Weather forecasting — *2026-07-20 23:34:31 UTC*
 
 Have a ball type that gets a prediction on what weather might come next.
