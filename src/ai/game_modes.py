@@ -21912,7 +21912,91 @@ class ChargedMode(GameMode):
                     b1_x = getattr(b1, "x", 0.0)
                     b1_y = getattr(b1, "y", 0.0)
 
+
+class ZeroGravityMeteorShowerMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Zero Gravity Meteor Shower"
+        self.description = "A chaotic mode combining zero-gravity periods with falling meteors that bounce unpredictably off boundaries while retaining momentum."
+        self.meteor_timer = 0.0
+        self.zero_g_timer = 0.0
+        self.is_zero_g = False
+        self.mutators_active = True
+        self.mutators = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.meteor_timer = 0.0
+        self.zero_g_timer = 0.0
+        self.is_zero_g = False
+        self.mutators_active = True
+        self.mutators = []
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is None:
+            world.arena.hazards = []
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+        import random
+
+        self.zero_g_timer += delta
+        if self.zero_g_timer > 5.0:
+            self.zero_g_timer = 0.0
+            self.is_zero_g = not self.is_zero_g
+            if self.is_zero_g:
+                if "zero_gravity" not in self.mutators:
+                    self.mutators.append("zero_gravity")
+            else:
+                if "zero_gravity" in self.mutators:
+                    self.mutators.remove("zero_gravity")
+
+        self.meteor_timer += delta
+        if self.meteor_timer > 3.0:
+            self.meteor_timer = 0.0
+            if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is not None:
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+
+                from arena.procedural_arena import Hazard
+
+                num_meteors = random.randint(2, 4)
+                for _ in range(num_meteors):
+                    x = random.uniform(100, arena_width - 100)
+                    y = random.uniform(100, arena_height - 100)
+                    h_id = f"meteor_{random.randint(10000, 99999)}"
+                    h = Hazard(h_id, x, y, 30.0, "meteor", 200.0)
+                    h.target_radius = 30.0
+                    h.vx = random.uniform(-400.0, 400.0)
+                    h.vy = random.uniform(-400.0, 400.0)
+                    setattr(h, "duration", 5.0)
+                    world.arena.hazards.append(h)
+
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is not None:
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "meteor":
+                    if self.is_zero_g:
+                        if hasattr(h, "vx") and hasattr(h, "vy"):
+                            h.x += h.vx * delta
+                            h.y += h.vy * delta
+
+                            if h.x - getattr(h, "radius", 30.0) < 0:
+                                h.x = getattr(h, "radius", 30.0)
+                                h.vx = abs(h.vx)
+                            elif h.x + getattr(h, "radius", 30.0) > arena_width:
+                                h.x = arena_width - getattr(h, "radius", 30.0)
+                                h.vx = -abs(h.vx)
+
+                            if h.y - getattr(h, "radius", 30.0) < 0:
+                                h.y = getattr(h, "radius", 30.0)
+                                h.vy = abs(h.vy)
+                            elif h.y + getattr(h, "radius", 30.0) > arena_height:
+                                h.y = arena_height - getattr(h, "radius", 30.0)
+                                h.vy = -abs(h.vy)
+
 GAME_MODES = {
+    'zero_gravity_meteor_shower': ZeroGravityMeteorShowerMode(),
     'charged': ChargedMode(),
     'bounce_laser': BounceLaserMode(),
     'dragging_magnetic_mines': DraggingMagneticMinesMode(),

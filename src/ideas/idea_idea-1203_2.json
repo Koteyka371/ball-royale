@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic Polarity Shift Mutator",
+  "description": "A global mutator that periodically assigns a 'positive' or 'negative' magnetic charge to all balls. Balls with opposite charges are slowly drawn together, while those with the same charge are violently repelled upon proximity."
+}

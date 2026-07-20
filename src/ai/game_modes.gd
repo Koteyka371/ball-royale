@@ -42910,3 +42910,181 @@ class DraggingMagneticMinesMode extends GameMode:
 						if dist <= m["activation_radius"] and dist > 0:
 							b.x -= (dx / dist) * m["pull_strength"] * delta
 							b.y -= (dy / dist) * m["pull_strength"] * delta
+
+
+class ZeroGravityMeteorShowerMode extends GameMode:
+	var meteor_timer: float = 0.0
+	var zero_g_timer: float = 0.0
+	var is_zero_g: bool = false
+
+	func _init() -> void:
+		name = "Zero Gravity Meteor Shower"
+		description = "A chaotic mode combining zero-gravity periods with falling meteors that bounce unpredictably off boundaries while retaining momentum."
+		self.set_meta("mutators_active", true)
+		self.set_meta("mutators", [])
+
+	func setup(world, balls) -> void:
+		super.setup(world, balls)
+		meteor_timer = 0.0
+		zero_g_timer = 0.0
+		is_zero_g = false
+		self.set_meta("mutators_active", true)
+		self.set_meta("mutators", [])
+
+		var world_dict = false
+		if typeof(world) == TYPE_DICTIONARY:
+			world_dict = true
+			if "arena" in world and world.arena != null:
+				if not ("hazards" in world.arena):
+					world.arena["hazards"] = []
+		elif typeof(world) == TYPE_OBJECT:
+			if "arena" in world and world.arena != null:
+				if not ("hazards" in world.arena):
+					world.arena.hazards = []
+
+	func apply_dynamic_traits(world, balls, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+
+		zero_g_timer += delta
+		if zero_g_timer > 5.0:
+			zero_g_timer = 0.0
+			is_zero_g = not is_zero_g
+			var muts = self.get_meta("mutators")
+			if is_zero_g:
+				if not ("zero_gravity" in muts):
+					muts.append("zero_gravity")
+			else:
+				if "zero_gravity" in muts:
+					muts.erase("zero_gravity")
+			self.set_meta("mutators", muts)
+
+		meteor_timer += delta
+		if meteor_timer > 3.0:
+			meteor_timer = 0.0
+			var arena = null
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world: arena = world.arena
+			elif typeof(world) == TYPE_OBJECT and "arena" in world: arena = world.arena
+
+			if arena != null:
+				var arena_haz = null
+				if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena: arena_haz = arena.hazards
+				elif typeof(arena) == TYPE_OBJECT and "hazards" in arena: arena_haz = arena.hazards
+
+				if arena_haz != null:
+					var arena_width = 1000.0
+					var arena_height = 1000.0
+					if typeof(arena) == TYPE_DICTIONARY:
+						if "width" in arena: arena_width = float(arena.width)
+						if "height" in arena: arena_height = float(arena.height)
+					elif typeof(arena) == TYPE_OBJECT:
+						if "width" in arena: arena_width = float(arena.width)
+						if "height" in arena: arena_height = float(arena.height)
+
+					var ProceduralArenaScript = preload("res://src/arena/procedural_arena.gd")
+					var num_meteors = randi() % 3 + 2
+					for i in range(num_meteors):
+						var h_x = randf_range(100.0, arena_width - 100.0)
+						var h_y = randf_range(100.0, arena_height - 100.0)
+						var h_id = randi() % 90000 + 10000
+						var h = ProceduralArenaScript.Hazard.new(h_id, h_x, h_y, 30.0, "meteor", 200.0)
+						h.target_radius = 30.0
+						h.set_meta("vx", randf_range(-400.0, 400.0))
+						h.set_meta("vy", randf_range(-400.0, 400.0))
+						h.set_meta("duration", 5.0)
+						if typeof(arena) == TYPE_DICTIONARY:
+							arena.hazards.append(h)
+						elif typeof(arena) == TYPE_OBJECT:
+							arena.hazards.append(h)
+
+		var arena = null
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world: arena = world.arena
+		elif typeof(world) == TYPE_OBJECT and "arena" in world: arena = world.arena
+
+		if arena != null:
+			var arena_haz = null
+			if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena: arena_haz = arena.hazards
+			elif typeof(arena) == TYPE_OBJECT and "hazards" in arena: arena_haz = arena.hazards
+
+			if arena_haz != null:
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+				if typeof(arena) == TYPE_DICTIONARY:
+					if "width" in arena: arena_width = float(arena.width)
+					if "height" in arena: arena_height = float(arena.height)
+				elif typeof(arena) == TYPE_OBJECT:
+					if "width" in arena: arena_width = float(arena.width)
+					if "height" in arena: arena_height = float(arena.height)
+
+				for h in arena_haz:
+					var is_meteor = false
+					if typeof(h) == TYPE_DICTIONARY and "kind" in h and h.kind == "meteor": is_meteor = true
+					elif typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "meteor": is_meteor = true
+
+					if is_meteor:
+						if is_zero_g:
+							var vx = 0.0
+							var vy = 0.0
+							var has_v = false
+
+							if typeof(h) == TYPE_DICTIONARY:
+								if "vx" in h and "vy" in h:
+									vx = h.vx
+									vy = h.vy
+									has_v = true
+							elif typeof(h) == TYPE_OBJECT:
+								if h.has_method("get_meta") and h.has_meta("vx") and h.has_meta("vy"):
+									vx = h.get_meta("vx")
+									vy = h.get_meta("vy")
+									has_v = true
+								elif "vx" in h and "vy" in h:
+									vx = h.vx
+									vy = h.vy
+									has_v = true
+
+							if has_v:
+								var h_x = 0.0
+								var h_y = 0.0
+								if typeof(h) == TYPE_DICTIONARY:
+									if "x" in h: h_x = h.x
+									if "y" in h: h_y = h.y
+								elif typeof(h) == TYPE_OBJECT:
+									if "x" in h: h_x = h.x
+									if "y" in h: h_y = h.y
+
+								h_x += vx * delta
+								h_y += vy * delta
+
+								var r = 30.0
+								if typeof(h) == TYPE_DICTIONARY and "radius" in h: r = h.radius
+								elif typeof(h) == TYPE_OBJECT and "radius" in h: r = h.radius
+
+								if h_x - r < 0:
+									h_x = r
+									vx = abs(vx)
+								elif h_x + r > arena_width:
+									h_x = arena_width - r
+									vx = -abs(vx)
+
+								if h_y - r < 0:
+									h_y = r
+									vy = abs(vy)
+								elif h_y + r > arena_height:
+									h_y = arena_height - r
+									vy = -abs(vy)
+
+								if typeof(h) == TYPE_DICTIONARY:
+									h["x"] = h_x
+									h["y"] = h_y
+									h["vx"] = vx
+									h["vy"] = vy
+								elif typeof(h) == TYPE_OBJECT:
+									h.x = h_x
+									h.y = h_y
+									if h.has_method("set_meta"):
+										h.set_meta("vx", vx)
+										h.set_meta("vy", vy)
+									else:
+										h.vx = vx
+										h.vy = vy
+
+GAME_MODES["zero_gravity_meteor_shower"] = ZeroGravityMeteorShowerMode.new()
