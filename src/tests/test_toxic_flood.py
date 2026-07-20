@@ -6,7 +6,7 @@ from ai.game_modes import ToxicFloodRoyaleMode
 
 class MockWorld:
     def __init__(self):
-        self.arena = type('Arena', (), {'width': 1000, 'height': 1000})()
+        self.arena = type('Arena', (), {'width': 1000, 'height': 1000, 'hazards': []})()
         self.events = []
         self.dead_balls = []
 
@@ -34,12 +34,14 @@ def test_toxic_flood_mode():
 
     assert mode.state == "dry"
     assert len(mode.platforms) == 0
+    assert len(world.arena.hazards) == 0
 
     # Tick down dry state
     mode.tick(world, balls, delta=10.0)
 
     assert mode.state == "warning"
     assert len(mode.platforms) > 0 # Spawned platform for 2 balls (max(1, 2//2) = 1 platform)
+    assert len(world.arena.hazards) > 0 # Elevated platforms as hazards
 
     # Move b1 onto platform
     p = mode.platforms[0]
@@ -68,3 +70,4 @@ def test_toxic_flood_mode():
 
     assert mode.state == "dry"
     assert len(mode.platforms) == 0
+    assert len(world.arena.hazards) == 0

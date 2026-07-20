@@ -23417,6 +23417,7 @@ class ToxicFloodRoyaleMode(GameMode):
 
     def spawn_platforms(self, count=3):
         import random
+        from arena.procedural_arena import Hazard
         arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else 1000
         arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else 1000
 
@@ -23430,6 +23431,10 @@ class ToxicFloodRoyaleMode(GameMode):
                 "y": y,
                 "radius": radius
             })
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                hazard_id = len(self.world.arena.hazards) + random.randint(1000, 9999)
+                hazard = Hazard(id=hazard_id, x=x, y=y, radius=radius, kind="elevated_platform", damage=0.0)
+                self.world.arena.hazards.append(hazard)
 
     def tick(self, world, balls, delta=0.016):
         import math
@@ -23453,6 +23458,8 @@ class ToxicFloodRoyaleMode(GameMode):
             self.state = "dry"
             self.state_timer = 10.0
             self.platforms = []
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "elevated_platform"]
             if hasattr(world, "add_event"):
                 world.add_event("visual_effect", {"type": "toxic_flood_end"})
 
