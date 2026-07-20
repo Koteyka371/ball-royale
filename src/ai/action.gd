@@ -24397,7 +24397,7 @@ func _use_skill():
                     elif hazard.has_method("has_meta") and hazard.has_meta("active"): active = hazard.get_meta("active")
 
                     if kind == "sound_mine" and active:
-                        if skill_name in ["dash", "sonar_ping", "stamina_dash", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"]:
+                        if skill_name in ["dash", "sonar_ping", "forecast_ping", "stamina_dash", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"]:
                             var h_x = 0.0
                             if "x" in hazard: h_x = hazard.x
                             var h_y = 0.0
@@ -28291,6 +28291,27 @@ func _use_skill():
                 self.world.add_event("sonar_ping", event_payload)
 
             var cool = 12.0
+            if "skill_cooldown" in self.ball: cool = self.ball.skill_cooldown
+            if "skill_timer" in self.ball: self.ball.skill_timer = cool
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cool)
+        elif skill_name == "forecast_ping":
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("sonar_ping_timer", 5.0)
+                self.ball.set_meta("forecast_booster_active", true)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["sonar_ping_timer"] = 5.0
+                self.ball["forecast_booster_active"] = true
+            elif "sonar_ping_timer" in self.ball:
+                self.ball.sonar_ping_timer = 5.0
+                if "forecast_booster_active" in self.ball:
+                    self.ball.forecast_booster_active = true
+
+            if self.world.has_method("add_event"):
+                var event_payload = {"x": self.ball.x, "y": self.ball.y, "radius": 1500.0}
+                if "id" in self.ball: event_payload["source_id"] = self.ball.id
+                self.world.add_event("sonar_ping", event_payload)
+
+            var cool = 15.0
             if "skill_cooldown" in self.ball: cool = self.ball.skill_cooldown
             if "skill_timer" in self.ball: self.ball.skill_timer = cool
             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cool)
