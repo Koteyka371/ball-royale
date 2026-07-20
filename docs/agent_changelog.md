@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1230] Debris Repulsor Mod — *2026-07-20 22:09:48 UTC*
+
+A new hazard modifier that causes orbital debris to push balls away continuously rather than just slowing them down, making the crater area extremely slippery and harder to navigate for any balls trying to find cover.
+
+---
+
 ## [idea-1226] Weather specific events — *2026-07-20 21:56:13 UTC*
 
 Have specific small weather events, like small rain, slight breeze, rather than just extreme weather. Have specific balls that benefit from certain weather, like a sandstorm element giving speed boost, or wind element being blown away by hurricane.
