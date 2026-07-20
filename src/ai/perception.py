@@ -212,6 +212,11 @@ class Perception:
                     e_has_stealth_booster = e.get_meta("stealth_booster_timer") > 0
                 elif hasattr(e, "stealth_booster_timer"):
                     e_has_stealth_booster = e.stealth_booster_timer > 0
+                e_has_invisibility_booster = False
+                if hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("invisibility_booster_timer"):
+                    e_has_invisibility_booster = e.get_meta("invisibility_booster_timer") > 0
+                elif hasattr(e, "invisibility_booster_timer"):
+                    e_has_invisibility_booster = e.invisibility_booster_timer > 0
                 e_has_ghost_mode_booster = False
                 if hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("ghost_mode_active"):
                     e_has_ghost_mode_booster = e.get_meta("ghost_mode_active")
@@ -222,7 +227,7 @@ class Perception:
                 if getattr(e, "ball_type", "") == "sand_elemental" and hasattr(self.world, "arena") and getattr(self.world.arena, "is_sandstorming", False):
                     is_sand_cloaked = True
 
-                if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster:
+                if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility_booster:
                     dist = math.sqrt((ex - bx_curr)**2 + (ey - by_curr)**2)
 
                     if has_thermal_vision:
@@ -230,7 +235,9 @@ class Perception:
                         if dist > 500.0:
                             continue
                     else:
-                        if (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
+                        if e_has_invisibility_booster:
+                            continue
+                        elif (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
                             continue
                         elif is_sand_cloaked and dist > 40.0:
                             continue

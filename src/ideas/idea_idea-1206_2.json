@@ -1,0 +1,4 @@
+{
+  "title": "Ethereal Wall Hazard",
+  "description": "Walls that randomly shift states between solid and ethereal. While ethereal, players can pass through them, but projectiles cannot."
+}
