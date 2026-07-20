@@ -10792,6 +10792,28 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "weather_booster":
+                    import random
+                    weathers = ["heatwave", "lava", "sandstorm", "slight_breeze", "storm", "hurricane", "light_rain", "rain", "heavy_rain", "blizzard", "clear"]
+                    self.ball.weather_booster_timer = 10.0
+
+                    if not getattr(self.ball, "weather_booster_applied", False):
+                        if hasattr(self.world, "arena"):
+                            self.ball.previous_weather = getattr(self.world.arena, "weather", "clear")
+
+                    self.ball.weather_booster_applied = True
+                    if hasattr(self.world, "arena"):
+                        # Pick a random weather
+                        new_weather = random.choice(weathers)
+                        self.world.arena.weather = new_weather
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("weather_booster", {"weather": new_weather, "message": f"{getattr(self.ball, 'name', 'A ball')} invoked {new_weather}!"})
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "storm_link_booster":
                     enemies = self._get_enemies()
                     if enemies:
@@ -11228,6 +11250,28 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "weather_booster":
+                    import random
+                    weathers = ["heatwave", "lava", "sandstorm", "slight_breeze", "storm", "hurricane", "light_rain", "rain", "heavy_rain", "blizzard", "clear"]
+                    self.ball.weather_booster_timer = 10.0
+
+                    if not getattr(self.ball, "weather_booster_applied", False):
+                        if hasattr(self.world, "arena"):
+                            self.ball.previous_weather = getattr(self.world.arena, "weather", "clear")
+
+                    self.ball.weather_booster_applied = True
+                    if hasattr(self.world, "arena"):
+                        # Pick a random weather
+                        new_weather = random.choice(weathers)
+                        self.world.arena.weather = new_weather
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("weather_booster", {"weather": new_weather, "message": f"{getattr(self.ball, 'name', 'A ball')} invoked {new_weather}!"})
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "storm_link_booster":
                     enemies = self._get_enemies()
                     if enemies:
@@ -11956,7 +12000,22 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "weather_booster":
-                    self.ball.weather_control_timer = 10.0
+                    import random
+                    weathers = ["heatwave", "lava", "sandstorm", "slight_breeze", "storm", "hurricane", "light_rain", "rain", "heavy_rain", "blizzard", "clear"]
+                    self.ball.weather_booster_timer = 10.0
+
+                    if not getattr(self.ball, "weather_booster_applied", False):
+                        if hasattr(self.world, "arena"):
+                            self.ball.previous_weather = getattr(self.world.arena, "weather", "clear")
+
+                    self.ball.weather_booster_applied = True
+                    if hasattr(self.world, "arena"):
+                        # Pick a random weather
+                        new_weather = random.choice(weathers)
+                        self.world.arena.weather = new_weather
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("weather_booster", {"weather": new_weather, "message": f"{getattr(self.ball, 'name', 'A ball')} invoked {new_weather}!"})
+
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -17042,6 +17101,18 @@ class Action:
         if quantum_teleporter_booster_timer > 0:
             self.ball.quantum_teleporter_booster_timer = quantum_teleporter_booster_timer - delta
 
+        weather_booster_timer = getattr(self.ball, "weather_booster_timer", 0.0)
+        if weather_booster_timer > 0:
+            self.ball.weather_booster_timer -= delta
+            if self.ball.weather_booster_timer <= 0:
+                self.ball.weather_booster_timer = 0.0
+                if getattr(self.ball, "weather_booster_applied", False):
+                    self.ball.weather_booster_applied = False
+                    if hasattr(self.world, "arena"):
+                        prev_weather = getattr(self.ball, "previous_weather", "clear")
+                        self.world.arena.weather = prev_weather
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("weather_booster_end", {"weather": prev_weather, "message": f"Weather returned to {prev_weather}."})
         storm_link_timer = getattr(self.ball, "storm_link_timer", 0.0)
         if storm_link_timer > 0:
             target = getattr(self.ball, "storm_link_target", None)

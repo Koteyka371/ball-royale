@@ -1,0 +1,4 @@
+{
+    "title": "Chain Lightning Mutator",
+    "description": "Periodically lightning strikes a random ball in the arena and chains to any other balls within a medium radius. The initial strike deals heavy damage, but the chained strikes deal reduced damage. Players can use \"insulator\" boots or modifiers to become immune or even absorb the energy to refill stamina."
+}

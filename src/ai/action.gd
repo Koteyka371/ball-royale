@@ -6233,6 +6233,57 @@ func execute(strategy: String, delta: float):
                 self.ball.set_meta("quantum_teleporter_booster_timer", qtbt)
             if "quantum_teleporter_booster_timer" in self.ball:
                 self.ball.quantum_teleporter_booster_timer = qtbt
+		var weather_booster_timer = 0.0
+		if ball.has_method("has_meta") and ball.has_meta("weather_booster_timer"):
+			weather_booster_timer = ball.get_meta("weather_booster_timer")
+		elif typeof(ball) == TYPE_DICTIONARY:
+			weather_booster_timer = ball.get("weather_booster_timer", 0.0)
+		elif "weather_booster_timer" in ball:
+			weather_booster_timer = ball.weather_booster_timer
+
+		if weather_booster_timer > 0:
+			var new_w_timer = weather_booster_timer - delta
+			if typeof(ball) == TYPE_DICTIONARY:
+				ball["weather_booster_timer"] = new_w_timer
+			elif ball.has_method("set_meta"):
+				ball.set_meta("weather_booster_timer", new_w_timer)
+			else:
+				if "weather_booster_timer" in ball:
+					ball.weather_booster_timer = new_w_timer
+
+			if new_w_timer <= 0:
+				var applied = false
+				if typeof(ball) == TYPE_DICTIONARY:
+					applied = ball.get("weather_booster_applied", false)
+				elif ball.has_method("has_meta") and ball.has_meta("weather_booster_applied"):
+					applied = ball.get_meta("weather_booster_applied")
+				elif "weather_booster_applied" in ball:
+					applied = ball.weather_booster_applied
+
+				if applied:
+					if typeof(ball) == TYPE_DICTIONARY:
+						ball["weather_booster_applied"] = false
+					elif ball.has_method("set_meta"):
+						ball.set_meta("weather_booster_applied", false)
+					else:
+						if "weather_booster_applied" in ball:
+							ball.weather_booster_applied = false
+
+					if "arena" in world and world.arena != null:
+						var prev_weather = "clear"
+						if typeof(ball) == TYPE_DICTIONARY:
+							prev_weather = ball.get("previous_weather", "clear")
+						elif ball.has_method("has_meta") and ball.has_meta("previous_weather"):
+							prev_weather = ball.get_meta("previous_weather")
+						elif "previous_weather" in ball:
+							prev_weather = ball.previous_weather
+
+						if typeof(world.arena) == TYPE_DICTIONARY:
+							world.arena["weather"] = prev_weather
+						else:
+							world.arena.weather = prev_weather
+						if world.has_method("add_event"):
+							world.add_event("weather_booster_end", {"weather": prev_weather, "message": "Weather returned to normal."})
 		var storm_link_timer = 0.0
 		if self.ball.has_method("has_meta") and self.ball.has_meta("storm_link_timer"):
 			storm_link_timer = self.ball.get_meta("storm_link_timer")
@@ -23180,15 +23231,47 @@ func _collect_booster(delta: float):
 					if idx != -1:
 						self.world.boosters.remove_at(idx)
 			elif "kind" in nearest and nearest.kind == "weather_booster":
-                if self.ball.has_method("set_meta"):
-                    self.ball.set_meta("weather_control_timer", 10.0)
-                else:
-                    self.ball.weather_control_timer = 10.0
+				var is_applied = false
+				if self.ball.has_method("has_meta") and self.ball.has_meta("weather_booster_applied"):
+					is_applied = self.ball.get_meta("weather_booster_applied")
+				elif "weather_booster_applied" in self.ball:
+					is_applied = self.ball.weather_booster_applied
 
-                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
-                    var idx = self.world.arena.hazards.find(nearest)
-                    if idx != -1:
-                        self.world.arena.hazards.remove_at(idx)
+				if not is_applied:
+					var prev = "clear"
+					if self.world != null and "arena" in self.world and self.world.arena != null:
+						prev = self.world.arena.get("weather", "clear") if typeof(self.world.arena) == TYPE_DICTIONARY else self.world.arena.weather
+
+					if self.ball.has_method("set_meta"):
+						self.ball.set_meta("previous_weather", prev)
+					else:
+						self.ball.previous_weather = prev
+
+				if self.ball.has_method("set_meta"):
+					self.ball.set_meta("weather_booster_timer", 10.0)
+					self.ball.set_meta("weather_booster_applied", true)
+				else:
+					self.ball.weather_booster_timer = 10.0
+					self.ball.weather_booster_applied = true
+
+				if self.world != null and "arena" in self.world and self.world.arena != null:
+					var weathers = ["heatwave", "lava", "sandstorm", "slight_breeze", "storm", "hurricane", "light_rain", "rain", "heavy_rain", "blizzard", "clear"]
+					var new_weather = weathers[randi() % weathers.size()]
+					if typeof(self.world.arena) == TYPE_DICTIONARY:
+						self.world.arena["weather"] = new_weather
+					else:
+						self.world.arena.weather = new_weather
+					if self.world.has_method("add_event"):
+						self.world.add_event("weather_booster", {"weather": new_weather, "message": "Weather invoked!"})
+
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1:
+						self.world.arena.hazards.remove_at(idx)
+				if self.world != null and "boosters" in self.world:
+					var idx = self.world.boosters.find(nearest)
+					if idx != -1:
+						self.world.boosters.remove_at(idx)
 			elif "kind" in nearest and nearest.kind == "storm_booster":
 				if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
 					self.ball.set_meta("storm_booster_timer", 10.0)
@@ -23673,15 +23756,47 @@ func _collect_booster(delta: float):
 					if idx != -1:
 						self.world.boosters.remove_at(idx)
 			elif "kind" in nearest and nearest.kind == "weather_booster":
-                if self.ball.has_method("set_meta"):
-                    self.ball.set_meta("weather_control_timer", 10.0)
-                else:
-                    self.ball.weather_control_timer = 10.0
+				var is_applied = false
+				if self.ball.has_method("has_meta") and self.ball.has_meta("weather_booster_applied"):
+					is_applied = self.ball.get_meta("weather_booster_applied")
+				elif "weather_booster_applied" in self.ball:
+					is_applied = self.ball.weather_booster_applied
 
-                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
-                    var idx = self.world.arena.hazards.find(nearest)
-                    if idx != -1:
-                        self.world.arena.hazards.remove_at(idx)
+				if not is_applied:
+					var prev = "clear"
+					if self.world != null and "arena" in self.world and self.world.arena != null:
+						prev = self.world.arena.get("weather", "clear") if typeof(self.world.arena) == TYPE_DICTIONARY else self.world.arena.weather
+
+					if self.ball.has_method("set_meta"):
+						self.ball.set_meta("previous_weather", prev)
+					else:
+						self.ball.previous_weather = prev
+
+				if self.ball.has_method("set_meta"):
+					self.ball.set_meta("weather_booster_timer", 10.0)
+					self.ball.set_meta("weather_booster_applied", true)
+				else:
+					self.ball.weather_booster_timer = 10.0
+					self.ball.weather_booster_applied = true
+
+				if self.world != null and "arena" in self.world and self.world.arena != null:
+					var weathers = ["heatwave", "lava", "sandstorm", "slight_breeze", "storm", "hurricane", "light_rain", "rain", "heavy_rain", "blizzard", "clear"]
+					var new_weather = weathers[randi() % weathers.size()]
+					if typeof(self.world.arena) == TYPE_DICTIONARY:
+						self.world.arena["weather"] = new_weather
+					else:
+						self.world.arena.weather = new_weather
+					if self.world.has_method("add_event"):
+						self.world.add_event("weather_booster", {"weather": new_weather, "message": "Weather invoked!"})
+
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1:
+						self.world.arena.hazards.remove_at(idx)
+				if self.world != null and "boosters" in self.world:
+					var idx = self.world.boosters.find(nearest)
+					if idx != -1:
+						self.world.boosters.remove_at(idx)
                 if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:

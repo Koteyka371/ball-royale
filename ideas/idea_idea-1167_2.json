@@ -1,0 +1,4 @@
+{
+    "title": "Gravity Inversion Zone",
+    "description": "A randomly appearing zone that temporarily inverts the gravity effects on projectiles and deployable hazards inside it. For example, falling meteors rise up harmlessly, while usually inert mines start drifting upwards, forcing players to navigate in 3D-like ways even in a 2D arena context."
+}

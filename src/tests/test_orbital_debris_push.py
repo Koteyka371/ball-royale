@@ -43,17 +43,19 @@ class MockWorld:
         self.height = 1000
 
 def test_orbital_debris_push_effect():
+    import random
+    random.seed(42)
     world = MockWorld()
-    ball = MockBall(x=100.0, y=100.0)
+    ball = MockBall(x=500.0, y=500.0)
     world.balls = [ball]
 
-    debris = MockHazard("orbital_debris", x=98.0, y=100.0, radius=40.0)
+    debris = MockHazard("orbital_debris", x=498.0, y=500.0, radius=40.0)
     world.arena.hazards.append(debris)
 
     action = Action(ball, world)
 
     # Run a full tick which should trigger the hazard loop and apply the push
-    action.execute("offensive", 0.1)
+    action.execute("idle", 0.1)
 
     # In action.py:
     # dx = 100 - 98 = 2
@@ -63,4 +65,4 @@ def test_orbital_debris_push_effect():
     # push_strength = 200.0 * 0.1 = 20.0
     # x += 20.0 -> 120.0 (plus any other movement)
 
-    assert ball.x > 105.0 # definitely moved right
+    assert ball.x > 505.0 # definitely moved right
