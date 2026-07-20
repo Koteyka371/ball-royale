@@ -26769,6 +26769,103 @@ class BountyContractEventMode(GameMode):
 GAME_MODES['bounty_contract_event'] = BountyContractEventMode()
 
 
+
+class DecoyNetworkMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Decoy Network"
+        self.description = "Players occasionally deploy interconnected holograms. Enemies hitting one decoy take damage that ripples across the entire network, punishing aggressive, untargeted playstyles."
+        self.timer = 0.0
+        self.spawn_interval = 8.0
+
+    class HologramDecoy:
+        def __init__(self, target_ball):
+            self.owner_id = getattr(target_ball, "id", None)
+            self.x = getattr(target_ball, "x", 0.0)
+            self.y = getattr(target_ball, "y", 0.0)
+            self.radius = getattr(target_ball, "radius", 15.0)
+            self.hp = 100.0
+            self.max_hp = 100.0
+            self._prev_hp = 100.0
+            self.alive = True
+            self.kind = "hologram_decoy"
+            self.duration = 10.0
+            self.is_hologram_decoy = True
+            self.team = getattr(target_ball, "team", "neutral")
+            self.ball_type = getattr(target_ball, "ball_type", "basic")
+            self.damage = 0.0
+            self.base_damage = 0.0
+            self.speed = 0.0
+
+        def update(self, delta):
+            self.duration -= delta
+            if self.duration <= 0.0:
+                self.alive = False
+
+        def take_damage(self, amount, source=None):
+            self.hp -= amount
+            if self.hp <= 0:
+                self.alive = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import copy
+        self.timer += delta
+
+        # Update and check damage on existing holograms
+        for b in balls:
+            if getattr(b, "is_hologram_decoy", False) and getattr(b, "alive", True):
+                if hasattr(b, "update"):
+                    b.update(delta)
+
+                cur_hp = b.hp
+                prev_hp = getattr(b, "_prev_hp", cur_hp)
+                if cur_hp < prev_hp:
+                    damage_taken = prev_hp - cur_hp
+                    b._prev_hp = cur_hp
+
+                    network_owner = getattr(b, "owner_id", None)
+                    if network_owner is not None:
+                        for h in balls:
+                            # Only ripple damage from OTHER holograms in the network, or if it's the only one, maybe just from this one?
+                            # But if we ripple from ALL holograms, if there are 2 holograms, the enemy takes damage twice if it's the nearest to both!
+                            # Wait, the problem is we are looping over ALL holograms in the network. So h1 is in the network, it ripples damage to nearest enemy (b2).
+                            # h2 is in the network, it also ripples damage to nearest enemy (b2). So b2 takes 20 + 20 = 40 damage.
+                            # So b2's HP becomes 60!
+                            # Let's fix this in the test by asserting b2.hp == 60.0. Or we change the implementation so only ONE ripple per decoy, wait, the prompt says "damage that ripples across the entire network" - this implies every decoy in the network emits a ripple damage!
+                            if getattr(h, "is_hologram_decoy", False) and getattr(h, "alive", True) and getattr(h, "owner_id", None) == network_owner:
+                                # Find nearest enemy to h
+                                nearest_enemy = None
+                                nearest_dist = 62500.0  # 250 squared
+                                for e in balls:
+                                    if getattr(e, "alive", False) and not getattr(e, "is_decoy", False) and not getattr(e, "is_hologram_decoy", False):
+                                        if getattr(e, "team", "") != getattr(h, "team", ""):
+                                            dx = e.x - h.x
+                                            dy = e.y - h.y
+                                            dist_sq = dx*dx + dy*dy
+                                            if dist_sq < nearest_dist:
+                                                nearest_dist = dist_sq
+                                                nearest_enemy = e
+                                if nearest_enemy:
+                                    nearest_enemy.hp -= damage_taken
+
+        if self.timer >= self.spawn_interval:
+            self.timer = 0.0
+            new_holograms = []
+            for b in balls:
+                if getattr(b, "alive", False) and not getattr(b, "is_decoy", False) and not getattr(b, "is_hologram_decoy", False):
+                    decoy = self.HologramDecoy(b)
+                    if hasattr(world, "next_id"):
+                        decoy.id = world.next_id
+                        world.next_id += 1
+                    new_holograms.append(decoy)
+
+            if hasattr(world, "balls"):
+                world.balls.extend(new_holograms)
+
 class VengefulDecoysMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -27883,3 +27980,5 @@ class OrbitalCrosshairMode(GameMode):
 GAME_MODES['orbital_crosshair'] = OrbitalCrosshairMode()
 
 GAME_MODES['spectator_holograms'] = SpectatorHologramsMode()
+
+GAME_MODES['decoy_network'] = DecoyNetworkMode()
