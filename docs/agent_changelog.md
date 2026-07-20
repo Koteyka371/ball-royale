@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1225] Weather forecasting — *2026-07-20 23:34:31 UTC*
+
+Have a ball type that gets a prediction on what weather might come next.
+
+---
+
 ## [idea-1235] Chain Reaction Booster — *2026-07-20 23:32:34 UTC*
 
 Increases the max number of chain lightning bounces by 1 but reduces initial damage by 15%.

@@ -20997,7 +20997,7 @@
     },
     {
       "id": "idea-1225",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather forecasting",
@@ -31619,6 +31619,40 @@
         "src/arena/quantum_lock_trap.py",
         "src/arena/quantum_lock_trap.gd",
         "tests/test_quantum_lock_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1849",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Jolt Reflex Skill",
+      "description": "A defensive skill where being hit by any form of lightning gives the player a brief burst of incredible speed and makes their next attack bounce to up to 2 nearby enemies.",
+      "allowed_paths": [
+        "src/ai/jolt_reflex_skill.py",
+        "src/ai/jolt_reflex_skill.gd",
+        "tests/test_jolt_reflex_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1850",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Static Feedback Loop",
+      "description": "A new mutator where each time a player uses chain lightning, the leftover electric charge stays in the air, creating a static field that slows down all entities and gradually damages those without electric immunity over time.",
+      "allowed_paths": [
+        "src/ai/static_feedback_loop.py",
+        "src/ai/static_feedback_loop.gd",
+        "tests/test_static_feedback_loop.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
