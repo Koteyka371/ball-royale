@@ -19277,7 +19277,7 @@
     },
     {
       "id": "idea-1124",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Booster Mode",
@@ -31449,6 +31449,23 @@
         "src/ai/time_loop_skill.py",
         "src/ai/time_loop_skill.gd",
         "tests/test_time_loop_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1839",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Shifters Mode",
+      "description": "Players periodically swap gravity directions, altering physics unpredictably.",
+      "allowed_paths": [
+        "src/ai/gravity_shifters.py",
+        "src/ai/gravity_shifters.gd",
+        "tests/test_gravity_shifters.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
