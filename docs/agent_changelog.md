@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1102] Trap Disarm Kit — *2026-07-20 04:07:45 UTC*
+
+A new rare item 'Trap Disarm Kit'. When used, it temporarily reveals all invisible traps in a large radius and destroys any trap the user rolls over for the next 5 seconds without triggering them.
+
+---
+
 ## [idea-1203] Cosmic Storm Event Mode — *2026-07-20 04:03:04 UTC*
 
 Combine the meteor shower with zero-gravity periods. When meteors fall during zero-g, they bounce off the ground unpredictably and carry momentum, making positioning extremely chaotic and challenging.
