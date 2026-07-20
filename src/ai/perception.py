@@ -207,6 +207,12 @@ class Perception:
                 elif hasattr(e, "shadow_booster_timer"):
                     e_has_shadow = e.shadow_booster_timer > 0
 
+                e_has_invisibility = False
+                if hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("invisibility_timer"):
+                    e_has_invisibility = e.get_meta("invisibility_timer") > 0
+                elif hasattr(e, "invisibility_timer"):
+                    e_has_invisibility = e.invisibility_timer > 0
+
                 e_has_stealth_booster = False
                 if hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("stealth_booster_timer"):
                     e_has_stealth_booster = e.get_meta("stealth_booster_timer") > 0
@@ -222,7 +228,7 @@ class Perception:
                 if getattr(e, "ball_type", "") == "sand_elemental" and hasattr(self.world, "arena") and getattr(self.world.arena, "is_sandstorming", False):
                     is_sand_cloaked = True
 
-                if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster:
+                if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility:
                     dist = math.sqrt((ex - bx_curr)**2 + (ey - by_curr)**2)
 
                     if has_thermal_vision:
@@ -230,7 +236,9 @@ class Perception:
                         if dist > 500.0:
                             continue
                     else:
-                        if (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
+                        if e_has_invisibility:
+                            continue
+                        elif (e_has_stealth_booster or e_has_ghost_mode_booster) and dist > 15.0:
                             continue
                         elif is_sand_cloaked and dist > 40.0:
                             continue
@@ -286,7 +294,7 @@ class Perception:
                                 data["boosters"].append(h)
                     else:
                         # Make sure it's not already in there by id
-                        if getattr(h, "kind", "") == "drone_item" or getattr(h, "kind", "") == "stealth_drone_item" or getattr(h, "kind", "") == "shadow_booster" or getattr(h, "kind", "") == "stealth_booster" or getattr(h, "kind", "") == "sound_mine":
+                        if getattr(h, "kind", "") == "drone_item" or getattr(h, "kind", "") == "stealth_drone_item" or getattr(h, "kind", "") == "shadow_booster" or getattr(h, "kind", "") == "stealth_booster" or getattr(h, "kind", "") == "invisibility_booster" or getattr(h, "kind", "") == "sound_mine":
                             if getattr(h, "kind", "") != "sound_mine":
                                 if not any(getattr(b, "id", None) == h.id for b in data["boosters"]):
                                     data["boosters"].append(h)
