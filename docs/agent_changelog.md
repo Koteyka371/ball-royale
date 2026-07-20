@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1189] Magnetic Polarity Overload — *2026-07-20 02:44:02 UTC*
+
+A game mode where every ball is assigned a random Positive or Negative charge. Balls of opposite charges are pulled toward each other, while balls of the same charge repel. The charges periodically flip during the match.
+
+---
+
 ## [idea-929] Mirror Image Booster — *2026-07-20 02:43:57 UTC*
 
 When taking lethal damage, this booster creates a decoy mirror image that explodes while the actual ball goes invisible for 2 seconds with 1 HP remaining.
