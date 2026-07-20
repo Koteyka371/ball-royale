@@ -243,6 +243,39 @@ func process_external_command(user: String, command: String, balls: Array):
                 user_votes[user] = option
                 world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " voted for " + option + "!"})
 
+    elif cmd == "!bounty" and parts.size() >= 2:
+        var target_id = parts[1]
+        var target = null
+        for b in alive_balls:
+            var b_id = ""
+            if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                b_id = str(b.get("id"))
+            elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                b_id = str(b["id"])
+            if b_id == target_id:
+                target = b
+                break
+
+        if target != null:
+            if typeof(target) == TYPE_OBJECT and target.has_method("set"):
+                target.set_meta("crowd_bounty_timer", 600)
+            elif typeof(target) == TYPE_DICTIONARY:
+                target["crowd_bounty_timer"] = 600
+
+            if world != null and world.has_method("add_event"):
+                var t_id = -1
+                var b_type = "Player"
+                if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+                    t_id = target.get("id")
+                    if target.get("ball_type") != null:
+                        b_type = target.get("ball_type")
+                elif typeof(target) == TYPE_DICTIONARY:
+                    if target.has("id"): t_id = target["id"]
+                    if target.has("ball_type"): b_type = target["ball_type"]
+                world.add_event("visual_effect", {"type": "bounty_mark", "target_id": t_id})
+                world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " placed a bounty on " + b_type + " " + str(target_id) + "!"})
+            excitement_level += 10.0
+
     elif cmd == "!bribe" and parts.size() >= 2:
         var action = parts[1]
         var option = ""
@@ -319,6 +352,21 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
     _process_external_commands(balls)
     _check_bets_and_winner(balls, current_tick)
     _update_excitement(current_tick)
+    # Decrement bounty timers
+    for b in balls:
+        var b_timer = 0
+        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+            if b.has_method("get_meta") and b.has_meta("crowd_bounty_timer"):
+                b_timer = b.get_meta("crowd_bounty_timer")
+        elif typeof(b) == TYPE_DICTIONARY and b.has("crowd_bounty_timer"):
+            b_timer = b["crowd_bounty_timer"]
+
+        if b_timer > 0:
+            if typeof(b) == TYPE_OBJECT and b.has_method("set"):
+                if b.has_method("set_meta"): b.set_meta("crowd_bounty_timer", b_timer - 1)
+            elif typeof(b) == TYPE_DICTIONARY:
+                b["crowd_bounty_timer"] = b_timer - 1
+
     _check_events(balls, kill_log, current_tick)
     _check_camping(balls, current_tick)
     _throw_buffs_if_needed(balls, current_tick)
@@ -564,6 +612,45 @@ func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
         return
 
     var killer_id = kill_info["killer_id"]
+
+
+    var victim_obj = null
+    var killer_obj = null
+    for b in balls:
+        var b_id = -1
+        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+            if b.get("id") != null: b_id = b.get("id")
+        elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+            b_id = b["id"]
+
+        if str(b_id) == str(kill_info.get("victim_id", "")):
+            victim_obj = b
+        if str(b_id) == str(killer_id):
+            killer_obj = b
+
+    if victim_obj != null and killer_obj != null:
+        var v_timer = 0
+        if typeof(victim_obj) == TYPE_OBJECT and victim_obj.has_method("get"):
+            if victim_obj.has_method("get_meta") and victim_obj.has_meta("crowd_bounty_timer"):
+                v_timer = victim_obj.get_meta("crowd_bounty_timer")
+        elif typeof(victim_obj) == TYPE_DICTIONARY and victim_obj.has("crowd_bounty_timer"):
+            v_timer = victim_obj["crowd_bounty_timer"]
+
+        if v_timer > 0:
+            if typeof(killer_obj) == TYPE_OBJECT and killer_obj.has_method("get") and killer_obj.has_method("set"):
+                var k_score = killer_obj.get("score") if killer_obj.get("score") != null else 0
+                var k_xp = killer_obj.get("xp") if killer_obj.get("xp") != null else 0
+                killer_obj.set("score", k_score + 1000)
+                killer_obj.set("xp", k_xp + 500)
+            elif typeof(killer_obj) == TYPE_DICTIONARY:
+                var k_score = killer_obj.get("score", 0)
+                var k_xp = killer_obj.get("xp", 0)
+                killer_obj["score"] = k_score + 1000
+                killer_obj["xp"] = k_xp + 500
+
+            if world != null and world.has_method("add_event"):
+                world.add_event("visual_effect", {"type": "bounty_claimed", "target_id": killer_id})
+                world.add_event("crowd_cheer", {"message": "The crowd goes wild as a bounty is claimed!"})
 
     if not kill_streak.has(killer_id):
         kill_streak[killer_id] = 1

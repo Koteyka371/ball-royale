@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Bounty Flare",
+  "description": "A new deployable item that creates a fake bounty marker on the map for 10 seconds. Enemies who attack the decoy trigger an explosion and get their locations revealed to the deploying team."
+}
