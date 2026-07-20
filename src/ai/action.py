@@ -3249,6 +3249,43 @@ class Action:
                             if hasattr(self.world, "events"):
                                 self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': explosion_radius}})
 
+                if getattr(hazard, "kind", "") == "thrown_noise_maker":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({'type': 'fake_footstep', 'data': {'x': hazard.x, 'y': hazard.y}})
+                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'visual_noise', 'x': hazard.x, 'y': hazard.y, 'radius': 150}})
+                            if hasattr(self.world, "balls"):
+                                owner_id = getattr(hazard, "owner_id", None)
+                                owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
+                                if owner:
+                                    import copy, math
+                                    for i in range(3):
+                                        angle = i * (2 * math.pi / 3)
+                                        decoy = copy.copy(owner)
+                                        decoy.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                                        if hasattr(self.world, "next_id"):
+                                            self.world.next_id += 1
+                                        decoy.x = hazard.x
+                                        decoy.y = hazard.y
+                                        decoy.vx = 200 * math.cos(angle)
+                                        decoy.vy = 200 * math.sin(angle)
+                                        decoy.is_decoy = True
+                                        decoy.is_illusion = True
+                                        decoy.decoy_type = "noise_phantom"
+                                        decoy.decoy_timer = 3.0
+                                        decoy.hp = 1.0
+                                        decoy.damage = 0.0
+                                        decoy.skill = None
+                                        decoy.SKILL = None
+                                        decoy.active_skill = None
+                                        decoy.skill_timer = 9999.0
+                                        self.world.balls.append(decoy)
+
                 if getattr(hazard, "kind", "") == "thrown_disruptor_bomb":
                     if getattr(hazard, "duration", 0.0) > 0:
                         hazard.duration -= delta
@@ -11003,7 +11040,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'throw_noise_maker']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -13926,6 +13963,45 @@ class Action:
                     decoy.decoy_type = "explosive"
 
                     self.world.balls.append(decoy)
+
+            elif skill_name == "throw_noise_maker":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    enemies = self._get_enemies()
+                    nx, ny = 1.0, 0.0
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        dx = closest_enemy.x - self.ball.x
+                        dy = closest_enemy.y - self.ball.y
+                        dist = __import__('math').sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx, ny = dx/dist, dy/dist
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+
+                    thrown_bomb = type("Hazard", (), {})()
+                    thrown_bomb.id = 19200 + len(self.world.arena.hazards)
+                    thrown_bomb.x = self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0)
+                    thrown_bomb.y = self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0)
+                    thrown_bomb.radius = 15.0
+                    thrown_bomb.kind = "thrown_noise_maker"
+                    thrown_bomb.damage = 0.0
+                    thrown_bomb.vx = nx * 400.0
+                    thrown_bomb.vy = ny * 400.0
+                    thrown_bomb.duration = 2.0
+                    thrown_bomb.owner_id = getattr(self.ball, "id", None)
+                    thrown_bomb.team = getattr(self.ball, "team", None)
+                    self.world.arena.hazards.append(thrown_bomb)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
             elif skill_name == "throw_bomb":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

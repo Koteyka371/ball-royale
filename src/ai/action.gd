@@ -7369,6 +7369,98 @@ func execute(strategy: String, delta: float):
 						var dmg = hazard.damage if "damage" in hazard else 10.0
 						self.ball.take_damage(dmg * delta)
 
+			elif hazard.get("kind") == "thrown_noise_maker" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_noise_maker"):
+				var h_dur = 0.0
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
+				elif typeof(hazard) == TYPE_OBJECT and "duration" in hazard: h_dur = float(hazard.duration)
+
+				if h_dur > 0:
+					h_dur -= delta
+					if typeof(hazard) == TYPE_DICTIONARY: hazard.duration = h_dur
+					else: hazard.duration = h_dur
+
+					if h_dur <= 0:
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.duration = 0.0
+						else: hazard.duration = 0.0
+						var idx = self.world.arena.hazards.find(hazard)
+						if idx != -1: self.world.arena.hazards.remove_at(idx)
+
+						if self.world.has_method("add_event"):
+							var hx = hazard.x if "x" in hazard else 0.0
+							var hy = hazard.y if "y" in hazard else 0.0
+							self.world.add_event("fake_footstep", {"x": hx, "y": hy})
+							self.world.add_event("visual_effect", {"type": "visual_noise", "x": hx, "y": hy, "radius": 150})
+
+						if "balls" in self.world:
+							var owner_id = hazard.owner_id if "owner_id" in hazard else -1
+							var owner = null
+							for b in self.world.balls:
+								var b_id = -1
+								var b_alive = false
+								if typeof(b) == TYPE_OBJECT:
+									if "id" in b: b_id = b.id
+									if "alive" in b: b_alive = b.alive
+								elif typeof(b) == TYPE_DICTIONARY:
+									if b.has("id"): b_id = b.id
+									if b.has("alive"): b_alive = b.alive
+								if b_id == owner_id and b_alive:
+									owner = b
+									break
+
+							if owner != null:
+								for i in range(3):
+									var angle = i * (2 * PI / 3)
+									var decoy = null
+									if typeof(owner) == TYPE_OBJECT and owner.has_method("duplicate"):
+										decoy = owner.duplicate()
+									elif typeof(owner) == TYPE_DICTIONARY:
+										decoy = owner.duplicate()
+
+									if decoy != null:
+										var next_id = randi() % 90000 + 10000
+										if "next_id" in self.world:
+											next_id = self.world.next_id
+											self.world.next_id += 1
+
+										var hx = hazard.x if "x" in hazard else 0.0
+										var hy = hazard.y if "y" in hazard else 0.0
+
+										if typeof(decoy) == TYPE_OBJECT:
+											if "id" in decoy: decoy.id = next_id
+											if "x" in decoy: decoy.x = hx
+											if "y" in decoy: decoy.y = hy
+											if "vx" in decoy: decoy.vx = 200 * cos(angle)
+											if "vy" in decoy: decoy.vy = 200 * sin(angle)
+											if "is_decoy" in decoy: decoy.is_decoy = true
+											elif decoy.has_method("set_meta"): decoy.set_meta("is_decoy", true)
+											if "is_illusion" in decoy: decoy.is_illusion = true
+											elif decoy.has_method("set_meta"): decoy.set_meta("is_illusion", true)
+											if "decoy_type" in decoy: decoy.decoy_type = "noise_phantom"
+											if "decoy_timer" in decoy: decoy.decoy_timer = 3.0
+											if "hp" in decoy: decoy.hp = 1.0
+											if "damage" in decoy: decoy.damage = 0.0
+											if "skill" in decoy: decoy.skill = ""
+											if "SKILL" in decoy: decoy.SKILL = ""
+											if "active_skill" in decoy: decoy.active_skill = ""
+											if "skill_timer" in decoy: decoy.skill_timer = 9999.0
+										elif typeof(decoy) == TYPE_DICTIONARY:
+											decoy["id"] = next_id
+											decoy["x"] = hx
+											decoy["y"] = hy
+											decoy["vx"] = 200 * cos(angle)
+											decoy["vy"] = 200 * sin(angle)
+											decoy["is_decoy"] = true
+											decoy["is_illusion"] = true
+											decoy["decoy_type"] = "noise_phantom"
+											decoy["decoy_timer"] = 3.0
+											decoy["hp"] = 1.0
+											decoy["damage"] = 0.0
+											decoy["skill"] = ""
+											decoy["SKILL"] = ""
+											decoy["active_skill"] = ""
+											decoy["skill_timer"] = 9999.0
+										self.world.balls.append(decoy)
+
 			elif hazard.get("kind") == "thrown_disruptor_bomb" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_disruptor_bomb"):
 				var h_dur = 0.0
 				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
@@ -21525,7 +21617,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'throw_noise_maker']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -28705,6 +28797,45 @@ func _use_skill():
                         decoy.vy = ny * 800.0
 
                     self.world.balls.append(decoy)
+
+        elif skill_name == "throw_noise_maker":
+            if "hazards" in self.world.arena:
+                var hazards = self.world.arena.hazards
+                var enemies = self._get_enemies()
+                var nx = 1.0
+                var ny = 0.0
+                if enemies.size() > 0:
+                    var closest_enemy = enemies[0]
+                    var min_dist = (closest_enemy.x - ball.x)*(closest_enemy.x - ball.x) + (closest_enemy.y - ball.y)*(closest_enemy.y - ball.y)
+                    for i in range(1, enemies.size()):
+                        var e = enemies[i]
+                        var dist = (e.x - ball.x)*(e.x - ball.x) + (e.y - ball.y)*(e.y - ball.y)
+                        if dist < min_dist:
+                            min_dist = dist
+                            closest_enemy = e
+                    var dx = closest_enemy.x - ball.x
+                    var dy = closest_enemy.y - ball.y
+                    var m = sqrt(dx*dx + dy*dy)
+                    if m > 0.0001:
+                        nx = dx/m
+                        ny = dy/m
+
+                var thrown_bomb = {
+                    "id": 19200 + hazards.size(),
+                    "x": ball.x + nx * (ball.radius + 5.0) if "radius" in ball else ball.x + nx * 15.0,
+                    "y": ball.y + ny * (ball.radius + 5.0) if "radius" in ball else ball.y + ny * 15.0,
+                    "radius": 15.0,
+                    "kind": "thrown_noise_maker",
+                    "damage": 0.0,
+                    "vx": nx * 400.0,
+                    "vy": ny * 400.0,
+                    "duration": 2.0,
+                    "owner_id": ball.id if "id" in ball else -1,
+                    "team": ball.team if "team" in ball else ""
+                }
+                hazards.append(thrown_bomb)
+                if "skill_cooldown" in ball: ball.skill_timer = float(ball.skill_cooldown)
+                else: ball.skill_timer = 5.0
 
         elif skill_name == "throw_bomb":
             if "hazards" in self.world.arena:
