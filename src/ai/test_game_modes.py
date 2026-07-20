@@ -1403,7 +1403,36 @@ import pytest
 # We already verified the logic by reading the source codebase changes.
 
 def test_forecast_booster_dummy():
-    assert True
+    from ai.game_modes import GAME_MODES
+    class MockArena:
+        def __init__(self):
+            self.weather = "clear"
+    class MockWorld:
+        def __init__(self):
+            self.arena = MockArena()
+            self.events = []
+        def add_event(self, name, data):
+            self.events.append((name, data))
+    class MockBall:
+        def __init__(self):
+            self.alive = True
+            self.speed = 100.0
+            self.base_speed = 100.0
+            self.forecast_booster_active = True
+            self.forecast_warning_issued = False
+
+    mode = GAME_MODES["dynamic_weather_transitions"]
+    world = MockWorld()
+    ball = MockBall()
+    balls = [ball]
+    mode.setup(world, balls)
+    mode.tick(world, balls, delta=10.0)
+    assert ball.forecast_warning_issued == True
+    mode.tick(world, balls, delta=10.0)
+    assert mode.weather == "cloudy"
+    assert getattr(ball, "weather_immunity_timer", 0.0) == 15.0
+    assert getattr(ball, "aura_booster_timer", 0.0) == 15.0
+    assert ball.forecast_booster_active == False
 
 def test_earthquake_mode_random_impulses():
     from ai.game_modes import EarthquakeMode
