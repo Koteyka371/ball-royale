@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1213] Vehicle Mounts — *2026-07-20 23:10:44 UTC*
+
+Players can find and mount stationary vehicles like tanks or hovercrafts across the arena. While mounted, they inherit the vehicle's health and damage stats, but lose their personal mobility traits. If the vehicle is destroyed, they are ejected with temporary stun.
+
+---
+
 ## [idea-1212] Dynamic Music Tempo for Chants — *2026-07-20 22:46:24 UTC*
 
 Increase the tempo of the background music as a team builds up their chant streak, reflecting the growing adrenaline.
