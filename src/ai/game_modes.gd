@@ -336,6 +336,7 @@ class GameMode:
 			2: {"type": "global_damage", "value": 0.9},
 			3: {"type": "global_hp", "value": 1.15},
 			4: {"type": "global_cooldown", "value": 0.8}
+
 		}
 
 		var mod_index = ((season_num - 1) % 4) + 1
@@ -35820,7 +35821,121 @@ class ExplosiveMeteorsMode extends GameMode:
 
 		meteors = still_active
 
+
+class ToxicFloodRoyaleMode extends GameMode:
+	var state = "dry"
+	var state_timer = 10.0
+	var platforms = []
+	var damage_per_second = 30.0
+
+	func _init():
+		super._init()
+		name = "Toxic Flood Royale"
+		description = "The floor periodically floods with toxic poison. Players must fight for control of the limited elevated platforms to survive."
+		state = "dry"
+		state_timer = 10.0
+		platforms = []
+		damage_per_second = 30.0
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		state = "dry"
+		state_timer = 10.0
+		platforms.clear()
+
+	func spawn_platforms(world, count):
+		platforms.clear()
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_OBJECT and world.has_method("get"):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_OBJECT:
+				arena_width = arena.get("width") if arena.get("width") != null else 1000.0
+				arena_height = arena.get("height") if arena.get("height") != null else 1000.0
+			elif typeof(arena) == TYPE_DICTIONARY:
+				arena_width = arena.get("width", 1000.0)
+				arena_height = arena.get("height", 1000.0)
+		elif typeof(world) == TYPE_DICTIONARY:
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = arena.get("width", 1000.0)
+				arena_height = arena.get("height", 1000.0)
+
+		for i in range(count):
+			var px = randf_range(200.0, arena_width - 200.0)
+			var py = randf_range(200.0, arena_height - 200.0)
+			var pradius = randf_range(80.0, 150.0)
+			platforms.append({"x": px, "y": py, "radius": pradius})
+
+	func tick(world, balls, delta = 0.016):
+		state_timer -= delta
+
+		if state == "dry" and state_timer <= 0.0:
+			state = "warning"
+			state_timer = 5.0
+			var alive_count = 0
+			for b in balls:
+				var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+				if is_alive and b_type != "spectator":
+					alive_count += 1
+			var p_count = max(1, alive_count / 2)
+			spawn_platforms(world, p_count)
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("visual_effect", {"type": "toxic_warning", "duration": 5.0})
+		elif state == "warning" and state_timer <= 0.0:
+			state = "flooded"
+			state_timer = 10.0
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("visual_effect", {"type": "toxic_flood_start", "duration": 10.0})
+		elif state == "flooded" and state_timer <= 0.0:
+			state = "dry"
+			state_timer = 10.0
+			platforms.clear()
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("visual_effect", {"type": "toxic_flood_end"})
+
+		for b in balls:
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+
+			var on_platform = false
+			for p in platforms:
+				var dx = bx - p["x"]
+				var dy = by - p["y"]
+				if sqrt(dx*dx + dy*dy) <= p["radius"]:
+					on_platform = true
+					break
+
+			if state == "flooded" and not on_platform:
+				var hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp
+				hp -= damage_per_second * delta
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = hp
+					b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 0.7
+					if hp <= 0:
+						b["alive"] = false
+						b["hp"] = 0
+						b["killer"] = "Toxic Flood"
+				else:
+					b.hp = hp
+					if "base_speed" in b:
+						b.speed = b.base_speed * 0.7
+					elif "speed" in b:
+						b.speed = b.speed * 0.7
+					if hp <= 0:
+						b.alive = false
+						b.hp = 0
+						b.killer = "Toxic Flood"
+
+
 GAME_MODES = {
+	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
 
 	"explosive_meteors": ExplosiveMeteorsMode.new(),
 	"void_tiles": VoidTilesMode.new(),

@@ -22388,6 +22388,86 @@ class ExplosiveMeteorsMode(GameMode):
             for m in self.meteors:
                 world.arena.hazards.append(Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor_indicator", 0))
 
+
+class ToxicFloodRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Toxic Flood Royale"
+        self.description = "The floor periodically floods with toxic poison. Players must fight for control of the limited elevated platforms to survive."
+        self.state = "dry" # 'dry', 'warning', 'flooded'
+        self.state_timer = 10.0
+        self.platforms = []
+        self.damage_per_second = 30.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        self.platforms = []
+        self.state = "dry"
+        self.state_timer = 10.0
+
+    def spawn_platforms(self, count=3):
+        import random
+        arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else 1000
+        arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else 1000
+
+        self.platforms = []
+        for _ in range(int(count)):
+            x = random.uniform(200, arena_width - 200)
+            y = random.uniform(200, arena_height - 200)
+            radius = random.uniform(80.0, 150.0)
+            self.platforms.append({
+                "x": x,
+                "y": y,
+                "radius": radius
+            })
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        self.state_timer -= delta
+
+        if self.state == "dry" and self.state_timer <= 0:
+            self.state = "warning"
+            self.state_timer = 5.0
+            num_balls = len([b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"])
+            num_platforms = max(1, num_balls // 2)
+            self.spawn_platforms(count=num_platforms)
+            if hasattr(world, "add_event"):
+                world.add_event("visual_effect", {"type": "toxic_warning", "duration": 5.0})
+        elif self.state == "warning" and self.state_timer <= 0:
+            self.state = "flooded"
+            self.state_timer = 10.0
+            if hasattr(world, "add_event"):
+                world.add_event("visual_effect", {"type": "toxic_flood_start", "duration": 10.0})
+        elif self.state == "flooded" and self.state_timer <= 0:
+            self.state = "dry"
+            self.state_timer = 10.0
+            self.platforms = []
+            if hasattr(world, "add_event"):
+                world.add_event("visual_effect", {"type": "toxic_flood_end"})
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            on_platform = False
+            for p in self.platforms:
+                dx = b.x - p["x"]
+                dy = b.y - p["y"]
+                if math.sqrt(dx*dx + dy*dy) <= p["radius"]:
+                    on_platform = True
+                    break
+
+            if self.state == "flooded" and not on_platform:
+                b.hp -= self.damage_per_second * delta
+                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.7
+                if b.hp <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    b.killer = "Toxic Flood"
+
+
 GAME_MODES = {
 
     "explosive_meteors": ExplosiveMeteorsMode(),
@@ -28410,3 +28490,5 @@ GAME_MODES['spectator_holograms'] = SpectatorHologramsMode()
 GAME_MODES['decoy_network'] = DecoyNetworkMode()
 
 GAME_MODES["chronosphere_event"] = ChronosphereEventMode()
+
+GAME_MODES['toxic_flood_royale'] = ToxicFloodRoyaleMode()
