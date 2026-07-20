@@ -351,3 +351,44 @@ def test_crowd_weather_command():
     system.tick(balls, [], 1)
 
     assert not any(e[0] == "spawn_hazard" and e[1]["kind"] == "blizzard" for e in system.world.events)
+
+def test_viewer_loyalty():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    ball = MockBall(1, "red", "tank")
+    ball.x = 100.0
+    ball.y = 100.0
+    balls = [ball]
+
+    system.viewer_loyalty["LoyalFan"] = 50
+    system.queue_external_command("LoyalFan", "!spawn lava_pit 1")
+    system.tick(balls, [], 1)
+
+    events = [e for e in world.events if e[0] == "crowd_throw"]
+    assert len(events) > 0
+    assert events[-1][1]["message"] == "Viewer 👑 LoyalFan spawned a lava_pit!"
+
+    # Test vote awarding
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap"]}
+    system.votes = {"lava_pit": 0, "spike_trap": 0}
+
+    # To prevent resolve_vote from immediately running due to vote_timer being 0
+    system.vote_timer = 200
+
+    system.queue_external_command("SmartVoter", "!vote spike_trap")
+    system.queue_external_command("SmartVoter", "!vote spike_trap")
+    system.queue_external_command("BadVoter", "!vote lava_pit")
+
+
+    system.tick(balls, [], 2)
+    system.tick(balls, [], 3)
+    system.tick(balls, [], 4)
+
+    assert system.user_votes.get("SmartVoter") == "spike_trap"
+    assert system.user_votes.get("BadVoter") == "lava_pit"
+
+    system.vote_timer = 1
+    system.tick(balls, [], 5)
+
+    assert system.viewer_loyalty.get("SmartVoter", 0) == 10
+    assert system.viewer_loyalty.get("BadVoter", 0) == 0

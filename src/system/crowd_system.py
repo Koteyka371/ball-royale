@@ -24,6 +24,16 @@ class CrowdSystem:
         self.consecutive_chants = 0
         self.last_chant_team = None
         self.has_real_spectators = False
+        self.viewer_loyalty = {}
+        self.user_votes = {}
+
+    def _get_user_display(self, user: str) -> str:
+        points = self.viewer_loyalty.get(user, 0)
+        if points >= 50:
+            return f"👑 {user}"
+        elif points >= 20:
+            return f"⭐ {user}"
+        return user
 
     def queue_external_command(self, user: str, command: str):
         if not hasattr(self, 'external_commands'):
@@ -57,7 +67,8 @@ class CrowdSystem:
                     "y": getattr(target, "y", 0),
                     "kind": hazard_kind
                 })
-                self.world.add_event("crowd_throw", {"message": f"Viewer {user} spawned a {hazard_kind}!"})
+                self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 5
+                self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} spawned a {hazard_kind}!"})
                 self.excitement_level += 5.0
 
         elif cmd == "!weather" and len(parts) >= 2:
@@ -68,13 +79,15 @@ class CrowdSystem:
                         self.world.arena.temperature = 50.0
                     if hasattr(self.world, 'add_event'):
                         self.world.add_event("arena_modifier", {"temperature": 50.0})
-                        self.world.add_event("crowd_cheer", {"message": f"Viewer {user} made it HOT!"})
+                        self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 10
+                        self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} made it HOT!"})
                 elif weather_type in ["cold", "blizzard", "snow"]:
                     if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'temperature'):
                         self.world.arena.temperature = -20.0
                     if hasattr(self.world, 'add_event'):
                         self.world.add_event("arena_modifier", {"temperature": -20.0})
-                        self.world.add_event("crowd_cheer", {"message": f"Viewer {user} made it COLD!"})
+                        self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 10
+                        self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} made it COLD!"})
                 else:
                     if hasattr(self.world, 'add_event'):
                         target = None
@@ -86,7 +99,8 @@ class CrowdSystem:
                                 "y": getattr(target, "y", 0),
                                 "kind": weather_type
                             })
-                            self.world.add_event("crowd_cheer", {"message": f"Viewer {user} summoned a {weather_type}!"})
+                            self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 10
+                            self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} summoned a {weather_type}!"})
                 self.excitement_level -= 10.0
 
         elif cmd == "!drop" and len(parts) >= 2:
@@ -108,18 +122,20 @@ class CrowdSystem:
                     "kind": booster_kind,
                     "value": 30.0
                 })
-                self.world.add_event("crowd_throw", {"message": f"Viewer {user} dropped a {booster_kind} booster!"})
+                self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 5
+                self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} dropped a {booster_kind} booster!"})
                 self.excitement_level += 5.0
 
         elif cmd == "!vote" and len(parts) >= 2:
             option = parts[1]
             if getattr(self, 'active_vote', None) and getattr(self, 'votes', None) is not None:
+                self.user_votes[user] = option
                 if option in self.votes:
                     self.votes[option] += 1
                 else:
                     self.votes[option] = 1
                 if hasattr(self.world, 'add_event'):
-                    self.world.add_event("crowd_cheer", {"message": f"Viewer {user} voted for {option}!"})
+                    self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} voted for {option}!"})
 
         elif cmd == "!bribe" and len(parts) >= 2:
             action = parts[1]
@@ -552,6 +568,8 @@ class CrowdSystem:
     def _resolve_vote(self, balls: List[Any]):
         if not self.active_vote or not self.votes:
             self.active_vote = None
+            self.votes = {}
+            self.user_votes = {}
             return
 
         # Find winner
@@ -592,6 +610,11 @@ class CrowdSystem:
                 self.global_modifier_timer = 1800  # 30 seconds at 60 ticks/sec
                 if hasattr(self.world, 'add_event'):
                     self.world.add_event("crowd_cheer", {"message": f"The crowd activated a {winning_option} for 30 seconds!", "volume": 1.2})
+
+        for u, v in getattr(self, 'user_votes', {}).items():
+            if v == winning_option:
+                self.viewer_loyalty[u] = self.viewer_loyalty.get(u, 0) + 10
+        self.user_votes = {}
 
         self.active_vote = None
         self.votes = {}
