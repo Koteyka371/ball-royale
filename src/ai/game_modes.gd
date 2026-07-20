@@ -35302,7 +35302,117 @@ class BounceLaserMode extends GameMode:
             if "hazards" in world.arena:
                 world.arena.hazards.append(laser)
 
+class DecoyNetworkMode extends GameMode:
+    var last_hp: Dictionary = {}
+    var last_alive: Dictionary = {}
+
+    func _init():
+        self.name = "Decoy Network"
+        self.description = "Deploying multiple decoys links them together. When one decoy is damaged, all decoys in the network emit a damaging pulse to nearby enemies, punishing aggressive play."
+
+    func setup(world, balls: Array):
+        super.setup(world, balls)
+        self.last_hp.clear()
+        self.last_alive.clear()
+
+    func tick(world, balls: Array, delta: float = 0.016):
+        super.tick(world, balls, delta)
+
+        var decoys_by_owner: Dictionary = {}
+        for b in balls:
+            var is_decoy = b.get("is_decoy", false) if typeof(b) == TYPE_DICTIONARY else (b.is_decoy if "is_decoy" in b else false)
+            if not is_decoy:
+                continue
+
+            var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+            var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+            var was_alive = b_id != null and self.last_alive.has(b_id)
+
+            if alive or was_alive:
+                var owner_id = b.get("owner_id", null) if typeof(b) == TYPE_DICTIONARY else (b.owner_id if "owner_id" in b else null)
+                if owner_id != null:
+                    if not decoys_by_owner.has(owner_id):
+                        decoys_by_owner[owner_id] = []
+                    decoys_by_owner[owner_id].append(b)
+
+        for owner_id in decoys_by_owner.keys():
+            var group = decoys_by_owner[owner_id]
+            var total_damage_taken: float = 0.0
+
+            for decoy in group:
+                var decoy_id = decoy.get("id", null) if typeof(decoy) == TYPE_DICTIONARY else (decoy.id if "id" in decoy else null)
+                if decoy_id != null and self.last_hp.has(decoy_id):
+                    var current_hp = decoy.get("hp", 0.0) if typeof(decoy) == TYPE_DICTIONARY else (decoy.hp if "hp" in decoy else 0.0)
+                    if current_hp < 0.0:
+                        current_hp = 0.0
+                    var damage_taken = self.last_hp[decoy_id] - current_hp
+                    if damage_taken > 0:
+                        total_damage_taken += damage_taken
+
+            if total_damage_taken > 0:
+                var pulse_damage = total_damage_taken * 0.5
+                var pulse_radius = 150.0
+                var pulse_radius_sq = pulse_radius * pulse_radius
+
+                for decoy in group:
+                    var decoy_x = decoy.get("x", 0.0) if typeof(decoy) == TYPE_DICTIONARY else (decoy.x if "x" in decoy else 0.0)
+                    var decoy_y = decoy.get("y", 0.0) if typeof(decoy) == TYPE_DICTIONARY else (decoy.y if "y" in decoy else 0.0)
+                    var decoy_team = decoy.get("team", "neutral") if typeof(decoy) == TYPE_DICTIONARY else (decoy.team if "team" in decoy else "neutral")
+
+                    for target in balls:
+                        var target_id = target.get("id", null) if typeof(target) == TYPE_DICTIONARY else (target.id if "id" in target else null)
+                        var decoy_id = decoy.get("id", null) if typeof(decoy) == TYPE_DICTIONARY else (decoy.id if "id" in decoy else null)
+
+                        if target_id == decoy_id:
+                            continue
+
+                        var target_is_decoy = target.get("is_decoy", false) if typeof(target) == TYPE_DICTIONARY else (target.is_decoy if "is_decoy" in target else false)
+                        var target_alive = target.get("alive", false) if typeof(target) == TYPE_DICTIONARY else (target.alive if "alive" in target else false)
+
+                        if target_is_decoy or not target_alive:
+                            continue
+
+                        var target_team = target.get("team", "enemy") if typeof(target) == TYPE_DICTIONARY else (target.team if "team" in target else "enemy")
+                        if target_team == decoy_team and target_team != "neutral":
+                            continue
+
+                        var target_x = target.get("x", 0.0) if typeof(target) == TYPE_DICTIONARY else (target.x if "x" in target else 0.0)
+                        var target_y = target.get("y", 0.0) if typeof(target) == TYPE_DICTIONARY else (target.y if "y" in target else 0.0)
+
+                        var dx = target_x - decoy_x
+                        var dy = target_y - decoy_y
+                        var dist_sq = dx * dx + dy * dy
+
+                        if dist_sq <= pulse_radius_sq:
+                            var current_target_hp = target.get("hp", 0.0) if typeof(target) == TYPE_DICTIONARY else (target.hp if "hp" in target else 0.0)
+                            var new_hp = current_target_hp - pulse_damage
+                            if new_hp <= 0:
+                                new_hp = 0.0
+                                if typeof(target) == TYPE_DICTIONARY:
+                                    target["alive"] = false
+                                else:
+                                    target.alive = false
+
+                            if typeof(target) == TYPE_DICTIONARY:
+                                target["hp"] = new_hp
+                            else:
+                                target.hp = new_hp
+
+        self.last_hp.clear()
+        self.last_alive.clear()
+        for b in balls:
+            var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+            var is_decoy = b.get("is_decoy", false) if typeof(b) == TYPE_DICTIONARY else (b.is_decoy if "is_decoy" in b else false)
+            if alive and is_decoy:
+                var decoy_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+                var current_hp = b.get("hp", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 0.0)
+                if decoy_id != null:
+                    self.last_hp[decoy_id] = current_hp
+                    self.last_alive[decoy_id] = true
+
 GAME_MODES = {
+    "decoy_network": DecoyNetworkMode.new(),
+
     "bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),
 

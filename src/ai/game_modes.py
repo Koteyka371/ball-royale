@@ -21912,7 +21912,93 @@ class ChargedMode(GameMode):
                     b1_x = getattr(b1, "x", 0.0)
                     b1_y = getattr(b1, "y", 0.0)
 
+class DecoyNetworkMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Decoy Network"
+        self.description = "Deploying multiple decoys links them together. When one decoy is damaged, all decoys in the network emit a damaging pulse to nearby enemies, punishing aggressive play."
+        self.last_hp = {}
+        self.last_alive = set()
+
+    def setup(self, world, balls, is_resume=False):
+        super().setup(world, balls)
+        self.last_hp = {}
+        self.last_alive = set()
+
+    def tick(self, world, balls, delta=0.016):
+        import collections
+        super().tick(world, balls, delta)
+
+        decoys_by_owner = collections.defaultdict(list)
+
+        # We need to process balls that are alive OR just died this tick
+        valid_decoys = []
+        for b in balls:
+            is_decoy = getattr(b, "is_decoy", False)
+            if not is_decoy:
+                continue
+
+            is_alive = getattr(b, "alive", False)
+            was_alive = b.id in self.last_alive
+
+            if is_alive or was_alive:
+                valid_decoys.append(b)
+                owner_id = getattr(b, "owner_id", None)
+                if owner_id is not None:
+                    decoys_by_owner[owner_id].append(b)
+
+        # Detect damage and trigger pulses
+        for owner_id, group in decoys_by_owner.items():
+            total_damage_taken = 0.0
+
+            for decoy in group:
+                if decoy.id in self.last_hp:
+                    current_hp = max(0.0, getattr(decoy, "hp", 0.0))
+                    damage_taken = self.last_hp[decoy.id] - current_hp
+                    if damage_taken > 0:
+                        total_damage_taken += damage_taken
+
+            if total_damage_taken > 0:
+                # Deal damage to enemies near ANY decoy in this network
+                # Damage scales with the damage taken, maybe half of it
+                pulse_damage = total_damage_taken * 0.5
+                pulse_radius = 150.0
+
+                for decoy in group:
+                    # Apply AoE damage around this decoy
+                    decoy_x = getattr(decoy, "x", 0.0)
+                    decoy_y = getattr(decoy, "y", 0.0)
+                    decoy_team = getattr(decoy, "team", "neutral")
+
+                    for target in balls:
+                        if target.id == decoy.id or getattr(target, "is_decoy", False) or not getattr(target, "alive", False):
+                            continue
+
+                        target_team = getattr(target, "team", "enemy")
+                        if target_team == decoy_team and target_team != "neutral":
+                            continue # Don't damage teammates
+
+                        target_x = getattr(target, "x", 0.0)
+                        target_y = getattr(target, "y", 0.0)
+
+                        dist_sq = (target_x - decoy_x)**2 + (target_y - decoy_y)**2
+                        if dist_sq <= pulse_radius**2:
+                            target.hp -= pulse_damage
+                            if target.hp <= 0:
+                                target.hp = 0.0
+                                target.alive = False
+
+        # update state for next tick
+        self.last_hp.clear()
+        self.last_alive.clear()
+        for b in balls:
+            if getattr(b, "is_decoy", False) and getattr(b, "alive", False):
+                self.last_hp[b.id] = getattr(b, "hp", 0.0)
+                self.last_alive.add(b.id)
+
 GAME_MODES = {
+    'decoy_network': DecoyNetworkMode(),
+
     'charged': ChargedMode(),
     'bounce_laser': BounceLaserMode(),
     'dragging_magnetic_mines': DraggingMagneticMinesMode(),
