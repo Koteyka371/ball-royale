@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1194] Decoy Network System — *2026-07-20 05:32:49 UTC*
+
+Introduces a sophisticated network of decoys where players can deploy multiple interconnected holograms. Enemies hitting one decoy take damage that ripples across the entire network, punishing aggressive, untargeted playstyles.
+
+---
+
 ## [idea-1195] Interactive Chat Bounties — *2026-07-20 05:27:46 UTC*
 
 Spectators can use '!bounty <ball_id>' to place a bounty on a specific ball. If that ball is killed within a certain timeframe, the killer gets a massive score boost and a unique visual effect.
