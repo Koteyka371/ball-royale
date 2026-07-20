@@ -14328,13 +14328,12 @@ func execute(strategy: String, delta: float):
                         if "radius" in hazard: h_rad = hazard.radius
                         elif hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
                         if dist < b_rad + h_rad:
-                            var bs = 150.0
-                            if "base_speed" in self.ball: bs = self.ball.base_speed
-                            elif self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): bs = self.ball.get_meta("base_speed")
-                            if "speed" in self.ball:
-                                self.ball.speed = bs * 0.2
-                            elif self.ball.has_method("set_meta"):
-                                self.ball.set_meta("speed", bs * 0.2)
+                            if dist > 0.0001:
+                                var nx = dx / dist
+                                var ny = dy / dist
+                                var push_strength = 200.0 * delta
+                                self.ball.x += nx * push_strength
+                                self.ball.y += ny * push_strength
                         continue
                     elif hazard.kind == "emp_strike_active":
                         var shielded = false
