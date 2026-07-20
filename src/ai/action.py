@@ -9013,6 +9013,12 @@ class Action:
                     self.ball.vx = self.ball._reflection_vx
                     self.ball.vy = self.ball._reflection_vy
 
+                # Trigger combo window if bounced at high speed
+                if speed > 400:
+                    setattr(self.ball, "_wall_knockback_combo_timer", 1.5)
+                    # We might already have a combo, just ensure the timer is refreshed
+                    # The increment happens either here or during the actual knockback
+
 
         if bounced_wall or bounced_col:
             self._trigger_ripple_effect()
@@ -15366,6 +15372,32 @@ class Action:
                     setattr(other, "_last_hit_by_timer", 2.0)
                     setattr(self.ball, "_last_hit_by_id", getattr(other, "id", None))
                     setattr(self.ball, "_last_hit_by_timer", 2.0)
+
+                    wkt = getattr(self.ball, "_wall_knockback_combo_timer", 0.0)
+                    if wkt > 0:
+                        # Double damage and knockback on collision immediately after a wall bounce
+                        combo_dmg_mult = 2.0
+
+                        # Apply bonus damage
+                        bonus_dmg = getattr(self.ball, "damage", 10.0) * combo_dmg_mult
+                        if hasattr(other, "hp"):
+                            other.hp -= bonus_dmg
+                        elif hasattr(other, "take_damage"):
+                            other.take_damage(bonus_dmg)
+
+                        # Apply bonus knockback
+                        if hasattr(other, "vx"):
+                            other.vx -= nx * 500.0 * combo_dmg_mult
+                        if hasattr(other, "vy"):
+                            other.vy -= ny * 500.0 * combo_dmg_mult
+
+                        # Consume combo
+                        self.ball._wall_knockback_combo_timer = 0.0
+                        self.ball._wall_knockback_combo = 0
+
+                        # Add a ripple effect
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("explosion", {"x": other.x, "y": other.y, "radius": 100.0, "damage": 0.0})
 
                 bounced = True
 

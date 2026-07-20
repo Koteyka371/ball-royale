@@ -17498,6 +17498,14 @@ func execute(strategy: String, delta: float):
                     self.ball.vx = nvx
                     self.ball.vy = nvy
 
+            if speed > 400:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["_wall_knockback_combo_timer"] = 1.5
+                elif typeof(self.ball) == TYPE_OBJECT and "_wall_knockback_combo_timer" in self.ball:
+                    self.ball.set("_wall_knockback_combo_timer", 1.5)
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("_wall_knockback_combo_timer", 1.5)
+
 
     if bounced_wall or bounced_col:
         _trigger_ripple_effect()
