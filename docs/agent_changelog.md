@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1200] New Event: Meteor Shower — *2026-07-20 20:40:20 UTC*
+
+Randomly drops explosive meteors from the sky that damage any players caught in their blast radius.
+
+---
+
 ## [idea-1224] Time Loop Mode — *2026-07-20 20:21:17 UTC*
 
 Every 30 seconds, the game state (positions, health) rewinds to where it was 5 seconds ago, forcing players to rethink their strategies or re-engage.
