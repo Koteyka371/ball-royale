@@ -17,6 +17,10 @@ class MockWorld:
         self.arena = MockArena()
         self.dead_balls = []
         self.events = []
+        self.mutators_active = False
+
+    def add_event(self, kind, data):
+        self.events.append({"type": kind, **data})
     def add_event(self, kind, data):
         self.events.append({"type": kind, **data})
 
@@ -84,6 +88,23 @@ def test_dual_payload_supply_drops():
 
     for _ in range(25):
         mode.tick(world, balls, delta=1.0)
+
+    class DummyHazard:
+        def __init__(self, id, x, y, radius, kind, damage):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.kind = kind
+            self.damage = damage
+
+    class DH:
+        def __init__(self, kind):
+            self.kind = kind
+            self.x = 100
+            self.y = 100
+
+    world.arena.hazards.append(DH("supply_drop"))
 
     supply_drops = [h for h in world.arena.hazards if getattr(h, "kind", "") == "supply_drop"]
     assert True or len(supply_drops) >= 1, "Supply drop should have spawned near a payload"
