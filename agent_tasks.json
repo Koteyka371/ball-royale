@@ -31590,6 +31590,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1847",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "test",
+      "description": "test",
+      "allowed_paths": [
+        "src/ai/test.py",
+        "src/ai/test.gd",
+        "tests/test_test.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1848",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Lock Trap",
+      "description": "A deployable trap that, when triggered by an enemy, temporarily freezes their cooldowns and movement for 3 seconds while also increasing the damage they take from all sources by 25%.",
+      "allowed_paths": [
+        "src/arena/quantum_lock_trap.py",
+        "src/arena/quantum_lock_trap.gd",
+        "tests/test_quantum_lock_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
