@@ -43510,3 +43510,9 @@ class ZeroGravityMeteorShowerMode extends GameMode:
 										h.vy = vy
 
 GAME_MODES["zero_gravity_meteor_shower"] = ZeroGravityMeteorShowerMode.new()
+
+class CursedBoosterMode extends GameMode:
+	func _init():
+		super._init()
+		self.name = "Cursed Boosters"
+		self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."

@@ -22128,7 +22128,14 @@ class DynamicWindCurrentsMode(GameMode):
                 b.vx += self.wind_dir_x * self.wind_strength * delta
                 b.vy += self.wind_dir_y * self.wind_strength * delta
 
+class CursedBoosterMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Cursed Boosters"
+        self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."
+
 GAME_MODES = {
+    "cursed_boosters": CursedBoosterMode(),
     'zero_gravity_meteor_shower': ZeroGravityMeteorShowerMode(),
     'charged': ChargedMode(),
     'bounce_laser': BounceLaserMode(),

@@ -1707,8 +1707,33 @@ class Action:
                 dist_sq = dx*dx + dy*dy
                 radius_sum = getattr(self.ball, "radius", 5) + getattr(target_item, "radius", 10)
                 if dist_sq <= radius_sum**2:
+                    is_cursed_mode = hasattr(self.world, "mode") and getattr(self.world.mode, "name", "") == "Cursed Boosters"
+                    pre_stats = {}
+                    if is_cursed_mode:
+                        pre_stats = {
+                            "hp": getattr(self.ball, "hp", 100.0),
+                            "speed": getattr(self.ball, "speed", 100.0),
+                            "damage": getattr(self.ball, "damage", 10.0),
+                            "stamina": getattr(self.ball, "stamina", 100.0)
+                        }
+
                     if hasattr(self.world, "_collect_booster"):
                         self.world._collect_booster(self.ball, target_item)
+
+                    if is_cursed_mode:
+                        post_hp = getattr(self.ball, "hp", 100.0)
+                        if post_hp > pre_stats["hp"]:
+                            self.ball.hp = pre_stats["hp"] - (post_hp - pre_stats["hp"])
+                        post_speed = getattr(self.ball, "speed", 100.0)
+                        if post_speed > pre_stats["speed"]:
+                            self.ball.speed = pre_stats["speed"] - (post_speed - pre_stats["speed"])
+                            self.ball.slow_timer = getattr(self.ball, "slow_timer", 0.0) + 5.0
+                        post_damage = getattr(self.ball, "damage", 10.0)
+                        if post_damage > pre_stats["damage"]:
+                            self.ball.damage = pre_stats["damage"] - (post_damage - pre_stats["damage"])
+                        post_stamina = getattr(self.ball, "stamina", 100.0)
+                        if post_stamina > pre_stats["stamina"]:
+                            self.ball.stamina = pre_stats["stamina"] - (post_stamina - pre_stats["stamina"])
                     if target_item in boosters and target_item in self.world.boosters:
                         self.world.boosters.remove(target_item)
                     elif target_item in hazards and target_item in getattr(getattr(self.world, "arena", None), "hazards", []):
@@ -12183,8 +12208,33 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 else:
+                    is_cursed_mode = hasattr(self.world, "mode") and getattr(self.world.mode, "name", "") == "Cursed Boosters"
+                    pre_stats = {}
+                    if is_cursed_mode:
+                        pre_stats = {
+                            "hp": getattr(self.ball, "hp", 100.0),
+                            "speed": getattr(self.ball, "speed", 100.0),
+                            "damage": getattr(self.ball, "damage", 10.0),
+                            "stamina": getattr(self.ball, "stamina", 100.0)
+                        }
+
                     if hasattr(self.world, "_collect_booster"):
                         self.world._collect_booster(self.ball, nearest)
+
+                    if is_cursed_mode:
+                        post_hp = getattr(self.ball, "hp", 100.0)
+                        if post_hp > pre_stats["hp"]:
+                            self.ball.hp = pre_stats["hp"] - (post_hp - pre_stats["hp"])
+                        post_speed = getattr(self.ball, "speed", 100.0)
+                        if post_speed > pre_stats["speed"]:
+                            self.ball.speed = pre_stats["speed"] - (post_speed - pre_stats["speed"])
+                            self.ball.slow_timer = getattr(self.ball, "slow_timer", 0.0) + 5.0
+                        post_damage = getattr(self.ball, "damage", 10.0)
+                        if post_damage > pre_stats["damage"]:
+                            self.ball.damage = pre_stats["damage"] - (post_damage - pre_stats["damage"])
+                        post_stamina = getattr(self.ball, "stamina", 100.0)
+                        if post_stamina > pre_stats["stamina"]:
+                            self.ball.stamina = pre_stats["stamina"] - (post_stamina - pre_stats["stamina"])
 
             booster_count_after = len(getattr(self.world, "boosters", []))
             hazard_count_after = len(getattr(self.world.arena, "hazards", [])) if hasattr(self.world, "arena") else 0
