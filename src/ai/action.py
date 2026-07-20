@@ -10642,6 +10642,18 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "storm_link_booster":
+                    enemies = self._get_enemies()
+                    if enemies:
+                        target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        self.ball.storm_link_timer = 5.0
+                        self.ball.storm_link_target = target
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "tether_booster":
                     enemies = self._get_enemies()
                     if enemies:
@@ -11061,6 +11073,18 @@ class Action:
                 elif getattr(nearest, "kind", None) == "debuff_booster":
                     # Applies debuffs
                     self.ball.slow_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "storm_link_booster":
+                    enemies = self._get_enemies()
+                    if enemies:
+                        target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        self.ball.storm_link_timer = 5.0
+                        self.ball.storm_link_target = target
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -16669,6 +16693,67 @@ class Action:
         quantum_teleporter_booster_timer = getattr(self.ball, "quantum_teleporter_booster_timer", 0.0)
         if quantum_teleporter_booster_timer > 0:
             self.ball.quantum_teleporter_booster_timer = quantum_teleporter_booster_timer - delta
+
+        storm_link_timer = getattr(self.ball, "storm_link_timer", 0.0)
+        if storm_link_timer > 0:
+            target = getattr(self.ball, "storm_link_target", None)
+            if target and getattr(target, "alive", True):
+                import math
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                dist = math.hypot(dx, dy)
+
+                # Apply minor constant damage
+                if hasattr(self.ball, "hp"):
+                    self.ball.hp = max(0.0, self.ball.hp - (2.0 * delta))
+                if hasattr(target, "hp"):
+                    target.hp = max(0.0, target.hp - (2.0 * delta))
+
+                if dist > 0:
+                    # Pull together like a tether
+                    pull_strength = 200.0 * delta
+                    if dist < pull_strength:
+                        pull_strength = dist
+
+                    # Pull both balls towards each other
+                    nx = dx / dist
+                    ny = dy / dist
+                    self.ball.x += nx * pull_strength * 0.5
+                    self.ball.y += ny * pull_strength * 0.5
+                    target.x -= nx * pull_strength * 0.5
+                    target.y -= ny * pull_strength * 0.5
+
+                    # Speed up if moving in the same direction
+                    b_vx = getattr(self.ball, "vx", 0.0)
+                    b_vy = getattr(self.ball, "vy", 0.0)
+                    t_vx = getattr(target, "vx", 0.0)
+                    t_vy = getattr(target, "vy", 0.0)
+
+                    b_speed_sq = b_vx**2 + b_vy**2
+                    t_speed_sq = t_vx**2 + t_vy**2
+
+                    if b_speed_sq > 0.01 and t_speed_sq > 0.01:
+                        b_mag = math.sqrt(b_speed_sq)
+                        t_mag = math.sqrt(t_speed_sq)
+
+                        b_nx = b_vx / b_mag
+                        b_ny = b_vy / b_mag
+                        t_nx = t_vx / t_mag
+                        t_ny = t_vy / t_mag
+
+                        dot_product = b_nx * t_nx + b_ny * t_ny
+
+                        # If roughly same direction (dot product > 0.8)
+                        if dot_product > 0.8:
+                            # Apply extreme speed boost
+                            boost = 400.0 * delta
+                            self.ball.x += b_nx * boost
+                            self.ball.y += b_ny * boost
+                            target.x += t_nx * boost
+                            target.y += t_ny * boost
+
+            self.ball.storm_link_timer = storm_link_timer - delta
+
         tether_booster_timer = getattr(self.ball, "tether_booster_timer", 0.0)
         if tether_booster_timer > 0:
             target = getattr(self.ball, "tether_booster_target", None)

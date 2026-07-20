@@ -6139,6 +6139,104 @@ func execute(strategy: String, delta: float):
                 self.ball.set_meta("quantum_teleporter_booster_timer", qtbt)
             if "quantum_teleporter_booster_timer" in self.ball:
                 self.ball.quantum_teleporter_booster_timer = qtbt
+		var storm_link_timer = 0.0
+		if self.ball.has_method("has_meta") and self.ball.has_meta("storm_link_timer"):
+			storm_link_timer = self.ball.get_meta("storm_link_timer")
+		elif "storm_link_timer" in self.ball:
+			storm_link_timer = self.ball.storm_link_timer
+
+		if storm_link_timer > 0:
+			var target = null
+			if self.ball.has_method("has_meta") and self.ball.has_meta("storm_link_target"):
+				target = self.ball.get_meta("storm_link_target")
+			elif "storm_link_target" in self.ball:
+				target = self.ball.storm_link_target
+
+			var is_target_alive = true
+			if target != null:
+				if "alive" in target:
+					is_target_alive = target.alive
+				elif target.has_method("has_meta") and target.has_meta("alive"):
+					is_target_alive = target.get_meta("alive")
+
+			if target != null and is_target_alive:
+				var bx = self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else self.ball.x if "x" in self.ball else 0.0
+				var by = self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else self.ball.y if "y" in self.ball else 0.0
+				var tx = target.get_meta("x") if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("x") else target.x if "x" in target else 0.0
+				var ty = target.get_meta("y") if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("y") else target.y if "y" in target else 0.0
+
+				# Minor constant damage
+				var b_hp = self.ball.get_meta("hp") if self.ball.has_method("has_meta") and self.ball.has_meta("hp") else self.ball.hp if "hp" in self.ball else 100.0
+				b_hp = max(0.0, b_hp - (2.0 * delta))
+				if "hp" in self.ball: self.ball.hp = b_hp
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", b_hp)
+
+				var t_hp = target.get_meta("hp") if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("hp") else target.hp if "hp" in target else 100.0
+				t_hp = max(0.0, t_hp - (2.0 * delta))
+				if typeof(target) == TYPE_DICTIONARY:
+					if "hp" in target: target.hp = t_hp
+				else:
+					if "hp" in target: target.hp = t_hp
+					elif target.has_method("set_meta"): target.set_meta("hp", t_hp)
+
+				var dx = tx - bx
+				var dy = ty - by
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist > 0:
+					var pull_strength = 200.0 * delta
+					if dist < pull_strength:
+						pull_strength = dist
+
+					var nx = dx / dist
+					var ny = dy / dist
+
+					var b_new_x = bx + nx * pull_strength * 0.5
+					var b_new_y = by + ny * pull_strength * 0.5
+					var t_new_x = tx - nx * pull_strength * 0.5
+					var t_new_y = ty - ny * pull_strength * 0.5
+
+					var b_vx = self.ball.get_meta("vx") if self.ball.has_method("has_meta") and self.ball.has_meta("vx") else self.ball.vx if "vx" in self.ball else 0.0
+					var b_vy = self.ball.get_meta("vy") if self.ball.has_method("has_meta") and self.ball.has_meta("vy") else self.ball.vy if "vy" in self.ball else 0.0
+					var t_vx = target.get_meta("vx") if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("vx") else target.vx if "vx" in target else 0.0
+					var t_vy = target.get_meta("vy") if typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("vy") else target.vy if "vy" in target else 0.0
+
+					var b_speed_sq = b_vx*b_vx + b_vy*b_vy
+					var t_speed_sq = t_vx*t_vx + t_vy*t_vy
+
+					if b_speed_sq > 0.01 and t_speed_sq > 0.01:
+						var b_mag = sqrt(b_speed_sq)
+						var t_mag = sqrt(t_speed_sq)
+						var b_nx = b_vx / b_mag
+						var b_ny = b_vy / b_mag
+						var t_nx = t_vx / t_mag
+						var t_ny = t_vy / t_mag
+
+						var dot = b_nx * t_nx + b_ny * t_ny
+						if dot > 0.8:
+							var boost = 400.0 * delta
+							b_new_x += b_nx * boost
+							b_new_y += b_ny * boost
+							t_new_x += t_nx * boost
+							t_new_y += t_ny * boost
+
+					if "x" in self.ball: self.ball.x = b_new_x
+					elif self.ball.has_method("set_meta"): self.ball.set_meta("x", b_new_x)
+					if "y" in self.ball: self.ball.y = b_new_y
+					elif self.ball.has_method("set_meta"): self.ball.set_meta("y", b_new_y)
+
+					if typeof(target) == TYPE_DICTIONARY:
+						if "x" in target: target.x = t_new_x
+						if "y" in target: target.y = t_new_y
+					else:
+						if "x" in target: target.x = t_new_x
+						elif target.has_method("set_meta"): target.set_meta("x", t_new_x)
+						if "y" in target: target.y = t_new_y
+						elif target.has_method("set_meta"): target.set_meta("y", t_new_y)
+
+			storm_link_timer -= delta
+			if "storm_link_timer" in self.ball: self.ball.storm_link_timer = storm_link_timer
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("storm_link_timer", storm_link_timer)
+
 		var tether_booster_timer = 0.0
 		if self.ball.has_method("has_meta") and self.ball.has_meta("tether_booster_timer"):
 			tether_booster_timer = self.ball.get_meta("tether_booster_timer")
@@ -20403,6 +20501,35 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "storm_link_booster":
+                var enemies = self._get_enemies_internal()
+                if enemies.size() > 0:
+                    var min_d = 999999999.0
+                    var closest_enemy = null
+                    var bx = self.ball.get_meta("x") if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("x") else self.ball.x if "x" in self.ball else 0.0
+                    var by = self.ball.get_meta("y") if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("y") else self.ball.y if "y" in self.ball else 0.0
+                    for e in enemies:
+                        var ex = e.get_meta("x") if typeof(e) != TYPE_DICTIONARY and e.has_method("has_meta") and e.has_meta("x") else e.x if "x" in e else 0.0
+                        var ey = e.get_meta("y") if typeof(e) != TYPE_DICTIONARY and e.has_method("has_meta") and e.has_meta("y") else e.y if "y" in e else 0.0
+                        var d = (ex - bx)*(ex - bx) + (ey - by)*(ey - by)
+                        if d < min_d:
+                            min_d = d
+                            closest_enemy = e
+                    if closest_enemy != null:
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("storm_link_timer", 5.0)
+                            self.ball.set_meta("storm_link_target", closest_enemy)
+                        else:
+                            self.ball.storm_link_timer = 5.0
+                            self.ball.storm_link_target = closest_enemy
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "tether_booster":
                 var enemies = self._get_enemies_internal()
                 if enemies.size() > 0:
@@ -21250,6 +21377,35 @@ func _collect_booster(delta: float):
                     self.ball.set_meta("slow_timer", 5.0)
                 if "slow_timer" in self.ball:
                     self.ball.slow_timer = 5.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "storm_link_booster":
+                var enemies = self._get_enemies_internal()
+                if enemies.size() > 0:
+                    var min_d = 999999999.0
+                    var closest_enemy = null
+                    var bx = self.ball.get_meta("x") if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("x") else self.ball.x if "x" in self.ball else 0.0
+                    var by = self.ball.get_meta("y") if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("y") else self.ball.y if "y" in self.ball else 0.0
+                    for e in enemies:
+                        var ex = e.get_meta("x") if typeof(e) != TYPE_DICTIONARY and e.has_method("has_meta") and e.has_meta("x") else e.x if "x" in e else 0.0
+                        var ey = e.get_meta("y") if typeof(e) != TYPE_DICTIONARY and e.has_method("has_meta") and e.has_meta("y") else e.y if "y" in e else 0.0
+                        var d = (ex - bx)*(ex - bx) + (ey - by)*(ey - by)
+                        if d < min_d:
+                            min_d = d
+                            closest_enemy = e
+                    if closest_enemy != null:
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("storm_link_timer", 5.0)
+                            self.ball.set_meta("storm_link_target", closest_enemy)
+                        else:
+                            self.ball.storm_link_timer = 5.0
+                            self.ball.storm_link_target = closest_enemy
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
