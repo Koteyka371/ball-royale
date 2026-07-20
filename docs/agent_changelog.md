@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1195] Interactive Chat Bounties — *2026-07-20 05:27:46 UTC*
+
+Spectators can use '!bounty <ball_id>' to place a bounty on a specific ball. If that ball is killed within a certain timeframe, the killer gets a massive score boost and a unique visual effect.
+
+---
+
 ## [idea-1149] Payload Overheal Shield — *2026-07-20 05:23:53 UTC*
 
 When a payload heals a teammate who is already at max HP, it instead generates a temporary shield that absorbs one instance of incoming damage.

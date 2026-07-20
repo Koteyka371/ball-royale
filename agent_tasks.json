@@ -20486,7 +20486,7 @@
     },
     {
       "id": "idea-1195",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Chat Bounties",
@@ -31330,6 +31330,40 @@
         "src/arena/wind_tunnel_arena.py",
         "src/arena/wind_tunnel_arena.gd",
         "tests/test_wind_tunnel_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1832",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Overheal Shield Capacity",
+      "description": "When a payload heals a max HP teammate, the temporary shield granted can stack indefinitely up to a set cap, turning defenders into slow but heavily armored tanks the longer they stay close to the payload.",
+      "allowed_paths": [
+        "src/ai/payload_overheal_shield_capacity.py",
+        "src/ai/payload_overheal_shield_capacity.gd",
+        "tests/test_payload_overheal_shield_capacity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1833",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shield Breaker Payload Mod",
+      "description": "A random event where the payload emits a pulse that instantly destroys all shields on nearby attackers, while converting their lost shields into permanent health for the defenders.",
+      "allowed_paths": [
+        "src/ai/shield_breaker_payload_mod.py",
+        "src/ai/shield_breaker_payload_mod.gd",
+        "tests/test_shield_breaker_payload_mod.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
