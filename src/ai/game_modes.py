@@ -138,6 +138,26 @@ class GameMode:
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -1014,6 +1034,26 @@ class DraftRoyaleMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -1233,6 +1273,26 @@ class BattleRoyaleMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -3170,6 +3230,26 @@ class TeamDeathmatchMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -3255,6 +3335,26 @@ class ZombieInfectionMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -3389,6 +3489,26 @@ class GuildBossFightMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -3540,6 +3660,26 @@ class BossFightMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -3847,6 +3987,26 @@ class DualPayloadMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -4298,6 +4458,26 @@ class EscortMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -4747,6 +4927,26 @@ class VIPDefenseMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -4839,6 +5039,26 @@ class SurvivalMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -5003,6 +5223,26 @@ class CaptureTheFlagMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -5111,6 +5351,26 @@ class EvolutionarySimulationMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -5342,6 +5602,26 @@ class MassiveGravityWellMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -5524,6 +5804,26 @@ class KingOfTheHillMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -5673,6 +5973,26 @@ class SweepingBlackHoleMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -5918,6 +6238,26 @@ class WeatherChaosMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -6729,6 +7069,26 @@ class DominationMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -7008,6 +7368,26 @@ class MemoryTrapsMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -7141,6 +7521,26 @@ class CustomMatchMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -7384,6 +7784,26 @@ class EcholocationMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -7521,6 +7941,26 @@ class PitchBlackMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -7642,6 +8082,26 @@ class VisionReducedMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -7775,6 +8235,26 @@ class EMPBurstMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -7876,6 +8356,26 @@ class DynamicHazardsMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -9084,6 +9584,26 @@ class MirrorMatchMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -9180,6 +9700,26 @@ class VolatileClonesMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -9388,6 +9928,26 @@ class CloneChaosMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -9616,6 +10176,26 @@ class BumperBallsMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -9877,6 +10457,26 @@ class ModifierZonesMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -10063,6 +10663,26 @@ class WindstormMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -10462,6 +11082,26 @@ class BountyHuntMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -10968,6 +11608,26 @@ class GravityWellMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -11761,6 +12421,26 @@ class MagneticCollisionsMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -12116,6 +12796,26 @@ class PinballMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -13486,6 +14186,26 @@ class StaminaSpeedMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -13618,6 +14338,26 @@ class HazardBilliardsMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -14370,6 +15110,26 @@ class DailyMutatorMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -14494,6 +15254,26 @@ class BlackMarketMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -14857,6 +15637,26 @@ class BlizzardMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -15012,6 +15812,26 @@ class MeteorShowerMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -15198,6 +16018,26 @@ class CursedBuffZoneMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -15336,6 +16176,26 @@ class RhythmPanelsMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -15840,6 +16700,26 @@ class ArtifactUpgraderMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -16043,6 +16923,26 @@ class SweepingPaddlesMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -16584,6 +17484,26 @@ class InvisibleDecoysMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -16641,7 +17561,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain"]
         import random
         self.random = random
 
@@ -17175,6 +18095,26 @@ class JuggernautMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -17574,6 +18514,26 @@ class TickingPayloadMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -18049,6 +19009,26 @@ class WeaponCollectionMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -18478,6 +19458,26 @@ class CenterBlackHoleMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -22629,6 +23629,26 @@ class RollingBouldersMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -22884,6 +23904,26 @@ class SoulLinkMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -23166,6 +24206,26 @@ class TagTeamMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -23387,6 +24447,26 @@ class CrossfireMode(GameMode):
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
 
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
+
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
             if is_elemental:
@@ -23505,6 +24585,26 @@ class TeleporterHubMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
@@ -24240,6 +25340,26 @@ class FreezeTagMode(GameMode):
 
                 if "dirt" in arena_type or "earth" in arena_type:
                     b.defense_multiplier = 0.8
+
+            # Trait: Wind
+            is_wind = "wind" in b_type or "wind" in traits
+            if is_wind:
+                if weather in ["slight_breeze", "storm"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                elif weather == "hurricane":
+                    # Blown away by hurricane
+                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
+                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Water
+            is_water = "water" in b_type or "water" in traits
+            if is_water:
+                if weather in ["light_rain", "heavy_rain", "rain"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.1
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
 
             # Trait: Elementalist
             is_elemental = "elemental" in b_type or "elemental" in traits
