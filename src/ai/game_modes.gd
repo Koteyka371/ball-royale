@@ -35593,7 +35593,67 @@ class ChronosphereEventMode extends GameMode:
 					if "attack_cooldown" in b: b.attack_cooldown += delta * 0.5
 
 
+class UnstableTeleportDashesMode extends GameMode:
+	func _init():
+		name = "unstable_teleport_dashes"
+		description = "Dashes have a chance to trigger a randomized, short-range teleport around the arena!"
+		probability = 0.05
+		color = [0.8, 0.2, 0.8]
+
+	func tick(world, balls, delta):
+		if not "arena" in world:
+			return
+
+		for b in balls:
+			var is_dashing = false
+			if "is_dashing" in b:
+				is_dashing = b.is_dashing
+			elif b.has_method("has_meta") and b.has_meta("is_dashing"):
+				is_dashing = b.get_meta("is_dashing")
+
+			if is_dashing:
+				var tp_cd = 0.0
+				if "unstable_tp_cd" in b:
+					tp_cd = b.unstable_tp_cd
+				elif b.has_method("has_meta") and b.has_meta("unstable_tp_cd"):
+					tp_cd = b.get_meta("unstable_tp_cd")
+
+				if tp_cd <= 0.0 and randf() < 0.2:
+					var angle = randf() * PI * 2.0
+					var dist = randf() * 300.0 + 100.0
+
+					var new_x = b.x + cos(angle) * dist
+					var new_y = b.y + sin(angle) * dist
+
+					var rad = 10.0
+					if "radius" in b:
+						rad = b.radius
+					elif b.has_method("has_meta") and b.has_meta("radius"):
+						rad = b.get_meta("radius")
+
+					var res = world.arena.clamp_position(new_x, new_y, rad)
+					b.x = res[0]
+					b.y = res[1]
+
+					if "unstable_tp_cd" in b:
+						b.unstable_tp_cd = 0.5
+					elif b.has_method("set_meta"):
+						b.set_meta("unstable_tp_cd", 0.5)
+
+			var cd = 0.0
+			if "unstable_tp_cd" in b:
+				cd = b.unstable_tp_cd
+			elif b.has_method("has_meta") and b.has_meta("unstable_tp_cd"):
+				cd = b.get_meta("unstable_tp_cd")
+
+			if cd > 0:
+				if "unstable_tp_cd" in b:
+					b.unstable_tp_cd -= delta
+				elif b.has_method("set_meta"):
+					b.set_meta("unstable_tp_cd", cd - delta)
+
 GAME_MODES = {
+	"unstable_teleport_dashes": UnstableTeleportDashesMode.new(),
 	"chronosphere_event": ChronosphereEventMode.new(),
     "bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),

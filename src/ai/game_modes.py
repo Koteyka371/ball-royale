@@ -22134,7 +22134,44 @@ class CursedBoosterMode(GameMode):
         self.name = "Cursed Boosters"
         self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."
 
+class UnstableTeleportDashesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "unstable_teleport_dashes"
+        self.description = "Dashes have a chance to trigger a randomized, short-range teleport around the arena!"
+        self.probability = 0.05
+        self.color = (200, 50, 200)
+
+    def tick(self, world, balls, delta):
+        import random
+        import math
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena"):
+            return
+
+        for b in balls:
+            if getattr(b, "is_dashing", False):
+                tp_cd = getattr(b, "unstable_tp_cd", 0.0)
+                if tp_cd <= 0.0 and random.random() < 0.2:
+                    angle = random.uniform(0, 2 * math.pi)
+                    dist = random.uniform(100.0, 400.0)
+                    new_x = getattr(b, "x", 0.0) + math.cos(angle) * dist
+                    new_y = getattr(b, "y", 0.0) + math.sin(angle) * dist
+                    rad = getattr(b, "radius", 10.0)
+                    if hasattr(world.arena, "clamp_position"):
+                        clamped = world.arena.clamp_position(new_x, new_y, rad)
+                        b.x = clamped[0]
+                        b.y = clamped[1]
+                    else:
+                        b.x = new_x
+                        b.y = new_y
+                    b.unstable_tp_cd = 0.5
+
+            if hasattr(b, "unstable_tp_cd") and b.unstable_tp_cd > 0.0:
+                b.unstable_tp_cd -= delta
+
 GAME_MODES = {
+    'unstable_teleport_dashes': UnstableTeleportDashesMode(),
     "cursed_boosters": CursedBoosterMode(),
     'zero_gravity_meteor_shower': ZeroGravityMeteorShowerMode(),
     'charged': ChargedMode(),

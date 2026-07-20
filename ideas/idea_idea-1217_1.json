@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Dash Trails",
+  "description": "Balls that teleport while dashing leave behind a temporary, static duplicate at their original location. This trail absorbs 1 incoming projectile before dissipating, providing brief cover."
+}
