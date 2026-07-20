@@ -31471,6 +31471,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1840",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ghost Boosters",
+      "description": "Boosters give you temporary ghost status.",
+      "allowed_paths": [
+        "src/ai/ghost_boosters.py",
+        "src/ai/ghost_boosters.gd",
+        "tests/test_ghost_boosters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1841",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cursed Buffs",
+      "description": "Boosters debuff you but last longer.",
+      "allowed_paths": [
+        "src/ai/cursed_buffs.py",
+        "src/ai/cursed_buffs.gd",
+        "tests/test_cursed_buffs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

@@ -1,4 +1,0 @@
-{
-  "title": "Time Loop Skill",
-  "description": "A new skill that records the player's position and health for 5 seconds. Activating the skill a second time rewinds the player to their recorded state."
-}
