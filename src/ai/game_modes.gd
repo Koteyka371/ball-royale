@@ -451,7 +451,110 @@ class GameMode:
 				var hazards = arena.hazards
 				if typeof(hazards) == TYPE_ARRAY:
 					var to_remove = []
+					var w_weather = ""
+					if "weather" in self: w_weather = self.weather
+					if w_weather == "" and "weather" in arena: w_weather = arena.weather
+					var is_ts = (w_weather == "thunderstorm")
 					for h in hazards:
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+						elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+
+						if kind == "lightning_rod":
+							if is_ts:
+								var t = 0.0
+								if typeof(h) == TYPE_DICTIONARY and h.has("strike_timer"): t = h["strike_timer"]
+								elif typeof(h) == TYPE_OBJECT and "strike_timer" in h: t = h.strike_timer
+								elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("strike_timer"): t = h.get_meta("strike_timer")
+
+								t += delta
+								if t >= 2.0:
+									t = 0.0
+									var c = 0
+									if typeof(h) == TYPE_DICTIONARY and h.has("charge"): c = h["charge"]
+									elif typeof(h) == TYPE_OBJECT and "charge" in h: c = h.charge
+									elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("charge"): c = h.get_meta("charge")
+									c += 1
+									if typeof(h) == TYPE_DICTIONARY: h["charge"] = c
+									elif typeof(h) == TYPE_OBJECT and "charge" in h: h.charge = c
+									elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("charge", c)
+
+									var hx = 0.0
+									var hy = 0.0
+									if typeof(h) == TYPE_DICTIONARY:
+										if h.has("x"): hx = h["x"]
+										if h.has("y"): hy = h["y"]
+									elif typeof(h) == TYPE_OBJECT:
+										if "x" in h: hx = h.x
+										if "y" in h: hy = h.y
+									if world.has_method("add_event"): world.add_event("lightning_strike", {"x": hx, "y": hy, "radius": 10.0})
+
+								if typeof(h) == TYPE_DICTIONARY: h["strike_timer"] = t
+								elif typeof(h) == TYPE_OBJECT and "strike_timer" in h: h.strike_timer = t
+								elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("strike_timer", t)
+
+								var cur_c = 0
+								if typeof(h) == TYPE_DICTIONARY and h.has("charge"): cur_c = h["charge"]
+								elif typeof(h) == TYPE_OBJECT and "charge" in h: cur_c = h.charge
+								elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("charge"): cur_c = h.get_meta("charge")
+
+								if cur_c >= 3:
+									var hx = 0.0
+									var hy = 0.0
+									if typeof(h) == TYPE_DICTIONARY:
+										if h.has("x"): hx = h["x"]
+										if h.has("y"): hy = h["y"]
+									elif typeof(h) == TYPE_OBJECT:
+										if "x" in h: hx = h.x
+										if "y" in h: hy = h.y
+									if world.has_method("add_event"): world.add_event("emp_blast", {"x": hx, "y": hy, "radius": 400.0})
+
+									var owner_t = ""
+									if typeof(h) == TYPE_DICTIONARY and h.has("owner_team"): owner_t = h["owner_team"]
+									elif typeof(h) == TYPE_OBJECT and "owner_team" in h: owner_t = h.owner_team
+									elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("owner_team"): owner_t = h.get_meta("owner_team")
+
+									for b in balls:
+										var b_alive = false
+										if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+										elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+										elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+										if b_alive:
+											var b_team = ""
+											if typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b.team
+											elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+											elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+											if b_team != owner_t:
+												var bx = 0.0
+												var by = 0.0
+												if typeof(b) == TYPE_DICTIONARY:
+													if b.has("x"): bx = b.x
+													if b.has("y"): by = b.y
+												elif typeof(b) == TYPE_OBJECT:
+													if "x" in b: bx = b.x
+													if "y" in b: by = b.y
+												var dx = hx - bx
+												var dy = hy - by
+												if dx*dx + dy*dy <= 160000.0:
+													if typeof(b) == TYPE_DICTIONARY:
+														b["has_shield"] = false
+														b["skill_timer"] = max(b.get("skill_timer", 0.0), 5.0)
+														b["silence_timer"] = max(b.get("silence_timer", 0.0), 5.0)
+														b["chain_lightning_timer"] = max(b.get("chain_lightning_timer", 0.0), 5.0)
+													elif typeof(b) == TYPE_OBJECT:
+														if "has_shield" in b: b.has_shield = false
+														elif b.has_method("set_meta"): b.set_meta("has_shield", false)
+														if "skill_timer" in b: b.skill_timer = max(b.skill_timer, 5.0)
+														elif b.has_method("get_meta") and b.has_meta("skill_timer"): b.set_meta("skill_timer", max(b.get_meta("skill_timer"), 5.0))
+														if "silence_timer" in b: b.silence_timer = max(b.silence_timer, 5.0)
+														elif b.has_method("get_meta") and b.has_meta("silence_timer"): b.set_meta("silence_timer", max(b.get_meta("silence_timer"), 5.0))
+														if "chain_lightning_timer" in b: b.chain_lightning_timer = max(b.chain_lightning_timer, 5.0)
+														elif b.has_method("get_meta") and b.has_meta("chain_lightning_timer"): b.set_meta("chain_lightning_timer", max(b.get_meta("chain_lightning_timer"), 5.0))
+
+									to_remove.append(h)
+
 						var is_detonating = false
 						if typeof(h) == TYPE_DICTIONARY and h.has("is_detonating"):
 							is_detonating = h["is_detonating"]
@@ -626,46 +729,79 @@ class GameMode:
 				var best_target_x = 0.0
 				var best_target_y = 0.0
 				var max_balls = -1
+				var rod_found = false
 
-				for b in balls:
-					var b_alive = false
-					if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
-					elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
-					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+				if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+					var arena = world.arena
+					if typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+						var hazards = arena.hazards
+						if typeof(hazards) == TYPE_ARRAY:
+							for h in hazards:
+								var kind = ""
+								if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+								elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+								elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
 
-					if b_alive:
-						var bx = 0.0
-						var by = 0.0
-						if typeof(b) == TYPE_DICTIONARY:
-							if b.has("x"): bx = b.x
-							if b.has("y"): by = b.y
-						elif typeof(b) == TYPE_OBJECT:
-							if "x" in b: bx = b.x
-							if "y" in b: by = b.y
+								if kind == "lightning_rod":
+									if typeof(h) == TYPE_DICTIONARY:
+										if h.has("x"): best_target_x = h["x"]
+										if h.has("y"): best_target_y = h["y"]
+										var c = 0
+										if h.has("charge"): c = h["charge"]
+										h["charge"] = c + 1
+									elif typeof(h) == TYPE_OBJECT:
+										if "x" in h: best_target_x = h.x
+										if "y" in h: best_target_y = h.y
+										var c = 0
+										if "charge" in h: c = h.charge
+										elif h.has_method("get_meta") and h.has_meta("charge"): c = h.get_meta("charge")
+										c += 1
+										if "charge" in h: h.charge = c
+										elif h.has_method("set_meta"): h.set_meta("charge", c)
+									max_balls = 999
+									rod_found = true
+									break
 
-						var count = 0
-						for ob in balls:
-							var ob_alive = false
-							if typeof(ob) == TYPE_DICTIONARY and ob.has("alive"): ob_alive = ob.alive
-							elif typeof(ob) == TYPE_OBJECT and "alive" in ob: ob_alive = ob.alive
-							elif typeof(ob) == TYPE_OBJECT and ob.has_method("get_meta") and ob.has_meta("alive"): ob_alive = ob.get_meta("alive")
+				if not rod_found:
+					for b in balls:
+						var b_alive = false
+						if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+						elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+						elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
 
-							if ob_alive:
-								var obx = 0.0
-								var oby = 0.0
-								if typeof(ob) == TYPE_DICTIONARY:
-									if ob.has("x"): obx = ob.x
-									if ob.has("y"): oby = ob.y
-								elif typeof(ob) == TYPE_OBJECT:
-									if "x" in ob: obx = ob.x
-									if "y" in ob: oby = ob.y
+						if b_alive:
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("x"): bx = b.x
+								if b.has("y"): by = b.y
+							elif typeof(b) == TYPE_OBJECT:
+								if "x" in b: bx = b.x
+								if "y" in b: by = b.y
 
-								var dist_sq = (bx - obx) * (bx - obx) + (by - oby) * (by - oby)
-								if dist_sq <= 10000.0:
-									count += 1
+							var count = 0
+							for ob in balls:
+								var ob_alive = false
+								if typeof(ob) == TYPE_DICTIONARY and ob.has("alive"): ob_alive = ob.alive
+								elif typeof(ob) == TYPE_OBJECT and "alive" in ob: ob_alive = ob.alive
+								elif typeof(ob) == TYPE_OBJECT and ob.has_method("get_meta") and ob.has_meta("alive"): ob_alive = ob.get_meta("alive")
 
-						if count > max_balls:
-							max_balls = count
+								if ob_alive:
+									var obx = 0.0
+									var oby = 0.0
+									if typeof(ob) == TYPE_DICTIONARY:
+										if ob.has("x"): obx = ob.x
+										if ob.has("y"): oby = ob.y
+									elif typeof(ob) == TYPE_OBJECT:
+										if "x" in ob: obx = ob.x
+										if "y" in ob: oby = ob.y
+
+									var dist_sq = (bx - obx) * (bx - obx) + (by - oby) * (by - oby)
+									if dist_sq <= 10000.0:
+										count += 1
+
+							if count > max_balls:
+								max_balls = count
 							best_target_x = bx
 							best_target_y = by
 

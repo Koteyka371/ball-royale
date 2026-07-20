@@ -358,23 +358,35 @@ class GameMode:
             if timer >= 15.0:
                 timer = 0.0
 
-                # find cluster of balls
+                # Prioritize lightning_rod hazard
                 best_target_x, best_target_y = 0.0, 0.0
                 max_balls = -1
+                rod_found = False
 
-                for b in balls:
-                    if getattr(b, "alive", False):
-                        count = 0
-                        bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
-                        for ob in balls:
-                            if getattr(ob, "alive", False):
-                                obx, oby = getattr(ob, "x", 0.0), getattr(ob, "y", 0.0)
-                                if (bx - obx)**2 + (by - oby)**2 <= 10000.0:
-                                    count += 1
-                        if count > max_balls:
-                            max_balls = count
-                            best_target_x = bx
-                            best_target_y = by
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        if getattr(h, "kind", "") == "lightning_rod":
+                            best_target_x, best_target_y = h.x, h.y
+                            max_balls = 999
+                            h.charge = getattr(h, "charge", 0) + 1
+                            rod_found = True
+                            break
+
+                if not rod_found:
+                    # find cluster of balls
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            count = 0
+                            bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                            for ob in balls:
+                                if getattr(ob, "alive", False):
+                                    obx, oby = getattr(ob, "x", 0.0), getattr(ob, "y", 0.0)
+                                    if (bx - obx)**2 + (by - oby)**2 <= 10000.0:
+                                        count += 1
+                            if count > max_balls:
+                                max_balls = count
+                                best_target_x = bx
+                                best_target_y = by
 
                 if max_balls > 0:
                     if hasattr(world, "add_event"):
@@ -461,7 +473,42 @@ class GameMode:
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             hazards_to_remove = []
+            # Lightning Rod logic
+            weather = getattr(self, "weather", "")
+            if not weather and hasattr(world, "arena"):
+                weather = getattr(world.arena, "weather", "")
+            is_raining = getattr(world.arena, "is_raining", False) if hasattr(world, "arena") else False
+            is_ts = (weather == "thunderstorm")
+
             for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "lightning_rod":
+                    if is_ts:
+                        t = getattr(h, "strike_timer", 0.0)
+                        t += delta
+                        if t >= 2.0:
+                            t = 0.0
+                            h.charge = getattr(h, "charge", 0) + 1
+                            if hasattr(world, "add_event"):
+                                world.add_event("lightning_strike", {"x": h.x, "y": h.y, "radius": 10.0})
+                        h.strike_timer = t
+
+                        if getattr(h, "charge", 0) >= 3:
+                            # Detonate EMP blast
+                            if hasattr(world, "add_event"):
+                                world.add_event("emp_blast", {"x": h.x, "y": h.y, "radius": 400.0})
+                            owner_team = getattr(h, "owner_team", None)
+                            for b in balls:
+                                if getattr(b, "alive", False) and getattr(b, "team", None) != owner_team:
+                                    dx = h.x - getattr(b, "x", 0.0)
+                                    dy = h.y - getattr(b, "y", 0.0)
+                                    if dx*dx + dy*dy <= 160000.0: # 400^2
+                                        b.has_shield = False
+                                        b.skill_timer = max(getattr(b, "skill_timer", 0.0), 5.0)
+                                        b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
+                                        b.chain_lightning_timer = max(getattr(b, "chain_lightning_timer", 0.0), 5.0)
+                            hazards_to_remove.append(h)
+
+
                 if getattr(h, "explodes", False) and getattr(h, "kind", "") == "gravity_well":
                     if hasattr(h, "duration"):
                         h.duration -= delta
@@ -17646,7 +17693,42 @@ class BlackoutEventMode(GameMode):
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             hazards_to_remove = []
+            # Lightning Rod logic
+            weather = getattr(self, "weather", "")
+            if not weather and hasattr(world, "arena"):
+                weather = getattr(world.arena, "weather", "")
+            is_raining = getattr(world.arena, "is_raining", False) if hasattr(world, "arena") else False
+            is_ts = (weather == "thunderstorm")
+
             for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "lightning_rod":
+                    if is_ts:
+                        t = getattr(h, "strike_timer", 0.0)
+                        t += delta
+                        if t >= 2.0:
+                            t = 0.0
+                            h.charge = getattr(h, "charge", 0) + 1
+                            if hasattr(world, "add_event"):
+                                world.add_event("lightning_strike", {"x": h.x, "y": h.y, "radius": 10.0})
+                        h.strike_timer = t
+
+                        if getattr(h, "charge", 0) >= 3:
+                            # Detonate EMP blast
+                            if hasattr(world, "add_event"):
+                                world.add_event("emp_blast", {"x": h.x, "y": h.y, "radius": 400.0})
+                            owner_team = getattr(h, "owner_team", None)
+                            for b in balls:
+                                if getattr(b, "alive", False) and getattr(b, "team", None) != owner_team:
+                                    dx = h.x - getattr(b, "x", 0.0)
+                                    dy = h.y - getattr(b, "y", 0.0)
+                                    if dx*dx + dy*dy <= 160000.0: # 400^2
+                                        b.has_shield = False
+                                        b.skill_timer = max(getattr(b, "skill_timer", 0.0), 5.0)
+                                        b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
+                                        b.chain_lightning_timer = max(getattr(b, "chain_lightning_timer", 0.0), 5.0)
+                            hazards_to_remove.append(h)
+
+
                 if getattr(h, "explodes", False) and getattr(h, "kind", "") == "gravity_well":
                     if hasattr(h, "duration"):
                         h.duration -= delta
@@ -18403,7 +18485,42 @@ class ShrinkingBoundaryMode(GameMode):
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             hazards_to_remove = []
+            # Lightning Rod logic
+            weather = getattr(self, "weather", "")
+            if not weather and hasattr(world, "arena"):
+                weather = getattr(world.arena, "weather", "")
+            is_raining = getattr(world.arena, "is_raining", False) if hasattr(world, "arena") else False
+            is_ts = (weather == "thunderstorm")
+
             for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "lightning_rod":
+                    if is_ts:
+                        t = getattr(h, "strike_timer", 0.0)
+                        t += delta
+                        if t >= 2.0:
+                            t = 0.0
+                            h.charge = getattr(h, "charge", 0) + 1
+                            if hasattr(world, "add_event"):
+                                world.add_event("lightning_strike", {"x": h.x, "y": h.y, "radius": 10.0})
+                        h.strike_timer = t
+
+                        if getattr(h, "charge", 0) >= 3:
+                            # Detonate EMP blast
+                            if hasattr(world, "add_event"):
+                                world.add_event("emp_blast", {"x": h.x, "y": h.y, "radius": 400.0})
+                            owner_team = getattr(h, "owner_team", None)
+                            for b in balls:
+                                if getattr(b, "alive", False) and getattr(b, "team", None) != owner_team:
+                                    dx = h.x - getattr(b, "x", 0.0)
+                                    dy = h.y - getattr(b, "y", 0.0)
+                                    if dx*dx + dy*dy <= 160000.0: # 400^2
+                                        b.has_shield = False
+                                        b.skill_timer = max(getattr(b, "skill_timer", 0.0), 5.0)
+                                        b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
+                                        b.chain_lightning_timer = max(getattr(b, "chain_lightning_timer", 0.0), 5.0)
+                            hazards_to_remove.append(h)
+
+
                 if getattr(h, "explodes", False) and getattr(h, "kind", "") == "gravity_well":
                     if hasattr(h, "duration"):
                         h.duration -= delta
