@@ -1,0 +1,4 @@
+{
+  "title": "Viewer Faction Wars",
+  "description": "Viewers can pledge loyalty to specific team colors at the start of a match. Whenever a viewer spawns a hazard or drops a buff, it gains a team affiliation, damaging only rival teams or buffing only their pledged team. This creates a meta-game of viewer armies fighting alongside AI."
+}
