@@ -3928,6 +3928,62 @@ class DualPayloadMode(GameMode):
 
         import math
 
+        if not hasattr(self, "supply_drop_timer"):
+            self.supply_drop_timer = 0.0
+
+        self.supply_drop_timer += delta
+        if self.supply_drop_timer >= 20.0:
+            self.supply_drop_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                    import random
+
+                    # Spawn near a random active payload
+                    active_payloads = []
+                    if getattr(self, "payload_red", None) and getattr(self.payload_red, "alive", False):
+                        active_payloads.append(self.payload_red)
+                    if getattr(self, "payload_blue", None) and getattr(self.payload_blue, "alive", False):
+                        active_payloads.append(self.payload_blue)
+
+                    if active_payloads:
+                        target_payload = random.choice(active_payloads)
+                        h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                        hx = getattr(target_payload, "x", center_x) + random.uniform(-150, 150)
+                        hy = getattr(target_payload, "y", center_y) + random.uniform(-150, 150)
+                        drop = Hazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
+                        world.arena.hazards.append(drop)
+                        if hasattr(world, "add_event"):
+                            world.add_event("supply_drop_spawned", {"x": hx, "y": hy})
+                except ImportError:
+                    pass
+
+        # Check collisions with supply drops for all balls
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards[:]:
+                if getattr(h, "kind", "") == "supply_drop":
+                    for b in balls:
+                        if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                            continue
+                        import math
+                        dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
+                        if dist <= getattr(h, "radius", 40.0) + getattr(b, "radius", 15.0):
+                            import random
+                            buff_type = random.choice(["invulnerability", "instant_ultimate", "mega_heal"])
+                            if buff_type == "invulnerability":
+                                b.invulnerable_timer = getattr(b, "invulnerable_timer", 0.0) + 10.0
+                            elif buff_type == "instant_ultimate":
+                                b.ultimate_charge = getattr(b, "max_ultimate_charge", 100.0)
+                            elif buff_type == "mega_heal":
+                                b.hp = getattr(b, "max_hp", 100.0)
+                                b.shield = getattr(b, "shield", 0.0) + 50.0
+
+                            if h in world.arena.hazards:
+                                world.arena.hazards.remove(h)
+                            if hasattr(world, "add_event"):
+                                world.add_event("supply_drop_collected", {"team": getattr(b, "team", "Unknown"), "buff": buff_type})
+                            break
+
         self.anti_payload_timer = getattr(self, "anti_payload_timer", 0.0) + delta
         if self.anti_payload_timer >= 15.0:
             self.anti_payload_timer = 0.0
@@ -4354,6 +4410,52 @@ class EscortMode(GameMode):
                     world.arena.hazards.append(new_hazard)
                 except ImportError:
                     pass
+
+        if not hasattr(self, "supply_drop_timer"):
+            self.supply_drop_timer = 0.0
+
+        self.supply_drop_timer += delta
+        if self.supply_drop_timer >= 20.0:
+            self.supply_drop_timer = 0.0
+            if getattr(self, "payload", None) and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                    import random
+                    h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                    hx = getattr(self.payload, "x", 0) + random.uniform(-150, 150)
+                    hy = getattr(self.payload, "y", 0) + random.uniform(-150, 150)
+                    drop = Hazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
+                    world.arena.hazards.append(drop)
+                    if hasattr(world, "add_event"):
+                        world.add_event("supply_drop_spawned", {"x": hx, "y": hy})
+                except ImportError:
+                    pass
+
+        # Check collisions with supply drops for all balls
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards[:]:
+                if getattr(h, "kind", "") == "supply_drop":
+                    for b in balls:
+                        if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                            continue
+                        import math
+                        dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
+                        if dist <= getattr(h, "radius", 40.0) + getattr(b, "radius", 15.0):
+                            import random
+                            buff_type = random.choice(["invulnerability", "instant_ultimate", "mega_heal"])
+                            if buff_type == "invulnerability":
+                                b.invulnerable_timer = getattr(b, "invulnerable_timer", 0.0) + 10.0
+                            elif buff_type == "instant_ultimate":
+                                b.ultimate_charge = getattr(b, "max_ultimate_charge", 100.0)
+                            elif buff_type == "mega_heal":
+                                b.hp = getattr(b, "max_hp", 100.0)
+                                b.shield = getattr(b, "shield", 0.0) + 50.0
+
+                            if h in world.arena.hazards:
+                                world.arena.hazards.remove(h)
+                            if hasattr(world, "add_event"):
+                                world.add_event("supply_drop_collected", {"team": getattr(b, "team", "Unknown"), "buff": buff_type})
+                            break
 
         if not hasattr(self, "pulse_timer"):
             self.pulse_timer = 0.0
