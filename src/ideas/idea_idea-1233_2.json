@@ -1,0 +1,4 @@
+{
+  "title": "Supercharged Bouncers",
+  "description": "If a slime_bouncer or trampoline is hit by a specific elemental attack (e.g. lightning), it becomes supercharged. Supercharged bouncers impart significantly higher knockback force and apply an elemental debuff (like stun or burn) in addition to their normal effects."
+}

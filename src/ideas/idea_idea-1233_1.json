@@ -1,0 +1,4 @@
+{
+  "title": "Slime Trails",
+  "description": "Balls moving while affected by a slow debuff (e.g. from slime_bouncer) leave behind a trail of slime on the ground. Any other ball that passes over this trail also receives a temporary slow debuff, creating area denial and synergistic hazard gameplay."
+}

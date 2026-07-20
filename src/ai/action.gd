@@ -15164,6 +15164,65 @@ func execute(strategy: String, delta: float):
                                 self.ball.vy = ny * 1000.0
                         continue
 
+                    elif hazard.kind == "slime_bouncer":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var d = sqrt(dx*dx + dy*dy)
+                        var b_rad = 10.0
+                        if "radius" in self.ball:
+                            b_rad = self.ball.radius
+                        if d < (b_rad + hazard.radius) and d > 0.0001:
+                            var nx = dx / d
+                            var ny = dy / d
+                            var ball_vx = 0.0
+                            var ball_vy = 0.0
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_meta("vx"):
+                                ball_vx = self.ball.get_meta("vx")
+                                ball_vy = self.ball.get_meta("vy")
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vx"):
+                                ball_vx = self.ball["vx"]
+                                ball_vy = self.ball["vy"]
+                            elif "vx" in self.ball:
+                                ball_vx = self.ball.vx
+                                ball_vy = self.ball.vy
+
+                            var v_mag = sqrt(ball_vx*ball_vx + ball_vy*ball_vy)
+                            if v_mag > 10.0:
+                                nx = -ball_vx / v_mag
+                                ny = -ball_vy / v_mag
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["vx"] = nx * 1500.0
+                                self.ball["vy"] = ny * 1500.0
+                                if self.ball.has("x"):
+                                    self.ball["x"] += nx * 20.0
+                                    self.ball["y"] += ny * 20.0
+                                var cur_slow = float(self.ball.get("slow_timer", 0.0))
+                                self.ball["slow_timer"] = max(cur_slow, 3.0)
+                                var cur_imm = float(self.ball.get("hazard_immunity_timer", 0.0))
+                                self.ball["hazard_immunity_timer"] = max(cur_imm, 0.5)
+                            elif "vx" in self.ball:
+                                self.ball.vx = nx * 1500.0
+                                self.ball.vy = ny * 1500.0
+                                if "x" in self.ball:
+                                    self.ball.x += nx * 20.0
+                                    self.ball.y += ny * 20.0
+                                var cur_slow = float(self.ball.slow_timer) if "slow_timer" in self.ball else 0.0
+                                self.ball.slow_timer = max(cur_slow, 3.0)
+                                var cur_imm = float(self.ball.hazard_immunity_timer) if "hazard_immunity_timer" in self.ball else 0.0
+                                self.ball.hazard_immunity_timer = max(cur_imm, 0.5)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("vx", nx * 1500.0)
+                                self.ball.set_meta("vy", ny * 1500.0)
+                                if "x" in self.ball:
+                                    self.ball.x += nx * 20.0
+                                    self.ball.y += ny * 20.0
+                                var cur_slow = self.ball.get_meta("slow_timer") if self.ball.has_meta("slow_timer") else 0.0
+                                self.ball.set_meta("slow_timer", max(cur_slow, 3.0))
+                                var cur_imm = self.ball.get_meta("hazard_immunity_timer") if self.ball.has_meta("hazard_immunity_timer") else 0.0
+                                self.ball.set_meta("hazard_immunity_timer", max(cur_imm, 0.5))
+                        continue
+
                     elif hazard.kind == "trampoline":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
