@@ -22137,7 +22137,65 @@ class CursedBoosterMode(GameMode):
         self.name = "Cursed Boosters"
         self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."
 
+
+class VoidTilesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Void Tiles"
+        self.description = "The edges of the arena break down into void tiles. Touching them slows you down and randomly rewinds your movement, forcing fights to the center."
+        self.history = {}
+        self.tick_timer = 0.0
+        self.safe_radius = 1000.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.history = {}
+        for b in balls:
+            self.history[getattr(b, 'id', 0)] = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.tick_timer += delta
+        self.safe_radius = max(0.0, 1000.0 - self.tick_timer * 10.0)
+
+        import math
+        import random
+
+        valid_balls = [b for b in balls if getattr(b, "alive", False)]
+
+        # Center of arena is usually 500,500 if arena size is 1000,
+        # let's assume world.arena.width/2 if available.
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        cx = arena_width / 2.0
+        cy = arena_height / 2.0
+
+        for b in valid_balls:
+            b_id = getattr(b, 'id', 0)
+            if b_id not in self.history:
+                self.history[b_id] = []
+
+            # Keep history to last 3 seconds
+            self.history[b_id].append((self.tick_timer, getattr(b, 'x', 0.0), getattr(b, 'y', 0.0)))
+            self.history[b_id] = [h for h in self.history[b_id] if self.tick_timer - h[0] <= 3.0]
+
+            dx = getattr(b, 'x', 0.0) - cx
+            dy = getattr(b, 'y', 0.0) - cy
+            dist = math.hypot(dx, dy)
+
+            if dist > self.safe_radius:
+                # Apply slow
+                b.speed_multiplier = getattr(b, 'speed_multiplier', 1.0) * 0.5
+
+                # Random rewind
+                if random.random() < 0.05 and len(self.history[b_id]) > 0:
+                    past_state = random.choice(self.history[b_id])
+                    b.x = past_state[1]
+                    b.y = past_state[2]
+
+
 GAME_MODES = {
+    "void_tiles": VoidTilesMode(),
     "cursed_boosters": CursedBoosterMode(),
     'zero_gravity_meteor_shower': ZeroGravityMeteorShowerMode(),
     'charged': ChargedMode(),
