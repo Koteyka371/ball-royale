@@ -3935,28 +3935,37 @@ class DualPayloadMode(GameMode):
         if self.supply_drop_timer >= 20.0:
             self.supply_drop_timer = 0.0
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
-                try:
-                    from arena.procedural_arena import Hazard
-                    import random
+                import random
+                class DummyHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
 
-                    # Spawn near a random active payload
-                    active_payloads = []
-                    if getattr(self, "payload_red", None) and getattr(self.payload_red, "alive", False):
-                        active_payloads.append(self.payload_red)
-                    if getattr(self, "payload_blue", None) and getattr(self.payload_blue, "alive", False):
-                        active_payloads.append(self.payload_blue)
+                active_payloads = []
+                if getattr(self, "payload_red", None) and getattr(self.payload_red, "alive", False):
+                    active_payloads.append(self.payload_red)
+                if getattr(self, "payload_blue", None) and getattr(self.payload_blue, "alive", False):
+                    active_payloads.append(self.payload_blue)
 
-                    if active_payloads:
-                        target_payload = random.choice(active_payloads)
-                        h_id = len(world.arena.hazards) + random.randint(1000, 9999)
-                        hx = getattr(target_payload, "x", center_x) + random.uniform(-150, 150)
-                        hy = getattr(target_payload, "y", center_y) + random.uniform(-150, 150)
+                if active_payloads:
+                    target_payload = random.choice(active_payloads)
+                    h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                    hx = getattr(target_payload, "x", center_x) + random.uniform(-150, 150)
+                    hy = getattr(target_payload, "y", center_y) + random.uniform(-150, 150)
+
+                    try:
+                        from arena.procedural_arena import Hazard
                         drop = Hazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
-                        world.arena.hazards.append(drop)
-                        if hasattr(world, "add_event"):
-                            world.add_event("supply_drop_spawned", {"x": hx, "y": hy})
-                except ImportError:
-                    pass
+                    except ImportError:
+                        drop = DummyHazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
+
+                    world.arena.hazards.append(drop)
+                    if hasattr(world, "add_event"):
+                        world.add_event("supply_drop_spawned", {"x": hx, "y": hy})
 
         # Check collisions with supply drops for all balls
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
