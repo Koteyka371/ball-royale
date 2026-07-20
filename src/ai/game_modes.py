@@ -27542,7 +27542,7 @@ class OrbitalCrosshairMode(GameMode):
 
             valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
             if valid_balls:
-                target = random.choice(valid_balls)
+                target = max(valid_balls, key=lambda b: getattr(b, "score", 0))
                 arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
                 arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
                 cx = random.uniform(100, arena_width - 100)
@@ -27563,13 +27563,16 @@ class OrbitalCrosshairMode(GameMode):
         for ch in self.crosshairs:
             if ch["state"] == "hunting":
                 target = next((b for b in balls if getattr(b, "id", None) == ch["target_id"]), None)
-                if not target or not getattr(target, "alive", False):
-                    # Pick new target
-                    valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
-                    if valid_balls:
-                        target = random.choice(valid_balls)
+
+                valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+                if valid_balls:
+                    highest_scoring_ball = max(valid_balls, key=lambda b: getattr(b, "score", 0))
+                    if target != highest_scoring_ball:
+                        target = highest_scoring_ball
                         ch["target_id"] = getattr(target, "id", None)
-                    else:
+
+                if not target or not getattr(target, "alive", False):
+                    if not valid_balls:
                         continue # No targets left
 
                 dx = target.x - ch["x"]
