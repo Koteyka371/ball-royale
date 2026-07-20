@@ -807,6 +807,10 @@ class Action:
                     except AttributeError:
                         setattr(attacker, "damage", old_dmg)
 
+            if getattr(attacker, "supercharge_stun_ready", False):
+                target.stutter_timer = max(getattr(target, "stutter_timer", 0.0), 1.0)
+                attacker.supercharge_stun_ready = False
+
             if getattr(attacker, "leech_booster_timer", 0.0) > 0:
                 target.leech_seed_timer = 5.0
                 target.leech_seed_attacker_id = getattr(attacker, "id", None)
@@ -7770,10 +7774,12 @@ class Action:
                                     if hasattr(self, "_spawn_skill_particles"):
                                         self._spawn_skill_particles("lightning")
                                     if b_type in ["drone", "juggernaut", "tank", "neural"] or "metal" in b_type or "armor" in b_type or "metal" in getattr(self.ball, "traits", []) or "armor" in getattr(self.ball, "traits", []):
-                                        self.ball.supercharge_timer = 5.0
+                                        self.ball.supercharge_timer = 10.0
+                                        self.ball.supercharge_stun_ready = True
                                         self.ball.speed_buff_timer = getattr(self.ball, "speed_buff_timer", 0.0) + 3.0 # Speed boost
                                     else:
                                         self.ball.stutter_timer = 1.0 # Stun
+                                        self.ball.pending_supercharge = True
                             continue
                         elif hazard.kind == "bone_wall":
                             dx = self.ball.x - hazard.x
@@ -15952,6 +15958,24 @@ class Action:
                 self.ball.hp -= drain_amount
                 if self.ball.hp <= 0:
                     self.ball.alive = False
+
+            # Zap nearby enemies
+            if getattr(self.ball, "alive", True):
+                self.ball.supercharge_zap_timer = getattr(self.ball, "supercharge_zap_timer", 0.0) - delta
+                if self.ball.supercharge_zap_timer <= 0:
+                    self.ball.supercharge_zap_timer = 1.0
+                    enemies = self._get_enemies()
+                    for enemy in enemies:
+                        if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 <= 22500: # 150 radius
+                            if hasattr(enemy, "take_damage"):
+                                enemy.take_damage(5.0)
+                            elif hasattr(enemy, "hp"):
+                                enemy.hp -= 5.0
+                                if enemy.hp <= 0:
+                                    enemy.alive = False
+                            if hasattr(self, "_spawn_directed_particles"):
+                                self._spawn_directed_particles(self.ball, enemy, "lightning")
+
             if self.ball.supercharge_timer < 0:
                 self.ball.supercharge_timer = 0.0
         if getattr(self.ball, "aura_booster_timer", 0.0) > 0:
@@ -17075,6 +17099,11 @@ class Action:
             self.ball.kite_trap_timer -= delta
         if hasattr(self.ball, "stutter_timer") and self.ball.stutter_timer > 0:
             self.ball.stutter_timer -= delta
+            if self.ball.stutter_timer <= 0:
+                if getattr(self.ball, "pending_supercharge", False):
+                    self.ball.supercharge_timer = 10.0
+                    self.ball.supercharge_stun_ready = True
+                    self.ball.pending_supercharge = False
         if hasattr(self.ball, "stealth_drone_timer") and self.ball.stealth_drone_timer > 0:
             self.ball.stealth_drone_timer -= delta
             if self.ball.stealth_drone_timer <= 0:

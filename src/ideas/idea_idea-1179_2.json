@@ -1,0 +1,4 @@
+{
+  "title": "Static Cling Mutator",
+  "description": "A new mutator where any ball that takes damage builds up static charge. If their static charge reaches 100, they emit an electrical explosion that pushes all nearby entities away and deals minor damage."
+}

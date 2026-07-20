@@ -158,7 +158,7 @@ def test_lightning_strike_metal_ball():
 
     # Metal ball should get supercharge and speed buff instead of taking damage/stun
     assert ball.hp == 45
-    assert ball.supercharge_timer == 4.0
+    assert ball.supercharge_timer == 9.0
     assert ball.speed_buff_timer == 3.0
     print("Success lightning_strike_metal_ball")
 
