@@ -50,6 +50,11 @@ def test_adrenaline_buff():
     assert system.consecutive_chants == 3
 
     booster_events = [e for e in world.events if e[0] == "spawn_booster" and e[1].get("value") == 50.0]
+    visual_events_streak = [e for e in world.events if e[0] == "visual_effect" and e[1].get("type") == "chant_streak"]
+    assert len(visual_events_streak) == 1
+    assert visual_events_streak[0][1].get("team") == "Red"
+    visual_events_buff = [e for e in world.events if e[0] == "visual_effect" and e[1].get("type") == "adrenaline_buff"]
+    assert len(visual_events_buff) == 2
     assert len(booster_events) == 2
 
 def test_adrenaline_buff_interrupted():
