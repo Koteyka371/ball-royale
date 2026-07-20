@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1197] Tornado Chains — *2026-07-20 05:32:53 UTC*
+
+A new 'Storm Link' booster that physically tethers two balls together using a miniature cyclone. The tether applies minor constant damage but drastically speeds up both players if they move in the same direction, rewarding extreme coordination or punishing unwilling captives.
+
+---
+
 ## [idea-1194] Decoy Network System — *2026-07-20 05:32:49 UTC*
 
 Introduces a sophisticated network of decoys where players can deploy multiple interconnected holograms. Enemies hitting one decoy take damage that ripples across the entire network, punishing aggressive, untargeted playstyles.
