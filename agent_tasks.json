@@ -31369,6 +31369,74 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1834",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Energy Vampire Mode",
+      "description": "A new game mode where stamina regeneration is completely disabled. The only way players can restore stamina (to use skills or sprint) is by dealing damage to other players, forcing hyper-aggressive gameplay.",
+      "allowed_paths": [
+        "src/ai/energy_vampire.py",
+        "src/ai/energy_vampire.gd",
+        "tests/test_energy_vampire.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1835",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Mirror Maze",
+      "description": "A game mode where invisible mirror walls periodically shift, reflecting projectiles and player movement vectors.",
+      "allowed_paths": [
+        "src/ai/quantum_mirror_maze.py",
+        "src/ai/quantum_mirror_maze.gd",
+        "tests/test_quantum_mirror_maze.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1836",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Boots Booster",
+      "description": "A new booster that grants temporary 'Magnetic Boots' to a ball. While active, the ball takes zero knockback from collisions with walls or other players, allowing them to anchor positions or brute-force through chaotic clashes.",
+      "allowed_paths": [
+        "src/ai/magnetic_boots_booster.py",
+        "src/ai/magnetic_boots_booster.gd",
+        "tests/test_magnetic_boots_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1837",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Swap Mines",
+      "description": "Deployable mines that, upon detonation, swap the gravity orientation and friction physics for all entities caught in the blast radius for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/gravity_swap_mines.py",
+        "src/ai/gravity_swap_mines.gd",
+        "tests/test_gravity_swap_mines.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

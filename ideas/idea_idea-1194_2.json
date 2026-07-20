@@ -1,4 +1,0 @@
-{
-  "title": "Gravity Swap Mines",
-  "description": "Deployable mines that, upon detonation, swap the gravity orientation and friction physics for all entities caught in the blast radius for 5 seconds."
-}

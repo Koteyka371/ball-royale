@@ -1,4 +1,0 @@
-{
-    "title": "Interactive Match Betting",
-    "description": "Allow viewers to type '!bet <ball_id> <amount>' to wager their prestige points or skill points on a specific ball winning the match. If the ball wins, the viewer earns a multiplier based on the underdog odds."
-}

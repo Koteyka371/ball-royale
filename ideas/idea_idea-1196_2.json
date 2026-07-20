@@ -1,4 +1,0 @@
-{
-    "title": "Twitch Plays AI Parameters",
-    "description": "Expose basic AI hyperparameters like aggressiveness, fleeing radius, or vision radius to viewers via chat commands, letting the crowd collectively train or alter the AI neural network traits in real-time."
-}

@@ -1,4 +1,0 @@
-{
-  "title": "Time Loop Booster",
-  "description": "When activated, records the player's position and health for 5 seconds. If the player is about to die within this period, they are instantly rewinded to their recorded state."
-}

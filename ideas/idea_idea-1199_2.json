@@ -1,4 +1,0 @@
-{
-  "title": "Vampiric Leech Beam",
-  "description": "An orbital beam similar to the irradiated zone, but instead of just dealing damage, it siphons HP from any ball inside the radius and heals the ball that called it in (or the lowest HP ball if spawned randomly by the arena)."
-}
