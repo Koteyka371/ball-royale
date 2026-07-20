@@ -401,8 +401,10 @@ class CrowdSystem:
                     if self.consecutive_chants >= 3:
                         self.world.add_event("crowd_cheer", {"message": f"Team {leading_team} is fueled by the crowd's energy! Adrenaline buff applied!", "volume": 1.2})
                         self.world.add_event("audio_event", {"sound": "adrenaline_rush", "volume": 1.0})
+                        self.world.add_event("visual_effect", {"type": "chant_streak", "team": leading_team})
                         for b in balls:
                             if getattr(b, "alive", False) and getattr(b, "team", getattr(b, "ball_type", "")) == leading_team:
+                                self.world.add_event("visual_effect", {"type": "adrenaline_buff", "target_id": getattr(b, "id", -1)})
                                 self.world.add_event("spawn_booster", {
                                     "x": getattr(b, "x", 0),
                                     "y": getattr(b, "y", 0),

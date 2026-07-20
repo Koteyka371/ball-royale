@@ -575,6 +575,7 @@ func _check_events(balls: Array, kill_log: Array, current_tick: int):
                 if get_meta("consecutive_chants") >= 3:
                     world.add_event("crowd_cheer", {"message": "Team %s is fueled by the crowd's energy! Adrenaline buff applied!" % leading_team, "volume": 1.2})
                     world.add_event("audio_event", {"sound": "adrenaline_rush", "volume": 1.0})
+                    world.add_event("visual_effect", {"type": "chant_streak", "team": leading_team})
                     for b in balls:
                         var is_alive = false
                         var team = ""
@@ -594,6 +595,12 @@ func _check_events(balls: Array, kill_log: Array, current_tick: int):
                             b_y = float(b.get("y", 0.0))
 
                         if is_alive and team == leading_team:
+                            var b_id = -1
+                            if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                                b_id = b.get("id") if b.get("id") != null else -1
+                            elif typeof(b) == TYPE_DICTIONARY:
+                                b_id = b.get("id", -1)
+                            world.add_event("visual_effect", {"type": "adrenaline_buff", "target_id": b_id})
                             world.add_event("spawn_booster", {
                                 "x": b_x,
                                 "y": b_y,

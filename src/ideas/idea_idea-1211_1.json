@@ -1,0 +1,4 @@
+{
+  "title": "Interactive Twitch Chat Commands for Chant Streaks",
+  "description": "Allow viewers to type '!chant [team]' to increase a team's chant streak manually. If a team receives enough chants in a short period, they gain the adrenaline buff directly from audience engagement."
+}
