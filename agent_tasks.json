@@ -20605,7 +20605,7 @@
     },
     {
       "id": "idea-1202",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Meteor Shower Core Mechanic Integration",
@@ -31126,6 +31126,23 @@
         "src/ai/confetti_explosion.py",
         "src/ai/confetti_explosion.gd",
         "tests/test_confetti_explosion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1820",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Loop Booster",
+      "description": "When activated, records the player's position and health for 5 seconds. If the player is about to die within this period, they are instantly rewinded to their recorded state.",
+      "allowed_paths": [
+        "src/ai/time_loop_booster.py",
+        "src/ai/time_loop_booster.gd",
+        "tests/test_time_loop_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

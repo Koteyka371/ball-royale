@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1202] Meteor Shower Core Mechanic Integration — *2026-07-20 03:00:41 UTC*
+
+Expand meteor shower behavior so it creates small craters that linger in the arena for a few seconds. Balls falling into craters receive a temporary 'slow' debuff, turning a random hazard into a tactical space control mechanism.
+
+---
+
 ## [idea-1189] Magnetic Polarity Overload — *2026-07-20 02:44:02 UTC*
 
 A game mode where every ball is assigned a random Positive or Negative charge. Balls of opposite charges are pulled toward each other, while balls of the same charge repel. The charges periodically flip during the match.
