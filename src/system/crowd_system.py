@@ -126,6 +126,29 @@ class CrowdSystem:
                 self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} dropped a {booster_kind} booster!"})
                 self.excitement_level += 5.0
 
+        elif cmd == "!emote" and len(parts) >= 2:
+            emote_type = parts[1]
+            target = None
+            if len(parts) >= 3:
+                try:
+                    tid = int(parts[2])
+                    target = next((b for b in alive_balls if getattr(b, "id", -1) == tid), None)
+                except ValueError:
+                    pass
+            if not target and alive_balls:
+                target = random.choice(alive_balls)
+
+            if target and hasattr(self.world, 'add_event'):
+                self.world.add_event("spawn_hazard", {
+                    "x": getattr(target, "x", 0),
+                    "y": getattr(target, "y", 0),
+                    "kind": "emote",
+                    "emoji": emote_type
+                })
+                self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 5
+                self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} spawned a {emote_type} emote!"})
+                self.excitement_level += 2.0
+
         elif cmd == "!vote" and len(parts) >= 2:
             option = parts[1]
             if getattr(self, 'active_vote', None) and getattr(self, 'votes', None) is not None:

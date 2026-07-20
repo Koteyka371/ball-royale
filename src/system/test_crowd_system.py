@@ -84,6 +84,25 @@ def test_external_command_spawn():
     assert hazard_events[-1][1]["kind"] == "lava_pit"
     assert hazard_events[-1][1]["x"] == 100.0
 
+def test_external_command_emote():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    ball = MockBall(1, "red", "tank")
+    ball.x = 100.0
+    ball.y = 100.0
+    balls = [ball]
+
+    system.queue_external_command("TwitchUser1", "!emote kappa")
+    system.tick(balls, [], 1)
+
+    events = [e[0] for e in world.events]
+    assert "spawn_hazard" in events
+    hazard_events = [e for e in world.events if e[0] == "spawn_hazard"]
+    assert len(hazard_events) > 0
+    assert hazard_events[-1][1]["kind"] == "emote"
+    assert hazard_events[-1][1]["emoji"] == "kappa"
+
+
 def test_external_command_drop():
     world = MockWorld()
     system = CrowdSystem(world)

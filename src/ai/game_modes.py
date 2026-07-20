@@ -503,6 +503,31 @@ class GameMode:
 
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            # Process Emote Hazards
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "emote":
+                    import random
+                    # Drift around randomly
+                    h.x += random.uniform(-20, 20) * delta
+                    h.y += random.uniform(-20, 20) * delta
+
+                    # Keep in bounds loosely
+                    h.x = max(50.0, min(getattr(world.arena, "width", 1000) - 50.0, h.x))
+                    h.y = max(50.0, min(getattr(world.arena, "height", 1000) - 50.0, h.y))
+
+                    # Physical bouncing for balls
+                    h_radius = getattr(h, "radius", 20.0)
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                            b_radius = getattr(b, "radius", 15.0)
+                            dx = getattr(b, "x", 0.0) - h.x
+                            dy = getattr(b, "y", 0.0) - h.y
+                            dist = (dx**2 + dy**2)**0.5
+                            if dist < h_radius + b_radius and dist > 0:
+                                overlap = (h_radius + b_radius) - dist
+                                b.x = getattr(b, "x", 0.0) + (dx / dist) * overlap * 0.5
+                                b.y = getattr(b, "y", 0.0) + (dy / dist) * overlap * 0.5
+
             drones = [h for h in world.arena.hazards if getattr(h, "kind", "") == "nemesis_drone"]
             for d in drones:
                 owner = next((b for b in balls if getattr(b, "id", None) == getattr(d, "owner_id", None)), None)
