@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1209] Gravitational Mine Trap — *2026-07-20 19:24:49 UTC*
+
+A stationary mine that remains hidden until an enemy comes close. Upon detonation, instead of direct damage, it violently pulls all nearby entities toward its center before exploding in a shockwave, effectively disrupting team formations.
+
+---
+
 ## [idea-1124] Reverse Booster Mode — *2026-07-20 15:22:45 UTC*
 
 A game mode where all boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect.
