@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1182] Escort Supply Drops — *2026-07-20 20:40:24 UTC*
+
+Periodically spawn supply drops near the payload containing powerful buffs (e.g., invulnerability or instant ultimate charge). The drops can be contested by either team.
+
+---
+
 ## [idea-1200] New Event: Meteor Shower — *2026-07-20 20:40:20 UTC*
 
 Randomly drops explosive meteors from the sky that damage any players caught in their blast radius.
