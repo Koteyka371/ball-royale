@@ -26312,6 +26312,93 @@ class PerfectReflectorHazardMode(GameMode):
 
 GAME_MODES["perfect_reflector"] = PerfectReflectorHazardMode()
 
+class ChronosphereEventMode(GameMode):
+    """
+    An arena-wide event where a massive chronosphere spawns. Entering it drastically
+    increases cooldown recovery, but moving outside of it slows all animations,
+    physics, and movement by 50% until the sphere collapses.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Chronosphere Event"
+        self.description = "A massive chronosphere speeds up cooldowns inside, but slows everything else outside."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 300.0
+        self.collapse_timer = 20.0
+        self.hazard_obj = None
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.collapse_timer = 20.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            self.hazard_obj = hazard_class("chronosphere", self.zone_x, self.zone_y, self.zone_radius, "chronosphere", 0.0)
+            if not hasattr(self.hazard_obj, "active"):
+                self.hazard_obj.active = True
+            world.arena.hazards.append(self.hazard_obj)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if self.collapse_timer > 0.0:
+            self.collapse_timer -= delta
+            if self.collapse_timer <= 0.0:
+                if self.hazard_obj and hasattr(self.hazard_obj, "active"):
+                    self.hazard_obj.active = False
+                return
+
+        if self.collapse_timer <= 0.0:
+            return
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            dx = getattr(b, "x", 0.0) - self.zone_x
+            dy = getattr(b, "y", 0.0) - self.zone_y
+            dist = math.hypot(dx, dy)
+
+            vx = getattr(b, "vx", getattr(b, "velocity_x", 0.0))
+            vy = getattr(b, "vy", getattr(b, "velocity_y", 0.0))
+
+            if dist <= self.zone_radius:
+                # Inside the sphere: rapidly decrease cooldowns
+                if hasattr(b, "skill_cooldown"):
+                    b.skill_cooldown = max(0.0, b.skill_cooldown - delta * 3.0)
+                if hasattr(b, "dash_cooldown"):
+                    b.dash_cooldown = max(0.0, b.dash_cooldown - delta * 3.0)
+                if hasattr(b, "attack_cooldown"):
+                    b.attack_cooldown = max(0.0, b.attack_cooldown - delta * 3.0)
+            else:
+                # Outside the sphere: counter-act movement by 50%
+                b.x = getattr(b, "x", 0.0) - vx * delta * 0.5
+                b.y = getattr(b, "y", 0.0) - vy * delta * 0.5
+
+                # Slow down animations/timers by increasing them by 50% of delta
+                if hasattr(b, "skill_cooldown"):
+                    b.skill_cooldown = getattr(b, "skill_cooldown", 0.0) + delta * 0.5
+                if hasattr(b, "dash_cooldown"):
+                    b.dash_cooldown = getattr(b, "dash_cooldown", 0.0) + delta * 0.5
+                if hasattr(b, "attack_cooldown"):
+                    b.attack_cooldown = getattr(b, "attack_cooldown", 0.0) + delta * 0.5
+
+
 class TimeDilationZoneMode(GameMode):
     """
     An anomalous zone in the arena where the flow of time slows down drastically.
@@ -28057,3 +28144,5 @@ GAME_MODES['orbital_crosshair'] = OrbitalCrosshairMode()
 GAME_MODES['spectator_holograms'] = SpectatorHologramsMode()
 
 GAME_MODES['decoy_network'] = DecoyNetworkMode()
+
+GAME_MODES["chronosphere_event"] = ChronosphereEventMode()
