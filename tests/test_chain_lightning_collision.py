@@ -40,11 +40,11 @@ def test_chain_lightning_collision():
     action._resolve_collisions()
 
     assert b1._cl_collision_cd == 0.5
-    # b2 gets hit by collision chain: damage = 5
-    assert b2.hp == 95.0
-    # b3 gets chained from b2: damage = 5
-    assert b3.hp == 95.0
-    # b4 gets chained from b3: damage = 5
-    assert b4.hp == 95.0
+    # b2 gets hit by collision chain: damage = 3.5
+    assert b2.hp == 96.5
+    # b3 gets chained from b2: damage = 3.5
+    assert b3.hp == 96.5
+    # b4 gets chained from b3: damage = 3.5
+    assert b4.hp == 96.5
     # b5 is too far
     assert b5.hp == 100.0
