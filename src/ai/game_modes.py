@@ -15339,6 +15339,9 @@ class TimeRewindMode(GameMode):
                     old_state = self.history[b_id][0]
                     b.x, b.y, b.hp = old_state[1], old_state[2], old_state[3]
 
+            if hasattr(world, "add_event"):
+                world.add_event("time_rewind", {"message": "Time Rewound 5 Seconds!"})
+
             self.history = {}
             self.rewind_timer = 0.0
 

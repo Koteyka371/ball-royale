@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Mutator",
+  "description": "A global modifier where attacks that hit an enemy have a chance to arc to other nearby enemies, spreading damage but at reduced strength per jump."
+}

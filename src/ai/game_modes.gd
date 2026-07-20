@@ -24032,6 +24032,13 @@ class TimeRewindMode extends GameMode:
 						if "hp" in b:
 							b.hp = old_state["hp"]
 
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.has("add_event"):
+					world.add_event.call("time_rewind", {"message": "Time Rewound 5 Seconds!"})
+			elif typeof(world) == TYPE_OBJECT:
+				if world.has_method("add_event"):
+					world.add_event("time_rewind", {"message": "Time Rewound 5 Seconds!"})
+
 			history.clear()
 			rewind_timer = 0.0
 
