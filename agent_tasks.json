@@ -15959,7 +15959,7 @@
     },
     {
       "id": "idea-929",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Image Booster",
@@ -31092,6 +31092,40 @@
         "src/ai/viewer_faction_wars.py",
         "src/ai/viewer_faction_wars.gd",
         "tests/test_viewer_faction_wars.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1818",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Viewer Betting Mini-Game",
+      "description": "Allow viewers to type '!bet [ball_id] [amount]' to wager loyalty points on a specific ball winning the match. If the ball wins, the viewer gets a payout. This increases viewer engagement and makes the crowd cheer louder for bets placed.",
+      "allowed_paths": [
+        "src/ai/viewer_betting_mini_game.py",
+        "src/ai/viewer_betting_mini_game.gd",
+        "tests/test_viewer_betting_mini_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1819",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Confetti Explosion Mode",
+      "description": "When a ball is eliminated, instead of just disappearing, it triggers a massive confetti explosion that momentarily blinds nearby players and applies a small speed buff to everyone caught in it, simulating a chaotic celebration.",
+      "allowed_paths": [
+        "src/ai/confetti_explosion.py",
+        "src/ai/confetti_explosion.gd",
+        "tests/test_confetti_explosion.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

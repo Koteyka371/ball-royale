@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-929] Mirror Image Booster — *2026-07-20 02:43:57 UTC*
+
+When taking lethal damage, this booster creates a decoy mirror image that explodes while the actual ball goes invisible for 2 seconds with 1 HP remaining.
+
+---
+
 ## [idea-1180] Crowd Emotes Over Arenas — *2026-07-20 02:26:58 UTC*
 
 Allow viewers to type specific emote commands that spawn bouncy, physics-based emote emojis in the arena. They deal no damage but can clutter the map or act as tiny dynamic obstacles for balls.
