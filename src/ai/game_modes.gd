@@ -35284,7 +35284,91 @@ class BounceLaserMode extends GameMode:
             if "hazards" in world.arena:
                 world.arena.hazards.append(laser)
 
+
+class ExplosiveMeteorsMode extends GameMode:
+    var spawn_timer: float = 0.0
+    var active_meteors: Array = []
+
+    func _init():
+        name = "Explosive Meteors"
+        description = "Randomly drops explosive meteors from the sky that damage any players caught in their blast radius."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        if world.get("arena") != null and world.arena.get("hazards") == null:
+            world.arena.hazards = []
+        spawn_timer = 0.0
+        active_meteors = []
+
+    func tick(world, balls, delta):
+        super.tick(world, balls, delta)
+        spawn_timer += delta
+
+        if spawn_timer >= 2.0:
+            spawn_timer = 0.0
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if world.get("arena") != null:
+                arena_width = world.arena.get("width", 1000.0)
+                arena_height = world.arena.get("height", 1000.0)
+
+            var x = randf_range(50.0, arena_width - 50.0)
+            var y = randf_range(50.0, arena_height - 50.0)
+            var id_val = "explosive_meteor_" + str(randi() % 90000 + 10000)
+
+            active_meteors.append({
+                "id": id_val,
+                "x": x,
+                "y": y,
+                "delay": 2.0,
+                "radius": 40.0
+            })
+            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                world.add_event("visual_effect", {"type": "meteor_warning", "x": x, "y": y, "radius": 40.0})
+
+        var still_active = []
+        for m in active_meteors:
+            m["delay"] -= delta
+            if m["delay"] <= 0:
+                for b in balls:
+                    if typeof(b) == TYPE_OBJECT and b.get("alive", false):
+                        var dx = b.get("x", 0.0) - m["x"]
+                        var dy = b.get("y", 0.0) - m["y"]
+                        if sqrt(dx*dx + dy*dy) <= m["radius"]:
+                            if b.has_method("take_damage"):
+                                b.take_damage(100.0)
+                            else:
+                                b.hp = b.get("hp", 100.0) - 100.0
+                    elif typeof(b) == TYPE_DICTIONARY and b.get("alive", false):
+                        var dx = b.get("x", 0.0) - m["x"]
+                        var dy = b.get("y", 0.0) - m["y"]
+                        if sqrt(dx*dx + dy*dy) <= m["radius"]:
+                            b["hp"] = b.get("hp", 100.0) - 100.0
+
+                if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                    world.add_event("visual_effect", {"type": "explosion", "x": m["x"], "y": m["y"], "radius": m["radius"]})
+            else:
+                still_active.append(m)
+
+        active_meteors = still_active
+
+        if world.get("arena") != null and world.arena.get("hazards") != null:
+            var filtered = []
+            for h in world.arena.hazards:
+                if typeof(h) == TYPE_OBJECT and h.get("kind") != "explosive_meteor":
+                    filtered.append(h)
+                elif typeof(h) == TYPE_DICTIONARY and h.get("kind") != "explosive_meteor":
+                    filtered.append(h)
+
+            for m in active_meteors:
+                filtered.append({"id": m["id"], "x": m["x"], "y": m["y"], "radius": m["radius"], "kind": "explosive_meteor", "damage": 100.0, "duration": m["delay"]})
+
+            world.arena.hazards = filtered
+
+
+
 GAME_MODES = {
+    "explosive_meteors": ExplosiveMeteorsMode.new(),
     "bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),
 

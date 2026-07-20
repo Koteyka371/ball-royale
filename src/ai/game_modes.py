@@ -21901,7 +21901,88 @@ class ChargedMode(GameMode):
                     b1_x = getattr(b1, "x", 0.0)
                     b1_y = getattr(b1, "y", 0.0)
 
+
+class ExplosiveMeteorsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Explosive Meteors"
+        self.description = "Randomly drops explosive meteors from the sky that damage any players caught in their blast radius."
+        self.spawn_timer = 0.0
+        self.active_meteors = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is None:
+            world.arena.hazards = []
+        self.spawn_timer = 0.0
+        self.active_meteors = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.spawn_timer += delta
+
+        if self.spawn_timer >= 2.0:
+            self.spawn_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000) if getattr(world, "arena", None) is not None else 1000
+            arena_height = getattr(world.arena, "height", 1000) if getattr(world, "arena", None) is not None else 1000
+
+            x = random.uniform(50, arena_width - 50)
+            y = random.uniform(50, arena_height - 50)
+
+            self.active_meteors.append({
+                "id": f"explosive_meteor_{random.randint(10000, 99999)}",
+                "x": x,
+                "y": y,
+                "delay": 2.0,
+                "radius": 40.0
+            })
+            if hasattr(world, "add_event"):
+                world.add_event("visual_effect", {"type": "meteor_warning", "x": x, "y": y, "radius": 40.0})
+
+        still_active = []
+        for m in self.active_meteors:
+            m["delay"] -= delta
+            if m["delay"] <= 0:
+                # Explosion!
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        if math.hypot(getattr(b, 'x', 0.0) - m["x"], getattr(b, 'y', 0.0) - m["y"]) <= m["radius"]:
+                            if hasattr(b, "take_damage"): b.take_damage(100.0)
+                            else: b.hp = getattr(b, "hp", 100) - 100.0
+
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "explosion", "x": m["x"], "y": m["y"], "radius": m["radius"]})
+            else:
+                still_active.append(m)
+        self.active_meteors = still_active
+
+        # Update visual hazards
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is not None:
+            filtered = [h for h in world.arena.hazards if getattr(h, "kind", "") != "explosive_meteor"]
+
+            try:
+                from arena.procedural_arena import Hazard
+                HazardClass = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                HazardClass = FallbackHazard
+
+            for m in self.active_meteors:
+                h = HazardClass(m["id"], m["x"], m["y"], m["radius"], "explosive_meteor", 100.0)
+                setattr(h, "duration", m["delay"])
+                filtered.append(h)
+
+            world.arena.hazards = filtered
+
+
 GAME_MODES = {
+    'explosive_meteors': ExplosiveMeteorsMode(),
     'charged': ChargedMode(),
     'bounce_laser': BounceLaserMode(),
     'dragging_magnetic_mines': DraggingMagneticMinesMode(),
