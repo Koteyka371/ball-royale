@@ -8543,6 +8543,32 @@ class Action:
                                     if other_ball.hp <= 0:
                                         other_ball.alive = False
 
+
+        if start_hp > 0 and current_hp <= 0 and getattr(self.ball, "death_defy_active", False):
+            self.ball.hp = 1.0
+            current_hp = 1.0
+            damage_taken = 0.0
+            self.ball.death_defy_active = False
+            self.ball.stealth_booster_timer = max(getattr(self.ball, "stealth_booster_timer", 0.0), 2.0)
+
+            # Spawn a decoy mirror image that explodes
+            import copy
+            if hasattr(self.world, "balls"):
+                decoy = copy.copy(self.ball)
+                decoy.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                if hasattr(self.world, "next_id"):
+                    self.world.next_id += 1
+                decoy.hp = 0  # To trigger explosion logic if it's like Trickster's decoy, or just make it explode
+                decoy.max_hp = getattr(self.ball, "max_hp", 100)
+                decoy.damage = 0
+                decoy.is_decoy = True
+                decoy.is_decoy_clone = True
+                decoy.decoy_timer = 2.0
+                decoy.owner_id = getattr(self.ball, "id", None)
+                self.world.balls.append(decoy)
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'poof', 'x': self.ball.x, 'y': self.ball.y}})
+
         if damage_taken > 0 and getattr(self.ball, "shield_booster_active", False):
             self.ball.hp = start_hp
             damage_taken = 0
@@ -11965,6 +11991,10 @@ class Action:
                     self.ball.crystal_armor_charges = 3
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "death_defy_booster":
+                    self.ball.death_defy_active = True
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "shield_booster":
                     self.ball.shield_booster_active = True
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
@@ -13719,7 +13749,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster"]:
+                        if getattr(h, "kind", "") not in ["event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -15977,7 +16007,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "defensive_shield", "defensive_shield", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "defensive_shield", "defensive_shield", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
