@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1178] Twitch Interactive Leaderboard — *2026-07-20 03:40:26 UTC*
+
+Create a viewer loyalty leaderboard that tracks which Twitch viewers spawned the most impactful hazards or voted correctly in the crowd system. Top viewers receive cosmetic badges when their name appears in the kill feed.
+
+---
+
 ## [idea-1176] Aura Reversal Field — *2026-07-20 03:29:37 UTC*
 
 An environmental hazard zone. While inside, all active beneficial auras (like healing or damage boosts) on players invert their effects, causing steady damage or reducing attack damage until they exit.

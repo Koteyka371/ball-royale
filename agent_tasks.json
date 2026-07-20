@@ -20197,7 +20197,7 @@
     },
     {
       "id": "idea-1178",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Twitch Interactive Leaderboard",
@@ -31177,6 +31177,23 @@
         "src/ai/orbital_emp_blast.py",
         "src/ai/orbital_emp_blast.gd",
         "tests/test_orbital_emp_blast.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1823",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Nullifier Zone",
+      "description": "A hazard zone that disables all localized gravity pulls (from black holes, gravity wells, etc.) for entities inside it, allowing for safe passage through highly congested gravitational anomalies.",
+      "allowed_paths": [
+        "src/ai/gravity_nullifier_zone.py",
+        "src/ai/gravity_nullifier_zone.gd",
+        "tests/test_gravity_nullifier_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
