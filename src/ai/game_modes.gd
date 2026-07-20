@@ -35495,7 +35495,106 @@ class DynamicWindCurrentsMode extends GameMode:
 						if "vy" in b:
 							b.vy = b_vy
 
+class ChronosphereEventMode extends GameMode:
+	var zone_x = 500.0
+	var zone_y = 500.0
+	var zone_radius = 300.0
+	var collapse_timer = 20.0
+	var hazard_obj = null
+
+	func _init():
+		pass
+		name = "Chronosphere Event"
+		description = "A massive chronosphere speeds up cooldowns inside, but slows everything else outside."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_width = world.arena.width
+				if world.arena.has("height"): arena_height = world.arena.height
+			else:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		collapse_timer = 20.0
+
+		var arena_has_hazards = false
+		var arena_ref = null
+
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_has_hazards = true
+				arena_ref = world.arena
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_has_hazards = true
+				arena_ref = world.arena
+
+		if arena_has_hazards:
+			var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+			if HazardObj != null:
+				hazard_obj = HazardObj.new("chronosphere", zone_x, zone_y, zone_radius, "chronosphere", 0.0)
+				if "active" in hazard_obj:
+					hazard_obj.active = true
+				arena_ref.hazards.append(hazard_obj)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		if collapse_timer > 0.0:
+			collapse_timer -= delta
+			if collapse_timer <= 0.0:
+				if hazard_obj != null and "active" in hazard_obj:
+					hazard_obj.active = false
+				return
+
+		if collapse_timer <= 0.0:
+			return
+
+		for b in balls:
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive if "alive" in b else true
+			if not alive:
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x if "x" in b else 0.0
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y if "y" in b else 0.0
+
+			var dx = bx - zone_x
+			var dy = by - zone_y
+			var dist = sqrt(dx * dx + dy * dy)
+
+			var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.vx if "vx" in b else (b.get("velocity_x") if typeof(b) == TYPE_DICTIONARY else b.velocity_x if "velocity_x" in b else 0.0)
+			var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.vy if "vy" in b else (b.get("velocity_y") if typeof(b) == TYPE_DICTIONARY else b.velocity_y if "velocity_y" in b else 0.0)
+
+			if dist <= zone_radius:
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("skill_cooldown"): b["skill_cooldown"] = max(0.0, b["skill_cooldown"] - delta * 3.0)
+					if b.has("dash_cooldown"): b["dash_cooldown"] = max(0.0, b["dash_cooldown"] - delta * 3.0)
+					if b.has("attack_cooldown"): b["attack_cooldown"] = max(0.0, b["attack_cooldown"] - delta * 3.0)
+				else:
+					if "skill_cooldown" in b: b.skill_cooldown = max(0.0, b.skill_cooldown - delta * 3.0)
+					if "dash_cooldown" in b: b.dash_cooldown = max(0.0, b.dash_cooldown - delta * 3.0)
+					if "attack_cooldown" in b: b.attack_cooldown = max(0.0, b.attack_cooldown - delta * 3.0)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] -= vx * delta * 0.5
+					b["y"] -= vy * delta * 0.5
+					if b.has("skill_cooldown"): b["skill_cooldown"] += delta * 0.5
+					if b.has("dash_cooldown"): b["dash_cooldown"] += delta * 0.5
+					if b.has("attack_cooldown"): b["attack_cooldown"] += delta * 0.5
+				else:
+					if "x" in b: b.x -= vx * delta * 0.5
+					if "y" in b: b.y -= vy * delta * 0.5
+					if "skill_cooldown" in b: b.skill_cooldown += delta * 0.5
+					if "dash_cooldown" in b: b.dash_cooldown += delta * 0.5
+					if "attack_cooldown" in b: b.attack_cooldown += delta * 0.5
+
+
 GAME_MODES = {
+	"chronosphere_event": ChronosphereEventMode.new(),
     "bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),
 
