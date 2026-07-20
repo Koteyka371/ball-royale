@@ -20163,7 +20163,7 @@
     },
     {
       "id": "idea-1176",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Reversal Field",
@@ -31143,6 +31143,40 @@
         "src/ai/time_loop_booster.py",
         "src/ai/time_loop_booster.gd",
         "tests/test_time_loop_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1821",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Leech Beam",
+      "description": "An orbital beam similar to the irradiated zone, but instead of just dealing damage, it siphons HP from any ball inside the radius and heals the ball that called it in (or the lowest HP ball if spawned randomly by the arena).",
+      "allowed_paths": [
+        "src/ai/vampiric_leech_beam.py",
+        "src/ai/vampiric_leech_beam.gd",
+        "tests/test_vampiric_leech_beam.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1822",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital EMP Blast",
+      "description": "A rare drop that calls down an orbital EMP strike on a massive area. Balls caught in the blast have all buffs stripped and lose all stamina, making them extremely vulnerable, but it deals zero direct damage.",
+      "allowed_paths": [
+        "src/ai/orbital_emp_blast.py",
+        "src/ai/orbital_emp_blast.gd",
+        "tests/test_orbital_emp_blast.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
