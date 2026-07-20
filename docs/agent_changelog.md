@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1216] Chronosphere Arena Event — *2026-07-20 15:11:32 UTC*
+
+An arena-wide event where a massive chronosphere spawns. Entering it drastically increases cooldown recovery, but moving outside of it slows all animations, physics, and movement by 50% until the sphere collapses.
+
+---
+
 ## [idea-1201] Phased Shift Skill — *2026-07-20 14:48:12 UTC*
 
 A temporary active skill that renders the player partially invisible and immune to terrain hazards for 3 seconds, but unable to deal damage. Good for escaping tight situations.
