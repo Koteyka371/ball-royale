@@ -139,5 +139,18 @@ class TestLeaderboard(unittest.TestCase):
         self.assertEqual(top[1]["defeats"], 1)
 
 
+
+    def test_viewer_loyalty(self):
+        self.lm.record_viewer_loyalty("viewer_1", 10)
+        self.assertEqual(self.lm.get_viewer_badge("viewer_1"), "")
+
+        self.lm.record_viewer_loyalty("viewer_1", 10)
+        self.assertEqual(self.lm.get_viewer_badge("viewer_1"), "⭐")
+
+        self.lm.record_viewer_loyalty("viewer_1", 30)
+        self.assertEqual(self.lm.get_viewer_badge("viewer_1"), "👑")
+
+        self.assertEqual(self.lm.get_viewer_badge("unknown_viewer"), "")
+
 if __name__ == '__main__':
     unittest.main()

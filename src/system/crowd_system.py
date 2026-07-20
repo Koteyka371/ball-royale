@@ -27,12 +27,25 @@ class CrowdSystem:
         self.viewer_loyalty = {}
         self.user_votes = {}
 
+    def _add_viewer_loyalty(self, user: str, points: int):
+        self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + points
+        if hasattr(self, 'world') and hasattr(self.world, 'leaderboard_manager'):
+            if hasattr(self.world.leaderboard_manager, 'record_viewer_loyalty'):
+                self.world.leaderboard_manager.record_viewer_loyalty(user, points)
+
     def _get_user_display(self, user: str) -> str:
-        points = self.viewer_loyalty.get(user, 0)
-        if points >= 50:
-            return f"👑 {user}"
-        elif points >= 20:
-            return f"⭐ {user}"
+        badge = ""
+        if hasattr(self, 'world') and hasattr(self.world, 'leaderboard_manager') and hasattr(self.world.leaderboard_manager, 'get_viewer_badge'):
+            badge = self.world.leaderboard_manager.get_viewer_badge(user)
+        else:
+            points = self.viewer_loyalty.get(user, 0)
+            if points >= 50:
+                badge = "👑"
+            elif points >= 20:
+                badge = "⭐"
+
+        if badge:
+            return f"{badge} {user}"
         return user
 
     def queue_external_command(self, user: str, command: str):
@@ -67,7 +80,7 @@ class CrowdSystem:
                     "y": getattr(target, "y", 0),
                     "kind": hazard_kind
                 })
-                self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 5
+                self._add_viewer_loyalty(user, 5)
                 self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} spawned a {hazard_kind}!"})
                 self.excitement_level += 5.0
 
@@ -79,14 +92,14 @@ class CrowdSystem:
                         self.world.arena.temperature = 50.0
                     if hasattr(self.world, 'add_event'):
                         self.world.add_event("arena_modifier", {"temperature": 50.0})
-                        self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 10
+                        self._add_viewer_loyalty(user, 10)
                         self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} made it HOT!"})
                 elif weather_type in ["cold", "blizzard", "snow"]:
                     if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'temperature'):
                         self.world.arena.temperature = -20.0
                     if hasattr(self.world, 'add_event'):
                         self.world.add_event("arena_modifier", {"temperature": -20.0})
-                        self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 10
+                        self._add_viewer_loyalty(user, 10)
                         self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} made it COLD!"})
                 else:
                     if hasattr(self.world, 'add_event'):
@@ -99,7 +112,7 @@ class CrowdSystem:
                                 "y": getattr(target, "y", 0),
                                 "kind": weather_type
                             })
-                            self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 10
+                            self._add_viewer_loyalty(user, 10)
                             self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} summoned a {weather_type}!"})
                 self.excitement_level -= 10.0
 
@@ -122,7 +135,7 @@ class CrowdSystem:
                     "kind": booster_kind,
                     "value": 30.0
                 })
-                self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 5
+                self._add_viewer_loyalty(user, 5)
                 self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} dropped a {booster_kind} booster!"})
                 self.excitement_level += 5.0
 
@@ -145,7 +158,7 @@ class CrowdSystem:
                     "kind": "emote",
                     "emoji": emote_type
                 })
-                self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + 5
+                self._add_viewer_loyalty(user, 5)
                 self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} spawned a {emote_type} emote!"})
                 self.excitement_level += 2.0
 
@@ -636,7 +649,7 @@ class CrowdSystem:
 
         for u, v in getattr(self, 'user_votes', {}).items():
             if v == winning_option:
-                self.viewer_loyalty[u] = self.viewer_loyalty.get(u, 0) + 10
+                self._add_viewer_loyalty(u, 10)
         self.user_votes = {}
 
         self.active_vote = None
