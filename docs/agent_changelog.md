@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1198] Bouncy Wall Traps — *2026-07-20 01:51:53 UTC*
+
+Add placeable traps that act as jump pads, forcing balls that dash into them or get knocked into them to ricochet at high speeds in an unpredictable direction.
+
+---
+
 ## [idea-1196] Twitch Chat Controlled Weather Event — *2026-07-20 01:42:14 UTC*
 
 Allow real spectators to type '!weather <type>' to change the arena temperature or spawn specific weather hazards like tornados or blizzards when the hype level is high.

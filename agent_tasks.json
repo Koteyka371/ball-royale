@@ -20537,7 +20537,7 @@
     },
     {
       "id": "idea-1198",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Wall Traps",
@@ -31024,6 +31024,40 @@
         "src/ai/payload_overcharge.py",
         "src/ai/payload_overcharge.gd",
         "tests/test_payload_overcharge.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1814",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Match Betting",
+      "description": "Allow viewers to type '!bet <ball_id> <amount>' to wager their prestige points or skill points on a specific ball winning the match. If the ball wins, the viewer earns a multiplier based on the underdog odds.",
+      "allowed_paths": [
+        "src/ai/interactive_match_betting.py",
+        "src/ai/interactive_match_betting.gd",
+        "tests/test_interactive_match_betting.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1815",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Twitch Plays AI Parameters",
+      "description": "Expose basic AI hyperparameters like aggressiveness, fleeing radius, or vision radius to viewers via chat commands, letting the crowd collectively train or alter the AI neural network traits in real-time.",
+      "allowed_paths": [
+        "src/ai/twitch_plays_ai_parameters.py",
+        "src/ai/twitch_plays_ai_parameters.gd",
+        "tests/test_twitch_plays_ai_parameters.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
