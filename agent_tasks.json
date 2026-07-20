@@ -19703,7 +19703,7 @@
     },
     {
       "id": "idea-1149",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Overheal Shield",
@@ -31279,6 +31279,57 @@
         "src/ai/payload_booster_pad.py",
         "src/ai/payload_booster_pad.gd",
         "tests/test_payload_booster_pad.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1829",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Spiderweb Traps",
+      "description": "Players can deploy spiderweb traps that remain on the field. When an enemy steps on them, their speed is significantly reduced, and they lose the ability to dash or jump. They can slowly wiggle out, or wait for the web to naturally disintegrate. This encourages more strategic defensive play around choke points.",
+      "allowed_paths": [
+        "src/arena/sticky_spiderweb_traps.py",
+        "src/arena/sticky_spiderweb_traps.gd",
+        "tests/test_sticky_spiderweb_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1830",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Fog Weather Event",
+      "description": "Periodically, a dense crimson fog rolls into the arena. While in the fog, players continuously lose a small amount of health. However, dealing damage to other players inside the fog restores health equivalent to double the damage dealt. This forces aggressive play during the weather event and changes target prioritization dynamically.",
+      "allowed_paths": [
+        "src/ai/vampiric_fog.py",
+        "src/ai/vampiric_fog.gd",
+        "tests/test_vampiric_fog.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1831",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wind Tunnel Arena Hazard",
+      "description": "A new hazard 'Wind Tunnel' that generates a narrow, extremely fast wind current across the arena. Any ball entering it gets accelerated to high speeds along the tunnel, allowing for quick escapes or surprise attacks, but making it hard to steer.",
+      "allowed_paths": [
+        "src/arena/wind_tunnel_arena.py",
+        "src/arena/wind_tunnel_arena.gd",
+        "tests/test_wind_tunnel_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
