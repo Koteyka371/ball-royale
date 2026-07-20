@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1207] Shrinking Safe Haven Booster — *2026-07-20 21:17:30 UTC*
+
+A rare booster that upon collection spawns a miniature personal safe zone that moves with the ball for a short duration, rendering them immune to environmental hazard damage.
+
+---
+
 ## [idea-1218] Bribe Wars UI — *2026-07-20 21:17:25 UTC*
 
 A new HUD element specifically for spectators and players that shows a live tug-of-war meter during votes. The meter visually shifts left or right as players spend skill points and prestige tokens to actively out-bribe each other on the outcome.
