@@ -1,0 +1,4 @@
+{
+    "title": "Bouncy Borders Mutator",
+    "description": "A new mutator that modifies the arena walls. Instead of simply stopping balls or destroying them, walls act as trampolines. Balls hitting the walls bounce back with increased velocity, rewarding calculated ricochet shots and chaotic movement."
+}

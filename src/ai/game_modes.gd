@@ -35284,7 +35284,92 @@ class BounceLaserMode extends GameMode:
             if "hazards" in world.arena:
                 world.arena.hazards.append(laser)
 
+
+class DynamicWindCurrentsMode extends GameMode:
+	var wind_change_timer = 0.0
+	var wind_dir_x = 0.0
+	var wind_dir_y = 0.0
+	var wind_strength = 0.0
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		super()
+		name = "Dynamic Wind Currents"
+		description = "Global dynamic wind currents periodically change direction and push all balls and projectiles, altering movement and combat dynamics."
+		rng.randomize()
+
+	func apply_dynamic_traits(world, balls: Array, delta: float = 0.016) -> void:
+		wind_change_timer -= delta
+		if wind_change_timer <= 0.0:
+			wind_change_timer = rng.randf_range(5.0, 10.0)
+			wind_strength = rng.randf_range(100.0, 300.0)
+			var angle = rng.randf_range(0.0, 2.0 * PI)
+			wind_dir_x = cos(angle)
+			wind_dir_y = sin(angle)
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("wind_shift", {"message": "Wind direction shifted!"})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+				pass # Usually objects in GDScript
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			elif b.has_method("get_meta"):
+				is_alive = b.alive if "alive" in b else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			elif b.has_method("get_meta"):
+				if b.has_meta("ball_type"):
+					b_type = str(b.get_meta("ball_type"))
+				elif "ball_type" in b:
+					b_type = str(b.ball_type)
+
+			if not is_alive or b_type == "spectator":
+				continue
+
+			if typeof(b) == TYPE_OBJECT:
+				if "vx" in b and "vy" in b:
+					b.vx += wind_dir_x * wind_strength * delta
+					b.vy += wind_dir_y * wind_strength * delta
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["vx"] = b.get("vx", 0.0) + wind_dir_x * wind_strength * delta
+				b["vy"] = b.get("vy", 0.0) + wind_dir_y * wind_strength * delta
+
+		if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var h_kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+				elif typeof(h) == TYPE_OBJECT:
+					if "kind" in h:
+						h_kind = h.kind
+					elif h.has_method("get_meta") and h.has_meta("kind"):
+						h_kind = h.get_meta("kind")
+
+				var is_proj = h_kind in ["projectile", "spell"]
+				if not is_proj:
+					if typeof(h) == TYPE_DICTIONARY:
+						is_proj = h.get("is_projectile", false)
+					elif typeof(h) == TYPE_OBJECT:
+						if "is_projectile" in h:
+							is_proj = h.is_projectile
+						elif h.has_method("get_meta") and h.has_meta("is_projectile"):
+							is_proj = h.get_meta("is_projectile")
+
+				if is_proj:
+					if typeof(h) == TYPE_OBJECT:
+						if "vx" in h and "vy" in h:
+							h.vx += wind_dir_x * wind_strength * delta
+							h.vy += wind_dir_y * wind_strength * delta
+					elif typeof(h) == TYPE_DICTIONARY:
+						h["vx"] = h.get("vx", 0.0) + wind_dir_x * wind_strength * delta
+						h["vy"] = h.get("vy", 0.0) + wind_dir_y * wind_strength * delta
+
 GAME_MODES = {
+	"dynamic_wind_currents": DynamicWindCurrentsMode.new(),
     "bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),
 

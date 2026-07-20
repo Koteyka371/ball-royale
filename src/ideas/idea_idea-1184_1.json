@@ -1,0 +1,4 @@
+{
+    "title": "Magnetic Minefield Hazard",
+    "description": "Introduces a new arena hazard type: Magnetic Mines. These mines slowly drift towards the nearest ball. When triggered, they detonate, pulling all nearby balls and projectiles to the center of the explosion, disrupting positioning rather than dealing direct damage."
+}

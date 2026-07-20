@@ -21830,7 +21830,52 @@ class BounceLaserMode(GameMode):
             laser.speed = 300.0
             world.arena.hazards.append(laser)
 
+
+class DynamicWindCurrentsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Wind Currents"
+        self.description = "Global dynamic wind currents periodically change direction and push all balls and projectiles, altering movement and combat dynamics."
+        self.wind_change_timer = 0.0
+        self.wind_dir_x = 0.0
+        self.wind_dir_y = 0.0
+        self.wind_strength = 0.0
+        import random
+        self.random = random
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        self.wind_change_timer -= delta
+        if self.wind_change_timer <= 0.0:
+            self.wind_change_timer = self.random.uniform(5.0, 10.0)
+            self.wind_strength = self.random.uniform(100.0, 300.0)
+            import math
+            angle = self.random.uniform(0.0, 2.0 * math.pi)
+            self.wind_dir_x = math.cos(angle)
+            self.wind_dir_y = math.sin(angle)
+            if hasattr(world, "add_event"):
+                world.add_event("wind_shift", {"message": "Wind direction shifted!"})
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            if not hasattr(b, "vx"):
+                b.vx = 0.0
+            if not hasattr(b, "vy"):
+                b.vy = 0.0
+
+            b.vx += self.wind_dir_x * self.wind_strength * delta
+            b.vy += self.wind_dir_y * self.wind_strength * delta
+
+        if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") in ["projectile", "spell"] or getattr(h, "is_projectile", False):
+                    if hasattr(h, "vx") and hasattr(h, "vy"):
+                        h.vx += self.wind_dir_x * self.wind_strength * delta
+                        h.vy += self.wind_dir_y * self.wind_strength * delta
+
 GAME_MODES = {
+    "dynamic_wind_currents": DynamicWindCurrentsMode(),
     'bounce_laser': BounceLaserMode(),
     'dragging_magnetic_mines': DraggingMagneticMinesMode(),
     'position_swap': PositionSwapMode(),
