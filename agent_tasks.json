@@ -20622,7 +20622,7 @@
     },
     {
       "id": "idea-1203",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cosmic Storm Event Mode",
@@ -31211,6 +31211,40 @@
         "src/ai/viewer_named_ai_balls.py",
         "src/ai/viewer_named_ai_balls.gd",
         "tests/test_viewer_named_ai_balls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1825",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Chain Reaction Mode",
+      "description": "When a payload detonates, it spawns 4 smaller payloads that fly in opposite directions. These mini-payloads can be pushed, and if they reach a goal, they detonate for a smaller explosion. This continues down to micro-payloads, creating chaotic endgame situations.",
+      "allowed_paths": [
+        "src/ai/payload_chain_reaction.py",
+        "src/ai/payload_chain_reaction.gd",
+        "tests/test_payload_chain_reaction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1826",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Tug-of-War Map Hazards",
+      "description": "On maps where payloads are active, periodic localized gravity wells or conveyor belts spawn to pull the payload towards or away from the goals. Teams have to coordinate to either ride the conveyors or destroy the gravity wells while keeping pushers nearby.",
+      "allowed_paths": [
+        "src/arena/payload_tug_of_war_map_hazards.py",
+        "src/arena/payload_tug_of_war_map_hazards.gd",
+        "tests/test_payload_tug_of_war_map_hazards.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
