@@ -35560,6 +35560,7 @@ GAME_MODES = {
 	"ticking_bomb": TickingBombMode.new(),
 	"orbital_mines": OrbitalMinesMode.new(),
 	"dragging_magnetic_mines": DraggingMagneticMinesMode.new(),
+	"explosive_meteors": ExplosiveMeteorsMode.new(),
 }
 
 
@@ -42972,3 +42973,108 @@ class DraggingMagneticMinesMode extends GameMode:
 						if dist <= m["activation_radius"] and dist > 0:
 							b.x -= (dx / dist) * m["pull_strength"] * delta
 							b.y -= (dy / dist) * m["pull_strength"] * delta
+
+
+class ExplosiveMeteorsMode extends GameMode:
+	var meteor_timer: float = 0.0
+	var active_meteors: Array = []
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		super()
+		name = "Explosive Meteors"
+		description = "Randomly drops explosive meteors from the sky that damage any players caught in their blast radius."
+		rng.randomize()
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		meteor_timer = 0.0
+		active_meteors = []
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		meteor_timer += delta
+
+		if meteor_timer >= 2.0:
+			meteor_timer = 0.0
+			var arena_width = world.arena.width if "width" in world.arena else 1000.0
+			var arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+			var x = rng.randf_range(50.0, arena_width - 50.0)
+			var y = rng.randf_range(50.0, arena_height - 50.0)
+
+			active_meteors.append({
+				"id": "explosive_meteor_" + str(rng.randi_range(10000, 99999)),
+				"x": x,
+				"y": y,
+				"delay": 2.5,
+				"radius": 50.0
+			})
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("visual_effect", {"type": "meteor_warning", "x": x, "y": y, "radius": 50.0})
+
+		var still_active = []
+		for m in active_meteors:
+			m["delay"] -= delta
+			if m["delay"] <= 0:
+				for b in balls:
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"]: is_alive = true
+					elif typeof(b) == TYPE_OBJECT and "alive" in b and b.alive: is_alive = true
+
+					var btype = ""
+					if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): btype = b["ball_type"]
+					elif typeof(b) == TYPE_OBJECT and "ball_type" in b: btype = b.ball_type
+
+					if is_alive and btype != "spectator" and btype != "shadow_monster":
+						var bx = 0.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b["x"]
+						elif typeof(b) == TYPE_OBJECT and "x" in b: bx = b.x
+
+						var by = 0.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b["y"]
+						elif typeof(b) == TYPE_OBJECT and "y" in b: by = b.y
+
+						var dist = sqrt(pow(bx - m["x"], 2) + pow(by - m["y"], 2))
+						if dist <= m["radius"]:
+							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+								b.take_damage(60.0)
+							else:
+								var cur_hp = 100.0
+								if typeof(b) == TYPE_DICTIONARY and b.has("hp"): cur_hp = b["hp"]
+								elif typeof(b) == TYPE_OBJECT and "hp" in b: cur_hp = b.hp
+
+								cur_hp -= 60.0
+
+								if typeof(b) == TYPE_DICTIONARY: b["hp"] = cur_hp
+								elif typeof(b) == TYPE_OBJECT and "hp" in b: b.hp = cur_hp
+
+								if cur_hp <= 0:
+									if typeof(b) == TYPE_DICTIONARY:
+										b["hp"] = 0
+										b["alive"] = false
+									elif typeof(b) == TYPE_OBJECT:
+										if "hp" in b: b.hp = 0
+										if "alive" in b: b.alive = false
+			else:
+				still_active.append(m)
+
+		active_meteors = still_active
+
+		if "arena" in world and "hazards" in world.arena:
+			var filtered_hazards = []
+			for h in world.arena.hazards:
+				var k = ""
+				if typeof(h) == TYPE_DICTIONARY and h.has("kind"): k = h["kind"]
+				elif typeof(h) == TYPE_OBJECT and "kind" in h: k = h.kind
+
+				if k != "explosive_meteor_indicator":
+					filtered_hazards.append(h)
+			world.arena.hazards = filtered_hazards
+
+			var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+			for m in active_meteors:
+				world.arena.hazards.append(HazardObj.new(m["id"], m["x"], m["y"], m["radius"], "explosive_meteor_indicator", 0))

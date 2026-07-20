@@ -27793,6 +27793,74 @@ class OrbitalCrosshairMode(GameMode):
                                         b.alive = False
 
 
+
+class ExplosiveMeteorsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Explosive Meteors"
+        self.description = "Randomly drops explosive meteors from the sky that damage any players caught in their blast radius."
+        self.meteor_timer = 0.0
+        self.active_meteors = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is None:
+            world.arena.hazards = []
+        self.meteor_timer = 0.0
+        self.active_meteors = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.meteor_timer += delta
+
+        if self.meteor_timer >= 2.0:
+            self.meteor_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000) if getattr(world, "arena", None) is not None else 1000
+            arena_height = getattr(world.arena, "height", 1000) if getattr(world, "arena", None) is not None else 1000
+
+            x = random.uniform(50, arena_width - 50)
+            y = random.uniform(50, arena_height - 50)
+
+            self.active_meteors.append({
+                "id": f"explosive_meteor_{random.randint(10000, 99999)}",
+                "x": x,
+                "y": y,
+                "delay": 2.5,
+                "radius": 50.0
+            })
+            if hasattr(world, "add_event"):
+                world.add_event("visual_effect", {"type": "meteor_warning", "x": x, "y": y, "radius": 50.0})
+
+        still_active = []
+        for m in self.active_meteors:
+            m["delay"] -= delta
+            if m["delay"] <= 0:
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ['spectator', 'shadow_monster']:
+                        if math.hypot(getattr(b, "x", 0.0) - m["x"], getattr(b, "y", 0.0) - m["y"]) <= m["radius"]:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(60.0)
+                            else:
+                                b.hp = getattr(b, "hp", 100) - 60.0
+                                if b.hp <= 0:
+                                    b.hp = 0
+                                    b.alive = False
+            else:
+                still_active.append(m)
+
+        self.active_meteors = still_active
+
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is not None:
+            world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "explosive_meteor_indicator"]
+
+            from arena.procedural_arena import Hazard
+            for m in self.active_meteors:
+                world.arena.hazards.append(Hazard(m["id"], m["x"], m["y"], m["radius"], "explosive_meteor_indicator", 0))
+
 GAME_MODES['orbital_crosshair'] = OrbitalCrosshairMode()
 
 GAME_MODES['spectator_holograms'] = SpectatorHologramsMode()
+GAME_MODES['explosive_meteors'] = ExplosiveMeteorsMode()
