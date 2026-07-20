@@ -35593,7 +35593,89 @@ class ChronosphereEventMode extends GameMode:
 					if "attack_cooldown" in b: b.attack_cooldown += delta * 0.5
 
 
+
+class VoidTilesMode extends GameMode:
+	var history: Dictionary = {}
+	var tick_timer: float = 0.0
+	var safe_radius: float = 1000.0
+
+	func _init():
+		super._init()
+		self.name = "Void Tiles"
+		self.description = "The edges of the arena break down into void tiles. Touching them slows you down and randomly rewinds your movement, forcing fights to the center."
+		self.id = "void_tiles"
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		history.clear()
+		for b in balls:
+			var b_id = b.id if "id" in b else (b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else 0)
+			history[b_id] = []
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+		tick_timer += delta
+		safe_radius = max(0.0, 1000.0 - tick_timer * 10.0)
+
+		var w = 1000.0
+		var h = 1000.0
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			w = world.arena.width if "width" in world.arena else 1000.0
+			h = world.arena.height if "height" in world.arena else 1000.0
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world["arena"] != null:
+			w = world["arena"].get("width", 1000.0)
+			h = world["arena"].get("height", 1000.0)
+
+		var cx = w / 2.0
+		var cy = h / 2.0
+
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+			else:
+				alive = b.alive if "alive" in b else false
+
+			if not alive:
+				continue
+
+			var b_id = b.id if "id" in b else (b.get("id", 0) if typeof(b) == TYPE_DICTIONARY else 0)
+			if not history.has(b_id):
+				history[b_id] = []
+
+			var bx = b.x if "x" in b else (b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+			var by = b.y if "y" in b else (b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+
+			history[b_id].append({"t": tick_timer, "x": bx, "y": by})
+
+			var new_hist = []
+			for hist in history[b_id]:
+				if tick_timer - hist.t <= 3.0:
+					new_hist.append(hist)
+			history[b_id] = new_hist
+
+			var dx = bx - cx
+			var dy = by - cy
+			var dist = sqrt(dx * dx + dy * dy)
+
+			if dist > safe_radius:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed_multiplier"] = b.get("speed_multiplier", 1.0) * 0.5
+				else:
+					if "speed_multiplier" in b:
+						b.speed_multiplier *= 0.5
+
+				if randf() < 0.05 and history[b_id].size() > 0:
+					var past_state = history[b_id][randi() % history[b_id].size()]
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = past_state.x
+						b["y"] = past_state.y
+					else:
+						b.x = past_state.x
+						b.y = past_state.y
+
 GAME_MODES = {
+	"void_tiles": VoidTilesMode.new(),
 	"chronosphere_event": ChronosphereEventMode.new(),
     "bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),

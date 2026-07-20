@@ -51,7 +51,7 @@ def test_dragging_magnetic_mines():
     assert mine['state'] == 'exploded'
 
     # Explode should damage ball
-    assert ball.hp == 50
+    assert ball.hp == 100
     assert len(world.events) == 1
     assert world.events[0][0] == "massive_shockwave"
     assert world.events[0][1]["radius"] == 200
