@@ -20758,7 +20758,7 @@
     },
     {
       "id": "idea-1211",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chant Streak Visual Effects",
@@ -31517,6 +31517,57 @@
         "src/ai/ghost_orbs.py",
         "src/ai/ghost_orbs.gd",
         "tests/test_ghost_orbs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1843",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Healing Rain",
+      "description": "Periodic rain storms that gradually heal players but slow down their movement.",
+      "allowed_paths": [
+        "src/ai/healing_rain.py",
+        "src/ai/healing_rain.gd",
+        "tests/test_healing_rain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1844",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Supply Drops",
+      "description": "Spawn decoy supply drops occasionally that look identical to real ones but instead trigger an AoE stun or damage when approached by players, making supply drops high risk vs high reward.",
+      "allowed_paths": [
+        "src/ai/decoy_supply_drops.py",
+        "src/ai/decoy_supply_drops.gd",
+        "tests/test_decoy_supply_drops.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1845",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supply Drop Orbital Path",
+      "description": "Have supply drops fall from orbit and create a small shockwave upon landing that damages and knocks back any players standing directly underneath the target zone.",
+      "allowed_paths": [
+        "src/ai/supply_drop_orbital_path.py",
+        "src/ai/supply_drop_orbital_path.gd",
+        "tests/test_supply_drop_orbital_path.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

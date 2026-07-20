@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1211] Chant Streak Visual Effects — *2026-07-20 20:54:13 UTC*
+
+Add visual particle effects to the UI or around players when their team is on a chant streak to hype up the excitement.
+
+---
+
 ## [idea-1182] Escort Supply Drops — *2026-07-20 20:40:24 UTC*
 
 Periodically spawn supply drops near the payload containing powerful buffs (e.g., invulnerability or instant ultimate charge). The drops can be contested by either team.
