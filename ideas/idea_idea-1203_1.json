@@ -1,0 +1,4 @@
+{
+  "title": "Anti-Gravity Well Hazard",
+  "description": "A hazard that repels all nearby players away from it instead of pulling them in, scaling with the distance to the center. Causes extremely fast pinball-like bounces if placed near arena walls or other hazards."
+}

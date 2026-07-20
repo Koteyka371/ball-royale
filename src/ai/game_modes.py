@@ -21912,7 +21912,158 @@ class ChargedMode(GameMode):
                     b1_x = getattr(b1, "x", 0.0)
                     b1_y = getattr(b1, "y", 0.0)
 
+
+class ZeroGMeteorShowerMode(MeteorShowerMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Zero-G Meteor Shower"
+        self.description = "Combines meteor shower with zero-gravity periods. When meteors fall during zero-g, they bounce off the ground unpredictably and carry momentum!"
+        self.zero_g_timer = 0.0
+        self.is_zero_g = False
+        self.mutators = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import random
+        import math
+
+        self.zero_g_timer += delta
+        if self.zero_g_timer >= 10.0:
+            self.zero_g_timer = 0.0
+            self.is_zero_g = not self.is_zero_g
+
+        if self.is_zero_g:
+            self.mutators = ["zero_gravity"]
+        else:
+            self.mutators = []
+
+        # Instead of calling super().tick, we reimplement the meteor logic to allow bouncing.
+        # super().tick creates craters for all delayed meteors.
+
+        # Apply dynamic traits
+        self.apply_dynamic_traits(world, balls, delta)
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 1.0:
+            self.spawn_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+            x = random.uniform(50, arena_width - 50)
+            y = random.uniform(50, arena_height - 50)
+            self.active_meteors.append({
+                "id": f"meteor_{random.randint(10000, 99999)}",
+                "x": x,
+                "y": y,
+                "delay": 2.0,
+                "radius": 30.0,
+                "bouncing": False,
+                "vx": 0.0,
+                "vy": 0.0
+            })
+
+        still_active = []
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+        for m in self.active_meteors:
+            if m.get("bouncing", False):
+                # Update position
+                m["x"] += m.get("vx", 0.0) * delta
+                m["y"] += m.get("vy", 0.0) * delta
+
+                # Bounce off walls
+                if m["x"] < 50:
+                    m["x"] = 50
+                    m["vx"] *= -1
+                elif m["x"] > arena_width - 50:
+                    m["x"] = arena_width - 50
+                    m["vx"] *= -1
+
+                if m["y"] < 50:
+                    m["y"] = 50
+                    m["vy"] *= -1
+                elif m["y"] > arena_height - 50:
+                    m["y"] = arena_height - 50
+                    m["vy"] *= -1
+
+                # Deal damage on bounce impact
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        dx = b.x - m["x"]
+                        dy = b.y - m["y"]
+                        dist = math.hypot(dx, dy)
+                        if dist < m["radius"] + getattr(b, "radius", 15.0) and dist > 0:
+                            b.x += (dx/dist) * 300.0 * delta
+                            b.y += (dy/dist) * 300.0 * delta
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(200.0 * delta)
+                            else:
+                                b.hp = getattr(b, "hp", 100) - 200.0 * delta
+
+                m["delay"] -= delta
+                if m["delay"] > -10.0: # Keep bouncing for 10 seconds max
+                    still_active.append(m)
+            else:
+                m["delay"] -= delta
+                if m["delay"] <= 0:
+                    if self.is_zero_g:
+                        m["bouncing"] = True
+                        m["vx"] = random.uniform(-400, 400)
+                        m["vy"] = random.uniform(-400, 400)
+                        m["delay"] = 0.0 # reset delay to be used as bounce timer
+                        still_active.append(m)
+                    else:
+                        self.craters.append({
+                            "id": f"crater_{random.randint(10000, 99999)}",
+                            "x": m["x"],
+                            "y": m["y"],
+                            "radius": m["radius"] * 1.5,
+                            "duration": 15.0
+                        })
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                if math.hypot(b.x - m["x"], b.y - m["y"]) <= m["radius"]:
+                                    if hasattr(b, "take_damage"): b.take_damage(200.0)
+                                    else: b.hp = getattr(b, "hp", 100) - 200.0
+                else:
+                    still_active.append(m)
+
+        self.active_meteors = still_active
+
+        # Process craters
+        still_craters = []
+        weather = getattr(world.arena, "weather", "") if hasattr(world, "arena") else ""
+        for c in self.craters:
+            c["duration"] -= delta
+            if c["duration"] > 0:
+                kind = "meteor_crater"
+                if weather == "rain": kind = "mud_pit"
+                elif weather in ["blizzard", "snow"]: kind = "ice_patch"
+                elif weather == "heatwave": kind = "lava_pit"
+                c["kind"] = kind
+                still_craters.append(c)
+
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        if math.hypot(b.x - c["x"], b.y - c["y"]) <= c["radius"]:
+                            base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                            if c["kind"] == "mud_pit":
+                                b.speed = base_speed * 0.2
+                            elif c["kind"] == "ice_patch":
+                                b.speed = base_speed * 1.5
+                                setattr(b, "friction_multiplier", 0.2)
+                            elif c["kind"] == "lava_pit":
+                                b.speed = base_speed * 0.5
+                                if hasattr(b, "take_damage"): b.take_damage(20.0 * delta)
+                                else: b.hp = getattr(b, "hp", 100) - 20.0 * delta
+                            else:
+                                b.speed = base_speed * 0.5
+                                setattr(b, "slow_timer", max(getattr(b, "slow_timer", 0.0), 2.0))
+                                if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                                else: b.hp = getattr(b, "hp", 100) - 10.0 * delta
+        self.craters = still_craters
+
 GAME_MODES = {
+    "zero_g_meteor_shower": ZeroGMeteorShowerMode(),
     'charged': ChargedMode(),
     'bounce_laser': BounceLaserMode(),
     'dragging_magnetic_mines': DraggingMagneticMinesMode(),

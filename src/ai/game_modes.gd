@@ -35303,6 +35303,7 @@ class BounceLaserMode extends GameMode:
                 world.arena.hazards.append(laser)
 
 GAME_MODES = {
+	"zero_g_meteor_shower": ZeroGMeteorShowerMode.new(),
     "bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),
 
@@ -42744,3 +42745,237 @@ class DraggingMagneticMinesMode extends GameMode:
 						if dist <= m["activation_radius"] and dist > 0:
 							b.x -= (dx / dist) * m["pull_strength"] * delta
 							b.y -= (dy / dist) * m["pull_strength"] * delta
+class ZeroGMeteorShowerMode extends MeteorShowerMode:
+	var zero_g_timer = 0.0
+	var is_zero_g = false
+
+	func _init().():
+		name = "Zero-G Meteor Shower"
+		description = "Combines meteor shower with zero-gravity periods. When meteors fall during zero-g, they bounce off the ground unpredictably and carry momentum!"
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		zero_g_timer += delta
+		if zero_g_timer >= 10.0:
+			zero_g_timer = 0.0
+			is_zero_g = not is_zero_g
+
+		if is_zero_g:
+			self.set_meta("mutators", ["zero_gravity"])
+		else:
+			self.set_meta("mutators", [])
+
+		self.apply_dynamic_traits(world, balls, delta)
+
+		spawn_timer += delta
+		if spawn_timer >= 1.0:
+			spawn_timer = 0.0
+			var arena_width = world.arena.width if "width" in world.arena else 1000.0
+			var arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+			var x = rng.randf_range(50.0, arena_width - 50.0)
+			var y = rng.randf_range(50.0, arena_height - 50.0)
+
+			active_meteors.append({
+				"id": "meteor_" + str(rng.randi_range(10000, 99999)),
+				"x": x,
+				"y": y,
+				"delay": 2.0,
+				"radius": 30.0,
+				"bouncing": false,
+				"vx": 0.0,
+				"vy": 0.0
+			})
+
+		var still_active = []
+		var arena_width = world.arena.width if "width" in world.arena else 1000.0
+		var arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+		for m in active_meteors:
+			if m.has("bouncing") and m["bouncing"]:
+				m["x"] += m["vx"] * delta
+				m["y"] += m["vy"] * delta
+
+				if m["x"] < 50:
+					m["x"] = 50
+					m["vx"] *= -1
+				elif m["x"] > arena_width - 50:
+					m["x"] = arena_width - 50
+					m["vx"] *= -1
+
+				if m["y"] < 50:
+					m["y"] = 50
+					m["vy"] *= -1
+				elif m["y"] > arena_height - 50:
+					m["y"] = arena_height - 50
+					m["vy"] *= -1
+
+				for b in balls:
+					var is_alive = false
+					if typeof(b) == TYPE_OBJECT:
+						if "alive" in b: is_alive = b.alive
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("alive"): is_alive = b["alive"]
+
+					if is_alive:
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_OBJECT:
+							bx = b.x
+							by = b.y
+						elif typeof(b) == TYPE_DICTIONARY:
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+
+						var dx = bx - m["x"]
+						var dy = by - m["y"]
+						var dist = sqrt(dx*dx + dy*dy)
+						var b_radius = 15.0
+						if typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+						elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b["radius"]
+
+						if dist < m["radius"] + b_radius and dist > 0:
+							var push_x = (dx/dist) * 300.0 * delta
+							var push_y = (dy/dist) * 300.0 * delta
+							if typeof(b) == TYPE_OBJECT:
+								b.x += push_x
+								b.y += push_y
+								if b.has_method("take_damage"): b.take_damage(200.0 * delta)
+								elif "hp" in b: b.hp -= 200.0 * delta
+							elif typeof(b) == TYPE_DICTIONARY:
+								b["x"] = b.get("x", 0.0) + push_x
+								b["y"] = b.get("y", 0.0) + push_y
+								if b.has("hp"): b["hp"] -= 200.0 * delta
+
+				m["delay"] -= delta
+				if m["delay"] > -10.0:
+					still_active.append(m)
+			else:
+				m["delay"] -= delta
+				if m["delay"] <= 0:
+					if is_zero_g:
+						m["bouncing"] = true
+						m["vx"] = rng.randf_range(-400.0, 400.0)
+						m["vy"] = rng.randf_range(-400.0, 400.0)
+						m["delay"] = 0.0
+						still_active.append(m)
+					else:
+						craters.append({
+							"id": "crater_" + str(rng.randi_range(10000, 99999)),
+							"x": m["x"],
+							"y": m["y"],
+							"radius": m["radius"] * 1.5,
+							"duration": 15.0
+						})
+						for b in balls:
+							var is_alive = false
+							if typeof(b) == TYPE_OBJECT:
+								if "alive" in b: is_alive = b.alive
+							elif typeof(b) == TYPE_DICTIONARY:
+								if b.has("alive"): is_alive = b["alive"]
+
+							if is_alive:
+								var bx = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+								var by = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+								var dx = bx - m["x"]
+								var dy = by - m["y"]
+								if sqrt(dx*dx + dy*dy) <= m["radius"]:
+									if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"): b.take_damage(200.0)
+									elif typeof(b) == TYPE_OBJECT and "hp" in b: b.hp -= 200.0
+									elif typeof(b) == TYPE_DICTIONARY and b.has("hp"): b["hp"] -= 200.0
+				else:
+					still_active.append(m)
+
+		active_meteors = still_active
+
+		var still_craters = []
+		var weather = ""
+		if world != null and "arena" in world and "weather" in world.arena:
+			weather = world.arena.weather
+
+		for c in craters:
+			c["duration"] -= delta
+			if c["duration"] > 0:
+				var kind = "meteor_crater"
+				if weather == "rain":
+					kind = "mud_pit"
+				elif weather == "blizzard" or weather == "snow":
+					kind = "ice_patch"
+				elif weather == "heatwave":
+					kind = "lava_pit"
+				c["kind"] = kind
+
+				still_craters.append(c)
+				for b in balls:
+					var is_alive = false
+					if typeof(b) == TYPE_OBJECT:
+						if "alive" in b: is_alive = b.alive
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("alive"): is_alive = b["alive"]
+
+					if is_alive:
+						var bx = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+						var by = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+						var dx = bx - c["x"]
+						var dy = by - c["y"]
+						if sqrt(dx*dx + dy*dy) <= c["radius"]:
+							var base_speed = 100.0
+							if typeof(b) == TYPE_OBJECT:
+								base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+							elif typeof(b) == TYPE_DICTIONARY:
+								base_speed = b.get("base_speed", b.get("speed", 100.0))
+
+							if c["kind"] == "mud_pit":
+								if typeof(b) == TYPE_OBJECT: b.speed = base_speed * 0.2
+								else: b["speed"] = base_speed * 0.2
+							elif c["kind"] == "ice_patch":
+								if typeof(b) == TYPE_OBJECT:
+									b.speed = base_speed * 1.5
+									if b.has_method("set_meta"): b.set_meta("friction_multiplier", 0.2)
+								else:
+									b["speed"] = base_speed * 1.5
+									b["friction_multiplier"] = 0.2
+							elif c["kind"] == "lava_pit":
+								if typeof(b) == TYPE_OBJECT:
+									b.speed = base_speed * 0.5
+									if b.has_method("take_damage"): b.take_damage(20.0 * delta)
+									elif "hp" in b: b.hp -= 20.0 * delta
+								else:
+									b["speed"] = base_speed * 0.5
+									if b.has("hp"): b["hp"] -= 20.0 * delta
+							else:
+								if typeof(b) == TYPE_OBJECT:
+									b.speed = base_speed * 0.5
+									if "slow_timer" in b: b.slow_timer = max(b.slow_timer if b.slow_timer != null else 0.0, 2.0)
+									elif b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
+									if b.has_method("take_damage"): b.take_damage(10.0 * delta)
+									elif "hp" in b: b.hp -= 10.0 * delta
+								else:
+									b["speed"] = base_speed * 0.5
+									b["slow_timer"] = max(b.get("slow_timer", 0.0), 2.0)
+									if b.has("hp"): b["hp"] -= 10.0 * delta
+
+		craters = still_craters
+
+		if world != null and "arena" in world:
+			var new_hazards = []
+			for h in world.arena.hazards:
+				var kind = ""
+				if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+				elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+				if kind != "meteor" and kind != "meteor_crater":
+					new_hazards.append(h)
+			world.arena.hazards = new_hazards
+
+			var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd") if ResourceLoader.exists("res://src/arena/procedural_arena.gd") else null
+			for m in active_meteors:
+				if ProceduralArenaScript:
+					var h = ProceduralArenaScript.Hazard.new(m["id"], m["x"], m["y"], m["radius"], "meteor", 0)
+					if m.has("bouncing") and m["bouncing"]:
+						h.set_meta("bouncing", true)
+					h.set_meta("duration", m["delay"] if m["delay"] >= 0 else 0)
+					world.arena.hazards.append(h)
+			for c in craters:
+				if ProceduralArenaScript:
+					var h = ProceduralArenaScript.Hazard.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
+					h.set_meta("duration", c["duration"])
+					world.arena.hazards.append(h)
