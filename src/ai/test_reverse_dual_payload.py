@@ -55,3 +55,35 @@ def test_reverse_dual_payload():
     assert balls[2].hp == 85.0
     # Red player 0 should not take damage
     assert balls[0].hp == 100.0
+
+
+
+def test_reverse_dual_payload_detonation():
+    mode = GAME_MODES["reverse_dual_payload"]
+    world = MockWorld()
+    balls = [MockBall(i) for i in range(4)]
+
+    # Red players (0, 1), Blue players (2, 3)
+    balls[0].team = "Red"
+    balls[1].team = "Red"
+    balls[2].team = "Blue"
+    balls[3].team = "Blue"
+
+    mode.setup(world, balls)
+
+    # Blue payload starts at 100.0, moves right towards 900.0 (Blue's goal)
+    mode.payload_blue.x = 900.0
+    mode.payload_blue.y = 500.0
+
+    # Red pushes Blue payload (pushers=2)
+    balls[2].x = 900.0
+    balls[2].y = 500.0
+    balls[0].x = 900.0
+    balls[0].y = 500.0
+    balls[1].x = 900.0
+    balls[1].y = 500.0
+
+    mode.tick(world, balls, 1.0)
+
+    assert getattr(mode.payload_blue, "detonated", False) == True
+    assert getattr(balls[2], "hp", 100.0) <= 0.0

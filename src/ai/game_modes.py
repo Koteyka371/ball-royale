@@ -3717,6 +3717,20 @@ class ReverseDualPayloadMode(GameMode):
             if pushers > 0:
                 speed_mult = 1.0 + ((pushers - 1) * 0.5)
                 self.payload_red.x -= 50.0 * delta * pushers * speed_mult
+                if self.payload_red.x <= 100.0:
+                    if not getattr(self.payload_red, "detonated", False):
+                        self.payload_red.detonated = True
+                        alive_blue = sum(1 for b in balls if getattr(b, "team", "") == "Blue" and getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_payload", False))
+                        if pushers >= alive_blue and alive_blue > 0:
+                            if hasattr(world, "add_event"):
+                                world.add_event("visual_effect", {"type": "massive_explosion", "x": self.payload_red.x, "y": self.payload_red.y, "radius": 500.0})
+                            for b in balls:
+                                if getattr(b, "team", "") == "Red" and getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_payload", False):
+                                    dist = math.hypot(getattr(b, "x", 0) - self.payload_red.x, getattr(b, "y", 0) - self.payload_red.y)
+                                    if dist <= 500.0:
+                                        b.hp = getattr(b, "hp", 100.0) - 500.0
+                                        if b.hp <= 0:
+                                            b.alive = False
                 if self.payload_red.x < 50.0:
                     self.payload_red.x = 50.0
 
@@ -3739,6 +3753,20 @@ class ReverseDualPayloadMode(GameMode):
             if pushers > 0:
                 speed_mult = 1.0 + ((pushers - 1) * 0.5)
                 self.payload_blue.x += 50.0 * delta * pushers * speed_mult
+                if self.payload_blue.x >= arena_width - 100.0:
+                    if not getattr(self.payload_blue, "detonated", False):
+                        self.payload_blue.detonated = True
+                        alive_red = sum(1 for b in balls if getattr(b, "team", "") == "Red" and getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_payload", False))
+                        if pushers >= alive_red and alive_red > 0:
+                            if hasattr(world, "add_event"):
+                                world.add_event("visual_effect", {"type": "massive_explosion", "x": self.payload_blue.x, "y": self.payload_blue.y, "radius": 500.0})
+                            for b in balls:
+                                if getattr(b, "team", "") == "Blue" and getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_payload", False):
+                                    dist = math.hypot(getattr(b, "x", 0) - self.payload_blue.x, getattr(b, "y", 0) - self.payload_blue.y)
+                                    if dist <= 500.0:
+                                        b.hp = getattr(b, "hp", 100.0) - 500.0
+                                        if b.hp <= 0:
+                                            b.alive = False
                 if self.payload_blue.x > arena_width - 50.0:
                     self.payload_blue.x = arena_width - 50.0
 
@@ -3996,6 +4024,20 @@ class DualPayloadMode(GameMode):
                 base_speed = getattr(self.payload_red, "speed", 10.0)
                 self.payload_red.x += (dx / dist) * base_speed * speed_mult_red * delta
                 self.payload_red.y += (dy / dist) * base_speed * speed_mult_red * delta
+            else:
+                if not getattr(self.payload_red, "detonated", False):
+                    self.payload_red.detonated = True
+                    alive_blue = sum(1 for b in balls if getattr(b, "team", "") == "Blue" and getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_payload", False))
+                    if nearby_red >= alive_blue and alive_blue > 0:
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "massive_explosion", "x": self.payload_red.x, "y": self.payload_red.y, "radius": 500.0})
+                        for b in balls:
+                            if getattr(b, "team", "") == "Blue" and getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_payload", False):
+                                bdist = math.hypot(getattr(b, "x", 0) - self.payload_red.x, getattr(b, "y", 0) - self.payload_red.y)
+                                if bdist <= 500.0:
+                                    b.hp = getattr(b, "hp", 100.0) - 500.0
+                                    if b.hp <= 0:
+                                        b.alive = False
 
         if self.payload_blue and getattr(self.payload_blue, "alive", False):
             nearby_blue = 0
@@ -4078,6 +4120,20 @@ class DualPayloadMode(GameMode):
                 base_speed = getattr(self.payload_blue, "speed", 10.0)
                 self.payload_blue.x += (dx / dist) * base_speed * speed_mult_blue * delta
                 self.payload_blue.y += (dy / dist) * base_speed * speed_mult_blue * delta
+            else:
+                if not getattr(self.payload_blue, "detonated", False):
+                    self.payload_blue.detonated = True
+                    alive_red = sum(1 for b in balls if getattr(b, "team", "") == "Red" and getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_payload", False))
+                    if nearby_blue >= alive_red and alive_red > 0:
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "massive_explosion", "x": self.payload_blue.x, "y": self.payload_blue.y, "radius": 500.0})
+                        for b in balls:
+                            if getattr(b, "team", "") == "Red" and getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_payload", False):
+                                bdist = math.hypot(getattr(b, "x", 0) - self.payload_blue.x, getattr(b, "y", 0) - self.payload_blue.y)
+                                if bdist <= 500.0:
+                                    b.hp = getattr(b, "hp", 100.0) - 500.0
+                                    if b.hp <= 0:
+                                        b.alive = False
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         red_alive = self.payload_red and getattr(self.payload_red, "alive", False)
