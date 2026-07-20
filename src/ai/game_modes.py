@@ -23477,7 +23477,66 @@ class ToxicFloodRoyaleMode(GameMode):
                     b.killer = "Toxic Flood"
 
 
+
+class RisingLavaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rising Lava"
+        self.description = "Lava slowly rises from the bottom of the arena, permanently destroying the lowest platforms and forcing players to constantly fight for high ground."
+        self.lava_y = 1000.0
+        self.rise_rate = 15.0
+        self.platforms = []
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.lava_y = float(arena_height)
+        self.platforms = []
+
+        # Generate some elevated platforms
+        import random
+        for _ in range(15):
+            x = random.uniform(100, arena_width - 100)
+            y = random.uniform(100, arena_height - 100)
+            radius = random.uniform(40.0, 100.0)
+            self.platforms.append({"x": x, "y": y, "radius": radius})
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        self.lava_y -= self.rise_rate * delta
+
+        # Destroy platforms submerged in lava
+        for p in list(self.platforms):
+            if p["y"] > self.lava_y:
+                self.platforms.remove(p)
+
+        # Deal damage to balls in lava (y coordinate is higher than lava_y)
+        lava_damage_per_second = 30.0
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                on_platform = False
+                for p in self.platforms:
+                    dist = math.hypot(b.x - p["x"], b.y - p["y"])
+                    if dist <= p["radius"]:
+                        on_platform = True
+                        break
+
+                if b.y > self.lava_y and not on_platform:
+                    damage_amount = lava_damage_per_second * delta
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(damage_amount)
+                    else:
+                        b.hp -= damage_amount
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if not hasattr(b, "killer") or not b.killer:
+                                b.killer = "rising_lava"
+
 GAME_MODES = {
+    "rising_lava": RisingLavaMode(),
 
     "explosive_meteors": ExplosiveMeteorsMode(),
     "void_tiles": VoidTilesMode(),

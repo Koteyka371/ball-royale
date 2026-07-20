@@ -39609,7 +39609,105 @@ class ToxicFloodRoyaleMode extends GameMode:
 						b.killer = "Toxic Flood"
 
 
+
+class RisingLavaMode extends GameMode:
+	var lava_y: float = 1000.0
+	var rise_rate: float = 15.0
+	var platforms: Array = []
+	var rng = RandomNumberGenerator.new()
+
+	func _init() -> void:
+		name = "Rising Lava"
+		description = "Lava slowly rises from the bottom of the arena, permanently destroying the lowest platforms and forcing players to constantly fight for high ground."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		lava_y -= rise_rate * delta
+
+		# Destroy platforms submerged in lava
+		var i = platforms.size() - 1
+		while i >= 0:
+			var p = platforms[i]
+			if p.y > lava_y:
+				platforms.remove_at(i)
+			i -= 1
+
+		var lava_damage_per_second = 30.0
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				if "ball_type" in b:
+					b_type = str(b.ball_type).to_lower()
+
+			if b_type == "spectator":
+				continue
+
+			var b_x = b.x if typeof(b) != TYPE_DICTIONARY and "x" in b else (b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+			var b_y = b.y if typeof(b) != TYPE_DICTIONARY and "y" in b else (b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else 0.0)
+			if typeof(b) != TYPE_DICTIONARY and not "x" in b and b.has_method("get_meta") and b.has_meta("x"):
+				b_x = b.get_meta("x")
+			if typeof(b) != TYPE_DICTIONARY and not "y" in b and b.has_method("get_meta") and b.has_meta("y"):
+				b_y = b.get_meta("y")
+
+			var on_platform = false
+			for p in platforms:
+				var dist = sqrt(pow(b_x - p.x, 2) + pow(b_y - p.y, 2))
+				if dist <= p.radius:
+					on_platform = true
+					break
+
+			if b_y > lava_y and not on_platform:
+				var damage_amount = lava_damage_per_second * delta
+				if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"):
+					b.take_damage(damage_amount)
+				elif typeof(b) == TYPE_DICTIONARY or "hp" in b:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = b.get("hp", 100.0) - damage_amount
+						if b["hp"] <= 0:
+							b["hp"] = 0
+							b["alive"] = false
+							if not b.has("killer") or b["killer"] == "":
+								b["killer"] = "rising_lava"
+					else:
+						b.hp -= damage_amount
+						if b.hp <= 0:
+							b.hp = 0
+							b.alive = false
+							if not "killer" in b or b.killer == null or b.killer == "":
+								if b.has_method("set_meta"):
+									b.set_meta("killer", "rising_lava")
+								else:
+									b.killer = "rising_lava"
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_height = 1000.0
+		var arena_width = 1000.0
+		if "arena" in world and world.arena:
+			if "height" in world.arena: arena_height = float(world.arena.height)
+			if "width" in world.arena: arena_width = float(world.arena.width)
+
+		lava_y = arena_height
+		platforms.clear()
+
+		for _i in range(15):
+			var px = rng.randf_range(100.0, arena_width - 100.0)
+			var py = rng.randf_range(100.0, arena_height - 100.0)
+			var pr = rng.randf_range(40.0, 100.0)
+			platforms.append({"x": px, "y": py, "radius": pr})
+
 GAME_MODES = {
+	"rising_lava": RisingLavaMode.new(),
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
 
 	"explosive_meteors": ExplosiveMeteorsMode.new(),
