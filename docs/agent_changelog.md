@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1235] Chain Reaction Booster — *2026-07-20 23:32:34 UTC*
+
+Increases the max number of chain lightning bounces by 1 but reduces initial damage by 15%.
+
+---
+
 ## [idea-1233] Slime Bounce Pads — *2026-07-20 23:24:13 UTC*
 
 Hazard objects that apply a large velocity impulse in the opposite direction of approach when a ball touches them, but cover them in slime (speed debuff) for 3 seconds.
