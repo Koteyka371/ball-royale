@@ -35285,6 +35285,7 @@ class BounceLaserMode extends GameMode:
                 world.arena.hazards.append(laser)
 
 GAME_MODES = {
+	"entangled_hazards": EntangledHazardsMode.new(),
     "bounce_laser": BounceLaserMode.new(),
 	"spectator_holograms": SpectatorHologramsMode.new(),
 
@@ -42723,3 +42724,337 @@ class DraggingMagneticMinesMode extends GameMode:
 						if dist <= m["activation_radius"] and dist > 0:
 							b.x -= (dx / dist) * m["pull_strength"] * delta
 							b.y -= (dy / dist) * m["pull_strength"] * delta
+
+
+class EntangledHazardsMode extends GameMode:
+	var prev_state: Dictionary = {}
+	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+
+	func _init().():
+		name = "Entangled Hazards"
+		description = "A hazard that spawns in pairs across the arena. Any damage or status effect taken by a ball near one hazard is partially duplicated and dealt to any ball standing near its paired hazard."
+
+	func _init_prev_state(b) -> void:
+		var state = {"hp": b.hp if "hp" in b else 100.0}
+		for eff in status_effects:
+			if eff in b:
+				state[eff] = b[eff]
+			elif b.has_meta(eff):
+				state[eff] = b.get_meta(eff)
+			else:
+				state[eff] = 0.0
+		if "id" in b:
+			prev_state[b.id] = state
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+
+		prev_state.clear()
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if is_alive and b_type != "spectator":
+				_init_prev_state(b)
+
+		var width = 1000.0
+		var height = 1000.0
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+				var arena = world.get("arena")
+				if typeof(arena) == TYPE_DICTIONARY:
+					width = arena.get("width", 1000.0)
+					height = arena.get("height", 1000.0)
+				elif arena != null:
+					width = arena.width if "width" in arena else 1000.0
+					height = arena.height if "height" in arena else 1000.0
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					width = world.arena.get("width", 1000.0)
+					height = world.arena.get("height", 1000.0)
+				else:
+					width = world.arena.width if "width" in world.arena else 1000.0
+					height = world.arena.height if "height" in world.arena else 1000.0
+
+		# Ensure hazards array exists
+		var has_arena = false
+		var arena = null
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+			has_arena = true
+			arena = world.get("arena")
+		elif typeof(world) != TYPE_DICTIONARY and "arena" in world:
+			has_arena = true
+			arena = world.arena
+
+		if has_arena and arena != null:
+			if typeof(arena) == TYPE_DICTIONARY and not "hazards" in arena:
+				arena["hazards"] = []
+			elif typeof(arena) != TYPE_DICTIONARY and not "hazards" in arena:
+				if arena.has_method("set_meta"):
+					pass # can't easily add property if not dynamically typed, assuming array exists
+
+		# Godot 4 requires instantiating the resource script for Hazard
+		var HazardClass = null
+		if typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and typeof(world.arena) != TYPE_DICTIONARY:
+			var script = world.arena.get_script()
+			if script != null:
+				if script.get_script_constant_map().has("Hazard"):
+					HazardClass = script.Hazard
+				elif "Hazard" in script:
+					HazardClass = script.Hazard
+
+		if HazardClass == null:
+			# Just use dictionaries for fallback if we can't find the class
+			pass
+
+		for _i in range(2): # spawn 2 pairs
+			var id1 = "entangled_" + str(randi() % 90000 + 10000)
+			var id2 = "entangled_" + str(randi() % 90000 + 10000)
+
+			var x1 = 100 + randf() * (width - 200)
+			var y1 = 100 + randf() * (height - 200)
+			var x2 = 100 + randf() * (width - 200)
+			var y2 = 100 + randf() * (height - 200)
+
+			var h1 = null
+			var h2 = null
+
+			if HazardClass != null:
+				h1 = HazardClass.new(id1, x1, y1, 50.0, "entangled_hazard", 0.0)
+				h2 = HazardClass.new(id2, x2, y2, 50.0, "entangled_hazard", 0.0)
+				if h1 is Object:
+					h1.set_meta("paired_hazard_id", id2)
+				else:
+					h1["paired_hazard_id"] = id2
+
+				if h2 is Object:
+					h2.set_meta("paired_hazard_id", id1)
+				else:
+					h2["paired_hazard_id"] = id1
+			else:
+				h1 = {
+					"id": id1, "x": x1, "y": y1, "radius": 50.0, "kind": "entangled_hazard",
+					"damage": 0.0, "active": true, "duration": -1.0, "paired_hazard_id": id2
+				}
+				h2 = {
+					"id": id2, "x": x2, "y": y2, "radius": 50.0, "kind": "entangled_hazard",
+					"damage": 0.0, "active": true, "duration": -1.0, "paired_hazard_id": id1
+				}
+
+			if has_arena and arena != null:
+				if typeof(arena) == TYPE_DICTIONARY:
+					if not "hazards" in arena: arena["hazards"] = []
+					arena.hazards.append(h1)
+					arena.hazards.append(h2)
+				else:
+					if "hazards" in arena:
+						arena.hazards.append(h1)
+						arena.hazards.append(h2)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		var entangled_hazards = []
+		if world != null:
+			var arena = null
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+				arena = world.get("arena")
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world:
+				arena = world.arena
+
+			if arena != null:
+				var hazards = []
+				if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+					hazards = arena.get("hazards", [])
+				elif typeof(arena) != TYPE_DICTIONARY and "hazards" in arena:
+					hazards = arena.hazards
+
+				for h in hazards:
+					var kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						kind = h.get("kind", "")
+					elif "kind" in h:
+						kind = h.kind
+					if kind == "entangled_hazard":
+						entangled_hazards.append(h)
+
+		if entangled_hazards.size() == 0:
+			return
+
+		var hp_diffs = {}
+		var eff_diffs = {}
+
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var b_id = b.id if "id" in b else null
+			if b_id == null:
+				continue
+
+			if not prev_state.has(b_id):
+				_init_prev_state(b)
+
+			var state = prev_state[b_id]
+
+			var curr_hp = b.hp if "hp" in b else 100.0
+			if curr_hp < state.hp:
+				hp_diffs[b_id] = state.hp - curr_hp
+
+			eff_diffs[b_id] = {}
+			var has_eff_diff = false
+			for eff in status_effects:
+				var prev_val = state[eff] if state.has(eff) else 0.0
+				var curr_val = 0.0
+				if eff in b:
+					curr_val = b[eff]
+				elif typeof(b) != TYPE_DICTIONARY and b.has_meta(eff):
+					curr_val = b.get_meta(eff)
+
+				if curr_val > prev_val:
+					eff_diffs[b_id][eff] = curr_val - prev_val
+					has_eff_diff = true
+
+			if not has_eff_diff:
+				eff_diffs.erase(b_id)
+
+		if hp_diffs.size() > 0 or eff_diffs.size() > 0:
+			for b in balls:
+				var is_alive = b.alive if "alive" in b else false
+				var b_type = b.ball_type if "ball_type" in b else ""
+				if not is_alive or b_type == "spectator":
+					continue
+
+				var b_id = b.id if "id" in b else null
+				if b_id == null:
+					continue
+
+				if hp_diffs.has(b_id) or eff_diffs.has(b_id):
+					var b_x = b.x if "x" in b else 0.0
+					var b_y = b.y if "y" in b else 0.0
+					var b_r = b.radius if "radius" in b else 15.0
+
+					var active_hazards = []
+					for h in entangled_hazards:
+						var h_x = 0.0
+						var h_y = 0.0
+						var h_r = 50.0
+						if typeof(h) == TYPE_DICTIONARY:
+							h_x = h.get("x", 0.0)
+							h_y = h.get("y", 0.0)
+							h_r = h.get("radius", 50.0)
+						else:
+							h_x = h.x if "x" in h else 0.0
+							h_y = h.y if "y" in h else 0.0
+							h_r = h.radius if "radius" in h else 50.0
+
+						var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+						if dist <= h_r + b_r:
+							active_hazards.append(h)
+
+					for h in active_hazards:
+						var paired_id = null
+						if typeof(h) == TYPE_DICTIONARY:
+							paired_id = h.get("paired_hazard_id")
+						elif "paired_hazard_id" in h:
+							paired_id = h.paired_hazard_id
+						elif typeof(h) != TYPE_DICTIONARY and h.has_meta("paired_hazard_id"):
+							paired_id = h.get_meta("paired_hazard_id")
+
+						if paired_id == null:
+							continue
+
+						var paired_h = null
+						for ph in entangled_hazards:
+							var ph_id = null
+							if typeof(ph) == TYPE_DICTIONARY:
+								ph_id = ph.get("id")
+							elif "id" in ph:
+								ph_id = ph.id
+							if ph_id == paired_id:
+								paired_h = ph
+								break
+
+						if paired_h == null:
+							continue
+
+						var ph_x = 0.0
+						var ph_y = 0.0
+						var ph_r = 50.0
+						if typeof(paired_h) == TYPE_DICTIONARY:
+							ph_x = paired_h.get("x", 0.0)
+							ph_y = paired_h.get("y", 0.0)
+							ph_r = paired_h.get("radius", 50.0)
+						else:
+							ph_x = paired_h.x if "x" in paired_h else 0.0
+							ph_y = paired_h.y if "y" in paired_h else 0.0
+							ph_r = paired_h.radius if "radius" in paired_h else 50.0
+
+						for target in balls:
+							var t_is_alive = target.alive if "alive" in target else false
+							var t_type = target.ball_type if "ball_type" in target else ""
+							var t_id = target.id if "id" in target else null
+
+							if not t_is_alive or t_type == "spectator" or t_id == b_id or t_id == null:
+								continue
+
+							var t_x = target.x if "x" in target else 0.0
+							var t_y = target.y if "y" in target else 0.0
+							var t_r = target.radius if "radius" in target else 15.0
+
+							var t_dist = sqrt(pow(t_x - ph_x, 2) + pow(t_y - ph_y, 2))
+							if t_dist <= ph_r + t_r:
+								if hp_diffs.has(b_id):
+									var damage = hp_diffs[b_id] * 0.5
+									var target_curr_hp = target.hp if "hp" in target else 100.0
+									if target_curr_hp > 0:
+										if typeof(target) != TYPE_DICTIONARY and target.has_method("take_damage"):
+											target.take_damage(damage)
+										else:
+											if typeof(target) == TYPE_DICTIONARY:
+												target["hp"] = target_curr_hp - damage
+												if target["hp"] <= 0:
+													target["hp"] = 0
+													target["alive"] = false
+													if "killer" in b: target["killer"] = b["killer"]
+											else:
+												target.hp = target_curr_hp - damage
+												if target.hp <= 0:
+													target.hp = 0
+													target.alive = false
+													if "killer" in b: target.killer = b.killer
+
+								if eff_diffs.has(b_id):
+									var b_effs = eff_diffs[b_id]
+									for eff in b_effs.keys():
+										var diff = b_effs[eff]
+										var target_val = 0.0
+										if eff in target:
+											target_val = target[eff]
+										elif typeof(target) != TYPE_DICTIONARY and target.has_meta(eff):
+											target_val = target.get_meta(eff)
+
+										if typeof(target) == TYPE_DICTIONARY:
+											target[eff] = target_val + (diff * 0.5)
+										else:
+											if eff in target: target[eff] = target_val + (diff * 0.5)
+											elif target.has_method("set_meta"): target.set_meta(eff, target_val + (diff * 0.5))
+
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var b_id = b.id if "id" in b else null
+			if b_id != null and prev_state.has(b_id):
+				var state = prev_state[b_id]
+				state.hp = b.hp if "hp" in b else 100.0
+				for eff in status_effects:
+					if eff in b:
+						state[eff] = b[eff]
+					elif typeof(b) != TYPE_DICTIONARY and b.has_meta(eff):
+						state[eff] = b.get_meta(eff)
+					else:
+						state[eff] = 0.0

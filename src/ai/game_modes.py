@@ -21805,7 +21805,181 @@ class BounceLaserMode(GameMode):
             laser.speed = 300.0
             world.arena.hazards.append(laser)
 
+class EntangledHazardsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Entangled Hazards"
+        self.description = "A hazard that spawns in pairs across the arena. Any damage or status effect taken by a ball near one hazard is partially duplicated and dealt to any ball standing near its paired hazard."
+        self.prev_state = {}
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+
+    class BallState:
+        def __init__(self, hp):
+            self.hp = hp
+
+    def _init_prev_state(self, b):
+        state = self.BallState(getattr(b, "hp", 100.0))
+        for eff in self.status_effects:
+            setattr(state, eff, getattr(b, eff, 0.0))
+        self.prev_state[b.id] = state
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+
+        self.prev_state = {}
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                self._init_prev_state(b)
+
+        # Try to find a Hazard class we can instantiate
+        class FallbackHazard:
+            def __init__(self, h_id, x, y, radius, kind, damage):
+                self.id = h_id
+                self.x = x
+                self.y = y
+                self.radius = radius
+                self.kind = kind
+                self.damage = damage
+                self.active = True
+                self.duration = -1.0
+                self.owner_id = None
+
+        import sys
+        HazardClass = FallbackHazard
+        if "src.ai.action" in sys.modules and hasattr(sys.modules["src.ai.action"], "Hazard"):
+            HazardClass = sys.modules["src.ai.action"].Hazard
+        elif "ai.action" in sys.modules and hasattr(sys.modules["ai.action"], "Hazard"):
+            HazardClass = sys.modules["ai.action"].Hazard
+        elif "src.arena.procedural_arena" in sys.modules and hasattr(sys.modules["src.arena.procedural_arena"], "Hazard"):
+            HazardClass = sys.modules["src.arena.procedural_arena"].Hazard
+
+        import random
+        width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        # Spawn pairs of hazards
+        num_pairs = 2
+        for _ in range(num_pairs):
+            id1 = "entangled_" + str(random.randint(10000, 99999))
+            id2 = "entangled_" + str(random.randint(10000, 99999))
+
+            h1 = HazardClass(id1, random.uniform(100, width - 100), random.uniform(100, height - 100), 50.0, "entangled_hazard", 0.0)
+            h1.paired_hazard_id = id2
+
+            h2 = HazardClass(id2, random.uniform(100, width - 100), random.uniform(100, height - 100), 50.0, "entangled_hazard", 0.0)
+            h2.paired_hazard_id = id1
+
+            world.arena.hazards.append(h1)
+            world.arena.hazards.append(h2)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        entangled_hazards = [h for h in getattr(getattr(world, "arena", None), "hazards", []) if getattr(h, "kind", "") == "entangled_hazard"]
+        if not entangled_hazards:
+            return
+
+        hp_diffs = {}
+        eff_diffs = {}
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            if getattr(b, "id", None) not in self.prev_state:
+                self._init_prev_state(b)
+
+            state = self.prev_state[b.id]
+
+            curr_hp = getattr(b, "hp", 100.0)
+            if curr_hp < state.hp:
+                hp_diffs[b.id] = state.hp - curr_hp
+
+            eff_diffs[b.id] = {}
+            for eff in self.status_effects:
+                prev_val = getattr(state, eff, 0.0)
+                curr_val = getattr(b, eff, 0.0)
+                if curr_val > prev_val:
+                    eff_diffs[b.id][eff] = curr_val - prev_val
+
+        if hp_diffs or any(eff_diffs.values()):
+            import math
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+
+                if b.id in hp_diffs or b.id in eff_diffs:
+                    # Check if b is in any entangled hazard
+                    b_x = getattr(b, 'x', 0)
+                    b_y = getattr(b, 'y', 0)
+                    active_hazards = []
+
+                    for h in entangled_hazards:
+                        h_x = getattr(h, 'x', 0)
+                        h_y = getattr(h, 'y', 0)
+                        h_r = getattr(h, 'radius', 50.0)
+                        dist = math.hypot(b_x - h_x, b_y - h_y)
+
+                        if dist <= h_r + getattr(b, 'radius', 15.0):
+                            active_hazards.append(h)
+
+                    for h in active_hazards:
+                        paired_id = getattr(h, 'paired_hazard_id', None)
+                        if not paired_id:
+                            continue
+
+                        # Find the paired hazard
+                        paired_h = next((ph for ph in entangled_hazards if getattr(ph, 'id', None) == paired_id), None)
+                        if not paired_h:
+                            continue
+
+                        # Apply 50% effects to balls in the paired hazard
+                        for target in balls:
+                            if not getattr(target, "alive", False) or getattr(target, "ball_type", None) == "spectator" or target.id == b.id:
+                                continue
+
+                            t_x = getattr(target, 'x', 0)
+                            t_y = getattr(target, 'y', 0)
+                            ph_x = getattr(paired_h, 'x', 0)
+                            ph_y = getattr(paired_h, 'y', 0)
+                            ph_r = getattr(paired_h, 'radius', 50.0)
+                            t_dist = math.hypot(t_x - ph_x, t_y - ph_y)
+
+                            if t_dist <= ph_r + getattr(target, 'radius', 15.0):
+                                if b.id in hp_diffs:
+                                    damage = hp_diffs[b.id] * 0.5
+                                    target_curr_hp = getattr(target, "hp", 100.0)
+                                    if target_curr_hp > 0:
+                                        if hasattr(target, "take_damage"):
+                                            target.take_damage(damage)
+                                        else:
+                                            target.hp = target_curr_hp - damage
+                                            if target.hp <= 0:
+                                                target.hp = 0
+                                                target.alive = False
+                                                if hasattr(b, "killer"):
+                                                    target.killer = getattr(b, "killer", None)
+
+                                if b.id in eff_diffs:
+                                    for eff, diff in eff_diffs[b.id].items():
+                                        target_val = getattr(target, eff, 0.0)
+                                        setattr(target, eff, target_val + (diff * 0.5))
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+            if getattr(b, "id", None) in self.prev_state:
+                state = self.prev_state[b.id]
+                state.hp = getattr(b, "hp", 100.0)
+                for eff in self.status_effects:
+                    setattr(state, eff, getattr(b, eff, 0.0))
+
+
 GAME_MODES = {
+    "entangled_hazards": EntangledHazardsMode(),
     'bounce_laser': BounceLaserMode(),
     'dragging_magnetic_mines': DraggingMagneticMinesMode(),
     'position_swap': PositionSwapMode(),
