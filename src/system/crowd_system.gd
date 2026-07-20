@@ -77,6 +77,47 @@ func process_external_command(user: String, command: String, balls: Array):
             world.add_event("crowd_throw", {"message": "Viewer " + user + " spawned a " + hazard_kind + "!"})
             excitement_level += 5.0
 
+    elif cmd == "!weather" and parts.size() >= 2:
+        if excitement_level >= 50.0:
+            var weather_type = parts[1].to_lower()
+            if weather_type == "hot" or weather_type == "heatwave":
+                if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "temperature" in world.arena:
+                    world.arena.temperature = 50.0
+                elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("temperature"):
+                    world.arena["temperature"] = 50.0
+                if world != null and world.has_method("add_event"):
+                    world.add_event("arena_modifier", {"temperature": 50.0})
+                    world.add_event("crowd_cheer", {"message": "Viewer " + user + " made it HOT!"})
+            elif weather_type == "cold" or weather_type == "blizzard" or weather_type == "snow":
+                if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "temperature" in world.arena:
+                    world.arena.temperature = -20.0
+                elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("temperature"):
+                    world.arena["temperature"] = -20.0
+                if world != null and world.has_method("add_event"):
+                    world.add_event("arena_modifier", {"temperature": -20.0})
+                    world.add_event("crowd_cheer", {"message": "Viewer " + user + " made it COLD!"})
+            else:
+                if world != null and world.has_method("add_event"):
+                    var target = null
+                    if not alive_balls.is_empty():
+                        target = alive_balls[randi() % alive_balls.size()]
+                    if target != null:
+                        var t_x = 0.0
+                        var t_y = 0.0
+                        if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+                            t_x = float(target.get("x")) if target.get("x") != null else 0.0
+                            t_y = float(target.get("y")) if target.get("y") != null else 0.0
+                        elif typeof(target) == TYPE_DICTIONARY:
+                            t_x = float(target.get("x", 0.0))
+                            t_y = float(target.get("y", 0.0))
+                        world.add_event("spawn_hazard", {
+                            "x": t_x,
+                            "y": t_y,
+                            "kind": weather_type
+                        })
+                        world.add_event("crowd_cheer", {"message": "Viewer " + user + " summoned a " + weather_type + "!"})
+            excitement_level -= 10.0
+
     elif cmd == "!drop" and parts.size() >= 2:
         var booster_kind = parts[1]
         var target = null

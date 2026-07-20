@@ -296,3 +296,58 @@ def test_global_modifier_vote():
     assert getattr(b1, "crowd_global_speed", False) == False
     assert b1.speed == 100.0
     assert b2.speed == 50.0
+
+def test_crowd_weather_command():
+    from system.crowd_system import CrowdSystem
+
+    class MockArena:
+        def __init__(self):
+            self.temperature = 20.0
+
+    class MockWorld:
+        def __init__(self):
+            self.events = []
+            self.arena = MockArena()
+            self.active_mode = None
+
+        def add_event(self, event_type, data):
+            self.events.append((event_type, data))
+
+    system = CrowdSystem(MockWorld())
+    system.excitement_level = 80  # High hype level
+
+    class MockBall:
+        def __init__(self, id, hp, max_hp, kills, ball_type="player"):
+            self.id = id
+            self.hp = hp
+            self.max_hp = max_hp
+            self.alive = True
+            self.kills = kills
+            self.ball_type = ball_type
+            self.x = 0
+            self.y = 0
+
+    balls = [MockBall(1, 100, 100, 0)]
+
+    # Test valid weather command (spawn hazard)
+    system.queue_external_command("user1", "!weather tornado")
+    system.tick(balls, [], 0)
+
+    assert any(e[0] == "spawn_hazard" and e[1]["kind"] == "tornado" for e in system.world.events)
+
+    # Test valid weather command (change temperature)
+    system.world.events = []
+    system.excitement_level = 80
+    system.queue_external_command("user3", "!weather hot")
+    system.tick(balls, [], 0)
+
+    assert any(e[0] == "arena_modifier" and "temperature" in e[1] for e in system.world.events)
+    assert system.world.arena.temperature == 50.0
+
+    # Test invalid weather command due to low hype
+    system.excitement_level = 20
+    system.world.events = []
+    system.queue_external_command("user2", "!weather blizzard")
+    system.tick(balls, [], 1)
+
+    assert not any(e[0] == "spawn_hazard" and e[1]["kind"] == "blizzard" for e in system.world.events)
