@@ -39536,11 +39536,22 @@ class ToxicFloodRoyaleMode extends GameMode:
 				arena_width = arena.get("width", 1000.0)
 				arena_height = arena.get("height", 1000.0)
 
+		var HazardType = null
+		if load("res://src/arena/procedural_arena.gd"):
+			HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+		elif load("res://src/ai/game_modes.gd"):
+			HazardType = load("res://src/ai/game_modes.gd").Hazard
+
 		for i in range(count):
 			var px = randf_range(200.0, arena_width - 200.0)
 			var py = randf_range(200.0, arena_height - 200.0)
 			var pradius = randf_range(80.0, 150.0)
 			platforms.append({"x": px, "y": py, "radius": pradius})
+
+			if HazardType != null and "arena" in world and "hazards" in world.arena:
+				var h_id = randi() % 5000 + 10000 + world.arena.hazards.size()
+				var new_node = HazardType.new(h_id, px, py, pradius, "elevated_platform", 0.0)
+				world.arena.hazards.append(new_node)
 
 	func tick(world, balls, delta = 0.016):
 		state_timer -= delta
@@ -39567,6 +39578,20 @@ class ToxicFloodRoyaleMode extends GameMode:
 			state = "dry"
 			state_timer = 10.0
 			platforms.clear()
+			if "arena" in world and "hazards" in world.arena:
+				var new_hazards = []
+				for h in world.arena.hazards:
+					if typeof(h) == TYPE_OBJECT and "kind" in h and h.kind != "elevated_platform":
+						new_hazards.append(h)
+					elif typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] != "elevated_platform":
+						new_hazards.append(h)
+					elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind") and h.get_meta("kind") != "elevated_platform":
+						new_hazards.append(h)
+					elif typeof(h) == TYPE_OBJECT and not "kind" in h:
+						new_hazards.append(h)
+					elif typeof(h) == TYPE_DICTIONARY and not h.has("kind"):
+						new_hazards.append(h)
+				world.arena.hazards = new_hazards
 			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("visual_effect", {"type": "toxic_flood_end"})
 
