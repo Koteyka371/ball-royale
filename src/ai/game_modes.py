@@ -22054,6 +22054,55 @@ class ZeroGravityMeteorShowerMode(GameMode):
                                 h.y = arena_height - getattr(h, "radius", 30.0)
                                 h.vy = -abs(h.vy)
 
+
+
+class DynamicWindCurrentsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Wind Currents"
+        self.description = "Dynamic wind currents slowly push balls and projectiles in a specific direction, altering movement and combat dynamics."
+        self.wind_timer = 15.0
+        self.wind_dir_x = 1.0
+        self.wind_dir_y = 0.0
+        self.wind_strength = 150.0
+        import random
+        self.random = random
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import math
+        angle = self.random.uniform(0, 2 * math.pi)
+        self.wind_dir_x = math.cos(angle)
+        self.wind_dir_y = math.sin(angle)
+        self.wind_strength = self.random.uniform(50.0, 150.0)
+        self.wind_timer = 15.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.wind_timer -= delta
+        if self.wind_timer <= 0:
+            self.wind_timer = self.random.uniform(10.0, 20.0)
+            import math
+            angle = self.random.uniform(0, 2 * math.pi)
+            self.wind_dir_x = math.cos(angle)
+            self.wind_dir_y = math.sin(angle)
+            self.wind_strength = self.random.uniform(50.0, 150.0)
+            if hasattr(world, 'add_event'):
+                world.add_event('weather_warning', {'type': 'weather_warning', 'message': 'The wind direction is changing!'})
+
+        all_entities = balls[:]
+        if hasattr(world, 'projectiles'):
+            all_entities.extend(world.projectiles)
+
+        for b in all_entities:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if not hasattr(b, "vx"):
+                    b.vx = 0.0
+                if not hasattr(b, "vy"):
+                    b.vy = 0.0
+                b.vx += self.wind_dir_x * self.wind_strength * delta
+                b.vy += self.wind_dir_y * self.wind_strength * delta
+
 GAME_MODES = {
     'zero_gravity_meteor_shower': ZeroGravityMeteorShowerMode(),
     'charged': ChargedMode(),
@@ -22125,6 +22174,7 @@ GAME_MODES = {
 
     "blackout": BlackoutMode(),
     "windstorm": WindstormMode(),
+    "dynamic_wind_currents": DynamicWindCurrentsMode(),
     "modifier_zones": ModifierZonesMode(),
     "modifier_safe_zone": ModifierSafeZoneMode(),
     "modifier_zones_safe_zone": ModifierZonesSafeZoneMode(),
