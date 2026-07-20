@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1226] Weather specific events — *2026-07-20 21:56:13 UTC*
+
+Have specific small weather events, like small rain, slight breeze, rather than just extreme weather. Have specific balls that benefit from certain weather, like a sandstorm element giving speed boost, or wind element being blown away by hurricane.
+
+---
+
 ## [idea-1215] Echo Strike Ability — *2026-07-20 21:38:11 UTC*
 
 A new active skill where the ball leaves behind a ghostly echo at its current position. Upon taking lethal damage or pressing the ability again, the ball teleports back to the echo, unleashing a shockwave based on the damage it took since placing the echo.
