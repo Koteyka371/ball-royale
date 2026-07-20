@@ -25,6 +25,8 @@ class CrowdSystem:
         self.last_chant_team = None
         self.has_real_spectators = False
         self.viewer_loyalty = {}
+        self.corruptibility_level = 1.0  # Multiplier for bribe cost
+        self.corruptibility_timer = 0
         self.user_votes = {}
 
     def _add_viewer_loyalty(self, user: str, points: int):
@@ -208,13 +210,14 @@ class CrowdSystem:
             return False
 
         currency_type = "skill_points"
-        currency_cost = 50
+        currency_cost = int(50 * self.corruptibility_level)
 
-        if pm.data.get("skill_points", 0) >= 50:
-            pm.data["skill_points"] -= 50
-        elif pm.data.get("prestige_tokens", 0) >= 1:
-            pm.data["prestige_tokens"] -= 1
-            currency_cost = 1
+        if pm.data.get("skill_points", 0) >= currency_cost:
+            pm.data["skill_points"] -= currency_cost
+        elif pm.data.get("prestige_tokens", 0) >= max(1, int(1 * self.corruptibility_level)):
+            cost_pt = max(1, int(1 * self.corruptibility_level))
+            pm.data["prestige_tokens"] -= cost_pt
+            currency_cost = cost_pt
             currency_type = "prestige_tokens"
         else:
             return False
@@ -233,9 +236,9 @@ class CrowdSystem:
             return True
 
         if currency_type == "skill_points":
-            pm.data["skill_points"] += 50
+            pm.data["skill_points"] += currency_cost
         else:
-            pm.data["prestige_tokens"] += 1
+            pm.data["prestige_tokens"] += currency_cost
         return False
 
     def _process_external_commands(self, balls: 'List[Any]'):

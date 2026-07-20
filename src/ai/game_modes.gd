@@ -43661,6 +43661,49 @@ class ZeroGravityMeteorShowerMode extends GameMode:
 
 GAME_MODES["zero_gravity_meteor_shower"] = ZeroGravityMeteorShowerMode.new()
 
+class CorruptCrowdEventMode extends GameMode:
+	var event_timer: int = 1800
+	var fluctuation_timer: int = 180
+	var started: bool = false
+
+	func _init():
+		super._init()
+		name = "Corrupt Crowd Event"
+		description = "The crowd is highly volatile! Bribe costs fluctuate wildly."
+
+	func tick(world, balls, delta):
+		if not started:
+			if world != null and world.has_method("add_event"):
+				world.add_event("crowd_cheer", {"message": "A wave of corruption hits the crowd! Bribes are fluctuating!"})
+			started = true
+
+			if world != null and "crowd_system" in world and world.crowd_system != null:
+				world.crowd_system.corruptibility_level = 1.0
+
+		event_timer -= 1
+		fluctuation_timer -= 1
+
+		if fluctuation_timer <= 0:
+			fluctuation_timer = 180
+
+			if world != null and "crowd_system" in world and world.crowd_system != null:
+				world.crowd_system.corruptibility_level = randf_range(0.1, 2.5)
+
+				var status = "CHEAP"
+				if world.crowd_system.corruptibility_level >= 1.0:
+					status = "EXPENSIVE"
+				if world != null and world.has_method("add_event"):
+					world.add_event("crowd_cheer", {"message": "Bribes are now " + status + "! (x" + str(snapped(world.crowd_system.corruptibility_level, 0.1)) + ")"})
+
+		if event_timer <= 0:
+			if world != null and "crowd_system" in world and world.crowd_system != null:
+				world.crowd_system.corruptibility_level = 1.0
+				if world != null and world.has_method("add_event"):
+					world.add_event("crowd_cheer", {"message": "The crowd corruption has ended. Bribe costs are back to normal."})
+			completed = true
+
+GAME_MODES["corrupt_crowd_event"] = CorruptCrowdEventMode.new()
+
 class CursedBoosterMode extends GameMode:
 	func _init():
 		super._init()

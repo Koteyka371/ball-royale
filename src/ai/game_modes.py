@@ -22220,7 +22220,55 @@ class VoidTilesMode(GameMode):
                     b.y = past_state[2]
 
 
+
+class CorruptCrowdEventMode(GameMode):
+    """
+    A periodic event where the crowd's corruptibility fluctuates,
+    making bribes significantly cheaper or more expensive.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Corrupt Crowd Event"
+        self.description = "The crowd is highly volatile! Bribe costs fluctuate wildly."
+        self.event_timer = 1800  # 30 seconds at 60 FPS
+        self.fluctuation_timer = 180
+        self.started = False
+
+    def tick(self, world, balls, delta):
+        if not self.started:
+            if hasattr(world, "add_event"):
+                world.add_event("crowd_cheer", {"message": "A wave of corruption hits the crowd! Bribes are fluctuating!"})
+            self.started = True
+
+            # Ensure the crowd system has the corruptibility attributes
+            if hasattr(world, "crowd_system"):
+                world.crowd_system.corruptibility_level = 1.0
+
+        self.event_timer -= 1
+        self.fluctuation_timer -= 1
+
+        if self.fluctuation_timer <= 0:
+            self.fluctuation_timer = 180  # Fluctuate every 3 seconds
+
+            if hasattr(world, "crowd_system"):
+                import random
+                # Range from 0.1 (extremely cheap) to 2.5 (very expensive)
+                world.crowd_system.corruptibility_level = random.uniform(0.1, 2.5)
+
+                status = "CHEAP" if world.crowd_system.corruptibility_level < 1.0 else "EXPENSIVE"
+                if hasattr(world, "add_event"):
+                    world.add_event("crowd_cheer", {"message": f"Bribes are now {status}! (x{world.crowd_system.corruptibility_level:.1f})"})
+
+        if self.event_timer <= 0:
+            if hasattr(world, "crowd_system"):
+                world.crowd_system.corruptibility_level = 1.0
+                if hasattr(world, "add_event"):
+                    world.add_event("crowd_cheer", {"message": "The crowd corruption has ended. Bribe costs are back to normal."})
+            self.completed = True
+
+
 GAME_MODES = {
+    "corrupt_crowd_event": CorruptCrowdEventMode,
     "void_tiles": VoidTilesMode(),
     "cursed_boosters": CursedBoosterMode(),
     'zero_gravity_meteor_shower': ZeroGravityMeteorShowerMode(),

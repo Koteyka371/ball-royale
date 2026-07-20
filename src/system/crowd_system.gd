@@ -21,6 +21,7 @@ var external_commands = []
 var has_real_spectators = false
 var viewer_loyalty = {}
 var user_votes = {}
+var corruptibility_level: float = 1.0
 
 func _init(p_world):
     world = p_world
@@ -310,16 +311,17 @@ func player_bribe_vote(player_id: String, action: String, option: String = "") -
         return false
 
     var currency_type = "skill_points"
-    var currency_cost = 50
+    var currency_cost = int(50 * corruptibility_level)
 
     var current_sp = pm_data.get("skill_points", 0)
     var current_pt = pm_data.get("prestige_tokens", 0)
 
-    if current_sp >= 50:
-        pm_data["skill_points"] = current_sp - 50
-    elif current_pt >= 1:
-        pm_data["prestige_tokens"] = current_pt - 1
-        currency_cost = 1
+    if current_sp >= currency_cost:
+        pm_data["skill_points"] = current_sp - currency_cost
+    elif current_pt >= max(1, int(1 * corruptibility_level)):
+        var cost_pt = max(1, int(1 * corruptibility_level))
+        pm_data["prestige_tokens"] = current_pt - cost_pt
+        currency_cost = cost_pt
         currency_type = "prestige_tokens"
     else:
         return false
@@ -338,9 +340,9 @@ func player_bribe_vote(player_id: String, action: String, option: String = "") -
         return true
 
     if currency_type == "skill_points":
-        pm_data["skill_points"] = pm_data.get("skill_points", 0) + 50
+        pm_data["skill_points"] = pm_data.get("skill_points", 0) + currency_cost
     else:
-        pm_data["prestige_tokens"] = pm_data.get("prestige_tokens", 0) + 1
+        pm_data["prestige_tokens"] = pm_data.get("prestige_tokens", 0) + currency_cost
     return false
 
 func _process_external_commands(balls: Array):
