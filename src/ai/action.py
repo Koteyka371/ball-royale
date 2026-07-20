@@ -14518,71 +14518,101 @@ class Action:
                 # Keep track of enemies alive before dash using object ids or id()
                 enemies_before = {id(e): getattr(e, "hp", 1.0) for e in enemies}
 
-                dir_x = 0.0
-                dir_y = 0.0
-                teleport_x = self.ball.x
-                teleport_y = self.ball.y
+                my_radius = getattr(self.ball, "radius", 10.0)
+                killed_enemy = False
+                damage_multiplier = 2.0
+                jumps = 0
+                max_jumps = 3
+                jump_radius = 200.0 # Small radius for clustering
 
-                if enemies:
-                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
-                    dx = target.x - self.ball.x
-                    dy = target.y - self.ball.y
-                    dist = math.sqrt(dx*dx + dy*dy)
-                    if dist > 0.0001:
-                        dir_x = dx / dist
-                        dir_y = dy / dist
-                        teleport_x = target.x
-                        teleport_y = target.y
+                visited_enemies = set()
+
+                while jumps < max_jumps:
+                    dir_x = 0.0
+                    dir_y = 0.0
+                    teleport_x = self.ball.x
+                    teleport_y = self.ball.y
+
+                    # Filter enemies to alive ones that haven't been targeted yet
+                    alive_enemies = [e for e in enemies if getattr(e, "hp", 1.0) > 0 and id(e) not in visited_enemies]
+                    target = None
+
+                    if alive_enemies:
+                        if jumps == 0:
+                            target = min(alive_enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        else:
+                            # For subsequent jumps, target must be within cluster radius
+                            close_enemies = [e for e in alive_enemies if (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2 <= jump_radius**2]
+                            if close_enemies:
+                                target = min(close_enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+
+                    if target:
+                        visited_enemies.add(id(target))
+                        dx = target.x - self.ball.x
+                        dy = target.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            dir_x = dx / dist
+                            dir_y = dy / dist
+                            teleport_x = target.x
+                            teleport_y = target.y
+                        else:
+                            angle = random.uniform(0, 2 * math.pi)
+                            dir_x = math.cos(angle)
+                            dir_y = math.sin(angle)
+                            teleport_x = self.ball.x + dir_x * dash_dist
+                            teleport_y = self.ball.y + dir_y * dash_dist
                     else:
+                        if jumps > 0:
+                            break # No valid targets within cluster radius for subsequent jumps
+
                         angle = random.uniform(0, 2 * math.pi)
                         dir_x = math.cos(angle)
                         dir_y = math.sin(angle)
                         teleport_x = self.ball.x + dir_x * dash_dist
                         teleport_y = self.ball.y + dir_y * dash_dist
-                else:
-                    angle = random.uniform(0, 2 * math.pi)
-                    dir_x = math.cos(angle)
-                    dir_y = math.sin(angle)
-                    teleport_x = self.ball.x + dir_x * dash_dist
-                    teleport_y = self.ball.y + dir_y * dash_dist
 
-                my_radius = getattr(self.ball, "radius", 10.0)
+                    # Teleport instantly
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                        res = self.world.arena.clamp_position(teleport_x, teleport_y, my_radius)
+                        if isinstance(res, (list, tuple)):
+                            teleport_x, teleport_y = res[0], res[1]
 
-                # Teleport instantly
-                if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
-                    res = self.world.arena.clamp_position(teleport_x, teleport_y, my_radius)
-                    if isinstance(res, (list, tuple)):
-                        teleport_x, teleport_y = res[0], res[1]
+                    self.ball.x = teleport_x
+                    self.ball.y = teleport_y
 
-                self.ball.x = teleport_x
-                self.ball.y = teleport_y
+                    # Deal damage to enemies we pass through or land on
+                    for enemy in self._get_enemies():
+                        if getattr(enemy, "hp", 1.0) <= 0:
+                            continue
+                        if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 < (getattr(self.ball, "radius", 10.0) + getattr(enemy, "radius", 10.0) + 20)**2:
+                            dmg = getattr(self.ball, "damage", 10.0) * damage_multiplier
+                            if hasattr(enemy, "take_damage"):
+                                enemy.take_damage(dmg)
+                            elif hasattr(enemy, "hp"):
+                                enemy.hp -= dmg
 
-                # Deal damage to enemies we pass through or land on
-                killed_enemy = False
-                for enemy in self._get_enemies():
-                    if (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2 < (getattr(self.ball, "radius", 10.0) + getattr(enemy, "radius", 10.0) + 20)**2:
-                        dmg = getattr(self.ball, "damage", 10.0) * 2.0
-                        if hasattr(enemy, "take_damage"):
-                            enemy.take_damage(dmg)
-                        elif hasattr(enemy, "hp"):
-                            enemy.hp -= dmg
+                            # Check if enemy died
+                            if getattr(enemy, "hp", 1.0) <= 0 and enemies_before.get(id(enemy), 1.0) > 0:
+                                killed_enemy = True
 
-                        # Check if enemy died
-                        if getattr(enemy, "hp", 1.0) <= 0 and enemies_before.get(id(enemy), 1.0) > 0:
-                            killed_enemy = True
+                            kb_dx = enemy.x - self.ball.x
+                            kb_dy = enemy.y - self.ball.y
+                            kb_dist = math.sqrt(kb_dx*kb_dx + kb_dy*kb_dy)
+                            if kb_dist > 0.0001:
+                                kb_force = 50.0
+                                enemy.x += (kb_dx / kb_dist) * kb_force
+                                enemy.y += (kb_dy / kb_dist) * kb_force
 
-                        kb_dx = enemy.x - self.ball.x
-                        kb_dy = enemy.y - self.ball.y
-                        kb_dist = math.sqrt(kb_dx*kb_dx + kb_dy*kb_dy)
-                        if kb_dist > 0.0001:
-                            kb_force = 50.0
-                            enemy.x += (kb_dx / kb_dist) * kb_force
-                            enemy.y += (kb_dy / kb_dist) * kb_force
+                    jumps += 1
+                    damage_multiplier *= 0.7 # Deal less damage on subsequent jumps
+                    if jumps > 1:
+                        # Refreshes a minor stamina burst
+                        self.ball.stamina_speed_burst_timer = getattr(self.ball, "stamina_speed_burst_timer", 0.0) + 0.5
 
                 # Reset cooldown if an enemy was killed during the dash
                 if killed_enemy:
                     self.ball.skill_timer = 0.0
-
 
             elif skill_name == "lightning_strike":
                 enemies = self._get_enemies()

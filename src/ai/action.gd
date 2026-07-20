@@ -27702,97 +27702,153 @@ func _use_skill():
                 elif e.has_method("has_meta") and e.has_meta("hp"):
                     enemies_before[e] = e.get_meta("hp")
 
-            if enemies.size() > 0:
-                var target = null
-                var min_dist_sq = INF
-                for e in enemies:
-                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                    if dist_sq < min_dist_sq:
-                        min_dist_sq = dist_sq
-                        target = e
-                var dx = target.x - self.ball.x
-                var dy = target.y - self.ball.y
-                var dist = sqrt(min_dist_sq)
-                if dist > 0.0001:
-                    dir_x = dx / dist
-                    dir_y = dy / dist
-                    teleport_x = target.x
-                    teleport_y = target.y
-                else:
-                    var angle = randf() * PI * 2.0
-                    dir_x = cos(angle)
-                    dir_y = sin(angle)
-                    teleport_x = self.ball.x + dir_x * dash_dist
-                    teleport_y = self.ball.y + dir_y * dash_dist
-            else:
-                var angle = randf() * PI * 2.0
-                dir_x = cos(angle)
-                dir_y = sin(angle)
-                teleport_x = self.ball.x + dir_x * dash_dist
-                teleport_y = self.ball.y + dir_y * dash_dist
-
             var dash_radius = 10.0
             if "radius" in self.ball:
                 dash_radius = self.ball.radius
             elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"):
                 dash_radius = self.ball.get_meta("radius")
 
-            if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and self.world.arena.has_method("clamp_position"):
-                var result = self.world.arena.clamp_position(teleport_x, teleport_y, dash_radius)
-                teleport_x = result[0]
-                teleport_y = result[1]
-
-            self.ball.x = teleport_x
-            self.ball.y = teleport_y
-
             var killed_enemy = false
-            for e in _get_enemies():
-                var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
-                var skill_radius = 10.0
-                if "radius" in self.ball: skill_radius = self.ball.radius
-                elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"): skill_radius = self.ball.get_meta("radius")
-                var e_radius = 10.0
-                if "radius" in e: e_radius = e.radius
-                elif e.has_method("has_meta") and e.has_meta("radius"): e_radius = e.get_meta("radius")
+            var damage_multiplier = 2.0
+            var jumps = 0
+            var max_jumps = 3
+            var jump_radius = 200.0
 
-                if dist_sq < pow(skill_radius + e_radius + 20.0, 2):
-                    var dmg = 20.0
-                    if "damage" in self.ball: dmg = self.ball.damage * 2.0
-                    elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"): dmg = self.ball.get_meta("damage") * 2.0
+            var visited_enemies = []
 
-                    if e.has_method("take_damage"):
-                        e.take_damage(dmg)
+            while jumps < max_jumps:
+                var alive_enemies = []
+                for e in enemies:
+                    var e_hp = 1.0
+                    if "hp" in e: e_hp = e.hp
+                    elif e.has_method("has_meta") and e.has_meta("hp"): e_hp = e.get_meta("hp")
+                    if e_hp > 0 and not visited_enemies.has(e):
+                        alive_enemies.append(e)
+
+                var target = null
+                var min_dist_sq = INF
+
+                if alive_enemies.size() > 0:
+                    if jumps == 0:
+                        for e in alive_enemies:
+                            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                            if dist_sq < min_dist_sq:
+                                min_dist_sq = dist_sq
+                                target = e
                     else:
-                        var e_hp = 1.0
-                        if "hp" in e: e_hp = e.hp
-                        elif e.has_method("has_meta") and e.has_meta("hp"): e_hp = e.get_meta("hp")
+                        for e in alive_enemies:
+                            var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                            if dist_sq <= jump_radius * jump_radius:
+                                if dist_sq < min_dist_sq:
+                                    min_dist_sq = dist_sq
+                                    target = e
 
-                        var new_hp = e_hp - dmg
-                        if "hp" in e:
-                            e.hp = new_hp
-                        elif e.has_method("set_meta"):
-                            e.set_meta("hp", new_hp)
+                dir_x = 0.0
+                dir_y = 0.0
+                teleport_x = self.ball.x
+                teleport_y = self.ball.y
 
-                    var check_hp = 1.0
-                    if "hp" in e: check_hp = e.hp
-                    elif e.has_method("has_meta") and e.has_meta("hp"): check_hp = e.get_meta("hp")
-                    if check_hp <= 0 and enemies_before.has(e) and enemies_before[e] > 0:
-                        killed_enemy = true
+                if target != null:
+                    visited_enemies.append(target)
+                    var dx = target.x - self.ball.x
+                    var dy = target.y - self.ball.y
+                    var dist = sqrt(min_dist_sq)
+                    if dist > 0.0001:
+                        dir_x = dx / dist
+                        dir_y = dy / dist
+                        teleport_x = target.x
+                        teleport_y = target.y
+                    else:
+                        var angle = randf() * PI * 2.0
+                        dir_x = cos(angle)
+                        dir_y = sin(angle)
+                        teleport_x = self.ball.x + dir_x * dash_dist
+                        teleport_y = self.ball.y + dir_y * dash_dist
+                else:
+                    if jumps > 0:
+                        break
 
-                    var kb_dx = e.x - self.ball.x
-                    var kb_dy = e.y - self.ball.y
-                    var kb_dist = sqrt(pow(kb_dx, 2) + pow(kb_dy, 2))
-                    if kb_dist > 0.0001:
-                        var kb_force = 50.0
-                        e.x += (kb_dx / kb_dist) * kb_force
-                        e.y += (kb_dy / kb_dist) * kb_force
+                    var angle = randf() * PI * 2.0
+                    dir_x = cos(angle)
+                    dir_y = sin(angle)
+                    teleport_x = self.ball.x + dir_x * dash_dist
+                    teleport_y = self.ball.y + dir_y * dash_dist
+
+                if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and self.world.arena.has_method("clamp_position"):
+                    var result = self.world.arena.clamp_position(teleport_x, teleport_y, dash_radius)
+                    teleport_x = result[0]
+                    teleport_y = result[1]
+
+                self.ball.x = teleport_x
+                self.ball.y = teleport_y
+
+                for e in _get_enemies():
+                    var check_hp_e = 1.0
+                    if "hp" in e: check_hp_e = e.hp
+                    elif e.has_method("has_meta") and e.has_meta("hp"): check_hp_e = e.get_meta("hp")
+
+                    if check_hp_e <= 0:
+                        continue
+
+                    var dist_sq = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    var skill_radius = 10.0
+                    if "radius" in self.ball: skill_radius = self.ball.radius
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"): skill_radius = self.ball.get_meta("radius")
+                    var e_radius = 10.0
+                    if "radius" in e: e_radius = e.radius
+                    elif e.has_method("has_meta") and e.has_meta("radius"): e_radius = e.get_meta("radius")
+
+                    if dist_sq < pow(skill_radius + e_radius + 20.0, 2):
+                        var dmg = 10.0 * damage_multiplier
+                        if "damage" in self.ball: dmg = self.ball.damage * damage_multiplier
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("damage"): dmg = self.ball.get_meta("damage") * damage_multiplier
+
+                        if e.has_method("take_damage"):
+                            e.take_damage(dmg)
+                        else:
+                            var e_hp = 1.0
+                            if "hp" in e: e_hp = e.hp
+                            elif e.has_method("has_meta") and e.has_meta("hp"): e_hp = e.get_meta("hp")
+
+                            var new_hp = e_hp - dmg
+                            if "hp" in e:
+                                e.hp = new_hp
+                            elif e.has_method("set_meta"):
+                                e.set_meta("hp", new_hp)
+
+                        var check_hp = 1.0
+                        if "hp" in e: check_hp = e.hp
+                        elif e.has_method("has_meta") and e.has_meta("hp"): check_hp = e.get_meta("hp")
+                        if check_hp <= 0 and enemies_before.has(e) and enemies_before[e] > 0:
+                            killed_enemy = true
+
+                        var kb_dx = e.x - self.ball.x
+                        var kb_dy = e.y - self.ball.y
+                        var kb_dist = sqrt(pow(kb_dx, 2) + pow(kb_dy, 2))
+                        if kb_dist > 0.0001:
+                            var kb_force = 50.0
+                            e.x += (kb_dx / kb_dist) * kb_force
+                            e.y += (kb_dy / kb_dist) * kb_force
+
+                jumps += 1
+                damage_multiplier *= 0.7
+                if jumps > 1:
+                    var burst = 0.0
+                    if self.ball.has_method("has_meta") and self.ball.has_meta("stamina_speed_burst_timer"):
+                        burst = self.ball.get_meta("stamina_speed_burst_timer")
+                    elif "stamina_speed_burst_timer" in self.ball:
+                        burst = self.ball.stamina_speed_burst_timer
+
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("stamina_speed_burst_timer", burst + 0.5)
+                    else:
+                        self.ball.stamina_speed_burst_timer = burst + 0.5
 
             if killed_enemy:
-                if "skill_timer" in self.ball:
-                    self.ball.skill_timer = 0.0
-                elif self.ball.has_method("set_meta"):
+                if self.ball.has_method("set_meta"):
                     self.ball.set_meta("skill_timer", 0.0)
-
+                else:
+                    self.ball.skill_timer = 0.0
 
         elif skill_name == "lightning_strike":
             var enemies = _get_enemies()
