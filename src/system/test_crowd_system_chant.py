@@ -35,10 +35,7 @@ def test_adrenaline_buff():
     assert system.last_chant_team == "Red"
     tempo_events = [e for e in world.events if e[0] == "audio_event" and e[1].get("sound") == "bgm_tempo_up"]
     assert len(tempo_events) == 1
-    tempo_events = [e for e in world.events if e[0] == "audio_event" and e[1].get("sound") == "bgm_tempo_up"]
-    assert len(tempo_events) == 1
-    tempo_events = [e for e in world.events if e[0] == "audio_event" and e[1].get("sound") == "bgm_tempo_up"]
-    assert len(tempo_events) == 1
+    assert tempo_events[-1][1].get("speed_multiplier") == 1.1
 
     for t in range(201, 401):
         system.excitement_level = 100.0
@@ -46,6 +43,9 @@ def test_adrenaline_buff():
 
     assert system.consecutive_chants == 2
     assert system.last_chant_team == "Red"
+    tempo_events = [e for e in world.events if e[0] == "audio_event" and e[1].get("sound") == "bgm_tempo_up"]
+    assert len(tempo_events) == 2
+    assert tempo_events[-1][1].get("speed_multiplier") == 1.2
 
     assert not any(e[0] == "spawn_booster" and e[1].get("value") == 50.0 for e in world.events)
 
@@ -54,6 +54,9 @@ def test_adrenaline_buff():
         system._check_events(balls, [{'tick': t-1, 'killer_id': 1, 'victim_id': 3}], t)
 
     assert system.consecutive_chants == 3
+    tempo_events = [e for e in world.events if e[0] == "audio_event" and e[1].get("sound") == "bgm_tempo_up"]
+    assert len(tempo_events) == 3
+    assert tempo_events[-1][1].get("speed_multiplier") == 1.3
 
     booster_events = [e for e in world.events if e[0] == "spawn_booster" and e[1].get("value") == 50.0]
     visual_events_streak = [e for e in world.events if e[0] == "visual_effect" and e[1].get("type") == "chant_streak"]

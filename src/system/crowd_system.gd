@@ -562,7 +562,6 @@ func _check_events(balls: Array, kill_log: Array, current_tick: int):
             if max_count >= 2 and world != null and world.has_method("add_event"):
                 world.add_event("crowd_cheer", {"message": "Let's go Team %s! Let's go!" % leading_team, "volume": 1.0})
                 world.add_event("audio_event", {"sound": "team_chant", "volume": 0.8})
-                world.add_event("audio_event", {"sound": "bgm_tempo_up", "volume": 1.0})
 
                 if not _has_meta_safe("last_chant_team"):
                     set_meta("last_chant_team", leading_team)
@@ -574,6 +573,8 @@ func _check_events(balls: Array, kill_log: Array, current_tick: int):
                         world.add_event("audio_event", {"sound": "bgm_tempo_reset", "volume": 1.0})
                     set_meta("last_chant_team", leading_team)
                     set_meta("consecutive_chants", 1)
+
+                world.add_event("audio_event", {"sound": "bgm_tempo_up", "volume": 1.0, "speed_multiplier": 1.0 + (get_meta("consecutive_chants") * 0.1)})
 
                 if get_meta("consecutive_chants") >= 3:
                     world.add_event("crowd_cheer", {"message": "Team %s is fueled by the crowd's energy! Adrenaline buff applied!" % leading_team, "volume": 1.2})
