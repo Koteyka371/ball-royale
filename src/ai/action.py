@@ -1332,6 +1332,19 @@ class Action:
                     self.ball.phase_booster_timer = max(getattr(self.ball, 'phase_booster_timer', 0.0), 0.5)
                     self.ball.hazard_immunity_timer = max(getattr(self.ball, 'hazard_immunity_timer', 0.0), 0.5)
 
+        if getattr(self.ball, "trap_disarm_timer", 0.0) > 0:
+            self.ball.trap_disarm_timer -= delta
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for hazard in list(self.world.arena.hazards):
+                    if getattr(hazard, "kind", "") == "trap":
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        # 300 radius reveal = 90000 dist sq
+                        if dist_sq < 90000:
+                            if hasattr(hazard, "active"):
+                                hazard.active = True
+                            if hasattr(hazard, "duration") and dist_sq < getattr(hazard, "radius", 20.0)**2:
+                                hazard.duration = 0.0
+
         flare_timer = getattr(self.world, 'flare_light_timer', 0.0)
         if isinstance(flare_timer, (int, float)) and flare_timer > 0.0:
             # We decrement based on number of active balls so the total drain matches delta roughly
@@ -11991,6 +12004,13 @@ class Action:
                     self.ball.crystal_armor_charges = 3
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "trap_disarm_kit":
+                    self.ball.trap_disarm_timer = 5.0
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "death_defy_booster":
                     self.ball.death_defy_active = True
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:

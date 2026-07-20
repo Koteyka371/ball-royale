@@ -2387,6 +2387,56 @@ func execute(strategy: String, delta: float):
                         elif typeof(self.ball) == TYPE_DICTIONARY:
                             self.ball["hazard_immunity_timer"] = new_hz_timer
 
+        var trap_disarm_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and "trap_disarm_timer" in self.ball: trap_disarm_timer = self.ball.trap_disarm_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("trap_disarm_timer"): trap_disarm_timer = self.ball.get_meta("trap_disarm_timer")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("trap_disarm_timer"): trap_disarm_timer = self.ball["trap_disarm_timer"]
+
+        if trap_disarm_timer > 0.0:
+            trap_disarm_timer -= delta
+            if typeof(self.ball) == TYPE_OBJECT and "trap_disarm_timer" in self.ball: self.ball.trap_disarm_timer = trap_disarm_timer
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("trap_disarm_timer", trap_disarm_timer)
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["trap_disarm_timer"] = trap_disarm_timer
+
+            if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                for h in self.world.arena.hazards:
+                    var is_trap = false
+                    if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "trap": is_trap = true
+                    elif typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "trap": is_trap = true
+
+                    if is_trap:
+                        var hx = 0.0
+                        var hy = 0.0
+                        var hr = 20.0
+                        if typeof(h) == TYPE_DICTIONARY:
+                            if h.has("x"): hx = h["x"]
+                            if h.has("y"): hy = h["y"]
+                            if h.has("radius"): hr = h["radius"]
+                        else:
+                            if "x" in h: hx = h.x
+                            if "y" in h: hy = h.y
+                            if "radius" in h: hr = h.radius
+
+                        var bx = 0.0
+                        var by = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            if self.ball.has("x"): bx = self.ball["x"]
+                            if self.ball.has("y"): by = self.ball["y"]
+                        else:
+                            if "x" in self.ball: bx = self.ball.x
+                            if "y" in self.ball: by = self.ball.y
+
+                        var dist_sq = pow(hx - bx, 2) + pow(hy - by, 2)
+                        if dist_sq < 90000:
+                            if typeof(h) == TYPE_DICTIONARY:
+                                h["active"] = true
+                                if dist_sq < hr * hr:
+                                    h["duration"] = 0.0
+                            else:
+                                if "active" in h: h.active = true
+                                if "duration" in h and dist_sq < hr * hr:
+                                    h.duration = 0.0
+
         var flare_timer = 0.0
         if "flare_light_timer" in self.world:
             flare_timer = self.world.flare_light_timer
@@ -22880,6 +22930,23 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
                 if self.world != null and "boosters" in self.world and self.world.boosters != null:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "trap_disarm_kit":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["trap_disarm_timer"] = 5.0
+                else:
+                    if "trap_disarm_timer" in self.ball:
+                        self.ball.trap_disarm_timer = 5.0
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("trap_disarm_timer", 5.0)
+
+                if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
