@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1104] Wall Ricochet Combos — *2026-07-20 05:04:13 UTC*
+
+After a ball is pulled into a wall by the reverse gravity booster (or just hits a wall at high speeds), the ball should get a 'combo window'. Hitting an enemy immediately after bouncing off the wall gives double damage or increased knockback, encouraging skilled placement near walls.
+
+---
+
 ## [idea-1187] Payload Boost Zones — *2026-07-20 04:25:34 UTC*
 
 The payload leaves a temporary speed boost trail or creates an aura that increases the movement speed of any nearby teammates, allowing the controlling team to better maneuver around the payload and defend it.

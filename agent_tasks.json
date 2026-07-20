@@ -18937,7 +18937,7 @@
     },
     {
       "id": "idea-1104",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wall Ricochet Combos",
@@ -31245,6 +31245,40 @@
         "src/arena/payload_tug_of_war_map_hazards.py",
         "src/arena/payload_tug_of_war_map_hazards.gd",
         "tests/test_payload_tug_of_war_map_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1827",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Payload",
+      "description": "Payload emits a pulse that disables enemy buffs within radius.",
+      "allowed_paths": [
+        "src/ai/emp_payload.py",
+        "src/ai/emp_payload.gd",
+        "tests/test_emp_payload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1828",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Booster Pad",
+      "description": "Escorting a payload deploys temporary speed boost pads for teammates.",
+      "allowed_paths": [
+        "src/ai/payload_booster_pad.py",
+        "src/ai/payload_booster_pad.gd",
+        "tests/test_payload_booster_pad.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
