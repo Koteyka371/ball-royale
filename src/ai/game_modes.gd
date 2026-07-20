@@ -43315,11 +43315,16 @@ class DraggingMagneticMinesMode extends GameMode:
 						var dx = b.x - m["x"]
 						var dy = b.y - m["y"]
 						var dist = sqrt(dx * dx + dy * dy)
-						if dist <= m["explosion_radius"]:
-							if b.has_method("take_damage"):
-								b.take_damage(m["explosion_damage"])
-							elif "hp" in b:
-								b.hp -= m["explosion_damage"]
+						if dist <= m["explosion_radius"] and dist > 0:
+							b.x = m["x"] + (dx / dist) * 10.0
+							b.y = m["y"] + (dy / dist) * 10.0
+							var shockwave_force = 1500.0
+							if "vx" in b and "vy" in b:
+								b.vx += (dx / dist) * shockwave_force
+								b.vy += (dy / dist) * shockwave_force
+							elif b.has_method("set_meta"):
+								b.set_meta("vx", b.get_meta("vx", 0.0) + (dx / dist) * shockwave_force)
+								b.set_meta("vy", b.get_meta("vy", 0.0) + (dy / dist) * shockwave_force)
 					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("massive_shockwave", {"x": m["x"], "y": m["y"], "radius": m["explosion_radius"]})
 				else:

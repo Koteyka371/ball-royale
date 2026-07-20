@@ -21884,11 +21884,14 @@ class DraggingMagneticMinesMode(GameMode):
                         dx = b.x - m["x"]
                         dy = b.y - m["y"]
                         dist = math.hypot(dx, dy)
-                        if dist <= m["explosion_radius"]:
-                            if hasattr(b, "take_damage"):
-                                b.take_damage(m["explosion_damage"])
-                            elif hasattr(b, "hp"):
-                                b.hp -= m["explosion_damage"]
+                        if dist <= m["explosion_radius"] and dist > 0:
+                            # Instead of direct damage, pull to center and apply a massive outward shockwave
+                            b.x = m["x"] + (dx / dist) * 10.0
+                            b.y = m["y"] + (dy / dist) * 10.0
+
+                            shockwave_force = 1500.0
+                            b.vx = getattr(b, "vx", 0.0) + (dx / dist) * shockwave_force
+                            b.vy = getattr(b, "vy", 0.0) + (dy / dist) * shockwave_force
                     if hasattr(world, "add_event"):
                         world.add_event("massive_shockwave", {"x": m["x"], "y": m["y"], "radius": m["explosion_radius"]})
                 else:
