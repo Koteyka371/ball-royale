@@ -7068,11 +7068,19 @@ class EscortMode extends GameMode:
 						if bdist <= 150.0:
 							var bmax_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0 if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
 							var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
-							var new_hp = min(bmax_hp, bhp + 15.0 * delta)
-							if typeof(b) == TYPE_DICTIONARY:
-								b["hp"] = new_hp
+							var new_hp = bhp + 15.0 * delta
+							if bhp >= bmax_hp:
+								if typeof(b) == TYPE_DICTIONARY:
+									b["shield"] = b.get("shield", 0.0) + 15.0 * delta
+								else:
+									var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
+									b.set("shield", curr_shield + 15.0 * delta)
 							else:
-								b.set("hp", new_hp)
+								new_hp = min(bmax_hp, new_hp)
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = new_hp
+								else:
+									b.set("hp", new_hp)
 
 				var nearby_teammates = 0
 				for b in balls:
@@ -27316,9 +27324,16 @@ class ReverseTugOfWarMode extends GameMode:
 							var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.hp
 							var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.max_hp
 							if typeof(b) == TYPE_DICTIONARY:
-								b["hp"] = min(max_hp, hp + 15.0 * delta)
+								if hp >= max_hp:
+									b["shield"] = b.get("shield", 0.0) + 15.0 * delta
+								else:
+									b["hp"] = min(max_hp, hp + 15.0 * delta)
 							else:
-								b.hp = min(max_hp, hp + 15.0 * delta)
+								if hp >= max_hp:
+									var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
+									b.shield = curr_shield + 15.0 * delta
+								else:
+									b.hp = min(max_hp, hp + 15.0 * delta)
 
 				var move_speed = 50.0
 
@@ -27889,9 +27904,16 @@ class TickingPayloadMode extends GameMode:
 						var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
 						var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
 						if typeof(b) == TYPE_DICTIONARY:
-							b["hp"] = min(max_hp, hp + 15.0 * delta)
+							if hp >= max_hp:
+								b["shield"] = b.get("shield", 0.0) + 15.0 * delta
+							else:
+								b["hp"] = min(max_hp, hp + 15.0 * delta)
 						else:
-							b.set("hp", min(max_hp, hp + 15.0 * delta))
+							if hp >= max_hp:
+								var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
+								b.set("shield", curr_shield + 15.0 * delta)
+							else:
+								b.set("hp", min(max_hp, hp + 15.0 * delta))
 
 			var move_speed = 50.0
 

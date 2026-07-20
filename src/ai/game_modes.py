@@ -3997,7 +3997,12 @@ class DualPayloadMode(GameMode):
                     bdx = getattr(b, "x", 0) - getattr(self.payload_red, "x", 0)
                     bdy = getattr(b, "y", 0) - getattr(self.payload_red, "y", 0)
                     if math.hypot(bdx, bdy) <= 150.0:
-                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
+                        max_hp_val = getattr(b, "max_hp", 100.0)
+                        current_hp = getattr(b, "hp", 100.0)
+                        if current_hp >= max_hp_val:
+                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                        else:
+                            b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
             px = getattr(self.payload_red, "x", 0)
             if not hasattr(self, "red_milestones"):
@@ -4094,7 +4099,12 @@ class DualPayloadMode(GameMode):
                     bdx = getattr(b, "x", 0) - getattr(self.payload_blue, "x", 0)
                     bdy = getattr(b, "y", 0) - getattr(self.payload_blue, "y", 0)
                     if math.hypot(bdx, bdy) <= 150.0:
-                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
+                        max_hp_val = getattr(b, "max_hp", 100.0)
+                        current_hp = getattr(b, "hp", 100.0)
+                        if current_hp >= max_hp_val:
+                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                        else:
+                            b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
             px = getattr(self.payload_blue, "x", 0)
             if not hasattr(self, "blue_milestones"):
@@ -4380,7 +4390,12 @@ class EscortMode(GameMode):
                 if getattr(b, "team", "") == "Defenders":
                     dist = math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0), getattr(b, "y", 0) - getattr(self.payload, "y", 0))
                     if dist <= 150.0:
-                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
+                        max_hp_val = getattr(b, "max_hp", 100.0)
+                        current_hp = getattr(b, "hp", 100.0)
+                        if current_hp >= max_hp_val:
+                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                        else:
+                            b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
             nearby_teammates = 0
             payload_team = getattr(self.payload, "team", "")
@@ -17220,7 +17235,12 @@ class ReverseTugOfWarMode(GameMode):
                         blue_count += 1
 
                     if team in ["Red", "Blue"]:
-                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
+                        max_hp_val = getattr(b, "max_hp", 100.0)
+                        current_hp = getattr(b, "hp", 100.0)
+                        if current_hp >= max_hp_val:
+                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                        else:
+                            b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
             # Payload moves towards Blue goal if Red has more players nearby, and vice versa
             move_speed = 50.0 # base move speed
@@ -17541,7 +17561,12 @@ class TickingPayloadMode(GameMode):
                         blue_count += 1
 
                     if team in ["Red", "Blue"]:
-                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
+                        max_hp_val = getattr(b, "max_hp", 100.0)
+                        current_hp = getattr(b, "hp", 100.0)
+                        if current_hp >= max_hp_val:
+                            b.shield = getattr(b, "shield", 0.0) + 15.0 * delta
+                        else:
+                            b.hp = min(max_hp_val, current_hp + 15.0 * delta)
 
             move_speed = 50.0 # base move speed
 
