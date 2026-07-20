@@ -7406,6 +7406,209 @@ func execute(strategy: String, delta: float):
 							hazard.y += hazard.vy * delta
 							hazard.vx *= (1.0 - 2.0 * delta)
 							hazard.vy *= (1.0 - 2.0 * delta)
+
+			elif hazard.get("kind") == "thrown_emp" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_emp"):
+				var h_dur = 0.0
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
+				elif "duration" in hazard: h_dur = float(hazard.duration)
+
+				if h_dur > 0:
+					h_dur -= delta
+					if h_dur <= 0:
+						h_dur = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.duration = 0.0
+						else: hazard.duration = 0.0
+
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.active = false
+						else: hazard.active = false
+
+						if "hazards" in world.arena and world.arena.hazards.has(hazard):
+							world.arena.hazards.erase(hazard)
+
+						if "events" in world:
+							world.events.append({"type": "visual_effect", "data": {"type": "emp_explosion", "x": hazard.x if "x" in hazard else hazard["x"], "y": hazard.y if "y" in hazard else hazard["y"], "radius": 150.0}})
+
+						var h_team = null
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"): h_team = hazard.team
+						elif "team" in hazard: h_team = hazard.team
+
+						if "balls" in world:
+							for b in world.balls:
+								var alive = true
+								if "alive" in b: alive = b.alive
+								var b_team = null
+								if "team" in b: b_team = b.team
+
+								if alive and b_team != h_team:
+									var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else 0.0)
+									var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else 0.0)
+									var hx = hazard.x if "x" in hazard else hazard["x"]
+									var hy = hazard.y if "y" in hazard else hazard["y"]
+									var dx = hx - bx
+									var dy = hy - by
+
+									if dx*dx + dy*dy <= 150.0*150.0:
+										if typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+											b.set_meta("speed", 0.0)
+										elif "speed" in b:
+											b.speed = 0.0
+										elif typeof(b) == TYPE_DICTIONARY:
+											b["speed"] = 0.0
+
+										if typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+											b.set_meta("shield", 0.0)
+										elif "shield" in b:
+											b.shield = 0.0
+										elif typeof(b) == TYPE_DICTIONARY:
+											b["shield"] = 0.0
+
+										if typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+											b.set_meta("shield_timer", 0.0)
+										elif "shield_timer" in b:
+											b.shield_timer = 0.0
+										elif typeof(b) == TYPE_DICTIONARY:
+											b["shield_timer"] = 0.0
+
+										if typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+											b.set_meta("silence_timer", max(float(b.get_meta("silence_timer")) if b.has_meta("silence_timer") else 0.0, 10.0))
+										elif "silence_timer" in b:
+											b.silence_timer = max(float(b.silence_timer), 10.0)
+										elif typeof(b) == TYPE_DICTIONARY:
+											b["silence_timer"] = max(float(b.get("silence_timer", 0.0)), 10.0)
+
+						if "hazards" in world.arena:
+							for h in world.arena.hazards:
+								if typeof(h) == TYPE_DICTIONARY and h.has("id") and typeof(hazard) == TYPE_DICTIONARY and hazard.has("id") and h["id"] == hazard["id"]: continue
+								elif typeof(h) != TYPE_DICTIONARY and typeof(hazard) != TYPE_DICTIONARY and h == hazard: continue
+
+								var hx = hazard.x if "x" in hazard else hazard["x"]
+								var hy = hazard.y if "y" in hazard else hazard["y"]
+								var ohx = h.x if "x" in h else (h["x"] if (typeof(h) == TYPE_DICTIONARY and h.has("x")) else 0.0)
+								var ohy = h.y if "y" in h else (h["y"] if (typeof(h) == TYPE_DICTIONARY and h.has("y")) else 0.0)
+								var dx = hx - ohx
+								var dy = hy - ohy
+
+								if dx*dx + dy*dy <= 150.0*150.0:
+									if typeof(h) != TYPE_DICTIONARY and h.has_method("set_meta"):
+										h.set_meta("emp_disabled_timer", 15.0)
+									elif "emp_disabled_timer" in h:
+										h.emp_disabled_timer = 15.0
+									elif typeof(h) == TYPE_DICTIONARY:
+										h["emp_disabled_timer"] = 15.0
+
+					else:
+						var vx = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("vx"): vx = hazard.vx
+						elif "vx" in hazard: vx = hazard.vx
+						var vy = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("vy"): vy = hazard.vy
+						elif "vy" in hazard: vy = hazard.vy
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard.duration = h_dur
+							hazard.x += vx * delta
+							hazard.y += vy * delta
+							hazard.vx *= (1.0 - 2.0 * delta)
+							hazard.vy *= (1.0 - 2.0 * delta)
+						else:
+							hazard.duration = h_dur
+							hazard.x += vx * delta
+							hazard.y += vy * delta
+							hazard.vx *= (1.0 - 2.0 * delta)
+							hazard.vy *= (1.0 - 2.0 * delta)
+
+			elif hazard.get("kind") == "thrown_emp" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_emp"):
+				var h_dur = 0.0
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
+				elif "duration" in hazard: h_dur = float(hazard.duration)
+
+				if h_dur > 0:
+					h_dur -= delta
+					if h_dur <= 0:
+						h_dur = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.duration = 0.0
+						else: hazard.duration = 0.0
+
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.active = false
+						else: hazard.active = false
+
+						if "hazards" in world.arena and world.arena.hazards.has(hazard):
+							world.arena.hazards.erase(hazard)
+
+						if "events" in world:
+							world.events.append({"type": "visual_effect", "data": {"type": "emp_explosion", "x": hazard.x if "x" in hazard else hazard["x"], "y": hazard.y if "y" in hazard else hazard["y"], "radius": 150.0}})
+
+						var h_team = null
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"): h_team = hazard.team
+						elif "team" in hazard: h_team = hazard.team
+
+						if "balls" in world:
+							for b in world.balls:
+								var alive = true
+								if "alive" in b: alive = b.alive
+								var b_team = null
+								if "team" in b: b_team = b.team
+
+								if alive and b_team != h_team:
+									var hx = hazard.x if "x" in hazard else hazard["x"]
+									var hy = hazard.y if "y" in hazard else hazard["y"]
+									var dx = hx - b.x
+									var dy = hy - b.y
+									if dx*dx + dy*dy <= 150.0*150.0:
+										b.speed = 0.0
+										b.shield = 0.0
+										if "shield_timer" in b:
+											b.shield_timer = 0.0
+										elif b.has_method("set_meta"):
+											b.set_meta("shield_timer", 0.0)
+
+										if "silence_timer" in b:
+											b.silence_timer = 10.0
+										elif b.has_method("set_meta"):
+											b.set_meta("silence_timer", 10.0)
+
+						if "hazards" in world.arena:
+							for h in world.arena.hazards:
+								if typeof(h) == TYPE_DICTIONARY and h.has("id") and typeof(hazard) == TYPE_DICTIONARY and hazard.has("id") and h["id"] == hazard["id"]: continue
+								elif typeof(h) != TYPE_DICTIONARY and typeof(hazard) != TYPE_DICTIONARY and h == hazard: continue
+
+								var hx = hazard.x if "x" in hazard else hazard["x"]
+								var hy = hazard.y if "y" in hazard else hazard["y"]
+								var ohx = h.x if "x" in h else (h["x"] if (typeof(h) == TYPE_DICTIONARY and h.has("x")) else 0.0)
+								var ohy = h.y if "y" in h else (h["y"] if (typeof(h) == TYPE_DICTIONARY and h.has("y")) else 0.0)
+								var dx = hx - ohx
+								var dy = hy - ohy
+
+								if dx*dx + dy*dy <= 150.0*150.0:
+									if typeof(h) == TYPE_DICTIONARY:
+										h["emp_disabled_timer"] = 15.0
+									else:
+										if "emp_disabled_timer" in h:
+											h.emp_disabled_timer = 15.0
+										elif h.has_method("set_meta"):
+											h.set_meta("emp_disabled_timer", 15.0)
+
+					else:
+						var vx = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("vx"): vx = hazard.vx
+						elif "vx" in hazard: vx = hazard.vx
+						var vy = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("vy"): vy = hazard.vy
+						elif "vy" in hazard: vy = hazard.vy
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard.duration = h_dur
+							hazard.x += vx * delta
+							hazard.y += vy * delta
+							hazard.vx *= (1.0 - 2.0 * delta)
+							hazard.vy *= (1.0 - 2.0 * delta)
+						else:
+							hazard.duration = h_dur
+							hazard.x += vx * delta
+							hazard.y += vy * delta
+							hazard.vx *= (1.0 - 2.0 * delta)
+							hazard.vy *= (1.0 - 2.0 * delta)
+
 						else:
 							hazard.duration = h_dur
 							hazard.x += hazard.vx * delta
@@ -28135,6 +28338,64 @@ func _use_skill():
                 var cd = 5.0
                 if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
                 self.ball.skill_timer = cd
+        elif skill_name == "throw_emp":
+            var closest_enemy = null
+            var min_d_sq = 9999999.0
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    var alive = true
+                    if "alive" in b: alive = b.alive
+
+                    var b_team = null
+                    if "team" in b: b_team = b.team
+
+                    var my_team = null
+                    if "team" in self.ball: my_team = self.ball.team
+
+                    if alive and b != self.ball and b_team != my_team:
+                        var dx = b.x - self.ball.x
+                        var dy = b.y - self.ball.y
+                        var d_sq = dx*dx + dy*dy
+                        if d_sq < min_d_sq:
+                            min_d_sq = d_sq
+                            closest_enemy = b
+
+            if closest_enemy != null:
+                var dx = closest_enemy.x - self.ball.x
+                var dy = closest_enemy.y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                var nx = 1.0
+                var ny = 0.0
+                if dist > 0.001:
+                    nx = dx / dist
+                    ny = dy / dist
+
+                var team_val = null
+                if "team" in self.ball: team_val = self.ball.team
+
+                var r_val = 10.0
+                if "radius" in self.ball: r_val = self.ball.radius
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): r_val = self.ball.get_meta("radius")
+
+                var thrown_bomb = {
+                    "kind": "thrown_emp",
+                    "x": self.ball.x + nx * (r_val + 5.0),
+                    "y": self.ball.y + ny * (r_val + 5.0),
+                    "radius": 20.0,
+                    "damage": 0.0,
+                    "vx": nx * 400.0,
+                    "vy": ny * 400.0,
+                    "duration": 2.0,
+                    "team": team_val,
+                    "owner_id": self.ball.id if "id" in self.ball else null,
+                    "active": true
+                }
+                hazards.append(thrown_bomb)
+
+                var cd = 5.0
+                if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                self.ball.skill_timer = cd
+
 
         elif skill_name == "throw_decoy":
             var active_decoys = []
