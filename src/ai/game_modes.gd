@@ -494,6 +494,155 @@ class GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+
+		# Check dash decoy explosions
+		var decoys_to_remove = []
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+
+			var decoy_type = ""
+			if typeof(b) == TYPE_DICTIONARY and b.has("decoy_type"): decoy_type = b["decoy_type"]
+			elif typeof(b) == TYPE_OBJECT and "decoy_type" in b: decoy_type = b.decoy_type
+
+			if is_alive and decoy_type == "dash_decoy":
+				var life_timer = 3.0
+				if typeof(b) == TYPE_DICTIONARY and b.has("life_timer"): life_timer = b["life_timer"]
+				elif typeof(b) == TYPE_OBJECT and "life_timer" in b: life_timer = b.life_timer
+
+				life_timer -= delta
+				if typeof(b) == TYPE_DICTIONARY: b["life_timer"] = life_timer
+				elif typeof(b) == TYPE_OBJECT and "life_timer" in b: b.life_timer = life_timer
+
+				if life_timer <= 0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["alive"] = false
+						b["hp"] = 0
+					elif typeof(b) == TYPE_OBJECT and "alive" in b:
+						b.alive = false
+						if "hp" in b: b.hp = 0
+					decoys_to_remove.append(b)
+					continue
+
+				var my_team = ""
+				if typeof(b) == TYPE_DICTIONARY and b.has("team"): my_team = b["team"]
+				elif typeof(b) == TYPE_OBJECT and "team" in b: my_team = b.team
+
+				var b_x = 0.0
+				var b_y = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): b_x = b["x"]
+					if b.has("y"): b_y = b["y"]
+				elif typeof(b) == TYPE_OBJECT:
+					if "x" in b: b_x = b.x
+					if "y" in b: b_y = b.y
+
+				var b_radius = 10.0
+				if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b["radius"]
+				elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+
+				var exploded = false
+				for other in balls:
+					var other_alive = false
+					if typeof(other) == TYPE_DICTIONARY and other.has("alive"): other_alive = other["alive"]
+					elif typeof(other) == TYPE_OBJECT and "alive" in other: other_alive = other.alive
+
+					var other_decoy_type = ""
+					if typeof(other) == TYPE_DICTIONARY and other.has("decoy_type"): other_decoy_type = other["decoy_type"]
+					elif typeof(other) == TYPE_OBJECT and "decoy_type" in other: other_decoy_type = other.decoy_type
+
+					if not other_alive or other == b or other_decoy_type == "dash_decoy":
+						continue
+
+					var other_team = ""
+					if typeof(other) == TYPE_DICTIONARY and other.has("team"): other_team = other["team"]
+					elif typeof(other) == TYPE_OBJECT and "team" in other: other_team = other.team
+
+					if my_team != "" and other_team != "" and my_team == other_team:
+						continue
+
+					var other_x = 0.0
+					var other_y = 0.0
+					if typeof(other) == TYPE_DICTIONARY:
+						if other.has("x"): other_x = other["x"]
+						if other.has("y"): other_y = other["y"]
+					elif typeof(other) == TYPE_OBJECT:
+						if "x" in other: other_x = other.x
+						if "y" in other: other_y = other.y
+
+					var other_radius = 10.0
+					if typeof(other) == TYPE_DICTIONARY and other.has("radius"): other_radius = other["radius"]
+					elif typeof(other) == TYPE_OBJECT and "radius" in other: other_radius = other.radius
+
+					var dist = sqrt(pow(other_x - b_x, 2) + pow(other_y - b_y, 2))
+					if dist < (b_radius + other_radius):
+						exploded = true
+						break
+
+				if exploded:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["alive"] = false
+						b["hp"] = 0
+					elif typeof(b) == TYPE_OBJECT and "alive" in b:
+						b.alive = false
+						if "hp" in b: b.hp = 0
+					decoys_to_remove.append(b)
+
+					var explosion_radius = 50.0
+					var explosion_damage = 20.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("damage"): explosion_damage = b["damage"]
+					elif typeof(b) == TYPE_OBJECT and "damage" in b: explosion_damage = b.damage
+
+					for other in balls:
+						var other_alive = false
+						if typeof(other) == TYPE_DICTIONARY and other.has("alive"): other_alive = other["alive"]
+						elif typeof(other) == TYPE_OBJECT and "alive" in other: other_alive = other.alive
+
+						var other_decoy_type = ""
+						if typeof(other) == TYPE_DICTIONARY and other.has("decoy_type"): other_decoy_type = other["decoy_type"]
+						elif typeof(other) == TYPE_OBJECT and "decoy_type" in other: other_decoy_type = other.decoy_type
+
+						if not other_alive or other == b or other_decoy_type == "dash_decoy":
+							continue
+
+						var other_team = ""
+						if typeof(other) == TYPE_DICTIONARY and other.has("team"): other_team = other["team"]
+						elif typeof(other) == TYPE_OBJECT and "team" in other: other_team = other.team
+
+						if my_team != "" and other_team != "" and my_team == other_team:
+							continue
+
+						var other_x = 0.0
+						var other_y = 0.0
+						if typeof(other) == TYPE_DICTIONARY:
+							if other.has("x"): other_x = other["x"]
+							if other.has("y"): other_y = other["y"]
+						elif typeof(other) == TYPE_OBJECT:
+							if "x" in other: other_x = other.x
+							if "y" in other: other_y = other.y
+
+						var other_radius = 10.0
+						if typeof(other) == TYPE_DICTIONARY and other.has("radius"): other_radius = other["radius"]
+						elif typeof(other) == TYPE_OBJECT and "radius" in other: other_radius = other.radius
+
+						var dist = sqrt(pow(other_x - b_x, 2) + pow(other_y - b_y, 2))
+						if dist < explosion_radius + other_radius:
+							if typeof(other) == TYPE_OBJECT and other.has_method("take_damage"):
+								other.take_damage(explosion_damage)
+							else:
+								if typeof(other) == TYPE_DICTIONARY and other.has("hp"):
+									other["hp"] -= explosion_damage
+								elif typeof(other) == TYPE_OBJECT and "hp" in other:
+									other.hp -= explosion_damage
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("decoy_exploded", {"x": b_x, "y": b_y})
+
+		for d in decoys_to_remove:
+			if balls.has(d):
+				balls.erase(d)
+
 		# Black Hole Mine detonating logic
 		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
 			var arena = world.arena

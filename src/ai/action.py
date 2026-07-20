@@ -14511,6 +14511,10 @@ class Action:
             elif skill_name == "dash":
                 self._spawn_skill_particles("dash")
 
+                # Put the ball in a 'quantum state' to make it immune to collisions and hazards during dash
+                self.ball.intangible = True
+                self.ball.intangible_timer = 0.5 # A short brief duration during/after the transition
+
                 dash_range_mult = getattr(self.ball, "dash_range_mult", 1.0)
                 dash_dist = 100.0 * dash_range_mult
                 enemies = self._get_enemies()
@@ -14553,6 +14557,41 @@ class Action:
                     res = self.world.arena.clamp_position(teleport_x, teleport_y, my_radius)
                     if isinstance(res, (list, tuple)):
                         teleport_x, teleport_y = res[0], res[1]
+
+                # After teleporting, leave behind a decoy
+                from ai.ball_types_neural import Neural # We can use a basic Neural or dummy ball as decoy
+                import random
+                import math
+
+                # Spawn decoy at OLD position
+                if hasattr(self.world, "balls"):
+                    # We will create a dummy object since we don't want to import everything directly if not needed
+                    class DashDecoy:
+                        def __init__(self, x, y, team, owner):
+                            self.x = x
+                            self.y = y
+                            self.vx = 0.0
+                            self.vy = 0.0
+                            self.radius = 10.0
+                            self.hp = 1.0
+                            self.max_hp = 1.0
+                            self.alive = True
+                            self.team = team
+                            self.owner = owner
+                            self.damage = 20.0
+                            self.decoy_type = "dash_decoy"
+                            self.ball_type = "decoy"
+                            self.id = id(self)
+                            self.life_timer = 3.0 # Decoy explodes after 3 seconds anyway, or on touch
+
+                        def take_damage(self, amount):
+                            self.hp -= amount
+
+                    decoy = DashDecoy(self.ball.x, self.ball.y, getattr(self.ball, "team", ""), self.ball)
+                    self.world.balls.append(decoy)
+
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("decoy_spawned", {"x": self.ball.x, "y": self.ball.y})
 
                 self.ball.x = teleport_x
                 self.ball.y = teleport_y

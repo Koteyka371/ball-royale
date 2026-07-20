@@ -307,6 +307,68 @@ class GameMode:
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         # Black Hole Mine detonating logic
@@ -1423,6 +1485,68 @@ class BattleRoyaleMode(GameMode):
 
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -3381,6 +3505,68 @@ class ZombieInfectionMode(GameMode):
                         b.team = "Survivor"
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -5411,6 +5597,68 @@ class VampireRoyaleMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -5844,6 +6092,68 @@ class KingOfTheHillMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -6101,6 +6411,68 @@ class BlackHoleMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -6285,6 +6657,68 @@ class WeatherChaosMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -7413,6 +7847,68 @@ class MemoryTrapsMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -7566,6 +8062,68 @@ class CustomMatchMode(GameMode):
         self.mutators_active = mutators_unlocked and len(self.mutators) > 0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -7986,6 +8544,68 @@ class PitchBlackMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -8126,6 +8746,68 @@ class VisionReducedMode(GameMode):
                 b.team = b.ball_type
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -10705,6 +11387,68 @@ class WindstormMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # Check dash decoy explosions
+        import math
+        decoys_to_remove = []
+        for b in list(balls):
+            if getattr(b, "alive", False) and getattr(b, "decoy_type", "") == "dash_decoy":
+                # Decrement timer
+                b.life_timer = getattr(b, "life_timer", 3.0) - delta
+                if b.life_timer <= 0:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+                    continue
+
+                # Check collision with enemies
+                my_team = getattr(b, "team", "")
+                my_owner = getattr(b, "owner", None)
+                exploded = False
+                for other in balls:
+                    if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy" or other == my_owner:
+                        continue
+                    # Ignore allies
+                    other_team = getattr(other, "team", "")
+                    if my_team and other_team and my_team == other_team:
+                        continue
+
+                    # Check distance
+                    dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                    if dist < (getattr(b, "radius", 10.0) + getattr(other, "radius", 10.0)):
+                        # Explode
+                        exploded = True
+                        break
+
+                if exploded:
+                    b.alive = False
+                    b.hp = 0
+                    decoys_to_remove.append(b)
+
+                    # Deal damage in explosion radius
+                    explosion_radius = 50.0
+                    explosion_damage = getattr(b, "damage", 20.0)
+                    for other in balls:
+                        if not getattr(other, "alive", False) or other == b or getattr(other, "decoy_type", "") == "dash_decoy":
+                            continue
+
+                        other_team = getattr(other, "team", "")
+                        if my_team and other_team and my_team == other_team:
+                            continue
+
+                        dist = math.hypot(getattr(other, "x", 0) - getattr(b, "x", 0), getattr(other, "y", 0) - getattr(b, "y", 0))
+                        if dist < explosion_radius + getattr(other, "radius", 10.0):
+                            if hasattr(other, "take_damage"):
+                                other.take_damage(explosion_damage)
+                            elif hasattr(other, "hp"):
+                                other.hp -= explosion_damage
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("decoy_exploded", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+
+        for d in decoys_to_remove:
+            if d in balls:
+                balls.remove(d)
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []

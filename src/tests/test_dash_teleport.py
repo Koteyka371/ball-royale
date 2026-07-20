@@ -81,3 +81,36 @@ def test_dash_teleport():
     # Check if ball teleported and stopped at the wall correctly
     assert abs(ball.x - 990.0) < 1.0, f"Expected ball x to be 990, but got {ball.x}"
     assert ball.y == 500.0
+
+    # Check quantum state and decoy
+    assert getattr(ball, "intangible", False) == True
+    assert getattr(ball, "intangible_timer", 0.0) == 0.5
+
+    # Assert a decoy was left behind
+    assert len(world.balls) == 3
+    decoy = world.balls[-1]
+    assert getattr(decoy, "decoy_type", "") == "dash_decoy"
+    assert decoy.x == 950.0
+    assert decoy.y == 500.0
+
+    # Check quantum state and decoy
+    assert getattr(ball, "intangible", False) == True
+    assert getattr(ball, "intangible_timer", 0.0) == 0.5
+
+    # Assert a decoy was left behind
+    assert len(world.balls) == 3
+    decoy = world.balls[-1]
+    assert getattr(decoy, "decoy_type", "") == "dash_decoy"
+    assert decoy.x == 950.0
+    assert decoy.y == 500.0
+
+    # Check quantum state and decoy
+    assert getattr(ball, "intangible", False) == True
+    assert getattr(ball, "intangible_timer", 0.0) == 0.5
+
+    # Assert a decoy was left behind
+    assert len(world.balls) == 3
+    decoy = world.balls[-1]
+    assert getattr(decoy, "decoy_type", "") == "dash_decoy"
+    assert decoy.x == 950.0
+    assert decoy.y == 500.0

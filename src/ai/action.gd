@@ -27689,6 +27689,15 @@ func _use_skill():
 
         elif skill_name == "dash":
             _spawn_skill_particles("dash")
+
+            # Put the ball in a 'quantum state' to make it immune to collisions and hazards during dash
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("intangible", true)
+                self.ball.set_meta("intangible_timer", 0.5)
+            elif "intangible" in self.ball:
+                self.ball.intangible = true
+                self.ball.intangible_timer = 0.5
+
             var dash_range_mult = 1.0
             if self.ball.has_method("has_meta") and self.ball.has_meta("dash_range_mult"):
                 dash_range_mult = self.ball.get_meta("dash_range_mult")
@@ -27741,6 +27750,32 @@ func _use_skill():
                 var result = self.world.arena.clamp_position(teleport_x, teleport_y, dash_radius)
                 teleport_x = result[0]
                 teleport_y = result[1]
+
+            # After teleporting, leave behind a decoy at OLD position
+            if "balls" in self.world:
+                var decoy = {}
+                decoy["x"] = self.ball.x
+                decoy["y"] = self.ball.y
+                decoy["vx"] = 0.0
+                decoy["vy"] = 0.0
+                decoy["radius"] = 10.0
+                if "radius" in self.ball: decoy["radius"] = self.ball.radius
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"): decoy["radius"] = self.ball.get_meta("radius")
+                decoy["hp"] = 1.0
+                decoy["max_hp"] = 1.0
+                decoy["alive"] = true
+                decoy["team"] = ""
+                if "team" in self.ball: decoy["team"] = self.ball.team
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): decoy["team"] = self.ball.get_meta("team")
+                decoy["owner"] = self.ball
+                decoy["damage"] = 20.0
+                decoy["decoy_type"] = "dash_decoy"
+                decoy["life_timer"] = 3.0
+
+                self.world.balls.append(decoy)
+
+                if self.world.has_method("add_event"):
+                    self.world.add_event("decoy_spawned", {"x": self.ball.x, "y": self.ball.y})
 
             self.ball.x = teleport_x
             self.ball.y = teleport_y
