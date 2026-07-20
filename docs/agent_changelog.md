@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1205] Grapple Hook Mechanics — *2026-07-20 05:13:21 UTC*
+
+Balls can equip a grapple hook to swing around obstacles and quickly cross gaps or evade enemies.
+
+---
+
 ## [idea-1104] Wall Ricochet Combos — *2026-07-20 05:04:13 UTC*
 
 After a ball is pulled into a wall by the reverse gravity booster (or just hits a wall at high speeds), the ball should get a 'combo window'. Hitting an enemy immediately after bouncing off the wall gives double damage or increased knockback, encouraging skilled placement near walls.
