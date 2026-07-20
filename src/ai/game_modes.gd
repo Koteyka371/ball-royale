@@ -6049,6 +6049,37 @@ class ReverseDualPayloadMode extends GameMode:
 			if pushers > 0:
 				var speed_mult = 1.0 + ((pushers - 1) * 0.5)
 				payload_red.x -= 50.0 * delta * pushers * speed_mult
+				if payload_red.x <= 100.0:
+					if not payload_red.get("detonated", false):
+						payload_red["detonated"] = true
+						var alive_blue = 0
+						for b in balls:
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.get("team", "") == "Blue" and b.get("alive", false) and b.get("ball_type", "") != "spectator" and not b.get("is_payload", false):
+									alive_blue += 1
+							else:
+								if b.get("team") == "Blue" and b.get("alive") and b.get("ball_type") != "spectator" and not b.get("is_payload"):
+									alive_blue += 1
+						if pushers >= alive_blue and alive_blue > 0:
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("visual_effect", {"type": "massive_explosion", "x": payload_red.x, "y": payload_red.y, "radius": 500.0})
+							for b in balls:
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.get("team", "") == "Red" and b.get("alive", false) and b.get("ball_type", "") != "spectator" and not b.get("is_payload", false):
+										var bdx = b.get("x", 0) - payload_red.x
+										var bdy = b.get("y", 0) - payload_red.y
+										if sqrt(bdx*bdx + bdy*bdy) <= 500.0:
+											b["hp"] = b.get("hp", 100.0) - 500.0
+											if b["hp"] <= 0:
+												b["alive"] = false
+								else:
+									if b.get("team") == "Red" and b.get("alive") and b.get("ball_type") != "spectator" and not b.get("is_payload"):
+										var bdx = b.get("x") - payload_red.x
+										var bdy = b.get("y") - payload_red.y
+										if sqrt(bdx*bdx + bdy*bdy) <= 500.0:
+											b.set("hp", b.get("hp") - 500.0)
+											if b.get("hp") <= 0:
+												b.set("alive", false)
 				if payload_red.x < 50.0:
 					payload_red.x = 50.0
 
@@ -6085,6 +6116,37 @@ class ReverseDualPayloadMode extends GameMode:
 			if pushers > 0:
 				var speed_mult = 1.0 + ((pushers - 1) * 0.5)
 				payload_blue.x += 50.0 * delta * pushers * speed_mult
+				if payload_blue.x >= arena_width - 100.0:
+					if not payload_blue.get("detonated", false):
+						payload_blue["detonated"] = true
+						var alive_red = 0
+						for b in balls:
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.get("team", "") == "Red" and b.get("alive", false) and b.get("ball_type", "") != "spectator" and not b.get("is_payload", false):
+									alive_red += 1
+							else:
+								if b.get("team") == "Red" and b.get("alive") and b.get("ball_type") != "spectator" and not b.get("is_payload"):
+									alive_red += 1
+						if pushers >= alive_red and alive_red > 0:
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("visual_effect", {"type": "massive_explosion", "x": payload_blue.x, "y": payload_blue.y, "radius": 500.0})
+							for b in balls:
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.get("team", "") == "Blue" and b.get("alive", false) and b.get("ball_type", "") != "spectator" and not b.get("is_payload", false):
+										var bdx = b.get("x", 0) - payload_blue.x
+										var bdy = b.get("y", 0) - payload_blue.y
+										if sqrt(bdx*bdx + bdy*bdy) <= 500.0:
+											b["hp"] = b.get("hp", 100.0) - 500.0
+											if b["hp"] <= 0:
+												b["alive"] = false
+								else:
+									if b.get("team") == "Blue" and b.get("alive") and b.get("ball_type") != "spectator" and not b.get("is_payload"):
+										var bdx = b.get("x") - payload_blue.x
+										var bdy = b.get("y") - payload_blue.y
+										if sqrt(bdx*bdx + bdy*bdy) <= 500.0:
+											b.set("hp", b.get("hp") - 500.0)
+											if b.get("hp") <= 0:
+												b.set("alive", false)
 				if payload_blue.x > arena_width - 50.0:
 					payload_blue.x = arena_width - 50.0
 
