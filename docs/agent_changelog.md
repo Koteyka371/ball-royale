@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1218] Bribe Wars UI — *2026-07-20 21:17:25 UTC*
+
+A new HUD element specifically for spectators and players that shows a live tug-of-war meter during votes. The meter visually shifts left or right as players spend skill points and prestige tokens to actively out-bribe each other on the outcome.
+
+---
+
 ## [idea-1214] EMP Grenades — *2026-07-20 21:13:36 UTC*
 
 A new tactical throwable that temporarily disables nearby enemies' abilities and deployed traps. Hitting an opponent with an EMP briefly sets their speed to zero and shuts off any active shield buffs.
