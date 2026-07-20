@@ -33,6 +33,12 @@ def test_adrenaline_buff():
 
     assert system.consecutive_chants == 1
     assert system.last_chant_team == "Red"
+    tempo_events = [e for e in world.events if e[0] == "audio_event" and e[1].get("sound") == "bgm_tempo_up"]
+    assert len(tempo_events) == 1
+    tempo_events = [e for e in world.events if e[0] == "audio_event" and e[1].get("sound") == "bgm_tempo_up"]
+    assert len(tempo_events) == 1
+    tempo_events = [e for e in world.events if e[0] == "audio_event" and e[1].get("sound") == "bgm_tempo_up"]
+    assert len(tempo_events) == 1
 
     for t in range(201, 401):
         system.excitement_level = 100.0
@@ -83,3 +89,5 @@ def test_adrenaline_buff_interrupted():
 
     assert system.consecutive_chants == 1
     assert system.last_chant_team == "Blue"
+    reset_events = [e for e in world.events if e[0] == "audio_event" and e[1].get("sound") == "bgm_tempo_reset"]
+    assert len(reset_events) == 1

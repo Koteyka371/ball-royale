@@ -386,6 +386,7 @@ class CrowdSystem:
                 if alive_teams[leading_team] >= 2 and hasattr(self.world, 'add_event'):
                     self.world.add_event("crowd_cheer", {"message": f"Let's go Team {leading_team}! Let's go!", "volume": 1.0})
                     self.world.add_event("audio_event", {"sound": "team_chant", "volume": 0.8})
+                    self.world.add_event("audio_event", {"sound": "bgm_tempo_up", "volume": 1.0})
 
                     # Track consecutive chants for Adrenaline buff
                     if not hasattr(self, 'last_chant_team'):
@@ -394,6 +395,8 @@ class CrowdSystem:
                     elif self.last_chant_team == leading_team:
                         self.consecutive_chants += 1
                     else:
+                        if self.consecutive_chants > 0 and hasattr(self.world, 'add_event'):
+                            self.world.add_event("audio_event", {"sound": "bgm_tempo_reset", "volume": 1.0})
                         self.last_chant_team = leading_team
                         self.consecutive_chants = 1
 
@@ -412,9 +415,13 @@ class CrowdSystem:
                                     "value": 50.0
                                 })
                 else:
+                    if self.consecutive_chants > 0 and hasattr(self.world, 'add_event'):
+                        self.world.add_event("audio_event", {"sound": "bgm_tempo_reset", "volume": 1.0})
                     self.last_chant_team = None
                     self.consecutive_chants = 0
         elif tick % 200 == 0:
+            if self.consecutive_chants > 0 and hasattr(self.world, 'add_event'):
+                self.world.add_event("audio_event", {"sound": "bgm_tempo_reset", "volume": 1.0})
             self.last_chant_team = None
             self.consecutive_chants = 0
 
