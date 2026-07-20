@@ -20231,7 +20231,7 @@
     },
     {
       "id": "idea-1180",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Crowd Emotes Over Arenas",
@@ -31058,6 +31058,40 @@
         "src/ai/twitch_plays_ai_parameters.py",
         "src/ai/twitch_plays_ai_parameters.gd",
         "tests/test_twitch_plays_ai_parameters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1816",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grappling Hook Skill",
+      "description": "A new skill that allows balls to shoot a grappling hook at hazards or boundaries to pull themselves quickly out of danger or into better positioning.",
+      "allowed_paths": [
+        "src/ai/grappling_hook_skill.py",
+        "src/ai/grappling_hook_skill.gd",
+        "tests/test_grappling_hook_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1817",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Viewer Faction Wars",
+      "description": "Viewers can pledge loyalty to specific team colors at the start of a match. Whenever a viewer spawns a hazard or drops a buff, it gains a team affiliation, damaging only rival teams or buffing only their pledged team. This creates a meta-game of viewer armies fighting alongside AI.",
+      "allowed_paths": [
+        "src/ai/viewer_faction_wars.py",
+        "src/ai/viewer_faction_wars.gd",
+        "tests/test_viewer_faction_wars.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

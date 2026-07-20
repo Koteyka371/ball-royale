@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1180] Crowd Emotes Over Arenas — *2026-07-20 02:26:58 UTC*
+
+Allow viewers to type specific emote commands that spawn bouncy, physics-based emote emojis in the arena. They deal no damage but can clutter the map or act as tiny dynamic obstacles for balls.
+
+---
+
 ## [idea-1198] Bouncy Wall Traps — *2026-07-20 01:51:53 UTC*
 
 Add placeable traps that act as jump pads, forcing balls that dash into them or get knocked into them to ricochet at high speeds in an unpredictable direction.
