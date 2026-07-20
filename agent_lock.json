@@ -67,9 +67,9 @@
     "agent-8": {
       "name": "Jules Worker 8",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1173",
+      "status": "assigned",
+      "started_at": "2026-07-20T22:09:23.152702+00:00",
       "cycles_today": 0
     },
     "agent-9": {
@@ -99,9 +99,9 @@
     "agent-12": {
       "name": "Jules Worker 12",
       "area": "ai-core",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1179",
+      "status": "assigned",
+      "started_at": "2026-07-20T22:09:23.152702+00:00",
       "cycles_today": 2
     },
     "agent-13": {
@@ -131,25 +131,25 @@
     "agent-16": {
       "name": "Jules Worker 16",
       "area": "innovation",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1212",
+      "started_at": "2026-07-20T22:09:23.152702+00:00",
       "cycles_today": 6
     },
     "agent-17": {
       "name": "Jules Worker 17",
       "area": "ai-core",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1222",
+      "started_at": "2026-07-20T22:09:23.152702+00:00",
       "cycles_today": 1
     },
     "agent-18": {
       "name": "Jules Worker 18",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1229",
+      "started_at": "2026-07-20T22:09:23.152702+00:00",
       "cycles_today": 4
     },
     "agent-19": {
@@ -219,9 +219,9 @@
     "agent-27": {
       "name": "Jules Worker 27",
       "area": "content",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1233",
+      "started_at": "2026-07-20T22:09:23.152702+00:00",
       "cycles_today": 1
     },
     "agent-28": {
@@ -243,9 +243,9 @@
     "agent-30": {
       "name": "Jules Worker 30",
       "area": "meta",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1234",
+      "started_at": "2026-07-20T22:09:23.152702+00:00",
       "cycles_today": 1
     }
   },
