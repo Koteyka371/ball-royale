@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
-from src.ai.action import Action
-from src.arena.procedural_arena import ProceduralArena
+from ai.action import Action
+from arena.procedural_arena import ProceduralArena
 
 class MockBall:
     def __init__(self):
