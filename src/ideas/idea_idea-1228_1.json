@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone based on Player Health",
+  "description": "A battle royale mode where the size of the safe zone dynamically shrinks or expands based on the total remaining health of all players combined."
+}
