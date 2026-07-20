@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1233] Slime Bounce Pads — *2026-07-20 23:24:13 UTC*
+
+Hazard objects that apply a large velocity impulse in the opposite direction of approach when a ball touches them, but cover them in slime (speed debuff) for 3 seconds.
+
+---
+
 ## [idea-1213] Vehicle Mounts — *2026-07-20 23:10:44 UTC*
 
 Players can find and mount stationary vehicles like tanks or hovercrafts across the arena. While mounted, they inherit the vehicle's health and damage stats, but lose their personal mobility traits. If the vehicle is destroyed, they are ejected with temporary stun.
