@@ -35737,7 +35737,85 @@ class VoidTilesMode extends GameMode:
 						b.x = past_state.x
 						b.y = past_state.y
 
+
+class ExplosiveMeteorsMode extends GameMode:
+	var meteor_timer: float = 0.0
+	var meteors: Array = []
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		super()
+		name = "Explosive Meteors"
+		description = "Randomly drops explosive meteors from the sky that damage any players caught in their blast radius."
+		rng.randomize()
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+		meteor_timer = 0.0
+		meteors = []
+
+	func _get_prop(b, prop_name, default_val):
+		if typeof(b) == TYPE_DICTIONARY and b.has(prop_name):
+			return b[prop_name]
+		elif typeof(b) == TYPE_OBJECT:
+			if prop_name in b:
+				return b.get(prop_name)
+			elif b.has_method("get_meta") and b.has_meta(prop_name):
+				return b.get_meta(prop_name)
+		return default_val
+
+	func _set_prop(b, prop_name, val):
+		if typeof(b) == TYPE_DICTIONARY:
+			b[prop_name] = val
+		elif typeof(b) == TYPE_OBJECT:
+			if prop_name in b:
+				b.set(prop_name, val)
+			elif b.has_method("set_meta"):
+				b.set_meta(prop_name, val)
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		meteor_timer += delta
+
+		if meteor_timer >= 5.0:
+			meteor_timer = 0.0
+			var arena_width = world.arena.width if "width" in world.arena else 1000.0
+			var arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+			meteors.append({
+				"id": "meteor_" + str(rng.randi_range(10000, 99999)),
+				"x": rng.randf_range(50.0, arena_width - 50.0),
+				"y": rng.randf_range(50.0, arena_height - 50.0),
+				"delay": 3.0,
+				"radius": 40.0
+			})
+
+		var still_active = []
+		for m in meteors:
+			m["delay"] -= delta
+			if m["delay"] <= 0:
+				for b in balls:
+					if _get_prop(b, "alive", false):
+						var bx = _get_prop(b, "x", 0.0)
+						var by = _get_prop(b, "y", 0.0)
+						var dist = sqrt(pow(bx - m["x"], 2) + pow(by - m["y"], 2))
+						if dist <= m["radius"]:
+							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+								b.take_damage(50.0)
+							else:
+								var cur_hp = _get_prop(b, "hp", 100.0)
+								_set_prop(b, "hp", cur_hp - 50.0)
+			else:
+				still_active.append(m)
+
+		meteors = still_active
+
 GAME_MODES = {
+
+	"explosive_meteors": ExplosiveMeteorsMode.new(),
 	"void_tiles": VoidTilesMode.new(),
 	"chronosphere_event": ChronosphereEventMode.new(),
     "bounce_laser": BounceLaserMode.new(),

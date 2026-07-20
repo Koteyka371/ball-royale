@@ -22220,7 +22220,72 @@ class VoidTilesMode(GameMode):
                     b.y = past_state[2]
 
 
+
+class ExplosiveMeteorsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Explosive Meteors"
+        self.description = "Randomly drops explosive meteors from the sky that damage any players caught in their blast radius."
+        self.meteor_timer = 0.0
+        self.meteors = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is None:
+            world.arena.hazards = []
+        self.meteor_timer = 0.0
+        self.meteors = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.meteor_timer += delta
+
+        if self.meteor_timer >= 5.0:
+            self.meteor_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000) if getattr(world, "arena", None) is not None else 1000
+            arena_height = getattr(world.arena, "height", 1000) if getattr(world, "arena", None) is not None else 1000
+
+            x = random.uniform(50, arena_width - 50)
+            y = random.uniform(50, arena_height - 50)
+
+            self.meteors.append({
+                "id": f"meteor_{random.randint(10000, 99999)}",
+                "x": x,
+                "y": y,
+                "delay": 3.0,
+                "radius": 40.0
+            })
+
+        still_active = []
+        for m in self.meteors:
+            m["delay"] -= delta
+            if m["delay"] <= 0:
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        dist = math.hypot(getattr(b, "x", 0.0) - m["x"], getattr(b, "y", 0.0) - m["y"])
+                        if dist <= m["radius"]:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(50.0)
+                            else:
+                                b.hp = getattr(b, "hp", 100) - 50.0
+            else:
+                still_active.append(m)
+
+        self.meteors = still_active
+
+        if getattr(world, "arena", None) is not None and getattr(world.arena, "hazards", None) is not None:
+            world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "meteor_indicator"]
+
+            from arena.procedural_arena import Hazard
+            for m in self.meteors:
+                world.arena.hazards.append(Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor_indicator", 0))
+
 GAME_MODES = {
+
+    "explosive_meteors": ExplosiveMeteorsMode(),
     "void_tiles": VoidTilesMode(),
     "cursed_boosters": CursedBoosterMode(),
     'zero_gravity_meteor_shower': ZeroGravityMeteorShowerMode(),
