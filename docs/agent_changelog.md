@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1241] Chain Teleport — *2026-07-20 23:49:57 UTC*
+
+Instead of a single teleport dash, the ball can teleport up to 3 times in quick succession if enemies are clustered within a small radius. Each subsequent jump deals slightly less damage but refreshes a minor stamina burst.
+
+---
+
 ## [idea-1228] New Game Mode: Toxic Flood — *2026-07-20 23:35:52 UTC*
 
 A variation of the standard battle royale where the safe zone isn't a shrinking circle, but rather elevated platforms. The floor periodically floods with poison, forcing all players to fight for control of the limited high ground platforms before the flood recedes.

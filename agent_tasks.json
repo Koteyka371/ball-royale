@@ -21269,7 +21269,7 @@
     },
     {
       "id": "idea-1241",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Teleport",
@@ -31653,6 +31653,40 @@
         "src/ai/static_feedback_loop.py",
         "src/ai/static_feedback_loop.gd",
         "tests/test_static_feedback_loop.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1851",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Low Gravity Events",
+      "description": "Add periods of low gravity to game modes, increasing jump height and decreasing friction.",
+      "allowed_paths": [
+        "src/ai/low_gravity_events.py",
+        "src/ai/low_gravity_events.gd",
+        "tests/test_low_gravity_events.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1852",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Conveyor Belt Terrain",
+      "description": "Segments of the arena floor that constantly move balls in a particular direction.",
+      "allowed_paths": [
+        "src/ai/conveyor_belt_terrain.py",
+        "src/ai/conveyor_belt_terrain.gd",
+        "tests/test_conveyor_belt_terrain.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
