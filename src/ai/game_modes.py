@@ -23477,7 +23477,159 @@ class ToxicFloodRoyaleMode(GameMode):
                     b.killer = "Toxic Flood"
 
 
+
+class QuantumEntanglementMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Entanglement"
+        self.description = "A hazard that spawns in pairs. Any damage or status effect taken by a ball near one hazard is partially duplicated and dealt to any ball standing near its paired hazard."
+        self.previous_states = {}
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import math
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        # Ensure we have the hazards
+        quantum_nodes = [h for h in world.arena.hazards if getattr(h, "kind", "") == "quantum_node"]
+        if len(quantum_nodes) < 2:
+            try:
+                from arena.procedural_arena import ProceduralArena
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                        self.target_radius = 0.0
+
+            w = getattr(world.arena, 'width', 2000.0)
+            h = getattr(world.arena, 'height', 2000.0)
+
+            needed = 2 - len(quantum_nodes)
+            import random
+            for i in range(needed):
+                h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                x = w * 0.2 if len(quantum_nodes) == 0 else w * 0.8
+                y = h * 0.5
+                new_h = Hazard(h_id, x, y, 150.0, "quantum_node", 0.0)
+                world.arena.hazards.append(new_h)
+                quantum_nodes.append(new_h)
+
+        node1 = quantum_nodes[0]
+        node2 = quantum_nodes[1]
+        n1_x = getattr(node1, "x", 0.0)
+        n1_y = getattr(node1, "y", 0.0)
+        n2_x = getattr(node2, "x", 0.0)
+        n2_y = getattr(node2, "y", 0.0)
+
+        near_n1 = []
+        near_n2 = []
+
+        for b in balls:
+            if not getattr(b, "alive", False): continue
+            b_x = getattr(b, "x", 0.0)
+            b_y = getattr(b, "y", 0.0)
+
+            d1 = math.hypot(b_x - n1_x, b_y - n1_y)
+            d2 = math.hypot(b_x - n2_x, b_y - n2_y)
+
+            if d1 < 150.0:
+                near_n1.append(b)
+            if d2 < 150.0:
+                near_n2.append(b)
+
+        current_states = {}
+        for b in near_n1 + near_n2:
+            state = {"hp": getattr(b, "hp", 100.0)}
+            for s in self.status_effects:
+                state[s] = getattr(b, s, 0.0)
+            current_states[getattr(b, "id", -1)] = state
+
+        # process n1 -> n2
+        for b in near_n1:
+            b_id = getattr(b, "id", -1)
+            if b_id in self.previous_states:
+                prev = self.previous_states[b_id]
+                cur = current_states[b_id]
+
+                hp_diff = prev["hp"] - cur["hp"]
+                if hp_diff > 0:
+                    for t in near_n2:
+                        t_hp = getattr(t, "hp", 100.0)
+                        new_hp = max(0.0, t_hp - hp_diff * 0.5)
+                        t.hp = new_hp
+                        if getattr(t, "id", -1) in current_states:
+                            current_states[getattr(t, "id", -1)]["hp"] = new_hp
+                            if getattr(t, "id", -1) in self.previous_states:
+                                self.previous_states[getattr(t, "id", -1)]["hp"] = new_hp
+
+                for s in self.status_effects:
+                    s_diff = cur[s] - prev.get(s, 0.0)
+                    if s_diff > 0:
+                        for t in near_n2:
+                            t_s = getattr(t, s, 0.0)
+                            new_s = t_s + s_diff * 0.5
+                            setattr(t, s, new_s)
+                            if getattr(t, "id", -1) in current_states:
+                                current_states[getattr(t, "id", -1)][s] = new_s
+                                if getattr(t, "id", -1) in self.previous_states:
+                                    self.previous_states[getattr(t, "id", -1)][s] = new_s
+
+        # process n2 -> n1
+        for b in near_n2:
+            b_id = getattr(b, "id", -1)
+            if b_id in self.previous_states:
+                prev = self.previous_states[b_id]
+                cur = current_states[b_id]
+
+                hp_diff = prev["hp"] - cur["hp"]
+                if hp_diff > 0:
+                    for t in near_n1:
+                        t_hp = getattr(t, "hp", 100.0)
+                        new_hp = max(0.0, t_hp - hp_diff * 0.5)
+                        t.hp = new_hp
+                        if getattr(t, "id", -1) in current_states:
+                            current_states[getattr(t, "id", -1)]["hp"] = new_hp
+                            if getattr(t, "id", -1) in self.previous_states:
+                                self.previous_states[getattr(t, "id", -1)]["hp"] = new_hp
+
+                for s in self.status_effects:
+                    s_diff = cur[s] - prev.get(s, 0.0)
+                    if s_diff > 0:
+                        for t in near_n1:
+                            t_s = getattr(t, s, 0.0)
+                            new_s = t_s + s_diff * 0.5
+                            setattr(t, s, new_s)
+                            if getattr(t, "id", -1) in current_states:
+                                current_states[getattr(t, "id", -1)][s] = new_s
+                                if getattr(t, "id", -1) in self.previous_states:
+                                    self.previous_states[getattr(t, "id", -1)][s] = new_s
+
+        for b in balls:
+            if getattr(b, "alive", False):
+                b_id = getattr(b, "id", -1)
+                b_x = getattr(b, "x", 0.0)
+                b_y = getattr(b, "y", 0.0)
+                d1 = math.hypot(b_x - n1_x, b_y - n1_y)
+                d2 = math.hypot(b_x - n2_x, b_y - n2_y)
+                if d1 < 150.0 or d2 < 150.0:
+                    state = {"hp": getattr(b, "hp", 100.0)}
+                    for s in self.status_effects:
+                        state[s] = getattr(b, s, 0.0)
+                    self.previous_states[b_id] = state
+                elif b_id in self.previous_states:
+                    del self.previous_states[b_id]
+
 GAME_MODES = {
+
 
     "explosive_meteors": ExplosiveMeteorsMode(),
     "void_tiles": VoidTilesMode(),
@@ -29621,3 +29773,5 @@ GAME_MODES['decoy_network'] = DecoyNetworkMode()
 GAME_MODES["chronosphere_event"] = ChronosphereEventMode()
 
 GAME_MODES['toxic_flood_royale'] = ToxicFloodRoyaleMode()
+
+GAME_MODES['quantum_entanglement'] = QuantumEntanglementMode()

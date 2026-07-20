@@ -39609,7 +39609,166 @@ class ToxicFloodRoyaleMode extends GameMode:
 						b.killer = "Toxic Flood"
 
 
+
+class QuantumEntanglementMode extends GameMode:
+	var previous_states = {}
+	var status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+	var random_obj = RandomNumberGenerator.new()
+
+	func _init():
+		super._init()
+		name = "Quantum Entanglement"
+		description = "A hazard that spawns in pairs. Any damage or status effect taken by a ball near one hazard is partially duplicated and dealt to any ball standing near its paired hazard."
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		if not ("arena" in world) or world.arena == null or not ("hazards" in world.arena):
+			return
+
+		var quantum_nodes = []
+		for h in world.arena.hazards:
+			var kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("get_meta") and h.has_meta("kind") else "")
+			if kind == "quantum_node":
+				quantum_nodes.append(h)
+
+		if quantum_nodes.size() < 2:
+			var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+			if ProceduralArenaScript != null:
+				var w = world.arena.width if "width" in world.arena else 2000.0
+				var h = world.arena.height if "height" in world.arena else 2000.0
+
+				var needed = 2 - quantum_nodes.size()
+				for i in range(needed):
+					var h_id = world.arena.hazards.size() + random_obj.randi_range(1000, 9999)
+					var x = w * 0.2 if quantum_nodes.size() == 0 else w * 0.8
+					var y = h * 0.5
+					var new_h = ProceduralArenaScript.Hazard.new(h_id, x, y, 150.0, "quantum_node", 0.0)
+					world.arena.hazards.append(new_h)
+					quantum_nodes.append(new_h)
+
+		if quantum_nodes.size() < 2: return
+
+		var node1 = quantum_nodes[0]
+		var node2 = quantum_nodes[1]
+		var n1_x = node1.x if "x" in node1 else (node1.get_meta("x") if node1.has_method("get_meta") and node1.has_meta("x") else 0.0)
+		var n1_y = node1.y if "y" in node1 else (node1.get_meta("y") if node1.has_method("get_meta") and node1.has_meta("y") else 0.0)
+		var n2_x = node2.x if "x" in node2 else (node2.get_meta("x") if node2.has_method("get_meta") and node2.has_meta("x") else 0.0)
+		var n2_y = node2.y if "y" in node2 else (node2.get_meta("y") if node2.has_method("get_meta") and node2.has_meta("y") else 0.0)
+
+		var near_n1 = []
+		var near_n2 = []
+
+		for b in balls:
+			var alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
+			if not alive: continue
+
+			var b_x = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+			var b_y = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+
+			var d1 = sqrt((b_x - n1_x)*(b_x - n1_x) + (b_y - n1_y)*(b_y - n1_y))
+			var d2 = sqrt((b_x - n2_x)*(b_x - n2_x) + (b_y - n2_y)*(b_y - n2_y))
+
+			if d1 < 150.0:
+				near_n1.append(b)
+			if d2 < 150.0:
+				near_n2.append(b)
+
+		var current_states = {}
+		for b in near_n1 + near_n2:
+			var b_id = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else -1)
+			var state = {"hp": b.hp if "hp" in b else (b.get_meta("hp") if b.has_method("get_meta") and b.has_meta("hp") else 100.0)}
+			for s in status_effects:
+				state[s] = b[s] if s in b else (b.get_meta(s) if b.has_method("get_meta") and b.has_meta(s) else 0.0)
+			current_states[b_id] = state
+
+		# process n1 -> n2
+		for b in near_n1:
+			var b_id = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else -1)
+			if previous_states.has(b_id):
+				var prev = previous_states[b_id]
+				var cur = current_states[b_id]
+
+				var hp_diff = prev["hp"] - cur["hp"]
+				if hp_diff > 0:
+					for t in near_n2:
+						var t_id = t.id if "id" in t else (t.get_meta("id") if t.has_method("get_meta") and t.has_meta("id") else -1)
+						var t_hp = t.hp if "hp" in t else (t.get_meta("hp") if t.has_method("get_meta") and t.has_meta("hp") else 100.0)
+						var new_hp = max(0.0, t_hp - hp_diff * 0.5)
+						if "hp" in t: t.hp = new_hp
+						elif t.has_method("set_meta"): t.set_meta("hp", new_hp)
+						if current_states.has(t_id):
+							current_states[t_id]["hp"] = new_hp
+							if previous_states.has(t_id):
+								previous_states[t_id]["hp"] = new_hp
+
+				for s in status_effects:
+					var prev_s = prev[s] if prev.has(s) else 0.0
+					var s_diff = cur[s] - prev_s
+					if s_diff > 0:
+						for t in near_n2:
+							var t_id = t.id if "id" in t else (t.get_meta("id") if t.has_method("get_meta") and t.has_meta("id") else -1)
+							var t_s = t[s] if s in t else (t.get_meta(s) if t.has_method("get_meta") and t.has_meta(s) else 0.0)
+							var new_s = t_s + s_diff * 0.5
+							if s in t: t[s] = new_s
+							elif t.has_method("set_meta"): t.set_meta(s, new_s)
+							if current_states.has(t_id):
+								current_states[t_id][s] = new_s
+								if previous_states.has(t_id):
+									previous_states[t_id][s] = new_s
+
+		# process n2 -> n1
+		for b in near_n2:
+			var b_id = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else -1)
+			if previous_states.has(b_id):
+				var prev = previous_states[b_id]
+				var cur = current_states[b_id]
+
+				var hp_diff = prev["hp"] - cur["hp"]
+				if hp_diff > 0:
+					for t in near_n1:
+						var t_id = t.id if "id" in t else (t.get_meta("id") if t.has_method("get_meta") and t.has_meta("id") else -1)
+						var t_hp = t.hp if "hp" in t else (t.get_meta("hp") if t.has_method("get_meta") and t.has_meta("hp") else 100.0)
+						var new_hp = max(0.0, t_hp - hp_diff * 0.5)
+						if "hp" in t: t.hp = new_hp
+						elif t.has_method("set_meta"): t.set_meta("hp", new_hp)
+						if current_states.has(t_id):
+							current_states[t_id]["hp"] = new_hp
+							if previous_states.has(t_id):
+								previous_states[t_id]["hp"] = new_hp
+
+				for s in status_effects:
+					var prev_s = prev[s] if prev.has(s) else 0.0
+					var s_diff = cur[s] - prev_s
+					if s_diff > 0:
+						for t in near_n1:
+							var t_id = t.id if "id" in t else (t.get_meta("id") if t.has_method("get_meta") and t.has_meta("id") else -1)
+							var t_s = t[s] if s in t else (t.get_meta(s) if t.has_method("get_meta") and t.has_meta(s) else 0.0)
+							var new_s = t_s + s_diff * 0.5
+							if s in t: t[s] = new_s
+							elif t.has_method("set_meta"): t.set_meta(s, new_s)
+							if current_states.has(t_id):
+								current_states[t_id][s] = new_s
+								if previous_states.has(t_id):
+									previous_states[t_id][s] = new_s
+
+		for b in balls:
+			var alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
+			if alive:
+				var b_id = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else -1)
+				var b_x = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+				var b_y = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+				var d1 = sqrt((b_x - n1_x)*(b_x - n1_x) + (b_y - n1_y)*(b_y - n1_y))
+				var d2 = sqrt((b_x - n2_x)*(b_x - n2_x) + (b_y - n2_y)*(b_y - n2_y))
+				if d1 < 150.0 or d2 < 150.0:
+					var state = {"hp": b.hp if "hp" in b else (b.get_meta("hp") if b.has_method("get_meta") and b.has_meta("hp") else 100.0)}
+					for s in status_effects:
+						state[s] = b[s] if s in b else (b.get_meta(s) if b.has_method("get_meta") and b.has_meta(s) else 0.0)
+					previous_states[b_id] = state
+				elif previous_states.has(b_id):
+					previous_states.erase(b_id)
+
 GAME_MODES = {
+
+	"quantum_entanglement": QuantumEntanglementMode.new(),
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
 
 	"explosive_meteors": ExplosiveMeteorsMode.new(),
