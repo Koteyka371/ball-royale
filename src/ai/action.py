@@ -7394,13 +7394,17 @@ class Action:
                             continue
 
                         elif hazard.kind == "orbital_debris":
-                            # Debris hazards slow down balls heavily in the crater area
+                            # Debris hazards push balls away continuously, making the crater area extremely slippery
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
                             dist = math.hypot(dx, dy)
                             if dist < getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 40.0):
-                                slow_factor = 0.2
-                                self.ball.speed = getattr(self.ball, 'base_speed', 150.0) * slow_factor
+                                if dist > 0.0001:
+                                    nx = dx / dist
+                                    ny = dy / dist
+                                    push_strength = 200.0 * delta
+                                    self.ball.x += nx * push_strength
+                                    self.ball.y += ny * push_strength
                             continue
                         elif hazard.kind == "emp_strike_active":
                             # Check if under an orbital shield dome
