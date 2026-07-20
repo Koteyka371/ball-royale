@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1201] Phased Shift Skill — *2026-07-20 14:48:12 UTC*
+
+A temporary active skill that renders the player partially invisible and immune to terrain hazards for 3 seconds, but unable to deal damage. Good for escaping tight situations.
+
+---
+
 ## [idea-1197] Tornado Chains — *2026-07-20 05:32:53 UTC*
 
 A new 'Storm Link' booster that physically tethers two balls together using a miniature cyclone. The tether applies minor constant damage but drastically speeds up both players if they move in the same direction, rewarding extreme coordination or punishing unwilling captives.
