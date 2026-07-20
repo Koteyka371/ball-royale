@@ -235,6 +235,55 @@ class GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -1096,6 +1145,55 @@ class GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -1911,6 +2009,55 @@ class DraftRoyaleMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -2219,6 +2366,55 @@ class BattleRoyaleMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -4769,6 +4965,55 @@ class TeamDeathmatchMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -4927,6 +5172,55 @@ class ZombieInfectionMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -5140,6 +5434,55 @@ class GuildBossFightMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -5398,6 +5741,55 @@ class BossFightMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -5608,6 +6000,55 @@ class VIPDefenseMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -5772,6 +6213,55 @@ class SurvivalMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -6284,6 +6774,55 @@ class DualPayloadMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -6848,6 +7387,55 @@ class EscortMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -7456,6 +8044,55 @@ class CaptureTheFlagMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -7625,6 +8262,55 @@ class EvolutionarySimulationMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -7989,6 +8675,55 @@ class MassiveGravityWellMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -8292,6 +9027,55 @@ class KingOfTheHillMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -8504,6 +9288,55 @@ class SweepingBlackHoleMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -8837,6 +9670,55 @@ class WeatherChaosMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -9717,6 +10599,55 @@ class DominationMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -9959,6 +10890,55 @@ class MovingZoneMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -10211,6 +11191,55 @@ class MemoryTrapsMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -10411,6 +11440,55 @@ class CustomMatchMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -10716,6 +11794,55 @@ class EcholocationMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -10926,6 +12053,55 @@ class PitchBlackMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -11109,6 +12285,55 @@ class VisionReducedMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -11516,6 +12741,55 @@ class PortalNodeMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -11712,6 +12986,55 @@ class MovingSafeZoneMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -12063,6 +13386,55 @@ class ShrinkingDangerZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -12368,6 +13740,55 @@ class ModifierSafeZoneMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -12700,6 +14121,55 @@ class ModifierZonesSafeZoneMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -13196,6 +14666,55 @@ class SafeZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -13516,6 +15035,55 @@ class InverseMirrorArenaMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -13714,6 +15282,55 @@ class MirrorMatchMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -13870,6 +15487,55 @@ class VolatileClonesMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -14201,6 +15867,55 @@ class CloneChaosMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -14377,6 +16092,55 @@ class SumoKnockoutMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -14574,6 +16338,55 @@ class PacifistKnockoutMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -14741,6 +16554,55 @@ class BumperBallsMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -15008,6 +16870,55 @@ class ToxicEnvironmentMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -15252,6 +17163,55 @@ class ModifierZonesMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -15493,6 +17453,55 @@ class WindstormMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -15929,6 +17938,55 @@ class BlackoutMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -16191,6 +18249,55 @@ class BountyHuntMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -16790,6 +18897,55 @@ class ShiftingMazeMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -17423,6 +19579,55 @@ class DayNightMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -18088,6 +20293,55 @@ class MagneticCollisionsMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -18656,6 +20910,55 @@ class PinballMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -19080,6 +21383,55 @@ class InvisibleWallsMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -19499,6 +21851,55 @@ class BodySwapMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -19687,6 +22088,55 @@ class TugOfWarMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -20800,6 +23250,55 @@ class StaminaSpeedMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -21018,6 +23517,55 @@ class HazardBilliardsMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -21496,6 +24044,55 @@ class InverseSafeZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -21841,6 +24438,55 @@ class DynamicSafeZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -22138,6 +24784,55 @@ class PrestigeWeatherMutatorMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -22304,6 +24999,55 @@ class DailyMutatorMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -22520,6 +25264,55 @@ class BlackMarketMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -23309,6 +26102,55 @@ class SoulLinkMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -23587,6 +26429,55 @@ class CursedBuffZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -23827,6 +26718,55 @@ class RhythmPanelsMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -24151,6 +27091,55 @@ class PolarityShiftMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -24919,6 +27908,55 @@ class ArtifactUpgraderMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -25339,6 +28377,55 @@ class SweepingPaddlesMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -25753,6 +28840,55 @@ class MazeSafeZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -26156,6 +29292,55 @@ class InvisibleDecoysMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -26228,7 +29413,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain"]
 
 	func _init():
 		name = "Extreme Weather"
@@ -26887,6 +30072,55 @@ class JuggernautMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -27214,6 +30448,55 @@ class ReverseTugOfWarMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -27517,6 +30800,55 @@ class HexGridRoyaleMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -27763,6 +31095,55 @@ class TickingPayloadMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -28154,6 +31535,55 @@ class BlackoutEventMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -28470,6 +31900,55 @@ class WeaponCollectionMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -29498,6 +32977,55 @@ class ShrinkingBoundaryMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -29686,6 +33214,55 @@ class EntangledArenaMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -29977,6 +33554,55 @@ class EntanglementMutatorMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -30671,6 +34297,55 @@ class LavaRoyaleMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -36334,6 +40009,55 @@ class CrossfireMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -36553,6 +40277,55 @@ class TagTeamMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -37029,6 +40802,55 @@ class TeleporterHubMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
@@ -37566,6 +41388,55 @@ class IllusionWallMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
 
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
+
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
 			if is_elemental:
@@ -37917,6 +41788,55 @@ class UndergroundTunnelMode extends GameMode:
 							b.defense_multiplier = 0.8
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", 0.8)
+
+			# Trait: Wind
+			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
+			if is_wind:
+				if weather_cond == "slight_breeze" or weather_cond == "storm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+				elif weather_cond == "hurricane":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b.get("x", 0.0) + (100.0 * delta)
+						b["y"] = b.get("y", 0.0) + (100.0 * delta)
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
+					else:
+						var old_x = b.get("x") if "x" in b else 0.0
+						var old_y = b.get("y") if "y" in b else 0.0
+						if "x" in b: b.x = old_x + (100.0 * delta)
+						if "y" in b: b.y = old_y + (100.0 * delta)
+
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b:
+							b.defense_multiplier = dm * 1.5
+						elif b.has_method("set_meta"):
+							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Water
+			var is_water = b_type.find("water") != -1 or traits.has("water")
+			if is_water:
+				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.1
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.1
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
+						if "hp" in b:
+							b.hp = new_hp
+						elif b.has_method("set_meta"):
+							b.set_meta("hp", new_hp)
 
 			# Trait: Elementalist
 			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
