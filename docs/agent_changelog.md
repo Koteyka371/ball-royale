@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1187] Payload Boost Zones — *2026-07-20 04:25:34 UTC*
+
+The payload leaves a temporary speed boost trail or creates an aura that increases the movement speed of any nearby teammates, allowing the controlling team to better maneuver around the payload and defend it.
+
+---
+
 ## [idea-1102] Trap Disarm Kit — *2026-07-20 04:07:45 UTC*
 
 A new rare item 'Trap Disarm Kit'. When used, it temporarily reveals all invisible traps in a large radius and destroys any trap the user rolls over for the next 5 seconds without triggering them.
