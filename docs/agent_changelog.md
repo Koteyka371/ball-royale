@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1196] Twitch Chat Controlled Weather Event — *2026-07-20 01:42:14 UTC*
+
+Allow real spectators to type '!weather <type>' to change the arena temperature or spawn specific weather hazards like tornados or blizzards when the hype level is high.
+
+---
+
 ## [idea-1183] Payload Path Alteration — *2026-07-19 23:30:51 UTC*
 
 Allow Attackers to capture hack points around the map to temporarily alter the payload's path, forcing the Defenders to take a longer route.
