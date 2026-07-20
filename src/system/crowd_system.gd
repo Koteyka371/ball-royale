@@ -562,6 +562,7 @@ func _check_events(balls: Array, kill_log: Array, current_tick: int):
             if max_count >= 2 and world != null and world.has_method("add_event"):
                 world.add_event("crowd_cheer", {"message": "Let's go Team %s! Let's go!" % leading_team, "volume": 1.0})
                 world.add_event("audio_event", {"sound": "team_chant", "volume": 0.8})
+                world.add_event("audio_event", {"sound": "bgm_tempo_up", "volume": 1.0})
 
                 if not _has_meta_safe("last_chant_team"):
                     set_meta("last_chant_team", leading_team)
@@ -569,6 +570,8 @@ func _check_events(balls: Array, kill_log: Array, current_tick: int):
                 elif get_meta("last_chant_team") == leading_team:
                     set_meta("consecutive_chants", get_meta("consecutive_chants") + 1)
                 else:
+                    if get_meta("consecutive_chants", 0) > 0 and world != null and world.has_method("add_event"):
+                        world.add_event("audio_event", {"sound": "bgm_tempo_reset", "volume": 1.0})
                     set_meta("last_chant_team", leading_team)
                     set_meta("consecutive_chants", 1)
 
@@ -608,9 +611,13 @@ func _check_events(balls: Array, kill_log: Array, current_tick: int):
                                 "value": 50.0
                             })
             else:
+                if get_meta("consecutive_chants", 0) > 0 and world != null and world.has_method("add_event"):
+                    world.add_event("audio_event", {"sound": "bgm_tempo_reset", "volume": 1.0})
                 set_meta("last_chant_team", null)
                 set_meta("consecutive_chants", 0)
     elif current_tick % 200 == 0:
+        if get_meta("consecutive_chants", 0) > 0 and world != null and world.has_method("add_event"):
+            world.add_event("audio_event", {"sound": "bgm_tempo_reset", "volume": 1.0})
         set_meta("last_chant_team", null)
         set_meta("consecutive_chants", 0)
 
