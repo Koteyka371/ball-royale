@@ -20980,7 +20980,7 @@
     },
     {
       "id": "idea-1224",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Loop Mode",
@@ -31500,6 +31500,23 @@
         "src/ai/cursed_buffs.py",
         "src/ai/cursed_buffs.gd",
         "tests/test_cursed_buffs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1842",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ghost Orbs",
+      "description": "When a ball dies, it leaves behind a ghost orb that chases living players and drains their stamina if touched.",
+      "allowed_paths": [
+        "src/ai/ghost_orbs.py",
+        "src/ai/ghost_orbs.gd",
+        "tests/test_ghost_orbs.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1224] Time Loop Mode — *2026-07-20 20:21:17 UTC*
+
+Every 30 seconds, the game state (positions, health) rewinds to where it was 5 seconds ago, forcing players to rethink their strategies or re-engage.
+
+---
+
 ## [idea-1220] Weather prediction tool booster — *2026-07-20 19:57:09 UTC*
 
 Add a new booster that predicts the next weather condition accurately and gives the capturing player an aura buff when the predicted weather starts.
