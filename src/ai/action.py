@@ -2951,14 +2951,15 @@ class Action:
                                 self.world.items.append(mat)
             else:
                 # Grapple to wall
+                ball_radius = getattr(self.ball, "radius", 15)
                 if closest_wall == "left":
-                    self.ball.x = max(0.0, self.ball.x - pull_dist)
+                    self.ball.x = max(float(ball_radius), self.ball.x - pull_dist)
                 elif closest_wall == "right":
-                    self.ball.x = min(float(arena_width), self.ball.x + pull_dist)
+                    self.ball.x = min(float(arena_width) - float(ball_radius), self.ball.x + pull_dist)
                 elif closest_wall == "top":
-                    self.ball.y = max(0.0, self.ball.y - pull_dist)
+                    self.ball.y = max(float(ball_radius), self.ball.y - pull_dist)
                 elif closest_wall == "bottom":
-                    self.ball.y = min(float(arena_height), self.ball.y + pull_dist)
+                    self.ball.y = min(float(arena_height) - float(ball_radius), self.ball.y + pull_dist)
 
             self.ball.inventory.remove("grapple_hook")
 
@@ -14008,14 +14009,15 @@ class Action:
                                     self.world.items.append(mat)
                 else:
                     # Grapple to wall
+                    ball_radius = getattr(self.ball, "radius", 15)
                     if closest_wall == "left":
-                        self.ball.x = max(0.0, self.ball.x - pull_dist)
+                        self.ball.x = max(float(ball_radius), self.ball.x - pull_dist)
                     elif closest_wall == "right":
-                        self.ball.x = min(float(arena_width), self.ball.x + pull_dist)
+                        self.ball.x = min(float(arena_width) - float(ball_radius), self.ball.x + pull_dist)
                     elif closest_wall == "top":
-                        self.ball.y = max(0.0, self.ball.y - pull_dist)
+                        self.ball.y = max(float(ball_radius), self.ball.y - pull_dist)
                     elif closest_wall == "bottom":
-                        self.ball.y = min(float(arena_height), self.ball.y + pull_dist)
+                        self.ball.y = min(float(arena_height) - float(ball_radius), self.ball.y + pull_dist)
 
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 

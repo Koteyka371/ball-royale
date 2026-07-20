@@ -43,7 +43,7 @@ def test_grapple_to_wall():
     action = Action(ball, world)
     action._use_skill()
 
-    assert ball.x == 0.0
+    assert ball.x == getattr(ball, "radius", 15.0)
     assert ball.y == 500.0
 
 def test_grapple_to_entity():

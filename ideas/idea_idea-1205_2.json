@@ -1,0 +1,4 @@
+{
+  "title": "Vampiric Fog Weather Event",
+  "description": "Periodically, a dense crimson fog rolls into the arena. While in the fog, players continuously lose a small amount of health. However, dealing damage to other players inside the fog restores health equivalent to double the damage dealt. This forces aggressive play during the weather event and changes target prioritization dynamically."
+}
