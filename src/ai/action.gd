@@ -1737,7 +1737,106 @@ func _attempt_damage(attacker, target) -> void:
 	var new_hp = 0.0
 	if "hp" in target: new_hp = float(target.hp)
 
-	if new_hp < old_hp:
+
+	if "ghostly_echo_active" in target and target.ghostly_echo_active:
+		var dmg_taken = max(0.0, old_hp - new_hp)
+		var echo_data = {}
+		if "ghostly_echo_data" in target: echo_data = target.ghostly_echo_data
+		elif target.has_method("has_meta") and target.has_meta("ghostly_echo_data"): echo_data = target.get_meta("ghostly_echo_data")
+
+		if typeof(echo_data) == TYPE_DICTIONARY:
+			echo_data["damage_taken"] = echo_data.get("damage_taken", 0.0) + dmg_taken
+			if "ghostly_echo_data" in target: target.ghostly_echo_data = echo_data
+			elif target.has_method("set_meta"): target.set_meta("ghostly_echo_data", echo_data)
+
+		if new_hp <= 0 and old_hp > 0:
+			if "hp" in target: target.hp = 1.0
+			new_hp = 1.0
+
+			var tx = 0.0
+			if "x" in target: tx = target.x
+			var ty = 0.0
+			if "y" in target: ty = target.y
+
+			if self.world != null and self.world.has_method("add_event"):
+				self.world.call("add_event", "visual_effect", {"type": "teleport", "x": tx, "y": ty})
+
+			if typeof(echo_data) == TYPE_DICTIONARY:
+				if echo_data.has("x"):
+					if "x" in target: target.x = echo_data["x"]
+				if echo_data.has("y"):
+					if "y" in target: target.y = echo_data["y"]
+
+			var new_tx = 0.0
+			if "x" in target: new_tx = target.x
+			var new_ty = 0.0
+			if "y" in target: new_ty = target.y
+
+			if self.world != null and self.world.has_method("add_event"):
+				self.world.call("add_event", "visual_effect", {"type": "shockwave", "x": new_tx, "y": new_ty})
+
+			var dmg_taken_since = 0.0
+			if typeof(echo_data) == TYPE_DICTIONARY and echo_data.has("damage_taken"):
+				dmg_taken_since = echo_data["damage_taken"]
+
+			var shockwave_damage = dmg_taken_since * 1.5
+			var shockwave_radius = 150.0
+
+			if self.world != null and "balls" in self.world:
+				var t_team = ""
+				if "team" in target: t_team = target.team
+				elif "ball_type" in target: t_team = target.ball_type
+
+				for enemy in self.world.balls:
+					var e_alive = false
+					if "alive" in enemy: e_alive = enemy.alive
+
+					var eid = null
+					if "id" in enemy: eid = enemy.id
+
+					var tid = null
+					if "id" in target: tid = target.id
+
+					if e_alive and eid != tid:
+						var e_team = ""
+						if "team" in enemy: e_team = enemy.team
+						elif "ball_type" in enemy: e_team = enemy.ball_type
+
+						if e_team != t_team:
+							var ex = 0.0
+							if "x" in enemy: ex = enemy.x
+							var ey = 0.0
+							if "y" in enemy: ey = enemy.y
+
+							var dist_sq = (ex - new_tx)*(ex - new_tx) + (ey - new_ty)*(ey - new_ty)
+							if dist_sq <= shockwave_radius*shockwave_radius:
+								if self.world.has_method("_deal_damage"):
+									var old_dmg = 10.0
+									if "damage" in target: old_dmg = target.damage
+
+									if "damage" in target: target.damage = shockwave_damage
+									self.world.call("_deal_damage", target, enemy)
+									if "damage" in target: target.damage = old_dmg
+								else:
+									if "hp" in enemy:
+										enemy.hp -= shockwave_damage
+										if enemy.hp <= 0:
+											if "alive" in enemy: enemy.alive = false
+
+			if "ghostly_echo_active" in target: target.ghostly_echo_active = false
+			elif target.has_method("set_meta"): target.set_meta("ghostly_echo_active", false)
+
+			if "ghostly_echo_data" in target: target.ghostly_echo_data = {}
+			elif target.has_method("set_meta"): target.set_meta("ghostly_echo_data", {})
+
+			var cd = 5.0
+			if "SKILL_COOLDOWN" in target: cd = target.SKILL_COOLDOWN
+			if "skill_timer" in target: target.skill_timer = cd
+
+			if "alive" in target: target.alive = true
+			elif target.has_method("set_meta"): target.set_meta("alive", true)
+
+if new_hp < old_hp:
 		self._award_xp(attacker, 10.0, self.world)
 		if new_hp <= 0 and old_hp > 0:
 			var base_xp = 50.0
@@ -23756,7 +23855,103 @@ func _use_skill():
                             can_recast = true
                             break
 
-    if skill_timer <= 0.0 or can_recast:
+
+    if skill_name == "ghostly_echo":
+        var is_active = false
+        if "ghostly_echo_active" in self.ball: is_active = self.ball.ghostly_echo_active
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("ghostly_echo_active"): is_active = self.ball.get_meta("ghostly_echo_active")
+
+        if is_active:
+            # Trigger teleport and shockwave
+            var b_x = 0.0
+            if "x" in self.ball: b_x = self.ball.x
+            var b_y = 0.0
+            if "y" in self.ball: b_y = self.ball.y
+
+            if self.world != null and self.world.has_method("add_event"):
+                self.world.call("add_event", "visual_effect", {"type": "teleport", "x": b_x, "y": b_y})
+
+            var echo_data = {}
+            if "ghostly_echo_data" in self.ball: echo_data = self.ball.ghostly_echo_data
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("ghostly_echo_data"): echo_data = self.ball.get_meta("ghostly_echo_data")
+
+            if typeof(echo_data) == TYPE_DICTIONARY:
+                if echo_data.has("x"):
+                    if "x" in self.ball: self.ball.x = echo_data["x"]
+                if echo_data.has("y"):
+                    if "y" in self.ball: self.ball.y = echo_data["y"]
+
+            var new_x = 0.0
+            if "x" in self.ball: new_x = self.ball.x
+            var new_y = 0.0
+            if "y" in self.ball: new_y = self.ball.y
+
+            if self.world != null and self.world.has_method("add_event"):
+                self.world.call("add_event", "visual_effect", {"type": "shockwave", "x": new_x, "y": new_y})
+
+            var damage_taken = 0.0
+            if typeof(echo_data) == TYPE_DICTIONARY and echo_data.has("damage_taken"):
+                damage_taken = echo_data["damage_taken"]
+
+            var shockwave_damage = damage_taken * 1.5
+            var shockwave_radius = 150.0
+
+            var enemies = self._get_enemies()
+            for enemy in enemies:
+                var ex = 0.0
+                if "x" in enemy: ex = enemy.x
+                var ey = 0.0
+                if "y" in enemy: ey = enemy.y
+
+                var dist_sq = (ex - new_x)*(ex - new_x) + (ey - new_y)*(ey - new_y)
+                if dist_sq <= shockwave_radius*shockwave_radius:
+                    if self.world != null and self.world.has_method("_deal_damage"):
+                        var old_dmg = 10.0
+                        if "damage" in self.ball: old_dmg = self.ball.damage
+
+                        if "damage" in self.ball: self.ball.damage = shockwave_damage
+                        self.world.call("_deal_damage", self.ball, enemy)
+                        if "damage" in self.ball: self.ball.damage = old_dmg
+                    else:
+                        if "hp" in enemy:
+                            enemy.hp -= shockwave_damage
+                            if enemy.hp <= 0:
+                                if "alive" in enemy: enemy.alive = false
+                                elif enemy.has_method("set_meta"): enemy.set_meta("alive", false)
+
+            if "ghostly_echo_active" in self.ball: self.ball.ghostly_echo_active = false
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("ghostly_echo_active", false)
+
+            if "ghostly_echo_data" in self.ball: self.ball.ghostly_echo_data = {}
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("ghostly_echo_data", {})
+
+            var cd = 5.0
+            if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+            if "skill_timer" in self.ball: self.ball.skill_timer = cd
+
+            return
+        else:
+            # Place echo
+            if "ghostly_echo_active" in self.ball: self.ball.ghostly_echo_active = true
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("ghostly_echo_active", true)
+
+            var bx = 0.0
+            if "x" in self.ball: bx = self.ball.x
+            var by = 0.0
+            if "y" in self.ball: by = self.ball.y
+
+            var new_data = {"x": bx, "y": by, "damage_taken": 0.0}
+            if "ghostly_echo_data" in self.ball: self.ball.ghostly_echo_data = new_data
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("ghostly_echo_data", new_data)
+
+            if self.world != null and self.world.has_method("add_event"):
+                self.world.call("add_event", "visual_effect", {"type": "ghostly_echo_placed", "x": bx, "y": by})
+
+            if "skill_timer" in self.ball: self.ball.skill_timer = 0.5
+            return
+
+if skill_timer <= 0.0 or can_recast:
         if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
             self.ball.use_skill()
 

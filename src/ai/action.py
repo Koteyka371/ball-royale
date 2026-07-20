@@ -916,6 +916,59 @@ class Action:
 
         new_hp = getattr(target, "hp", 0.0)
 
+
+        if getattr(target, "ghostly_echo_active", False):
+            damage_taken = max(0, old_hp - new_hp)
+            echo_data = getattr(target, "ghostly_echo_data", {})
+            echo_data["damage_taken"] = echo_data.get("damage_taken", 0.0) + damage_taken
+            target.ghostly_echo_data = echo_data
+
+            if new_hp <= 0 and old_hp > 0:
+                # Lethal damage, prevent death and trigger shockwave
+                target.hp = 1.0
+                new_hp = 1.0
+
+                # Trigger teleport and shockwave
+                import math
+                if hasattr(self.world, "events"):
+                    self.world.events.append({"type": "visual_effect", "data": {"type": "teleport", "x": target.x, "y": target.y}})
+
+                echo_data = getattr(target, "ghostly_echo_data", {})
+                target.x = echo_data.get("x", target.x)
+                target.y = echo_data.get("y", target.y)
+
+                if hasattr(self.world, "events"):
+                    self.world.events.append({"type": "visual_effect", "data": {"type": "shockwave", "x": target.x, "y": target.y}})
+
+                damage_taken_since = echo_data.get("damage_taken", 0.0)
+                shockwave_damage = damage_taken_since * 1.5
+                shockwave_radius = 150.0
+
+                # Cannot easily use self._get_enemies() because target is the one using the echo, not self.ball (attacker)
+                # But we can iterate world balls
+                if hasattr(self.world, "balls"):
+                    target_team = getattr(target, "team", getattr(target, "ball_type", ""))
+                    for enemy in self.world.balls:
+                        if getattr(enemy, "alive", True) and getattr(enemy, "id", None) != getattr(target, "id", None):
+                            enemy_team = getattr(enemy, "team", getattr(enemy, "ball_type", ""))
+                            if enemy_team != target_team:
+                                dist_sq = (enemy.x - target.x)**2 + (enemy.y - target.y)**2
+                                if dist_sq <= shockwave_radius**2:
+                                    if hasattr(self.world, "_deal_damage"):
+                                        old_dmg = getattr(target, "damage", 10.0)
+                                        target.damage = shockwave_damage
+                                        self.world._deal_damage(target, enemy)
+                                        target.damage = old_dmg
+                                    elif hasattr(enemy, "hp"):
+                                        enemy.hp -= shockwave_damage
+                                        if enemy.hp <= 0:
+                                            enemy.alive = False
+
+                target.ghostly_echo_active = False
+                target.ghostly_echo_data = {}
+                target.skill_timer = getattr(target, "SKILL_COOLDOWN", 5.0)
+                target.alive = True
+
         damage_dealt_general = max(0, old_hp - new_hp)
         if damage_dealt_general > 0 and getattr(attacker, "has_vampiric_aura", False):
             heal_amount = damage_dealt_general * 0.5
@@ -12314,6 +12367,57 @@ class Action:
                             if math.hypot(b.x - self.ball.x, b.y - self.ball.y) < 150.0:
                                 can_recast = True
                                 break
+
+
+        if skill_name == "ghostly_echo":
+            if getattr(self.ball, "ghostly_echo_active", False):
+                # Trigger teleport and shockwave
+                import math
+                if hasattr(self.world, "events"):
+                    self.world.events.append({"type": "visual_effect", "data": {"type": "teleport", "x": self.ball.x, "y": self.ball.y}})
+
+                old_x, old_y = self.ball.x, self.ball.y
+                echo_data = getattr(self.ball, "ghostly_echo_data", {})
+                self.ball.x = echo_data.get("x", self.ball.x)
+                self.ball.y = echo_data.get("y", self.ball.y)
+
+                if hasattr(self.world, "events"):
+                    self.world.events.append({"type": "visual_effect", "data": {"type": "shockwave", "x": self.ball.x, "y": self.ball.y}})
+
+                damage_taken = echo_data.get("damage_taken", 0.0)
+                shockwave_damage = damage_taken * 1.5
+                shockwave_radius = 150.0
+
+                enemies = self._get_enemies()
+                for enemy in enemies:
+                    dist_sq = (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2
+                    if dist_sq <= shockwave_radius**2:
+                        if hasattr(self.world, "_deal_damage"):
+                            old_dmg = getattr(self.ball, "damage", 10.0)
+                            self.ball.damage = shockwave_damage
+                            self.world._deal_damage(self.ball, enemy)
+                            self.ball.damage = old_dmg
+                        elif hasattr(enemy, "hp"):
+                            enemy.hp -= shockwave_damage
+                            if enemy.hp <= 0:
+                                enemy.alive = False
+
+                self.ball.ghostly_echo_active = False
+                self.ball.ghostly_echo_data = {}
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+                return
+            else:
+                # Place echo
+                self.ball.ghostly_echo_active = True
+                self.ball.ghostly_echo_data = {
+                    "x": self.ball.x,
+                    "y": self.ball.y,
+                    "damage_taken": 0.0
+                }
+                if hasattr(self.world, "events"):
+                    self.world.events.append({"type": "visual_effect", "data": {"type": "ghostly_echo_placed", "x": self.ball.x, "y": self.ball.y}})
+                self.ball.skill_timer = 0.5  # Short cooldown to prevent accidental double press
+                return
 
         if skill_timer <= 0 or can_recast:
             if hasattr(self.ball, "use_skill") and skill_timer <= 0:

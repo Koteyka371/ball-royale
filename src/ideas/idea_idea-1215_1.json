@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Traps",
+  "description": "Allow traps to be linked. When one trap in the chain triggers, it explodes and sends a signal to adjacent traps, creating a cascading sequence of explosions. This allows players to setup intricate defensive grids or explosive ambushes."
+}

@@ -1,2 +1,0 @@
-Ah, memory says: "In the GDScript implementation (`action.gd`), use the built-in helper functions `_get_prop(entity, "property_name", default_value)` and `_set_prop(entity, "property_name", value)` for safe property access and assignment on dynamically typed entities (like `target` or `ball`)."
-Wait, grep didn't find `func _get_prop` in `action.gd`. Is it in `action.gd` but defined differently? Let me check `game_modes.gd` or `action.gd` for `_get_prop`.
