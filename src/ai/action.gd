@@ -13572,6 +13572,15 @@ func execute(strategy: String, delta: float):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "jump_pad":
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
+                                var angle = randf() * 2.0 * PI
+                                var speed = 1000.0
+                                _set_prop(self.ball, "vx", cos(angle) * speed)
+                                _set_prop(self.ball, "vy", sin(angle) * speed)
                             elif trap_variant == "ricochet":
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
