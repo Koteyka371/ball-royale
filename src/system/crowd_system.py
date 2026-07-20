@@ -60,6 +60,35 @@ class CrowdSystem:
                 self.world.add_event("crowd_throw", {"message": f"Viewer {user} spawned a {hazard_kind}!"})
                 self.excitement_level += 5.0
 
+        elif cmd == "!weather" and len(parts) >= 2:
+            if self.excitement_level >= 50.0:
+                weather_type = parts[1].lower()
+                if weather_type in ["hot", "heatwave"]:
+                    if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'temperature'):
+                        self.world.arena.temperature = 50.0
+                    if hasattr(self.world, 'add_event'):
+                        self.world.add_event("arena_modifier", {"temperature": 50.0})
+                        self.world.add_event("crowd_cheer", {"message": f"Viewer {user} made it HOT!"})
+                elif weather_type in ["cold", "blizzard", "snow"]:
+                    if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'temperature'):
+                        self.world.arena.temperature = -20.0
+                    if hasattr(self.world, 'add_event'):
+                        self.world.add_event("arena_modifier", {"temperature": -20.0})
+                        self.world.add_event("crowd_cheer", {"message": f"Viewer {user} made it COLD!"})
+                else:
+                    if hasattr(self.world, 'add_event'):
+                        target = None
+                        if alive_balls:
+                            target = random.choice(alive_balls)
+                        if target:
+                            self.world.add_event("spawn_hazard", {
+                                "x": getattr(target, "x", 0),
+                                "y": getattr(target, "y", 0),
+                                "kind": weather_type
+                            })
+                            self.world.add_event("crowd_cheer", {"message": f"Viewer {user} summoned a {weather_type}!"})
+                self.excitement_level -= 10.0
+
         elif cmd == "!drop" and len(parts) >= 2:
             booster_kind = parts[1]
             target = None
