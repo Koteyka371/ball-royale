@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1184] Wind Currents — *2026-07-20 05:13:26 UTC*
+
+Introduce dynamic wind currents that slowly push balls and projectiles in a specific direction, altering movement and combat dynamics.
+
+---
+
 ## [idea-1205] Grapple Hook Mechanics — *2026-07-20 05:13:21 UTC*
 
 Balls can equip a grapple hook to swing around obstacles and quickly cross gaps or evade enemies.
