@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1199] Orbital Laser Event — *2026-07-20 03:05:37 UTC*
+
+A slow-moving orbital laser tracks the highest-scoring ball, forcing them to constantly stay on the move while dodging other attacks.
+
+---
+
 ## [idea-1202] Meteor Shower Core Mechanic Integration — *2026-07-20 03:00:41 UTC*
 
 Expand meteor shower behavior so it creates small craters that linger in the arena for a few seconds. Balls falling into craters receive a temporary 'slow' debuff, turning a random hazard into a tactical space control mechanism.
