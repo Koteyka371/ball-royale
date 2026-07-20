@@ -173,6 +173,22 @@ class CrowdSystem:
                 if hasattr(self.world, 'add_event'):
                     self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} voted for {option}!"})
 
+        elif cmd == "!bounty" and len(parts) >= 2:
+            target_id = None
+            try:
+                target_id = int(parts[1])
+            except ValueError:
+                target_id = parts[1]
+
+            target = next((b for b in alive_balls if str(getattr(b, "id", "")) == str(target_id)), None)
+            if target:
+                target.crowd_bounty_timer = 600
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("visual_effect", {"type": "bounty_mark", "target_id": getattr(target, 'id', -1)})
+                    b_type = getattr(target, 'ball_type', 'Player')
+                    self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} placed a bounty on {b_type} {target_id}!"})
+                self.excitement_level += 10.0
+
         elif cmd == "!bribe" and len(parts) >= 2:
             action = parts[1]
             option = parts[2] if len(parts) >= 3 else None
@@ -233,6 +249,11 @@ class CrowdSystem:
         self._process_external_commands(balls)
         self._check_bets_and_winner(balls, tick)
         self._update_excitement(tick)
+        # Decrement bounty timers
+        for b in balls:
+            if getattr(b, "crowd_bounty_timer", 0) > 0:
+                b.crowd_bounty_timer -= 1
+
         self._check_events(balls, kill_log, tick)
         self._check_camping(balls, tick)
         self._throw_buffs_if_needed(balls, tick)
@@ -398,6 +419,18 @@ class CrowdSystem:
     def _handle_kill(self, kill_info: Dict, tick: int, balls: List[Any]):
         killer_id = kill_info.get("killer_id")
         victim_id = kill_info.get("victim_id")
+
+        victim_obj = next((b for b in balls if getattr(b, "id", -1) == victim_id), None)
+        killer_obj = next((b for b in balls if getattr(b, "id", -1) == killer_id), None)
+
+        if victim_obj and killer_obj and getattr(victim_obj, "crowd_bounty_timer", 0) > 0:
+            killer_obj.score = getattr(killer_obj, 'score', 0) + 1000
+            killer_obj.xp = getattr(killer_obj, 'xp', 0) + 500
+            if hasattr(self.world, 'add_event'):
+                self.world.add_event("visual_effect", {"type": "bounty_claimed", "target_id": killer_id})
+                self.world.add_event("crowd_cheer", {"message": f"The crowd goes wild as a bounty is claimed!"})
+
+
 
         # Track streak
         if killer_id not in self.kill_streak:
