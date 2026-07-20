@@ -155,6 +155,43 @@ func process_external_command(user: String, command: String, balls: Array):
             world.add_event("crowd_throw", {"message": "Viewer " + user + " dropped a " + booster_kind + " booster!"})
             excitement_level += 5.0
 
+    elif cmd == "!emote" and parts.size() >= 2:
+        var emote_type = parts[1]
+        var target = null
+        if parts.size() >= 3:
+            var tid = parts[2].to_int()
+            for b in alive_balls:
+                var b_id = -1
+                if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                    b_id = b.get("id")
+                elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                    b_id = b["id"]
+                if b_id == tid:
+                    target = b
+                    break
+
+        if target == null and not alive_balls.is_empty():
+            target = alive_balls[randi() % alive_balls.size()]
+
+        if target != null and world != null and world.has_method("add_event"):
+            var t_x = 0.0
+            var t_y = 0.0
+            if typeof(target) == TYPE_OBJECT:
+                t_x = float(target.get("x", 0.0))
+                t_y = float(target.get("y", 0.0))
+            elif typeof(target) == TYPE_DICTIONARY:
+                t_x = float(target.get("x", 0.0))
+                t_y = float(target.get("y", 0.0))
+
+            world.add_event("spawn_hazard", {
+                "x": t_x,
+                "y": t_y,
+                "kind": "emote",
+                "emoji": emote_type
+            })
+            world.add_event("crowd_throw", {"message": "Viewer " + user + " spawned a " + emote_type + " emote!"})
+            excitement_level += 2.0
+
     elif cmd == "!vote" and parts.size() >= 2:
         var option = parts[1]
         if active_vote != null and votes.has(option):

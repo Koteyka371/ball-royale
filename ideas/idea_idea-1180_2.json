@@ -1,0 +1,4 @@
+{
+    "title": "Viewer Betting Mini-Game",
+    "description": "Allow viewers to type '!bet [ball_id] [amount]' to wager loyalty points on a specific ball winning the match. If the ball wins, the viewer gets a payout. This increases viewer engagement and makes the crowd cheer louder for bets placed."
+}
