@@ -6825,14 +6825,19 @@ func execute(strategy: String, delta: float):
 						self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
 						self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
 			else:
+				var ball_radius = 15.0
+				if self.ball.has_meta("radius"):
+					ball_radius = float(self.ball.get_meta("radius"))
+				elif "radius" in self.ball:
+					ball_radius = float(self.ball.radius)
 				if closest_wall == "left":
-					self.ball.x = max(0.0, self.ball.x - pull_dist)
+					self.ball.x = max(ball_radius, self.ball.x - pull_dist)
 				elif closest_wall == "right":
-					self.ball.x = min(arena_width, self.ball.x + pull_dist)
+					self.ball.x = min(arena_width - ball_radius, self.ball.x + pull_dist)
 				elif closest_wall == "top":
-					self.ball.y = max(0.0, self.ball.y - pull_dist)
+					self.ball.y = max(ball_radius, self.ball.y - pull_dist)
 				elif closest_wall == "bottom":
-					self.ball.y = min(arena_height, self.ball.y + pull_dist)
+					self.ball.y = min(arena_height - ball_radius, self.ball.y + pull_dist)
 
 			inv.erase("grapple_hook")
 			self.ball.set_meta("inventory", inv)
@@ -26544,14 +26549,21 @@ func _use_skill():
                         self.ball.x = max(0.0, min(arena_width, self.ball.x))
                         self.ball.y = max(0.0, min(arena_height, self.ball.y))
             else:
+                var ball_radius = 15.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"):
+                    ball_radius = float(self.ball.radius)
+                elif typeof(self.ball) != TYPE_DICTIONARY and "radius" in self.ball:
+                    ball_radius = float(self.ball.radius)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"):
+                    ball_radius = float(self.ball.get_meta("radius"))
                 if min_dist == dist_left:
-                    self.ball.x = max(0.0, self.ball.x - pull_dist)
+                    self.ball.x = max(ball_radius, self.ball.x - pull_dist)
                 elif min_dist == dist_right:
-                    self.ball.x = min(arena_width, self.ball.x + pull_dist)
+                    self.ball.x = min(arena_width - ball_radius, self.ball.x + pull_dist)
                 elif min_dist == dist_top:
-                    self.ball.y = max(0.0, self.ball.y - pull_dist)
+                    self.ball.y = max(ball_radius, self.ball.y - pull_dist)
                 elif min_dist == dist_bottom:
-                    self.ball.y = min(arena_height, self.ball.y + pull_dist)
+                    self.ball.y = min(arena_height - ball_radius, self.ball.y + pull_dist)
 
             if "skill_cooldown" in self.ball:
                 self.ball.skill_timer = self.ball.skill_cooldown
