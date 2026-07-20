@@ -1,0 +1,4 @@
+{
+  "title": "Static Feedback Loop",
+  "description": "A new mutator where each time a player uses chain lightning, the leftover electric charge stays in the air, creating a static field that slows down all entities and gradually damages those without electric immunity over time."
+}

@@ -1047,11 +1047,11 @@ class Action:
                     weather_is_thunderstorm = True
 
                 chain_range = 150
-                chain_damage_multiplier = 0.8
+                chain_damage_multiplier = 0.65
 
                 if weather_is_thunderstorm:
                     chain_range = 300
-                    chain_damage_multiplier = 1.2
+                    chain_damage_multiplier = 1.05
 
                 chain_range_sq = chain_range * chain_range
                 jump_count = 0
@@ -1067,7 +1067,7 @@ class Action:
                 else:
                     target.stun_timer = 0.2
 
-                while jump_count < 3:
+                while jump_count < 4:
                     nearby_entities = []
                     for e in enemies:
                         if e not in hit_entities and getattr(e, "insulator_timer", 0.0) <= 0:
@@ -3721,7 +3721,7 @@ class Action:
                     current_target = self.ball
                     hit_entities = [self.ball]
 
-                    while jump_count < 3:
+                    while jump_count < 4:
                         nearby_entities = []
                         ct_x = getattr(current_target, "x", current_target.get("x", 0.0) if isinstance(current_target, dict) else 0.0)
                         ct_y = getattr(current_target, "y", current_target.get("y", 0.0) if isinstance(current_target, dict) else 0.0)
@@ -12328,7 +12328,7 @@ class Action:
                         bounced_enemies = {target}
                         current_pos = target
 
-                        for _ in range(3):
+                        for _ in range(4):
                             current_damage *= 0.8
                             next_target = None
                             best_dist = float("inf")
@@ -15544,7 +15544,7 @@ class Action:
                     if getattr(self.ball, "_cl_collision_cd", 0.0) <= 0.0:
                         setattr(self.ball, "_cl_collision_cd", 0.5) # 0.5s cooldown per ball to prevent spam
                         # Deal half damage (default base is 10, so half is 5, but let's just say 5 for chain)
-                        chain_damage = getattr(self.ball, "damage", 10.0) * 0.5
+                        chain_damage = getattr(self.ball, "damage", 10.0) * 0.35
                         if hasattr(other, "hp"):
                             other.hp -= chain_damage
                         elif hasattr(other, "take_damage"):
@@ -15556,7 +15556,7 @@ class Action:
                         bounced_enemies = {other}
                         current_pos = other
                         # Chain up to 3 times (meaning 3 additional jumps)
-                        for _ in range(3):
+                        for _ in range(4):
                             # find next nearest enemy within medium radius (e.g., 200)
                             best_dist = float("inf")
                             next_target = None

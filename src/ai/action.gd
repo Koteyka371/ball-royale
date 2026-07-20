@@ -1986,11 +1986,11 @@ func _attempt_damage(attacker, target) -> void:
 						weather_is_thunderstorm = true
 
 				var chain_range = 150.0
-				var chain_damage_multiplier = 0.8
+				var chain_damage_multiplier = 0.65
 
 				if weather_is_thunderstorm:
 					chain_range = 300.0
-					chain_damage_multiplier = 1.2
+					chain_damage_multiplier = 1.05
 
 				var chain_range_sq = chain_range * chain_range
 				var current_damage = orig_dmg * chain_damage_multiplier
@@ -1998,7 +1998,7 @@ func _attempt_damage(attacker, target) -> void:
 				hit_entities.append(attacker)
 				hit_entities.append(target)
 
-				while jump_count < 3:
+				while jump_count < 4:
 					var nearby = []
 					for e in enemies:
 						if not hit_entities.has(e):
@@ -8176,7 +8176,7 @@ func execute(strategy: String, delta: float):
                 var hit_entities = []
                 hit_entities.append(self.ball)
 
-                while jump_count < 3:
+                while jump_count < 4:
                     var nearby = []
                     var ct_x = current_target.x if "x" in current_target else current_target.get_meta("x") if typeof(current_target) == TYPE_OBJECT and current_target.has_meta("x") else current_target["x"]
                     var ct_y = current_target.y if "y" in current_target else current_target.get_meta("y") if typeof(current_target) == TYPE_OBJECT and current_target.has_meta("y") else current_target["y"]
@@ -30094,9 +30094,9 @@ func _resolve_collisions() -> bool:
                     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                         self.ball.set_meta("_cl_collision_cd", 0.5)
 
-                    var chain_damage = 5.0
-                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"): chain_damage = float(self.ball["damage"]) * 0.5
-                    elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball: chain_damage = float(self.ball.damage) * 0.5
+                    var chain_damage = 3.5
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"): chain_damage = float(self.ball["damage"]) * 0.35
+                    elif typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball: chain_damage = float(self.ball.damage) * 0.35
 
                     if typeof(other) == TYPE_DICTIONARY and other.has("hp"):
                         other["hp"] -= chain_damage
@@ -30110,7 +30110,7 @@ func _resolve_collisions() -> bool:
 
                     var bounced_enemies = [other]
                     var current_pos = other
-                    for _i in range(3):
+                    for _i in range(4):
                         var best_dist = 40000.0 # 200 squared
                         var next_target = null
                         for e in nearby:

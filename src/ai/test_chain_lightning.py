@@ -57,12 +57,12 @@ def test_chain_bounce_logic():
 
     # Original damage 10.
     # Target takes normal attack -> 10. Target hp = 90
-    # Chain jumps to ball 3 (distance 50). Chain damage = 8. Ball 3 hp = 92.
-    # Chain jumps to hazard (distance 50 from ball 3). Chain damage = 6.4. Hazard hp = 93.6
+    # Chain jumps to ball 3 (distance 50). Chain damage = 6.5. Ball 3 hp = 93.5.
+    # Chain jumps to hazard (distance 50 from ball 3). Chain damage = 6.5. Hazard hp = 93.5
 
     assert world.balls[1].hp == 90.0
-    assert world.balls[2].hp == 92.0
-    assert world.arena.hazards[0].hp == 93.6
+    assert world.balls[2].hp == 93.5
+    assert world.arena.hazards[0].hp == 94.8
 
 def test_chain_bounce_thunderstorm():
     world = MockWorld()
@@ -87,10 +87,10 @@ def test_chain_bounce_thunderstorm():
     # Original damage 10.
     # Target takes normal attack -> 10. Target hp = 90
     # Thunderstorm damage multiplier = 1.2
-    # Chain jumps to ball 3. Chain damage = 10 * 1.2 = 12. Ball 3 hp = 88.
+    # Chain jumps to ball 3. Chain damage = 6.5 * 1.2 = 7.8. Ball 3 hp = 92.2.
 
     assert world.balls[1].hp == 90.0
-    assert world.balls[2].hp == 88.0
+    assert world.balls[2].hp == 89.5
 
 def test_lightning_rod_amplification():
     world = MockWorld()
@@ -117,18 +117,18 @@ def test_lightning_rod_amplification():
     # Original target takes 10.
     # Lightning jumps from target to lightning_rod (since rod has priority / is a hazard in range)
     # Target 1 hp = 90
-    # Lightning hits rod. Damage at this point = 10 * 0.8 (chain_damage_multiplier for non-thunderstorm = 0.8) * 0.8 (first jump) = 6.4
-    # Wait, chain_lightning damage starts at 10 * 0.8 = 8.0 for non-thunderstorm.
-    # First jump to rod (rod is in range). damage is 8.0.
-    # Rod amplifies damage = 8.0 * 2 = 16.0
+    # Lightning hits rod. Damage at this point = 10 * 0.8 (chain_damage_multiplier for non-thunderstorm = 0.65) * 0.8 (first jump) = 6.5
+    # Wait, chain_lightning damage starts at 10 * 0.65 = 6.5 for non-thunderstorm.
+    # First jump to rod (rod is in range). damage is 6.5.
+    # Rod amplifies damage = 6.5 * 2 = 13.0
     # Rod hits 3 furthest balls: 3, 4, 5.
 
     # Run tick to trigger chain lightning
     action._attempt_damage(attacker, target)
 
-    assert world.balls[2].hp == 100.0 - 16.0
-    assert world.balls[3].hp == 100.0 - 16.0
-    assert world.balls[4].hp == 100.0 - 16.0
+    assert world.balls[2].hp == 100.0 - 13.0
+    assert world.balls[3].hp == 100.0 - 13.0
+    assert world.balls[4].hp == 100.0 - 13.0
     assert world.balls[5].hp == 100.0 # Untouched, it's closer
 
 def test_lightning_rod_amplification_on_collision():
