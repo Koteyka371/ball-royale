@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1220] Weather prediction tool booster — *2026-07-20 19:57:09 UTC*
+
+Add a new booster that predicts the next weather condition accurately and gives the capturing player an aura buff when the predicted weather starts.
+
+---
+
 ## [idea-1208] Temporal Collapse — *2026-07-20 19:57:02 UTC*
 
 As the match progresses, the edges of the arena start breaking down into 'void tiles'. Touching these tiles slows the player down and randomly rewinds their movement to a previous position, disorienting them and forcing fights into the center.
