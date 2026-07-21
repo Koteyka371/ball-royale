@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1257] Adaptive Power-Up Pools — *2026-07-21 20:36:42 UTC*
+
+When boosters spawn in specific hazard zones (e.g., inside a mud pit or a flood zone), they mutate into specialized variants that not only provide their core power but also impart a temporary environmental immunity or buff, like a 'muddy' booster giving minor speed buffs on dirt but slowing down on normal terrain.
+
+---
+
 ## [idea-1277] Slingshot Hook Mechanic — *2026-07-21 20:34:22 UTC*
 
 Add a new skill where the ball shoots a grappling hook to an ally or a piece of the environment, rapidly pulling itself towards it to avoid danger or reposition.

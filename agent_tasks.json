@@ -21541,7 +21541,7 @@
     },
     {
       "id": "idea-1257",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Adaptive Power-Up Pools",
@@ -32316,6 +32316,40 @@
         "src/ai/shrinking_horizon.py",
         "src/ai/shrinking_horizon.gd",
         "tests/test_shrinking_horizon.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1890",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Grapple Node Mode",
+      "description": "Nodes that pull you towards them when you shoot a grappling hook, but when another player touches them, they reverse and push you away at high speeds.",
+      "allowed_paths": [
+        "src/ai/reverse_grapple_node.py",
+        "src/ai/reverse_grapple_node.gd",
+        "tests/test_reverse_grapple_node.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1891",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bungee Cord Skill",
+      "description": "Similar to grapple but leaves a temporary tether between the player and the wall. Both the player and the wall are elastic, creating interesting physics traps and escapes.",
+      "allowed_paths": [
+        "src/ai/bungee_cord_skill.py",
+        "src/ai/bungee_cord_skill.gd",
+        "tests/test_bungee_cord_skill.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
