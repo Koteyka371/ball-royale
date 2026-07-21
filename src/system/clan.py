@@ -122,30 +122,57 @@ class ClanManager:
                         return True
         return False
 
-    def add_clan_quest(self, clan_name, description, required_progress):
+    def add_clan_quest(self, clan_name, description, required_progress, rewards=None):
+        if rewards is None:
+            rewards = []
         if clan_name in self.data["clans"]:
             clan = self.data["clans"][clan_name]
             clan["quests"].append({
                 "description": description,
                 "required": required_progress,
                 "current": 0,
-                "completed": False
+                "completed": False,
+                "rewards": rewards,
+                "contributors": {}
             })
             self.save()
             return True
         return False
 
-    def progress_clan_quest(self, clan_name, quest_index, amount):
+    def progress_clan_quest(self, clan_name, quest_index, amount, player_id=None):
         if clan_name in self.data["clans"]:
             clan = self.data["clans"][clan_name]
             if 0 <= quest_index < len(clan["quests"]):
                 quest = clan["quests"][quest_index]
                 if not quest["completed"]:
                     quest["current"] += amount
+                    if player_id:
+                        quest.setdefault("contributors", {})
+                        quest["contributors"][player_id] = quest["contributors"].get(player_id, 0) + amount
                     if quest["current"] >= quest["required"]:
                         quest["current"] = quest["required"]
                         quest["completed"] = True
                         clan["points"] += 10
+                        rewards = quest.get("rewards", [])
+                        for reward in rewards:
+                            rtype = reward.get("type")
+                            rval = reward.get("value")
+                            if rtype == "points":
+                                clan["points"] += rval
+                            elif rtype == "buff":
+                                if "buffs" not in clan:
+                                    clan["buffs"] = []
+                                if rval not in clan["buffs"]:
+                                    clan["buffs"].append(rval)
+                            elif rtype == "cosmetic":
+                                if "cosmetics" not in clan:
+                                    clan["cosmetics"] = []
+                                if rval not in clan["cosmetics"]:
+                                    clan["cosmetics"].append(rval)
+                            elif rtype == "stash_item":
+                                if "stash" not in clan:
+                                    clan["stash"] = {}
+                                clan["stash"][rval] = clan["stash"].get(rval, 0) + reward.get("amount", 1)
                     self.save()
                     return True
         return False

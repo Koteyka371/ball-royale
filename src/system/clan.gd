@@ -140,30 +140,65 @@ func withdraw_from_stash(clan_name: String, player_id: String, item_name: String
                     return true
     return false
 
-func add_clan_quest(clan_name: String, description: String, required_progress: int) -> bool:
+func add_clan_quest(clan_name: String, description: String, required_progress: int, rewards: Array = []) -> bool:
     if data["clans"].has(clan_name):
         var clan = data["clans"][clan_name]
         clan["quests"].append({
             "description": description,
             "required": required_progress,
             "current": 0,
-            "completed": false
+            "completed": false,
+            "rewards": rewards,
+            "contributors": {}
         })
         save_clans()
         return true
     return false
 
-func progress_clan_quest(clan_name: String, quest_index: int, amount: int) -> bool:
+func progress_clan_quest(clan_name: String, quest_index: int, amount: int, player_id: String = "") -> bool:
     if data["clans"].has(clan_name):
         var clan = data["clans"][clan_name]
         if quest_index >= 0 and quest_index < clan["quests"].size():
             var quest = clan["quests"][quest_index]
             if not quest["completed"]:
                 quest["current"] += amount
+                if player_id != "":
+                    if not quest.has("contributors"):
+                        quest["contributors"] = {}
+                    if not quest["contributors"].has(player_id):
+                        quest["contributors"][player_id] = 0
+                    quest["contributors"][player_id] += amount
                 if quest["current"] >= quest["required"]:
                     quest["current"] = quest["required"]
                     quest["completed"] = true
                     clan["points"] += 10
+                    var rewards = []
+                    if quest.has("rewards"):
+                        rewards = quest["rewards"]
+                    for reward in rewards:
+                        var rtype = reward["type"]
+                        var rval = reward["value"]
+                        if rtype == "points":
+                            clan["points"] += rval
+                        elif rtype == "buff":
+                            if not clan.has("buffs"):
+                                clan["buffs"] = []
+                            if not clan["buffs"].has(rval):
+                                clan["buffs"].append(rval)
+                        elif rtype == "cosmetic":
+                            if not clan.has("cosmetics"):
+                                clan["cosmetics"] = []
+                            if not clan["cosmetics"].has(rval):
+                                clan["cosmetics"].append(rval)
+                        elif rtype == "stash_item":
+                            if not clan.has("stash"):
+                                clan["stash"] = {}
+                            if not clan["stash"].has(rval):
+                                clan["stash"][rval] = 0
+                            var amt = 1
+                            if reward.has("amount"):
+                                amt = reward["amount"]
+                            clan["stash"][rval] += amt
                 save_clans()
                 return true
     return false
