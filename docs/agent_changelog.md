@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1259] Doppelganger Elite Hazard — *2026-07-21 05:14:22 UTC*
+
+A rare elite hazard that roams the map. When it spots a player, it perfectly mimics their stats, buffs, and loadout for 30 seconds. Players must either outrun their own doppelganger or fight an equally matched AI mirror.
+
+---
+
 ## [idea-1240] Quantum Dash — *2026-07-21 05:14:17 UTC*
 
 Modify the dash to briefly put the ball in a 'quantum state', making it immune to collisions and hazards during the teleport transition. After teleporting, it leaves behind a decoy that explodes if touched by enemies.
