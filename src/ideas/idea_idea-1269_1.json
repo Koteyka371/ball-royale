@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Tunnels Mode",
+  "description": "Pairs of tunnels spawn randomly on the map. Entering one tunnel immediately teleports the ball to the other with exactly the same momentum, but the ball is temporarily cloaked for 2 seconds upon exit."
+}

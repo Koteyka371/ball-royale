@@ -49392,3 +49392,60 @@ class InvisibleGravityWellsMode extends GameMode:
 			arena_hazards.erase(h)
 
 GAME_MODES["invisible_gravity_wells"] = InvisibleGravityWellsMode.new()
+
+
+class IceWallsMode extends GameMode:
+    var regeneration_timer = 0.0
+
+    func _init():
+        self.name = "Ice Walls"
+        self.description = "The arena is surrounded by fragile ice walls. Hitting them at high speed shatters them, creating an abyss, but they regenerate over time."
+        self.regeneration_timer = 0.0
+
+    func start(world, balls):
+        if not ("arena" in world) or world.arena == null:
+            return
+        if not ("boundary_states" in world.arena):
+            world.arena.boundary_states = {}
+        if not ("boundary_health" in world.arena):
+            world.arena.boundary_health = {}
+        var walls = ["top", "bottom", "left", "right"]
+        for wall in walls:
+            world.arena.boundary_states[wall] = "ice"
+            world.arena.boundary_health[wall] = 2000.0
+
+    func tick(world, balls, delta):
+        if not ("arena" in world) or world.arena == null:
+            return
+
+        self.regeneration_timer += delta
+        if self.regeneration_timer >= 5.0:
+            self.regeneration_timer = 0.0
+
+            if "boundary_health" in world.arena and "boundary_states" in world.arena:
+                var walls = ["top", "bottom", "left", "right"]
+                for wall in walls:
+                    var current_health = 2000.0
+                    if world.arena.boundary_health.has(wall):
+                        current_health = world.arena.boundary_health[wall]
+
+                    var current_state = "ice"
+                    if world.arena.boundary_states.has(wall):
+                        current_state = world.arena.boundary_states[wall]
+
+                    if current_state == "ice":
+                        if current_health < 2000.0:
+                            world.arena.boundary_health[wall] = min(2000.0, current_health + 250.0)
+                    else:
+                        world.arena.boundary_states[wall] = "ice"
+                        world.arena.boundary_health[wall] = 1000.0
+
+                        if world.arena.has_meta("boundary_offsets"):
+                            var offsets = world.arena.get_meta("boundary_offsets")
+                            var current_offset = 0.0
+                            if offsets.has(wall):
+                                current_offset = offsets[wall]
+                            offsets[wall] = max(0.0, current_offset - 50.0)
+                            world.arena.set_meta("boundary_offsets", offsets)
+
+GAME_MODES["ice_walls"] = IceWallsMode.new()

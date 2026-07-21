@@ -18337,21 +18337,28 @@ func execute(strategy: String, delta: float):
             if self.world.arena.boundary_health.has(hit_wall):
                 health = self.world.arena.boundary_health[hit_wall]
 
-            health -= speed * 0.2
+            if wall_state == "ice":
+                health -= speed * 0.5
+            else:
+                health -= speed * 0.2
             self.world.arena.boundary_health[hit_wall] = health
 
             if health <= 0.0:
-                var new_states = ["abyss", "spikes"]
-                var new_state = new_states[randi() % new_states.size()]
+                var new_state = ""
+                if wall_state == "ice":
+                    new_state = "abyss"
+                else:
+                    var new_states = ["abyss", "spikes"]
+                    new_state = new_states[randi() % new_states.size()]
                 self.world.arena.boundary_states[hit_wall] = new_state
                 wall_state = new_state
                 # offsets is already defined at the top of the function
                 if self.world.arena.has_meta("boundary_offsets"):
                     offsets = self.world.arena.get_meta("boundary_offsets")
-                offsets[hit_wall] += 50.0
-                self.world.arena.set_meta("boundary_offsets", offsets)
+                    offsets[hit_wall] += 50.0
+                    self.world.arena.set_meta("boundary_offsets", offsets)
                 self.world.arena.boundary_health[hit_wall] = 2000.0
-            elif health < 1000.0:
+            elif health < 1000.0 and wall_state != "ice":
                 wall_state = "damaged_bouncy"
 
         if wall_state == "sticky":
@@ -18404,7 +18411,9 @@ func execute(strategy: String, delta: float):
                     is_bouncy_terrain = true
             var new_speed = 0.0
             # Bouncy walls cause high-speed ricochets to make dodging harder and create chaotic collisions
-            if wall_state == "bouncy":
+            if wall_state == "ice":
+                new_speed = min(speed * 1.2, 4000.0)
+            elif wall_state == "bouncy":
                 new_speed = min(speed * 3.5, 4500.0)
             elif wall_state == "damaged_bouncy":
                 new_speed = min(speed * 2.0, 3000.0)
@@ -18488,7 +18497,7 @@ func execute(strategy: String, delta: float):
             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball["ball_type"]
             var is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-            if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss":
+            if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice":
                 pass
             elif wall_state == "spikes":
                 var dmg = 250.0
