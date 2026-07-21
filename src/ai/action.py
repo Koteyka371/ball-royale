@@ -16022,6 +16022,18 @@ class Action:
                     setattr(self.ball, "_last_hit_by_id", getattr(other, "id", None))
                     setattr(self.ball, "_last_hit_by_timer", 2.0)
 
+                    if getattr(self.ball, "speed_overdrive_timer", 0.0) > 0:
+                        speed = math.hypot(getattr(self.ball, "vx", 0.0), getattr(self.ball, "vy", 0.0))
+                        # kinetic burst based on speed (e.g. 10% of speed as bonus damage)
+                        burst_damage = speed * 0.1
+                        if hasattr(other, "take_damage"):
+                            other.take_damage(burst_damage)
+                        elif hasattr(other, "hp"):
+                            other.hp -= burst_damage
+
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("visual_effect", {"type": "kinetic_burst", "x": other.x, "y": other.y, "damage": burst_damage})
+
                     wkt = getattr(self.ball, "_wall_knockback_combo_timer", 0.0)
                     if wkt > 0:
                         # Double damage and knockback on collision immediately after a wall bounce
