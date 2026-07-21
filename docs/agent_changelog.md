@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1190] Quantum Entanglement Hazards — *2026-07-21 05:20:12 UTC*
+
+A hazard that spawns in pairs across the arena. Any damage or status effect taken by a ball near one hazard is partially duplicated and dealt to any ball standing near its paired hazard.
+
+---
+
 ## [idea-1219] Corruptible Crowd Modes — *2026-07-21 05:17:28 UTC*
 
 Introduces game modes or periodic events where the base cost of bribing the crowd fluctuates dynamically based on 'Corruptibility Level', encouraging players to strategically time their bribes to cheaply cancel hazards or overwhelm enemies.
