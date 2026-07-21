@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1222] Teleport Anchor Traps — *2026-07-21 04:00:47 UTC*
+
+Introduce a new player-deployable trap called the 'Anchor Trap'. When an enemy ball enters the trap's radius, their movement abilities (like dash or teleport) are completely disabled for 5 seconds, effectively rooting them in the general area and disabling escape mechanics.
+
+---
+
 ## [idea-1238] Rubber Band Arena — *2026-07-21 03:50:06 UTC*
 
 A mutator where pairs of players are tethered together by an elastic band. If they move too far apart, they are snapped back towards each other, dealing collision damage.

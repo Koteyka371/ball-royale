@@ -20946,7 +20946,7 @@
     },
     {
       "id": "idea-1222",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Teleport Anchor Traps",
@@ -31942,6 +31942,23 @@
         "src/ai/bounty_hunter_tracking_darts.py",
         "src/ai/bounty_hunter_tracking_darts.gd",
         "tests/test_bounty_hunter_tracking_darts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1868",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ghost Phase",
+      "description": "Players periodically become ghosts and can pass through walls.",
+      "allowed_paths": [
+        "src/ai/ghost_phase.py",
+        "src/ai/ghost_phase.gd",
+        "tests/test_ghost_phase.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
