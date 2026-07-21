@@ -29924,3 +29924,114 @@ GAME_MODES['decoy_network'] = DecoyNetworkMode()
 GAME_MODES["chronosphere_event"] = ChronosphereEventMode()
 
 GAME_MODES['toxic_flood_royale'] = ToxicFloodRoyaleMode()
+
+
+class HealerFreezeTagMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Healer Freeze Tag"
+        self.description = "One Healer per team. Healers must dodge hazards and quickly unfreeze their entire team before the other healer does."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        # Split into two teams
+        playing_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(playing_balls) // 2
+        for i, b in enumerate(playing_balls):
+            b.team = "Red" if i < mid else "Blue"
+
+        # Pick a healer for each team
+        teams = {}
+        for b in playing_balls:
+            if b.team not in teams:
+                teams[b.team] = []
+            teams[b.team].append(b)
+
+        for t, members in teams.items():
+            for i, b in enumerate(members):
+                if i == 0:
+                    b.is_healer = True
+                    b.is_frozen = False
+                else:
+                    b.is_healer = False
+                    self._freeze_ball(b)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+
+        n = len(alive_balls)
+        for i in range(n):
+            for j in range(i + 1, n):
+                b1 = alive_balls[i]
+                b2 = alive_balls[j]
+
+                b1_x = getattr(b1, "x", 0.0)
+                b1_y = getattr(b1, "y", 0.0)
+                b1_r = getattr(b1, "radius", 10.0)
+
+                b2_x = getattr(b2, "x", 0.0)
+                b2_y = getattr(b2, "y", 0.0)
+                b2_r = getattr(b2, "radius", 10.0)
+
+                dist_sq = (b1_x - b2_x) ** 2 + (b1_y - b2_y) ** 2
+                min_dist = b1_r + b2_r
+
+                if dist_sq < min_dist ** 2:
+                    team1 = getattr(b1, "team", None)
+                    team2 = getattr(b2, "team", None)
+
+                    if team1 and team2 and team1 == team2:
+                        # Ally collision
+                        b1_frozen = getattr(b1, "is_frozen", False)
+                        b2_frozen = getattr(b2, "is_frozen", False)
+
+                        # If one is frozen and the other is NOT frozen (i.e. is the healer or an unfrozen ally)
+                        if b1_frozen and not b2_frozen:
+                            self._unfreeze_ball(b1)
+                        elif not b1_frozen and b2_frozen:
+                            self._unfreeze_ball(b2)
+
+    def _freeze_ball(self, b: 'Any') -> None:
+        b.is_frozen = True
+        b.stun_timer = 9999.0
+        b.frozen_timer = 9999.0
+        b.vx = 0.0
+        b.vy = 0.0
+
+    def _unfreeze_ball(self, b: 'Any') -> None:
+        b.is_frozen = False
+        b.stun_timer = 0.0
+        b.frozen_timer = 0.0
+
+    def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
+        playing_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        if not playing_balls:
+            return "Draw"
+
+        team_status = {}
+        for b in playing_balls:
+            team = getattr(b, "team", None)
+            if team:
+                if team not in team_status:
+                    team_status[team] = {"total": 0, "frozen": 0}
+                team_status[team]["total"] += 1
+                if getattr(b, "is_frozen", False):
+                    team_status[team]["frozen"] += 1
+
+        # A team wins if they have 0 frozen players across all their initial members
+        winners = []
+        for team, stats in team_status.items():
+            if stats["frozen"] == 0 and stats["total"] > 0:
+                winners.append(team)
+
+        if len(winners) == 1:
+            return winners[0]
+        elif len(winners) > 1:
+            return "Draw"
+
+        return None
+
+GAME_MODES['healer_freeze_tag'] = HealerFreezeTagMode()
