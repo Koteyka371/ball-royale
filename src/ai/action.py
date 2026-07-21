@@ -9258,7 +9258,7 @@ class Action:
                 elif gm and getattr(gm, "name", "") == "Jump Pad Boundaries":
                     new_speed = min(speed * 4.0, 5000.0)
                 else:
-                    new_speed = min(speed * 1.5, 2000.0)
+                    new_speed = min(speed * 2.0, 5000.0)
 
                 if getattr(self.ball, "is_frictionless", False):
                     new_speed = min(speed * 2.0, 4000.0)
