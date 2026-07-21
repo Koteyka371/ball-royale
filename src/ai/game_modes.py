@@ -25535,7 +25535,75 @@ class ChromaBossMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("chroma_boss_aura_change", {"color": boss.cosmetic_aura_color})
 
+
+class RandomQuantumTunnelsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Random Quantum Tunnels"
+        self.description = "Random quantum tunnels occasionally spawn. Entering one instantly teleports the ball to the opposite side of the map with inverted velocity."
+        self.tunnels = []
+        self.tunnel_radius = 40.0
+        self.spawn_timer = 0.0
+
+    class Tunnel:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.tunnels = []
+        import random
+        if hasattr(world, "arena"):
+            w, h = getattr(world.arena, "width", 2000.0), getattr(world.arena, "height", 2000.0)
+            for _ in range(3):
+                self.tunnels.append(self.Tunnel(random.uniform(100, w-100), random.uniform(100, h-100)))
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.spawn_timer += delta
+        if self.spawn_timer > 10.0:
+            self.spawn_timer = 0.0
+            if hasattr(world, "arena"):
+                w, h = getattr(world.arena, "width", 2000.0), getattr(world.arena, "height", 2000.0)
+                if len(self.tunnels) > 0:
+                    self.tunnels.pop(0)
+                self.tunnels.append(self.Tunnel(random.uniform(100, w-100), random.uniform(100, h-100)))
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            cd = getattr(b, "quantum_tunnel_cooldown", 0.0)
+            if cd > 0:
+                b.quantum_tunnel_cooldown = max(0.0, cd - delta)
+                continue
+
+            for t in self.tunnels:
+                dist = math.sqrt((b.x - t.x)**2 + (b.y - t.y)**2)
+                if dist < self.tunnel_radius:
+                    w = 2000.0
+                    h = 2000.0
+                    if hasattr(world, "arena"):
+                        w = getattr(world.arena, "width", 2000.0)
+                        h = getattr(world.arena, "height", 2000.0)
+
+                    b.x = w - b.x
+                    b.y = h - b.y
+                    b.vx = -getattr(b, "vx", 0.0)
+                    b.vy = -getattr(b, "vy", 0.0)
+                    b.quantum_tunnel_cooldown = 1.0
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("quantum_tunnel_teleport", {"ball_id": getattr(b, "id", 0)})
+                    break
+
+
 GAME_MODES = {
+    'random_quantum_tunnels': RandomQuantumTunnelsMode(),
     "chroma_boss": ChromaBossMode(),
     'rising_lava': RisingLavaMode(),
     'time_rewind_altar': TimeRewindAltarMode(),
