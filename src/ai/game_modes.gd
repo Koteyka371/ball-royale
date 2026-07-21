@@ -41090,7 +41090,218 @@ class RandomTeleportDashMode extends GameMode:
 					b.set_meta("random_teleport_cooldown", rand_cooldown)
 
 
+
+class TimeRewindAltarMode extends GameMode:
+	var altar = null
+	var ball_history = {}
+	var time_elapsed = 0.0
+
+	func _init():
+		self.name = "Time Rewind Altar"
+		self.description = "An altar that, when captured by a team, rewinds the positions and health of all enemy balls by 5 seconds, allowing the capturing team to regain a lost advantage or punish an aggressive push."
+
+	func setup(world, balls) -> void:
+		super.setup(world, balls)
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+
+		var arena = null
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"): arena = world["arena"]
+		elif typeof(world) == TYPE_OBJECT and "arena" in world: arena = world.arena
+
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				if arena.has("width"): arena_w = arena["width"]
+				if arena.has("height"): arena_h = arena["height"]
+			else:
+				if "width" in arena: arena_w = arena.width
+				if "height" in arena: arena_h = arena.height
+
+		self.altar = {
+			"x": arena_w * 0.5,
+			"y": arena_h * 0.5,
+			"radius": 150.0,
+			"capture_progress": 0.0,
+			"owner": null,
+			"cooldown": 0.0
+		}
+		self.ball_history = {}
+		self.time_elapsed = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		self.time_elapsed += delta
+
+		for b in balls:
+			var bid = null
+			if typeof(b) == TYPE_DICTIONARY and b.has("id"): bid = b["id"]
+			elif typeof(b) == TYPE_OBJECT and "id" in b: bid = b.id
+
+			if bid != null:
+				if not self.ball_history.has(bid):
+					self.ball_history[bid] = []
+
+				var b_x = 0.0
+				var b_y = 0.0
+				var b_hp = 0.0
+				var b_alive = false
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b_x = b.get("x", 0.0)
+					b_y = b.get("y", 0.0)
+					b_hp = b.get("hp", 0.0)
+					b_alive = b.get("alive", false)
+				else:
+					if "x" in b: b_x = b.x
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+
+					if "y" in b: b_y = b.y
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+
+					if "hp" in b: b_hp = b.hp
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("hp"): b_hp = b.get_meta("hp")
+
+					if "alive" in b: b_alive = b.alive
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+				var state = {
+					"t": self.time_elapsed,
+					"x": b_x,
+					"y": b_y,
+					"hp": b_hp,
+					"alive": b_alive
+				}
+				self.ball_history[bid].append(state)
+
+				while self.ball_history[bid].size() > 0 and self.time_elapsed - self.ball_history[bid][0]["t"] > 5.0:
+					self.ball_history[bid].pop_front()
+
+		if self.altar == null:
+			return
+
+		if self.altar["cooldown"] > 0:
+			self.altar["cooldown"] -= delta
+			return
+
+		var teams_present = {}
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+			else: b_alive = b.get("alive") if "alive" in b else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY: b_type = b.get("ball_type", "")
+			else: b_type = b.get("ball_type") if "ball_type" in b else ""
+
+			if b_alive and b_type != "spectator":
+				var b_x = 0.0
+				var b_y = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					b_x = b.get("x", 0.0)
+					b_y = b.get("y", 0.0)
+				else:
+					if "x" in b: b_x = b.x
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+					if "y" in b: b_y = b.y
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+
+				var dist_sq = (b_x - self.altar["x"])*(b_x - self.altar["x"]) + (b_y - self.altar["y"])*(b_y - self.altar["y"])
+				if dist_sq <= self.altar["radius"]*self.altar["radius"]:
+					var team = "unknown"
+					if typeof(b) == TYPE_DICTIONARY:
+						team = b.get("team", b.get("ball_type", "unknown"))
+					else:
+						team = b.get("team") if "team" in b else (b.get("ball_type") if "ball_type" in b else "unknown")
+
+					if teams_present.has(team):
+						teams_present[team] += 1
+					else:
+						teams_present[team] = 1
+
+		if teams_present.size() > 0:
+			var max_team = null
+			var max_count = -1
+			for team in teams_present.keys():
+				if teams_present[team] > max_count:
+					max_count = teams_present[team]
+					max_team = team
+
+			var tie_count = 0
+			for team in teams_present.keys():
+				if teams_present[team] == max_count:
+					tie_count += 1
+
+			var is_tie = tie_count > 1
+			if not is_tie and max_team != null:
+				if self.altar["owner"] == max_team:
+					if self.altar["capture_progress"] < 100.0:
+						self.altar["capture_progress"] = min(100.0, self.altar["capture_progress"] + 20.0 * delta)
+						if self.altar["capture_progress"] == 100.0:
+							self.trigger_rewind(max_team, balls, world)
+							self.altar["capture_progress"] = 0.0
+							self.altar["owner"] = null
+							self.altar["cooldown"] = 30.0
+				else:
+					self.altar["capture_progress"] -= 20.0 * delta
+					if self.altar["capture_progress"] <= 0:
+						self.altar["owner"] = max_team
+						self.altar["capture_progress"] = 0.0
+		else:
+			self.altar["capture_progress"] = max(0.0, self.altar["capture_progress"] - 10.0 * delta)
+			if self.altar["capture_progress"] == 0.0:
+				self.altar["owner"] = null
+
+	func trigger_rewind(capturing_team, balls, world):
+		if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+			world.add_event("altar_rewind_triggered", {"team": capturing_team})
+
+		for b in balls:
+			var team = "unknown"
+			var b_type = "unknown"
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "unknown")
+				team = b.get("team", b_type)
+			else:
+				b_type = b.get("ball_type") if "ball_type" in b else "unknown"
+				team = b.get("team") if "team" in b else b_type
+
+			if team != capturing_team and b_type != "spectator":
+				var bid = null
+				if typeof(b) == TYPE_DICTIONARY and b.has("id"): bid = b["id"]
+				elif typeof(b) == TYPE_OBJECT and "id" in b: bid = b.id
+
+				if bid != null and self.ball_history.has(bid) and self.ball_history[bid].size() > 0:
+					var old_state = self.ball_history[bid][0]
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = old_state["x"]
+						b["y"] = old_state["y"]
+						if old_state["alive"]:
+							b["hp"] = old_state["hp"]
+							b["alive"] = true
+						else:
+							b["hp"] = 0.0
+							b["alive"] = false
+					else:
+						if "x" in b: b.x = old_state["x"]
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("x", old_state["x"])
+
+						if "y" in b: b.y = old_state["y"]
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("y", old_state["y"])
+
+						if old_state["alive"]:
+							if "hp" in b: b.hp = old_state["hp"]
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("hp", old_state["hp"])
+							if "alive" in b: b.alive = true
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("alive", true)
+						else:
+							if "hp" in b: b.hp = 0.0
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("hp", 0.0)
+							if "alive" in b: b.alive = false
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("alive", false)
+
 GAME_MODES = {
+	"time_rewind_altar": TimeRewindAltarMode.new(),
 	"random_teleport_dash": RandomTeleportDashMode.new(),
 	"roaming_doppelganger": RoamingDoppelgangerMode.new(),
 class ThermalFreezeTagMode extends FreezeTagMode:

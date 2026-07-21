@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Skill",
+  "description": "An active skill that links the user's health pool and position with a targeted enemy ball for 5 seconds. Damage taken by one is shared, and at the end of the duration, they swap positions."
+}

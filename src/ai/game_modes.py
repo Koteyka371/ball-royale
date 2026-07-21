@@ -25228,7 +25228,121 @@ class TeleportDashMutatorMode(GameMode):
                     b.time_since_death += delta
                 continue
 
+
+class TimeRewindAltarMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Rewind Altar"
+        self.description = "An altar that, when captured by a team, rewinds the positions and health of all enemy balls by 5 seconds, allowing the capturing team to regain a lost advantage or punish an aggressive push."
+        self.altar = None
+        self.ball_history = {}
+        self.time_elapsed = 0.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.altar = {
+            "x": arena_w * 0.5,
+            "y": arena_h * 0.5,
+            "radius": 150.0,
+            "capture_progress": 0.0,
+            "owner": None,
+            "cooldown": 0.0
+        }
+        self.ball_history = {}
+        self.time_elapsed = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.time_elapsed += delta
+
+        # Record history for 5 seconds
+        for b in balls:
+            bid = getattr(b, "id", id(b))
+            if bid not in self.ball_history:
+                self.ball_history[bid] = []
+
+            # Record state
+            state = {
+                "t": self.time_elapsed,
+                "x": getattr(b, "x", 0.0),
+                "y": getattr(b, "y", 0.0),
+                "hp": getattr(b, "hp", 0.0),
+                "alive": getattr(b, "alive", False)
+            }
+            self.ball_history[bid].append(state)
+
+            # Prune old states (older than 5 seconds)
+            while self.ball_history[bid] and self.time_elapsed - self.ball_history[bid][0]["t"] > 5.0:
+                self.ball_history[bid].pop(0)
+
+        if not self.altar:
+            return
+
+        # Cooldown management
+        if self.altar["cooldown"] > 0:
+            self.altar["cooldown"] -= delta
+            return
+
+        teams_present = {}
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                dist_sq = (bx - self.altar["x"])**2 + (by - self.altar["y"])**2
+                if dist_sq <= self.altar["radius"]**2:
+                    team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                    teams_present[team] = teams_present.get(team, 0) + 1
+
+        if teams_present:
+            max_team = max(teams_present, key=teams_present.get)
+            is_tie = sum(1 for t, v in teams_present.items() if v == teams_present[max_team]) > 1
+            if not is_tie:
+                if self.altar["owner"] == max_team:
+                    if self.altar["capture_progress"] < 100.0:
+                        self.altar["capture_progress"] = min(100.0, self.altar["capture_progress"] + 20.0 * delta)
+                        if self.altar["capture_progress"] == 100.0:
+                            # TRIGGER REWIND!
+                            self.trigger_rewind(max_team, balls, world)
+                            self.altar["capture_progress"] = 0.0
+                            self.altar["owner"] = None
+                            self.altar["cooldown"] = 30.0 # 30s cooldown after use
+                else:
+                    self.altar["capture_progress"] -= 20.0 * delta
+                    if self.altar["capture_progress"] <= 0:
+                        self.altar["owner"] = max_team
+                        self.altar["capture_progress"] = 0.0
+        else:
+            self.altar["capture_progress"] = max(0.0, self.altar["capture_progress"] - 10.0 * delta)
+            if self.altar["capture_progress"] == 0.0:
+                self.altar["owner"] = None
+
+    def trigger_rewind(self, capturing_team, balls, world):
+        if hasattr(world, "add_event"):
+            world.add_event("altar_rewind_triggered", {"team": capturing_team})
+
+        for b in balls:
+            team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+            # Rewind only enemy balls
+            if team != capturing_team and getattr(b, "ball_type", None) != "spectator":
+                bid = getattr(b, "id", id(b))
+                if bid in self.ball_history and self.ball_history[bid]:
+                    # The oldest state is the one closest to 5 seconds ago
+                    old_state = self.ball_history[bid][0]
+                    b.x = old_state["x"]
+                    b.y = old_state["y"]
+                    if old_state["alive"]:
+                        b.hp = old_state["hp"]
+                        b.alive = True
+                    # If they were dead 5 seconds ago, they stay dead or die
+                    else:
+                        b.hp = 0.0
+                        b.alive = False
+
 GAME_MODES = {
+    'time_rewind_altar': TimeRewindAltarMode(),
     'teleport_dash_mutator': TeleportDashMutatorMode(),
     'random_teleport_dash': RandomTeleportDashMode(),
     'roaming_doppelganger': RoamingDoppelgangerMode(),
