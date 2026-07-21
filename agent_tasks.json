@@ -32814,6 +32814,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1919",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Overcharge Station",
+      "description": "Players can enter a stationary field that slowly drains their HP but permanently intensifies their cosmetic aura, slightly increasing its knockback multiplier on collision with weaker auras.",
+      "allowed_paths": [
+        "src/ai/aura_overcharge_station.py",
+        "src/ai/aura_overcharge_station.gd",
+        "tests/test_aura_overcharge_station.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
