@@ -29861,10 +29861,15 @@ class ExtremeWeatherMode extends GameMode:
 				if not is_immune:
 					if b.has_method("set_meta"):
 						b.set_meta("is_frictionless", true)
+						b.set_meta("steering_mult", 0.1)
+						if "steering_mult" in b:
+							b.steering_mult = 0.1
 						if not b.has_meta("is_slipping") or not b.get_meta("is_slipping"):
 							b.set_meta("is_slipping", true)
 					else:
 						b.is_frictionless = true
+						if "steering_mult" in b:
+							b.steering_mult = 0.1
 						if not "is_slipping" in b or not b.is_slipping:
 							b.is_slipping = true
 			elif current_weather == "earthquake":

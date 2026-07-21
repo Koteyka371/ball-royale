@@ -45,7 +45,7 @@ def test_extreme_weather_mode_setup_and_tick():
     # Tick for 15s to trigger weather change
     mode.tick(world, balls, 15.0)
 
-    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment"]
+    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain"]
     assert len(world.boosters) == 2 # 2 balls, 1 booster each spawned
 
     kind = world.boosters[0].kind
@@ -181,6 +181,7 @@ def test_ice_weather_sliding():
 
     assert getattr(b1, "is_frictionless", False) == True
     assert getattr(b1, "is_slipping", False) == True
+    assert b1.steering_mult == 0.1
 
 def test_earthquake_effects():
     from ai.game_modes import ExtremeWeatherMode
