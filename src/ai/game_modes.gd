@@ -47959,6 +47959,109 @@ class FakeBall:
         if self.hp <= 0:
             self.alive = false
 
+class MassDecoyEventMode extends GameMode:
+    var spawn_timer = 0.0
+    var spawn_interval = 15.0
+
+    func _init():
+        name = "Mass Decoy Event"
+        description = "Randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights."
+
+    func tick(world, balls, delta):
+        spawn_timer += delta
+
+        if spawn_timer >= spawn_interval:
+            spawn_timer = 0.0
+
+            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                world.add_event("mass_decoy_spawn", {"message": "Mass Decoils Deployed!"})
+            elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+                world.add_event.call("mass_decoy_spawn", {"message": "Mass Decoils Deployed!"})
+
+            var arena_w = 1000.0
+            var arena_h = 1000.0
+            if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+                arena_w = float(world.arena.width)
+                arena_h = float(world.arena.height)
+            elif typeof(world) == TYPE_DICTIONARY and ("arena" in world):
+                arena_w = float(world.arena.width)
+                arena_h = float(world.arena.height)
+
+            var new_decoys = []
+            for b in balls:
+                var alive = false
+                if typeof(b) == TYPE_OBJECT and "alive" in b: alive = b.alive
+                elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+
+                var is_decoy = false
+                if typeof(b) == TYPE_OBJECT and "is_decoy" in b: is_decoy = b.is_decoy
+                elif typeof(b) == TYPE_DICTIONARY and b.has("is_decoy"): is_decoy = b.is_decoy
+
+                var b_type = null
+                if typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+                elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b.ball_type
+
+                if alive and not is_decoy and b_type != "spectator" and b_type != "mimic_decoy":
+                    var decoy = null
+                    if typeof(b) == TYPE_OBJECT and b.has_method("duplicate"):
+                        decoy = b.duplicate()
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        decoy = b.duplicate()
+
+                    if decoy:
+                        var new_id = randi() % 900000 + 100000
+                        if typeof(world) == TYPE_OBJECT and "next_id" in world:
+                            new_id = world.next_id
+                            world.next_id += 1
+                        elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+                            new_id = world["next_id"]
+                            world["next_id"] += 1
+
+                        if typeof(decoy) == TYPE_OBJECT:
+                            if "id" in decoy: decoy.id = new_id
+                            if "is_decoy" in decoy: decoy.is_decoy = true
+                            if "ball_type" in decoy: decoy.ball_type = "mimic_decoy"
+                            if "speed" in decoy: decoy.speed = 0.0
+                            if "damage" in decoy: decoy.damage = 0.0
+                            if decoy.has_method("set_meta"):
+                                decoy.set_meta("base_speed", 0.0)
+
+                            var bx = 0.0
+                            var by = 0.0
+                            if "x" in b: bx = b.x
+                            if "y" in b: by = b.y
+
+                            var offset_x = randf_range(-50.0, 50.0)
+                            var offset_y = randf_range(-50.0, 50.0)
+
+                            if "x" in decoy: decoy.x = clamp(bx + offset_x, 50.0, arena_w - 50.0)
+                            if "y" in decoy: decoy.y = clamp(by + offset_y, 50.0, arena_h - 50.0)
+
+                            new_decoys.append(decoy)
+
+                        elif typeof(decoy) == TYPE_DICTIONARY:
+                            decoy["id"] = new_id
+                            decoy["is_decoy"] = true
+                            decoy["ball_type"] = "mimic_decoy"
+                            decoy["speed"] = 0.0
+                            decoy["damage"] = 0.0
+                            decoy["base_speed"] = 0.0
+
+                            var bx = decoy.get("x", 0.0)
+                            var by = decoy.get("y", 0.0)
+                            var offset_x = randf_range(-50.0, 50.0)
+                            var offset_y = randf_range(-50.0, 50.0)
+                            decoy["x"] = clamp(bx + offset_x, 50.0, arena_w - 50.0)
+                            decoy["y"] = clamp(by + offset_y, 50.0, arena_h - 50.0)
+
+                            new_decoys.append(decoy)
+
+            for d in new_decoys:
+                if typeof(world) == TYPE_OBJECT and "balls" in world:
+                    world.balls.append(d)
+                elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                    world.balls.append(d)
+
 class FakeBallsMode extends GameMode:
     var spawn_timer = 0.0
     var spawn_interval = 10.0
@@ -50490,6 +50593,7 @@ class WeatherCombinationsMode extends GameMode:
                     else:
                         if "speed" in b: b.speed = base_speed
 
+GAME_MODES["mass_decoy_event"] = MassDecoyEventMode.new()
 GAME_MODES["ice_walls"] = IceWallsMode.new()
 GAME_MODES["weather_combinations"] = WeatherCombinationsMode.new()
 GAME_MODES["linked_portals"] = LinkedPortalsMode.new()

@@ -30924,6 +30924,52 @@ class FakeBall:
         if self.hp <= 0:
             self.alive = False
 
+class MassDecoyEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mass Decoy Event"
+        self.description = "Randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights."
+        self.spawn_timer = 0.0
+        self.spawn_interval = 15.0
+
+    def tick(self, world, balls, delta=0.016):
+        import copy
+        import random
+        self.spawn_timer += delta
+
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0.0
+
+            if hasattr(world, "add_event"):
+                world.add_event("mass_decoy_spawn", {"message": "Mass Decoils Deployed!"})
+
+            arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+            arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+            for b in balls:
+                if getattr(b, "alive", False) and not getattr(b, "is_decoy", False) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "ball_type", None) != "mimic_decoy":
+                    decoy = copy.copy(b)
+                    if hasattr(world, "next_id"):
+                        decoy.id = world.next_id
+                        world.next_id += 1
+                    else:
+                        decoy.id = random.randint(100000, 999999)
+
+                    decoy.is_decoy = True
+                    decoy.ball_type = "mimic_decoy"
+                    decoy.speed = 0.0
+                    decoy.damage = 0.0
+                    decoy.base_speed = 0.0
+
+                    # Spawn near the player
+                    offset_x = random.uniform(-50, 50)
+                    offset_y = random.uniform(-50, 50)
+                    decoy.x = max(50, min(arena_w - 50, getattr(b, "x", 0) + offset_x))
+                    decoy.y = max(50, min(arena_h - 50, getattr(b, "y", 0) + offset_y))
+
+                    if hasattr(world, "balls"):
+                        world.balls.append(decoy)
+
 class FakeBallsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -30966,6 +31012,7 @@ class FakeBallsMode(GameMode):
                 if b in world.balls:
                     world.balls.remove(b)
 
+GAME_MODES["mass_decoy_event"] = MassDecoyEventMode()
 GAME_MODES["fake_balls"] = FakeBallsMode()
 
 class FactionWarMode(GameMode):
