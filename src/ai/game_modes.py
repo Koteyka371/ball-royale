@@ -6335,7 +6335,7 @@ class WeatherChaosMode(GameMode):
         super().setup(world, balls)
         arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
-        self.altars = [{"x": arena_w/2, "y": arena_h/2, "radius": 150.0, "capture_progress": 0.0, "owner": None}]
+        self.altars = [{"x": arena_w/2, "y": arena_h/2, "radius": 150.0, "capture_progress": 0.0, "owner": None, "sabotaged_by": None}]
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -6390,6 +6390,16 @@ class WeatherChaosMode(GameMode):
                     if dist_sq <= altar["radius"]**2:
                         team = getattr(b, "team", getattr(b, "ball_type", None))
                         teams_present[team] = teams_present.get(team, 0) + 1
+
+                        if hasattr(b, "inventory") and "negative_modifier" in b.inventory:
+                            b.inventory.remove("negative_modifier")
+                            altar["sabotaged_by"] = team
+                            if hasattr(world, "add_event"):
+                                world.add_event("altar_sabotaged", {"team": team})
+
+                        saboteur = altar.get("sabotaged_by")
+                        if saboteur and saboteur != team:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 15.0 * delta)
 
             if teams_present:
                 max_team = max(teams_present, key=teams_present.get)
@@ -25932,8 +25942,8 @@ class WeatherClashMode(GameMode):
         arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
 
         self.altars = [
-            {"x": arena_w * 0.25, "y": arena_h * 0.5, "radius": 150.0, "capture_progress": 0.0, "weather": "heatwave", "owner": None},
-            {"x": arena_w * 0.75, "y": arena_h * 0.5, "radius": 150.0, "capture_progress": 0.0, "weather": "blizzard", "owner": None}
+            {"x": arena_w * 0.25, "y": arena_h * 0.5, "radius": 150.0, "capture_progress": 0.0, "weather": "heatwave", "owner": None, "sabotaged_by": None},
+            {"x": arena_w * 0.75, "y": arena_h * 0.5, "radius": 150.0, "capture_progress": 0.0, "weather": "blizzard", "owner": None, "sabotaged_by": None}
         ]
 
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -25959,6 +25969,16 @@ class WeatherClashMode(GameMode):
                     if dist_sq <= altar["radius"]**2:
                         team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
                         teams_present[team] = teams_present.get(team, 0) + 1
+
+                        if hasattr(b, "inventory") and "negative_modifier" in b.inventory:
+                            b.inventory.remove("negative_modifier")
+                            altar["sabotaged_by"] = team
+                            if hasattr(world, "add_event"):
+                                world.add_event("altar_sabotaged", {"team": team})
+
+                        saboteur = altar.get("sabotaged_by")
+                        if saboteur and saboteur != team:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 15.0 * delta)
 
             if teams_present:
                 max_team = max(teams_present, key=teams_present.get)

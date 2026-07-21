@@ -72,3 +72,45 @@ def test_weather_chaos_altar_decay():
     mode.tick(world, [b1], delta)
 
     assert altar["capture_progress"] < 50.0
+
+def test_altar_sabotage():
+    mode = WeatherChaosMode()
+    world = MockWorld()
+
+    class SabotageMockBall:
+        def __init__(self, team, x, y, inv):
+            self.ball_type = team
+            self.team = team
+            self.x = x
+            self.y = y
+            self.alive = True
+            self.perception_radius = 250.0
+            self.speed = 100.0
+            self.damage = 10.0
+            self.weather_immunity_timer = 0.0
+            self.inventory = inv
+            self.hp = 100.0
+            self.max_stamina = 100.0
+            self.stamina = 100.0
+            self.base_speed = 100.0
+            self.base_damage = 10.0
+            self.original_base_damage = 10.0
+            self.traits = []
+            self.in_mirror_dimension = False
+            self.intangible = False
+            self.vision_radius = 250.0
+            self.invisible = False
+            self.speed_multiplier = 1.0
+
+    b1 = SabotageMockBall("red", 500, 500, ["negative_modifier"])
+    b2 = SabotageMockBall("blue", 500, 500, [])
+
+    mode.setup(world, [b1, b2])
+
+    # Tick loop to apply sabotage and damage
+    delta = 0.1
+    mode.tick(world, [b1, b2], delta)
+
+    assert "negative_modifier" not in b1.inventory
+    assert mode.altars[0]["sabotaged_by"] == "red"
+    assert b2.hp < 100.0
