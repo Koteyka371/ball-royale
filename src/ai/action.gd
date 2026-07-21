@@ -7385,10 +7385,24 @@ func execute(strategy: String, delta: float):
 				target = valid_targets[randi() % valid_targets.size()]
 
 			if target != null:
-				var temp_x = target.x
-				var temp_y = target.y
-				target.x = self.ball.x
-				target.y = self.ball.y
+				var t_x = 0.0
+				var t_y = 0.0
+				if "x" in target:
+					t_x = target.x
+					t_y = target.y
+				else:
+					t_x = target.position.x
+					t_y = target.position.y
+
+				var temp_x = t_x
+				var temp_y = t_y
+				if "x" in target:
+					target.x = self.ball.x
+					target.y = self.ball.y
+				else:
+					target.position.x = self.ball.x
+					target.position.y = self.ball.y
+
 				self.ball.x = temp_x
 				self.ball.y = temp_y
 				inv.erase("position_swap")
@@ -7411,6 +7425,19 @@ func execute(strategy: String, delta: float):
 						target.hp -= 5.0
 					elif typeof(target) == TYPE_DICTIONARY and target.has("hp"):
 						target["hp"] -= 5.0
+
+					if "slow_timer" in target:
+						target.slow_timer += 2.0
+					elif typeof(target) == TYPE_DICTIONARY:
+						if target.has("slow_timer"):
+							target["slow_timer"] += 2.0
+						else:
+							target["slow_timer"] = 2.0
+					elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+						var current_slow = 0.0
+						if target.has_meta("slow_timer"):
+							current_slow = target.get_meta("slow_timer")
+						target.set_meta("slow_timer", current_slow + 2.0)
 
 					if typeof(target) == TYPE_DICTIONARY:
 						target["slow_timer"] = target.get("slow_timer", 0.0) + 2.0
