@@ -1,4 +1,0 @@
-{
-  "title": "Stamina Overflow Discharge",
-  "description": "If a ball performs a cluster dash while already at maximum stamina, the excess stamina speed bursts are converted into a radial electrical discharge at each jump point. This minor AoE applies a brief slowing effect to enemies not directly hit by the dash, controlling clustered enemy movement."
-}

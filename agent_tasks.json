@@ -31692,6 +31692,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1853",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Overflow Discharge",
+      "description": "If a ball performs a cluster dash while already at maximum stamina, the excess stamina speed bursts are converted into a radial electrical discharge at each jump point. This minor AoE applies a brief slowing effect to enemies not directly hit by the dash, controlling clustered enemy movement.",
+      "allowed_paths": [
+        "src/ai/stamina_overflow_discharge.py",
+        "src/ai/stamina_overflow_discharge.gd",
+        "tests/test_stamina_overflow_discharge.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1854",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Mirage Dash",
+      "description": "After successfully completing a maximum cluster dash (all 3 jumps hit enemies), the ball leaves behind 3 static mirages of itself at the jump locations. These mirages briefly absorb a single enemy attack or hazard before dissipating, adding a layer of defensive misdirection to the aggressive playstyle.",
+      "allowed_paths": [
+        "src/ai/quantum_mirage_dash.py",
+        "src/ai/quantum_mirage_dash.gd",
+        "tests/test_quantum_mirage_dash.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
