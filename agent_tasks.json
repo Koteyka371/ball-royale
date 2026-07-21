@@ -20895,7 +20895,7 @@
     },
     {
       "id": "idea-1219",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Corruptible Crowd Modes",
@@ -32010,6 +32010,40 @@
         "src/ai/wall_reinforcement.py",
         "src/ai/wall_reinforcement.gd",
         "tests/test_wall_reinforcement.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1872",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Recall Traps",
+      "description": "A new hazard that occasionally pulses, marking all 'quantum state' teleporting entities. If they teleport while marked, they are recalled to their starting position after 3 seconds, forcing them to re-evaluate their dash trajectory.",
+      "allowed_paths": [
+        "src/arena/quantum_recall_traps.py",
+        "src/arena/quantum_recall_traps.gd",
+        "tests/test_quantum_recall_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1873",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Network Overload",
+      "description": "If a player has multiple decoys active, they can trigger an ability that links them with lasers for a few seconds before detonating them in a chain reaction, creating area denial zones.",
+      "allowed_paths": [
+        "src/ai/decoy_network_overload.py",
+        "src/ai/decoy_network_overload.gd",
+        "tests/test_decoy_network_overload.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

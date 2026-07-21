@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1219] Corruptible Crowd Modes — *2026-07-21 05:17:28 UTC*
+
+Introduces game modes or periodic events where the base cost of bribing the crowd fluctuates dynamically based on 'Corruptibility Level', encouraging players to strategically time their bribes to cheaply cancel hazards or overwhelm enemies.
+
+---
+
 ## [idea-1259] Doppelganger Elite Hazard — *2026-07-21 05:14:22 UTC*
 
 A rare elite hazard that roams the map. When it spots a player, it perfectly mimics their stats, buffs, and loadout for 30 seconds. Players must either outrun their own doppelganger or fight an equally matched AI mirror.
