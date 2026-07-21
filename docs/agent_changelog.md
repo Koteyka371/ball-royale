@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1302] Aura Resonance Shields — *2026-07-21 23:11:49 UTC*
+
+Balls with matching aura colors generate a temporary shield when they collide or stay in close proximity, encouraging players to cluster same-aura units for defense.
+
+---
+
 ## [idea-1279] Bouncy Bullet Mutator — *2026-07-21 22:55:41 UTC*
 
 A weekly mutator where all projectiles (bullets, fireballs, snipes) bounce off walls and hazards up to 3 times before dissipating. This creates a chaotic bullet-hell environment, rewarding players with strong defensive skills and positional awareness.

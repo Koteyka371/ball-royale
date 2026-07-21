@@ -22308,7 +22308,7 @@
     },
     {
       "id": "idea-1302",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Resonance Shields",
@@ -32690,6 +32690,74 @@
         "src/ai/dynamic_events.py",
         "src/ai/dynamic_events.gd",
         "tests/test_dynamic_events.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1912",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sabotage Votes",
+      "description": "Players can initiate a 'sabotage' vote that secretly applies a debuff (like reduced movement speed or increased damage taken) to a random player. This keeps players guessing and adds a layer of paranoia during matches.",
+      "allowed_paths": [
+        "src/ai/sabotage_votes.py",
+        "src/ai/sabotage_votes.gd",
+        "tests/test_sabotage_votes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1913",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Projectile Overload",
+      "description": "A survival mode where invincible turrets constantly spawn projectiles that bounce around the map. Players cannot destroy the turrets and must solely rely on dodging, perfect blocks, and positioning to survive as the arena fills with chaotic projectiles.",
+      "allowed_paths": [
+        "src/ai/projectile_overload.py",
+        "src/ai/projectile_overload.gd",
+        "tests/test_projectile_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1914",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter System",
+      "description": "Introduce a dynamic bounty system where the player with the highest score or most kills is marked as a 'Bounty Target.' If another player kills them, they receive a massive resource or score boost, encouraging underdog comebacks.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter.py",
+        "src/ai/bounty_hunter.gd",
+        "tests/test_bounty_hunter.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1915",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Hazard Arena",
+      "description": "The arena boundaries slowly constrict over time, pushing all balls towards the center. Touching the outer boundary applies a severe slow and damages over time.",
+      "allowed_paths": [
+        "src/arena/shrinking_arena.py",
+        "src/arena/shrinking_arena.gd",
+        "tests/test_shrinking_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
