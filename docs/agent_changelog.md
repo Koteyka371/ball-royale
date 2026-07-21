@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1240] Quantum Dash — *2026-07-21 05:14:17 UTC*
+
+Modify the dash to briefly put the ball in a 'quantum state', making it immune to collisions and hazards during the teleport transition. After teleporting, it leaves behind a decoy that explodes if touched by enemies.
+
+---
+
 ## [idea-1258] Hyperdrive Vortex — *2026-07-21 04:40:25 UTC*
 
 If an entity maintains Speed Overdrive for more than 10 seconds, it generates a mini vortex that temporarily pulls in nearby hazards and destroys them, creating a path for the player.
