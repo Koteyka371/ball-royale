@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Entanglement Hazards",
+    "description": "Hazards that link two players together. When one player takes damage or is inflicted with a status effect, the other linked player receives a portion of it. Breaking the link requires moving a significant distance away from each other within a limited time."
+}

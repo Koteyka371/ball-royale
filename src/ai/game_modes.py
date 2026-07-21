@@ -488,7 +488,7 @@ class GameMode:
                 b.submerge_timer -= delta
                 # Significantly slow down while submerged
                 b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.2
-                if b.submerge_timer <= 0:
+                if isinstance(getattr(b, "submerge_timer", 0.0), (int, float)) and b.submerge_timer <= 0:
                     b.is_submerged = False
                     # Drop some HP
                     if hasattr(b, "take_damage"):
@@ -503,7 +503,7 @@ class GameMode:
                     if hasattr(world, "add_event"):
                         world.add_event("ball_surfaced", {"id": getattr(b, "id", None)})
 
-            if getattr(b, "wet_debuff_timer", 0.0) > 0:
+            if isinstance(getattr(b, "wet_debuff_timer", 0.0), (int, float)) and getattr(b, "wet_debuff_timer", 0.0) > 0:
                 b.wet_debuff_timer -= delta
                 # Wet debuff could make them take more electrical damage or just slow them down a bit more
                 b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.2 # takes 20% more damage

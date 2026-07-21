@@ -1,0 +1,4 @@
+{
+    "title": "Bouncing Laser Mines",
+    "description": "Deployable mines that, instead of exploding, emit continuous laser beams that bounce off arena walls. The lasers deal damage on contact and remain active for several seconds, creating a dynamic web of lasers players must avoid."
+}
