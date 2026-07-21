@@ -23548,7 +23548,23 @@ class ToxicFloodRoyaleMode(GameMode):
                     b.killer = "Toxic Flood"
 
 
+
+class DashTeleportMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dash Teleport Mutator"
+        self.description = "A mutator for balls where their dash skill is replaced by a short-range instantaneous teleport, which can pass through thin walls but has a longer cooldown."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        for b in balls:
+            skill = getattr(b, "skill", "")
+            if skill == "dash":
+                b.skill = "dash_teleport"
+                b.SKILL = "dash_teleport"
+                b.skill_cooldown = getattr(b, "skill_cooldown", 5.0) + 3.0
+
 GAME_MODES = {
+    'dash_teleport_mutator': DashTeleportMutatorMode(),
 
     "explosive_meteors": ExplosiveMeteorsMode(),
     "void_tiles": VoidTilesMode(),

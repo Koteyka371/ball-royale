@@ -39700,7 +39700,30 @@ class ToxicFloodRoyaleMode extends GameMode:
 						b.killer = "Toxic Flood"
 
 
+
+class DashTeleportMutatorMode extends GameMode:
+	func _init().():
+		name = "Dash Teleport Mutator"
+		description = "A mutator for balls where their dash skill is replaced by a short-range instantaneous teleport, which can pass through thin walls but has a longer cooldown."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		for b in balls:
+			var skill = ""
+			if "skill" in b: skill = b.skill
+			elif b.has_method("has_meta") and b.has_meta("skill"): skill = b.get_meta("skill")
+			if skill == "dash":
+				if "skill" in b: b.skill = "dash_teleport"
+				elif b.has_method("set_meta"): b.set_meta("skill", "dash_teleport")
+				if "SKILL" in b: b.SKILL = "dash_teleport"
+				elif b.has_method("set_meta"): b.set_meta("SKILL", "dash_teleport")
+				var cd = 5.0
+				if "skill_cooldown" in b: cd = b.skill_cooldown
+				elif b.has_method("has_meta") and b.has_meta("skill_cooldown"): cd = b.get_meta("skill_cooldown")
+				if "skill_cooldown" in b: b.skill_cooldown = cd + 3.0
+				elif b.has_method("set_meta"): b.set_meta("skill_cooldown", cd + 3.0)
+
 GAME_MODES = {
+	"dash_teleport_mutator": DashTeleportMutatorMode.new(),
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
 
 	"explosive_meteors": ExplosiveMeteorsMode.new(),

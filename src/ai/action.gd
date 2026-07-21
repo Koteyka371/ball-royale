@@ -21831,7 +21831,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'throw_noise_maker']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'throw_noise_maker', 'dash_teleport']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -27694,6 +27694,64 @@ func _use_skill():
                 else:
                     self.ball.skill_timer = cooldown
 
+        elif skill_name == "dash_teleport":
+		_spawn_skill_particles("dash")
+		var dash_range_mult = 1.0
+		if self.ball.has_method("has_meta") and self.ball.has_meta("dash_range_mult"):
+			dash_range_mult = self.ball.get_meta("dash_range_mult")
+		var dash_dist = 100.0 * dash_range_mult
+		var dash_radius = 10.0
+		if "radius" in self.ball:
+			dash_radius = self.ball.radius
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"):
+			dash_radius = self.ball.get_meta("radius")
+		var enemies = _get_enemies()
+		var alive_enemies = []
+		for e in enemies:
+			var ehp = 1.0
+			if "hp" in e: ehp = e.hp
+			elif typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("hp"): ehp = e.get_meta("hp")
+			if ehp > 0: alive_enemies.append(e)
+		var target = null
+		var min_dist = 999999999.0
+		for e in alive_enemies:
+			var d_sq = (e.x - self.ball.x)*(e.x - self.ball.x) + (e.y - self.ball.y)*(e.y - self.ball.y)
+			if d_sq < min_dist:
+				min_dist = d_sq
+				target = e
+		var teleport_x = self.ball.x
+		var teleport_y = self.ball.y
+		if target != null:
+			var dx = target.x - self.ball.x
+			var dy = target.y - self.ball.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0.0001:
+				var dir_x = dx / dist
+				var dir_y = dy / dist
+				teleport_x = self.ball.x + dir_x * dash_dist
+				teleport_y = self.ball.y + dir_y * dash_dist
+			else:
+				var angle = randf() * 2 * PI
+				teleport_x = self.ball.x + cos(angle) * dash_dist
+				teleport_y = self.ball.y + sin(angle) * dash_dist
+		else:
+			var angle = randf() * 2 * PI
+			teleport_x = self.ball.x + cos(angle) * dash_dist
+			teleport_y = self.ball.y + sin(angle) * dash_dist
+		if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("clamp_position"):
+			var res = world.arena.clamp_position(teleport_x, teleport_y, dash_radius)
+			if typeof(res) == TYPE_ARRAY and res.size() >= 2:
+				teleport_x = res[0]
+				teleport_y = res[1]
+		if "x" in self.ball: self.ball.x = teleport_x
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("x", teleport_x)
+		if "y" in self.ball: self.ball.y = teleport_y
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("y", teleport_y)
+		var cd = 8.0
+		if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"): cd = self.ball.get_meta("skill_cooldown")
+		if "skill_timer" in self.ball: self.ball.skill_timer = cd
+		elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
         elif skill_name == "dash":
             _spawn_skill_particles("dash")
             var dash_range_mult = 1.0

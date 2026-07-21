@@ -11113,7 +11113,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'throw_noise_maker']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'throw_noise_maker', 'dash_teleport']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -14507,6 +14507,52 @@ class Action:
                 self.ball.y = max(0.0, min(float(arena_height), self.ball.y))
 
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", getattr(self.ball, "skill_cooldown", 5.0))
+
+            elif skill_name == "dash_teleport":
+                self._spawn_skill_particles("dash")
+                dash_range_mult = getattr(self.ball, "dash_range_mult", 1.0)
+                dash_dist = 100.0 * dash_range_mult
+
+                my_radius = getattr(self.ball, "radius", 10.0)
+
+                enemies = [e for e in self._get_enemies() if getattr(e, "hp", 1.0) > 0]
+                target = None
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+
+                teleport_x = self.ball.x
+                teleport_y = self.ball.y
+
+                if target:
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        dir_x = dx / dist
+                        dir_y = dy / dist
+                        teleport_x = self.ball.x + dir_x * dash_dist
+                        teleport_y = self.ball.y + dir_y * dash_dist
+                    else:
+                        import random
+                        import math
+                        angle = random.uniform(0, 2 * math.pi)
+                        teleport_x = self.ball.x + math.cos(angle) * dash_dist
+                        teleport_y = self.ball.y + math.sin(angle) * dash_dist
+                else:
+                    import random
+                    import math
+                    angle = random.uniform(0, 2 * math.pi)
+                    teleport_x = self.ball.x + math.cos(angle) * dash_dist
+                    teleport_y = self.ball.y + math.sin(angle) * dash_dist
+
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                    res = self.world.arena.clamp_position(teleport_x, teleport_y, my_radius)
+                    if isinstance(res, (list, tuple)):
+                        teleport_x, teleport_y = res[0], res[1]
+
+                self.ball.x = teleport_x
+                self.ball.y = teleport_y
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 8.0)
 
             elif skill_name == "dash":
                 self._spawn_skill_particles("dash")
