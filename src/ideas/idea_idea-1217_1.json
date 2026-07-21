@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Dash",
+  "description": "A game mode where dashing links your position to the nearest enemy. If they dash within the next 3 seconds, they teleport to your old location."
+}

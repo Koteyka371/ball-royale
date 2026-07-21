@@ -40952,7 +40952,143 @@ class RoamingDoppelgangerMode extends GameMode:
 						boss.set("vy", sin(angle) * boss_speed)
 
 
+class RandomTeleportDashMode extends GameMode:
+	func _init():
+		super()
+		name = "Random Teleport Dash"
+		description = "A rare game mode modifier where instead of standard dashes, ball abilities have a chance to trigger a randomized, short-range teleport around the arena. This creates high-stakes, unpredictable positioning during engagements, making both escapes and chases thrilling."
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+		elif typeof(world) == TYPE_DICTIONARY and "arena" in world:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				if "alive" in b: alive = b["alive"]
+			elif typeof(b) == TYPE_OBJECT:
+				if "alive" in b: alive = b.get("alive")
+
+			var btype = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				if "ball_type" in b: btype = b["ball_type"]
+			elif typeof(b) == TYPE_OBJECT:
+				if "ball_type" in b: btype = b.get("ball_type")
+
+			if not alive or btype == "spectator":
+				continue
+
+			var is_dashing = false
+			if typeof(b) == TYPE_DICTIONARY:
+				if "is_dashing" in b: is_dashing = b["is_dashing"]
+			elif typeof(b) == TYPE_OBJECT:
+				if "is_dashing" in b: is_dashing = b.get("is_dashing")
+
+			var skill_timer = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if "skill_timer" in b: skill_timer = float(b["skill_timer"])
+			elif typeof(b) == TYPE_OBJECT:
+				if "skill_timer" in b: skill_timer = float(b.get("skill_timer"))
+
+			var dash_cooldown = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if "dash_cooldown" in b: dash_cooldown = float(b["dash_cooldown"])
+			elif typeof(b) == TYPE_OBJECT:
+				if "dash_cooldown" in b: dash_cooldown = float(b.get("dash_cooldown"))
+
+			var prev_skill_timer = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if "_prev_teleport_skill_timer" in b: prev_skill_timer = float(b["_prev_teleport_skill_timer"])
+			elif typeof(b) == TYPE_OBJECT and b.has_meta("_prev_teleport_skill_timer"):
+				prev_skill_timer = float(b.get_meta("_prev_teleport_skill_timer"))
+
+			var prev_dash_cooldown = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if "_prev_teleport_dash_cooldown" in b: prev_dash_cooldown = float(b["_prev_teleport_dash_cooldown"])
+			elif typeof(b) == TYPE_OBJECT and b.has_meta("_prev_teleport_dash_cooldown"):
+				prev_dash_cooldown = float(b.get_meta("_prev_teleport_dash_cooldown"))
+
+			var just_used_skill = false
+			if skill_timer > prev_skill_timer + 1.0:
+				just_used_skill = true
+			if dash_cooldown > prev_dash_cooldown + 1.0:
+				just_used_skill = true
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["_prev_teleport_skill_timer"] = skill_timer
+				b["_prev_teleport_dash_cooldown"] = dash_cooldown
+			elif typeof(b) == TYPE_OBJECT:
+				b.set_meta("_prev_teleport_skill_timer", skill_timer)
+				b.set_meta("_prev_teleport_dash_cooldown", dash_cooldown)
+
+			var rand_cooldown = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if "random_teleport_cooldown" in b: rand_cooldown = float(b["random_teleport_cooldown"])
+			elif typeof(b) == TYPE_OBJECT and b.has_meta("random_teleport_cooldown"):
+				rand_cooldown = float(b.get_meta("random_teleport_cooldown"))
+
+			if is_dashing or just_used_skill:
+				if rand_cooldown <= 0.0:
+					if randf() < 0.3:
+						var teleport_radius = randf_range(150.0, 300.0)
+						var angle = randf_range(0, 2 * PI)
+
+						var bx = 0.0
+						var by = 0.0
+						var br = 15.0
+						if typeof(b) == TYPE_DICTIONARY:
+							if "x" in b: bx = float(b["x"])
+							if "y" in b: by = float(b["y"])
+							if "radius" in b: br = float(b["radius"])
+						elif typeof(b) == TYPE_OBJECT:
+							if "x" in b: bx = float(b.get("x"))
+							if "y" in b: by = float(b.get("y"))
+							if "radius" in b: br = float(b.get("radius"))
+
+						var new_x = bx + cos(angle) * teleport_radius
+						var new_y = by + sin(angle) * teleport_radius
+
+						new_x = max(br, min(arena_width - br, new_x))
+						new_y = max(br, min(arena_height - br, new_y))
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = new_x
+							b["y"] = new_y
+							if "vx" in b: b["vx"] = 0.0
+							if "vy" in b: b["vy"] = 0.0
+						elif typeof(b) == TYPE_OBJECT:
+							b.set("x", new_x)
+							b.set("y", new_y)
+							if "vx" in b: b.set("vx", 0.0)
+							if "vy" in b: b.set("vy", 0.0)
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("visual_effect", {"type": "teleport", "x": new_x, "y": new_y})
+
+					rand_cooldown = 2.0
+					if typeof(b) == TYPE_DICTIONARY:
+						b["random_teleport_cooldown"] = rand_cooldown
+					elif typeof(b) == TYPE_OBJECT:
+						b.set_meta("random_teleport_cooldown", rand_cooldown)
+
+			if rand_cooldown > 0.0:
+				rand_cooldown -= delta
+				if typeof(b) == TYPE_DICTIONARY:
+					b["random_teleport_cooldown"] = rand_cooldown
+				elif typeof(b) == TYPE_OBJECT:
+					b.set_meta("random_teleport_cooldown", rand_cooldown)
+
+
 GAME_MODES = {
+	"random_teleport_dash": RandomTeleportDashMode.new(),
 	"roaming_doppelganger": RoamingDoppelgangerMode.new(),
 	"healer_freeze_tag": HealerFreezeTagMode.new(),
 	"entangled_hazards_mode": EntangledHazardsMode.new(),
