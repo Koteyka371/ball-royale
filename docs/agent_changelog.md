@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1279] Bouncy Bullet Mutator — *2026-07-21 22:55:41 UTC*
+
+A weekly mutator where all projectiles (bullets, fireballs, snipes) bounce off walls and hazards up to 3 times before dissipating. This creates a chaotic bullet-hell environment, rewarding players with strong defensive skills and positional awareness.
+
+---
+
 ## [idea-1282] Bribe Auction System — *2026-07-21 22:55:37 UTC*
 
 If multiple players attempt to bribe the same vote event, a short auction is triggered where players bid currency to secure the final decision.
