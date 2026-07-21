@@ -30890,6 +30890,55 @@ func _clamp_position() -> bool:
             if old_x != self.ball.x or old_y != self.ball.y:
                 bounced = true
 
+        var is_projectile = false
+        var b_type = ""
+        if "ball_type" in self.ball:
+            b_type = self.ball.ball_type
+        elif "kind" in self.ball:
+            b_type = self.ball.kind
+        if b_type in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"]:
+            is_projectile = true
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta"):
+            if self.ball.has_meta("is_projectile") and self.ball.get_meta("is_projectile"):
+                is_projectile = true
+            elif self.ball.has_meta("is_ricochet_laser") and self.ball.get_meta("is_ricochet_laser"):
+                is_projectile = true
+            elif self.ball.has_meta("is_spell") and self.ball.get_meta("is_spell"):
+                is_projectile = true
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            if self.ball.get("is_projectile", false): is_projectile = true
+            elif self.ball.get("is_ricochet_laser", false): is_projectile = true
+            elif self.ball.get("is_spell", false): is_projectile = true
+
+        if bounced and is_projectile:
+            var gm_name = ""
+            if "game_mode" in self.world and self.world.game_mode != null:
+                if typeof(self.world.game_mode) == TYPE_DICTIONARY and self.world.game_mode.has("name"):
+                    gm_name = self.world.game_mode["name"]
+                elif typeof(self.world.game_mode) == TYPE_OBJECT and "name" in self.world.game_mode:
+                    gm_name = self.world.game_mode.name
+            if gm_name == "Bouncy Projectiles":
+                if old_x != self.ball.x and "vx" in self.ball:
+                    self.ball.vx = -self.ball.vx
+                if old_y != self.ball.y and "vy" in self.ball:
+                    self.ball.vy = -self.ball.vy
+                var bounces_left = 3
+                if typeof(self.ball) == TYPE_OBJECT and "bounces_left" in self.ball: bounces_left = self.ball.bounces_left
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bounces_left"): bounces_left = self.ball.get_meta("bounces_left")
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bounces_left"): bounces_left = self.ball["bounces_left"]
+
+                if bounces_left > 0:
+                    if typeof(self.ball) == TYPE_OBJECT and "bounces_left" in self.ball: self.ball.bounces_left = bounces_left - 1
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("bounces_left", bounces_left - 1)
+                    elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["bounces_left"] = bounces_left - 1
+                else:
+                    if typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = 0.0
+                    elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = 0.0
+                    if typeof(self.ball) == TYPE_OBJECT and "alive" in self.ball: self.ball.alive = false
+                    elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["alive"] = false
+
+
+
     return bounced
 
 func _resolve_collisions() -> bool:
@@ -31080,6 +31129,108 @@ func _resolve_collisions() -> bool:
 
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
+
+            var is_projectile_self = false
+            var b_type_self = ""
+            if "ball_type" in self.ball: b_type_self = self.ball.ball_type
+            elif "kind" in self.ball: b_type_self = self.ball.kind
+            if b_type_self in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"]: is_projectile_self = true
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta"):
+                if self.ball.has_meta("is_projectile") and self.ball.get_meta("is_projectile"): is_projectile_self = true
+                elif self.ball.has_meta("is_ricochet_laser") and self.ball.get_meta("is_ricochet_laser"): is_projectile_self = true
+                elif self.ball.has_meta("is_spell") and self.ball.get_meta("is_spell"): is_projectile_self = true
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.get("is_projectile", false): is_projectile_self = true
+                elif self.ball.get("is_ricochet_laser", false): is_projectile_self = true
+                elif self.ball.get("is_spell", false): is_projectile_self = true
+
+            var is_projectile_other = false
+            var b_type_other = ""
+            if "ball_type" in other: b_type_other = other.ball_type
+            elif "kind" in other: b_type_other = other.kind
+            if b_type_other in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"]: is_projectile_other = true
+            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta"):
+                if other.has_meta("is_projectile") and other.get_meta("is_projectile"): is_projectile_other = true
+                elif other.has_meta("is_ricochet_laser") and other.get_meta("is_ricochet_laser"): is_projectile_other = true
+                elif other.has_meta("is_spell") and other.get_meta("is_spell"): is_projectile_other = true
+            elif typeof(other) == TYPE_DICTIONARY:
+                if other.get("is_projectile", false): is_projectile_other = true
+                elif other.get("is_ricochet_laser", false): is_projectile_other = true
+                elif other.get("is_spell", false): is_projectile_other = true
+
+            var gm_name2 = ""
+            if "game_mode" in self.world and self.world.game_mode != null:
+                if typeof(self.world.game_mode) == TYPE_DICTIONARY and self.world.game_mode.has("name"): gm_name2 = self.world.game_mode["name"]
+                elif typeof(self.world.game_mode) == TYPE_OBJECT and "name" in self.world.game_mode: gm_name2 = self.world.game_mode.name
+
+            if gm_name2 == "Bouncy Projectiles":
+                var other_kind = ""
+                if "kind" in other: other_kind = other.kind
+                if is_projectile_self and other_kind in ["trap", "hazard", "bomb", "mine", "turret", "bounce_laser"]:
+                    var bounces_left = 3
+                    if typeof(self.ball) == TYPE_OBJECT and "bounces_left" in self.ball: bounces_left = self.ball.bounces_left
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bounces_left"): bounces_left = self.ball.get_meta("bounces_left")
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bounces_left"): bounces_left = self.ball["bounces_left"]
+
+                    if bounces_left > 0:
+                        if typeof(self.ball) == TYPE_OBJECT and "bounces_left" in self.ball: self.ball.bounces_left = bounces_left - 1
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("bounces_left", bounces_left - 1)
+                        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["bounces_left"] = bounces_left - 1
+
+                        var bvx = 0.0
+                        var bvy = 0.0
+                        if typeof(self.ball) == TYPE_OBJECT and "vx" in self.ball: bvx = self.ball.vx
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vx"): bvx = self.ball["vx"]
+                        if typeof(self.ball) == TYPE_OBJECT and "vy" in self.ball: bvy = self.ball.vy
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vy"): bvy = self.ball["vy"]
+
+                        var dot = bvx * nx + bvy * ny
+                        bvx = bvx - 2 * dot * nx
+                        bvy = bvy - 2 * dot * ny
+
+                        if typeof(self.ball) == TYPE_OBJECT and "vx" in self.ball: self.ball.vx = bvx
+                        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["vx"] = bvx
+                        if typeof(self.ball) == TYPE_OBJECT and "vy" in self.ball: self.ball.vy = bvy
+                        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["vy"] = bvy
+                    else:
+                        if typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = 0.0
+                        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = 0.0
+                        if typeof(self.ball) == TYPE_OBJECT and "alive" in self.ball: self.ball.alive = false
+                        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["alive"] = false
+
+                var self_kind = ""
+                if "kind" in self.ball: self_kind = self.ball.kind
+                if is_projectile_other and self_kind in ["trap", "hazard", "bomb", "mine", "turret", "bounce_laser"]:
+                    var bounces_left = 3
+                    if typeof(other) == TYPE_OBJECT and "bounces_left" in other: bounces_left = other.bounces_left
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("bounces_left"): bounces_left = other.get_meta("bounces_left")
+                    elif typeof(other) == TYPE_DICTIONARY and other.has("bounces_left"): bounces_left = other["bounces_left"]
+
+                    if bounces_left > 0:
+                        if typeof(other) == TYPE_OBJECT and "bounces_left" in other: other.bounces_left = bounces_left - 1
+                        elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("bounces_left", bounces_left - 1)
+                        elif typeof(other) == TYPE_DICTIONARY: other["bounces_left"] = bounces_left - 1
+
+                        var ovx = 0.0
+                        var ovy = 0.0
+                        if typeof(other) == TYPE_OBJECT and "vx" in other: ovx = other.vx
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("vx"): ovx = other["vx"]
+                        if typeof(other) == TYPE_OBJECT and "vy" in other: ovy = other.vy
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("vy"): ovy = other["vy"]
+
+                        var dot = ovx * (-nx) + ovy * (-ny)
+                        ovx = ovx - 2 * dot * (-nx)
+                        ovy = ovy - 2 * dot * (-ny)
+
+                        if typeof(other) == TYPE_OBJECT and "vx" in other: other.vx = ovx
+                        elif typeof(other) == TYPE_DICTIONARY: other["vx"] = ovx
+                        if typeof(other) == TYPE_OBJECT and "vy" in other: other.vy = ovy
+                        elif typeof(other) == TYPE_DICTIONARY: other["vy"] = ovy
+                    else:
+                        if typeof(other) == TYPE_OBJECT and "hp" in other: other.hp = 0.0
+                        elif typeof(other) == TYPE_DICTIONARY: other["hp"] = 0.0
+                        if typeof(other) == TYPE_OBJECT and "alive" in other: other.alive = false
+                        elif typeof(other) == TYPE_DICTIONARY: other["alive"] = false
 
             # Secondary stun explosion on collision
             var b_vx = 0.0

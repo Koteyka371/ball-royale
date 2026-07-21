@@ -16003,6 +16003,22 @@ class Action:
             if old_x != self.ball.x or old_y != self.ball.y:
                 bounced = True
 
+        # Handle Bouncy Projectiles mode
+        is_projectile = getattr(self.ball, "ball_type", getattr(self.ball, "kind", "")) in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"] or getattr(self.ball, "is_projectile", False) or getattr(self.ball, "is_ricochet_laser", False) or getattr(self.ball, "is_spell", False)
+        if bounced and is_projectile:
+            gm = getattr(self.world, "game_mode", None)
+            if gm and getattr(gm, "name", "") == "Bouncy Projectiles":
+                if old_x != self.ball.x:
+                    self.ball.vx = -getattr(self.ball, "vx", 0.0)
+                if old_y != self.ball.y:
+                    self.ball.vy = -getattr(self.ball, "vy", 0.0)
+                bounces_left = getattr(self.ball, "bounces_left", 3)
+                if bounces_left > 0:
+                    self.ball.bounces_left = bounces_left - 1
+                else:
+                    self.ball.hp = 0
+                    self.ball.alive = False
+
         return bounced
 
     def _resolve_collisions(self) -> bool:
@@ -16088,6 +16104,34 @@ class Action:
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
+
+                is_projectile_self = getattr(self.ball, "ball_type", getattr(self.ball, "kind", "")) in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"] or getattr(self.ball, "is_projectile", False) or getattr(self.ball, "is_ricochet_laser", False) or getattr(self.ball, "is_spell", False)
+                is_projectile_other = getattr(other, "ball_type", getattr(other, "kind", "")) in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"] or getattr(other, "is_projectile", False) or getattr(other, "is_ricochet_laser", False) or getattr(other, "is_spell", False)
+                gm = getattr(self.world, "game_mode", None)
+                if gm and getattr(gm, "name", "") == "Bouncy Projectiles":
+                    if is_projectile_self and getattr(other, "kind", "") in ["trap", "hazard", "bomb", "mine", "turret", "bounce_laser"]:
+                        bounces_left = getattr(self.ball, "bounces_left", 3)
+                        if bounces_left > 0:
+                            self.ball.bounces_left = bounces_left - 1
+                            # Reflect velocity
+                            dot = getattr(self.ball, "vx", 0.0) * nx + getattr(self.ball, "vy", 0.0) * ny
+                            self.ball.vx = getattr(self.ball, "vx", 0.0) - 2 * dot * nx
+                            self.ball.vy = getattr(self.ball, "vy", 0.0) - 2 * dot * ny
+                        else:
+                            self.ball.hp = 0
+                            self.ball.alive = False
+
+                    if is_projectile_other and getattr(self.ball, "kind", "") in ["trap", "hazard", "bomb", "mine", "turret", "bounce_laser"]:
+                        bounces_left = getattr(other, "bounces_left", 3)
+                        if bounces_left > 0:
+                            other.bounces_left = bounces_left - 1
+                            # Reflect velocity
+                            dot = getattr(other, "vx", 0.0) * (-nx) + getattr(other, "vy", 0.0) * (-ny)
+                            other.vx = getattr(other, "vx", 0.0) - 2 * dot * (-nx)
+                            other.vy = getattr(other, "vy", 0.0) - 2 * dot * (-ny)
+                        elif hasattr(other, "hp"):
+                            other.hp = 0
+                            other.alive = False
 
                 # Secondary stun explosion on collision
                 speed_self = math.sqrt(getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2)

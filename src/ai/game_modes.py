@@ -30694,5 +30694,17 @@ class LinkedPortalsMode(GameMode):
                         portal["cooldown"] = 0.5
                         break
 
+
+class BouncyProjectilesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bouncy Projectiles"
+        self.description = "All projectiles bounce off walls and hazards up to 3 times, creating a chaotic bullet-hell environment."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        # Bounces are handled in Action._clamp_position and Action._resolve_collisions
+
+GAME_MODES['bouncy_projectiles'] = BouncyProjectilesMode()
 GAME_MODES['ice_walls'] = IceWallsMode()
 GAME_MODES['linked_portals'] = LinkedPortalsMode()

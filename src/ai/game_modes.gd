@@ -49883,5 +49883,18 @@ class LinkedPortalsMode extends GameMode:
                     linked["cooldown"] = 0.5
                     break
 
+class BouncyProjectilesMode extends GameMode:
+    func _init():
+        name = "Bouncy Projectiles"
+        description = "All projectiles bounce off walls and hazards up to 3 times, creating a chaotic bullet-hell environment."
+        tags = ["chaos", "bullet_hell"]
+
+    func start(world, balls):
+        super.start(world, balls)
+
+    func tick(world, balls, delta=0.016):
+        super.tick(world, balls, delta)
+
+GAME_MODES["bouncy_projectiles"] = BouncyProjectilesMode.new()
 GAME_MODES["ice_walls"] = IceWallsMode.new()
 GAME_MODES["linked_portals"] = LinkedPortalsMode.new()
