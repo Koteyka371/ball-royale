@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1239] Sticky Bomb Trap — *2026-07-21 03:34:14 UTC*
+
+A new trap type that attaches to the first ball that touches it and detonates after 3 seconds, damaging them and nearby players. Can be passed to another player by colliding with them before detonation.
+
+---
+
 ## [idea-1236] Quantum Mirror Boundaries — *2026-07-21 03:15:17 UTC*
 
 An arena mode where hitting a map boundary doesn't just bounce you, but teleports you to the opposite side of the map with inverted velocity.

@@ -21235,7 +21235,7 @@
     },
     {
       "id": "idea-1239",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Bomb Trap",
@@ -31823,6 +31823,91 @@
         "src/ai/cursed_altar.py",
         "src/ai/cursed_altar.gd",
         "tests/test_cursed_altar.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1861",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Entanglement Mode",
+      "description": "Balls can spawn temporary decoys. Any damage or buffs applied to the decoy are partially shared back to the creator, acting as a two-way street for risk/reward mechanics.",
+      "allowed_paths": [
+        "src/ai/decoy_entanglement.py",
+        "src/ai/decoy_entanglement.gd",
+        "tests/test_decoy_entanglement.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1862",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Pinball Mode",
+      "description": "An arena heavily populated with bouncers and bumpers. When colliding with bumpers, balls don't just gain velocity but phase into an intangible state for 1.5 seconds, ignoring terrain collisions.",
+      "allowed_paths": [
+        "src/ai/quantum_pinball.py",
+        "src/ai/quantum_pinball.gd",
+        "tests/test_quantum_pinball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1863",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Twitch Spectator Voting: Hazard Upgrades",
+      "description": "Allow spectators to vote to upgrade a specific hazard (e.g., increase meteor radius, double poison cloud damage) rather than just spawning them. The command !upgrade_hazard <hazard_kind> will let Twitch users spend their loyalty points to enhance the threat level of obstacles, triggering visually unique 'super' hazard effects.",
+      "allowed_paths": [
+        "src/arena/twitch_spectator_voting_upgrades.py",
+        "src/arena/twitch_spectator_voting_upgrades.gd",
+        "tests/test_twitch_spectator_voting_upgrades.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1864",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Gravity Modifier",
+      "description": "A random mutator event where a massive central black hole occasionally spawns, heavily modifying the trajectory of all projectiles and slightly pulling balls inward while providing an orbit-like speed boost to tangential movement.",
+      "allowed_paths": [
+        "src/ai/black_hole_gravity.py",
+        "src/ai/black_hole_gravity.gd",
+        "tests/test_black_hole_gravity.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1865",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Twitch Loyalty Shop: Cosmetic Auras",
+      "description": "A new integration where Twitch viewers can type !aura <color> <target_ball_id> to spend their viewer loyalty points, granting their favorite ball a cosmetic aura and a minor one-time buff for the current match. This encourages viewers to stick around to build loyalty for their favorite AI.",
+      "allowed_paths": [
+        "src/ai/twitch_loyalty_shop_cosmetic_auras.py",
+        "src/ai/twitch_loyalty_shop_cosmetic_auras.gd",
+        "tests/test_twitch_loyalty_shop_cosmetic_auras.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
