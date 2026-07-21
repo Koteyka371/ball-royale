@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1273] Clan Daily Quests — *2026-07-21 19:14:11 UTC*
+
+Quests that provide shared rewards and contribute to clan goals, incentivizing playing together and increasing engagement.
+
+---
+
 ## [idea-1263] Aura of Repulsion Booster — *2026-07-21 19:08:38 UTC*
 
 When picked up, this booster grants a temporary aura that forcefully pushes away incoming hazards and projectiles, protecting the ball but also potentially pushing hazards toward allies.

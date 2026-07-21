@@ -21814,7 +21814,7 @@
     },
     {
       "id": "idea-1273",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Daily Quests",
@@ -32061,6 +32061,40 @@
         "src/ai/magnetic_grapple_hook_skill.py",
         "src/ai/magnetic_grapple_hook_skill.gd",
         "tests/test_magnetic_grapple_hook_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1875",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Linking Mechanic",
+      "description": "Portals don't just teleport randomly. Instead, two portals will occasionally link together, letting balls visually track where they will pop out, creating unique strategies and trick shots.",
+      "allowed_paths": [
+        "src/ai/portal_linking_mechanic.py",
+        "src/ai/portal_linking_mechanic.gd",
+        "tests/test_portal_linking_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1876",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Momentum Reversal Trap",
+      "description": "A deployable trap that functions like a portal but reverses the momentum of any ball entering it. Useful for throwing balls back into hazards.",
+      "allowed_paths": [
+        "src/arena/momentum_reversal_trap.py",
+        "src/arena/momentum_reversal_trap.gd",
+        "tests/test_momentum_reversal_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
