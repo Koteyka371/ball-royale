@@ -873,13 +873,6 @@ func _attempt_damage(attacker, target) -> void:
 				attacker.set_meta("hp", attacker.hp - refl_dmg)
 			else:
 				attacker.hp -= refl_dmg
-		if typeof(target) != TYPE_DICTIONARY and target.has_method("take_damage"):
-			target.take_damage(refl_dmg)
-		elif "hp" in target:
-			if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"):
-				target.set_meta("hp", target.hp - refl_dmg)
-			else:
-				target.hp -= refl_dmg
 		return
 
 	var old_hp = 0.0

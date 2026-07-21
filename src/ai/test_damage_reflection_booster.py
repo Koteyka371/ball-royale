@@ -35,7 +35,7 @@ def test_damage_reflection():
     action = Action(target, world)
     action._attempt_damage(attacker, target)
 
-    assert target.hp == 90.0, f"Expected target to take 10 dmg (50% of 20), got {100 - target.hp}"
+    assert target.hp == 100.0, f"Expected target to take 0 dmg, got {100 - target.hp}"
     assert attacker.hp == 90.0, f"Expected attacker to take 10 dmg, got {100 - attacker.hp}"
 
 if __name__ == "__main__":

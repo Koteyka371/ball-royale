@@ -481,10 +481,7 @@ class Action:
                 attacker.take_damage(refl_dmg)
             elif hasattr(attacker, "hp"):
                 attacker.hp -= refl_dmg
-            if hasattr(target, "take_damage"):
-                target.take_damage(refl_dmg)
-            elif hasattr(target, "hp"):
-                target.hp -= refl_dmg
+            # Target absorbs all damage (takes 0)
             return
 
         if getattr(target, "half_reflect_shield_active", False):
