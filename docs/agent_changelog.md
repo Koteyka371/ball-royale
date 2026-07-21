@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1256] Aegis Reflection Shield — *2026-07-21 09:26:37 UTC*
+
+A temporary booster that not only absorbs all incoming projectile and skill damage but also reflects 50% of it back to the original attacker.
+
+---
+
 ## [idea-1262] Zoning tools — *2026-07-21 05:50:42 UTC*
 
 A new booster that allows players to create temporary safe zones outside the main circle, encouraging tactical setups for flanking or sniping.
