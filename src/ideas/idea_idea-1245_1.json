@@ -1,4 +1,4 @@
 {
-  "title": "Sticky Boundaries",
-  "description": "Arena walls become extremely sticky, grabbing balls upon collision and slowing them down entirely, stopping their momentum."
+  "title": "Pinball Bumpers on Arena Floor",
+  "description": "Add stationary circular bumpers throughout the arena that forcefully repel any balls that touch them, dealing minor damage but significantly altering trajectory."
 }

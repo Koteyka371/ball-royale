@@ -23975,7 +23975,15 @@ class RoamingDoppelgangerMode(GameMode):
                     boss.vy = math.sin(angle) * boss.speed
 
 
+
+class BouncyBordersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bouncy Borders Mode"
+        self.description = "Arena walls become extremely bouncy. Colliding with a wall reflects balls at 2x speed, turning the arena into a chaotic pinball machine."
+
 GAME_MODES = {
+    'bouncy_borders': BouncyBordersMode(),
     'roaming_doppelganger': RoamingDoppelgangerMode(),
     'entangled_hazards_mode': EntangledHazardsMode(),
 

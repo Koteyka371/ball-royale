@@ -18405,6 +18405,8 @@ func execute(strategy: String, delta: float):
             if "game_mode" in self.world and self.world.game_mode != null:
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bouncy Terrain":
                     is_bouncy_terrain = true
+                elif "name" in self.world.game_mode and self.world.game_mode.name == "Bouncy Borders Mode":
+                    is_bouncy_terrain = true
                 elif "name" in self.world.game_mode and self.world.game_mode.name == "Extreme Bounciness":
                     is_bouncy_terrain = true
                 elif "name" in self.world.game_mode and self.world.game_mode.name == "Jump Pad Boundaries":
@@ -18454,6 +18456,8 @@ func execute(strategy: String, delta: float):
                     if "alive" in self.ball: self.ball.alive = false
             elif wall_state == "spikes":
                 new_speed = speed * 0.5
+            elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Bouncy Borders Mode":
+                new_speed = min(speed * 2.0, 5000.0)
             elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Extreme Bounciness":
                 new_speed = min(speed * 4.0, 5000.0)
             elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Jump Pad Boundaries":
