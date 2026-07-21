@@ -9046,14 +9046,21 @@ class Action:
 
             # Determine which wall was hit based on coordinates
             margin = getattr(self.ball, "radius", 10.0) + 5.0
+            offsets = getattr(getattr(self.world, "arena", None), "boundary_offsets", {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0})
+
+            top_bound = offsets.get("top", 0.0)
+            bottom_bound = getattr(self.world, "height", 1000) - offsets.get("bottom", 0.0)
+            left_bound = offsets.get("left", 0.0)
+            right_bound = getattr(self.world, "width", 1000) - offsets.get("right", 0.0)
+
             hit_wall = None
-            if self.ball.y <= margin:
+            if self.ball.y <= margin + top_bound:
                 hit_wall = "top"
-            elif self.ball.y >= getattr(self.world, "height", 1000) - margin:
+            elif self.ball.y >= bottom_bound - margin:
                 hit_wall = "bottom"
-            elif self.ball.x <= margin:
+            elif self.ball.x <= margin + left_bound:
                 hit_wall = "left"
-            elif self.ball.x >= getattr(self.world, "width", 1000) - margin:
+            elif self.ball.x >= right_bound - margin:
                 hit_wall = "right"
 
             wall_state = "normal"
@@ -9076,6 +9083,11 @@ class Action:
                         new_state = random.choice(["abyss", "spikes"])
                         self.world.arena.boundary_states[hit_wall] = new_state
                         wall_state = new_state
+                        # Expand hazard zone inwards
+                        if hasattr(self.world.arena, "boundary_offsets"):
+                            self.world.arena.boundary_offsets[hit_wall] += 50.0
+                            # Reset health for next break
+                            self.world.arena.boundary_health[hit_wall] = 2000.0
                     elif health < 1000.0:
                         wall_state = "damaged_bouncy"
 
@@ -9087,10 +9099,10 @@ class Action:
                 speed_sq = 0.0 # prevent normal bounce processing
 
                 # Push slightly into the arena to prevent continuous sticking
-                if hit_wall == "top": self.ball.y = margin + 1.0
-                elif hit_wall == "bottom": self.ball.y = getattr(self.world, "height", 1000) - margin - 1.0
-                elif hit_wall == "left": self.ball.x = margin + 1.0
-                elif hit_wall == "right": self.ball.x = getattr(self.world, "width", 1000) - margin - 1.0
+                if hit_wall == "top": self.ball.y = margin + 1.0 + top_bound
+                elif hit_wall == "bottom": self.ball.y = bottom_bound - margin - 1.0
+                elif hit_wall == "left": self.ball.x = margin + 1.0 + left_bound
+                elif hit_wall == "right": self.ball.x = right_bound - margin - 1.0
 
             # Simple reflection heuristic since we don't have exact normal here.
             # We can approximate by reversing velocity and increasing speed.

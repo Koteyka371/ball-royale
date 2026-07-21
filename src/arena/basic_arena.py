@@ -46,13 +46,20 @@ class BasicArena:
             self.hazards.append(q2)
         self.boundary_states = {"top": "bouncy", "bottom": "bouncy", "left": "bouncy", "right": "bouncy"}
         self.boundary_health = {"top": 2000.0, "bottom": 2000.0, "left": 2000.0, "right": 2000.0}
+        self.boundary_offsets = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
 
     def get_random_spawn_point(self, radius: float) -> Tuple[float, float]:
         return (self.rng.uniform(radius, self.width - radius),
                 self.rng.uniform(radius, self.height - radius))
 
     def is_point_inside(self, x: float, y: float, radius: float) -> bool:
-        if not (radius <= x <= self.width - radius and radius <= y <= self.height - radius):
+        offsets = getattr(self, "boundary_offsets", {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0})
+        left_bound = radius + offsets.get("left", 0.0)
+        right_bound = self.width - radius - offsets.get("right", 0.0)
+        top_bound = radius + offsets.get("top", 0.0)
+        bottom_bound = self.height - radius - offsets.get("bottom", 0.0)
+
+        if not (left_bound <= x <= right_bound and top_bound <= y <= bottom_bound):
             return False
 
         import math
@@ -66,18 +73,24 @@ class BasicArena:
         new_x = x
         new_y = y
 
-        if x < radius:
-            new_x = radius
+        offsets = getattr(self, "boundary_offsets", {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0})
+        left_bound = radius + offsets.get("left", 0.0)
+        right_bound = self.width - radius - offsets.get("right", 0.0)
+        top_bound = radius + offsets.get("top", 0.0)
+        bottom_bound = self.height - radius - offsets.get("bottom", 0.0)
+
+        if x < left_bound:
+            new_x = left_bound
             bounced = True
-        elif x > self.width - radius:
-            new_x = self.width - radius
+        elif x > right_bound:
+            new_x = right_bound
             bounced = True
 
-        if y < radius:
-            new_y = radius
+        if y < top_bound:
+            new_y = top_bound
             bounced = True
-        elif y > self.height - radius:
-            new_y = self.height - radius
+        elif y > bottom_bound:
+            new_y = bottom_bound
             bounced = True
 
         import math
