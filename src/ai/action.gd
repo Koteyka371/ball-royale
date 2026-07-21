@@ -28209,8 +28209,30 @@ func _use_skill():
                     var dy = closest_target.y - self.ball.y
 
                     if closest_target_type == "ball":
-                        closest_target.x -= (dx / dist) * pull_dist
-                        closest_target.y -= (dy / dist) * pull_dist
+                        var target_team = -1
+                        if typeof(closest_target) == TYPE_DICTIONARY and closest_target.has("team"):
+                            target_team = closest_target["team"]
+                        elif typeof(closest_target) != TYPE_DICTIONARY and "team" in closest_target:
+                            target_team = closest_target.team
+                        elif closest_target.has_method("has_meta") and closest_target.has_meta("team"):
+                            target_team = closest_target.get_meta("team")
+
+                        var my_team = -2
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+                            my_team = self.ball["team"]
+                        elif typeof(self.ball) != TYPE_DICTIONARY and "team" in self.ball:
+                            my_team = self.ball.team
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("team"):
+                            my_team = self.ball.get_meta("team")
+
+                        if target_team != my_team:
+                            closest_target.x -= (dx / dist) * pull_dist
+                            closest_target.y -= (dy / dist) * pull_dist
+                        else:
+                            self.ball.x += (dx / dist) * pull_dist
+                            self.ball.y += (dy / dist) * pull_dist
+                            self.ball.x = max(0.0, min(arena_width, self.ball.x))
+                            self.ball.y = max(0.0, min(arena_height, self.ball.y))
                     else:
                         self.ball.x += (dx / dist) * pull_dist
                         self.ball.y += (dy / dist) * pull_dist

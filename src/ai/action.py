@@ -14733,13 +14733,16 @@ class Action:
                         dx = closest_target.x - self.ball.x
                         dy = closest_target.y - self.ball.y
 
-                        if closest_target_type == "ball":
+                        if closest_target_type == "ball" and getattr(closest_target, "team", -1) != getattr(self.ball, "team", -2):
+                            # Enemy ball - pull them
                             closest_target.x -= (dx / dist) * pull_dist
                             closest_target.y -= (dy / dist) * pull_dist
                         else:
-                            # Pull user towards target
+                            # Ally ball or hazard/item - pull user towards target
                             self.ball.x += (dx / dist) * pull_dist
                             self.ball.y += (dy / dist) * pull_dist
+                            self.ball.x = max(0.0, min(arena_width, self.ball.x))
+                            self.ball.y = max(0.0, min(arena_height, self.ball.y))
 
                         if getattr(closest_target, "kind", "") == "grapple_node":
                             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and closest_target in self.world.arena.hazards:
