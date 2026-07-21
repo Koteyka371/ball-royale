@@ -3,10 +3,10 @@
     "agent-1": {
       "name": "Jules Core",
       "area": "ai-core",
-      "task_id": "idea-883",
-      "status": "working",
-      "started_at": "2026-07-21T03:14:57.611391+00:00",
-      "cycles_today": 1
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
+      "cycles_today": 0
     },
     "agent-2": {
       "name": "Jules Behaviors",
