@@ -9015,6 +9015,39 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in getattr(self.world.arena, "hazards", []):
+                if getattr(hazard, "kind", "") in ["tall_grass_seed", "healing_fruit_seed"]:
+                    if hasattr(hazard, "growth_timer"):
+                        hazard.growth_timer -= delta
+                        if hazard.growth_timer <= 0:
+                            if hazard.kind == "tall_grass_seed":
+                                hazard.kind = "tall_grass"
+                                hazard.radius = 40.0
+                                hazard.duration = 20.0
+                            elif hazard.kind == "healing_fruit_seed":
+                                hazard.kind = "healing_fruit"
+                                hazard.radius = 25.0
+                                hazard.duration = 20.0
+
+                if getattr(hazard, "kind", "") == "tall_grass":
+                    dx = hazard.x - self.ball.x
+                    dy = hazard.y - self.ball.y
+                    dist_sq = dx * dx + dy * dy
+                    if dist_sq <= getattr(hazard, "radius", 0)**2:
+                        b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                        if b_type == "botanist" and getattr(hazard, "owner_id", None) == getattr(self.ball, "id", None):
+                            self.ball.stealth_active = True
+
+                if getattr(hazard, "kind", "") == "healing_fruit":
+                    dx = hazard.x - self.ball.x
+                    dy = hazard.y - self.ball.y
+                    dist_sq = dx * dx + dy * dy
+                    if dist_sq <= (getattr(hazard, "radius", 0) + getattr(self.ball, "radius", 10.0))**2:
+                        b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                        if b_type == "botanist" and getattr(hazard, "owner_id", None) == getattr(self.ball, "id", None):
+                            self.ball.hp = min(getattr(self.ball, "hp", 100.0) + 20.0, getattr(self.ball, "max_hp", 100.0))
+                            hazard.duration = 0.0 # Consume fruit
+
+
                 if getattr(hazard, "kind", "") == "gravity_pulse" and getattr(hazard, "active", True):
                     dx = hazard.x - self.ball.x
                     dy = hazard.y - self.ball.y
@@ -10058,6 +10091,12 @@ class Action:
                     if True:
                         target.charge_level = min(100.0, getattr(target, "charge_level", 0.0) + 5.0)
                     b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                    if b_type == 'botanist':
+                        if not hasattr(target, "speed_multiplier"):
+                            target.speed_multiplier = 1.0
+                        target.speed_multiplier = max(0.2, target.speed_multiplier - 0.2)
+                        target.slowed_timer = 2.0
+
                     if b_type == 'vampire':
                         dmg = getattr(self.ball, 'damage', 10.0)
                         self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
@@ -12827,6 +12866,30 @@ class Action:
                             else:
                                 break
                         self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+
+            elif skill_name == "plant_seed":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    seed_type = "tall_grass_seed" if getattr(self.ball, "hp", 100) / getattr(self.ball, "max_hp", 100) > 0.5 else "healing_fruit_seed"
+
+                    # Create a seed hazard
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, duration):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.duration = duration
+                            self.owner_id = getattr(self, "owner_id", None)
+
+                    trap_id = f"seed_{self.ball.id}_{getattr(self.world, 'tick_count', 0)}"
+                    seed = Hazard(trap_id, self.ball.x, self.ball.y, 8.0, seed_type, 15.0)
+                    seed.owner_id = self.ball.id
+                    seed.growth_timer = 3.0 # Takes 3 seconds to grow
+                    self.world.arena.hazards.append(seed)
+
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.5)
 
             elif skill_name == "entangle":
                 enemies = self._get_enemies()
@@ -17827,6 +17890,12 @@ class Action:
                     if True:
                         optimal_target.charge_level = min(100.0, getattr(optimal_target, "charge_level", 0.0) + 5.0)
                     b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
+                    if b_type == 'botanist':
+                        if not hasattr(optimal_target, "speed_multiplier"):
+                            optimal_target.speed_multiplier = 1.0
+                        optimal_target.speed_multiplier = max(0.2, optimal_target.speed_multiplier - 0.2)
+                        optimal_target.slowed_timer = 2.0
+
                     if b_type == 'vampire':
                         dmg = getattr(self.ball, 'damage', 10.0)
                         self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 0.5, getattr(self.ball, 'max_hp', 100.0))
