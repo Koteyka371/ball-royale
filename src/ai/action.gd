@@ -33354,11 +33354,15 @@ func _update_skill_timer(delta: float):
 						else:
 							hazard.duration = 0.0
 							hazard.active = false
+						var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
 						if randf() < 0.5:
-							var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
 							var new_trap = HazardObj.new(9999, hx, hy, 20.0, "disguised_trap", 0.0)
 							new_trap.duration = 10.0
 							world.arena.hazards.append(new_trap)
+						else:
+							var true_trap = HazardObj.new(9999, hx, hy, 150.0, "fire_zone", 25.0)
+							true_trap.duration = 5.0
+							world.arena.hazards.append(true_trap)
                 if h_kind == "disguised_trap":
                     var h_x = 0.0
                     if "x" in hazard: h_x = hazard.x

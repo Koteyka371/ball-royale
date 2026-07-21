@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Swap Hazard",
+    "description": "A zone hazard that, when an entity enters it, immediately swaps their position with a random enemy entity on the map. This introduces chaos, especially in tight scenarios or near instant-death borders."
+}

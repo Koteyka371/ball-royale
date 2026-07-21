@@ -16842,15 +16842,39 @@ class Action:
                         hazard.duration = 0.0
                         hazard.active = False
                         import random
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            # Fallback if we cannot import it directly
+                            Hazard = type("Hazard", (), {})
+
                         if random.random() < 0.5:
-                            trap = type("Hazard", (), {})()
-                            trap.id = getattr(self.world, "next_id", 99999) + random.randint(1000, 9999)
-                            trap.x = hazard.x
-                            trap.y = hazard.y
-                            trap.radius = 20.0
-                            trap.kind = "disguised_trap"
-                            trap.damage = 0.0
-                            trap.duration = 10.0
+                            if Hazard != type("Hazard", (), {}):
+                                trap = Hazard(id=getattr(self.world, "next_id", 99999) + random.randint(1000, 9999), x=hazard.x, y=hazard.y, radius=20.0, kind="disguised_trap", damage=0.0)
+                                trap.duration = 10.0
+                            else:
+                                trap = type("Hazard", (), {})()
+                                trap.id = getattr(self.world, "next_id", 99999) + random.randint(1000, 9999)
+                                trap.x = hazard.x
+                                trap.y = hazard.y
+                                trap.radius = 20.0
+                                trap.kind = "disguised_trap"
+                                trap.damage = 0.0
+                                trap.duration = 10.0
+                            self.world.arena.hazards.append(trap)
+                        else:
+                            if Hazard != type("Hazard", (), {}):
+                                trap = Hazard(id=getattr(self.world, "next_id", 99999) + random.randint(1000, 9999), x=hazard.x, y=hazard.y, radius=150.0, kind="fire_zone", damage=25.0)
+                                trap.duration = 5.0
+                            else:
+                                trap = type("Hazard", (), {})()
+                                trap.id = getattr(self.world, "next_id", 99999) + random.randint(1000, 9999)
+                                trap.x = hazard.x
+                                trap.y = hazard.y
+                                trap.radius = 150.0
+                                trap.kind = "fire_zone"
+                                trap.damage = 25.0
+                                trap.duration = 5.0
                             self.world.arena.hazards.append(trap)
 
 
