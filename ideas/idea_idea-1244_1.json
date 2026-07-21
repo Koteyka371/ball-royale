@@ -1,4 +1,1 @@
-{
-  "title": "Gravity well that specifically targets high health players",
-  "description": "A gravity well that pulls players with hp > 75 towards the center."
-}
+{"title": "Weather Anomaly Modifier", "description": "A global modifier that randomly spawns intense weather patterns across the arena like thunderstorms or meteor showers, forcing players to adapt."}

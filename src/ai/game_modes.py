@@ -26321,6 +26321,8 @@ class ThermalFreezeTagMode(FreezeTagMode):
                                 b.hp = 0
                                 b.alive = False
                                 b.is_frozen = False
+                                if hasattr(world, "add_event"):
+                                    world.add_event("shatter", {"victim_id": b.id})
         for h in to_remove:
             if h in world.arena.hazards:
                 world.arena.hazards.remove(h)

@@ -1,4 +1,1 @@
-{
-  "title": "Inverted control schemes mutator",
-  "description": "A mutator that inverts all control schemes momentarily for a duration."
-}
+{"title": "Mirage Clone Ball", "description": "A new ball type that creates fake copies of itself to distract enemies. Copies deal no damage but can soak up hits."}

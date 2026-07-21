@@ -41204,6 +41204,11 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 								elif b.has_method("set_meta"): b.set_meta("alive", false)
 								if "is_frozen" in b: b.is_frozen = false
 								elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
+								if world.has_method("add_event"):
+									var id = -1
+									if "id" in b: id = b.id
+									elif b.has_method("has_meta") and b.has_meta("id"): id = b.get_meta("id")
+									world.add_event("shatter", {"victim_id": id})
 		for h in to_remove:
 			if h in arena.hazards:
 				arena.hazards.erase(h)
