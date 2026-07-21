@@ -30694,5 +30694,118 @@ class LinkedPortalsMode(GameMode):
                         portal["cooldown"] = 0.5
                         break
 
+
+class WeatherCombinationsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Weather Combinations"
+        self.description = "Capturing altars of different weather types combines their effects. E.g. Rain + Heatwave = Steam (obscures vision, drains stamina)."
+        self.active_weathers = set()
+        self.combined_weather = None
+        self.altars = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.altars = [
+            {"x": arena_w * 0.25, "y": arena_h * 0.25, "radius": 150.0, "capture_progress": 0.0, "weather": "rain", "owner": None},
+            {"x": arena_w * 0.75, "y": arena_h * 0.75, "radius": 150.0, "capture_progress": 0.0, "weather": "heatwave", "owner": None}
+        ]
+
+        self.active_weathers = set()
+        self.combined_weather = None
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for b in valid_balls:
+            b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+            if not hasattr(b, "stamina"):
+                b.stamina = 100.0
+            if not hasattr(b, "max_stamina"):
+                b.max_stamina = 100.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(self, "altars"):
+            return
+
+        current_weathers = set()
+
+        for altar in self.altars:
+            teams_present = {}
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    dist_sq = (bx - altar["x"])**2 + (by - altar["y"])**2
+                    if dist_sq <= altar["radius"]**2:
+                        team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                        teams_present[team] = teams_present.get(team, 0) + 1
+
+            if teams_present:
+                max_team = max(teams_present, key=teams_present.get)
+                is_tie = sum(1 for t, v in teams_present.items() if v == teams_present[max_team]) > 1
+                if not is_tie:
+                    if altar["owner"] == max_team:
+                        if altar["capture_progress"] < 100.0:
+                            altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+                    else:
+                        altar["capture_progress"] -= 20.0 * delta
+                        if altar["capture_progress"] <= 0:
+                            altar["owner"] = max_team
+                            altar["capture_progress"] = 0.0
+
+            else:
+                altar["capture_progress"] = max(0.0, altar["capture_progress"] - 10.0 * delta)
+                if altar["capture_progress"] == 0.0:
+                    altar["owner"] = None
+
+            if altar["capture_progress"] >= 100.0:
+                current_weathers.add(altar["weather"])
+
+        if current_weathers != self.active_weathers:
+            self.active_weathers = current_weathers
+
+            if "rain" in self.active_weathers and "heatwave" in self.active_weathers:
+                self.combined_weather = "steam"
+                if hasattr(world, "add_event"):
+                    world.add_event("weather_change", {"weather": "steam", "message": "Steam obscures the arena!"})
+            else:
+                self.combined_weather = None
+
+        # apply effects
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if not hasattr(b, "stamina"):
+                b.stamina = 100.0
+                b.max_stamina = 100.0
+
+            base_speed = getattr(b, "base_speed", 100.0)
+
+            if self.combined_weather == "steam":
+                # Drain stamina
+                b.stamina = max(0.0, b.stamina - 5.0 * delta)
+                if b.stamina <= 0.0:
+                    b.speed = base_speed * 0.5
+                else:
+                    b.speed = base_speed * 0.8 # reduced vision/speed
+            else:
+                # Recover stamina if no steam
+                b.stamina = min(b.max_stamina, b.stamina + 10.0 * delta)
+
+                # Apply single weather effects if any
+                if "heatwave" in self.active_weathers and "rain" not in self.active_weathers:
+                    b.speed = base_speed * 1.2
+                elif "rain" in self.active_weathers and "heatwave" not in self.active_weathers:
+                    b.speed = base_speed * 0.9
+                else:
+                    b.speed = base_speed
+
+GAME_MODES['weather_combinations'] = WeatherCombinationsMode()
+
 GAME_MODES['ice_walls'] = IceWallsMode()
 GAME_MODES['linked_portals'] = LinkedPortalsMode()

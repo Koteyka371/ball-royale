@@ -1,0 +1,4 @@
+{
+  "title": "Stamina Based Jump Pads",
+  "description": "Jump pads scattered around the arena that launch the ball extremely far across the map, but instantly consume a massive amount of stamina. If a ball hits the pad with low stamina, the pad fails to launch them and inflicts a short stun instead."
+}
