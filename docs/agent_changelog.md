@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1258] Hyperdrive Vortex — *2026-07-21 04:40:25 UTC*
+
+If an entity maintains Speed Overdrive for more than 10 seconds, it generates a mini vortex that temporarily pulls in nearby hazards and destroys them, creating a path for the player.
+
+---
+
 ## [idea-1247] Reverse Freeze Tag — *2026-07-21 04:21:31 UTC*
 
 A mutator or variant of Freeze Tag where everyone starts frozen, and there is one 'Healer' per team. The healers must dodge hazards and quickly unfreeze their entire team before the other healer does.
