@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1275] Reverse Time Altar — *2026-07-21 20:56:17 UTC*
+
+An altar that, when captured by a team, rewinds the positions and health of all enemy balls by 5 seconds, allowing the capturing team to regain a lost advantage or punish an aggressive push.
+
+---
+
 ## [idea-1248] Interactive Twitch Hazard Controls — *2026-07-21 20:36:46 UTC*
 
 Allow real spectators via the Twitch integration to not only trigger votes, but actively control specific neutral hazards for brief periods (e.g., directing a meteor strike or moving a poison cloud).
