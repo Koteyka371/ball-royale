@@ -321,6 +321,59 @@ func _attempt_damage(attacker, target) -> void:
 	if a_dim != t_dim:
 		return
 
+    var has_kin_abs = false
+    if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("has_kinetic_absorber"):
+        has_kin_abs = target.get_meta("has_kinetic_absorber")
+    elif typeof(target) == TYPE_DICTIONARY and target.has("has_kinetic_absorber"):
+        has_kin_abs = target.get("has_kinetic_absorber")
+    elif typeof(target) == TYPE_OBJECT and "has_kinetic_absorber" in target:
+        has_kin_abs = target.has_kinetic_absorber
+
+    if has_kin_abs:
+        var dmg = 10.0
+        if typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"):
+            dmg = float(attacker.get("damage"))
+        elif typeof(attacker) == TYPE_OBJECT and "damage" in attacker:
+            dmg = float(attacker.damage)
+
+        var speed = 0.0
+        var avx = 0.0
+        var avy = 0.0
+        if typeof(attacker) == TYPE_DICTIONARY:
+            avx = attacker.get("vx", 0.0)
+            avy = attacker.get("vy", 0.0)
+        elif typeof(attacker) == TYPE_OBJECT:
+            avx = attacker.get("vx", 0.0) if "vx" in attacker else 0.0
+            avy = attacker.get("vy", 0.0) if "vy" in attacker else 0.0
+
+        speed = sqrt(pow(avx, 2) + pow(avy, 2))
+
+        var mass = 1.0
+        if typeof(attacker) == TYPE_DICTIONARY and attacker.has("mass"):
+            mass = attacker.get("mass", 1.0)
+        elif typeof(attacker) == TYPE_OBJECT and "mass" in attacker:
+            mass = attacker.mass
+
+        dmg += speed * mass * 0.01
+
+        var current_pool = 0.0
+        if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("kinetic_energy_pool"):
+            current_pool = target.get_meta("kinetic_energy_pool")
+        elif typeof(target) == TYPE_DICTIONARY and target.has("kinetic_energy_pool"):
+            current_pool = target.get("kinetic_energy_pool")
+        elif typeof(target) == TYPE_OBJECT and "kinetic_energy_pool" in target:
+            current_pool = target.kinetic_energy_pool
+
+        if typeof(target) == TYPE_OBJECT:
+            if "kinetic_energy_pool" in target:
+                target.kinetic_energy_pool = current_pool + dmg
+            elif target.has_method("set_meta"):
+                target.set_meta("kinetic_energy_pool", current_pool + dmg)
+        elif typeof(target) == TYPE_DICTIONARY:
+            target["kinetic_energy_pool"] = current_pool + dmg
+
+        return
+
 	# Reflect projectiles and lasers
 	var is_reflective = target.is_reflective if "is_reflective" in target else false
 	if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("is_reflective"):
@@ -22446,7 +22499,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'throw_noise_maker', 'deploy_lightning_rod']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -32177,6 +32230,130 @@ func _update_skill_timer(delta: float):
         cur_skill = self.ball.get_meta("skill")
     elif "skill" in self.ball:
         cur_skill = self.ball.skill
+
+
+    if cur_skill == "kinetic_absorber":
+        var current_st = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("skill_timer"):
+            current_st = float(self.ball.get_meta("skill_timer"))
+        elif "skill_timer" in self.ball:
+            current_st = float(self.ball.skill_timer)
+
+        var prev_st = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("_prev_skill_timer"):
+            prev_st = float(self.ball.get_meta("_prev_skill_timer"))
+        elif "_prev_skill_timer" in self.ball:
+            prev_st = float(self.ball._prev_skill_timer)
+
+        if current_st > prev_st:
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "has_kinetic_absorber" in self.ball:
+                    self.ball.has_kinetic_absorber = true
+                    self.ball.kinetic_energy_pool = 0.0
+                    self.ball.kinetic_absorber_duration = 3.0
+                    if "SKILL_COOLDOWN" in self.ball:
+                        self.ball.skill_timer = self.ball.SKILL_COOLDOWN
+                    else:
+                        self.ball.skill_timer = 10.0
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("has_kinetic_absorber", true)
+                    self.ball.set_meta("kinetic_energy_pool", 0.0)
+                    self.ball.set_meta("kinetic_absorber_duration", 3.0)
+                    self.ball.set_meta("skill_timer", 10.0)
+            if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_absorber_activated', 'x': self.ball.x, 'y': self.ball.y}})
+
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "_prev_skill_timer" in self.ball:
+                self.ball._prev_skill_timer = current_st
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("_prev_skill_timer", current_st)
+
+    var has_kin_abs = false
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("has_kinetic_absorber"):
+        has_kin_abs = self.ball.get_meta("has_kinetic_absorber")
+    elif "has_kinetic_absorber" in self.ball:
+        has_kin_abs = self.ball.has_kinetic_absorber
+
+    if has_kin_abs:
+        var dur = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_absorber_duration"):
+            dur = self.ball.get_meta("kinetic_absorber_duration")
+        elif "kinetic_absorber_duration" in self.ball:
+            dur = self.ball.kinetic_absorber_duration
+
+        dur -= delta
+
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "kinetic_absorber_duration" in self.ball:
+                self.ball.kinetic_absorber_duration = dur
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("kinetic_absorber_duration", dur)
+
+        var stored_energy = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_energy_pool"):
+            stored_energy = self.ball.get_meta("kinetic_energy_pool")
+        elif "kinetic_energy_pool" in self.ball:
+            stored_energy = self.ball.kinetic_energy_pool
+        if dur <= 0.0 or stored_energy >= 750.0:
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "has_kinetic_absorber" in self.ball:
+                    self.ball.has_kinetic_absorber = false
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("has_kinetic_absorber", false)
+
+            var stored_energy = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_energy_pool"):
+                stored_energy = self.ball.get_meta("kinetic_energy_pool")
+            elif "kinetic_energy_pool" in self.ball:
+                stored_energy = self.ball.kinetic_energy_pool
+
+            var shockwave_radius = 100.0 + min(200.0, stored_energy * 0.5)
+            var shockwave_force = 500.0 + min(1500.0, stored_energy * 2.0)
+
+            if self.has_method("_get_enemies"):
+                var enemies = self._get_enemies()
+                for enemy in enemies:
+                    var bx = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+                    var by = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+                    var ex = enemy.get("x", 0.0) if typeof(enemy) == TYPE_DICTIONARY else enemy.x
+                    var ey = enemy.get("y", 0.0) if typeof(enemy) == TYPE_DICTIONARY else enemy.y
+
+                    var dist_sq = pow(ex - bx, 2) + pow(ey - by, 2)
+                    if dist_sq <= pow(shockwave_radius, 2) and dist_sq > 0:
+                        var dist = sqrt(dist_sq)
+                        var nx = (ex - bx) / dist
+                        var ny = (ey - by) / dist
+                        if typeof(enemy) == TYPE_DICTIONARY:
+                            enemy["vx"] = enemy.get("vx", 0.0) + nx * shockwave_force
+                            enemy["vy"] = enemy.get("vy", 0.0) + ny * shockwave_force
+                        else:
+                            if "vx" in enemy: enemy.vx += nx * shockwave_force
+                            if "vy" in enemy: enemy.vy += ny * shockwave_force
+
+            if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                for hazard in self.world.arena.hazards:
+                    var bx = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+                    var by = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+                    var hx = hazard.get("x", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.x
+                    var hy = hazard.get("y", 0.0) if typeof(hazard) == TYPE_DICTIONARY else hazard.y
+
+                    var dist_sq = pow(hx - bx, 2) + pow(hy - by, 2)
+                    if dist_sq <= pow(shockwave_radius, 2) and dist_sq > 0:
+                        var dist = sqrt(dist_sq)
+                        var nx = (hx - bx) / dist
+                        var ny = (hy - by) / dist
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["vx"] = hazard.get("vx", 0.0) + nx * shockwave_force
+                            hazard["vy"] = hazard.get("vy", 0.0) + ny * shockwave_force
+                        else:
+                            if "vx" in hazard: hazard.vx += nx * shockwave_force
+                            if "vy" in hazard: hazard.vy += ny * shockwave_force
+
+            if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                var bx = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+                var by = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_absorber_shockwave', 'x': bx, 'y': by, 'radius': shockwave_radius, 'force': shockwave_force}})
 
     if cur_skill == "kinetic_echo":
         var current_st = 0.0
