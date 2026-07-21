@@ -16572,8 +16572,13 @@ class Action:
 
         # Count unique ball types among nearby friendlies, including self
         unique_types = {ball_type}
+        my_cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        matching_cosmetics = 0
         for f in nearby_friendlies:
             unique_types.add(getattr(f, "ball_type", ""))
+            f_cosmetic = getattr(f, "cosmetic", "").lower().replace(" ", "_")
+            if my_cosmetic and my_cosmetic != "default" and my_cosmetic == f_cosmetic:
+                matching_cosmetics += 1
 
         stack_count = len(unique_types) - 1 # How many *other* types are nearby
 
@@ -16595,6 +16600,10 @@ class Action:
         self.ball.has_vampiric_aura = has_vampiric_aura
 
         # Apply buffs based on stack count
+        if matching_cosmetics >= 1:
+            # 1 or more allies with same cosmetic -> cosmetic synergy buff
+            self.ball.hp = min(getattr(self.ball, "hp", 100.0) + (1.0 * aura_multiplier) * delta, getattr(self.ball, "max_hp", 100.0))
+
         if is_cursed_aura and stack_count >= 1:
             # Under cursed aura event, stacking penalizes with scaling damage
             damage = (2.0 * stack_count) * delta
@@ -16617,29 +16626,33 @@ class Action:
 
         # If we are not dashing or stuttering or night vampire, we can control the speed
         if not is_dashing and stutter <= 0.0:
+            cosmetic_speed_bonus = 0.05 * matching_cosmetics
+
             if is_cursed_aura and stack_count >= 1:
                 # Slowed movement speed based on stacks
                 speed_penalty = 1.0 - (0.1 * stack_count)
                 if speed_penalty < 0.2:
                     speed_penalty = 0.2
-                self.ball.speed = base_s * speed_penalty
+                self.ball.speed = base_s * speed_penalty * (1.0 + cosmetic_speed_bonus)
             else:
                 if stack_count >= 2 and not has_vampiric_aura:
                     # 2 extra types: Speed boost
-                    self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier)
+                    self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier + cosmetic_speed_bonus)
                 else:
                     if getattr(self.ball, "stamina_speed_burst_timer", 0.0) <= 0.0:
-                        self.ball.speed = base_s
+                        self.ball.speed = base_s * (1.0 + cosmetic_speed_bonus)
+
+            cosmetic_dmg_bonus = 0.05 * matching_cosmetics
 
             if is_cursed_aura and stack_count >= 1:
                 # Normal damage, no buff
-                self.ball.damage = base_d
+                self.ball.damage = base_d * (1.0 + cosmetic_dmg_bonus)
             else:
                 if stack_count >= 3 and not has_vampiric_aura:
                     # 3 extra types: Damage boost
-                    self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier)
+                    self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier + cosmetic_dmg_bonus)
                 else:
-                    self.ball.damage = base_d
+                    self.ball.damage = base_d * (1.0 + cosmetic_dmg_bonus)
 
             # Re-apply night mode base buffs if needed (just for vampire/normal)
             is_lunar = hasattr(self.world, "arena") and (getattr(self.world.arena, "is_lunar_eclipse", False) or getattr(self.world.arena, "is_eclipse", False))
@@ -16649,33 +16662,33 @@ class Action:
                 # Day max buff: 1.2x speed, 1.5x damage (Paladin/Guardian)
                 # Combined: 1.5x speed, 2.0x damage for ALL classes
 
-                if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.5 * 1.1
-                else: self.ball.speed = base_s * 1.5
-                if stack_count >= 3 and not has_vampiric_aura: self.ball.damage = base_d * 2.0 * 1.2
-                else: self.ball.damage = base_d * 2.0
+                if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.5 * (1.1 + cosmetic_speed_bonus)
+                else: self.ball.speed = base_s * 1.5 * (1.0 + cosmetic_speed_bonus)
+                if stack_count >= 3 and not has_vampiric_aura: self.ball.damage = base_d * 2.0 * (1.2 + cosmetic_dmg_bonus)
+                else: self.ball.damage = base_d * 2.0 * (1.0 + cosmetic_dmg_bonus)
             elif is_night:
                 if ball_type == "vampire":
                     if is_cursed_aura and stack_count >= 1:
                         speed_penalty = max(0.2, 1.0 - (0.1 * stack_count))
-                        self.ball.speed = base_s * 1.5 * speed_penalty
-                        self.ball.damage = base_d * 1.5
+                        self.ball.speed = base_s * 1.5 * speed_penalty * (1.0 + cosmetic_speed_bonus)
+                        self.ball.damage = base_d * 1.5 * (1.0 + cosmetic_dmg_bonus)
                     else:
-                        if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.5 * 1.1
-                        else: self.ball.speed = base_s * 1.5
-                        if stack_count >= 3 and not has_vampiric_aura: self.ball.damage = base_d * 1.5 * 1.2
-                        else: self.ball.damage = base_d * 1.5
+                        if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.5 * (1.1 + cosmetic_speed_bonus)
+                        else: self.ball.speed = base_s * 1.5 * (1.0 + cosmetic_speed_bonus)
+                        if stack_count >= 3 and not has_vampiric_aura: self.ball.damage = base_d * 1.5 * (1.2 + cosmetic_dmg_bonus)
+                        else: self.ball.damage = base_d * 1.5 * (1.0 + cosmetic_dmg_bonus)
                 elif ball_type in ["assassin", "phantom"]:
                     if is_cursed_aura and stack_count >= 1:
                         speed_penalty = max(0.2, 1.0 - (0.1 * stack_count))
-                        self.ball.speed = base_s * 1.2 * speed_penalty
-                        self.ball.damage = base_d * 1.5
+                        self.ball.speed = base_s * 1.2 * speed_penalty * (1.0 + cosmetic_speed_bonus)
+                        self.ball.damage = base_d * 1.5 * (1.0 + cosmetic_dmg_bonus)
                     else:
-                        if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.2 * 1.1
-                        else: self.ball.speed = base_s * 1.2
-                        if stack_count >= 3 and not has_vampiric_aura: self.ball.damage = base_d * 1.5 * 1.2
-                        else: self.ball.damage = base_d * 1.5
+                        if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.2 * (1.1 + cosmetic_speed_bonus)
+                        else: self.ball.speed = base_s * 1.2 * (1.0 + cosmetic_speed_bonus)
+                        if stack_count >= 3 and not has_vampiric_aura: self.ball.damage = base_d * 1.5 * (1.2 + cosmetic_dmg_bonus)
+                        else: self.ball.damage = base_d * 1.5 * (1.0 + cosmetic_dmg_bonus)
                 else:
-                    if stack_count < 3 or has_vampiric_aura: self.ball.damage = base_d
+                    if stack_count < 3 or has_vampiric_aura: self.ball.damage = base_d * (1.0 + cosmetic_dmg_bonus)
             else:
                 # normal mode - in execute it says: self.ball.damage = getattr(self.ball, "base_damage", 10.0) * 1.2 during day
                 # So we must add 1.2 here for regular day damage bump for all balls if not stacked 3 times. If stacked 3 times, we multiply the base * 1.2 day bump * 1.2 stack bump
@@ -16687,18 +16700,18 @@ class Action:
                     day_multiplier = 1.5
                     if is_cursed_aura and stack_count >= 1:
                         speed_penalty = max(0.2, 1.0 - (0.1 * stack_count))
-                        self.ball.speed = base_s * 1.2 * speed_penalty
+                        self.ball.speed = base_s * 1.2 * speed_penalty * (1.0 + cosmetic_speed_bonus)
                     else:
-                        if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.2 * 1.1
-                        else: self.ball.speed = base_s * 1.2
+                        if stack_count >= 2 and not has_vampiric_aura: self.ball.speed = base_s * 1.2 * (1.1 + cosmetic_speed_bonus)
+                        else: self.ball.speed = base_s * 1.2 * (1.0 + cosmetic_speed_bonus)
 
                 if is_cursed_aura and stack_count >= 1:
-                    self.ball.damage = base_d * day_multiplier
+                    self.ball.damage = base_d * day_multiplier * (1.0 + cosmetic_dmg_bonus)
                 else:
                     if stack_count >= 3 and not has_vampiric_aura:
-                        self.ball.damage = base_d * day_multiplier * 1.2
+                        self.ball.damage = base_d * day_multiplier * (1.2 + cosmetic_dmg_bonus)
                     else:
-                        self.ball.damage = base_d * day_multiplier
+                        self.ball.damage = base_d * day_multiplier * (1.0 + cosmetic_dmg_bonus)
             # Check for global eclipse inside the not is_dashing block so it isn't overwritten later
             if hasattr(self.world, "arena") and getattr(self.world.arena, "is_eclipse", False):
                 self.ball.damage = getattr(self.ball, "damage", base_d) * 2.0

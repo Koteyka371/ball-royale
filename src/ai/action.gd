@@ -31925,6 +31925,13 @@ func _apply_friendly_aura(delta: float):
     # Count unique ball types among nearby friendlies, including self
     var unique_types = []
     unique_types.append(ball_type)
+
+    var my_cosmetic = ""
+    if "cosmetic" in self.ball:
+        my_cosmetic = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+
+    var matching_cosmetics = 0
+
     for f in nearby_friendlies:
         var f_type = ""
         if "ball_type" in f:
@@ -31933,6 +31940,13 @@ func _apply_friendly_aura(delta: float):
             f_type = f.BALL_TYPE
         if not unique_types.has(f_type):
             unique_types.append(f_type)
+
+        var f_cosmetic = ""
+        if "cosmetic" in f:
+            f_cosmetic = str(f.cosmetic).to_lower().replace(" ", "_")
+
+        if my_cosmetic != "" and my_cosmetic != "default" and my_cosmetic == f_cosmetic:
+            matching_cosmetics += 1
 
     var stack_count = unique_types.size() - 1 # How many *other* types are nearby
 
@@ -31989,6 +32003,14 @@ func _apply_friendly_aura(delta: float):
             self.ball.has_vampiric_aura = has_vampiric_aura
 
     # Apply buffs based on stack count
+    if matching_cosmetics >= 1:
+        # 1 or more allies with same cosmetic -> cosmetic synergy buff
+        var current_hp = 100.0
+        if "hp" in self.ball: current_hp = self.ball.hp
+        var m_hp = 100.0
+        if "max_hp" in self.ball: m_hp = self.ball.max_hp
+        self.ball.hp = min(current_hp + (1.0 * aura_multiplier) * delta, m_hp)
+
     if is_cursed_aura and stack_count >= 1:
         var damage = (2.0 * stack_count) * delta
         var curr_hp = 100.0
@@ -32030,30 +32052,34 @@ func _apply_friendly_aura(delta: float):
         is_night = world.arena.is_night
 
     if not is_dashing and stutter <= 0.0:
+        var cosmetic_speed_bonus = 0.05 * matching_cosmetics
+
         if is_cursed_aura and stack_count >= 1:
             var speed_penalty = 1.0 - (0.1 * stack_count)
             if speed_penalty < 0.2:
                 speed_penalty = 0.2
             if "speed" in self.ball:
-                self.ball.speed = base_s * speed_penalty
+                self.ball.speed = base_s * speed_penalty * (1.0 + cosmetic_speed_bonus)
         else:
             if stack_count >= 2 and not has_vampiric_aura:
                 if "speed" in self.ball:
-                    self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier)
+                    self.ball.speed = base_s * (1.0 + 0.1 * aura_multiplier + cosmetic_speed_bonus)
             else:
                 if "speed" in self.ball:
-                    self.ball.speed = base_s
+                    self.ball.speed = base_s * (1.0 + cosmetic_speed_bonus)
+
+        var cosmetic_dmg_bonus = 0.05 * matching_cosmetics
 
         if is_cursed_aura and stack_count >= 1:
             if "damage" in self.ball:
-                self.ball.damage = base_d
+                self.ball.damage = base_d * (1.0 + cosmetic_dmg_bonus)
         else:
             if stack_count >= 3 and not has_vampiric_aura:
                 if "damage" in self.ball:
-                    self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier)
+                    self.ball.damage = base_d * (1.0 + 0.2 * aura_multiplier + cosmetic_dmg_bonus)
             else:
                 if "damage" in self.ball:
-                    self.ball.damage = base_d
+                    self.ball.damage = base_d * (1.0 + cosmetic_dmg_bonus)
 
         var is_lunar = false
         if world != null and "arena" in world:
@@ -32066,51 +32092,51 @@ func _apply_friendly_aura(delta: float):
             if is_cursed_aura and stack_count >= 1:
                 var speed_penalty = 1.0 - (0.1 * stack_count)
                 if speed_penalty < 0.2: speed_penalty = 0.2
-                if "speed" in self.ball: self.ball.speed = base_s * 1.5 * speed_penalty
-                if "damage" in self.ball: self.ball.damage = base_d * 2.0
+                if "speed" in self.ball: self.ball.speed = base_s * 1.5 * speed_penalty * (1.0 + cosmetic_speed_bonus)
+                if "damage" in self.ball: self.ball.damage = base_d * 2.0 * (1.0 + cosmetic_dmg_bonus)
             else:
                 if stack_count >= 2 and not has_vampiric_aura:
-                    if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier)
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier + cosmetic_speed_bonus)
                 else:
-                    if "speed" in self.ball: self.ball.speed = base_s * 1.5
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + cosmetic_speed_bonus)
                 if stack_count >= 3 and not has_vampiric_aura:
-                    if "damage" in self.ball: self.ball.damage = base_d * 2.0 * (1.0 + 0.2 * aura_multiplier)
+                    if "damage" in self.ball: self.ball.damage = base_d * 2.0 * (1.0 + 0.2 * aura_multiplier + cosmetic_dmg_bonus)
                 else:
-                    if "damage" in self.ball: self.ball.damage = base_d * 2.0
+                    if "damage" in self.ball: self.ball.damage = base_d * 2.0 * (1.0 + cosmetic_dmg_bonus)
         elif is_night:
             if ball_type == "vampire":
                 if is_cursed_aura and stack_count >= 1:
                     var speed_penalty = 1.0 - (0.1 * stack_count)
                     if speed_penalty < 0.2: speed_penalty = 0.2
-                    if "speed" in self.ball: self.ball.speed = base_s * 1.5 * speed_penalty
-                    if "damage" in self.ball: self.ball.damage = base_d * 1.5
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.5 * speed_penalty * (1.0 + cosmetic_speed_bonus)
+                    if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + cosmetic_dmg_bonus)
                 else:
                     if stack_count >= 2 and not has_vampiric_aura:
-                        if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier)
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + 0.1 * aura_multiplier + cosmetic_speed_bonus)
                     else:
-                        if "speed" in self.ball: self.ball.speed = base_s * 1.5
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.5 * (1.0 + cosmetic_speed_bonus)
                     if stack_count >= 3 and not has_vampiric_aura:
-                        if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier)
+                        if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier + cosmetic_dmg_bonus)
                     else:
-                        if "damage" in self.ball: self.ball.damage = base_d * 1.5
+                        if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + cosmetic_dmg_bonus)
             elif ball_type == "assassin" or ball_type == "phantom":
                 if is_cursed_aura and stack_count >= 1:
                     var speed_penalty = 1.0 - (0.1 * stack_count)
                     if speed_penalty < 0.2: speed_penalty = 0.2
-                    if "speed" in self.ball: self.ball.speed = base_s * 1.2 * speed_penalty
-                    if "damage" in self.ball: self.ball.damage = base_d * 1.5
+                    if "speed" in self.ball: self.ball.speed = base_s * 1.2 * speed_penalty * (1.0 + cosmetic_speed_bonus)
+                    if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + cosmetic_dmg_bonus)
                 else:
                     if stack_count >= 2 and not has_vampiric_aura:
-                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier)
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier + cosmetic_speed_bonus)
                     else:
-                        if "speed" in self.ball: self.ball.speed = base_s * 1.2
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + cosmetic_speed_bonus)
                     if stack_count >= 3 and not has_vampiric_aura:
-                        if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier)
+                        if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + 0.2 * aura_multiplier + cosmetic_dmg_bonus)
                     else:
-                        if "damage" in self.ball: self.ball.damage = base_d * 1.5
+                        if "damage" in self.ball: self.ball.damage = base_d * 1.5 * (1.0 + cosmetic_dmg_bonus)
             else:
                 if stack_count < 3 or has_vampiric_aura:
-                    if "damage" in self.ball: self.ball.damage = base_d
+                    if "damage" in self.ball: self.ball.damage = base_d * (1.0 + cosmetic_dmg_bonus)
         else:
             var day_mult = 1.0
             if world != null and "arena" in world:
@@ -32125,20 +32151,20 @@ func _apply_friendly_aura(delta: float):
                     if is_cursed_aura and stack_count >= 1:
                         var speed_penalty = 1.0 - (0.1 * stack_count)
                         if speed_penalty < 0.2: speed_penalty = 0.2
-                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * speed_penalty
+                        if "speed" in self.ball: self.ball.speed = base_s * 1.2 * speed_penalty * (1.0 + cosmetic_speed_bonus)
                     else:
                         if stack_count >= 2 and not has_vampiric_aura:
-                            if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier)
+                            if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + 0.1 * aura_multiplier + cosmetic_speed_bonus)
                         else:
-                            if "speed" in self.ball: self.ball.speed = base_s * 1.2
+                            if "speed" in self.ball: self.ball.speed = base_s * 1.2 * (1.0 + cosmetic_speed_bonus)
 
             if is_cursed_aura and stack_count >= 1:
-                if "damage" in self.ball: self.ball.damage = base_d * day_mult
+                if "damage" in self.ball: self.ball.damage = base_d * day_mult * (1.0 + cosmetic_dmg_bonus)
             else:
                 if stack_count >= 3 and not has_vampiric_aura:
-                    if "damage" in self.ball: self.ball.damage = base_d * day_mult * (1.0 + 0.2 * aura_multiplier)
+                    if "damage" in self.ball: self.ball.damage = base_d * day_mult * (1.0 + 0.2 * aura_multiplier + cosmetic_dmg_bonus)
                 else:
-                    if "damage" in self.ball: self.ball.damage = base_d * day_mult
+                    if "damage" in self.ball: self.ball.damage = base_d * day_mult * (1.0 + cosmetic_dmg_bonus)
 
         var is_exh = false
         if self.ball.has_method("has_meta") and self.ball.has_meta("is_exhausted"):
