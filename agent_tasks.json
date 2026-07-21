@@ -21150,7 +21150,7 @@
     },
     {
       "id": "idea-1234",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slime Monster Boss",
@@ -31755,6 +31755,40 @@
         "src/ai/black_hole_overdrive.py",
         "src/ai/black_hole_overdrive.gd",
         "tests/test_black_hole_overdrive.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1857",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Magnetic Field Mode",
+      "description": "A battle royale variation where instead of a standard safe zone, a powerful magnetic field slowly shrinks towards the center. Balls outside the field are pulled violently into walls or hazards, while balls inside must fight for the remaining stable space.",
+      "allowed_paths": [
+        "src/ai/shrinking_magnetic_field.py",
+        "src/ai/shrinking_magnetic_field.gd",
+        "tests/test_shrinking_magnetic_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1858",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ice Rink Arena",
+      "description": "Frictionless arena where balls keep their momentum longer.",
+      "allowed_paths": [
+        "src/arena/ice_rink_arena.py",
+        "src/arena/ice_rink_arena.gd",
+        "tests/test_ice_rink_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

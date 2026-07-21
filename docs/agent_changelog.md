@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1234] Slime Monster Boss — *2026-07-21 02:40:44 UTC*
+
+A boss that shoots out balls of slime. It leaves a massive trail of slime behind it, slowing down everyone who gets too close to its tail. When destroyed, splits into two smaller, faster slimes.
+
+---
+
 ## [idea-1179] Supercharged Balls Event — *2026-07-21 02:13:05 UTC*
 
 If a ball is struck by a lightning hazard and survives the stun, it gains a 'Supercharged' status for 10 seconds. Supercharged balls move 50% faster, emit tiny electric sparks that deal minor damage over time to nearby enemies, and their next attack stuns the target.
