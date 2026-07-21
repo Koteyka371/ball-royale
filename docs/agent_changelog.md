@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1172] Orbital Relay Booster — *2026-07-21 23:35:38 UTC*
+
+A rare booster that, when collected, temporarily links the collector to the game's hazard spawner. For the next 10 seconds, the player is immune to orbital strikes and debris, and any orbital strikes that occur will automatically target the enemies closest to the player, turning a hazard into an offensive tool.
+
+---
+
 ## [idea-1301] Aura Combination Evolutions — *2026-07-21 23:23:19 UTC*
 
 When balls with different colored auras collide, instead of just an explosion, there's a small chance their auras combine to create a rare 'hybrid' aura color that grants both base aura effects for a short duration.
