@@ -31120,6 +31120,104 @@ func _resolve_collisions() -> bool:
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
 
+
+            # Aura Clash shockwave
+            var scale_self = 1.0
+            var scale_other = 1.0
+
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("scale"):
+                scale_self = float(self.ball["scale"])
+            elif typeof(self.ball) == TYPE_OBJECT and "scale" in self.ball:
+                scale_self = float(self.ball.scale)
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("scale"):
+                scale_self = float(self.ball.get_meta("scale"))
+
+            if typeof(other) == TYPE_DICTIONARY and other.has("scale"):
+                scale_other = float(other["scale"])
+            elif typeof(other) == TYPE_OBJECT and "scale" in other:
+                scale_other = float(other.scale)
+            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("scale"):
+                scale_other = float(other.get_meta("scale"))
+
+            if scale_self >= 2.0 and scale_other >= 2.0:
+                var aura_cd_self = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_aura_clash_cooldown"): aura_cd_self = float(self.ball["_aura_clash_cooldown"])
+                elif typeof(self.ball) == TYPE_OBJECT and "_aura_clash_cooldown" in self.ball: aura_cd_self = float(self.ball._aura_clash_cooldown)
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("_aura_clash_cooldown"): aura_cd_self = float(self.ball.get_meta("_aura_clash_cooldown"))
+
+                var aura_cd_other = 0.0
+                if typeof(other) == TYPE_DICTIONARY and other.has("_aura_clash_cooldown"): aura_cd_other = float(other["_aura_clash_cooldown"])
+                elif typeof(other) == TYPE_OBJECT and "_aura_clash_cooldown" in other: aura_cd_other = float(other._aura_clash_cooldown)
+                elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("_aura_clash_cooldown"): aura_cd_other = float(other.get_meta("_aura_clash_cooldown"))
+
+                if aura_cd_self <= 0.0 and aura_cd_other <= 0.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["_aura_clash_cooldown"] = 1.0
+                    elif typeof(self.ball) == TYPE_OBJECT and "_aura_clash_cooldown" in self.ball: self.ball._aura_clash_cooldown = 1.0
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("_aura_clash_cooldown", 1.0)
+
+                    if typeof(other) == TYPE_DICTIONARY: other["_aura_clash_cooldown"] = 1.0
+                    elif typeof(other) == TYPE_OBJECT and "_aura_clash_cooldown" in other: other._aura_clash_cooldown = 1.0
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("_aura_clash_cooldown", 1.0)
+
+                    var exp_x = (self.ball.x + other.x) / 2.0
+                    var exp_y = (self.ball.y + other.y) / 2.0
+
+                    if self.world != null and self.world.has_method("add_event"):
+                        self.world.add_event("explosion", {"x": exp_x, "y": exp_y, "radius": 300.0, "damage": 0.0})
+                        self.world.add_event("audio_event", {"type": "aura_clash", "x": exp_x, "y": exp_y})
+
+                    var all_ents = []
+                    if self.world != null and self.world.has_method("get_nearby_entities"):
+                        var data_ents = self.world.get_nearby_entities({"x": exp_x, "y": exp_y, "radius": 300.0}, 300.0)
+                        if typeof(data_ents) == TYPE_DICTIONARY:
+                            if data_ents.has("enemies"): all_ents += data_ents["enemies"]
+                            if data_ents.has("allies"): all_ents += data_ents["allies"]
+                            if data_ents.has("hazards"): all_ents += data_ents["hazards"]
+                        elif typeof(data_ents) == TYPE_ARRAY:
+                            all_ents = data_ents
+
+                    for ent in all_ents:
+                        var ex = 0.0
+                        var ey = 0.0
+                        if typeof(ent) == TYPE_DICTIONARY:
+                            if ent.has("x"): ex = ent["x"]
+                            if ent.has("y"): ey = ent["y"]
+                        elif typeof(ent) == TYPE_OBJECT:
+                            if "x" in ent: ex = ent.x
+                            elif ent.has_method("has_meta") and ent.has_meta("x"): ex = ent.get_meta("x")
+                            if "y" in ent: ey = ent.y
+                            elif ent.has_method("has_meta") and ent.has_meta("y"): ey = ent.get_meta("y")
+
+                        var edx = ex - exp_x
+                        var edy = ey - exp_y
+                        var edist = sqrt(edx*edx + edy*edy)
+
+                        if edist < 300.0 and edist > 0.0001:
+                            var push_force = (300.0 - edist) * 5.0
+                            var n_ex = edx / edist
+                            var n_ey = edy / edist
+
+                            if typeof(ent) == TYPE_DICTIONARY:
+                                if ent.has("vx"): ent["vx"] += n_ex * push_force
+                                if ent.has("vy"): ent["vy"] += n_ey * push_force
+                                var c_st = 0.0
+                                if ent.has("silence_timer"): c_st = float(ent["silence_timer"])
+                                ent["silence_timer"] = max(c_st, 2.0)
+                            elif typeof(ent) == TYPE_OBJECT:
+                                if "vx" in ent: ent.vx += n_ex * push_force
+                                elif ent.has_method("has_meta") and ent.has_meta("vx"): ent.set_meta("vx", ent.get_meta("vx") + n_ex * push_force)
+
+                                if "vy" in ent: ent.vy += n_ey * push_force
+                                elif ent.has_method("has_meta") and ent.has_meta("vy"): ent.set_meta("vy", ent.get_meta("vy") + n_ey * push_force)
+
+                                var c_st = 0.0
+                                if "silence_timer" in ent: c_st = float(ent.silence_timer)
+                                elif ent.has_method("has_meta") and ent.has_meta("silence_timer"): c_st = float(ent.get_meta("silence_timer"))
+
+                                if "silence_timer" in ent: ent.silence_timer = max(c_st, 2.0)
+                                elif ent.has_method("set_meta"): ent.set_meta("silence_timer", max(c_st, 2.0))
+
+
             # Secondary stun explosion on collision
             var b_vx = 0.0
             var b_vy = 0.0

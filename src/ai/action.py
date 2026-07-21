@@ -16111,6 +16111,56 @@ class Action:
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
 
+
+                # Aura Clash shockwave
+                scale_self = getattr(self.ball, "scale", 1.0)
+                scale_other = getattr(other, "scale", 1.0)
+
+                if scale_self >= 2.0 and scale_other >= 2.0:
+                    # Check if already triggered recently to avoid spam
+                    aura_cooldown_self = getattr(self.ball, "_aura_clash_cooldown", 0.0)
+                    aura_cooldown_other = getattr(other, "_aura_clash_cooldown", 0.0)
+                    if aura_cooldown_self <= 0.0 and aura_cooldown_other <= 0.0:
+                        setattr(self.ball, "_aura_clash_cooldown", 1.0)
+                        setattr(other, "_aura_clash_cooldown", 1.0)
+
+                        exp_x = (self.ball.x + other.x) / 2.0
+                        exp_y = (self.ball.y + other.y) / 2.0
+
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("explosion", {"x": exp_x, "y": exp_y, "radius": 300.0, "damage": 0.0})
+                            self.world.add_event("audio_event", {"type": "aura_clash", "x": exp_x, "y": exp_y})
+
+                        # Knockback and silence all nearby entities (balls and hazards)
+                        all_entities = []
+                        if hasattr(self.world, "get_nearby_entities"):
+                            try:
+                                data = self.world.get_nearby_entities({"x": exp_x, "y": exp_y, "radius": 300}, 300.0)
+                                if isinstance(data, dict):
+                                    all_entities = data.get("enemies", []) + data.get("allies", []) + data.get("hazards", [])
+                                elif isinstance(data, list):
+                                    all_entities = data
+                            except Exception:
+                                pass
+
+                        for ent in all_entities:
+                            ex = getattr(ent, "x", 0.0)
+                            ey = getattr(ent, "y", 0.0)
+                            edx = ex - exp_x
+                            edy = ey - exp_y
+                            edist = math.sqrt(edx*edx + edy*edy)
+                            if edist < 300.0 and edist > 0.0001:
+                                push_force = (300.0 - edist) * 5.0
+                                n_ex = edx / edist
+                                n_ey = edy / edist
+                                if hasattr(ent, "vx"): ent.vx += n_ex * push_force
+                                if hasattr(ent, "vy"): ent.vy += n_ey * push_force
+                                # Temporary silence
+                                if hasattr(ent, "silence_timer"):
+                                    ent.silence_timer = max(getattr(ent, "silence_timer", 0.0), 2.0)
+                                else:
+                                    setattr(ent, "silence_timer", 2.0)
+
                 # Secondary stun explosion on collision
                 speed_self = math.sqrt(getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2)
                 speed_other = math.sqrt(getattr(other, "vx", 0.0)**2 + getattr(other, "vy", 0.0)**2)
