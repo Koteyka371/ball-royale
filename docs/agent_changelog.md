@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1274] Random Boss Invasions — *2026-07-21 20:29:29 UTC*
+
+Periodically spawn a massive boss entity (e.g. 'The Behemoth') during Battle Royale matches that drops legendary items when defeated. If players fail to defeat it within a certain time, it explodes, wiping out a huge portion of the arena.
+
+---
+
 ## [idea-1231] Quantum Teleport Mutator — *2026-07-21 20:29:24 UTC*
 
 A new mutator for balls where their dash skill is replaced by a short-range instantaneous teleport, which can pass through thin walls but has a longer cooldown.
