@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1282] Bribe Auction System — *2026-07-21 22:55:37 UTC*
+
+If multiple players attempt to bribe the same vote event, a short auction is triggered where players bid currency to secure the final decision.
+
+---
+
 ## [idea-1294] Orbital Laser Strike Event — *2026-07-21 22:36:52 UTC*
 
 Periodically, a massive orbital laser targets the player with the highest score. It takes 3 seconds to lock on, providing a visible warning beam. When it fires, it leaves a scorched earth trail that heavily slows and slightly damages any balls moving through it.

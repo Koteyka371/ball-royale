@@ -21968,7 +21968,7 @@
     },
     {
       "id": "idea-1282",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bribe Auction System",
@@ -32639,6 +32639,57 @@
         "src/ai/decoy_bomb.py",
         "src/ai/decoy_bomb.gd",
         "tests/test_decoy_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1909",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteorite Debris from Orbital Strikes",
+      "description": "When the orbital crosshair fires its laser and creates an irradiated zone, it has a chance to also leave behind physical meteorite debris that acts as a temporary obstacle with collision.",
+      "allowed_paths": [
+        "src/ai/meteorite_debris_from_orbital_strikes.py",
+        "src/ai/meteorite_debris_from_orbital_strikes.gd",
+        "tests/test_meteorite_debris_from_orbital_strikes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1910",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Laser Reflector Powerup",
+      "description": "Add a new powerup or buff that allows a player to perfectly reflect the orbital laser's irradiated zone back to its origin or redirect it onto another player when locked on.",
+      "allowed_paths": [
+        "src/ai/orbital_laser_reflector_powerup.py",
+        "src/ai/orbital_laser_reflector_powerup.gd",
+        "tests/test_orbital_laser_reflector_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1911",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Weather Events",
+      "description": "Add rare in-match dynamic weather transitions (e.g. going from clear to blizzard abruptly) that require players to quickly adapt by finding shelter or equipping weather-specific boosters.",
+      "allowed_paths": [
+        "src/ai/dynamic_events.py",
+        "src/ai/dynamic_events.gd",
+        "tests/test_dynamic_events.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
