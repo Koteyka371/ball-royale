@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1167] Weather Manipulation Booster — *2026-07-21 01:33:50 UTC*
+
+A new booster that allows the user to change the current arena weather for 10 seconds. This could be used defensively (e.g. summoning rain to put out fire/reduce fire damage, or fog to reduce enemy perception) or offensively (e.g. thunderstorm to speed up tornadoes and increase their pull radius).
+
+---
+
 ## [idea-1241] Chain Teleport — *2026-07-20 23:49:57 UTC*
 
 Instead of a single teleport dash, the ball can teleport up to 3 times in quick succession if enemies are clustered within a small radius. Each subsequent jump deals slightly less damage but refreshes a minor stamina burst.
