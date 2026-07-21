@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1306] Necromancer Grave Traps — *2026-07-21 23:59:25 UTC*
+
+When a Necromancer dies, they leave behind a 'Grave Trap' hazard that explodes into bone fragments, damaging and slowing nearby enemies who step on it.
+
+---
+
 ## [idea-1290] Quantum Tunnels Mechanics — *2026-07-21 23:42:01 UTC*
 
 Adding random quantum tunnels that instantly teleport a ball to the opposite side of the map with inverted velocity.
