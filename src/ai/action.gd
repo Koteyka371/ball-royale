@@ -18998,6 +18998,30 @@ func execute(strategy: String, delta: float):
         var kt = float(self.ball._knockback_timer)
         if kt > 0.0:
             self.ball._knockback_timer = max(0.0, kt - delta)
+	var hat = float(self.ball.get("_hybrid_aura_timer")) if self.ball.get("_hybrid_aura_timer") != null else 0.0
+	if hat > 0.0:
+		self.ball.set("_hybrid_aura_timer", max(0.0, hat - delta))
+		if float(self.ball.get("_hybrid_aura_timer")) == 0.0:
+			var colors = [Color(0.0, 1.0, 0.0, 0.5), Color(0.0, 0.0, 1.0, 0.6), Color(1.0, 0.0, 1.0, 0.7), Color(1.0, 0.0, 0.0, 0.8), Color(1.0, 1.0, 0.0, 1.0)]
+			var lvl = 1
+			if "level" in self.ball: lvl = self.ball.level
+			var new_col = colors[min(lvl - 1, colors.size() - 1)]
+			if "cosmetic_aura_color" in self.ball:
+				self.ball.cosmetic_aura_color = new_col
+			if "base_damage" in self.ball and "damage" in self.ball:
+				self.ball.damage = self.ball.base_damage
+
+	var hat = float(self.ball.get("_hybrid_aura_timer")) if self.ball.get("_hybrid_aura_timer") != null else 0.0
+	if hat > 0.0:
+		self.ball.set("_hybrid_aura_timer", max(0.0, hat - delta))
+		if float(self.ball.get("_hybrid_aura_timer")) == 0.0:
+			var colors = [Color(0.0, 1.0, 0.0, 0.5), Color(0.0, 0.0, 1.0, 0.6), Color(1.0, 0.0, 1.0, 0.7), Color(1.0, 0.0, 0.0, 0.8), Color(1.0, 1.0, 0.0, 1.0)]
+			var lvl = 1
+			if "level" in self.ball: lvl = self.ball.level
+			var new_col = colors[min(lvl - 1, colors.size() - 1)]
+			if "cosmetic_aura_color" in self.ball:
+				self.ball.cosmetic_aura_color = new_col
+
         if "_wall_knockback_combo_timer" in self.ball:
             var wkt = float(self.ball.get("_wall_knockback_combo_timer")) if self.ball.get("_wall_knockback_combo_timer") != null else 0.0
             if wkt > 0.0:
@@ -31605,81 +31629,151 @@ func _resolve_collisions() -> bool:
                         if typeof(other) == TYPE_DICTIONARY: other["_aura_explosion_cd"] = 1.0
                         elif typeof(other) == TYPE_OBJECT and "hp" in other: other.set("_aura_explosion_cd", 1.0)
                         elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("_aura_explosion_cd", 1.0)
+                        var is_hybrid = false
+                        if c1 != c2 and randf() < 0.1:
+				is_hybrid = true
+				var hybrid_color
+				if typeof(c1) == TYPE_ARRAY and typeof(c2) == TYPE_ARRAY and c1.size() >= 3 and c2.size() >= 3:
+					hybrid_color = [(c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0]
+					if c1.size() == 4 and c2.size() == 4:
+						hybrid_color.append((c1[3]+c2[3])/2.0)
+				elif typeof(c1) == TYPE_COLOR and typeof(c2) == TYPE_COLOR:
+					hybrid_color = Color((c1.r+c2.r)/2.0, (c1.g+c2.g)/2.0, (c1.b+c2.b)/2.0, (c1.a+c2.a)/2.0)
+				else:
+					hybrid_color = c1
+				if typeof(self.ball) == TYPE_OBJECT and "cosmetic_aura_color" in self.ball:
+					self.ball.cosmetic_aura_color = hybrid_color
+					self.ball.set("_hybrid_aura_timer", 5.0)
+					if "base_speed" in self.ball and "speed" in self.ball:
+						self.ball.speed = self.ball.base_speed * 1.5
+					if "base_damage" in self.ball and "damage" in self.ball:
+						self.ball.damage = self.ball.base_damage * 1.5
+					var b1_sbt = self.ball.get("speed_boost_timer") if self.ball.get("speed_boost_timer") != null else 0.0
+					self.ball.set("speed_boost_timer", max(b1_sbt, 5.0))
+				if typeof(other) == TYPE_OBJECT and "cosmetic_aura_color" in other:
+					other.cosmetic_aura_color = hybrid_color
+					other.set("_hybrid_aura_timer", 5.0)
+					if "base_speed" in other and "speed" in other:
+						other.speed = other.base_speed * 1.5
+					if "base_damage" in other and "damage" in other:
+						other.damage = other.base_damage * 1.5
+					var b2_sbt = other.get("speed_boost_timer") if other.get("speed_boost_timer") != null else 0.0
+					other.set("speed_boost_timer", max(b2_sbt, 5.0))
+				if self.world != null and self.world.has_method("add_event"):
+					var b1_id = self.ball.get("id") if typeof(self.ball) == TYPE_OBJECT and "id" in self.ball else null
+					var b2_id = other.get("id") if typeof(other) == TYPE_OBJECT and "id" in other else null
+					self.world.add_event("hybrid_aura", {"ball1": b1_id, "ball2": b2_id, "duration": 5.0})
+                        if not is_hybrid:
+                        var is_hybrid = false
+                        if c1 != c2 and randf() < 0.1:
+				is_hybrid = true
+				var hybrid_color
+				if typeof(c1) == TYPE_ARRAY and typeof(c2) == TYPE_ARRAY and c1.size() >= 3 and c2.size() >= 3:
+					hybrid_color = [(c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0]
+					if c1.size() == 4 and c2.size() == 4:
+						hybrid_color.append((c1[3]+c2[3])/2.0)
+				elif typeof(c1) == TYPE_COLOR and typeof(c2) == TYPE_COLOR:
+					hybrid_color = Color((c1.r+c2.r)/2.0, (c1.g+c2.g)/2.0, (c1.b+c2.b)/2.0, (c1.a+c2.a)/2.0)
+				else:
+					hybrid_color = c1
+				if typeof(self.ball) == TYPE_OBJECT and "cosmetic_aura_color" in self.ball:
+					self.ball.cosmetic_aura_color = hybrid_color
+					self.ball.set("_hybrid_aura_timer", 5.0)
+					if "base_speed" in self.ball and "speed" in self.ball:
+						self.ball.speed = self.ball.base_speed * 1.5
+					if "base_damage" in self.ball and "damage" in self.ball:
+						self.ball.damage = self.ball.base_damage * 1.5
+					var b1_sbt = self.ball.get("speed_boost_timer") if self.ball.get("speed_boost_timer") != null else 0.0
+					self.ball.set("speed_boost_timer", max(b1_sbt, 5.0))
+				if typeof(other) == TYPE_OBJECT and "cosmetic_aura_color" in other:
+					other.cosmetic_aura_color = hybrid_color
+					other.set("_hybrid_aura_timer", 5.0)
+					if "base_speed" in other and "speed" in other:
+						other.speed = other.base_speed * 1.5
+					if "base_damage" in other and "damage" in other:
+						other.damage = other.base_damage * 1.5
+					var b2_sbt = other.get("speed_boost_timer") if other.get("speed_boost_timer") != null else 0.0
+					other.set("speed_boost_timer", max(b2_sbt, 5.0))
+				if self.world != null and self.world.has_method("add_event"):
+					var b1_id = self.ball.get("id") if typeof(self.ball) == TYPE_OBJECT and "id" in self.ball else null
+					var b2_id = other.get("id") if typeof(other) == TYPE_OBJECT and "id" in other else null
+					self.world.add_event("hybrid_aura", {"ball1": b1_id, "ball2": b2_id, "duration": 5.0})
+                        if not is_hybrid:
 
-                        var b1_x = 0.0
-                        var b1_y = 0.0
-                        if typeof(self.ball) == TYPE_DICTIONARY:
-                            if self.ball.has("x"): b1_x = self.ball["x"]
-                            if self.ball.has("y"): b1_y = self.ball["y"]
-                        else:
-                            if "x" in self.ball: b1_x = self.ball.x
-                            if "y" in self.ball: b1_y = self.ball.y
+					var b1_x = 0.0
+		                        var b1_y = 0.0
+		                        if typeof(self.ball) == TYPE_DICTIONARY:
+		                            if self.ball.has("x"): b1_x = self.ball["x"]
+		                            if self.ball.has("y"): b1_y = self.ball["y"]
+		                        else:
+		                            if "x" in self.ball: b1_x = self.ball.x
+		                            if "y" in self.ball: b1_y = self.ball.y
 
-                        var b2_x = 0.0
-                        var b2_y = 0.0
-                        if typeof(other) == TYPE_DICTIONARY:
-                            if other.has("x"): b2_x = other["x"]
-                            if other.has("y"): b2_y = other["y"]
-                        else:
-                            if "x" in other: b2_x = other.x
-                            if "y" in other: b2_y = other.y
+		                        var b2_x = 0.0
+		                        var b2_y = 0.0
+		                        if typeof(other) == TYPE_DICTIONARY:
+		                            if other.has("x"): b2_x = other["x"]
+		                            if other.has("y"): b2_y = other["y"]
+		                        else:
+		                            if "x" in other: b2_x = other.x
+		                            if "y" in other: b2_y = other.y
 
-                        var exp_x = (b1_x + b2_x) / 2.0
-                        var exp_y = (b1_y + b2_y) / 2.0
+		                        var exp_x = (b1_x + b2_x) / 2.0
+		                        var exp_y = (b1_y + b2_y) / 2.0
 
-                        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
-                            var b1_id = 0
-                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b1_id = self.ball["id"]
-                            elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b1_id = self.ball.id
+		                        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+		                            var b1_id = 0
+		                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b1_id = self.ball["id"]
+		                            elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b1_id = self.ball.id
 
-                            var b2_id = 0
-                            if typeof(other) == TYPE_DICTIONARY and other.has("id"): b2_id = other["id"]
-                            elif typeof(other) == TYPE_OBJECT and "id" in other: b2_id = other.id
+		                            var b2_id = 0
+		                            if typeof(other) == TYPE_DICTIONARY and other.has("id"): b2_id = other["id"]
+		                            elif typeof(other) == TYPE_OBJECT and "id" in other: b2_id = other.id
 
-                            var h = {}
-                            h["id"] = "aura_exp_" + str(b1_id) + "_" + str(b2_id)
-                            h["x"] = exp_x
-                            h["y"] = exp_y
-                            h["radius"] = 80.0
-                            h["kind"] = "aura_explosion"
-                            h["damage"] = 20.0
-                            h["active"] = true
-                            h["duration"] = 1.0
-                            if typeof(c1) == TYPE_ARRAY and typeof(c2) == TYPE_ARRAY and c1.size() >= 3 and c2.size() >= 3:
-                                h["color"] = [(c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0, 0.8]
-                            elif typeof(c1) == TYPE_COLOR and typeof(c2) == TYPE_COLOR:
-                                h["color"] = Color((c1.r+c2.r)/2.0, (c1.g+c2.g)/2.0, (c1.b+c2.b)/2.0, 0.8)
-                            self.world.arena.hazards.append(h)
+		                            var h = {}
+		                            h["id"] = "aura_exp_" + str(b1_id) + "_" + str(b2_id)
+		                            h["x"] = exp_x
+		                            h["y"] = exp_y
+		                            h["radius"] = 80.0
+		                            h["kind"] = "aura_explosion"
+		                            h["damage"] = 20.0
+		                            h["active"] = true
+		                            h["duration"] = 1.0
+		                            if typeof(c1) == TYPE_ARRAY and typeof(c2) == TYPE_ARRAY and c1.size() >= 3 and c2.size() >= 3:
+		                                h["color"] = [(c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0, 0.8]
+		                            elif typeof(c1) == TYPE_COLOR and typeof(c2) == TYPE_COLOR:
+		                                h["color"] = Color((c1.r+c2.r)/2.0, (c1.g+c2.g)/2.0, (c1.b+c2.b)/2.0, 0.8)
+		                            self.world.arena.hazards.append(h)
 
-                        var nearby_exp = []
-                        if self.world != null and self.world.has_method("get_nearby_entities"):
-                            var dp = {"x": exp_x, "y": exp_y}
-                            var data_exp = self.world.get_nearby_entities(dp, 80.0)
-                            if typeof(data_exp) == TYPE_DICTIONARY:
-                                if data_exp.has("enemies"): nearby_exp += data_exp["enemies"]
-                                if data_exp.has("allies"): nearby_exp += data_exp["allies"]
-                            elif typeof(data_exp) == TYPE_ARRAY:
-                                nearby_exp = data_exp
+		                        var nearby_exp = []
+		                        if self.world != null and self.world.has_method("get_nearby_entities"):
+		                            var dp = {"x": exp_x, "y": exp_y}
+		                            var data_exp = self.world.get_nearby_entities(dp, 80.0)
+		                            if typeof(data_exp) == TYPE_DICTIONARY:
+		                                if data_exp.has("enemies"): nearby_exp += data_exp["enemies"]
+		                                if data_exp.has("allies"): nearby_exp += data_exp["allies"]
+		                            elif typeof(data_exp) == TYPE_ARRAY:
+		                                nearby_exp = data_exp
 
-                        for t in nearby_exp:
-                            var t_x = 0.0
-                            var t_y = 0.0
-                            if typeof(t) == TYPE_DICTIONARY:
-                                if t.has("x"): t_x = t["x"]
-                                if t.has("y"): t_y = t["y"]
-                            else:
-                                if "x" in t: t_x = t.x
-                                if "y" in t: t_y = t.y
-                            var dx_e = t_x - exp_x
-                            var dy_e = t_y - exp_y
-                            if dx_e*dx_e + dy_e*dy_e <= 80.0*80.0:
-                                if typeof(t) == TYPE_OBJECT and t.has_method("take_damage"):
-                                    t.take_damage(20.0)
-                                elif typeof(t) == TYPE_OBJECT and "hp" in t:
-                                    t.hp -= 20.0
-                                    if t.hp <= 0:
-                                        t.hp = 0
-                                        t.alive = false
+		                        for t in nearby_exp:
+		                            var t_x = 0.0
+		                            var t_y = 0.0
+		                            if typeof(t) == TYPE_DICTIONARY:
+		                                if t.has("x"): t_x = t["x"]
+		                                if t.has("y"): t_y = t["y"]
+		                            else:
+		                                if "x" in t: t_x = t.x
+		                                if "y" in t: t_y = t.y
+		                            var dx_e = t_x - exp_x
+		                            var dy_e = t_y - exp_y
+		                            if dx_e*dx_e + dy_e*dy_e <= 80.0*80.0:
+		                                if typeof(t) == TYPE_OBJECT and t.has_method("take_damage"):
+		                                    t.take_damage(20.0)
+		                                elif typeof(t) == TYPE_OBJECT and "hp" in t:
+		                                    t.hp -= 20.0
+		                                    if t.hp <= 0:
+		                                        t.hp = 0
+		                                        t.alive = false
                                 elif typeof(t) == TYPE_DICTIONARY and t.has("hp"):
                                     t["hp"] -= 20.0
                                     if t["hp"] <= 0:

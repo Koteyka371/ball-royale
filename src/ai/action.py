@@ -9653,6 +9653,18 @@ class Action:
         if kt > 0:
             self.ball._knockback_timer = max(0.0, kt - delta)
 
+        hat = getattr(self.ball, "_hybrid_aura_timer", 0.0)
+        if hat > 0:
+            self.ball._hybrid_aura_timer = max(0.0, hat - delta)
+            if self.ball._hybrid_aura_timer == 0.0:
+                colors = [(0.0, 1.0, 0.0, 0.5), (0.0, 0.0, 1.0, 0.6), (1.0, 0.0, 1.0, 0.7), (1.0, 0.0, 0.0, 0.8), (1.0, 1.0, 0.0, 1.0)]
+                lvl = getattr(self.ball, "level", 1)
+                self.ball.cosmetic_aura_color = colors[min(lvl - 1, len(colors) - 1)]
+                if hasattr(self.ball, "base_damage"):
+                    self.ball.damage = self.ball.base_damage
+                if hasattr(self.ball, "base_speed"):
+                    self.ball.speed = self.ball.base_speed
+
         wkt = getattr(self.ball, "_wall_knockback_combo_timer", 0.0)
         if wkt > 0:
             self.ball._wall_knockback_combo_timer = max(0.0, wkt - delta)
@@ -16321,54 +16333,76 @@ class Action:
                         self.ball._aura_explosion_cd = 1.0
                         setattr(other, "_aura_explosion_cd", 1.0)
 
-                        explosion_x = (self.ball.x + other.x) / 2
-                        explosion_y = (self.ball.y + other.y) / 2
+                        import random
+                        if c1 != c2 and random.random() < 0.1 and isinstance(c1, (list, tuple)) and isinstance(c2, (list, tuple)) and len(c1) >= 3 and len(c2) >= 3:
+                            hybrid_color = ((c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0)
+                            if len(c1) == 4 and len(c2) == 4:
+                                hybrid_color = (hybrid_color[0], hybrid_color[1], hybrid_color[2], (c1[3]+c2[3])/2.0)
+                            self.ball.cosmetic_aura_color = hybrid_color
+                            other.cosmetic_aura_color = hybrid_color
+                            self.ball._hybrid_aura_timer = 5.0
+                            setattr(other, "_hybrid_aura_timer", 5.0)
+                            if hasattr(self.ball, "base_speed"):
+                                self.ball.speed = getattr(self.ball, "base_speed", 100) * 1.5
+                            if hasattr(other, "base_speed"):
+                                other.speed = getattr(other, "base_speed", 100) * 1.5
+                            if hasattr(self.ball, "base_damage"):
+                                self.ball.damage = getattr(self.ball, "base_damage", 10) * 1.5
+                            if hasattr(other, "base_damage"):
+                                other.damage = getattr(other, "base_damage", 10) * 1.5
+                            self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 5.0)
+                            setattr(other, "speed_boost_timer", max(getattr(other, "speed_boost_timer", 0.0), 5.0))
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("hybrid_aura", {"ball1": getattr(self.ball, "id", None), "ball2": getattr(other, "id", None), "duration": 5.0})
+                        else:
+                            explosion_x = (self.ball.x + other.x) / 2
+                            explosion_y = (self.ball.y + other.y) / 2
 
-                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                            try:
-                                from arena.procedural_arena import Hazard
-                            except ImportError:
-                                class Hazard:
-                                    def __init__(self, id, x, y, radius, kind, damage):
-                                        self.id = id
-                                        self.x = x
-                                        self.y = y
-                                        self.radius = radius
-                                        self.kind = kind
-                                        self.damage = damage
-                                        self.active = True
-                            h = Hazard(f"aura_exp_{getattr(self.ball, 'id', 0)}_{getattr(other, 'id', 0)}", explosion_x, explosion_y, 80.0, "aura_explosion", 20.0)
-                            if isinstance(c1, (list, tuple)) and isinstance(c2, (list, tuple)) and len(c1) >= 3 and len(c2) >= 3:
-                                setattr(h, "color", ((c1[0]+c2[0])/2, (c1[1]+c2[1])/2, (c1[2]+c2[2])/2, 0.8))
-                            setattr(h, "duration", 1.0)
-                            self.world.arena.hazards.append(h)
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                try:
+                                    from arena.procedural_arena import Hazard
+                                except ImportError:
+                                    class Hazard:
+                                        def __init__(self, id, x, y, radius, kind, damage):
+                                            self.id = id
+                                            self.x = x
+                                            self.y = y
+                                            self.radius = radius
+                                            self.kind = kind
+                                            self.damage = damage
+                                            self.active = True
+                                h = Hazard(f"aura_exp_{getattr(self.ball, 'id', 0)}_{getattr(other, 'id', 0)}", explosion_x, explosion_y, 80.0, "aura_explosion", 20.0)
+                                if isinstance(c1, (list, tuple)) and isinstance(c2, (list, tuple)) and len(c1) >= 3 and len(c2) >= 3:
+                                    setattr(h, "color", ((c1[0]+c2[0])/2, (c1[1]+c2[1])/2, (c1[2]+c2[2])/2, 0.8))
+                                setattr(h, "duration", 1.0)
+                                self.world.arena.hazards.append(h)
 
-                        nearby_exp = []
-                        if hasattr(self.world, "get_nearby_entities"):
-                            class DummyPos:
-                                pass
-                            dp = DummyPos()
-                            dp.x = explosion_x
-                            dp.y = explosion_y
-                            try:
-                                data_exp = self.world.get_nearby_entities(dp, 80.0)
-                                if isinstance(data_exp, dict):
-                                    nearby_exp = data_exp.get("enemies", []) + data_exp.get("allies", [])
-                                elif isinstance(data_exp, list):
-                                    nearby_exp = data_exp
-                            except Exception:
-                                pass
+                            nearby_exp = []
+                            if hasattr(self.world, "get_nearby_entities"):
+                                class DummyPos:
+                                    pass
+                                dp = DummyPos()
+                                dp.x = explosion_x
+                                dp.y = explosion_y
+                                try:
+                                    data_exp = self.world.get_nearby_entities(dp, 80.0)
+                                    if isinstance(data_exp, dict):
+                                        nearby_exp = data_exp.get("enemies", []) + data_exp.get("allies", [])
+                                    elif isinstance(data_exp, list):
+                                        nearby_exp = data_exp
+                                except Exception:
+                                    pass
 
-                        for t in nearby_exp:
-                            dx_exp = getattr(t, "x", 0) - explosion_x
-                            dy_exp = getattr(t, "y", 0) - explosion_y
-                            if dx_exp*dx_exp + dy_exp*dy_exp <= 80.0*80.0:
-                                if hasattr(t, "take_damage"):
-                                    t.take_damage(20.0)
-                                elif hasattr(t, "hp"):
-                                    t.hp -= 20.0
-                                    if t.hp <= 0:
-                                        t.alive = False
+                            for t in nearby_exp:
+                                dx_exp = getattr(t, "x", 0) - explosion_x
+                                dy_exp = getattr(t, "y", 0) - explosion_y
+                                if dx_exp*dx_exp + dy_exp*dy_exp <= 80.0*80.0:
+                                    if hasattr(t, "take_damage"):
+                                        t.take_damage(20.0)
+                                    elif hasattr(t, "hp"):
+                                        t.hp -= 20.0
+                                        if t.hp <= 0:
+                                            t.alive = False
 
 
                 if getattr(other, "team", None) != getattr(self.ball, "team", None):
