@@ -32218,6 +32218,23 @@ class LinkedPortalsMode(GameMode):
                         portal["cooldown"] = 0.5
                         break
 
+            if hasattr(world, "projectiles"):
+                for p in world.projectiles:
+                    if getattr(p, "alive", False) or getattr(p, "active", False):
+                        dx = getattr(p, "x", 0.0) - px
+                        dy = getattr(p, "y", 0.0) - py
+                        import math
+                        dist = math.sqrt(dx * dx + dy * dy)
+                        if dist < pr + getattr(p, "radius", 5.0):
+                            linked = portal["link"]
+                            if hasattr(p, "x"):
+                                p.x = linked["x"]
+                            if hasattr(p, "y"):
+                                p.y = linked["y"]
+                            linked["cooldown"] = 0.5
+                            portal["cooldown"] = 0.5
+                            break
+
 
 class WeatherCombinationsMode(GameMode):
     def __init__(self):

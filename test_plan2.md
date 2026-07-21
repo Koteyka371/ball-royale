@@ -1,3 +1,0 @@
-Since we want boosters to have the opposite effect (e.g. speed booster decreases speed, health booster deals damage, etc.), and those effects are scattered throughout the codebase (particularly in `action.py` and `action.gd` and game modes), maybe we can intercept the booster itself before it is collected, or modify how it affects the balls in the game mode.
-Wait! If we just iterate over `balls` and dynamically apply debuffs based on their active timers/buffs? No, some boosters take immediate effect (like healing).
-Let's see where boosters are actually processed. In `action.py`, does `_collect_booster` process all booster effects, or is there another place?
