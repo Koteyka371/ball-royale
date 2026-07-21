@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1255] Quantum Swap Token — *2026-07-21 21:44:26 UTC*
+
+A rare collectable item that allows a player to instantly swap positions with a targeted enemy or ally, confusing opponents and enabling strategic repositioning.
+
+---
+
 ## [idea-1278] Black Ice Weather Hazard — *2026-07-21 21:40:47 UTC*
 
 A weather type or hazard zone that significantly drops steering capabilities (e.g. steering_mult = 0.1) and applies constant slide physics where the ball can't brake effectively, making arena navigation chaotic.

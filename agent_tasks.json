@@ -21507,7 +21507,7 @@
     },
     {
       "id": "idea-1255",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Token",
@@ -32469,6 +32469,23 @@
         "src/ai/possession_mechanic_for_ghosts.py",
         "src/ai/possession_mechanic_for_ghosts.gd",
         "tests/test_possession_mechanic_for_ghosts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1899",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Eruption Weather",
+      "description": "A new extreme weather event called 'Singularity Storm' where miniature black holes randomly spawn across the arena, forcefully pulling balls towards them. Surviving requires precise usage of dash skills and gravity boots.",
+      "allowed_paths": [
+        "src/ai/black_hole_eruption.py",
+        "src/ai/black_hole_eruption.gd",
+        "tests/test_black_hole_eruption.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
