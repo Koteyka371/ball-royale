@@ -198,13 +198,25 @@ class CrowdSystem:
         elif cmd == "!vote" and len(parts) >= 2:
             option = parts[1]
             if getattr(self, 'active_vote', None) and getattr(self, 'votes', None) is not None:
+                if user in getattr(self, 'user_votes', {}):
+                    return
+
+                streak = getattr(self, 'viewer_vote_streaks', {}).get(user, 0)
+                vote_weight = 1 + streak
+
                 self.user_votes[user] = option
+
+                if not hasattr(self, 'current_vote_participants'):
+                    self.current_vote_participants = set()
+                self.current_vote_participants.add(user)
+
                 if option in self.votes:
-                    self.votes[option] += 1
+                    self.votes[option] += vote_weight
                 else:
-                    self.votes[option] = 1
+                    self.votes[option] = vote_weight
+
                 if hasattr(self.world, 'add_event'):
-                    self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} voted for {option}!"})
+                    self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} voted for {option} (Power: {vote_weight})!"})
 
         elif cmd == "!bounty" and len(parts) >= 2:
             target_id = None
@@ -737,6 +749,16 @@ class CrowdSystem:
             if v == winning_option:
                 self._add_viewer_loyalty(u, 10)
         self.user_votes = {}
+
+        if not hasattr(self, 'viewer_vote_streaks'):
+            self.viewer_vote_streaks = {}
+        participants = getattr(self, 'current_vote_participants', set())
+        for u in list(self.viewer_vote_streaks.keys()):
+            if u not in participants:
+                self.viewer_vote_streaks[u] = 0
+        for u in participants:
+            self.viewer_vote_streaks[u] = self.viewer_vote_streaks.get(u, 0) + 1
+        self.current_vote_participants = set()
 
         self.active_vote = None
         self.votes = {}

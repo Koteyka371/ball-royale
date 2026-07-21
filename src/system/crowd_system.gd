@@ -22,6 +22,8 @@ var external_commands = []
 var has_real_spectators = false
 var viewer_loyalty = {}
 var user_votes = {}
+var viewer_vote_streaks = {}
+var current_vote_participants = []
 
 func _init(p_world):
     world = p_world
@@ -277,10 +279,23 @@ func process_external_command(user: String, command: String, balls: Array):
     elif cmd == "!vote" and parts.size() >= 2:
         var option = parts[1]
         if active_vote != null and votes.has(option):
-            votes[option] += 1
+            if user_votes.has(user):
+                return
+
+            var streak = 0
+            if viewer_vote_streaks.has(user):
+                streak = viewer_vote_streaks[user]
+
+            var vote_weight = 1 + streak
+            user_votes[user] = option
+
+            if not current_vote_participants.has(user):
+                current_vote_participants.append(user)
+
+            votes[option] += vote_weight
+
             if world != null and world.has_method("add_event"):
-                user_votes[user] = option
-                world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " voted for " + option + "!"})
+                world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " voted for " + option + " (Power: " + str(vote_weight) + ")!"})
 
     elif cmd == "!bounty" and parts.size() >= 2:
         var target_id = parts[1]
@@ -1167,6 +1182,22 @@ func _resolve_vote(balls: Array):
         if user_votes[u] == winning_option:
             _add_viewer_loyalty(u, 10)
     user_votes.clear()
+
+    var users_to_remove = []
+    for u in viewer_vote_streaks.keys():
+        if not current_vote_participants.has(u):
+            users_to_remove.append(u)
+
+    for u in users_to_remove:
+        viewer_vote_streaks.erase(u)
+
+    for u in current_vote_participants:
+        if viewer_vote_streaks.has(u):
+            viewer_vote_streaks[u] += 1
+        else:
+            viewer_vote_streaks[u] = 1
+
+    current_vote_participants.clear()
 
     active_vote = null
     votes.clear()
