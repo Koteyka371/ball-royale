@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1248] Interactive Twitch Hazard Controls — *2026-07-21 20:36:46 UTC*
+
+Allow real spectators via the Twitch integration to not only trigger votes, but actively control specific neutral hazards for brief periods (e.g., directing a meteor strike or moving a poison cloud).
+
+---
+
 ## [idea-1257] Adaptive Power-Up Pools — *2026-07-21 20:36:42 UTC*
 
 When boosters spawn in specific hazard zones (e.g., inside a mud pit or a flood zone), they mutate into specialized variants that not only provide their core power but also impart a temporary environmental immunity or buff, like a 'muddy' booster giving minor speed buffs on dirt but slowing down on normal terrain.
