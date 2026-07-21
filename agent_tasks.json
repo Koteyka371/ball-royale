@@ -21866,7 +21866,7 @@
     },
     {
       "id": "idea-1276",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Phantom Hazard - Poltergeist",
@@ -32095,6 +32095,74 @@
         "src/arena/momentum_reversal_trap.py",
         "src/arena/momentum_reversal_trap.gd",
         "tests/test_momentum_reversal_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1877",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Alliance System",
+      "description": "Allow clans to form alliances to share territories and complete mega-quests together for exclusive alliance-wide buffs and cosmetics.",
+      "allowed_paths": [
+        "src/ai/clan_alliance.py",
+        "src/ai/clan_alliance.gd",
+        "tests/test_clan_alliance.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1878",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Clan Hubs",
+      "description": "Provide instanced, customizable environments for clan members to hang out in, interact with clan-specific NPCs, and view physical representations of their stash and unlocked decorations.",
+      "allowed_paths": [
+        "src/ai/dynamic_clan_hubs.py",
+        "src/ai/dynamic_clan_hubs.gd",
+        "tests/test_dynamic_clan_hubs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1879",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity well that specifically targets high health players",
+      "description": "A gravity well that pulls players with hp > 75 towards the center.",
+      "allowed_paths": [
+        "src/ai/gravity_well_that_specifically_targets_high_health_players.py",
+        "src/ai/gravity_well_that_specifically_targets_high_health_players.gd",
+        "tests/test_gravity_well_that_specifically_targets_high_health_players.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1880",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Inverted control schemes mutator",
+      "description": "A mutator that inverts all control schemes momentarily for a duration.",
+      "allowed_paths": [
+        "src/ai/inverted_control_schemes_mutator.py",
+        "src/ai/inverted_control_schemes_mutator.gd",
+        "tests/test_inverted_control_schemes_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
