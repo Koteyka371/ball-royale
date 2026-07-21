@@ -169,6 +169,10 @@ def test_external_command_bribe_cancel():
     system.queue_external_command("TwitchUser", "!bribe cancel")
     system.tick(balls, [], 1)
 
+    # Fast forward auction timer
+    system.vote_auction_timer = 0
+    system._resolve_vote_auction([])
+
     assert system.active_vote is None
     events = [e[0] for e in world.events]
     assert "vote_cancelled" in events
@@ -185,7 +189,11 @@ def test_external_command_bribe_skew():
     system.queue_external_command("TwitchUser", "!bribe skew lava")
     system.tick(balls, [], 1)
 
-    assert system.votes["lava"] == 5
+    # Fast forward auction timer
+    system.vote_auction_timer = 0
+    system._resolve_vote_auction([])
+
+    assert system.votes["lava"] == 9999
     events = [e[0] for e in world.events]
     assert "crowd_cheer" in events
 
@@ -234,6 +242,10 @@ def test_player_bribe_vote_cancel():
     # Should use skill_points first
     result = system.player_bribe_vote("player1", "cancel")
     assert result == True
+
+    system.vote_auction_timer = 0
+    system._resolve_vote_auction([])
+
     assert system.active_vote is None
     assert world.profile_manager.data["skill_points"] == 38
     assert world.profile_manager.data["prestige_tokens"] == 5
@@ -252,7 +264,11 @@ def test_player_bribe_vote_skew():
 
     result = system.player_bribe_vote("player2", "skew", "spike")
     assert result == True
-    assert system.votes["spike"] == 5
+
+    system.vote_auction_timer = 0
+    system._resolve_vote_auction([])
+
+    assert system.votes["spike"] == 9999
     assert world.profile_manager.data["skill_points"] == 0
     assert world.profile_manager.data["prestige_tokens"] == 4
     events = [e[0] for e in world.events]

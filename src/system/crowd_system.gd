@@ -341,6 +341,9 @@ func player_bribe_vote(player_id: String, action: String, option: String = "") -
     if active_vote == null or votes.is_empty():
         return false
 
+    if action != "cancel" and (action != "skew" or not votes.has(option)):
+        return false
+
     var pm = null
     if world != null and world.has_method("get_profile_manager"):
         pm = world.get_profile_manager()
@@ -365,6 +368,7 @@ func player_bribe_vote(player_id: String, action: String, option: String = "") -
 
     var currency_type = "skill_points"
     var currency_cost = int(max(10, 50 * (2.0 - corruptibility_level * 1.5)))
+    var bid_power = currency_cost
 
     var current_sp = pm_data.get("skill_points", 0)
     var current_pt = pm_data.get("prestige_tokens", 0)
@@ -373,29 +377,30 @@ func player_bribe_vote(player_id: String, action: String, option: String = "") -
         pm_data["skill_points"] = current_sp - currency_cost
     elif current_pt >= 1:
         pm_data["prestige_tokens"] = current_pt - 1
-        currency_cost = 1
+        bid_power = 100
         currency_type = "prestige_tokens"
     else:
         return false
 
-    if action == "cancel":
-        if world != null and world.has_method("add_event"):
-            world.add_event("vote_cancelled", {"message": "Player " + player_id + " bribed the crowd to cancel the vote!"})
-        active_vote = null
-        votes.clear()
-        vote_cooldown = 1000
-        return true
-    elif action == "skew" and votes.has(option):
-        votes[option] += 5
-        if world != null and world.has_method("add_event"):
-            world.add_event("crowd_cheer", {"message": "Player " + player_id + " bribed the crowd to favor " + option + "!"})
-        return true
-
-    if currency_type == "skill_points":
-        pm_data["skill_points"] = pm_data.get("skill_points", 0) + 50
+    if vote_bids.has(player_id):
+        vote_bids[player_id]["amount"] += bid_power
+        vote_bids[player_id]["action"] = action
+        if option != "":
+            vote_bids[player_id]["option"] = option
     else:
-        pm_data["prestige_tokens"] = pm_data.get("prestige_tokens", 0) + 1
-    return false
+        vote_bids[player_id] = {"amount": bid_power, "action": action, "option": option}
+
+    if vote_bids.size() == 1:
+        vote_auction_timer = 300
+        if world != null and world.has_method("add_event"):
+            world.add_event("bribe_attempt", {"message": "Player " + player_id + " is attempting to bribe the vote! 5 seconds to counter-bid!"})
+    elif vote_bids.size() >= 2 and not vote_auction_active:
+        vote_auction_active = true
+        vote_auction_timer = 300
+        if world != null and world.has_method("add_event"):
+            world.add_event("auction_started", {"message": "Multiple players are bribing! A short auction has started!"})
+
+    return true
 
 func _process_external_commands(balls: Array):
     while external_commands.size() > 0:
@@ -988,14 +993,55 @@ func _process_votes(balls: Array, current_tick: int):
             _start_vote(balls)
         return
 
-    vote_timer -= 1
+    if not vote_bids.is_empty():
+        vote_auction_timer -= 1
+        if vote_auction_timer <= 0:
+            _resolve_vote_auction(balls)
+    else:
+        vote_timer -= 1
 
-    if not has_real_spectators:
-        if randf() < 0.05:
-            _simulate_spectator_vote()
+        if not has_real_spectators:
+            if randf() < 0.05:
+                _simulate_spectator_vote()
 
-    if vote_timer <= 0:
-        _resolve_vote(balls)
+        if vote_timer <= 0:
+            _resolve_vote(balls)
+
+func _resolve_vote_auction(balls: Array):
+    if vote_bids.is_empty():
+        return
+
+    var winner_id = ""
+    var highest_bid = -1
+
+    for pid in vote_bids.keys():
+        if vote_bids[pid]["amount"] > highest_bid:
+            highest_bid = vote_bids[pid]["amount"]
+            winner_id = pid
+
+    var bid_info = vote_bids[winner_id]
+
+    if world != null and world.has_method("add_event"):
+        world.add_event("auction_ended", {"message": "Player " + winner_id + " won the bribe auction and secured the decision!"})
+
+    var action = bid_info["action"]
+    var option = bid_info["option"]
+
+    if action == "cancel":
+        if world != null and world.has_method("add_event"):
+            world.add_event("vote_cancelled", {"message": "Player " + winner_id + " bribed the crowd to cancel the vote!"})
+        active_vote = null
+        votes.clear()
+        vote_cooldown = 1000
+    elif action == "skew":
+        if votes.has(option):
+            votes[option] += 9999
+            if world != null and world.has_method("add_event"):
+                world.add_event("crowd_cheer", {"message": "Player " + winner_id + " bribed the crowd to favor " + option + "!"})
+            vote_timer = 0
+
+    vote_bids.clear()
+    vote_auction_active = false
 
 func _process_spectator_signs(balls: Array, current_tick: int):
     if excitement_level < 10.0 or randf() > 0.01:
