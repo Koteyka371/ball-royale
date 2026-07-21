@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1229] Kinetic Reversal Booster — *2026-07-21 21:30:14 UTC*
+
+A new active skill/booster that temporarily stores all incoming kinetic energy (push and pull forces) into a charge meter. When full or upon expiration, it releases the accumulated force in a massive radial shockwave, pushing away all nearby hazards and enemies.
+
+---
+
 ## [idea-1280] Weather Fusion Mode — *2026-07-21 21:07:04 UTC*
 
 A game mode where capturing altars of different weather types combines their effects. For example, triggering Rain and Heatwave simultaneously creates a 'Steam' weather condition that obscures vision globally while continuously draining stamina.
