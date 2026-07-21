@@ -1,0 +1,4 @@
+{
+    "title": "Time Loop Mutator",
+    "description": "Every 60 seconds, the entire arena and all players are rewound to their state and positions from 10 seconds ago, forcing players to anticipate and exploit their past actions."
+}

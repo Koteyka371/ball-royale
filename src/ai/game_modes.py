@@ -30188,3 +30188,82 @@ class HealerFreezeTagMode(GameMode):
         return None
 
 GAME_MODES['healer_freeze_tag'] = HealerFreezeTagMode()
+
+class InvisibleGravityWellsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Invisible Gravity Wells"
+        self.description = "Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously."
+        self.spawn_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        # Handle spawning invisible gravity wells
+        self.spawn_timer += delta
+        if self.spawn_timer >= 5.0: # spawn every 5 seconds
+            self.spawn_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+
+            x = random.uniform(100.0, arena_width - 100.0)
+            y = random.uniform(100.0, arena_height - 100.0)
+            h_id = len(world.arena.hazards) + random.randint(10000, 99999)
+
+            try:
+                from arena.procedural_arena import Hazard
+                well = Hazard(id=h_id, x=x, y=y, radius=200.0, kind="invisible_gravity_well", damage=0.0)
+                well.duration = 15.0
+                well.active = True
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.duration = 15.0
+                        self.active = True
+                well = FallbackHazard(id=h_id, x=x, y=y, radius=200.0, kind="invisible_gravity_well", damage=0.0)
+
+            world.arena.hazards.append(well)
+
+        to_remove = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "invisible_gravity_well":
+                if hasattr(h, "duration"):
+                    h.duration -= delta
+                    if h.duration <= 0:
+                        to_remove.append(h)
+                        continue
+
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    dx = h.x - bx
+                    dy = h.y - by
+                    dist = math.hypot(dx, dy)
+                    h_radius = getattr(h, "radius", 200.0)
+
+                    if dist <= h_radius:
+                        if dist > 0.0001:
+                            pull_strength = 200.0 * (1.0 - (dist / h_radius))
+                            if not hasattr(b, "vx"): b.vx = 0.0
+                            if not hasattr(b, "vy"): b.vy = 0.0
+                            b.vx += (dx / dist) * pull_strength * delta
+                            b.vy += (dy / dist) * pull_strength * delta
+
+        for h in to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+
+GAME_MODES['invisible_gravity_wells'] = InvisibleGravityWellsMode()

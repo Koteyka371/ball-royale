@@ -49282,3 +49282,113 @@ class WrapAroundMode extends GameMode:
 						vy = b.get_meta('vy')
 						b.set_meta('vy', -vy)
 					teleported = true
+
+
+class InvisibleGravityWellsMode extends GameMode:
+	var spawn_timer = 0.0
+
+	func _init():
+		name = "Invisible Gravity Wells"
+		description = "Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously."
+
+	func tick(world, balls, delta = 0.016):
+		if typeof(world) == TYPE_DICTIONARY:
+			if not ("arena" in world) or typeof(world["arena"]) != TYPE_DICTIONARY or not world["arena"].has("hazards"):
+				return
+		else:
+			if not "arena" in world or not "hazards" in world.arena:
+				return
+
+		var arena_hazards = world["arena"]["hazards"] if typeof(world) == TYPE_DICTIONARY else world.arena.hazards
+
+		spawn_timer += delta
+		if spawn_timer >= 5.0:
+			spawn_timer = 0.0
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world) == TYPE_DICTIONARY:
+				arena_width = world["arena"].get("width", 1000.0)
+				arena_height = world["arena"].get("height", 1000.0)
+			else:
+				if "width" in world.arena:
+					arena_width = world.arena.width
+				if "height" in world.arena:
+					arena_height = world.arena.height
+
+			var hx = randf_range(100.0, arena_width - 100.0)
+			var hy = randf_range(100.0, arena_height - 100.0)
+			var well = {
+				"id": arena_hazards.size() + randi() % 90000 + 10000,
+				"x": hx,
+				"y": hy,
+				"radius": 200.0,
+				"kind": "invisible_gravity_well",
+				"damage": 0.0,
+				"duration": 15.0,
+				"active": true
+			}
+			arena_hazards.append(well)
+
+		var to_remove = []
+		for h in arena_hazards:
+			var is_dict = typeof(h) == TYPE_DICTIONARY
+			var kind = h.get("kind", "") if is_dict else (h.kind if "kind" in h else "")
+			if kind == "invisible_gravity_well":
+				var duration = h.get("duration", 0.0) if is_dict else (h.duration if "duration" in h else 0.0)
+				duration -= delta
+				if is_dict:
+					h["duration"] = duration
+				else:
+					h.duration = duration
+
+				if duration <= 0:
+					to_remove.append(h)
+					continue
+
+				var hx = h.get("x", 0.0) if is_dict else (h.x if "x" in h else 0.0)
+				var hy = h.get("y", 0.0) if is_dict else (h.y if "y" in h else 0.0)
+				var hrad = h.get("radius", 200.0) if is_dict else (h.radius if "radius" in h else 200.0)
+
+				for b in balls:
+					var alive = false
+					var bx = 0.0
+					var by = 0.0
+					var bvx = 0.0
+					var bvy = 0.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						alive = b.get("alive", false)
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+						bvx = b.get("vx", 0.0)
+						bvy = b.get("vy", 0.0)
+					else:
+						alive = b.alive if "alive" in b else false
+						bx = b.x if "x" in b else 0.0
+						by = b.y if "y" in b else 0.0
+						bvx = b.vx if "vx" in b else 0.0
+						bvy = b.vy if "vy" in b else 0.0
+
+					if not alive:
+						continue
+
+					var dx = hx - bx
+					var dy = hy - by
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist <= hrad and dist > 0.0001:
+						var pull_strength = 200.0 * (1.0 - (dist / hrad))
+						var add_vx = (dx / dist) * pull_strength * delta
+						var add_vy = (dy / dist) * pull_strength * delta
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["vx"] = bvx + add_vx
+							b["vy"] = bvy + add_vy
+						else:
+							b.vx = bvx + add_vx
+							b.vy = bvy + add_vy
+
+		for h in to_remove:
+			arena_hazards.erase(h)
+
+GAME_MODES["invisible_gravity_wells"] = InvisibleGravityWellsMode.new()
